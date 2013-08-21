@@ -9,7 +9,6 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_pump_aurax11.h"
@@ -32,19 +31,6 @@ const int kWheelScrollAmount = 53;
 
 const int kMinWheelButton = 4;
 const int kMaxWheelButton = 7;
-
-// A workaround for some incorrect implemented input drivers:
-// Ignore their mouse input valuators.
-bool IgnoreMouseValuators() {
-  static bool initialized = false;
-  static bool ignore_valuators = true;
-  if (initialized)
-    return ignore_valuators;
-  ignore_valuators =
-      CommandLine::ForCurrentProcess()->HasSwitch("disable-mouse-valuators");
-  initialized = true;
-  return ignore_valuators;
-}
 
 // A class to track current modifier state on master device. Only track ctrl,
 // alt, shift and caps lock keys currently. The tracked state can then be used
@@ -476,40 +462,8 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-
-#if defined(USE_XI2_MT)
-      // Touch event valuators aren't coordinates.
-      // Return the |event_x|/|event_y| directly as event's position.
-      if (xievent->evtype == XI_TouchBegin ||
-          xievent->evtype == XI_TouchUpdate ||
-          xievent->evtype == XI_TouchEnd)
-        // Note: Touch events are always touch screen events.
-        return gfx::Point(static_cast<int>(xievent->event_x),
-                          static_cast<int>(xievent->event_y));
-#endif
-      if (IgnoreMouseValuators()) {
-        return gfx::Point(static_cast<int>(xievent->event_x),
-                          static_cast<int>(xievent->event_y));
-      }
-      // Read the position from the valuators, because the location reported in
-      // event_x/event_y seems to be different (and doesn't match for events
-      // coming from slave device and master device) from the values in the
-      // valuators. See more on crbug.com/103981. The position in the valuators
-      // is in the global screen coordinates. But it is necessary to convert it
-      // into the window's coordinates. If the valuator is not set, that means
-      // the value hasn't changed, and so we can use the value from
-      // event_x/event_y (which are in the window's coordinates).
-      double* valuators = xievent->valuators.values;
-
-      double x = xievent->event_x;
-      if (XIMaskIsSet(xievent->valuators.mask, 0))
-        x = *valuators++ - (xievent->root_x - xievent->event_x);
-
-      double y = xievent->event_y;
-      if (XIMaskIsSet(xievent->valuators.mask, 1))
-        y = *valuators++ - (xievent->root_y - xievent->event_y);
-
-      return gfx::Point(static_cast<int>(x), static_cast<int>(y));
+      return gfx::Point(static_cast<int>(xievent->event_x),
+                        static_cast<int>(xievent->event_y));
     }
   }
   return gfx::Point();
