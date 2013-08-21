@@ -83,8 +83,7 @@ bool WriteValue(base::win::RegKey& key,
 
   // presubmit: allow wstring
   std::wstring value_json = UTF8ToWide(value_json_utf8);
-  LONG result = key.WriteValue(value_name,
-                               UTF8ToWide(value_json_utf8).c_str());
+  LONG result = key.WriteValue(value_name, value_json.c_str());
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
     PLOG(ERROR) << "Cannot write value '" << value_name << "'";
