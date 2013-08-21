@@ -1703,30 +1703,17 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
     return frame;
 }
 
-void FrameLoader::loadSameDocumentItem(HistoryItem* item)
+void FrameLoader::loadHistoryItem(HistoryItem* item)
 {
-    ASSERT(item->documentSequenceNumber() == history()->currentItem()->documentSequenceNumber());
+    m_requestedHistoryItem = item;
+    HistoryItem* currentItem = history()->currentItem();
 
-    // Save user view state to the current history item here since we don't do a normal load.
-    // FIXME: Does form state need to be saved here too?
-    history()->saveScrollPositionAndViewStateToItem(history()->currentItem());
-    if (FrameView* view = m_frame->view())
-        view->setWasScrolledByUser(false);
+    if (currentItem && item->shouldDoSameDocumentNavigationTo(currentItem)) {
+        history()->setCurrentItem(item);
+        loadInSameDocument(item->url(), item->stateObject(), false);
+        return;
+    }
 
-    history()->setCurrentItem(item);
-
-    // loadInSameDocument() actually changes the URL and notifies load delegates of a "fake" load
-    loadInSameDocument(item->url(), item->stateObject(), false);
-
-    // Restore user view state from the current history item here since we don't do a normal load.
-    history()->restoreScrollPositionAndViewState();
-}
-
-// FIXME: This function should really be split into a couple pieces, some of
-// which should be methods of HistoryController and some of which should be
-// methods of FrameLoader.
-void FrameLoader::loadDifferentDocumentItem(HistoryItem* item)
-{
     // Remember this item so we can traverse any child items as child frames load
     history()->setProvisionalItem(item);
 
@@ -1742,18 +1729,6 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item)
     }
 
     loadWithNavigationAction(request, NavigationAction(request, FrameLoadTypeBackForward, false), FrameLoadTypeBackForward, 0, SubstituteData());
-}
-
-void FrameLoader::loadHistoryItem(HistoryItem* item)
-{
-    m_requestedHistoryItem = item;
-    HistoryItem* currentItem = history()->currentItem();
-    bool sameDocumentNavigation = currentItem && item->shouldDoSameDocumentNavigationTo(currentItem);
-
-    if (sameDocumentNavigation)
-        loadSameDocumentItem(item);
-    else
-        loadDifferentDocumentItem(item);
 }
 
 void FrameLoader::insertDummyHistoryItem()

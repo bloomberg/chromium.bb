@@ -226,8 +226,6 @@ private:
 
     void checkTimerFired(Timer<FrameLoader>*);
 
-    void loadSameDocumentItem(HistoryItem*);
-    void loadDifferentDocumentItem(HistoryItem*);
     void insertDummyHistoryItem();
 
     bool prepareRequestForThisFrame(FrameLoadRequest&);
