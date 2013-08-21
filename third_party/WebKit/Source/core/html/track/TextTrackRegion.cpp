@@ -373,7 +373,7 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
-    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
 
     m_currentTop += boxHeight;
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
@@ -385,7 +385,7 @@ void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayB
     if (m_cueContainer->contains(displayBox.get()))
         return;
 
-    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
+    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachLazily);
     displayLastTextTrackCueBox();
 }
 
@@ -394,20 +394,23 @@ void TextTrackRegion::displayLastTextTrackCueBox()
     LOG(Media, "TextTrackRegion::displayLastTextTrackCueBox");
     ASSERT(m_cueContainer);
 
-    // The container needs to be rendered, if it is not empty and the region is not currently scrolling.
-    if (!m_cueContainer->renderer() || !m_cueContainer->childNodeCount() || m_scrollTimer.isActive())
+    // FIXME: This should not be causing recalc styles in a loop to set the "top" css
+    // property to move elements. We should just scroll the text track cues on the
+    // compositor with an animation.
+
+    if (!m_scrollTimer.isActive())
         return;
 
     // If it's a scrolling region, add the scrolling class.
     if (isScrollingRegion())
-        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
 
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
     // Find first cue that is not entirely displayed and scroll it upwards.
     for (int i = 0; i < m_cueContainer->childNodeCount() && !m_scrollTimer.isActive(); ++i) {
-        float childTop = static_cast<HTMLDivElement*>(m_cueContainer->childNode(i))->getBoundingClientRect()->top();
-        float childBottom = static_cast<HTMLDivElement*>(m_cueContainer->childNode(i))->getBoundingClientRect()->bottom();
+        float childTop = toHTMLDivElement(m_cueContainer->childNode(i))->getBoundingClientRect()->top();
+        float childBottom = toHTMLDivElement(m_cueContainer->childNode(i))->getBoundingClientRect()->bottom();
 
         if (regionBottom >= childBottom)
             continue;
