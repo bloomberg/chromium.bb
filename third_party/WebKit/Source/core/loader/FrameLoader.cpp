@@ -314,7 +314,7 @@ void FrameLoader::didExplicitOpen()
 
     // Calling document.open counts as committing the first real document load.
     if (!m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 
     // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing away results
     // from a subsequent window.document.open / window.document.write call.
@@ -366,7 +366,7 @@ void FrameLoader::clear(ClearOptions options)
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;
 
-    if (m_stateMachine.isDisplayingInitialEmptyDocument() && m_stateMachine.committedFirstRealDocumentLoad())
+    if (m_stateMachine.isDisplayingInitialEmptyDocument())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
@@ -987,9 +987,6 @@ void FrameLoader::commitProvisionalLoad()
 
     history()->updateForCommit();
     m_client->transitionToCommittedForNewPage();
-
-    if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
 
     m_frame->navigationScheduler()->cancel();
     m_frame->editor()->clearLastEditCommand();

@@ -47,7 +47,6 @@ public:
         CreatingInitialEmptyDocument,
         DisplayingInitialEmptyDocument,
         StartedFirstRealLoad,
-        DisplayingInitialEmptyDocumentPostCommit,
         CommittedFirstRealLoad
     };
 
