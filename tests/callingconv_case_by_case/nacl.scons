@@ -95,7 +95,7 @@ else:
   test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('target_arm'):
     envlist, link_env = MakeCrossEnvs(env, [],
-        ['--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
+        ['--target=armv7a-unknown-nacl-gnueabi',
          '-mfloat-abi=hard'])
     test_configurations.append((envlist, link_env, ''))
   elif env.Bit('target_x86_32'):
@@ -117,14 +117,14 @@ else:
                                       [])
     test_configurations.append((envlist, link_env, '_fp'))
     envlist, link_env = MakeCrossEnvs(env, ['-msse2'],
-        ['--pnacl-frontend-triple=x86_64-unknown-nacl'])
+        ['--target=x86_64-unknown-nacl'])
     test_configurations.append((envlist, link_env, '_sysvabi'))
     envlist, link_env = MakeCrossEnvs(env,
-        ['--pnacl-frontend-triple=x86_64-unknown-nacl',
+        ['--target=x86_64-unknown-nacl',
          '-DTEST_ATTRIBUTE_VIA_DECL'], [], both_clang=True)
     test_configurations.append((envlist, link_env, '_clangdecl'))
     envlist, link_env = MakeCrossEnvs(env,
-        ['--pnacl-frontend-triple=x86_64-unknown-nacl',
+        ['--target=x86_64-unknown-nacl',
          '-DTEST_ATTRIBUTE_VIA_FP'], [], both_clang=True)
     test_configurations.append((envlist, link_env, '_clangfp'))
   else:

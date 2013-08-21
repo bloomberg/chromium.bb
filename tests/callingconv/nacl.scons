@@ -80,7 +80,7 @@ if env.Bit('bitcode'):
   if env.Bit('target_arm'):
     # For ARM, PNaCl only uses the standard ABI if given special flags.
     pnacl_env.Append(CCFLAGS=[
-        '--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
+        '--target=armv7a-unknown-nacl-gnueabi',
         '-mfloat-abi=hard',
         ])
 
