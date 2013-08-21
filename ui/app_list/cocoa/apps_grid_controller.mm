@@ -546,9 +546,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
 
   [self updatePages:start];
-
-  for (size_t i = start; i < start + count; ++i)
-    [[self itemAtIndex:i] onInitialModelBuilt];
 }
 
 - (void)listItemsRemoved:(size_t)start

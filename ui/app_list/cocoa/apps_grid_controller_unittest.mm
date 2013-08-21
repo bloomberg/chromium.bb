@@ -908,50 +908,5 @@ TEST_F(AppsGridControllerTest, ContextMenus) {
   EXPECT_NSEQ(@"Menu For: Item Two", [[menu itemAtIndex:0] title]);
 }
 
-TEST_F(AppsGridControllerTest, HighlightedOnFirstShow) {
-  scoped_ptr<AppListTestModel> test_model(new AppListTestModel);
-  test_model->PopulateApps(kItemsPerPage * 3);
-
-  // Manipulate the second item on the second page.
-  const size_t kTestItemIndex = kItemsPerPage + 1;
-
-  // When shown for the first time during an in-progress install, item should be
-  // visible, but not selected.
-  AppListItemModel* test_item = test_model->apps()->GetItemAt(kTestItemIndex);
-  test_item->SetHighlighted(true);
-  test_item->SetIsInstalling(true);
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  ResetModel(test_model.PassAs<AppListModel>());
-  EXPECT_EQ(3u, [apps_grid_controller_ pageCount]);
-  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(NSNotFound, [apps_grid_controller_ selectedItemIndex]);
-
-  // Updating download progress should add a progress bar lazily.
-  NSView* containerView = [GetItemViewAt(kTestItemIndex) superview];
-  EXPECT_EQ(1u, [[containerView subviews] count]);
-  test_item->SetPercentDownloaded(50);
-  EXPECT_EQ(2u, [[containerView subviews] count]);
-
-  // Completing install should remove the progress bar, and select the item.
-  test_item->SetIsInstalling(false);
-  EXPECT_EQ(1u, [[containerView subviews] count]);
-  EXPECT_EQ(kTestItemIndex, [apps_grid_controller_ selectedItemIndex]);
-
-  // Reset to unconstructed state.
-  ResetModel(scoped_ptr<AppListModel>());
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
-  EXPECT_EQ(NSNotFound, [apps_grid_controller_ selectedItemIndex]);
-
-  // If shown after install completes, item should also be selected.
-  test_model.reset(new AppListTestModel);
-  test_model->PopulateApps(kItemsPerPage * 3);
-  test_model->apps()->GetItemAt(kTestItemIndex)->SetHighlighted(true);
-  ResetModel(test_model.PassAs<AppListModel>());
-  EXPECT_EQ(3u, [apps_grid_controller_ pageCount]);
-  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(kTestItemIndex, [apps_grid_controller_ selectedItemIndex]);
-}
-
 }  // namespace test
 }  // namespace app_list

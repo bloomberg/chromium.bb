@@ -50,10 +50,6 @@ APP_LIST_EXPORT
 // the initial snapshot are restored.
 - (NSBitmapImageRep*)dragRepresentationForRestore:(BOOL)isRestore;
 
-// Called the first time an item is added to the grid view, once the grid view
-// is consistent with items being added at the same time.
-- (void)onInitialModelBuilt;
-
 @end
 
 #endif  // UI_APP_LIST_COCOA_APPS_GRID_VIEW_ITEM_H_
