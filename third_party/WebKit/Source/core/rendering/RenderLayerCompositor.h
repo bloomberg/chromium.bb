@@ -285,6 +285,8 @@ private:
     bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
     bool requiresCompositingForBlending(RenderObject* renderer) const;
+    bool requiresCompositingForOverflowScrollingParent(const RenderLayer*) const;
+    bool requiresCompositingForOutOfFlowClipping(const RenderLayer*) const;
     bool requiresCompositingForScrollableFrame() const;
     bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason* = 0) const;
     bool requiresCompositingForOverflowScrolling(const RenderLayer*) const;

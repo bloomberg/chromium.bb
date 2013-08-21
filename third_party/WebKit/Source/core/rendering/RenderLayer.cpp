@@ -132,6 +132,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasOutOfFlowPositionedDescendant(false)
     , m_hasOutOfFlowPositionedDescendantDirty(true)
     , m_hasUnclippedDescendant(false)
+    , m_isUnclippedDescendant(false)
     , m_needsCompositedScrolling(false)
     , m_canBePromotedToStackingContainer(false)
     , m_canBePromotedToStackingContainerDirty(true)
@@ -486,6 +487,9 @@ bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
 // overflow scroll is ready (crbug.com/254111).
 bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
 {
+    if (!acceleratedCompositingForOverflowScrollEnabled())
+        return false;
+
     const Settings* settings = renderer()->document()->settings();
     return settings && settings->isCompositorDrivenAcceleratedScrollingEnabled();
 }
@@ -496,7 +500,7 @@ bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
 // preserved between the two sets of lists.
 void RenderLayer::updateCanBeStackingContainer()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateCanBeStackingContainer");
+    TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayer::updateCanBeStackingContainer");
 
     if (isStackingContext() || !m_canBePromotedToStackingContainerDirty || !acceleratedCompositingForOverflowScrollEnabled())
         return;
@@ -1020,8 +1024,19 @@ void RenderLayer::updateHasUnclippedDescendant()
         return;
 
     const RenderObject* containingBlock = renderer()->containingBlock();
-    for (RenderLayer* ancestor = parent(); ancestor && ancestor->renderer() != containingBlock; ancestor = ancestor->parent())
+    setIsUnclippedDescendant(false);
+    for (RenderLayer* ancestor = parent(); ancestor && ancestor->renderer() != containingBlock; ancestor = ancestor->parent()) {
+        // TODO(vollick): This isn't quite right. Whenever ancestor is composited and clips
+        // overflow, we're technically unclipped. However, this will currently cause a huge
+        // number of layers to report that they are unclipped. Eventually, when we've formally
+        // separated the clipping, transform, opacity, and stacking trees here and in the
+        // compositor, we will be able to relax this restriction without it being prohibitively
+        // expensive (currently, we have to do a lot of work in the compositor to honor a
+        // clip child/parent relationship).
+        if (ancestor->needsCompositedScrolling())
+            setIsUnclippedDescendant(true);
         ancestor->setHasUnclippedDescendant(true);
+    }
 }
 
 static bool subtreeContainsOutOfFlowPositionedLayer(const RenderLayer* subtreeRoot)
@@ -1377,6 +1392,23 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
         if (curr->isComposited() && !curr->backing()->paintsIntoCompositedAncestor())
             return const_cast<RenderLayer*>(curr);
+    }
+
+    return 0;
+}
+
+RenderLayer* RenderLayer::ancestorScrollingLayer() const
+{
+    if (!acceleratedCompositingForOverflowScrollEnabled())
+        return 0;
+
+    RenderObject* containingBlock = renderer()->containingBlock();
+    if (!containingBlock)
+        return 0;
+
+    for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
+        if (ancestorLayer->needsCompositedScrolling())
+            return ancestorLayer;
     }
 
     return 0;
@@ -1952,6 +1984,15 @@ bool RenderLayer::usesCompositedScrolling() const
 
 bool RenderLayer::needsCompositedScrolling() const
 {
+    if (!compositorDrivenAcceleratedScrollingEnabled())
+        return needsToBeStackingContainer();
+    if (FrameView* frameView = renderer()->view()->frameView())
+        return frameView->containsScrollableArea(scrollableArea());
+    return false;
+}
+
+bool RenderLayer::needsToBeStackingContainer() const
+{
     switch (m_forceNeedsCompositedScrolling) {
     case DoNotForceCompositedScrolling:
         return m_needsCompositedScrolling;
@@ -1967,6 +2008,8 @@ bool RenderLayer::needsCompositedScrolling() const
 
 void RenderLayer::updateNeedsCompositedScrolling()
 {
+    TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
+
     updateCanBeStackingContainer();
     updateDescendantDependentFlags();
 
@@ -5942,6 +5985,14 @@ void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
     } else {
         dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
         compositor()->removeOutOfFlowPositionedLayer(this);
+
+        // We need to reset the isUnclippedDescendant bit here because normally
+        // the "unclipped-ness" property is only updated in
+        // RenderLayerCompositor::updateCompositingRequirementsState(). However,
+        // it is only updated for layers which are known to be out of flow.
+        // Since this is no longer out of flow, we have to explicitly ensure
+        // that it doesn't think it is unclipped.
+        setIsUnclippedDescendant(false);
     }
 }
 

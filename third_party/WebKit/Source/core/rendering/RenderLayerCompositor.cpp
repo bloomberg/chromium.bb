@@ -325,25 +325,29 @@ bool RenderLayerCompositor::hasAnyAdditionalCompositedLayers(const RenderLayer* 
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingRequirementsState");
-
     if (!m_needsUpdateCompositingRequirementsState)
         return;
+
+    TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayerCompositor::updateCompositingRequirementsState");
 
     m_needsUpdateCompositingRequirementsState = false;
 
     if (!rootRenderLayer() || !rootRenderLayer()->acceleratedCompositingForOverflowScrollEnabled())
         return;
 
+    const bool compositorDrivenAcceleratedScrollingEnabled = rootRenderLayer()->compositorDrivenAcceleratedScrollingEnabled();
+
     const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
-    if (!scrollableAreas)
+    if (!compositorDrivenAcceleratedScrollingEnabled && !scrollableAreas)
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
         (*it)->updateHasUnclippedDescendant();
 
-    for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-        (*it)->updateNeedsCompositedScrolling();
+    if (!compositorDrivenAcceleratedScrollingEnabled) {
+        for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
+            (*it)->updateNeedsCompositedScrolling();
+    }
 }
 
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
@@ -1550,6 +1554,8 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
         || requiresCompositingForBlending(renderer)
         || requiresCompositingForPosition(renderer, layer)
         || requiresCompositingForOverflowScrolling(layer)
+        || requiresCompositingForOverflowScrollingParent(layer)
+        || requiresCompositingForOutOfFlowClipping(layer)
         || renderer->isTransparent()
         || renderer->hasMask()
         || renderer->hasReflection()
@@ -1606,6 +1612,12 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
 
     if (requiresCompositingForBlending(renderer))
         directReasons |= CompositingReasonBlending;
+
+    if (requiresCompositingForOverflowScrollingParent(layer))
+        directReasons |= CompositingReasonOverflowScrollingParent;
+
+    if (requiresCompositingForOutOfFlowClipping(layer))
+        directReasons |= CompositingReasonOutOfFlowClipping;
 
     return directReasons;
 }
@@ -1926,6 +1938,43 @@ bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer
 bool RenderLayerCompositor::requiresCompositingForBlending(RenderObject* renderer) const
 {
     return renderer->hasBlendMode();
+}
+
+bool RenderLayerCompositor::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const
+{
+    if (!layer->compositorDrivenAcceleratedScrollingEnabled())
+        return false;
+
+    // A layer scrolls with its containing block. So to find the overflow scrolling layer
+    // that we scroll with respect to, we must ascend the layer tree until we reach the
+    // first overflow scrolling div at or above our containing block. I will refer to this
+    // layer as our 'scrolling ancestor'.
+    //
+    // Now, if we reside in a normal flow list, then we will naturally scroll with our scrolling
+    // ancestor, and we need not be composited. If, on the other hand, we reside in a z-order
+    // list, and on our walk upwards to our scrolling ancestor we find no layer that is a stacking
+    // context, then we know that in the stacking tree, we will not be in the subtree rooted at
+    // our scrolling ancestor, and we will therefore not scroll with it. In this case, we must
+    // be a composited layer since the compositor will need to take special measures to ensure
+    // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
+    RenderLayer* scrollParent = layer->ancestorScrollingLayer();
+
+    if (!scrollParent || scrollParent->isStackingContext())
+        return false;
+
+    // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
+    // be composited due to an overflow scrolling parent, so we don't need to.
+    for (RenderLayer* ancestor = layer->parent(); ancestor && ancestor != scrollParent; ancestor = ancestor->parent()) {
+        if (ancestor->isStackingContext())
+            return false;
+    }
+
+    return true;
+}
+
+bool RenderLayerCompositor::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
+{
+    return layer->compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
 }
 
 bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const

@@ -478,7 +478,7 @@ public:
     // stacking containers, but the converse is not true. Layers that use
     // composited scrolling are stacking containers, but they may not
     // necessarily be stacking contexts.
-    bool isStackingContainer() const { return isStackingContext() || needsCompositedScrolling(); }
+    bool isStackingContainer() const { return isStackingContext() || needsToBeStackingContainer(); }
 
     RenderLayer* ancestorStackingContainer() const;
     RenderLayer* ancestorStackingContext() const;
@@ -540,6 +540,7 @@ public:
     bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
     void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
     void updateHasUnclippedDescendant();
+    bool isUnclippedDescendant() const { return m_isUnclippedDescendant; }
 
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
@@ -556,6 +557,9 @@ public:
     RenderLayer* enclosingCompositingLayerForRepaint(bool includeSelf = true) const;
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(false); }
+
+    // Ancestor scrolling layer at or above our containing block.
+    RenderLayer* ancestorScrollingLayer() const;
 
     RenderLayer* enclosingFilterLayer(bool includeSelf = true) const;
     RenderLayer* enclosingFilterRepaintLayer() const;
@@ -720,6 +724,7 @@ public:
     RenderLayerBacking* ensureBacking();
     void clearBacking(bool layerBeingDestroyed = false);
     bool needsCompositedScrolling() const;
+    bool needsToBeStackingContainer() const;
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const;
@@ -820,6 +825,8 @@ private:
     // See the comment for collectLayers for information about the layerToForceAsStackingContainer parameter.
     void rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0, CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
     void clearZOrderLists();
+    void setIsUnclippedDescendant(bool isUnclippedDescendant) { m_isUnclippedDescendant = isUnclippedDescendant; }
+
 
     void updateNormalFlowList();
 
@@ -1042,6 +1049,7 @@ private:
 
     IntSize scrollbarOffset(const Scrollbar*) const;
 
+    bool requiresScrollableArea() const { return renderer()->style()->overflowX() != OVISIBLE || canResize() || usesCompositedScrolling(); }
     void updateResizerAreaSet();
     void updateScrollableAreaSet(bool hasOverflow);
 
@@ -1134,6 +1142,8 @@ protected:
     // may fall outside of our clip preventing things like opting into
     // composited scrolling (which causes clipping of all descendants).
     unsigned m_hasUnclippedDescendant : 1;
+
+    unsigned m_isUnclippedDescendant : 1;
 
     unsigned m_needsCompositedScrolling : 1;
 

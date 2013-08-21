@@ -297,7 +297,7 @@ public:
     bool addScrollableArea(ScrollableArea*);
     // Returns whether the scrollable area has just been removed.
     bool removeScrollableArea(ScrollableArea*);
-    bool containsScrollableArea(ScrollableArea*) const;
+    bool containsScrollableArea(const ScrollableArea*) const;
     const ScrollableAreaSet* scrollableAreas() const { return m_scrollableAreas.get(); }
 
     // With CSS style "resize:" enabled, a little resizer handle will appear at the bottom

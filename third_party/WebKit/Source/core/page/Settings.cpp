@@ -139,6 +139,7 @@ Settings::Settings(Page* page)
     , m_touchEventEmulationEnabled(false)
     , m_viewportEnabled(false)
     , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
+    , m_compositorDrivenAcceleratedScrollingEnabled(false)
 {
     m_page = page; // Page is not yet fully initialized wen constructing Settings, so keeping m_page null over initializeDefaultFontFamilies() call.
 }

@@ -3309,11 +3309,11 @@ bool FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
     return true;
 }
 
-bool FrameView::containsScrollableArea(ScrollableArea* scrollableArea) const
+bool FrameView::containsScrollableArea(const ScrollableArea* scrollableArea) const
 {
     if (!m_scrollableAreas)
         return false;
-    return m_scrollableAreas->contains(scrollableArea);
+    return m_scrollableAreas->contains(const_cast<ScrollableArea*>(scrollableArea));
 }
 
 void FrameView::removeChild(Widget* widget)

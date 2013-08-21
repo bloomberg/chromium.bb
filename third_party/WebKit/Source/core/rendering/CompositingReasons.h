@@ -56,7 +56,10 @@ const uint64_t CompositingReasonLayerForMask                           = UINT64_
 
 // FIXME: the following compositing reasons need to be re-organized to fit with categories
 // used in all the other reasons above.
-const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_C(1) << 32;
+const uint64_t CompositingReasonOverflowScrollingParent                = UINT64_C(1) << 32;
+const uint64_t CompositingReasonOutOfFlowClipping                      = UINT64_C(1) << 33;
+
+const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_C(1) << 34;
 
 // Note: if you add more reasons here, you will need to update WebCompositingReasons as well.
 typedef uint64_t CompositingReasons;
