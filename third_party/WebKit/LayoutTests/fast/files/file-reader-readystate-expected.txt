@@ -1,0 +1,7 @@
+
+PASS Check if the readyState is EMPTY initially 
+PASS Check if the readyState is LOADING in loadstart 
+PASS Check if the readyState is LOADING in progress 
+PASS Check if the readyState is DONE in load 
+PASS Check if the readyState is DONE in loadend 
+

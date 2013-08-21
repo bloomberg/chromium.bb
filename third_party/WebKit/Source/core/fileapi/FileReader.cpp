@@ -231,10 +231,11 @@ void FileReader::didFinishLoading()
     if (m_aborting)
         return;
 
+    fireEvent(eventNames().progressEvent);
+
     ASSERT(m_state != DONE);
     m_state = DONE;
 
-    fireEvent(eventNames().progressEvent);
     fireEvent(eventNames().loadEvent);
     fireEvent(eventNames().loadendEvent);
 
