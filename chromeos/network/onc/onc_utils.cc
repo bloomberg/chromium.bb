@@ -171,7 +171,7 @@ std::string GetSourceAsString(ONCSource source) {
   return "unknown";
 }
 
-void ExpandField(const std::string fieldname,
+void ExpandField(const std::string& fieldname,
                  const StringSubstitution& substitution,
                  base::DictionaryValue* onc_object) {
   std::string user_string;

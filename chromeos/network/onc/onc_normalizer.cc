@@ -70,7 +70,7 @@ scoped_ptr<base::DictionaryValue> Normalizer::MapObject(
 namespace {
 
 void RemoveEntryUnless(base::DictionaryValue* dict,
-                       const std::string path,
+                       const std::string& path,
                        bool condition) {
   if (!condition)
     dict->RemoveWithoutPathExpansion(path, NULL);
