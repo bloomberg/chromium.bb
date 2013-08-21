@@ -161,8 +161,11 @@ void V8Window::eventAttrGetterCustom(v8::Local<v8::String> name, const v8::Prope
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame))
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame, es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     ASSERT(frame);
     v8::Local<v8::Context> context = frame->script()->currentWorldContext();
@@ -183,8 +186,11 @@ void V8Window::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::V
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame))
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame)) {
+        es.throwIfNeeded();
         return;
+    }
 
     ASSERT(frame);
     v8::Local<v8::Context> context = frame->script()->currentWorldContext();
