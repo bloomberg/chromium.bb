@@ -132,15 +132,16 @@ class DesktopMediaPickerModelTest : public testing::Test {
       : window_capturer_(NULL),
         ui_thread_(content::BrowserThread::UI,
                    &message_loop_) {
-    // Set update period to reduce the time it takes to run tests.
-    model_.SetUpdatePeriod(base::TimeDelta::FromMilliseconds(0));
   }
 
-  void SetDefaultCapturers() {
+  void CreateWithDefaultCapturers() {
     window_capturer_ = new FakeWindowCapturer();
-    model_.SetCapturers(
+    model_.reset(new DesktopMediaPickerModel(
         scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer()),
-        scoped_ptr<webrtc::WindowCapturer>(window_capturer_));
+        scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
+
+    // Set update period to reduce the time it takes to run tests.
+    model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(0));
   }
 
  protected:
@@ -150,7 +151,7 @@ class DesktopMediaPickerModelTest : public testing::Test {
   // Owned by |model_|;
   FakeWindowCapturer* window_capturer_;
 
-  DesktopMediaPickerModel model_;
+  scoped_ptr<DesktopMediaPickerModel> model_;
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -167,7 +168,7 @@ ACTION_P(QuitMessageLoop, message_loop) {
 }
 
 TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
-  SetDefaultCapturers();
+  CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -179,29 +180,29 @@ TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(&model_, 2));
+      .WillOnce(CheckListSize(model_.get(), 2));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
-  EXPECT_EQ(model_.source(0).id.id, 0);
-  EXPECT_EQ(model_.source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_.source(1).id.id, 0);
-  EXPECT_EQ(model_.source(1).name, UTF8ToUTF16(window.title));
+  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->source(0).id.id, 0);
+  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->source(1).id.id, 0);
+  EXPECT_EQ(model_->source(1).name, UTF8ToUTF16(window.title));
 }
 
 TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
   window_capturer_ = new FakeWindowCapturer();
-  model_.SetCapturers(
+  model_.reset(new DesktopMediaPickerModel(
       scoped_ptr<webrtc::ScreenCapturer>(),
-      scoped_ptr<webrtc::WindowCapturer>(window_capturer_));
+      scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -213,38 +214,38 @@ TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
 }
 
 TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
-  model_.SetCapturers(
+  model_.reset(new DesktopMediaPickerModel(
       scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer),
-      scoped_ptr<webrtc::WindowCapturer>());
+      scoped_ptr<webrtc::WindowCapturer>()));
 
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
 }
 
 TEST_F(DesktopMediaPickerModelTest, AddWindow) {
-  SetDefaultCapturers();
+  CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -256,21 +257,21 @@ TEST_F(DesktopMediaPickerModelTest, AddWindow) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(&model_, 2));
+      .WillOnce(CheckListSize(model_.get(), 2));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
   testing::Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnSourceAdded(1))
-    .WillOnce(DoAll(CheckListSize(&model_, 3),
+    .WillOnce(DoAll(CheckListSize(model_.get(), 3),
                     QuitMessageLoop(&message_loop_)));
 
   window.id = 0;
@@ -280,12 +281,12 @@ TEST_F(DesktopMediaPickerModelTest, AddWindow) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_.source(1).id.id, 0);
+  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->source(1).id.id, 0);
 }
 
 TEST_F(DesktopMediaPickerModelTest, RemoveWindow) {
-  SetDefaultCapturers();
+  CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -300,24 +301,24 @@ TEST_F(DesktopMediaPickerModelTest, RemoveWindow) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(&model_, 2));
+      .WillOnce(CheckListSize(model_.get(), 2));
     EXPECT_CALL(observer_, OnSourceAdded(2))
-      .WillOnce(CheckListSize(&model_, 3));
+      .WillOnce(CheckListSize(model_.get(), 3));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(1));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(2))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
   testing::Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnSourceRemoved(1))
-    .WillOnce(DoAll(CheckListSize(&model_, 2),
+    .WillOnce(DoAll(CheckListSize(model_.get(), 2),
                     QuitMessageLoop(&message_loop_)));
 
   list.erase(list.begin());
@@ -327,7 +328,7 @@ TEST_F(DesktopMediaPickerModelTest, RemoveWindow) {
 }
 
 TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
-  SetDefaultCapturers();
+  CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -339,14 +340,14 @@ TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(&model_, 2));
+      .WillOnce(CheckListSize(model_.get(), 2));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 
@@ -362,12 +363,12 @@ TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(1).name, base::UTF8ToUTF16(kTestTitle));
+  EXPECT_EQ(model_->source(1).name, base::UTF8ToUTF16(kTestTitle));
 }
 
 // Disabled due to flakiness on all platforms, see http://crbug.com/275260.
 TEST_F(DesktopMediaPickerModelTest, DISABLED_UpdateThumbnail) {
-  SetDefaultCapturers();
+  CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
   webrtc::WindowCapturer::Window window;
@@ -382,17 +383,17 @@ TEST_F(DesktopMediaPickerModelTest, DISABLED_UpdateThumbnail) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(observer_, OnSourceAdded(0))
-      .WillOnce(CheckListSize(&model_, 1));
+      .WillOnce(CheckListSize(model_.get(), 1));
     EXPECT_CALL(observer_, OnSourceAdded(1))
-      .WillOnce(CheckListSize(&model_, 2));
+      .WillOnce(CheckListSize(model_.get(), 2));
     EXPECT_CALL(observer_, OnSourceAdded(2))
-      .WillOnce(CheckListSize(&model_, 3));
+      .WillOnce(CheckListSize(model_.get(), 3));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(1));
     EXPECT_CALL(observer_, OnSourceThumbnailChanged(2))
       .WillOnce(QuitMessageLoop(&message_loop_));
   }
-  model_.StartUpdating(&observer_);
+  model_->StartUpdating(&observer_);
 
   message_loop_.Run();
 

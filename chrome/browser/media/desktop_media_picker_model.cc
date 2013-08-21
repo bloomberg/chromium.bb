@@ -219,8 +219,12 @@ void DesktopMediaPickerModel::Worker::OnCaptureCompleted(
   current_frame_.reset(frame);
 }
 
-DesktopMediaPickerModel::DesktopMediaPickerModel()
-    : update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
+DesktopMediaPickerModel::DesktopMediaPickerModel(
+    scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
+    scoped_ptr<webrtc::WindowCapturer> window_capturer)
+    : screen_capturer_(screen_capturer.Pass()),
+      window_capturer_(window_capturer.Pass()),
+      update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       thumbnail_size_(100, 100),
       observer_(NULL),
       weak_factory_(this) {
@@ -231,14 +235,6 @@ DesktopMediaPickerModel::DesktopMediaPickerModel()
 
 DesktopMediaPickerModel::~DesktopMediaPickerModel() {
   capture_task_runner_->DeleteSoon(FROM_HERE, worker_.release());
-}
-
-void DesktopMediaPickerModel::SetCapturers(
-    scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
-    scoped_ptr<webrtc::WindowCapturer> window_capturer) {
-  DCHECK(!observer_);
-  screen_capturer_ = screen_capturer.Pass();
-  window_capturer_ = window_capturer.Pass();
 }
 
 void DesktopMediaPickerModel::SetUpdatePeriod(base::TimeDelta period) {

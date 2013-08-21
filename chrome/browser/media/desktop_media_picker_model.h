@@ -49,16 +49,12 @@ class DesktopMediaPickerModel {
     gfx::ImageSkia thumbnail;
   };
 
-  DesktopMediaPickerModel();
+  // Caller may pass NULL for either of the arguments in case when only some
+  // types of sources the model should be populated with (e.g. it will only
+  // contain windows, if |screen_capturer| is NULL).
+  DesktopMediaPickerModel(scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
+                          scoped_ptr<webrtc::WindowCapturer> window_capturer);
   virtual ~DesktopMediaPickerModel();
-
-  // Sets screen/window capturer implementations to use (e.g. for tests). Caller
-  // may pass NULL for either of the arguments in case when only some types of
-  // sources the model should be populated with (e.g. it will only contain
-  // windows, if |screen_capturer| is NULL). Must be called before
-  // StartUpdating().
-  void SetCapturers(scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
-                    scoped_ptr<webrtc::WindowCapturer> window_capturer);
 
   // Sets time interval between updates. By default list of sources and their
   // thumbnail are updated once per second. If called after StartUpdating() then
@@ -106,9 +102,6 @@ class DesktopMediaPickerModel {
   void OnSourcesList(const std::vector<SourceDescription>& sources);
   void OnSourceThumbnail(int index, const gfx::ImageSkia& thumbnail);
   void OnRefreshFinished();
-
-  // Flags passed to the constructor.
-  int flags_;
 
   // Capturers specified in SetCapturers() and passed to the |worker_| later.
   scoped_ptr<webrtc::ScreenCapturer> screen_capturer_;

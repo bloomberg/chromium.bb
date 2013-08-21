@@ -241,7 +241,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
       std::string()));
 
   // Audio is only supported for screen capture streams.
-  if (media_id.type == content::DesktopMediaID::TYPE_SCREEN ||
+  if (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_SYSTEM_AUDIO_CAPTURE, media_id.ToString(),

@@ -1289,6 +1289,7 @@
         'browser/extensions/api/debugger/debugger_extension_apitest.cc',
         'browser/extensions/api/declarative/declarative_apitest.cc',
         'browser/extensions/api/declarative_content/declarative_content_apitest.cc',
+        'browser/extensions/api/desktop_capture/desktop_capture_apitest.cc',
         'browser/extensions/api/developer_private/developer_private_apitest.cc',
         'browser/extensions/api/dial/dial_apitest.cc',
         'browser/extensions/api/dns/dns_apitest.cc',

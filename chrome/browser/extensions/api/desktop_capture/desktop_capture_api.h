@@ -18,6 +18,23 @@ class DesktopCaptureChooseDesktopMediaFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("desktopCapture.chooseDesktopMedia",
                              DESKTOPCAPTURE_CHOOSEDESKTOPMEDIA)
 
+  // Factory creating DesktopMediaPickerModel and DesktopMediaPicker instances.
+  // Used for tests to supply fake picker.
+  class PickerFactory {
+   public:
+    virtual scoped_ptr<DesktopMediaPickerModel> CreateModel(
+        scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
+        scoped_ptr<webrtc::WindowCapturer> window_capturer) = 0;
+    virtual scoped_ptr<DesktopMediaPicker> CreatePicker() = 0;
+   protected:
+    virtual ~PickerFactory() {}
+  };
+
+  // Used to set PickerFactory used to create mock DesktopMediaPicker instances
+  // for tests. Calling tests keep ownership of the factory. Can be called with
+  // |factory| set to NULL at the end of the test.
+  static void SetPickerFactoryForTests(PickerFactory* factory);
+
   DesktopCaptureChooseDesktopMediaFunction();
 
  private:

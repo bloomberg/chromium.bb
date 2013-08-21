@@ -14,12 +14,23 @@
 namespace extensions {
 
 namespace {
+
 const char kNotImplementedError[] =
     "Desktop Capture API is not yet implemented for this platform.";
 const char kInvalidSourceNameError[] = "Invalid source type specified.";
 const char kEmptySourcesListError[] =
     "At least one source type must be specified.";
 const char kTabCaptureNotSupportedError[] = "Tab capture is not supported yet.";
+
+DesktopCaptureChooseDesktopMediaFunction::PickerFactory* g_picker_factory =
+    NULL;
+
+}  // namespace
+
+// static
+void DesktopCaptureChooseDesktopMediaFunction::SetPickerFactoryForTests(
+    PickerFactory* factory) {
+  g_picker_factory = factory;
 }
 
 DesktopCaptureChooseDesktopMediaFunction::
@@ -31,10 +42,6 @@ DesktopCaptureChooseDesktopMediaFunction::
 }
 
 bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
-#if !defined(TOOLKIT_VIEWS)
-  error_ = kNotImplementedError;
-  return false;
-#else
   scoped_ptr<api::desktop_capture::ChooseDesktopMedia::Params> params =
       api::desktop_capture::ChooseDesktopMedia::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -74,15 +81,28 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     origin_ = GetExtension()->url();
   }
 
-  scoped_ptr<DesktopMediaPickerModel> model(new DesktopMediaPickerModel());
-  model->SetCapturers(screen_capturer.Pass(), window_capturer.Pass());
+  scoped_ptr<DesktopMediaPickerModel> model;
+  if (g_picker_factory) {
+    model = g_picker_factory->CreateModel(
+        screen_capturer.Pass(), window_capturer.Pass());
+    picker_ = g_picker_factory->CreatePicker();
+  } else {
+    // Currently DesktopMediaPicker is implemented only for platforms that
+    // use Views.
+#if defined(TOOLKIT_VIEWS)
+    model.reset(new DesktopMediaPickerModel(
+        screen_capturer.Pass(), window_capturer.Pass()));
+    picker_ = DesktopMediaPicker::Create();
+#else
+    error_ = kNotImplementedError;
+    return false;
+#endif
+  }
   DesktopMediaPicker::DoneCallback callback = base::Bind(
       &DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults, this);
-  picker_ = DesktopMediaPicker::Create();
   picker_->Show(NULL, NULL, UTF8ToUTF16(GetExtension()->name()),
                 model.Pass(), callback);
   return true;
-#endif
 }
 
 void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
