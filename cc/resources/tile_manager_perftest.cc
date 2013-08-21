@@ -6,6 +6,7 @@
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
@@ -30,6 +31,8 @@ class TileManagerPerfTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     output_surface_ = FakeOutputSurface::Create3d();
+    CHECK(output_surface_->BindToClient(&output_surface_client_));
+
     resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
     tile_manager_ = make_scoped_ptr(
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
@@ -122,6 +125,7 @@ class TileManagerPerfTest : public testing::Test {
   LayerTreeSettings settings_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;
+  FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
 
