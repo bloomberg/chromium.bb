@@ -18,9 +18,27 @@ using message_center::Notification;
 
 namespace ash {
 namespace internal {
+namespace {
 
-const char TrayLocallyManagedUser::kNotificationId[] =
+const char kLocallyManagedUserNotificationId[] =
     "chrome://user/locally-managed";
+
+void CreateOrUpdateNotification(const base::string16& new_message) {
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kLocallyManagedUserNotificationId,
+      new_message,
+      base::string16() /* body is empty */,
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      std::string() /* extension_id */,
+      message_center::RichNotificationData(),
+      NULL /* no delegate */));
+  notification->SetSystemPriority();
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
+
+} // namespace
 
 TrayLocallyManagedUser::TrayLocallyManagedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
@@ -36,8 +54,10 @@ void TrayLocallyManagedUser::UpdateMessage() {
       GetLocallyManagedUserMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
-  if (message_center::MessageCenter::Get()->HasNotification(kNotificationId))
+  if (message_center::MessageCenter::Get()->HasNotification(
+          kLocallyManagedUserNotificationId)) {
     CreateOrUpdateNotification(message);
+  }
 }
 
 views::View* TrayLocallyManagedUser::CreateDefaultView(
@@ -69,22 +89,6 @@ void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
     CreateOrUpdateNotification(delegate->GetLocallyManagedUserMessage());
   }
   status_ = status;
-}
-
-void TrayLocallyManagedUser::CreateOrUpdateNotification(
-    const base::string16& new_message) {
-  scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId,
-      new_message,
-      base::string16() /* body is empty */,
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      std::string() /* extension_id */,
-      message_center::RichNotificationData(),
-      NULL /* no delegate */));
-  notification->SetSystemPriority();
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
 } // namespace internal
