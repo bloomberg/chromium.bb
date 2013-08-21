@@ -21,6 +21,7 @@
 #ifndef SVGLinearGradientElement_h
 #define SVGLinearGradientElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
 
@@ -52,6 +53,12 @@ private:
         DECLARE_ANIMATED_LENGTH(Y2, y2)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGLinearGradientElement* toSVGLinearGradientElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::linearGradientTag));
+    return static_cast<SVGLinearGradientElement*>(node);
+}
 
 } // namespace WebCore
 
