@@ -103,7 +103,7 @@ class ViewWithNameAndRole : public views::View {
 class AccessibilityEventRouterViewsTest
     : public testing::Test {
  public:
-  AccessibilityEventRouterViewsTest() {
+  AccessibilityEventRouterViewsTest() : focus_event_count_(0) {
   }
 
   virtual void SetUp() {
