@@ -13,12 +13,11 @@ description("Tests cypto.subtle.sign and crypto.subtle.verify");
 
 jsTestIsAsync = true;
 
+hmacSha1 = {name: 'hmac', hash: {name: 'sha-1'}};
+data = asciiToArrayBuffer("hello");
+
 importTestKeys().then(function(importedKeys) {
     keys = importedKeys;
-
-    hmacSha1 = {name: 'hmac', hash: {name: 'sha-1'}};
-
-    data = asciiToArrayBuffer("hello");
 
     // Pass invalid signature parameters to verify()
     shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data)");
@@ -66,6 +65,16 @@ importTestKeys().then(function(importedKeys) {
 }).then(function(result) {
     verifyResult = result;
     shouldBe("verifyResult", "false");
+
+    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-1' }, length: 48}, false, ['sign']);
+}).then(function(result) {
+    generatedHmacSha1Key = result;
+
+    // Cannot use an HMAC SHA-1 key for signing HMAC SHA-256
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, generatedHmacSha1Key, data)");
+
+    // However it can be used to sign for HMAC SHA-1
+    shouldNotThrow("crypto.subtle.sign(hmacSha1, generatedHmacSha1Key, data)");
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

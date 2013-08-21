@@ -41,7 +41,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
@@ -117,56 +117,6 @@ private:
     bool m_finished;
 };
 
-WebKit::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
-{
-    switch (operation) {
-    case Encrypt:
-        return WebKit::WebCryptoKeyUsageEncrypt;
-    case Decrypt:
-        return WebKit::WebCryptoKeyUsageDecrypt;
-    case Sign:
-        return WebKit::WebCryptoKeyUsageSign;
-    case Verify:
-        return WebKit::WebCryptoKeyUsageVerify;
-    case DeriveKey:
-        return WebKit::WebCryptoKeyUsageDeriveKey;
-    case WrapKey:
-        return WebKit::WebCryptoKeyUsageWrapKey;
-    case UnwrapKey:
-        return WebKit::WebCryptoKeyUsageUnwrapKey;
-    case Digest:
-    case GenerateKey:
-    case ImportKey:
-    case NumberOfAlgorithmOperations:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-bool keyCanBeUsedForAlgorithm(const WebKit::WebCryptoKey& key, const WebKit::WebCryptoAlgorithm& algorithm, AlgorithmOperation op)
-{
-    if (!(key.usages() & toKeyUsage(op)))
-        return false;
-
-    if (key.algorithm().id() != algorithm.id())
-        return false;
-
-    if (key.algorithm().paramsType() == WebKit::WebCryptoAlgorithmParamsTypeNone)
-        return true;
-
-    // Verify that the algorithm-specific parameters for the key conform to the
-    // algorithm.
-
-    if (key.algorithm().paramsType() == WebKit::WebCryptoAlgorithmParamsTypeHmacParams) {
-        return key.algorithm().hmacParams()->hash().id() == algorithm.hmacParams()->hash().id();
-    }
-
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
 {
     WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
@@ -186,10 +136,8 @@ ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Algo
             return ScriptObject();
         }
 
-        if (!keyCanBeUsedForAlgorithm(key->key(), algorithm, operationType)) {
-            es.throwDOMException(NotSupportedError);
+        if (!key->canBeUsedForAlgorithm(algorithm, operationType, es))
             return ScriptObject();
-        }
     }
 
     // Only Verify takes a signature.

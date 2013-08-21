@@ -32,6 +32,7 @@
 #define Key_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -54,6 +55,8 @@ public:
     Vector<String> usages() const;
 
     const WebKit::WebCryptoKey& key() const { return m_key; }
+
+    bool canBeUsedForAlgorithm(const WebKit::WebCryptoAlgorithm&, AlgorithmOperation, ExceptionState&) const;
 
     static bool parseFormat(const String&, WebKit::WebCryptoKeyFormat&);
 

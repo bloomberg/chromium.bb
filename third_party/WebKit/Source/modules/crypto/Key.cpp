@@ -31,7 +31,10 @@
 #include "config.h"
 #include "modules/crypto/Key.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Algorithm.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
 
 namespace WebCore {
 
@@ -87,6 +90,47 @@ WebKit::WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
     return 0;
 }
 
+WebKit::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
+{
+    switch (operation) {
+    case Encrypt:
+        return WebKit::WebCryptoKeyUsageEncrypt;
+    case Decrypt:
+        return WebKit::WebCryptoKeyUsageDecrypt;
+    case Sign:
+        return WebKit::WebCryptoKeyUsageSign;
+    case Verify:
+        return WebKit::WebCryptoKeyUsageVerify;
+    case DeriveKey:
+        return WebKit::WebCryptoKeyUsageDeriveKey;
+    case WrapKey:
+        return WebKit::WebCryptoKeyUsageWrapKey;
+    case UnwrapKey:
+        return WebKit::WebCryptoKeyUsageUnwrapKey;
+    case Digest:
+    case GenerateKey:
+    case ImportKey:
+    case NumberOfAlgorithmOperations:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+bool getHmacHashId(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoAlgorithmId& hashId)
+{
+    if (algorithm.hmacParams()) {
+        hashId = algorithm.hmacParams()->hash().id();
+        return true;
+    }
+    if (algorithm.hmacKeyParams()) {
+        hashId = algorithm.hmacKeyParams()->hash().id();
+        return true;
+    }
+    return false;
+}
+
 } // namespace
 
 Key::~Key()
@@ -129,6 +173,33 @@ Vector<String> Key::usages() const
             result.append(keyUsageToString(usage));
     }
     return result;
+}
+
+bool Key::canBeUsedForAlgorithm(const WebKit::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, ExceptionState& es) const
+{
+    if (!(m_key.usages() & toKeyUsage(op))) {
+        es.throwDOMException(NotSupportedError, "key.usages does not permit this operation");
+        return false;
+    }
+
+    if (m_key.algorithm().id() != algorithm.id()) {
+        es.throwDOMException(NotSupportedError, "key.algorithm does not match that of operation");
+        return false;
+    }
+
+    // Verify that the algorithm-specific parameters for the key conform to the
+    // algorithm.
+
+    if (m_key.algorithm().id() == WebKit::WebCryptoAlgorithmIdHmac) {
+        WebKit::WebCryptoAlgorithmId keyHash;
+        WebKit::WebCryptoAlgorithmId algorithmHash;
+        if (!getHmacHashId(m_key.algorithm(), keyHash) || !getHmacHashId(algorithm, algorithmHash) || keyHash != algorithmHash) {
+            es.throwDOMException(NotSupportedError, "key.algorithm does not match that of operation (HMAC's hash differs)");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool Key::parseFormat(const String& formatString, WebKit::WebCryptoKeyFormat& format)
