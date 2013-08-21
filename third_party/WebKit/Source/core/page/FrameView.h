@@ -363,9 +363,12 @@ private:
 
     void paintControlTints();
 
-    void forceLayoutParentViewIfNeeded();
-    void performPostLayoutTasks();
     void autoSizeIfEnabled();
+    void forceLayoutParentViewIfNeeded();
+    void performPreLayoutTasks();
+    void performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout);
+    void scheduleOrPerformPostLayoutTasks();
+    void performPostLayoutTasks();
 
     virtual void repaintContentRectangle(const IntRect&);
     virtual void contentsResized() OVERRIDE;

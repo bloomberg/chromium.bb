@@ -838,6 +838,104 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     frameView->layout();
 }
 
+void FrameView::performPreLayoutTasks()
+{
+    // Don't schedule more layouts, we're in one.
+    TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
+
+    if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !frame()->document()->shouldDisplaySeamlesslyWithParent()) {
+        // This is a new top-level layout. If there are any remaining tasks from the previous layout, finish them now.
+        m_inSynchronousPostLayout = true;
+        performPostLayoutTasks();
+        m_inSynchronousPostLayout = false;
+    }
+
+    // Viewport-dependent media queries may cause us to need completely different style information.
+    Document* document = m_frame->document();
+    if (!document->styleResolverIfExists() || document->styleResolverIfExists()->affectedByViewportChange()) {
+        document->styleResolverChanged(DeferRecalcStyle);
+        // FIXME: This instrumentation event is not strictly accurate since cached media query results
+        //        do not persist across StyleResolver rebuilds.
+        InspectorInstrumentation::mediaQueryResultChanged(document);
+    } else {
+        document->evaluateMediaQueryList();
+    }
+
+    // If there is any pagination to apply, it will affect the RenderView's style, so we should
+    // take care of that now.
+    applyPaginationToViewport();
+
+    // Always ensure our style info is up-to-date. This can happen in situations where
+    // the layout beats any sort of style recalc update that needs to occur.
+    TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
+    document->updateStyleIfNeeded();
+}
+
+void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
+{
+    // performLayout is the actual guts of layout().
+    // FIXME: The 300 other lines in layout() probably belong in other helper functions
+    // so that a single human could understand what layout() is actually doing.
+
+    bool disableLayoutState = false;
+    if (inSubtreeLayout) {
+        RenderView* view = rootForThisLayout->view();
+        disableLayoutState = view->shouldDisableLayoutStateForSubtree(rootForThisLayout);
+        view->pushLayoutState(rootForThisLayout);
+    }
+    LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
+
+    m_inLayout = true;
+    beginDeferredRepaints();
+    forceLayoutParentViewIfNeeded();
+
+    rootForThisLayout->layout(); // THIS IS WHERE LAYOUT ACTUALLY HAPPENS.
+
+    bool autosized = frame()->document()->textAutosizer()->processSubtree(rootForThisLayout);
+    if (autosized && rootForThisLayout->needsLayout()) {
+        TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
+        rootForThisLayout->layout();
+    }
+
+    endDeferredRepaints();
+    m_inLayout = false;
+
+    if (inSubtreeLayout)
+        rootForThisLayout->view()->popLayoutState(rootForThisLayout);
+}
+
+void FrameView::scheduleOrPerformPostLayoutTasks()
+{
+    if (m_postLayoutTasksTimer.isActive()) {
+        m_actionScheduler->resume();
+        return;
+    }
+
+    if (!m_inSynchronousPostLayout) {
+        if (frame()->document()->shouldDisplaySeamlesslyWithParent()) {
+            if (RenderView* renderView = this->renderView())
+                renderView->updateWidgetPositions();
+        } else {
+            m_inSynchronousPostLayout = true;
+            // Calls resumeScheduledEvents()
+            performPostLayoutTasks();
+            m_inSynchronousPostLayout = false;
+        }
+    }
+
+    if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout || frame()->document()->shouldDisplaySeamlesslyWithParent())) {
+        // If we need layout or are already in a synchronous call to postLayoutTasks(),
+        // defer widget updates and event dispatch until after we return. postLayoutTasks()
+        // can make us need to update again, and we can get stuck in a nasty cycle unless
+        // we call it through the timer here.
+        m_postLayoutTasksTimer.startOneShot(0);
+        if (needsLayout()) {
+            m_actionScheduler->pause();
+            layout();
+        }
+    }
+}
+
 void FrameView::layout(bool allowSubtree)
 {
     // We should never layout a Document which is not in a Frame.
@@ -873,54 +971,21 @@ void FrameView::layout(bool allowSubtree)
         m_layoutRoot = 0;
     }
 
+    performPreLayoutTasks();
+
+    // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
+    // so there's no point to continuing to layout
+    if (protector->hasOneRef())
+        return;
+
     Document* document = m_frame->document();
-    bool inSubtreeLayout = false;
-    RenderObject* rootForThisLayout = 0;
-
-    {
-        TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
-
-        if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !frame()->document()->shouldDisplaySeamlesslyWithParent()) {
-            // This is a new top-level layout. If there are any remaining tasks from the previous layout, finish them now.
-            m_inSynchronousPostLayout = true;
-            performPostLayoutTasks();
-            m_inSynchronousPostLayout = false;
-        }
-
-        // Viewport-dependent media queries may cause us to need completely different style information.
-        if (!document->styleResolverIfExists() || document->styleResolverIfExists()->affectedByViewportChange()) {
-            document->styleResolverChanged(DeferRecalcStyle);
-            // FIXME: This instrumentation event is not strictly accurate since cached media query results
-            //        do not persist across StyleResolver rebuilds.
-            InspectorInstrumentation::mediaQueryResultChanged(document);
-        } else {
-            document->evaluateMediaQueryList();
-        }
-
-        // If there is any pagination to apply, it will affect the RenderView's style, so we should
-        // take care of that now.
-        applyPaginationToViewport();
-
-        // Always ensure our style info is up-to-date. This can happen in situations where
-        // the layout beats any sort of style recalc update that needs to occur.
-        TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
-        document->updateStyleIfNeeded();
-
-        inSubtreeLayout = m_layoutRoot;
-
-        // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
-        // so there's no point to continuing to layout
-        if (protector->hasOneRef())
-            return;
-
-        rootForThisLayout = inSubtreeLayout ? m_layoutRoot : document->renderer();
-        if (!rootForThisLayout) {
-            // FIXME: Do we need to set m_size here?
-            return;
-        }
-    } // Reset m_layoutSchedulingEnabled to its previous value.
-    // The only reason the scoping was closed here is allow fontCachePurgePreventer
-    // to outlive the change and reset of m_layoutSchedulingEnabled.
+    bool inSubtreeLayout = m_layoutRoot;
+    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutRoot : document->renderer();
+    if (!rootForThisLayout) {
+        // FIXME: Do we need to set m_size here?
+        ASSERT_NOT_REACHED();
+        return;
+    }
 
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
@@ -984,33 +1049,7 @@ void FrameView::layout(bool allowSubtree)
         layer = rootForThisLayout->enclosingLayer();
 
         m_actionScheduler->pause();
-
-        {
-            bool disableLayoutState = false;
-            if (inSubtreeLayout) {
-                RenderView* view = rootForThisLayout->view();
-                disableLayoutState = view->shouldDisableLayoutStateForSubtree(rootForThisLayout);
-                view->pushLayoutState(rootForThisLayout);
-            }
-            LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
-
-            m_inLayout = true;
-            beginDeferredRepaints();
-            forceLayoutParentViewIfNeeded();
-            rootForThisLayout->layout();
-
-            bool autosized = document->textAutosizer()->processSubtree(rootForThisLayout);
-            if (autosized && rootForThisLayout->needsLayout()) {
-                TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
-                rootForThisLayout->layout();
-            }
-
-            endDeferredRepaints();
-            m_inLayout = false;
-
-            if (inSubtreeLayout)
-                rootForThisLayout->view()->popLayoutState(rootForThisLayout);
-        }
+        performLayout(rootForThisLayout, inSubtreeLayout);
         m_layoutRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
@@ -1023,9 +1062,12 @@ void FrameView::layout(bool allowSubtree)
 
     // Now update the positions of all layers.
     beginDeferredRepaints();
-    if (m_doFullRepaint)
-        rootForThisLayout->view()->repaint(); // FIXME: This isn't really right, since the RenderView doesn't fully encompass the visibleContentRect(). It just happens
-                                 // to work out most of the time, since first layouts and printing don't have you scrolled anywhere.
+    if (m_doFullRepaint) {
+        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
+        // the visibleContentRect(). It just happens to work out most of the time,
+        // since first layouts and printing don't have you scrolled anywhere.
+        rootForThisLayout->view()->repaint();
+    }
 
     layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
 
@@ -1046,33 +1088,9 @@ void FrameView::layout(bool allowSubtree)
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
         updateOverflowStatus(layoutWidth() < contentsWidth(), layoutHeight() < contentsHeight());
 
-    if (!m_postLayoutTasksTimer.isActive()) {
-        if (!m_inSynchronousPostLayout) {
-            if (frame()->document()->shouldDisplaySeamlesslyWithParent()) {
-                if (RenderView* renderView = this->renderView())
-                    renderView->updateWidgetPositions();
-            } else {
-                m_inSynchronousPostLayout = true;
-                // Calls resumeScheduledEvents()
-                performPostLayoutTasks();
-                m_inSynchronousPostLayout = false;
-            }
-        }
-
-        if (!m_postLayoutTasksTimer.isActive() && (needsLayout() || m_inSynchronousPostLayout || frame()->document()->shouldDisplaySeamlesslyWithParent())) {
-            // If we need layout or are already in a synchronous call to postLayoutTasks(),
-            // defer widget updates and event dispatch until after we return. postLayoutTasks()
-            // can make us need to update again, and we can get stuck in a nasty cycle unless
-            // we call it through the timer here.
-            m_postLayoutTasksTimer.startOneShot(0);
-            if (needsLayout()) {
-                m_actionScheduler->pause();
-                layout();
-            }
-        }
-    } else {
-        m_actionScheduler->resume();
-    }
+    // Resume scheduled events (FrameActionScheduler m_actionScheduler)
+    // and ensure post layout tasks are executed or scheduled to be.
+    scheduleOrPerformPostLayoutTasks();
 
     InspectorInstrumentation::didLayout(cookie, rootForThisLayout);
 

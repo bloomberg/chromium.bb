@@ -53,6 +53,8 @@ public:
     ~FrameActionScheduler();
 
     bool isEmpty() const;
+    // FIXME: Why is this < m_enqueueActions, does this
+    // mean that the steady state of m_enqueueActions should be -1?
     bool isScheduled() const { return 0 < m_enqueueActions; }
     void clear();
     void pause();
