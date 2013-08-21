@@ -90,9 +90,10 @@ elif env.Bit('target_x86'):
       # It then had to be reduced to 2044 to pass on OS X 10.7 (Lion).
       high_thread_count_nthreads = 2044
       if trusted_env.Bit('asan') and trusted_env.Bit('target_x86_32'):
-        # Under ASan less address space is available.  On MacOS 10.6
-        # on x86-32 under ASan, 1104 threads fit.
-        high_thread_count_nthreads = 1104
+        # Under ASan less address space is available.  On MacOS 10.6 on
+        # x86-32 under ASan, ~1100 threads fit (there is some
+        # non-determinism in the upper bound, perhaps due to ASLR).
+        high_thread_count_nthreads = 1100
     elif trusted_env.Bit('windows'):
       high_thread_count_nthreads = 900
     else:
