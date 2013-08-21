@@ -52,7 +52,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest)
 }
 
 ImageResource::ImageResource(WebCore::Image* image)
-    : Resource(ResourceRequest(), Image)
+    : Resource(ResourceRequest(""), Image)
     , m_image(image)
 {
     setStatus(Cached);
