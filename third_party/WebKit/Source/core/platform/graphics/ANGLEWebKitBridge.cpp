@@ -30,12 +30,7 @@
 
 namespace WebCore {
 
-// Temporary typedef to support an incompatible change in the ANGLE API.
-#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
-typedef int ANGLEGetInfoType;
-#else
 typedef size_t ANGLEGetInfoType;
-#endif
 
 inline static ANGLEGetInfoType getValidationResultValue(const ShHandle compiler, ShShaderInfo shaderInfo)
 {
@@ -80,18 +75,18 @@ static bool getSymbolInfo(ShHandle compiler, ShShaderInfo symbolType, Vector<ANG
         switch (symbolType) {
         case SH_ACTIVE_ATTRIBUTES:
             symbol.symbolType = SHADER_SYMBOL_TYPE_ATTRIBUTE;
-#if ANGLE_SH_VERSION >= 111
-            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
+#if ANGLE_SH_VERSION >= 112
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, &symbol.staticUse, nameBuffer.data(), mappedNameBuffer.data());
 #else
-            ShGetActiveAttrib(compiler, i, &nameLength, &symbol.size, &symbol.dataType, nameBuffer.data(), mappedNameBuffer.data());
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
 #endif
             break;
         case SH_ACTIVE_UNIFORMS:
             symbol.symbolType = SHADER_SYMBOL_TYPE_UNIFORM;
-#if ANGLE_SH_VERSION >= 111
-            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
+#if ANGLE_SH_VERSION >= 112
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, &symbol.staticUse, nameBuffer.data(), mappedNameBuffer.data());
 #else
-            ShGetActiveUniform(compiler, i, &nameLength, &symbol.size, &symbol.dataType, nameBuffer.data(), mappedNameBuffer.data());
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
 #endif
             break;
         default:
