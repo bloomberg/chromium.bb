@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
 namespace base {
@@ -22,13 +23,13 @@ namespace media {
 // Runs a series of bound functions accepting Closures or PipelineStatusCB.
 // SerialRunner doesn't use regular Closure/PipelineStatusCBs as it late binds
 // the completion callback as the series progresses.
-class SerialRunner {
+class MEDIA_EXPORT SerialRunner {
  public:
   typedef base::Callback<void(const base::Closure&)> BoundClosure;
   typedef base::Callback<void(const PipelineStatusCB&)> BoundPipelineStatusCB;
 
   // Serial queue of bound functions to run.
-  class Queue {
+  class MEDIA_EXPORT Queue {
    public:
     Queue();
     ~Queue();

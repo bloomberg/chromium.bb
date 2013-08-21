@@ -969,6 +969,7 @@
         'base/ranges_unittest.cc',
         'base/run_all_unittests.cc',
         'base/scoped_histogram_timer_unittest.cc',
+        'base/serial_runner_unittest.cc',
         'base/seekable_buffer_unittest.cc',
         'base/sinc_resampler_unittest.cc',
         'base/test_data_util.cc',
