@@ -28,6 +28,7 @@ window.onload = function()
     // undefined value indicates failure
     shouldThrow("window.setTimeout.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.setInterval.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.showModalDialog.call(targetWindow);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldBeUndefined("window.getSelection.call(targetWindow)");
     shouldBeUndefined("window.find.call(targetWindow, 'string', false, false, false, false, false, false)");
     shouldBeUndefined("window.confirm.call(targetWindow, 'message')");
@@ -54,7 +55,6 @@ window.onload = function()
     shouldBeUndefined("window.moveTo.call(targetWindow, 0, 0);");
     shouldBeUndefined("window.resizeBy.call(targetWindow, 0, 0);");
     shouldBeUndefined("window.resizeTo.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.showModalDialog.call(targetWindow);");
 
     // Throws an EvalError and logs to the error console
     shouldBe("window.eval.call(targetWindow, '1+2');", '3');

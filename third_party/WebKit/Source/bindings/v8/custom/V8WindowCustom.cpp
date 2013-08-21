@@ -187,7 +187,7 @@ void V8Window::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::V
 
     Frame* frame = V8Window::toNative(holder)->frame();
     ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame, es)) {
         es.throwIfNeeded();
         return;
     }
@@ -352,8 +352,11 @@ static void setUpDialog(DOMWindow* dialog, void* handler)
 void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     DOMWindow* impl = V8Window::toNative(args.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame()))
+    ExceptionState es(args.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     // FIXME: Handle exceptions properly.
     String urlString = toWebCoreStringWithUndefinedOrNullCheck(args[0]);
