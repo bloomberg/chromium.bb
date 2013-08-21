@@ -2378,6 +2378,9 @@ bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* e
 
 void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, Element* element)
 {
+    if (!canvas()->renderer())
+        return;
+
     // If accessibility is already enabled in this frame, associate this path's
     // bounding box with the accessible object. Do this even if the element
     // isn't focused because assistive technology might try to explore the object's
