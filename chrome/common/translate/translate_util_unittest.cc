@@ -4,7 +4,10 @@
 
 #include "chrome/common/translate/translate_util.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 typedef testing::Test TranslateUtilTest;
 
@@ -48,4 +51,16 @@ TEST_F(TranslateUtilTest, ToChromeLanguageSynonym) {
   language = std::string("tl");
   TranslateUtil::ToChromeLanguageSynonym(&language);
   EXPECT_EQ("fil", language);
+}
+
+TEST_F(TranslateUtilTest, SecurityOrigin) {
+  GURL origin = TranslateUtil::GetTranslateSecurityOrigin();
+  EXPECT_EQ(std::string(TranslateUtil::kSecurityOrigin), origin.spec());
+
+  const std::string running_origin("http://www.tamurayukari.com/");
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kTranslateSecurityOrigin,
+                                  running_origin);
+  GURL modified_origin = TranslateUtil::GetTranslateSecurityOrigin();
+  EXPECT_EQ(running_origin, modified_origin.spec());
 }

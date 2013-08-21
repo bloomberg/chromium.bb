@@ -194,7 +194,14 @@ cr.googleTranslate = (function() {
       if (!libReady)
         return false;
       startTime = performance.now();
-      lib.translatePage(originalLang, targetLang, onTranslateProgress);
+      try {
+        lib.translatePage(originalLang, targetLang, onTranslateProgress);
+      } catch (err) {
+        console.error('Translate: ' + err);
+        // TODO(toyoshim): Check if it shows an error notification.
+        error = true;
+        return false;
+      }
       return true;
     },
 
@@ -249,8 +256,13 @@ cr.googleTranslate = (function() {
      * @param {string} url URL of an external JavaScript to load.
      */
     onLoadJavascript: function(url) {
-      if (url.indexOf('https://') != 0)
+      // securityOrigin is predefined by translate_script.cc.
+      if (url.indexOf(securityOrigin) != 0) {
+        // TODO(toyoshim): Handle this error to show an error notification.
+        console.error('Translate: ' + url + ' is not allowed to load.');
+        error = true;
         return;
+      }
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
