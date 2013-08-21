@@ -19,6 +19,7 @@ AC_SUBST([WESTON_VERSION], [weston_version])
 AC_CONFIG_HEADERS([config.h])
 
 AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
 
 AM_INIT_AUTOMAKE([1.11 parallel-tests foreign no-dist-gzip dist-xz color-tests])
 
