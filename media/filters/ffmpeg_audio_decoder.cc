@@ -374,6 +374,13 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Store initial values to guard against midstream configuration changes.
   channels_ = codec_context_->channels;
+  if (channels_ != ChannelLayoutToChannelCount(channel_layout_)) {
+    DLOG(ERROR) << "Audio configuration specified "
+                << ChannelLayoutToChannelCount(channel_layout_)
+                << " channels, but FFmpeg thinks the file contains "
+                << channels_ << " channels";
+    return false;
+  }
   av_sample_format_ = codec_context_->sample_fmt;
   sample_format_ = AVSampleFormatToSampleFormat(
       static_cast<AVSampleFormat>(av_sample_format_));
