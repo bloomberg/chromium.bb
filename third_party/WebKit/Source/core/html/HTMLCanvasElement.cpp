@@ -343,12 +343,6 @@ bool HTMLCanvasElement::is3D() const
     return m_context && m_context->is3d();
 }
 
-void HTMLCanvasElement::makeRenderingResultsAvailable()
-{
-    if (m_context)
-        m_context->paintRenderingResultsToCanvas();
-}
-
 void HTMLCanvasElement::makePresentationCopy()
 {
     if (!m_presentedImage) {
@@ -401,7 +395,8 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
     if (imageData)
         return ImageDataToDataURL(*imageData, encodingMimeType, quality);
 
-    makeRenderingResultsAvailable();
+    if (m_context)
+        m_context->paintRenderingResultsToCanvas();
 
     return buffer()->toDataURL(encodingMimeType, quality);
 }

@@ -1458,8 +1458,8 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     // as that will do a readback to software.
     CanvasRenderingContext* sourceContext = sourceCanvas->renderingContext();
     // FIXME: Implement an accelerated path for drawing from a WebGL canvas to a 2d canvas when possible.
-    if (!isAccelerated() || !sourceContext || !sourceContext->isAccelerated() || !sourceContext->is2d())
-        sourceCanvas->makeRenderingResultsAvailable();
+    if (sourceContext && sourceContext->is3d())
+        sourceContext->paintRenderingResultsToCanvas();
 
     if (rectContainsCanvas(normalizedDstRect)) {
         c->drawImageBuffer(buffer, normalizedDstRect, normalizedSrcRect, state().m_globalComposite, state().m_globalBlend);

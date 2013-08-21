@@ -126,7 +126,6 @@ public:
 
     bool is3D() const;
 
-    void makeRenderingResultsAvailable();
     bool hasCreatedImageBuffer() const { return m_hasCreatedImageBuffer; }
 
     bool shouldAccelerate(const IntSize&) const;
