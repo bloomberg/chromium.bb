@@ -72,7 +72,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 
   cursor_manager->LockCursor();
-  EXPECT_TRUE(cursor_manager->is_cursor_locked());
+  EXPECT_TRUE(cursor_manager->IsCursorLocked());
 
   // Cusror scale does change even while cursor is locked.
   EXPECT_EQ(2.5f, test_api.GetCurrentScale());
@@ -93,7 +93,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_EQ(gfx::Display::ROTATE_180, test_api.GetDisplay().rotation());
 
   cursor_manager->UnlockCursor();
-  EXPECT_FALSE(cursor_manager->is_cursor_locked());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
 
   // Cursor type changes to the one specified while cursor is locked.
   EXPECT_EQ(1.5f, test_api.GetCurrentScale());

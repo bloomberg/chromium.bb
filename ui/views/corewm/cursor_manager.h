@@ -38,8 +38,6 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   CursorManager(scoped_ptr<NativeCursorManager> delegate);
   virtual ~CursorManager();
 
-  bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
-
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor) OVERRIDE;
   virtual void ShowCursor() OVERRIDE;
@@ -53,6 +51,7 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual void SetDisplay(const gfx::Display& display) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
+  virtual bool IsCursorLocked() const OVERRIDE;
   virtual void AddObserver(
       aura::client::CursorClientObserver* observer) OVERRIDE;
   virtual void RemoveObserver(

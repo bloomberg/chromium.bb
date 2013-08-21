@@ -5,6 +5,7 @@
 #include "ui/views/corewm/compound_event_filter.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/logging.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -183,6 +184,12 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
   } else if (!show && !cursor_hidden_by_filter_) {
     cursor_hidden_by_filter_ = true;
     client->HideCursor();
+  } else if (show && !client->IsCursorVisible() && !client->IsCursorLocked()) {
+    // TODO(tdanderson): Remove this temporary logging once the issues related
+    // to a disappearing mouse cursor on the Pixel login screen / Pixel
+    // wakeup have been resolved. See crbug.com/275826.
+    LOG(ERROR) << "Event of type " << event->type() << " did not show cursor."
+               << " Mouse enabled state is " << client->IsMouseEventsEnabled();
   }
 }
 

@@ -60,6 +60,9 @@ class AURA_EXPORT CursorClient {
   // EnableMouseEvents/DisableMouseEvents.
   virtual void UnlockCursor() = 0;
 
+  // Returns true if the cursor is locked.
+  virtual bool IsCursorLocked() const = 0;
+
   // Used to add or remove a CursorClientObserver.
   virtual void AddObserver(CursorClientObserver* observer) = 0;
   virtual void RemoveObserver(CursorClientObserver* observer) = 0;

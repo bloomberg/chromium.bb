@@ -12,6 +12,7 @@ namespace test {
 TestCursorClient::TestCursorClient(aura::Window* root_window)
     : visible_(true),
       mouse_events_enabled_(true),
+      cursor_lock_count_(0),
       root_window_(root_window) {
   client::SetCursorClient(root_window, this);
 }
@@ -58,9 +59,17 @@ void TestCursorClient::SetDisplay(const gfx::Display& display) {
 }
 
 void TestCursorClient::LockCursor() {
+  cursor_lock_count_++;
 }
 
 void TestCursorClient::UnlockCursor() {
+  cursor_lock_count_--;
+  if (cursor_lock_count_ < 0)
+    cursor_lock_count_ = 0;
+}
+
+bool TestCursorClient::IsCursorLocked() const {
+  return cursor_lock_count_ > 0;
 }
 
 void TestCursorClient::AddObserver(

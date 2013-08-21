@@ -29,6 +29,7 @@ class TestCursorClient : public aura::client::CursorClient {
   virtual void SetDisplay(const gfx::Display& display) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
+  virtual bool IsCursorLocked() const OVERRIDE;
   virtual void AddObserver(
       aura::client::CursorClientObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
@@ -37,6 +38,7 @@ class TestCursorClient : public aura::client::CursorClient {
  private:
   bool visible_;
   bool mouse_events_enabled_;
+  int cursor_lock_count_;
   ObserverList<aura::client::CursorClientObserver> observers_;
   aura::Window* root_window_;
 

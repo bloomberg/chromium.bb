@@ -172,6 +172,10 @@ void CursorManager::UnlockCursor() {
   }
 }
 
+bool CursorManager::IsCursorLocked() const {
+  return cursor_lock_count_ > 0;
+}
+
 void CursorManager::AddObserver(
     aura::client::CursorClientObserver* observer) {
   observers_.AddObserver(observer);
