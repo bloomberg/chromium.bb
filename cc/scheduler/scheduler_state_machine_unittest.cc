@@ -1209,7 +1209,8 @@ TEST(SchedulerStateMachineTest, TestImmediateFinishCommitDuringCommit) {
 
   // Should be waiting for the normal begin frame from the main thread.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
-            state.CommitState()) << state.ToString();
+            state.CommitState())
+      << *state.AsValue();
 }
 
 TEST(SchedulerStateMachineTest,
@@ -1248,7 +1249,8 @@ TEST(SchedulerStateMachineTest,
 
   // Should be waiting for the main thread's begin frame.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
-            state.CommitState()) << state.ToString();
+            state.CommitState())
+      << *state.AsValue();
 
   // Become invisible and abort the main thread's begin frame.
   state.SetVisible(false);

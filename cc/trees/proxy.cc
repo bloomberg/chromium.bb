@@ -77,8 +77,8 @@ Proxy::~Proxy() {
   DCHECK(IsMainThread());
 }
 
-std::string Proxy::SchedulerStateAsStringForTesting() {
-  return "";
+scoped_ptr<base::Value> Proxy::SchedulerStateAsValueForTesting() {
+  return make_scoped_ptr(base::Value::CreateNullValue());
 }
 
 }  // namespace cc

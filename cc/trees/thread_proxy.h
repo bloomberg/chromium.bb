@@ -63,7 +63,7 @@ class ThreadProxy : public Proxy,
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
-  virtual std::string SchedulerStateAsStringForTesting() OVERRIDE;
+  virtual scoped_ptr<base::Value> SchedulerStateAsValueForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
   virtual void DidTryInitializeRendererOnImplThread(
@@ -173,7 +173,7 @@ class ThreadProxy : public Proxy,
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
-  void SchedulerStateAsStringOnImplThreadForTesting(
+  void SchedulerStateAsValueOnImplThreadForTesting(
       SchedulerStateRequest* request);
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::DictionaryValue* state) const;

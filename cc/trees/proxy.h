@@ -98,7 +98,7 @@ class CC_EXPORT Proxy {
 
   // Testing hooks
   virtual bool CommitPendingForTesting() = 0;
-  virtual std::string SchedulerStateAsStringForTesting();
+  virtual scoped_ptr<base::Value> SchedulerStateAsValueForTesting();
 
  protected:
   explicit Proxy(

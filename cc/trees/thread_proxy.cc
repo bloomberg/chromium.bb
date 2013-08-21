@@ -52,7 +52,7 @@ struct ThreadProxy::CommitPendingRequest {
 
 struct ThreadProxy::SchedulerStateRequest {
   CompletionEvent completion;
-  std::string state;
+  scoped_ptr<base::Value> state;
 };
 
 scoped_ptr<Proxy> ThreadProxy::Create(
@@ -1404,27 +1404,27 @@ void ThreadProxy::CommitPendingOnImplThreadForTesting(
   request->completion.Signal();
 }
 
-std::string ThreadProxy::SchedulerStateAsStringForTesting() {
+scoped_ptr<base::Value> ThreadProxy::SchedulerStateAsValueForTesting() {
   if (IsImplThread())
-    return scheduler_on_impl_thread_->StateAsStringForTesting();
+    return scheduler_on_impl_thread_->StateAsValueForTesting().Pass();
 
   SchedulerStateRequest scheduler_state_request;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting,
+        base::Bind(&ThreadProxy::SchedulerStateAsValueOnImplThreadForTesting,
                    impl_thread_weak_ptr_,
                    &scheduler_state_request));
     scheduler_state_request.completion.Wait();
   }
-  return scheduler_state_request.state;
+  return scheduler_state_request.state.Pass();
 }
 
-void ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting(
+void ThreadProxy::SchedulerStateAsValueOnImplThreadForTesting(
     SchedulerStateRequest* request) {
   DCHECK(IsImplThread());
-  request->state = scheduler_on_impl_thread_->StateAsStringForTesting();
+  request->state = scheduler_on_impl_thread_->StateAsValueForTesting();
   request->completion.Signal();
 }
 

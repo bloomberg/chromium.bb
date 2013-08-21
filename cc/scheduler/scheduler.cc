@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/debug/traced_value.h"
 
 namespace cc {
 
@@ -199,8 +200,13 @@ void Scheduler::ProcessScheduledActions() {
 
   base::AutoReset<bool> mark_inside(&inside_process_scheduled_actions_, true);
 
-  SchedulerStateMachine::Action action = state_machine_.NextAction();
-  while (action != SchedulerStateMachine::ACTION_NONE) {
+  SchedulerStateMachine::Action action;
+  do {
+    action = state_machine_.NextAction();
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+                 "SchedulerStateMachine",
+                 "state",
+                 TracedValue::FromValue(state_machine_.AsValue().release()));
     state_machine_.UpdateState(action);
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
@@ -230,8 +236,7 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionAcquireLayerTexturesForMainThread();
         break;
     }
-    action = state_machine_.NextAction();
-  }
+  } while (action != SchedulerStateMachine::ACTION_NONE);
 
   SetupNextBeginFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());

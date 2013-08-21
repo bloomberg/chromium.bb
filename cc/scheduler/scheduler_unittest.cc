@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +53,7 @@ class FakeSchedulerClient : public SchedulerClient {
   int num_draws() const { return num_draws_; }
   int num_actions_() const { return static_cast<int>(actions_.size()); }
   const char* Action(int i) const { return actions_[i]; }
-  std::string StateForAction(int i) const { return states_[i]; }
+  base::Value& StateForAction(int i) const { return *states_[i]; }
 
   bool HasAction(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
@@ -71,17 +72,17 @@ class FakeSchedulerClient : public SchedulerClient {
   // Scheduler Implementation.
   virtual void SetNeedsBeginFrameOnImplThread(bool enable) OVERRIDE {
     actions_.push_back("SetNeedsBeginFrameOnImplThread");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
     needs_begin_frame_ = enable;
   }
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionSendBeginFrameToMainThread");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
     num_draws_++;
     return ScheduledActionDrawAndSwapResult(draw_will_happen_,
                                             draw_will_happen_ &&
@@ -90,29 +91,29 @@ class FakeSchedulerClient : public SchedulerClient {
   virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
       OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
     return ScheduledActionDrawAndSwapResult(true,
                                             swap_will_happen_if_draw_happens_);
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE {
     actions_.push_back("ScheduledActionUpdateVisibleTiles");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE {
     actions_.push_back("ScheduledActionActivatePendingTreeIfNeeded");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionAcquireLayerTexturesForMainThread");
-    states_.push_back(scheduler_->StateAsStringForTesting());
+    states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE {
@@ -131,7 +132,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool swap_will_happen_if_draw_happens_;
   int num_draws_;
   std::vector<const char*> actions_;
-  std::vector<std::string> states_;
+  ScopedVector<base::Value> states_;
   scoped_ptr<Scheduler> scheduler_;
 };
 

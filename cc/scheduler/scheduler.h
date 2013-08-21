@@ -105,7 +105,9 @@ class CC_EXPORT Scheduler {
 
   void BeginFrame(const BeginFrameArgs& args);
 
-  std::string StateAsStringForTesting() { return state_machine_.ToString(); }
+  scoped_ptr<base::Value> StateAsValueForTesting() {
+    return state_machine_.AsValue().Pass();
+  }
 
  private:
   Scheduler(SchedulerClient* client,

@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 
 namespace cc {
 
@@ -40,68 +41,157 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       output_surface_state_(OUTPUT_SURFACE_LOST),
       did_create_and_initialize_first_output_surface_(false) {}
 
-std::string SchedulerStateMachine::ToString() {
-  std::string str;
-  base::StringAppendF(&str,
-                      "settings_.impl_side_painting = %d; ",
-                      settings_.impl_side_painting);
-  base::StringAppendF(&str, "commit_state_ = %d; ", commit_state_);
-  base::StringAppendF(&str, "commit_count_ = %d; ", commit_count_);
-  base::StringAppendF(
-      &str, "current_frame_number_ = %d; ", current_frame_number_);
-  base::StringAppendF(&str,
-                      "last_frame_number_where_draw_was_called_ = %d; ",
-                      last_frame_number_where_draw_was_called_);
-  base::StringAppendF(
-      &str,
-      "last_frame_number_where_tree_activation_attempted_ = %d; ",
-      last_frame_number_where_tree_activation_attempted_);
-  base::StringAppendF(
-      &str,
-      "last_frame_number_where_update_visible_tiles_was_called_ = %d; ",
+const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
+  switch (state) {
+    case COMMIT_STATE_IDLE:
+      return "COMMIT_STATE_IDLE";
+    case COMMIT_STATE_FRAME_IN_PROGRESS:
+      return "COMMIT_STATE_FRAME_IN_PROGRESS";
+    case COMMIT_STATE_READY_TO_COMMIT:
+      return "COMMIT_STATE_READY_TO_COMMIT";
+    case COMMIT_STATE_WAITING_FOR_FIRST_DRAW:
+      return "COMMIT_STATE_WAITING_FOR_FIRST_DRAW";
+    case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
+      return "COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW";
+  }
+  NOTREACHED();
+  return "???";
+}
+
+const char* SchedulerStateMachine::TextureStateToString(TextureState state) {
+  switch (state) {
+    case LAYER_TEXTURE_STATE_UNLOCKED:
+      return "LAYER_TEXTURE_STATE_UNLOCKED";
+    case LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD:
+      return "LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD";
+    case LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD:
+      return "LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD";
+  }
+  NOTREACHED();
+  return "???";
+}
+
+const char* SchedulerStateMachine::OutputSurfaceStateToString(
+    OutputSurfaceState state) {
+  switch (state) {
+    case OUTPUT_SURFACE_ACTIVE:
+      return "OUTPUT_SURFACE_ACTIVE";
+    case OUTPUT_SURFACE_LOST:
+      return "OUTPUT_SURFACE_LOST";
+    case OUTPUT_SURFACE_CREATING:
+      return "OUTPUT_SURFACE_CREATING";
+  }
+  NOTREACHED();
+  return "???";
+}
+
+const char* SchedulerStateMachine::ActionToString(Action action) {
+  switch (action) {
+    case ACTION_NONE:
+      return "ACTION_NONE";
+    case ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
+      return "ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD";
+    case ACTION_COMMIT:
+      return "ACTION_COMMIT";
+    case ACTION_UPDATE_VISIBLE_TILES:
+      return "ACTION_UPDATE_VISIBLE_TILES";
+    case ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
+      return "ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED";
+    case ACTION_DRAW_IF_POSSIBLE:
+      return "ACTION_DRAW_IF_POSSIBLE";
+    case ACTION_DRAW_FORCED:
+      return "ACTION_DRAW_FORCED";
+    case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
+      return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
+    case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
+      return "ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD";
+  }
+  NOTREACHED();
+  return "???";
+}
+
+scoped_ptr<base::Value> SchedulerStateMachine::AsValue() {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+
+  scoped_ptr<base::DictionaryValue> major_state(new base::DictionaryValue);
+  major_state->SetString("next_action", ActionToString(NextAction()));
+  major_state->SetString("commit_state", CommitStateToString(commit_state_));
+  major_state->SetString("texture_state_",
+                         TextureStateToString(texture_state_));
+  major_state->SetString("output_surface_state_",
+                         OutputSurfaceStateToString(output_surface_state_));
+  state->Set("major_state", major_state.release());
+
+  scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
+  base::TimeTicks now = base::TimeTicks::Now();
+  timestamps_state->SetDouble(
+      "0_interval", last_begin_frame_args_.interval.InMicroseconds() / 1000.0L);
+  timestamps_state->SetDouble(
+      "1_now_to_deadline",
+      (last_begin_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
+  timestamps_state->SetDouble(
+      "2_frame_time_to_now",
+      (last_begin_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
+  timestamps_state->SetDouble(
+      "3_frame_time_to_deadline",
+      (last_begin_frame_args_.deadline - last_begin_frame_args_.frame_time)
+              .InMicroseconds() /
+          1000.0L);
+  timestamps_state->SetDouble(
+      "4_now", (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
+  timestamps_state->SetDouble(
+      "5_frame_time",
+      (last_begin_frame_args_.frame_time - base::TimeTicks()).InMicroseconds() /
+          1000.0L);
+  timestamps_state->SetDouble(
+      "6_deadline",
+      (last_begin_frame_args_.deadline - base::TimeTicks()).InMicroseconds() /
+          1000.0L);
+  state->Set("major_timestamps_in_ms", timestamps_state.release());
+
+  scoped_ptr<base::DictionaryValue> minor_state(new base::DictionaryValue);
+  minor_state->SetInteger("commit_count", commit_count_);
+  minor_state->SetInteger("current_frame_number", current_frame_number_);
+  minor_state->SetInteger(
+      "last_frame_number_where_begin_frame_sent_to_main_thread",
+      last_frame_number_where_begin_frame_sent_to_main_thread_);
+  minor_state->SetInteger("last_frame_number_where_draw_was_called",
+                          last_frame_number_where_draw_was_called_);
+  minor_state->SetInteger("last_frame_number_where_tree_activation_attempted",
+                          last_frame_number_where_tree_activation_attempted_);
+  minor_state->SetInteger(
+      "last_frame_number_where_update_visible_tiles_was_called",
       last_frame_number_where_update_visible_tiles_was_called_);
-  base::StringAppendF(
-      &str, "consecutive_failed_draws_ = %d; ", consecutive_failed_draws_);
-  base::StringAppendF(
-      &str,
-      "maximum_number_of_failed_draws_before_draw_is_forced_ = %d; ",
+  minor_state->SetInteger("consecutive_failed_draws",
+                          consecutive_failed_draws_);
+  minor_state->SetInteger(
+      "maximum_number_of_failed_draws_before_draw_is_forced",
       maximum_number_of_failed_draws_before_draw_is_forced_);
-  base::StringAppendF(&str, "needs_redraw_ = %d; ", needs_redraw_);
-  base::StringAppendF(
-      &str, "swap_used_incomplete_tile_ = %d; ", swap_used_incomplete_tile_);
-  base::StringAppendF(
-      &str, "needs_forced_redraw_ = %d; ", needs_forced_redraw_);
-  base::StringAppendF(&str,
-                      "needs_forced_redraw_after_next_commit_ = %d; ",
-                      needs_forced_redraw_after_next_commit_);
-  base::StringAppendF(&str, "needs_commit_ = %d; ", needs_commit_);
-  base::StringAppendF(
-      &str, "needs_forced_commit_ = %d; ", needs_forced_commit_);
-  base::StringAppendF(&str,
-                      "expect_immediate_begin_frame_for_main_thread_ = %d; ",
-                      expect_immediate_begin_frame_for_main_thread_);
-  base::StringAppendF(&str,
-                      "main_thread_needs_layer_textures_ = %d; ",
-                      main_thread_needs_layer_textures_);
-  base::StringAppendF(&str, "inside_begin_frame_ = %d; ",
-      inside_begin_frame_);
-  base::StringAppendF(&str, "last_frame_time_ = %" PRId64 "; ",
-      (last_begin_frame_args_.frame_time - base::TimeTicks())
-          .InMilliseconds());
-  base::StringAppendF(&str, "last_deadline_ = %" PRId64 "; ",
-      (last_begin_frame_args_.deadline - base::TimeTicks()).InMilliseconds());
-  base::StringAppendF(&str, "last_interval_ = %" PRId64 "; ",
-      last_begin_frame_args_.interval.InMilliseconds());
-  base::StringAppendF(&str, "visible_ = %d; ", visible_);
-  base::StringAppendF(&str, "can_start_ = %d; ", can_start_);
-  base::StringAppendF(&str, "can_draw_ = %d; ", can_draw_);
-  base::StringAppendF(
-      &str, "draw_if_possible_failed_ = %d; ", draw_if_possible_failed_);
-  base::StringAppendF(&str, "has_pending_tree_ = %d; ", has_pending_tree_);
-  base::StringAppendF(&str, "texture_state_ = %d; ", texture_state_);
-  base::StringAppendF(
-      &str, "output_surface_state_ = %d; ", output_surface_state_);
-  return str;
+  minor_state->SetBoolean("needs_redraw", needs_redraw_);
+  minor_state->SetBoolean("swap_used_incomplete_tile",
+                          swap_used_incomplete_tile_);
+  minor_state->SetBoolean("needs_forced_redraw", needs_forced_redraw_);
+  minor_state->SetBoolean("needs_forced_redraw_after_next_commit",
+                          needs_forced_redraw_after_next_commit_);
+  minor_state->SetBoolean("needs_redraw_after_next_commit",
+                          needs_redraw_after_next_commit_);
+  minor_state->SetBoolean("needs_commit", needs_commit_);
+  minor_state->SetBoolean("needs_forced_commit", needs_forced_commit_);
+  minor_state->SetBoolean("expect_immediate_begin_frame_for_main_thread",
+                          expect_immediate_begin_frame_for_main_thread_);
+  minor_state->SetBoolean("main_thread_needs_layer_textures",
+                          main_thread_needs_layer_textures_);
+  minor_state->SetBoolean("inside_begin_frame", inside_begin_frame_);
+  minor_state->SetBoolean("visible", visible_);
+  minor_state->SetBoolean("can_start", can_start_);
+  minor_state->SetBoolean("can_draw", can_draw_);
+  minor_state->SetBoolean("has_pending_tree", has_pending_tree_);
+  minor_state->SetBoolean("draw_if_possible_failed", draw_if_possible_failed_);
+  minor_state->SetBoolean("did_create_and_initialize_first_output_surface",
+                          did_create_and_initialize_first_output_surface_);
+  state->Set("minor_state", minor_state.release());
+
+  return state.PassAs<base::Value>();
 }
 
 bool SchedulerStateMachine::HasDrawnThisFrame() const {
@@ -441,7 +531,7 @@ void SchedulerStateMachine::FinishCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
          (expect_immediate_begin_frame_for_main_thread_ &&
           commit_state_ != COMMIT_STATE_IDLE))
-      << ToString();
+      << *AsValue();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }
 
