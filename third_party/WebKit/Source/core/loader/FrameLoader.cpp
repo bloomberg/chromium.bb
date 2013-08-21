@@ -1477,7 +1477,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
-    if (!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckStandard) || !shouldClose()) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckStandard) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = 0;
         return;
@@ -1488,7 +1488,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     // <rdar://problem/6250856> - In certain circumstances on pages with multiple frames, stopAllLoaders()
     // might detach the current FrameLoader, in which case we should bail on this newly defunct load.
-    if (!m_frame->page())
+    if (!m_frame->page() || !m_policyDocumentLoader)
         return;
 
     if (isLoadingMainFrame())
