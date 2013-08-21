@@ -389,6 +389,8 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wimax-details', !this.wimax);
       updateHidden('#details-internet-page .vpn-details', !this.vpn);
       updateHidden('#details-internet-page .proxy-details', !this.showProxy);
+      updateHidden('#details-internet-page .gsm-only', !this.gsm);
+      updateHidden('#details-internet-page .cdma-only', this.gsm);
       /* Network information merged into the Wifi tab for wireless networks
          unless the option is set for enabling a static IP configuration. */
       updateHidden('#details-internet-page .network-details',
@@ -1113,12 +1115,10 @@ cr.define('options.internet', function() {
         setContentOrHide('esn');
         setContentOrHide('imei');
         setContentOrHide('meid');
+        setContentOrHide('prl-version');
       })();
       detailsPage.gsm = data.gsm;
       if (data.gsm) {
-        // Hide CDMA only properties.
-        $('prl-version').parentElement.hidden = true;
-
         $('iccid').textContent = data.iccid ? data.iccid : '';
         $('imsi').textContent = data.imsi ? data.imsi : '';
 
@@ -1165,13 +1165,6 @@ cr.define('options.internet', function() {
         updateHidden('.apn-list-view', false);
         updateHidden('.apn-details-view', true);
         DetailsInternetPage.updateSecurityTab(data.simCardLockEnabled.value);
-      } else {
-        // Hide 3GPP only properties for CDMA.
-        $('iccid').parentElement.hidden = true;
-        $('imsi').parentElement.hidden = true;
-
-        // CDMA only properties.
-        $('prl-version').textContent = data.prlVersion ? data.prlVersion : '';
       }
       $('auto-connect-network-cellular').checked = data.autoConnect.value;
       $('auto-connect-network-cellular').disabled = false;
