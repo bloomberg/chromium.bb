@@ -101,10 +101,6 @@ const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& sc
     cachedImage = tryToResumeDecodeAndScale(scaledSize, index);
     if (cachedImage)
         return cachedImage;
-
-    cachedImage = tryToDecodeAndScale(scaledSize, index);
-    if (cachedImage)
-        return cachedImage;
     return 0;
 }
 
@@ -147,20 +143,29 @@ const ScaledImageFragment* ImageFrameGenerator::tryToResumeDecodeAndScale(const 
 {
     TRACE_EVENT1("webkit", "ImageFrameGenerator::tryToResumeDecodeAndScale", "index", static_cast<int>(index));
 
-    ImageDecoder* cachedDecoder = 0;
+    ImageDecoder* decoder = 0;
+    const bool resumeDecoding = ImageDecodingStore::instance()->lockDecoder(this, m_fullSize, &decoder);
+    ASSERT(!resumeDecoding || decoder);
 
-    if (!ImageDecodingStore::instance()->lockDecoder(this, m_fullSize, &cachedDecoder))
+    OwnPtr<ScaledImageFragment> fullSizeImage = decode(index, &decoder);
+
+    if (!decoder)
         return 0;
-    ASSERT(cachedDecoder);
 
-    // Always generate a new image and insert it into cache.
-    OwnPtr<ScaledImageFragment> fullSizeImage = decode(index, &cachedDecoder);
+    // If we are not resuming decoding that means the decoder is freshly
+    // created and we have ownership. If we are resuming decoding then
+    // the decoder is owned by ImageDecodingStore.
+    OwnPtr<ImageDecoder> decoderContainer;
+    if (!resumeDecoding)
+        decoderContainer = adoptPtr(decoder);
 
     if (!fullSizeImage) {
         // If decode has failed and resulted an empty image we can save work
         // in the future by returning early.
-        m_decodeFailedAndEmpty = !m_isMultiFrame && cachedDecoder->failed();
-        ImageDecodingStore::instance()->unlockDecoder(this, cachedDecoder);
+        m_decodeFailedAndEmpty = !m_isMultiFrame && decoder->failed();
+
+        if (resumeDecoding)
+            ImageDecodingStore::instance()->unlockDecoder(this, decoder);
         return 0;
     }
 
@@ -169,42 +174,16 @@ const ScaledImageFragment* ImageFrameGenerator::tryToResumeDecodeAndScale(const 
     // If the image generated is complete then there is no need to keep
     // the decoder. The exception is multi-frame decoder which can generate
     // multiple complete frames.
-    if (cachedImage->isComplete() && !m_isMultiFrame)
-        ImageDecodingStore::instance()->removeDecoder(this, cachedDecoder);
-    else
-        ImageDecodingStore::instance()->unlockDecoder(this, cachedDecoder);
+    const bool removeDecoder = cachedImage->isComplete() && !m_isMultiFrame;
 
-    if (m_fullSize == scaledSize)
-        return cachedImage;
-    return tryToScale(cachedImage, scaledSize, index);
-}
-
-const ScaledImageFragment* ImageFrameGenerator::tryToDecodeAndScale(const SkISize& scaledSize, size_t index)
-{
-    TRACE_EVENT1("webkit", "ImageFrameGenerator::tryToDecodeAndScale", "index", static_cast<int>(index));
-
-    ImageDecoder* decoder = 0;
-    OwnPtr<ScaledImageFragment> fullSizeImage = decode(index, &decoder);
-
-    if (!decoder)
-        return 0;
-
-    OwnPtr<ImageDecoder> decoderContainer = adoptPtr(decoder);
-
-    if (!fullSizeImage) {
-        // If decode has failed and resulted an empty image we can save work
-        // in the future by returning early.
-        m_decodeFailedAndEmpty = !m_isMultiFrame && decoderContainer->failed();
-        return 0;
-    }
-
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(this, fullSizeImage.release());
-
-    // If image is complete then decoder is not needed in the future.
-    // Otherwise save the decoder for later use. The exception is
-    // multi-frame decoder which can generate multiple complete frames.
-    if (!cachedImage->isComplete() || m_isMultiFrame)
+    if (resumeDecoding) {
+        if (removeDecoder)
+            ImageDecodingStore::instance()->removeDecoder(this, decoder);
+        else
+            ImageDecodingStore::instance()->unlockDecoder(this, decoder);
+    } else if (!removeDecoder) {
         ImageDecodingStore::instance()->insertDecoder(this, decoderContainer.release(), DiscardablePixelRef::isDiscardable(cachedImage->bitmap().pixelRef()));
+    }
 
     if (m_fullSize == scaledSize)
         return cachedImage;

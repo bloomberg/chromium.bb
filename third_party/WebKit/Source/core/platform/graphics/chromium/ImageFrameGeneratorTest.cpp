@@ -92,7 +92,9 @@ public:
 
     virtual ImageFrame::FrameStatus frameStatus()
     {
-        return m_frameStatus;
+        ImageFrame::FrameStatus currentStatus = m_frameStatus;
+        m_frameStatus = m_nextFrameStatus;
+        return currentStatus;
     }
 
     virtual size_t frameCount() { return 1; }
@@ -114,13 +116,15 @@ protected:
         m_generator->setData(m_data, false);
     }
 
-    void setFrameStatus(ImageFrame::FrameStatus status)  { m_frameStatus = status; }
+    void setFrameStatus(ImageFrame::FrameStatus status)  { m_frameStatus = m_nextFrameStatus = status; }
+    void setNextFrameStatus(ImageFrame::FrameStatus status)  { m_nextFrameStatus = status; }
 
     RefPtr<SharedBuffer> m_data;
     RefPtr<ImageFrameGenerator> m_generator;
     int m_decodersDestroyed;
     int m_frameBufferRequestCount;
     ImageFrame::FrameStatus m_frameStatus;
+    ImageFrame::FrameStatus m_nextFrameStatus;
 };
 
 PassOwnPtr<ImageDecoder> MockImageDecoderFactory::create()
@@ -392,7 +396,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteBitmapCopied)
     ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), tempDecoder);
 }
 
-TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrame)
+TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrameTurnsComplete)
 {
     m_generator = ImageFrameGenerator::create(fullSize(), m_data, false, true);
     m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this));
@@ -403,6 +407,7 @@ TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrame)
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
 
     setFrameStatus(ImageFrame::FrameEmpty);
+    setNextFrameStatus(ImageFrame::FrameComplete);
     EXPECT_FALSE(m_generator->decodeAndScale(fullSize(), 1));
 }
 
