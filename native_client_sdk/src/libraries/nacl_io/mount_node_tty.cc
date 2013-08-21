@@ -229,8 +229,10 @@ Error MountNodeTty::ProcessInput(struct tioc_nacl_input_string* message) {
       is_readable_ = true;
   }
 
-  if (is_readable_)
+  if (is_readable_) {
+    RaiseEvent(POLLIN);
     pthread_cond_broadcast(&is_readable_cond_);
+  }
   return 0;
 }
 

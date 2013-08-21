@@ -9,9 +9,9 @@
 #include <string>
 
 #include "gtest/gtest.h"
+#include "mount_dev_mock.h"
 #include "nacl_io/ioctl.h"
 #include "nacl_io/mount.h"
-#include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osunistd.h"
@@ -30,18 +30,7 @@ class MountMemMock : public MountMem {
   int num_nodes() { return (int) inode_pool_.size(); }
 };
 
-class MountDevMock : public MountDev {
- public:
-  MountDevMock() {
-    StringMap_t map;
-    Init(1, map, NULL);
-  }
-  int num_nodes() { return (int) inode_pool_.size(); }
-};
-
 }  // namespace
-
-#define NULL_NODE ((MountNode*) NULL)
 
 TEST(MountTest, Sanity) {
   MountMemMock mnt;
@@ -302,72 +291,3 @@ TEST(MountTest, DISABLED_DevUrandom) {
   EXPECT_LE(chi_squared, 293.24);
 }
 
-class TtyTest : public ::testing::Test {
- public:
-  void SetUp() {
-    ASSERT_EQ(0, mnt_.Access(Path("/tty"), R_OK | W_OK));
-    ASSERT_EQ(EACCES, mnt_.Access(Path("/tty"), X_OK));
-    ASSERT_EQ(0, mnt_.Open(Path("/tty"), O_RDWR, &dev_tty_));
-    ASSERT_NE(NULL_NODE, dev_tty_.get());
-  }
-
- protected:
-  MountDevMock mnt_;
-  ScopedMountNode dev_tty_;
-};
-
-TEST_F(TtyTest, DevTty) {
-  // 123 is not a valid ioctl request.
-  EXPECT_EQ(EINVAL, dev_tty_->Ioctl(123, NULL));
-
-  // TIOCNACLPREFIX is, it should set the prefix.
-  std::string prefix("__my_awesome_prefix__");
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCNACLPREFIX,
-                              const_cast<char*>(prefix.c_str())));
-
-  // Now let's try sending some data over.
-  // First we create the message.
-  std::string content("hello, how are you?\n");
-  std::string message = prefix.append(content);
-  struct tioc_nacl_input_string packaged_message;
-  packaged_message.length = message.size();
-  packaged_message.buffer = message.data();
-
-  // Now we make buffer we'll read into.
-  // We fill the buffer and a backup buffer with arbitrary data
-  // and compare them after reading to make sure read doesn't
-  // clobber parts of the buffer it shouldn't.
-  int bytes_read;
-  char buffer[100];
-  char backup_buffer[100];
-  memset(buffer, 'a', 100);
-  memset(backup_buffer, 'a', 100);
-
-  // Now we actually send the data
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCNACLINPUT,
-                               reinterpret_cast<char*>(&packaged_message)));
-
-  // We read a small chunk first to ensure it doesn't give us
-  // more than we ask for.
-  EXPECT_EQ(0, dev_tty_->Read(0, buffer, 5, &bytes_read));
-  EXPECT_EQ(bytes_read, 5);
-  EXPECT_EQ(0, memcmp(content.data(), buffer, 5));
-  EXPECT_EQ(0, memcmp(buffer + 5, backup_buffer + 5, 95));
-
-  // Now we ask for more data than is left in the tty, to ensure
-  // it doesn't give us more than is there.
-  EXPECT_EQ(0, dev_tty_->Read(0, buffer + 5, 95, &bytes_read));
-  EXPECT_EQ(bytes_read, content.size() - 5);
-  EXPECT_EQ(0, memcmp(content.data(), buffer, content.size()));
-  EXPECT_EQ(0, memcmp(buffer + content.size(),
-                      backup_buffer + content.size(),
-                       100 - content.size()));
-
-  // Now we try to send something with an invalid prefix
-  std::string bogus_message("Woah there, this message has no valid prefix");
-  struct tioc_nacl_input_string bogus_pack;
-  bogus_pack.length = bogus_message.size();
-  bogus_pack.buffer = bogus_message.data();
-  EXPECT_EQ(ENOTTY, dev_tty_->Ioctl(TIOCNACLINPUT,
-                                   reinterpret_cast<char*>(&bogus_pack)));
-}

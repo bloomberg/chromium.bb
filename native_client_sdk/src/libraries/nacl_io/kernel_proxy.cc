@@ -791,7 +791,7 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
 
       // If the timeout is invalid or too long (larger than signed 32 bit).
       if ((timeout->tv_sec < 0) || (timeout->tv_sec >= (INT_MAX / 1000)) ||
-          (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000) ||
+          (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000000) ||
           (ms < 0) || (ms >= INT_MAX)) {
         errno = EINVAL;
         return -1;

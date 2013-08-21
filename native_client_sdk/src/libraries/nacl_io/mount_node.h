@@ -37,8 +37,8 @@ class MountNode : public EventListener {
   virtual void Destroy();
 
  public:
-   // Declared in EventEmitter. defaults to signalled.
-   virtual uint32_t GetEventStatus();
+  // Declared in EventEmitter. defaults to signalled.
+  virtual uint32_t GetEventStatus();
 
   // Normal OS operations on a node (file), can be called by the kernel
   // directly so it must lock and unlock appropriately.  These functions

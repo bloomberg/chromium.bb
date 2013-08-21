@@ -182,7 +182,7 @@ Error EventListener::Track(int id,
   EventInfoMap_t::iterator it = event_info_map_.find(id);
 
   // If it's not a streaming type, then it can not be added.
-  if ((emitter->GetType() & (S_IFIFO | S_IFSOCK)) == 0)
+  if ((emitter->GetType() & (S_IFIFO | S_IFSOCK | S_IFCHR)) == 0)
     return EPERM;
 
   if (it != event_info_map_.end())

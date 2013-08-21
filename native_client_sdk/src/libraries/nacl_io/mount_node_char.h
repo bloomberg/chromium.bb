@@ -14,6 +14,10 @@ class MountNodeCharDevice : public MountNode {
   explicit MountNodeCharDevice(Mount* mount) : MountNode(mount) {
     stat_.st_mode = S_IFCHR;
   }
+
+  virtual uint32_t GetEventStatus() {
+    return 0;
+  }
 };
 
 }

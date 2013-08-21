@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_MOUNT_NODE_TTY_H_
 #define LIBRARIES_NACL_IO_MOUNT_NODE_TTY_H_
 
+#include <poll.h>
 #include <pthread.h>
 
 #include <deque>
@@ -37,6 +38,13 @@ class MountNodeTty : public MountNodeCharDevice {
   virtual Error Tcgetattr(struct termios* termios_p);
   virtual Error Tcsetattr(int optional_actions,
                           const struct termios *termios_p);
+
+  virtual uint32_t GetEventStatus() {
+    uint32_t status = POLLOUT;
+    if (is_readable_)
+      status |= POLLIN;
+    return status;
+  }
 
  private:
   virtual Error Write(size_t offs,
