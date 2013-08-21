@@ -590,30 +590,6 @@ void UpdateWebContentsModalDialogPosition(
   widget->SetBounds(gfx::Rect(position, size));
 }
 
-views::Widget* CreateWebContentsModalDialogViews(
-    views::WidgetDelegate* widget_delegate,
-    gfx::NativeView parent,
-    WebContentsModalDialogHost* dialog_host) {
-  views::Widget* dialog = new views::Widget;
-
-  views::Widget::InitParams params;
-  params.delegate = widget_delegate;
-  params.child = true;
-  if (views::DialogDelegate::UseNewStyle()) {
-    params.parent = dialog_host->GetHostView();
-    params.remove_standard_frame = true;
-#if defined(USE_AURA)
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-#endif
-  } else {
-    params.parent = parent;
-  }
-
-  dialog->Init(params);
-
-  return dialog;
-}
-
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent) {
   views::Widget* widget =

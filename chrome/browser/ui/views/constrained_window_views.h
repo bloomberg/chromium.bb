@@ -28,11 +28,6 @@ void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host);
 
-views::Widget* CreateWebContentsModalDialogViews(
-    views::WidgetDelegate* widget_delegate,
-    gfx::NativeView parent,
-    web_modal::WebContentsModalDialogHost* dialog_host);
-
 // Create a widget for |dialog| that is modal to the browser window |parent|.
 // This places the dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
