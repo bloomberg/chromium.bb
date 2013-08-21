@@ -27,8 +27,12 @@ namespace ash {
 namespace {
 
 const int64 kTimeOutMilliseconds = 2000;
-const SkColor kForegroundColor = 0xFFFFFFFF;
-const SkColor kBackgroundColor = 0xE0808080;
+// Color of the text of the warning message.
+const SkColor kTextColor = SK_ColorWHITE;
+// Color of the window background.
+const SkColor kWindowBackgroundColor = SkColorSetARGB(0xC0, 0x0, 0x0, 0x0);
+// Radius of the rounded corners of the window.
+const int kWindowCornerRadius = 2;
 const int kHorizontalMarginAroundText = 100;
 const int kVerticalMarginAroundText = 100;
 
@@ -68,8 +72,8 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     label->SetText(text_);
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetFont(font_);
-    label->SetEnabledColor(kForegroundColor);
-    label->SetDisabledColor(kForegroundColor);
+    label->SetEnabledColor(kTextColor);
+    label->SetDisabledColor(kTextColor);
     label->SetAutoColorReadabilityEnabled(false);
     AddChildView(label);
     SetLayoutManager(new views::FillLayout);
@@ -80,7 +84,10 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetLocalBounds(), kBackgroundColor);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(kWindowBackgroundColor);
+    canvas->DrawRoundRect(GetLocalBounds(), kWindowCornerRadius, paint);
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
