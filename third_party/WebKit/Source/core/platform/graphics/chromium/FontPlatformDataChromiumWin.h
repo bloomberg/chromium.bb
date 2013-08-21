@@ -92,6 +92,8 @@ public:
     SkTypeface* typeface() const { return m_typeface.get(); }
     int paintTextFlags() const { return m_paintTextFlags; }
 
+    String fontFamilyName() const;
+
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 

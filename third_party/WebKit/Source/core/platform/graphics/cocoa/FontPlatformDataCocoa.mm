@@ -234,6 +234,11 @@ static CTFontDescriptorRef cascadeToLastResortAndDisableSwashesFontDescriptor()
     return descriptor;
 }
 
+String FontPlatformData::fontFamilyName() const
+{
+    return String(CTFontCopyDisplayName(ctFont()));
+}
+
 CTFontRef FontPlatformData::ctFont() const
 {
     if (m_CTFont)

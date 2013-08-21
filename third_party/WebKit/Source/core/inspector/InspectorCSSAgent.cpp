@@ -58,7 +58,15 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/JSONValues.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/WidthIterator.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderRegion.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderTextFragment.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -1037,6 +1045,65 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     RefPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), computedStyleInfo, 0);
     style = inspectorStyle->buildArrayForComputedStyle();
+}
+
+void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, HashMap<String, int>* fontStats)
+{
+    for (InlineTextBox* box = renderer->firstTextBox(); box; box = box->nextTextBox()) {
+        RenderStyle* style = renderer->style(box->isFirstLineStyle());
+        const Font& font = style->font();
+        TextRun run = box->constructTextRunForInspector(style, font);
+        WidthIterator it(&font, run, 0, false);
+        GlyphBuffer glyphBuffer;
+        it.advance(run.length(), &glyphBuffer);
+        for (int i = 0; i < glyphBuffer.size(); ++i) {
+            String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
+            int value = fontStats->contains(familyName) ? fontStats->get(familyName) : 0;
+            fontStats->set(familyName, value + 1);
+        }
+    }
+}
+
+void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int nodeId,
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >& platformFontUsage)
+{
+    Node* node = m_domAgent->assertNode(errorString, nodeId);
+    if (!node)
+        return;
+    Vector<Node*> textNodes;
+    if (node->nodeType() == Node::TEXT_NODE) {
+        if (node->renderer())
+            textNodes.append(node);
+    } else {
+        for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
+            if (child->nodeType() == Node::TEXT_NODE && child->renderer())
+                textNodes.append(child);
+        }
+    }
+
+    HashMap<String, int> fontStats;
+    for (size_t i = 0; i < textNodes.size(); ++i) {
+        RenderText* renderer = toRenderText(textNodes[i]->renderer());
+        collectPlatformFontsForRenderer(renderer, &fontStats);
+        if (renderer->isTextFragment()) {
+            RenderTextFragment* textFragment = toRenderTextFragment(renderer);
+            if (textFragment->firstLetter()) {
+                RenderObject* firstLetter = textFragment->firstLetter();
+                for (RenderObject* current = firstLetter->firstChild(); current; current = current->nextSibling()) {
+                    if (current->isText())
+                        collectPlatformFontsForRenderer(toRenderText(current), &fontStats);
+                }
+            }
+        }
+    }
+
+    platformFontUsage = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();
+    for (HashMap<String, int>::iterator it = fontStats.begin(), end = fontStats.end(); it != end; ++it) {
+        RefPtr<TypeBuilder::CSS::PlatformFontUsage> platformFont = TypeBuilder::CSS::PlatformFontUsage::create()
+            .setFamilyName(it->key)
+            .setGlyphCount(it->value);
+        platformFontUsage->addItem(platformFont);
+    }
 }
 
 void InspectorCSSAgent::getAllStyleSheets(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader> >& styleInfos)

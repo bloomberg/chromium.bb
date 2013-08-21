@@ -1,0 +1,77 @@
+<html>
+<head>
+<script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    function sendCommand(command, properties, callback) {
+        InspectorTest.sendCommand(command, properties || {}, commandCallback);
+        function commandCallback(msg)
+        {
+            if (msg.error) {
+                InspectorTest.log(msg.error.message);
+                InspectorTest.completeTest();
+                return;
+            }
+            callback(msg.result);
+        }
+    }
+    sendCommand("DOM.getDocument", {}, onGotDocument);
+
+    function onGotDocument(result)
+    {
+        var root = result.root;
+        sendCommand("DOM.querySelector", { "nodeId": root.nodeId , "selector": "#fancy" }, onGotNode);
+    }
+
+    function onGotNode(node)
+    {
+        sendCommand("CSS.getPlatformFontsForNode", { "nodeId": node.nodeId }, onGotComputedFonts);
+    }
+
+    function onGotComputedFonts(response)
+    {
+        var fonts = response.fonts;
+        fonts.sort(function(a, b) {
+            return b.glyphCount - a.glyphCount;
+        });
+        for (var i = 0; i < fonts.length; ++i)
+            fonts[i].familyName = "<Some-family-name-" + i + ">";
+        InspectorTest.log(JSON.stringify(fonts));
+        InspectorTest.completeTest();
+    }
+};
+
+window.addEventListener("DOMContentLoaded", function () {
+    runTest();
+}, false);
+
+</script>
+<style>
+    #fancy {
+        font-family: 'Arial';
+        background-color: gray;
+    }
+    #fancy:first-letter {
+        font-family: 'Times New Roman';
+        font-size: 400%;
+        background-color: blue;
+    }
+
+    #fancy:first-line {
+        font-family: 'Courier New';
+        background-color: yellow;
+    }
+</style>
+</head>
+<body>
+
+<div id="fancy">
+First line.
+<br>
+Second line.
+</div>
+
+</body>
+</html>

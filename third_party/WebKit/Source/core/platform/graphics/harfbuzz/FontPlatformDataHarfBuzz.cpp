@@ -211,6 +211,15 @@ SkFontID FontPlatformData::uniqueID() const
     return m_typeface->uniqueID();
 }
 
+String FontPlatformData::fontFamilyName() const
+{
+    SkTypeface::LocalizedStrings* fontFamilyIterator = this->typeface()->createFamilyNameIterator();
+    SkTypeface::LocalizedString localizedString;
+    while (fontFamilyIterator->next(&localizedString) && !localizedString.fString.size()) { }
+    fontFamilyIterator->unref();
+    return String(localizedString.fString.c_str());
+}
+
 bool FontPlatformData::operator==(const FontPlatformData& a) const
 {
     // If either of the typeface pointers are null then we test for pointer

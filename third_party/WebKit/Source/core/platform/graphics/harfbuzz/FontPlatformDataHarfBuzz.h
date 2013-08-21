@@ -70,6 +70,8 @@ public:
     FontPlatformData(const FontPlatformData& src, float textSize);
     ~FontPlatformData();
 
+    String fontFamilyName() const;
+
     // -------------------------------------------------------------------------
     // Return true iff this font is monospaced (i.e. every glyph has an equal x
     // advance)

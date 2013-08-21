@@ -1534,6 +1534,11 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     return run;
 }
 
+TextRun InlineTextBox::constructTextRunForInspector(RenderStyle* style, const Font& font) const
+{
+    return InlineTextBox::constructTextRun(style, font);
+}
+
 #ifndef NDEBUG
 
 const char* InlineTextBox::boxName() const

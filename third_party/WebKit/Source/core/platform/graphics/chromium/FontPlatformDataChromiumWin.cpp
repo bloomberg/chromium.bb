@@ -224,6 +224,18 @@ FontPlatformData::~FontPlatformData()
     m_scriptCache = 0;
 }
 
+String FontPlatformData::fontFamilyName() const
+{
+    HWndDC dc(0);
+    HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont()));
+    WCHAR name[LF_FACESIZE];
+    unsigned resultLength = GetTextFace(dc, LF_FACESIZE, name);
+    if (resultLength > 0)
+        resultLength--; // ignore the null terminator
+    SelectObject(dc, oldFont);
+    return String(name, resultLength);
+}
+
 bool FontPlatformData::isFixedPitch() const
 {
 #if ENABLE(GDI_FONTS_ON_WINDOWS)

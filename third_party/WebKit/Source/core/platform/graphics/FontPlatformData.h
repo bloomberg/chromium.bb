@@ -107,6 +107,7 @@ public:
     bool allowsLigatures() const;
 #endif
 
+    String fontFamilyName() const;
     bool isFixedPitch() const;
     float size() const { return m_size; }
     void setSize(float size) { m_size = size; }

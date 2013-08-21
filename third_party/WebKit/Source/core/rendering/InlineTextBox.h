@@ -107,6 +107,7 @@ private:
     TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
 
 public:
+    TextRun constructTextRunForInspector(RenderStyle*, const Font&) const;
     virtual FloatRect calculateBoundaries() const { return FloatRect(x(), y(), width(), height()); }
 
     virtual LayoutRect localSelectionRect(int startPos, int endPos);
