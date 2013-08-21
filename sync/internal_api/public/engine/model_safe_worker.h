@@ -132,6 +132,7 @@ class SYNC_EXPORT ModelSafeWorker
 
   // Remember working loop for posting task to unregister destruction
   // observation from sync thread when shutting down sync.
+  base::Lock working_loop_lock_;
   base::MessageLoop* working_loop_;
   base::WaitableEvent working_loop_set_wait_;
 };
