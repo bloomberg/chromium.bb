@@ -254,9 +254,6 @@ public:
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool affectedByViewportChange() const;
 
-    // FIXME: This likely belongs on RuleSet.
-    void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
-
     // FIXME: Regions should not require special logic in StyleResolver.
     bool checkRegionStyle(Element* regionElement);
 

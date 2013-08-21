@@ -281,13 +281,6 @@ void StyleResolver::popParentShadowRoot(const ShadowRoot* shadowRoot)
     m_styleTree.popStyleCache(shadowRoot);
 }
 
-// This is a simplified style setting function for keyframe styles
-void StyleResolver::addKeyframeStyle(PassRefPtr<StyleRuleKeyframes> rule)
-{
-    AtomicString s(rule->name());
-    m_keyframesRuleMap.set(s.impl(), rule);
-}
-
 StyleResolver::~StyleResolver()
 {
     m_fontSelector->clearDocument();

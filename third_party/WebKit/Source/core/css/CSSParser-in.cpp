@@ -10266,7 +10266,7 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
         }
         CASE("keyframes") {
             if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                m_token = WEBKIT_KEYFRAMES_SYM;
+                m_token = KEYFRAMES_SYM;
         }
         CASE("left-top") {
             if (LIKELY(!hasEscape))
@@ -11196,7 +11196,7 @@ void CSSParser::logError(const String& message, const CSSParserLocation& locatio
     console->addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 
-StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes)
+StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes, bool isPrefixed)
 {
     OwnPtr<Vector<RefPtr<StyleKeyframe> > > keyframes = popKeyframes;
     m_allowImportRules = m_allowNamespaceDeclarations = false;
@@ -11204,6 +11204,7 @@ StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPt
     for (size_t i = 0; i < keyframes->size(); ++i)
         rule->parserAppendKeyframe(keyframes->at(i));
     rule->setName(name);
+    rule->setVendorPrefixed(isPrefixed);
     StyleRuleKeyframes* rulePtr = rule.get();
     m_parsedRules.append(rule.release());
     endRuleBody();

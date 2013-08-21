@@ -142,6 +142,7 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token INTERNAL_VALUE_SYM
 %token INTERNAL_KEYFRAME_RULE_SYM
 %token INTERNAL_SUPPORTS_CONDITION_SYM
+%token KEYFRAMES_SYM
 %token WEBKIT_KEYFRAMES_SYM
 %token WEBKIT_REGION_RULE_SYM
 %token WEBKIT_FILTER_RULE_SYM
@@ -822,8 +823,16 @@ before_keyframes_rule:
     ;
 
 keyframes:
+    before_keyframes_rule KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
+        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10), false /* isPrefixed */);
+    }
+  |
     before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
-        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10));
+        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10), true /* isPrefixed */);
+    }
+  | before_keyframes_rule KEYFRAMES_SYM at_rule_recovery {
+        $$ = 0;
+        parser->endRuleBody(true);
     }
   | before_keyframes_rule WEBKIT_KEYFRAMES_SYM at_rule_recovery {
         $$ = 0;

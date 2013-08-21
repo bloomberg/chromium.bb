@@ -52,6 +52,9 @@ public:
     String name() const { return m_name; }
     void setName(const String& name) { m_name = AtomicString(name); }
 
+    bool isVendorPrefixed() const { return m_isPrefixed; }
+    void setVendorPrefixed(bool isPrefixed) { m_isPrefixed = isPrefixed; }
+
     int findKeyframeIndex(const String& key) const;
 
     PassRefPtr<StyleRuleKeyframes> copy() const { return adoptRef(new StyleRuleKeyframes(*this)); }
@@ -62,6 +65,7 @@ private:
 
     Vector<RefPtr<StyleKeyframe> > m_keyframes;
     AtomicString m_name;
+    bool m_isPrefixed;
 };
 
 class CSSKeyframesRule : public CSSRule {
@@ -87,12 +91,16 @@ public:
     unsigned length() const;
     CSSKeyframeRule* item(unsigned index) const;
 
+    bool isVendorPrefixed() const { return m_isPrefixed; }
+    void setVendorPrefixed(bool isPrefixed) { m_isPrefixed = isPrefixed; }
+
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
     RefPtr<StyleRuleKeyframes> m_keyframesRule;
     mutable Vector<RefPtr<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
+    bool m_isPrefixed;
 };
 
 } // namespace WebCore

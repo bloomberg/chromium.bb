@@ -335,7 +335,15 @@ const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const 
 void ScopedStyleResolver::addKeyframeStyle(PassRefPtr<StyleRuleKeyframes> rule)
 {
     AtomicString s(rule->name());
-    m_keyframesRuleMap.set(s.impl(), rule);
+    if (rule->isVendorPrefixed()) {
+        KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(rule->name().impl());
+        if (it == m_keyframesRuleMap.end())
+            m_keyframesRuleMap.set(s.impl(), rule);
+        else if (it->value->isVendorPrefixed())
+            m_keyframesRuleMap.set(s.impl(), rule);
+    } else {
+        m_keyframesRuleMap.set(s.impl(), rule);
+    }
 }
 
 inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRoot) const

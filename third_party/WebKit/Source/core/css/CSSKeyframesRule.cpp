@@ -43,6 +43,7 @@ StyleRuleKeyframes::StyleRuleKeyframes(const StyleRuleKeyframes& o)
     : StyleRuleBase(o)
     , m_keyframes(o.m_keyframes)
     , m_name(o.m_name)
+    , m_isPrefixed(o.m_isPrefixed)
 {
 }
 
@@ -88,6 +89,7 @@ CSSKeyframesRule::CSSKeyframesRule(StyleRuleKeyframes* keyframesRule, CSSStyleSh
     : CSSRule(parent)
     , m_keyframesRule(keyframesRule)
     , m_childRuleCSSOMWrappers(keyframesRule->keyframes().size())
+    , m_isPrefixed(keyframesRule->isVendorPrefixed())
 {
 }
 
@@ -151,7 +153,10 @@ CSSKeyframeRule* CSSKeyframesRule::findRule(const String& s)
 String CSSKeyframesRule::cssText() const
 {
     StringBuilder result;
-    result.append("@-webkit-keyframes ");
+    if (isVendorPrefixed())
+        result.append("@-webkit-keyframes ");
+    else
+        result.append("@keyframes ");
     result.append(name());
     result.append(" { \n");
 
