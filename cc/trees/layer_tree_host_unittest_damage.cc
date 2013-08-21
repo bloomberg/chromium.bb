@@ -334,16 +334,16 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
         // The first frame has damage, so we should draw and swap.
         break;
       case 1:
-        // The second frame should damage the scrollbars.
-        EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
+        // The second frame should not damage the scrollbars.
+        EXPECT_FALSE(root_damage.Intersects(gfx::Rect(300, 300, 10, 100)));
         break;
       case 2:
         // The third frame should damage the scrollbars.
         EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
         break;
       case 3:
-        // The fourth frame should not damage the scrollbars.
-        EXPECT_FALSE(root_damage.Intersects(gfx::Rect(300, 300, 10, 100)));
+        // The fourth frame should damage the scrollbars.
+        EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
         EndTest();
         break;
     }
@@ -358,19 +358,21 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     LayerImpl* scroll_layer = root->children()[0];
     switch (did_swaps_) {
       case 1:
+        // Test that modifying the position of the content layer (not
+        // scrolling) won't damage the scrollbar. Do this before the other
+        // tests, as they can cause commits that will later damage the
+        // scrollbar. http://crbug.com/276657
+        scroll_layer->SetPosition(gfx::Point(1,1));
+        scroll_layer->SetScrollOffset(scroll_layer->scroll_offset());
+        host_impl->SetNeedsRedraw();
+        break;
+      case 2:
         host_impl->ScrollBegin(gfx::Point(1,1), InputHandler::Wheel);
         EXPECT_TRUE(host_impl->ScrollBy(gfx::Point(),
                                         gfx::Vector2dF(10.0, 10.0)));
         break;
-      case 2:
-        scroll_layer->SetMaxScrollOffset(gfx::Vector2d(60, 100));
-        host_impl->SetNeedsRedraw();
-        break;
       case 3:
-        // Test that modifying the position of the content layer (not
-        // scrolling) won't damage the scrollbar.
-        scroll_layer->SetPosition(gfx::Point(1,1));
-        scroll_layer->SetScrollOffset(scroll_layer->scroll_offset());
+        scroll_layer->SetMaxScrollOffset(gfx::Vector2d(60, 100));
         host_impl->SetNeedsRedraw();
         break;
     }
@@ -385,12 +387,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   int did_swaps_;
 };
 
-// Flaky on win.  http://crbug.com/274116
-// Can't specify the normal DISABLED_ since we don't have access to the test
-// names through this macro.  Just ifdef it out completely.
-#if !defined(OS_WIN)
 MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarDoesDamage);
-#endif
 
 }  // namespace
 }  // namespace cc
