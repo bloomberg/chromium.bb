@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests that document.createEvent() properly constructs and initializes a WheelEvent.");
+var wheelEvent = document.createEvent("WheelEvent");
+
+shouldBe("wheelEvent.deltaX", "0");
+shouldBe("wheelEvent.deltaY", "0");
+shouldBe("wheelEvent.deltaZ", "0");
+shouldBe("wheelEvent.deltaMode", "0");
+
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

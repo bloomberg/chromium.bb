@@ -49,7 +49,10 @@ WheelEventInit::WheelEventInit()
 }
 
 WheelEvent::WheelEvent()
-    : m_deltaMode(DOM_DELTA_PIXEL)
+    : m_deltaX(0)
+    , m_deltaY(0)
+    , m_deltaZ(0)
+    , m_deltaMode(DOM_DELTA_PIXEL)
     , m_directionInvertedFromDevice(false)
 {
     ScriptWrappable::init(this);
