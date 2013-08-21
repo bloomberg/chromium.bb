@@ -23,13 +23,18 @@ import run_isolated
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
-# The number of files to check the isolate server per /contains query. The
-# number here is a trade-off; the more per request, the lower the effect of HTTP
-# round trip latency and TCP-level chattiness. On the other hand, larger values
-# cause longer lookups, increasing the initial latency to start uploading, which
-# is especially an issue for large files. This value is optimized for the "few
-# thousands files to look up with minimal number of large files missing" case.
-ITEMS_PER_CONTAINS_QUERY = 100
+# The number of files to check the isolate server per /contains query.
+# All files are sorted by likelihood of a change in the file content
+# (currently file size is used to estimate this: larger the file -> larger the
+# possibility it has changed). Then first ITEMS_PER_CONTAINS_QUERIES[0] files
+# are taken and send to '/contains', then next ITEMS_PER_CONTAINS_QUERIES[1],
+# and so on. Numbers here is a trade-off; the more per request, the lower the
+# effect of HTTP round trip latency and TCP-level chattiness. On the other hand,
+# larger values cause longer lookups, increasing the initial latency to start
+# uploading, which is especially an issue for large files. This value is
+# optimized for the "few thousands files to look up with minimal number of large
+# files missing" case.
+ITEMS_PER_CONTAINS_QUERIES = [20, 20, 50, 50, 50, 100]
 
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
@@ -249,17 +254,18 @@ def batch_files_for_check(infiles):
   Yields:
     batches: list of batches, each batch is a list of files.
   """
-  # TODO(maruel): Make this adaptative, e.g. only query a few, like 10 in one
-  # request, for the largest files, since they are the ones most likely to be
-  # missing, then batch larger requests (up to 500) for the tail since they are
-  # likely to be present.
+  batch_count = 0
+  batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[0]
   next_queries = []
   items = ((k, v) for k, v in infiles.iteritems() if 's' in v)
   for relfile, metadata in sorted(items, key=lambda x: -x[1]['s']):
     next_queries.append((relfile, metadata))
-    if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
+    if len(next_queries) == batch_size_limit:
       yield next_queries
       next_queries = []
+      batch_count += 1
+      batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[
+          min(batch_count, len(ITEMS_PER_CONTAINS_QUERIES) - 1)]
   if next_queries:
     yield next_queries
 
