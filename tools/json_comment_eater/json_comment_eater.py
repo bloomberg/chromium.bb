@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,11 +7,15 @@
 json.loads.
 '''
 
+import sys
+
+
 def _Rcount(string, chars):
   '''Returns the number of consecutive characters from |chars| that occur at the
   end of |string|.
   '''
   return len(string) - len(string.rstrip(chars))
+
 
 def _FindNextToken(string, tokens, start):
   '''Finds the next token in |tokens| that occurs in |string| from |start|.
@@ -22,6 +27,7 @@ def _FindNextToken(string, tokens, start):
     if index != -1 and (min_index == -1 or index < min_index):
       min_index, min_key = (index, k)
   return (min_index, min_key)
+
 
 def _ReadString(input, start, output):
   output.append('"')
@@ -35,6 +41,7 @@ def _ReadString(input, start, output):
   output.append(input[start:end_range + 1])
   return end_range + 1
 
+
 def _ReadComment(input, start, output):
   eol_tokens = ('\n', '\r')
   eol_token_index, eol_token = _FindNextToken(input, eol_tokens, start)
@@ -42,6 +49,7 @@ def _ReadComment(input, start, output):
     return len(input)
   output.append(eol_token)
   return eol_token_index + len(eol_token)
+
 
 def Nom(input):
   token_actions = {
@@ -58,3 +66,7 @@ def Nom(input):
     output.append(input[pos:token_index])
     pos = token_actions[token](input, token_index + len(token), output)
   return ''.join(output)
+
+
+if __name__ == '__main__':
+    sys.stdout.write(Nom(sys.stdin.read()))
