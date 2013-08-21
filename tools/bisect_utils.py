@@ -13,39 +13,40 @@ import stat
 import subprocess
 import sys
 
+DEFAULT_GCLIENT_CUSTOM_DEPS = {
+    "src/data/page_cycler": "https://chrome-internal.googlesource.com/"
+                            "chrome/data/page_cycler/.git",
+    "src/data/dom_perf": "https://chrome-internal.googlesource.com/"
+                         "chrome/data/dom_perf/.git",
+    "src/data/mach_ports": "https://chrome-internal.googlesource.com/"
+                           "chrome/data/mach_ports/.git",
+    "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
+                           "chrome/tools/perf/data/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/linux":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/linux/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/linux_x64":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/linux_x64/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/mac":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/mac/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/mac_64":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/mac_64/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/win":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/win/.git",
+    "src/third_party/adobe/flash/binaries/ppapi/win_x64":
+        "https://chrome-internal.googlesource.com/"
+        "chrome/deps/adobe/flash/binaries/ppapi/win_x64/.git",}
+
 GCLIENT_SPEC_DATA = [
   { "name"        : "src",
     "url"         : "https://chromium.googlesource.com/chromium/src.git",
     "deps_file"   : ".DEPS.git",
     "managed"     : True,
-    "custom_deps" : {
-      "src/data/page_cycler": "https://chrome-internal.googlesource.com/"
-                              "chrome/data/page_cycler/.git",
-      "src/data/dom_perf": "https://chrome-internal.googlesource.com/"
-                           "chrome/data/dom_perf/.git",
-      "src/data/mach_ports": "https://chrome-internal.googlesource.com/"
-                           "chrome/data/mach_ports/.git",
-      "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
-                             "chrome/tools/perf/data/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/linux":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/linux/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/linux_x64":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/linux_x64/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/mac":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/mac/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/mac_64":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/mac_64/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/win":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/win/.git",
-      "src/third_party/adobe/flash/binaries/ppapi/win_x64":
-          "https://chrome-internal.googlesource.com/"
-          "chrome/deps/adobe/flash/binaries/ppapi/win_x64/.git",
-    },
+    "custom_deps" : {},
     "safesync_url": "",
   },
 ]
@@ -282,12 +283,13 @@ def RunGClientAndSync(cwd=None):
   return RunGClient(params, cwd=cwd)
 
 
-def SetupGitDepot(opts):
+def SetupGitDepot(opts, custom_deps):
   """Sets up the depot for the bisection. The depot will be located in a
   subdirectory called 'bisect'.
 
   Args:
     opts: The options parsed from the command line through parse_args().
+    custom_deps: A dictionary of additional dependencies to add to .gclient.
 
   Returns:
     True if gclient successfully created the config file and did a sync, False
@@ -300,7 +302,7 @@ def SetupGitDepot(opts):
 
   passed = False
 
-  if not RunGClientAndCreateConfig(opts):
+  if not RunGClientAndCreateConfig(opts, custom_deps):
     passed_deps_check = True
     if os.path.isfile(os.path.join('src', FILE_DEPS_GIT)):
       cwd = os.getcwd()
@@ -424,13 +426,13 @@ def SetupPlatformBuildEnvironment(opts):
   return True
 
 
-def CreateBisectDirectoryAndSetupDepot(opts):
+def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
 
   Args:
     opts: The options parsed from the command line through parse_args().
-    reset: Whether to reset any changes to the depot.
+    custom_deps: A dictionary of additional dependencies to add to .gclient.
 
   Returns:
     Returns 0 on success, otherwise 1.
@@ -440,7 +442,7 @@ def CreateBisectDirectoryAndSetupDepot(opts):
     print
     return 1
 
-  if not SetupGitDepot(opts):
+  if not SetupGitDepot(opts, custom_deps):
     print 'Error: Failed to grab source.'
     print
     return 1

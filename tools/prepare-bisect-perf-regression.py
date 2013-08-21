@@ -57,7 +57,9 @@ def main():
     parser.print_help()
     return 1
 
-  return bisect_utils.CreateBisectDirectoryAndSetupDepot(opts)
+  return bisect_utils.CreateBisectDirectoryAndSetupDepot(
+             opts,
+             bisect_utils.DEFAULT_GCLIENT_CUSTOM_DEPS)
 
 
 if __name__ == '__main__':

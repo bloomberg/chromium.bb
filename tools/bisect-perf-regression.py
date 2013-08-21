@@ -2327,6 +2327,11 @@ def main():
                     'platform), "cros", or "android". If you specify something '
                     'other than "chromium", you must be properly set up to '
                     'build that platform.')
+  parser.add_option('--no_custom_deps',
+                    dest='no_custom_deps',
+                    action="store_true",
+                    default=False,
+                    help='Run the script with custom_deps or not.')
   parser.add_option('--cros_board',
                     type='str',
                     help='The cros board type to build.')
@@ -2410,8 +2415,13 @@ def main():
     return 1
 
   if opts.working_directory:
-    if bisect_utils.CreateBisectDirectoryAndSetupDepot(opts):
+    custom_deps = bisect_utils.DEFAULT_GCLIENT_CUSTOM_DEPS
+    if opts.no_custom_deps:
+      custom_deps = None
+    if bisect_utils.CreateBisectDirectoryAndSetupDepot(opts,
+                                                       custom_deps):
       return 1
+
 
     if not bisect_utils.SetupPlatformBuildEnvironment(opts):
       print 'Error: Failed to set platform environment.'
