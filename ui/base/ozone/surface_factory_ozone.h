@@ -10,25 +10,30 @@
 #include "ui/gfx/rect.h"
 
 namespace gfx {
+class Screen;
 class VSyncProvider;
 } //  namespace gfx
 
 namespace ui {
 
-class SurfaceFactoryOzone {
+class UI_EXPORT SurfaceFactoryOzone {
  public:
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();
 
   // Returns the instance
-  UI_EXPORT static SurfaceFactoryOzone* GetInstance();
+  static SurfaceFactoryOzone* GetInstance();
 
   // Returns a display spec as in |CreateDisplayFromSpec| for the default
   // native surface.
   virtual const char* DefaultDisplaySpec();
 
   // Sets the implementation delegate. Ownership is retained by the caller.
-  UI_EXPORT static void SetInstance(SurfaceFactoryOzone* impl);
+  static void SetInstance(SurfaceFactoryOzone* impl);
+
+  // TODO(rjkroege): decide how to separate screen/display stuff from SFOz
+  // This method implements gfx::Screen, particularly useful in Desktop Aura.
+  virtual gfx::Screen* CreateDesktopScreen();
 
   // TODO(rjkroege): Add a status code if necessary.
   // Configures the display hardware. Must be called from within the GPU
@@ -68,7 +73,7 @@ class SurfaceFactoryOzone {
   virtual gfx::VSyncProvider* GetVSyncProvider(gfx::AcceleratedWidget w) = 0;
 
   // Create a default SufaceFactoryOzone implementation useful for tests.
-  UI_EXPORT static SurfaceFactoryOzone* CreateTestHelper();
+  static SurfaceFactoryOzone* CreateTestHelper();
 
  private:
   static SurfaceFactoryOzone* impl_; // not owned

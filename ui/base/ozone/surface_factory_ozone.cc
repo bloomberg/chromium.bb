@@ -57,6 +57,10 @@ const char* SurfaceFactoryOzone::DefaultDisplaySpec() {
   return  "720x1280*2";
 }
 
+gfx::Screen* SurfaceFactoryOzone::CreateDesktopScreen() {
+  return NULL;
+}
+
 // static
 SurfaceFactoryOzone* SurfaceFactoryOzone::CreateTestHelper() {
   return new SurfaceFactoryOzoneStub;

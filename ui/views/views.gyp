@@ -376,6 +376,7 @@
         'widget/desktop_aura/desktop_root_window_host_x11.cc',
         'widget/desktop_aura/desktop_root_window_host_x11.h',
         'widget/desktop_aura/desktop_screen.h',
+        'widget/desktop_aura/desktop_screen_ozone.cc',
         'widget/desktop_aura/desktop_screen_position_client.cc',
         'widget/desktop_aura/desktop_screen_position_client.h',
         'widget/desktop_aura/desktop_screen_win.cc',
