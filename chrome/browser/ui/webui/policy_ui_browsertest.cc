@@ -90,7 +90,7 @@ class PolicyUITest : public InProcessBrowserTest {
 
   void UpdateProviderPolicy(const policy::PolicyMap& policy);
 
-  void VerifyPolicies(const std::vector<std::vector<std::string> > expected);
+  void VerifyPolicies(const std::vector<std::vector<std::string> >& expected);
 
  private:
   policy::MockConfigurationPolicyProvider provider_;
@@ -118,7 +118,7 @@ void PolicyUITest::UpdateProviderPolicy(const policy::PolicyMap& policy) {
 }
 
 void PolicyUITest::VerifyPolicies(
-    const std::vector<std::vector<std::string> > expected_policies) {
+    const std::vector<std::vector<std::string> >& expected_policies) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy"));
 
   // Retrieve the text contents of the policy table cells for all policies.
