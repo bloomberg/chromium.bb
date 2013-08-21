@@ -545,6 +545,14 @@ void InputType::handleBlurEvent()
 {
 }
 
+void InputType::enableSecureTextInput()
+{
+}
+
+void InputType::disableSecureTextInput()
+{
+}
+
 void InputType::accessKeyAction(bool)
 {
     element()->focus(false);
@@ -581,6 +589,10 @@ bool InputType::canChangeFromAnotherType() const
 }
 
 void InputType::minOrMaxAttributeChanged()
+{
+}
+
+void InputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
 {
 }
 

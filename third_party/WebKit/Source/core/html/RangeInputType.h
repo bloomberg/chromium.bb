@@ -62,7 +62,7 @@ private:
     virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
     virtual String serialize(const Decimal&) const OVERRIDE;
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual void minOrMaxAttributeChanged() OVERRIDE;
+    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange() OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual String fallbackValue() const OVERRIDE;
     virtual String sanitizeValue(const String& proposedValue) const OVERRIDE;

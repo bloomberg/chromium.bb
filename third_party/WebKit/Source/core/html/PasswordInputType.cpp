@@ -130,18 +130,16 @@ bool PasswordInputType::isPasswordField() const
     return true;
 }
 
-void PasswordInputType::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
+void PasswordInputType::enableSecureTextInput()
 {
-    BaseTextInputType::handleFocusEvent(oldFocusedElement, direction);
     if (element()->document()->frame())
         element()->document()->setUseSecureKeyboardEntryWhenActive(true);
 }
 
-void PasswordInputType::handleBlurEvent()
+void PasswordInputType::disableSecureTextInput()
 {
     if (element()->document()->frame())
         element()->document()->setUseSecureKeyboardEntryWhenActive(false);
-    BaseTextInputType::handleBlurEvent();
 }
 
 } // namespace WebCore

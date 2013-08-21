@@ -195,6 +195,8 @@ public:
     virtual bool isKeyboardFocusable() const;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldUseInputMethod() const;
+    virtual void enableSecureTextInput();
+    virtual void disableSecureTextInput();
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection);
     virtual void handleBlurEvent();
     virtual void accessKeyAction(bool sendMouseEvents);
@@ -224,6 +226,7 @@ public:
     virtual void detach();
     virtual void countUsage();
     virtual void minOrMaxAttributeChanged();
+    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
     virtual void stepAttributeChanged();
     virtual void altAttributeChanged();
     virtual void srcAttributeChanged();

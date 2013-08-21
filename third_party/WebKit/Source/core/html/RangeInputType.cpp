@@ -279,11 +279,8 @@ void RangeInputType::accessKeyAction(bool sendMouseEvents)
     element()->dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
 
-void RangeInputType::minOrMaxAttributeChanged()
+void RangeInputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
 {
-    InputType::minOrMaxAttributeChanged();
-
-    // Sanitize the value.
     if (element()->hasDirtyValue())
         element()->setValue(element()->value());
 

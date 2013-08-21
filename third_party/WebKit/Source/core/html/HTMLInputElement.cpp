@@ -383,10 +383,12 @@ bool HTMLInputElement::shouldUseInputMethod()
 void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
 {
     m_inputType->handleFocusEvent(oldFocusedElement, direction);
+    m_inputType->enableSecureTextInput();
 }
 
 void HTMLInputElement::handleBlurEvent()
 {
+    m_inputType->disableSecureTextInput();
     m_inputType->handleBlurEvent();
 }
 
@@ -700,6 +702,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {
         m_inputType->minOrMaxAttributeChanged();
+        m_inputType->sanitizeValueInResponseToMinOrMaxAttributeChange();
         setNeedsValidityCheck();
         UseCounter::count(document(), UseCounter::MinAttribute);
     } else if (name == maxAttr) {
