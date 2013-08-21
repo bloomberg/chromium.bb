@@ -139,16 +139,14 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
         return;
 
     // If the image is wrapped in a link, |url| points to the target of the
-    // link.  This isn't useful to us, so get the actual image URL.
+    // link. This isn't useful to us, so get the actual image URL.
     AtomicString urlString;
     if (node->hasTagName(HTMLNames::imgTag) || node->hasTagName(HTMLNames::inputTag))
         urlString = toElement(node)->getAttribute(HTMLNames::srcAttr);
     else if (node->hasTagName(SVGNames::imageTag))
         urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
-    else if (node->hasTagName(HTMLNames::embedTag) || node->hasTagName(HTMLNames::objectTag)) {
-        Element* element = toElement(node);
-        urlString = element->imageSourceURL();
-    }
+    else if (node->hasTagName(HTMLNames::embedTag) || node->hasTagName(HTMLNames::objectTag))
+        urlString = toElement(node)->imageSourceURL();
     KURL url = urlString.isEmpty() ? KURL() : node->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
     WebKit::WebImage webImage = bitmap->bitmap();
     WebKit::Platform::current()->clipboard()->writeImage(webImage, WebKit::WebURL(url), WebKit::WebString(title));
