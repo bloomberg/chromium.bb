@@ -23,3 +23,5 @@ Local changes:
 Cherry-picks:
   f626fe2 Detect canvas and image size mismatch in decoder.
   f5fbdee demux: stricter image bounds check
+  a03c351 Demux: WebPIterator now also denotes if the frame has alpha.
+  6284854b Support for "Do not blend" in mux and demux libraries
