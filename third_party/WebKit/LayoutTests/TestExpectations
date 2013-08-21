@@ -1245,3 +1245,5 @@ crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background-rep
 crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background-size-aspect-ratio.htm [ NeedsRebaseline ]
 crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_border_box.htm [ NeedsRebaseline ]
 crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_content_box.htm [ NeedsRebaseline ]
+
+crbug.com/277005 [ Linux ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout ]
