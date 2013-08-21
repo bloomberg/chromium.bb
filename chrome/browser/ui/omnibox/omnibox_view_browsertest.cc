@@ -1460,20 +1460,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), old_text);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  // Undo should clear the omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
+  // Delete the text, then undo.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_TRUE(omnibox_view->GetText().empty());
-
-  // Nothing should happen if undo again.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
-  EXPECT_TRUE(omnibox_view->GetText().empty());
-
-  // Redo should restore the original text.
-  ASSERT_NO_FATAL_FAILURE(
-      SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
   EXPECT_EQ(old_text, omnibox_view->GetText());
 
+  // Redo should delete the text again.
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
+  EXPECT_TRUE(omnibox_view->GetText().empty());
+
   // Looks like the undo manager doesn't support restoring selection.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // The cursor should be at the end.
@@ -1508,10 +1507,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   // Undo delete two characters.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_EQ(old_text, omnibox_view->GetText());
-
-  // Undo again.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
-  EXPECT_TRUE(omnibox_view->GetText().empty());
 }
 
 // See http://crosbug.com/10306
