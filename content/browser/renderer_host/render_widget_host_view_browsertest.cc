@@ -375,7 +375,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
 // an async copy.
 //
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
   DISABLED_CopyFromCompositingSurface_CallbackDespiteDelete
 #else
@@ -724,7 +725,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 };
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_Origin_Unscaled \
   DISABLED_CopyFromCompositingSurface_Origin_Unscaled
 #else
@@ -746,7 +748,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_Origin_Scaled \
   DISABLED_CopyFromCompositingSurface_Origin_Scaled
 #else
@@ -768,7 +771,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_Cropped_Unscaled \
   DISABLED_CopyFromCompositingSurface_Cropped_Unscaled
 #else
@@ -793,7 +797,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_Cropped_Scaled \
   DISABLED_CopyFromCompositingSurface_Cropped_Scaled
 #else
@@ -818,7 +823,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_ForVideoFrame \
   DISABLED_CopyFromCompositingSurface_ForVideoFrame
 #else
@@ -843,7 +849,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 // Test is flaky on Win Aura. http://crbug.com/276783
-#if defined(OS_WIN) && defined(USE_AURA)
+#if (defined(OS_WIN) && defined(USE_AURA)) || \
+    (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled \
   DISABLED_CopyFromCompositingSurface_ForVideoFrame_Scaled
 #else
