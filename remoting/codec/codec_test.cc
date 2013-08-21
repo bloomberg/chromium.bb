@@ -140,7 +140,8 @@ class VideoDecoderTester {
       : screen_size_(screen_size),
         view_size_(view_size),
         strict_(false),
-        decoder_(decoder) {
+        decoder_(decoder),
+        frame_(NULL) {
     image_data_.reset(new uint8[
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
