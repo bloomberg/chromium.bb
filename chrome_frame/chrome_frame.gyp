@@ -412,7 +412,7 @@
         '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:test_support_common',
         '../chrome/chrome_resources.gyp:chrome_resources',
-        '../content/content.gyp:content_app_browser',
+        '../content/content.gyp:content_app_both',
         '../content/content.gyp:content_gpu',
         '../content/content.gyp:test_support_content',
         '../net/net.gyp:net',
