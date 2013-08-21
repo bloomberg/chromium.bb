@@ -1114,6 +1114,9 @@ const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 // Enable conversion from vector to raster for any page.
 const char kPrintRaster[]                   = "print-raster";
 
+// Use IPv6 only for privet HTTP.
+const char kPrivetIPv6Only[]                   = "privet-ipv6-only";
+
 // Outputs the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";

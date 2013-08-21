@@ -27,17 +27,6 @@ namespace {
 // response.
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
 
-std::string IPAddressToHostString(const net::IPAddressNumber& address) {
-  std::string address_str = net::IPAddressToString(address);
-
-  // IPv6 addresses need to be surrounded by brackets.
-  if (address.size() == net::kIPv6AddressSize) {
-    address_str = base::StringPrintf("[%s]", address_str.c_str());
-  }
-
-  return address_str;
-}
-
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
 }  // namespace
 
@@ -86,6 +75,9 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     service_discovery_client_ = ServiceDiscoveryHostClientFactory::GetClient();
     privet_lister_.reset(new PrivetDeviceListerImpl(
         service_discovery_client_.get(), this));
+    privet_http_factory_.reset(new PrivetHTTPAsynchronousFactoryImpl(
+        service_discovery_client_.get(),
+        Profile::FromWebUI(web_ui())->GetRequestContext()));
   }
 
   privet_lister_->Start();
@@ -100,13 +92,12 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   DCHECK(rv);
   current_http_device_ = device_name;
 
-  domain_resolver_ = service_discovery_client_->CreateLocalDomainResolver(
-      device_descriptions_[device_name].address.host(),
-      net::ADDRESS_FAMILY_UNSPECIFIED,
+
+  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      device_descriptions_[device_name].address,
       base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                  base::Unretained(this)));
-
-    domain_resolver_->Start();
+  privet_resolution_->Start();
 }
 
 void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
@@ -114,24 +105,19 @@ void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
   args->GetString(0, &device_name);
   current_http_device_ = device_name;
 
-  domain_resolver_ = service_discovery_client_->CreateLocalDomainResolver(
-      device_descriptions_[device_name].address.host(),
-      net::ADDRESS_FAMILY_UNSPECIFIED,
+    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      device_descriptions_[device_name].address,
       base::Bind(&LocalDiscoveryUIHandler::StartInfoHTTP,
                  base::Unretained(this)));
-
-  domain_resolver_->Start();
+    privet_resolution_->Start();
 }
 
-void LocalDiscoveryUIHandler::StartRegisterHTTP(bool success,
-    const net::IPAddressNumber& address) {
-  if (!success) {
-    LogRegisterErrorToWeb("Resolution failed");
-    return;
-  }
+void LocalDiscoveryUIHandler::StartRegisterHTTP(
+    scoped_ptr<PrivetHTTPClient> http_client) {
+  current_http_client_.swap(http_client);
 
-  if (device_descriptions_.count(current_http_device_) == 0) {
-    LogRegisterErrorToWeb("Device no longer exists");
+  if (!current_http_client_) {
+    LogRegisterErrorToWeb("Resolution failed");
     return;
   }
 
@@ -146,36 +132,19 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(bool success,
 
   std::string username = signin_manager->GetAuthenticatedUsername();
 
-  std::string address_str = IPAddressToHostString(address);
-  int port = device_descriptions_[current_http_device_].address.port();
-
-  current_http_client_.reset(new PrivetHTTPClientImpl(
-      net::HostPortPair(address_str, port),
-      Profile::FromWebUI(web_ui())->GetRequestContext()));
   current_register_operation_ =
       current_http_client_->CreateRegisterOperation(username, this);
   current_register_operation_->Start();
 }
 
-void LocalDiscoveryUIHandler::StartInfoHTTP(bool success,
-    const net::IPAddressNumber& address) {
-  if (!success) {
-    LogInfoErrorToWeb("Resolution failed");
+void LocalDiscoveryUIHandler::StartInfoHTTP(
+    scoped_ptr<PrivetHTTPClient> http_client) {
+  current_http_client_.swap(http_client);
+  if (!current_http_client_) {
+    LogRegisterErrorToWeb("Resolution failed");
     return;
   }
 
-  if (device_descriptions_.count(current_http_device_) == 0) {
-    LogRegisterErrorToWeb("Device no longer exists");
-    return;
-  }
-
-  std::string address_str = IPAddressToHostString(address);
-
-  int port = device_descriptions_[current_http_device_].address.port();
-
-  current_http_client_.reset(new PrivetHTTPClientImpl(
-      net::HostPortPair(address_str, port),
-      Profile::FromWebUI(web_ui())->GetRequestContext()));
   current_info_operation_ = current_http_client_->CreateInfoOperation(this);
   current_info_operation_->Start();
 }

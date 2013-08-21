@@ -13,8 +13,6 @@
 
 namespace local_discovery {
 
-class PrivetHTTPImpl;
-
 // Represents a request to /privet/info. Will store a cached response and token
 // in the PrivetHTTPClient that created.
 class PrivetInfoOperation {

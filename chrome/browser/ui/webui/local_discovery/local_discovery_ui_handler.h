@@ -11,6 +11,7 @@
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/user_metrics.h"
@@ -77,12 +78,10 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void HandleInfoRequested(const base::ListValue* args);
 
   // For when the IP address of the printer has been resolved for registration.
-  void StartRegisterHTTP(bool success,
-                         const net::IPAddressNumber& address);
+  void StartRegisterHTTP(scoped_ptr<PrivetHTTPClient> http_client);
 
   // For when the IP address of the printer has been resolved for registration.
-  void StartInfoHTTP(bool success,
-                     const net::IPAddressNumber& address);
+  void StartInfoHTTP(scoped_ptr<PrivetHTTPClient> http_client);
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
@@ -119,11 +118,14 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // The service discovery client used listen for devices on the local network.
   scoped_refptr<ServiceDiscoveryHostClient> service_discovery_client_;
 
+  // A factory for creating the privet HTTP Client.
+  scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
+
+  // An object representing the resolution process for the privet_http_factory.
+  scoped_ptr<PrivetHTTPAsynchronousFactory::Resolution> privet_resolution_;
+
   // A map of current device descriptions provided by the PrivetDeviceLister.
   std::map<std::string, DeviceDescription> device_descriptions_;
-
-  // The local domain resolver used to resolve the domains for local devices.
-  scoped_ptr<LocalDomainResolver> domain_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUIHandler);
 };
