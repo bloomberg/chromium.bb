@@ -1699,7 +1699,18 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     # handler, which interferes with various NaCl tests, including the
     # platform qualification test built into sel_ldr.  We fix this by
     # telling ASan not to mess with SIGSEGV.
-    extra['osenv'] = extra['osenv'] + ['ASAN_OPTIONS=handle_segv=0']
+    asan_options = ['handle_segv=0']
+    if env.Bit('host_mac') and int(platform.mac_ver()[0].split('.')[1]) < 7:
+      # MacOS 10.6 has a bug in the libsandbox system library where it
+      # makes a memcmp call that reads off the end of a malloc'd block.
+      # The bug appears to be harmless, but trips an ASan report.  So
+      # tell ASan to suppress memcmp checks.
+      asan_options.append('strict_memcmp=0')
+    # Note that the ASan runtime doesn't use : specifically as a separator.
+    # It actually just looks for "foo=" anywhere in the string with strstr,
+    # so any separator will do.  The most obvious choices, ' ', ',', and ';'
+    # all cause command_tester.py to split things up and get confused.
+    extra['osenv'].append('ASAN_OPTIONS=' + ':'.join(asan_options))
 
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg
