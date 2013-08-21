@@ -28,6 +28,40 @@ using net::test_server::EmbeddedTestServer;
 
 namespace app_list {
 namespace test {
+namespace {
+
+// Mock results.
+const char kOneResult[] = "{"
+    "\"search_url\": \"http://host/search\","
+    "\"results\":["
+      "{"
+        "\"id\": \"app1_id\","
+        "\"localized_name\": \"app1 name\","
+        "\"icon_url\": \"http://host/icon\""
+      "}"
+    "]}";
+
+const char kThreeResults[] = "{"
+    "\"search_url\": \"http://host/search\","
+    "\"results\":["
+      "{"
+        "\"id\": \"app1_id\","
+        "\"localized_name\": \"one\","
+        "\"icon_url\": \"http://host/icon\""
+      "},"
+      "{"
+        "\"id\": \"app2_id\","
+        "\"localized_name\": \"two\","
+        "\"icon_url\": \"http://host/icon\""
+      "},"
+      "{"
+        "\"id\": \"app3_id\","
+        "\"localized_name\": \"three\","
+        "\"icon_url\": \"http://host/icon\""
+      "}"
+    "]}";
+
+}  // namespace
 
 class WebstoreProviderTest : public InProcessBrowserTest {
  public:
@@ -56,6 +90,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     webstore_provider_->set_webstore_search_fetched_callback(
         base::Bind(&WebstoreProviderTest::OnSearchResultsFetched,
                    base::Unretained(this)));
+    // TODO(mukai): add test cases for throttling.
+    webstore_provider_->set_use_throttling(false);
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -67,7 +103,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                        const std::string& mock_server_response) {
     webstore_provider_->Start(UTF8ToUTF16(query));
 
-    if (!mock_server_response.empty()) {
+    if (webstore_provider_->webstore_search_ && !mock_server_response.empty()) {
       mock_server_response_ = mock_server_response;
 
       DCHECK(!run_loop_);
@@ -137,34 +173,6 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 #define MAYBE_Basic Basic
 #endif
 IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_Basic) {
-  const char kOneResult[] = "{"
-      "\"search_url\": \"http://host/search\","
-      "\"results\":["
-        "{"
-          "\"id\": \"app1_id\","
-          "\"localized_name\": \"app1 name\","
-          "\"icon_url\": \"http://host/icon\""
-        "}"
-      "]}";
-  const char kThreeResults[] = "{"
-      "\"search_url\": \"http://host/search\","
-      "\"results\":["
-        "{"
-          "\"id\": \"app1_id\","
-          "\"localized_name\": \"one\","
-          "\"icon_url\": \"http://host/icon\""
-        "},"
-        "{"
-          "\"id\": \"app2_id\","
-          "\"localized_name\": \"two\","
-          "\"icon_url\": \"http://host/icon\""
-        "},"
-        "{"
-          "\"id\": \"app3_id\","
-          "\"localized_name\": \"three\","
-          "\"icon_url\": \"http://host/icon\""
-        "}"
-      "]}";
   struct {
     const char* query;
     const char* mock_server_response;
@@ -207,7 +215,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForSensitiveData) {
   };
 
   for (size_t i = 0; i < arraysize(inputs); ++i)
-    EXPECT_EQ("", RunQuery(inputs[i], ""));
+    EXPECT_EQ("", RunQuery(inputs[i], kOneResult));
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForShortQueries) {
+  EXPECT_EQ("", RunQuery("a", kOneResult));
+  EXPECT_EQ("", RunQuery("ab", kOneResult));
+  EXPECT_EQ("app1 name", RunQuery("abc", kOneResult));
 }
 
 }  // namespace test
