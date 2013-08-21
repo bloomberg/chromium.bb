@@ -901,18 +901,19 @@ bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(child, hasInfiniteLineLength);
         LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(child)
             + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
-        LayoutUnit childMainAxisMarginBoxExtent = childMainAxisExtent + childMainAxisMarginBorderPadding;
+        LayoutUnit childFlexBaseSize = childMainAxisExtent + childMainAxisMarginBorderPadding;
 
-        if (isMultiline() && sumFlexBaseSize + childMainAxisMarginBoxExtent > lineBreakLength && lineHasInFlowItem)
+        LayoutUnit childMinMaxAppliedMainAxisExtent = adjustChildSizeForMinAndMax(child, childMainAxisExtent);
+        LayoutUnit childHypotheticalMainSize = childMinMaxAppliedMainAxisExtent + childMainAxisMarginBorderPadding;
+
+        if (isMultiline() && sumHypotheticalMainSize + childHypotheticalMainSize > lineBreakLength && lineHasInFlowItem)
             break;
         orderedChildren.append(child);
         lineHasInFlowItem  = true;
-        sumFlexBaseSize += childMainAxisMarginBoxExtent;
+        sumFlexBaseSize += childFlexBaseSize;
         totalFlexGrow += child->style()->flexGrow();
         totalWeightedFlexShrink += child->style()->flexShrink() * childMainAxisExtent;
-
-        LayoutUnit childMinMaxAppliedMainAxisExtent = adjustChildSizeForMinAndMax(child, childMainAxisExtent);
-        sumHypotheticalMainSize += childMinMaxAppliedMainAxisExtent + childMainAxisMarginBorderPadding;
+        sumHypotheticalMainSize += childHypotheticalMainSize;
     }
     return true;
 }
