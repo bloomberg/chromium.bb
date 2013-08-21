@@ -15,6 +15,7 @@ from host_file_system_creator import HostFileSystemCreator
 from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
+from permissions_data_source import PermissionsDataSource
 from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
@@ -102,6 +103,13 @@ class ServerInstance(object):
         '/'.join((svn_constants.JSON_PATH, 'manifest.json')),
         '/'.join((svn_constants.API_PATH, '_manifest_features.json')))
 
+    self.permissions_data_source = PermissionsDataSource(
+        self.compiled_host_fs_factory,
+        self.host_file_system,
+        '/'.join((svn_constants.API_PATH, '_api_features.json')),
+        '/'.join((svn_constants.API_PATH, '_permission_features.json')),
+        '/'.join((svn_constants.JSON_PATH, 'permissions.json')))
+
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
         self.host_file_system,
@@ -116,7 +124,6 @@ class ServerInstance(object):
 
     self.strings_json_path = '/'.join((svn_constants.JSON_PATH, 'strings.json'))
 
-
     self.template_data_source_factory = TemplateDataSource.Factory(
         self.api_data_source_factory,
         self.api_list_data_source_factory,
@@ -126,6 +133,7 @@ class ServerInstance(object):
         self.compiled_host_fs_factory,
         self.ref_resolver_factory,
         self.manifest_data_source,
+        self.permissions_data_source,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         svn_constants.PRIVATE_TEMPLATE_PATH,
         base_path,
@@ -134,6 +142,8 @@ class ServerInstance(object):
         DataSourceRegistry.AsTemplateData(self))
 
     self.api_data_source_factory.SetTemplateDataSource(
+        self.template_data_source_factory)
+    self.permissions_data_source.SetTemplateDataSource(
         self.template_data_source_factory)
 
   @staticmethod

@@ -36,6 +36,7 @@ class TemplateDataSource(object):
                  compiled_fs_factory,
                  ref_resolver_factory,
                  manifest_data_source,
+                 permissions_data_source,
                  public_template_path,
                  private_template_path,
                  base_path,
@@ -48,9 +49,10 @@ class TemplateDataSource(object):
       self._cache = compiled_fs_factory.Create(self._CreateTemplate,
                                                TemplateDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
+      self._manifest_data_source = manifest_data_source
+      self._permissions_data_source = permissions_data_source
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
-      self._manifest_data_source = manifest_data_source
       self._base_path = base_path
       self._data_sources = data_sources
 
@@ -68,6 +70,7 @@ class TemplateDataSource(object):
           self._sidenav_data_source_factory.Create(path),
           self._cache,
           self._manifest_data_source,
+          self._permissions_data_source,
           self._public_template_path,
           self._private_template_path,
           self._base_path,
@@ -81,6 +84,7 @@ class TemplateDataSource(object):
                sidenav_data_source,
                cache,
                manifest_data_source,
+               permissions_data_source,
                public_template_path,
                private_template_path,
                base_path,
@@ -94,6 +98,7 @@ class TemplateDataSource(object):
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
     self._manifest_data_source = manifest_data_source
+    self._permissions_data_source = permissions_data_source
     self._base_path = base_path
     self._data_sources = data_sources
 
@@ -113,6 +118,7 @@ class TemplateDataSource(object):
       'sidenavs': self._sidenav_data_source,
       'partials': self,
       'manifest_source': self._manifest_data_source,
+      'permissions': self._permissions_data_source,
       'samples': self._samples_data_source,
       'apps_samples_url': url_constants.GITHUB_BASE,
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,

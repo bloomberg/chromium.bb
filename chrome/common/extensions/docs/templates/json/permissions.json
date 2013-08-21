@@ -1,0 +1,62 @@
+{
+  "host-permissions": {
+    "anchor": "match-pattern",
+    "name": "[scheme]:[host]/*",
+    "partial": "permissions/host_permissions.html",
+    "platforms": ["app", "extension"]
+  },
+  "activeTab": {
+    "partial": "permissions/active_tab.html"
+  },
+  "audioCapture": {
+    "partial": "permissions/audio_capture.html"
+  },
+  "background": {
+    "partial": "permissions/background.html"
+  },
+  "chrome://favicon/": {
+    "anchor": "favicon",
+    "name": "chrome://favicon/",
+    "partial": "permissions/favicon.html",
+    "platforms": ["extension"]
+  },
+  "clipboardRead": {
+    "partial": "permissions/clipboard_read.html"
+  },
+  "clipboardWrite": {
+    "partial": "permissions/clipboard_write.html"
+  },
+  "experimental": {
+    "partial": "permissions/experimental.html"
+  },
+  "fullscreen": {
+    "partial": "permissions/fullscreen.html"
+  },
+  "geolocation": {
+    "partial": "permissions/geolocation.html"
+  },
+  "notifications": {
+    "partial": "permissions/notifications.html"
+  },
+  "pointerLock": {
+    "partial": "permissions/pointer_lock.html"
+  },
+  "syncFileSystem": {
+    "partial": "permissions/sync_file_system.html"
+  },
+  "tabCapture": {
+    "partial": "permissions/tab_capture.html"
+  },
+  "unlimitedStorage": {
+    "partial": "permissions/unlimited_storage.html"
+  },
+  "videoCapture": {
+    "partial": "permissions/video_capture.html"
+  },
+  "webRequestBlocking": {
+    "partial": "permissions/web_request_blocking.html"
+  },
+  "webview": {
+    "partial": "permissions/webview.html"
+  }
+}

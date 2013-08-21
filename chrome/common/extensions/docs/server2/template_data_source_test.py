@@ -13,6 +13,7 @@ from compiled_file_system import CompiledFileSystem
 from local_file_system import LocalFileSystem
 from manifest_data_source import ManifestDataSource
 from object_store_creator import ObjectStoreCreator
+from permissions_data_source import PermissionsDataSource
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
 from test_file_system import TestFileSystem
@@ -41,6 +42,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_sidenav_data_source_factory = _FakeFactory()
     self._manifest_data_source = ManifestDataSource(
       _FakeFactory(), LocalFileSystem.Create(), '', '')
+    self._permissions_data_source = PermissionsDataSource(
+      _FakeFactory(), LocalFileSystem.Create(), '', '', '')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -76,6 +79,7 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._fake_sidenav_data_source_factory,
         compiled_fs_factory,
         reference_resolver_factory,
+        self._permissions_data_source,
         self._manifest_data_source,
         '.',
         '.',
