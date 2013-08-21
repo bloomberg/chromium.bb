@@ -201,30 +201,30 @@ bool EventTarget::fireEventListeners(Event* event)
     if (!d)
         return true;
 
-    EventListenerVector* listenerPrefixedVector = 0;
-    AtomicString prefixedTypeName = legacyType(event);
-    if (!prefixedTypeName.isEmpty())
-        listenerPrefixedVector = d->eventListenerMap.find(prefixedTypeName);
+    EventListenerVector* legacyListenersVector = 0;
+    AtomicString legacyTypeName = legacyType(event);
+    if (!legacyTypeName.isEmpty())
+        legacyListenersVector = d->eventListenerMap.find(legacyTypeName);
 
-    EventListenerVector* listenerUnprefixedVector = d->eventListenerMap.find(event->type());
+    EventListenerVector* listenersVector = d->eventListenerMap.find(event->type());
 
-    if (listenerUnprefixedVector)
-        fireEventListeners(event, d, *listenerUnprefixedVector);
-    else if (listenerPrefixedVector) {
+    if (listenersVector) {
+        fireEventListeners(event, d, *listenersVector);
+    } else if (legacyListenersVector) {
         AtomicString unprefixedTypeName = event->type();
-        event->setType(prefixedTypeName);
-        fireEventListeners(event, d, *listenerPrefixedVector);
+        event->setType(legacyTypeName);
+        fireEventListeners(event, d, *legacyListenersVector);
         event->setType(unprefixedTypeName);
     }
 
-    if (prefixedTypeName == eventNames().webkitTransitionEndEvent) {
+    if (legacyTypeName == eventNames().webkitTransitionEndEvent) {
         if (DOMWindow* executingWindow = this->executingWindow()) {
-            if (listenerPrefixedVector) {
-                if (listenerUnprefixedVector)
+            if (legacyListenersVector) {
+                if (listenersVector)
                     UseCounter::count(executingWindow, UseCounter::PrefixedAndUnprefixedTransitionEndEvent);
                 else
                     UseCounter::count(executingWindow, UseCounter::PrefixedTransitionEndEvent);
-            } else if (listenerUnprefixedVector) {
+            } else if (listenersVector) {
                 UseCounter::count(executingWindow, UseCounter::UnprefixedTransitionEndEvent);
             }
         }
