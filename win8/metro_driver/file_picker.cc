@@ -311,7 +311,6 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
 
       // Metro wants suffixes only, not patterns.
       mswrw::HString extension;
-      std::vector<string16> extensions;
       for (size_t i = 0; i < extensions_win32_style.size(); ++i) {
         if (extensions_win32_style[i] == L"*.*") {
           // The wildcard filter is "*" for Metro. The string "*.*" produces
