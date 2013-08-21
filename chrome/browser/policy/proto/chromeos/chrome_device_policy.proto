@@ -238,7 +238,11 @@ message SystemTimezoneProto {
 
 message SystemUse24HourClockProto {
   // Specifies an owner-determined clock format that applies to the login
-  // screen and all users.
+  // screen and is used as a default for all user sessions. Users can still
+  // override the format to use for their account.
+  //
+  // True and false select a 24 and 12 hour clock format, respectively. The
+  // default format for the case the setting is not present is 24 hour clock.
   optional bool use_24hour_clock = 1;
 }
 

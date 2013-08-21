@@ -1007,7 +1007,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   bool ShouldUse24HourClock() const {
     // On login screen and in guest mode owner default is used for
     // kUse24HourClock preference.
-    // All other modes default to the default locale value.
     const ash::user::LoginStatus status = GetUserLoginStatus();
     const CrosSettings* const cros_settings = CrosSettings::Get();
     bool system_use_24_hour_clock = true;

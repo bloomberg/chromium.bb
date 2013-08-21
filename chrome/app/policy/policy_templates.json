@@ -4113,7 +4113,13 @@
       'example_value': True,
       'id': 236,
       'caption': '''Use 24 hour clock by default''',
-      'desc': '''Specifies the clock format be used for the device. Users can override clock format for the current session. However, on logout it is set back to the specified value. If an empty string is provided, device owner preference is used.''',
+      'desc': '''Specifies the clock format be used for the device.
+
+      This policy configures the clock format to use on the login screen and as a default for user sessions. Users can still override the clock format for their account.
+
+      If the policy is not set to true, the device will use a 24 hour clock format. If the policy is set to false, the device will use 12 hour clock format.
+
+      If this policy is not set, the device will default to a 24 hour clock format.''',
     },
     {
       'name': 'ShowLogoutButtonInTray',
