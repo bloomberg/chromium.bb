@@ -41,14 +41,15 @@
       'SK_SUPPORT_GPU=<(skia_support_gpu)',
       'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
     ],
-    
+
     'default_font_cache_limit': '(20*1024*1024)',
 
     'conditions': [
       ['OS== "android"', {
         # Android devices are typically more memory constrained, so
-        # use a smaller glyph cache.
-        'default_font_cache_limit': '(8*1024*1024)',
+        # default to a smaller glyph cache (it may be overriden at runtime
+        # when the renderer starts up, depending on the actual device memory).
+        'default_font_cache_limit': '(1*1024*1024)',
         'skia_export_defines': [
           'SK_BUILD_FOR_ANDROID',
           'USE_CHROMIUM_SKIA',
@@ -355,7 +356,7 @@
       'sources/': [
         ['exclude', 'opts_check_SSE2\\.cpp$'],
       ],
-      
+
       # The main skia_opts target does not currently work on iOS because the
       # target architecture on iOS is determined at compile time rather than
       # gyp time (simulator builds are x86, device builds are arm).  As a

@@ -89,6 +89,7 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebColorName.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
@@ -1267,6 +1268,10 @@ void RenderThreadImpl::OnMemoryPressure(
     v8::V8::LowMemoryNotification();
     // Clear the image cache.
     WebKit::WebImageCache::clear();
+    // Purge Skia font cache, by setting it to 0 and then again to the previous
+    // limit.
+    size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
+    SkGraphics::SetFontCacheLimit(font_cache_limit);
   } else {
     // Otherwise trigger a couple of v8 GCs using IdleNotification.
     if (!v8::V8::IdleNotification())
