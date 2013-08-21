@@ -225,8 +225,10 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
-  // Allows the tests to catch slots leaking out of the dispatcher.
-  size_t num_running_jobs_for_tests() const {
+  // Allows the tests to catch slots leaking out of the dispatcher.  One
+  // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
+  // slots.
+  size_t num_running_dispatcher_jobs_for_tests() const {
     return dispatcher_.num_running_jobs();
   }
 
