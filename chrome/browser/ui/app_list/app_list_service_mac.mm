@@ -16,7 +16,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
-#include "base/observer_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -94,11 +93,6 @@ class AppListServiceMac : public AppListServiceImpl,
 
   base::scoped_nsobject<AppListWindowController> window_controller_;
   base::scoped_nsobject<NSRunningApplication> previously_active_application_;
-
-  // App shim hosts observing when the app list is dismissed. In normal user
-  // usage there should only be one. However, it can't be guaranteed, so use
-  // an ObserverList rather than handling corner cases.
-  ObserverList<apps::AppShimHandler::Host> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };
@@ -385,10 +379,6 @@ void AppListServiceMac::DismissAppList() {
     return;
 
   [[window_controller_ window] close];
-
-  FOR_EACH_OBSERVER(apps::AppShimHandler::Host,
-                    observers_,
-                    OnAppClosed());
 }
 
 bool AppListServiceMac::IsAppListVisible() const {
@@ -406,27 +396,24 @@ NSWindow* AppListServiceMac::GetAppListWindow() {
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
                                      apps::AppShimLaunchType launch_type) {
-  Show();
-  observers_.AddObserver(host);
-  host->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_SUCCESS);
+  if (IsAppListVisible())
+    DismissAppList();
+  else
+    Show();
+
+  // Always close the shim process immediately.
+  host->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
 }
 
-void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {
-  observers_.RemoveObserver(host);
-  DismissAppList();
-}
+void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {}
 
 void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host,
-                                    apps::AppShimFocusType focus_type) {
-  DismissAppList();
-}
+                                    apps::AppShimFocusType focus_type) {}
 
 void AppListServiceMac::OnShimSetHidden(apps::AppShimHandler::Host* host,
                                         bool hidden) {}
 
-void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {
-  DismissAppList();
-}
+void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {}
 
 enum DockLocation {
   DockLocationOtherDisplay,

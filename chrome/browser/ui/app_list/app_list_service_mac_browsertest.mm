@@ -18,38 +18,24 @@ namespace {
 class AppListServiceMacBrowserTest : public InProcessBrowserTest,
                                      public AppShimHandler::Host {
  public:
-  AppListServiceMacBrowserTest() : launch_count_(0),
-                                   close_count_(0),
-                                   running_(false) {}
+  AppListServiceMacBrowserTest() : launch_count_(0) {}
 
  protected:
   void LaunchShim() {
-    DCHECK(!running_);
-    // AppList shims should always succced showing the app list.
+    // AppList shims always launch normally (never relaunched via dock icon).
     AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->
         OnShimLaunch(this, apps::APP_SHIM_LAUNCH_NORMAL);
-    running_ = true;
-  }
-
-  void FocusShim() {
-    DCHECK(running_);
-    AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->
-        OnShimFocus(this, apps::APP_SHIM_FOCUS_REOPEN);
-  }
-
-  void QuitShim() {
-    DCHECK(running_);
-    running_ = false;
-    AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->OnShimClose(this);
   }
 
   // AppShimHandler::Host overrides:
-  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult) OVERRIDE {
+  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) OVERRIDE {
+    // AppList shims are always given APP_SHIM_LAUNCH_DUPLICATE_HOST, indicating
+    // that the shim process should immediately close.
+    EXPECT_EQ(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST, result);
     ++launch_count_;
   }
   virtual void OnAppClosed() OVERRIDE {
-    ++close_count_;
-    QuitShim();
+    NOTREACHED();
   }
   virtual base::FilePath GetProfilePath() const OVERRIDE {
     NOTREACHED();  // Currently unused in this test.
@@ -60,8 +46,6 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
   }
 
   int launch_count_;
-  int close_count_;
-  bool running_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMacBrowserTest);
@@ -75,38 +59,25 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacBrowserTest, ShowAppListUsingShim) {
 
   AppListService* service = AppListService::Get();
   EXPECT_FALSE(service->IsAppListVisible());
-  EXPECT_EQ(0, close_count_);
 
   // With no saved profile, the default profile should be chosen and saved.
   service->Show();
   EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(0, launch_count_);
-  EXPECT_EQ(0, close_count_);
   service->DismissAppList();
   EXPECT_FALSE(service->IsAppListVisible());
 
-  // There is no shim yet, so the close count should not change.
-  EXPECT_EQ(0, close_count_);
-
-  // Test showing the app list via the shim, then quit the shim directly. The
-  // close count does not change since the shim host is triggering the close,
-  // not the app list.
+  // Test showing the app list via the shim. The shim should immediately close
+  // leaving the app list visible.
   LaunchShim();
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(1, launch_count_);
-  QuitShim();
-  EXPECT_FALSE(service->IsAppListVisible());
-  EXPECT_EQ(0, close_count_);
 
-  // Test showing the app list via the shim, then simulate clicking the dock
-  // icon again, which should close it.
+  // Launching again should toggle the app list.
   LaunchShim();
-  EXPECT_TRUE(service->IsAppListVisible());
-  EXPECT_EQ(2, launch_count_);
-  FocusShim();
   EXPECT_FALSE(service->IsAppListVisible());
-  EXPECT_EQ(1, close_count_);
+  EXPECT_EQ(2, launch_count_);
 
   // Test showing the app list via the shim, then dismissing the app list.
   LaunchShim();
@@ -114,14 +85,4 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacBrowserTest, ShowAppListUsingShim) {
   EXPECT_EQ(3, launch_count_);
   service->DismissAppList();
   EXPECT_FALSE(service->IsAppListVisible());
-  EXPECT_EQ(2, close_count_);
-
-  // Verify that observers are correctly removed by ensuring that |close_count_|
-  // is unchanged when the app list is dismissed again.
-  service->ShowForProfile(browser()->profile());
-  EXPECT_TRUE(service->IsAppListVisible());
-  EXPECT_EQ(3, launch_count_);
-  service->DismissAppList();
-  EXPECT_FALSE(service->IsAppListVisible());
-  EXPECT_EQ(2, close_count_);
 }
