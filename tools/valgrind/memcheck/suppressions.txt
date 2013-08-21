@@ -6782,7 +6782,7 @@
    fun:_ZN7content19ApplyWebPreferencesERK14WebPreferencesPN6WebKit7WebViewE
    ...
    fun:_ZN7content14RenderViewImpl10InitializeEPNS_20RenderViewImplParamsE
-   fun:_ZN7content14RenderViewImpl6CreateEiRKNS_19RendererPreferencesERK14WebPreferencesPN4base14RefCountedDataIiEEiiilRKSbItNS7_20string16_char_traitsESaItEEbbbiRKN6WebKit13WebScreenInfoE17AccessibilityModeb
+   fun:_ZN7content14RenderViewImpl6CreateE*
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
 }
 {
