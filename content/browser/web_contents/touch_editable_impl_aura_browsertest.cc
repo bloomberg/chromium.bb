@@ -335,7 +335,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
 
 #if defined(OS_CHROMEOS)
 #define MAYBE_TouchSelectionOriginatingFromWebpageTest \
-    DISABLE_TouchSelectionOriginatingFromWebpageTest
+    DISABLED_TouchSelectionOriginatingFromWebpageTest
 #else
 #define MAYBE_TouchSelectionOriginatingFromWebpageTest \
     TouchSelectionOriginatingFromWebpageTest
