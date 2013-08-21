@@ -701,7 +701,7 @@ BOOL __stdcall CanOfferRelaunch(const wchar_t** partner_brandcode_list,
   // These conditions need to be satisfied for relaunch:
   // a) Chrome should be installed;
   if (!IsChromeInstalled(HKEY_LOCAL_MACHINE) &&
-      (shell_mode == GCAPI_INVOKED_STANDARD_SHELL &&
+      (shell_mode != GCAPI_INVOKED_STANDARD_SHELL ||
           !IsChromeInstalled(HKEY_CURRENT_USER))) {
     if (error_code)
       *error_code = RELAUNCH_ERROR_NOTINSTALLED;
