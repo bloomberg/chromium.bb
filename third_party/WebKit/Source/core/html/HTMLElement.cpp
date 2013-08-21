@@ -356,7 +356,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
     if (es.hadException())
         return;
 
-    parent->replaceChild(fragment.release(), this, es);
+    parent->replaceChild(fragment.release(), this, es, AttachLazily);
     RefPtr<Node> node = next ? next->previousSibling() : 0;
     if (!es.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(node.release(), es);
@@ -479,7 +479,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& es)
         es.throwDOMException(HierarchyRequestError);
     if (es.hadException())
         return;
-    parent->replaceChild(newChild.release(), this, es);
+    parent->replaceChild(newChild.release(), this, es, AttachLazily);
 
     RefPtr<Node> node = next ? next->previousSibling() : 0;
     if (!es.hadException() && node && node->isTextNode())
