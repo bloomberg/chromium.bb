@@ -46,14 +46,21 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // PrivetRegisterOperation::Delegate implementation.
-  virtual void OnPrivetRegisterClaimToken(const std::string& token,
-                                          const GURL& url) OVERRIDE;
+  virtual void OnPrivetRegisterClaimToken(
+      PrivetRegisterOperation* operation,
+      const std::string& token,
+      const GURL& url) OVERRIDE;
+
   virtual void OnPrivetRegisterError(
+      PrivetRegisterOperation* operation,
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
       const DictionaryValue* json) OVERRIDE;
-  virtual void OnPrivetRegisterDone(const std::string& device_id) OVERRIDE;
+
+  virtual void OnPrivetRegisterDone(
+      PrivetRegisterOperation* operation,
+      const std::string& device_id) OVERRIDE;
 
   // PrivetDeviceLister::Delegate implementation.
   virtual void DeviceChanged(
@@ -64,6 +71,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // PrivetInfoOperation::Delegate implementation:
   virtual void OnPrivetInfoDone(
+      PrivetInfoOperation* operation,
       int http_code,
       const base::DictionaryValue* json_value) OVERRIDE;
 
@@ -93,15 +101,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Log a successful registration to the web inteface.
   void LogRegisterDoneToWeb(const std::string& id);
 
-
   // Log an error to the web interface.
   void LogInfoErrorToWeb(const std::string& error);
 
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;
-
-  // The current device being used in an HTTP operation.
-  std::string current_http_device_;
 
   // The current info operation (operations are currently exclusive).
   scoped_ptr<PrivetInfoOperation> current_info_operation_;

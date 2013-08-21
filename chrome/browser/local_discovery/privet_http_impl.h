@@ -24,6 +24,8 @@ class PrivetInfoOperationImpl : public PrivetInfoOperation,
 
   virtual void Start() OVERRIDE;
 
+  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
+
   virtual void OnError(PrivetURLFetcher* fetcher,
                        PrivetURLFetcher::ErrorType error) OVERRIDE;
   virtual void OnParsedJson(PrivetURLFetcher* fetcher,
@@ -58,8 +60,11 @@ class PrivetRegisterOperationImpl
                             const base::DictionaryValue* value,
                             bool has_error) OVERRIDE;
 
-  virtual void OnPrivetInfoDone(int http_code,
+  virtual void OnPrivetInfoDone(PrivetInfoOperation* operation,
+                                int http_code,
                                 const base::DictionaryValue* value) OVERRIDE;
+
+  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
  private:
   // Arguments is JSON value from request.
   typedef base::Callback<void(const base::DictionaryValue&)>
@@ -89,8 +94,10 @@ class PrivetRegisterOperationImpl
 
 class PrivetHTTPClientImpl : public PrivetHTTPClient {
  public:
-  PrivetHTTPClientImpl(const net::HostPortPair& host_port,
-                       net::URLRequestContextGetter* request_context);
+  PrivetHTTPClientImpl(
+      const std::string& name,
+      const net::HostPortPair& host_port,
+      net::URLRequestContextGetter* request_context);
   virtual ~PrivetHTTPClientImpl();
 
   virtual const base::DictionaryValue* GetCachedInfo() const OVERRIDE;
@@ -102,6 +109,8 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
       PrivetInfoOperation::Delegate* delegate) OVERRIDE;
 
+  virtual const std::string& GetName() OVERRIDE;
+
   const PrivetURLFetcherFactory& fetcher_factory() const {
     return fetcher_factory_;
   }
@@ -110,6 +119,7 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   void CacheInfo(const base::DictionaryValue* cached_info);
 
  private:
+  std::string name_;
   PrivetURLFetcherFactory fetcher_factory_;
   net::HostPortPair host_port_;
   scoped_ptr<base::DictionaryValue> cached_info_;

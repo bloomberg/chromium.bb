@@ -24,7 +24,7 @@ std::string IPAddressToHostString(const net::IPAddressNumber& address) {
   return address_str;
 }
 
-} // namespace
+}  // namespace
 
 PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
     ServiceDiscoveryClient* service_discovery_client,
@@ -38,19 +38,21 @@ PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
 
 scoped_ptr<PrivetHTTPAsynchronousFactory::Resolution>
 PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
+    const std::string& name,
     const net::HostPortPair& address,
     const ResultCallback& callback) {
-  return scoped_ptr<Resolution>(new ResolutionImpl(address, callback,
+  return scoped_ptr<Resolution>(new ResolutionImpl(name, address, callback,
                                                    service_discovery_client_,
                                                    request_context_.get()));
 }
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
+    const std::string& name,
     const net::HostPortPair& address,
     const ResultCallback& callback,
     ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context)
-    : hostport_(address), callback_(callback),
+    : name_(name), hostport_(address), callback_(callback),
       request_context_(request_context) {
   net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
 
@@ -63,7 +65,6 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
       address.host(), address_family,
       base::Bind(&ResolutionImpl::ResolveComplete, base::Unretained(this)));
 }
-
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {
 }
@@ -82,7 +83,7 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
   net::HostPortPair new_address = net::HostPortPair(
       IPAddressToHostString(address), hostport_.port());
   callback_.Run(scoped_ptr<PrivetHTTPClient>(
-      new PrivetHTTPClientImpl(new_address, request_context_.get())));
+      new PrivetHTTPClientImpl(name_, new_address, request_context_.get())));
 }
 
 }  // namespace local_discovery

@@ -13,6 +13,8 @@
 
 namespace local_discovery {
 
+class PrivetHTTPClient;
+
 // Represents a request to /privet/info. Will store a cached response and token
 // in the PrivetHTTPClient that created.
 class PrivetInfoOperation {
@@ -22,13 +24,17 @@ class PrivetInfoOperation {
     virtual ~Delegate() {}
 
     // In case of non-HTTP errors, |http_code| will be -1.
-    virtual void OnPrivetInfoDone(int http_code,
-                                  const base::DictionaryValue* json_value) = 0;
+    virtual void OnPrivetInfoDone(
+        PrivetInfoOperation* operation,
+        int http_code,
+        const base::DictionaryValue* json_value) = 0;
   };
 
   virtual ~PrivetInfoOperation() {}
 
   virtual void Start() = 0;
+
+  virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
 
 // Represents a full registration flow (/privet/register), normally consisting
@@ -49,21 +55,25 @@ class PrivetRegisterOperation {
     ~Delegate() {}
 
     // Called when a user needs to claim the printer by visiting the given URL.
-    virtual void OnPrivetRegisterClaimToken(const std::string& token,
-                                            const GURL& url) = 0;
+    virtual void OnPrivetRegisterClaimToken(
+        PrivetRegisterOperation* operation,
+        const std::string& token,
+        const GURL& url) = 0;
 
     // Called in case of an error while registering.  |action| is the
     // registration action taken during the error. |reason| is the reason for
     // the failure. |printer_http_code| is the http code returned from the
     // printer. If it is -1, an internal error occurred while trying to complete
     // the request. |json| may be null if printer_http_code signifies an error.
-    virtual void OnPrivetRegisterError(const std::string& action,
+    virtual void OnPrivetRegisterError(PrivetRegisterOperation* operation,
+                                       const std::string& action,
                                        FailureReason reason,
                                        int printer_http_code,
                                        const DictionaryValue* json) = 0;
 
     // Called when the registration is done.
-    virtual void OnPrivetRegisterDone(const std::string& device_id) = 0;
+    virtual void OnPrivetRegisterDone(PrivetRegisterOperation* operation,
+                                      const std::string& device_id) = 0;
   };
 
   virtual ~PrivetRegisterOperation() {}
@@ -72,6 +82,8 @@ class PrivetRegisterOperation {
   // Owner SHOULD call explicitly before destroying operation.
   virtual void Cancel() = 0;
   virtual void CompleteRegistration() = 0;
+
+  virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
 
 // Privet HTTP client. Must not outlive the operations it creates.
@@ -85,6 +97,9 @@ class PrivetHTTPClient {
       PrivetRegisterOperation::Delegate* delegate) = 0;
   virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
       PrivetInfoOperation::Delegate* delegate) = 0;
+
+  // A name for the HTTP client, e.g. the device name for the privet device.
+  virtual const std::string& GetName() = 0;
 };
 
 }  // namespace local_discovery

@@ -45,12 +45,16 @@ void PrivetInfoOperationImpl::Start() {
   url_fetcher_->Start();
 }
 
+PrivetHTTPClient* PrivetInfoOperationImpl::GetHTTPClient() {
+  return privet_client_;
+}
+
 void PrivetInfoOperationImpl::OnError(PrivetURLFetcher* fetcher,
                                       PrivetURLFetcher::ErrorType error) {
   if (error == PrivetURLFetcher::RESPONSE_CODE_ERROR) {
-    delegate_->OnPrivetInfoDone(fetcher->response_code(), NULL);
+    delegate_->OnPrivetInfoDone(this, fetcher->response_code(), NULL);
   } else {
-    delegate_->OnPrivetInfoDone(kPrivetHTTPCodeInternalFailure, NULL);
+    delegate_->OnPrivetInfoDone(this, kPrivetHTTPCodeInternalFailure, NULL);
   }
 }
 
@@ -59,7 +63,7 @@ void PrivetInfoOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
                                            bool has_error) {
   if (!has_error)
     privet_client_->CacheInfo(value);
-  delegate_->OnPrivetInfoDone(fetcher->response_code(), value);
+  delegate_->OnPrivetInfoDone(this, fetcher->response_code(), value);
 }
 
 PrivetRegisterOperationImpl::PrivetRegisterOperationImpl(
@@ -98,6 +102,10 @@ void PrivetRegisterOperationImpl::CompleteRegistration() {
   SendRequest(kPrivetActionComplete);
 }
 
+PrivetHTTPClient* PrivetRegisterOperationImpl::GetHTTPClient() {
+  return privet_client_;
+}
+
 void PrivetRegisterOperationImpl::OnError(PrivetURLFetcher* fetcher,
                                           PrivetURLFetcher::ErrorType error) {
   ongoing_ = false;
@@ -111,7 +119,8 @@ void PrivetRegisterOperationImpl::OnError(PrivetURLFetcher* fetcher,
     reason = FAILURE_MALFORMED_RESPONSE;
   }
 
-  delegate_->OnPrivetRegisterError(current_action_,
+  delegate_->OnPrivetRegisterError(this,
+                                   current_action_,
                                    reason,
                                    visible_http_code,
                                    NULL);
@@ -150,7 +159,8 @@ void PrivetRegisterOperationImpl::OnParsedJson(
                      base::TimeDelta::FromSeconds(timeout_seconds_randomized));
     } else  {
       ongoing_ = false;
-      delegate_->OnPrivetRegisterError(current_action_,
+      delegate_->OnPrivetRegisterError(this,
+                                       current_action_,
                                        FAILURE_JSON_ERROR,
                                        fetcher->response_code(),
                                        value);
@@ -195,9 +205,10 @@ void PrivetRegisterOperationImpl::GetClaimTokenResponse(
   bool got_url = value.GetString(kPrivetKeyClaimURL, &claimUrl);
   bool got_token = value.GetString(kPrivetKeyClaimToken, &claimToken);
   if (got_url || got_token) {
-    delegate_->OnPrivetRegisterClaimToken(claimToken, GURL(claimUrl));
+    delegate_->OnPrivetRegisterClaimToken(this, claimToken, GURL(claimUrl));
   } else {
-    delegate_->OnPrivetRegisterError(current_action_,
+    delegate_->OnPrivetRegisterError(this,
+                                     current_action_,
                                      FAILURE_MALFORMED_RESPONSE,
                                      -1,
                                      NULL);
@@ -209,16 +220,18 @@ void PrivetRegisterOperationImpl::CompleteResponse(
   std::string id;
   value.GetString(kPrivetKeyDeviceID, &id);
   ongoing_ = false;
-  delegate_->OnPrivetRegisterDone(id);
+  delegate_->OnPrivetRegisterDone(this, id);
 }
 
 void PrivetRegisterOperationImpl::OnPrivetInfoDone(
+    PrivetInfoOperation* operation,
     int http_code,
     const base::DictionaryValue* value) {
   // TODO(noamsml): Distinguish between network errors and unparsable JSON in
   // this case.
   if (!value) {
-    delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
+    delegate_->OnPrivetRegisterError(this,
+                                     kPrivetActionNameInfo,
                                      FAILURE_NETWORK,
                                      -1,
                                      NULL);
@@ -229,12 +242,14 @@ void PrivetRegisterOperationImpl::OnPrivetInfoDone(
   // has stored it in the client.
   if (!value->HasKey(kPrivetInfoKeyToken)) {
     if (value->HasKey(kPrivetKeyError)) {
-      delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
+      delegate_->OnPrivetRegisterError(this,
+                                       kPrivetActionNameInfo,
                                        FAILURE_JSON_ERROR,
                                        http_code,
                                        value);
     } else {
-      delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
+      delegate_->OnPrivetRegisterError(this,
+                                       kPrivetActionNameInfo,
                                        FAILURE_MALFORMED_RESPONSE,
                                        -1,
                                        NULL);
@@ -262,9 +277,11 @@ bool PrivetRegisterOperationImpl::PrivetErrorTransient(
 }
 
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(
+    const std::string& name,
     const net::HostPortPair& host_port,
     net::URLRequestContextGetter* request_context)
-    : fetcher_factory_(request_context),
+    : name_(name),
+      fetcher_factory_(request_context),
       host_port_(host_port) {
 }
 
@@ -287,6 +304,10 @@ scoped_ptr<PrivetInfoOperation> PrivetHTTPClientImpl::CreateInfoOperation(
     PrivetInfoOperation::Delegate* delegate) {
   return scoped_ptr<PrivetInfoOperation>(
       new PrivetInfoOperationImpl(this, delegate));
+}
+
+const std::string& PrivetHTTPClientImpl::GetName() {
+  return name_;
 }
 
 void PrivetHTTPClientImpl::CacheInfo(const base::DictionaryValue* cached_info) {

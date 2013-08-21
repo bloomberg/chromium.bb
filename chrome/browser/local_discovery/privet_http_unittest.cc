@@ -95,6 +95,7 @@ class PrivetHTTPTest : public ::testing::Test {
     request_context_= new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
     privet_client_.reset(new PrivetHTTPClientImpl(
+        "sampleDevice._privet._tcp.local",
         net::HostPortPair("10.0.0.8", 6006),
         request_context_.get()));
     fetcher_factory_.SetDelegateForTests(&fetcher_delegate_);
@@ -115,7 +116,8 @@ class MockInfoDelegate : public PrivetInfoOperation::Delegate {
   MockInfoDelegate() {}
   ~MockInfoDelegate() {}
 
-  virtual void OnPrivetInfoDone(int response_code,
+  virtual void OnPrivetInfoDone(PrivetInfoOperation* operation,
+                                int response_code,
                                 const base::DictionaryValue* value) OVERRIDE {
     if (!value) {
       value_.reset();
@@ -140,10 +142,19 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
   ~MockRegisterDelegate() {
   }
 
-  MOCK_METHOD2(OnPrivetRegisterClaimToken, void(const std::string& token,
-                                                const GURL& url));
+  virtual void OnPrivetRegisterClaimToken(
+      PrivetRegisterOperation* operation,
+      const std::string& token,
+      const GURL& url) OVERRIDE {
+    OnPrivetRegisterClaimTokenInternal(token, url);
+  }
+
+  MOCK_METHOD2(OnPrivetRegisterClaimTokenInternal, void(
+      const std::string& token,
+      const GURL& url));
 
   virtual void OnPrivetRegisterError(
+      PrivetRegisterOperation* operation,
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
@@ -157,7 +168,14 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
                     PrivetRegisterOperation::FailureReason reason,
                     int printer_http_code));
 
-  MOCK_METHOD1(OnPrivetRegisterDone, void(const std::string& device_id));
+  virtual void OnPrivetRegisterDone(
+      PrivetRegisterOperation* operation,
+      const std::string& device_id) OVERRIDE {
+    OnPrivetRegisterDoneInternal(device_id);
+  }
+
+  MOCK_METHOD1(OnPrivetRegisterDoneInternal,
+               void(const std::string& device_id));
 };
 
 class PrivetInfoTest : public PrivetHTTPTest {
@@ -266,7 +284,7 @@ class PrivetRegisterTest : public PrivetHTTPTest {
 
  protected:
   bool SuccessfulResponseToURL(const GURL& url,
-                                         const std::string& response) {
+                               const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
     if (!fetcher || url != fetcher->GetOriginalURL())
       return false;
@@ -314,7 +332,7 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
            "action=start&user=example@google.com"),
       kSampleRegisterStartResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimToken(
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
       "MySampleToken",
       GURL("https://domain.com/SoMeUrL")));
 
@@ -325,7 +343,7 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
 
   register_operation_->CompleteRegistration();
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterDone(
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterDoneInternal(
       "MyDeviceID"));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -368,7 +386,7 @@ TEST_F(PrivetRegisterTest, RegisterXSRFFailure) {
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimToken(
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimTokenInternal(
       "MySampleToken", GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -433,7 +451,6 @@ TEST_F(PrivetRegisterTest, InfoFailure) {
                   "info",
                   PrivetRegisterOperation::FAILURE_NETWORK,
                   -1));
-
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),

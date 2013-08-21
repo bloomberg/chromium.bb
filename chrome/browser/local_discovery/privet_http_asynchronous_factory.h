@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_H_
 
+#include <string>
+
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
@@ -24,6 +26,7 @@ class PrivetHTTPAsynchronousFactory {
   virtual ~PrivetHTTPAsynchronousFactory() {}
 
   virtual scoped_ptr<Resolution> CreatePrivetHTTP(
+      const std::string& name,
       const net::HostPortPair& address,
       const ResultCallback& callback) = 0;
 };
@@ -36,13 +39,15 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
   virtual ~PrivetHTTPAsynchronousFactoryImpl();
 
   virtual scoped_ptr<Resolution> CreatePrivetHTTP(
+      const std::string& name,
       const net::HostPortPair& address,
       const ResultCallback& callback) OVERRIDE;
 
  private:
   class ResolutionImpl : public Resolution {
    public:
-    ResolutionImpl(const net::HostPortPair& address,
+    ResolutionImpl(const std::string& name,
+                   const net::HostPortPair& address,
                    const ResultCallback& callback,
                    ServiceDiscoveryClient* service_discovery_client,
                    net::URLRequestContextGetter* request_context);
@@ -52,6 +57,7 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
    private:
     void ResolveComplete(bool success, const net::IPAddressNumber& address);
 
+    std::string name_;
     scoped_ptr<LocalDomainResolver> resolver_;
     net::HostPortPair hostport_;
     ResultCallback callback_;

@@ -90,10 +90,9 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
 
   bool rv = args->GetString(0, &device_name);
   DCHECK(rv);
-  current_http_device_ = device_name;
-
 
   privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      device_name,
       device_descriptions_[device_name].address,
       base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                  base::Unretained(this)));
@@ -103,13 +102,13 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
 void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
   std::string device_name;
   args->GetString(0, &device_name);
-  current_http_device_ = device_name;
 
-    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      device_name,
       device_descriptions_[device_name].address,
       base::Bind(&LocalDiscoveryUIHandler::StartInfoHTTP,
                  base::Unretained(this)));
-    privet_resolution_->Start();
+  privet_resolution_->Start();
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
@@ -150,16 +149,17 @@ void LocalDiscoveryUIHandler::StartInfoHTTP(
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
+    PrivetRegisterOperation* operation,
     const std::string& token,
     const GURL& url) {
-  if (device_descriptions_.count(current_http_device_) == 0) {
+  if (device_descriptions_.count(current_http_client_->GetName()) == 0) {
     LogRegisterErrorToWeb("Device no longer exists");
     return;
   }
 
   GURL automated_claim_url(base::StringPrintf(
       kPrivetAutomatedClaimURLFormat,
-      device_descriptions_[current_http_device_].url.c_str(),
+      device_descriptions_[current_http_client_->GetName()].url.c_str(),
       token.c_str()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -183,6 +183,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterError(
+    PrivetRegisterOperation* operation,
     const std::string& action,
     PrivetRegisterOperation::FailureReason reason,
     int printer_http_code,
@@ -192,6 +193,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
+    PrivetRegisterOperation* operation,
     const std::string& device_id) {
   current_register_operation_.reset();
   current_http_client_.reset();
@@ -263,6 +265,7 @@ void LocalDiscoveryUIHandler::LogInfoErrorToWeb(const std::string& error) {
 }
 
 void LocalDiscoveryUIHandler::OnPrivetInfoDone(
+    PrivetInfoOperation* operation,
     int http_code,
     const base::DictionaryValue* json_value) {
   if (http_code != net::HTTP_OK || !json_value) {
