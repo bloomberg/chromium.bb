@@ -20,6 +20,16 @@ class ResourceEntry;
 // Converts a google_apis::ResourceEntry into a drive::ResourceEntry.
 // If the conversion succeeded, return true and sets the result to |output|.
 // If failed, it returns false and keeps |*output| untouched.
+//
+// Every entry is guaranteed to have one parent resource ID in ResourceMetadata.
+// This requirement is needed to represent contents in Drive as a file system
+// tree, and achieved as follows:
+//
+// 1) Entries without parents are allowed on drive.google.com. These entries are
+// collected to "drive/other", and have "drive/other" as the parent.
+//
+// 2) Entries with multiple parents are allowed on drive.google.com. For these
+// entries, the first parent is chosen.
 bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
                             ResourceEntry* output);
 

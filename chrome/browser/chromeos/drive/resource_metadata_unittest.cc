@@ -43,11 +43,11 @@ std::vector<std::string> GetSortedBaseNames(
 
 // Creates a ResourceEntry for a directory.
 ResourceEntry CreateDirectoryEntry(const std::string& title,
-                                   const std::string& parent_resource_id) {
+                                   const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
   entry.set_resource_id("resource_id:" + title);
-  entry.set_parent_resource_id(parent_resource_id);
+  entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(true);
   entry.mutable_directory_specific_info()->set_changestamp(kTestChangestamp);
   return entry;
@@ -55,11 +55,11 @@ ResourceEntry CreateDirectoryEntry(const std::string& title,
 
 // Creates a ResourceEntry for a file.
 ResourceEntry CreateFileEntry(const std::string& title,
-                              const std::string& parent_resource_id) {
+                              const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
   entry.set_resource_id("resource_id:" + title);
-  entry.set_parent_resource_id(parent_resource_id);
+  entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(false);
   entry.mutable_file_info()->set_size(1024);
   entry.mutable_file_specific_info()->set_md5("md5:" + title);
@@ -617,7 +617,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
   EXPECT_EQ(kTestChangestamp,
             dir2_proto->directory_specific_info().changestamp());
   // Change the parent resource ID, as dir2 will be moved to "drive/dir1/dir2".
-  dir2_proto->set_parent_resource_id(dir1_proto->resource_id());
+  dir2_proto->set_parent_local_id(dir1_proto->resource_id());
 
   // Get the directory dir3 (existing child directory).
   // This directory will remain as "drive/dir1/dir3".
@@ -635,14 +635,14 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
   ResourceEntry new_file;
   new_file.set_title("new_file");
   new_file.set_resource_id("new_file_id");
-  new_file.set_parent_resource_id(dir1_proto->resource_id());
+  new_file.set_parent_local_id(dir1_proto->resource_id());
   entry_map["new_file_id"] = new_file;
 
   // Add a new directory to the map.
   ResourceEntry new_directory;
   new_directory.set_title("new_directory");
   new_directory.set_resource_id("new_directory_id");
-  new_directory.set_parent_resource_id(dir1_proto->resource_id());
+  new_directory.set_parent_local_id(dir1_proto->resource_id());
   new_directory.mutable_file_info()->set_is_directory(true);
   entry_map["new_directory_id"] = new_directory;
 
@@ -740,7 +740,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_WrongParentResourceId) {
   new_file.set_resource_id("new_file_id");
   // Set a random parent resource ID. This entry should not be added because
   // the parent resource ID does not match dir1_proto->resource_id().
-  new_file.set_parent_resource_id("some-random-resource-id");
+  new_file.set_parent_local_id("some-random-resource-id");
   entry_map["new_file_id"] = new_file;
 
   // Update the directory with the map.
@@ -935,7 +935,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   // Change the name to dir100 and change the parent to drive/dir1/dir3.
   ResourceEntry dir_entry(entry);
   dir_entry.set_title("dir100");
-  dir_entry.set_parent_resource_id("resource_id:dir3");
+  dir_entry.set_parent_local_id("resource_id:dir3");
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(dir_entry));
 
   EXPECT_EQ(
@@ -963,7 +963,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   dir_entry.Clear();
   dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
   dir_entry.set_title("new-root-name");
-  dir_entry.set_parent_resource_id("resource_id:dir1");
+  dir_entry.set_parent_local_id("resource_id:dir1");
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
             resource_metadata_->RefreshEntry(dir_entry));
 }

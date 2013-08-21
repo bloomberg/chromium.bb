@@ -53,7 +53,7 @@ FileError RefreshEntriesOnBlockingPool(
       //
       // It will be moved to the right place when the metadata gets synced
       // in normal loading process in ChangeListProcessor.
-      entry.set_parent_resource_id(util::kDriveOtherDirSpecialResourceId);
+      entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
       error = resource_metadata->AddEntry(entry);
 
       // FILE_ERROR_EXISTS may happen if we have already added the entry to

@@ -54,12 +54,12 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
   const google_apis::Link* parent_link =
       input.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
-    converted.set_parent_resource_id(util::ExtractResourceIdFromUrl(
+    converted.set_parent_local_id(util::ExtractResourceIdFromUrl(
         parent_link->href()));
   }
   // Apply mapping from an empty parent to the special dummy directory.
-  if (converted.parent_resource_id().empty())
-    converted.set_parent_resource_id(util::kDriveOtherDirSpecialResourceId);
+  if (converted.parent_local_id().empty())
+    converted.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
 
   converted.set_deleted(input.deleted());
   converted.set_shared_with_me(HasSharedWithMeLabel(input));

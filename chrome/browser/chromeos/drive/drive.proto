@@ -75,18 +75,8 @@ message ResourceEntry {
   // Resource ID of the entry. Guaranteed to be unique.
   optional string resource_id = 4;
 
-  // Resource ID of the parent entry. Every entry is guaranteed to have the
-  // single parent resource ID in ResourceMetadata. This requirement is
-  // needed to represent contents in Drive as a file system tree, and
-  // achieved as follows:
-  //
-  // 1) Entries without parents are allowed on drive.google.com. These
-  // entries are collected to "drive/other", and have the resource ID of
-  // "drive/other" as the parent resource ID.
-  //
-  // 2) Entries with multiple parents are allowed on drive.google.com. For
-  // these entries, the first parent resource ID is chosen.
-  optional string parent_resource_id = 7;
+  // Local ID of the parent entry.
+  optional string parent_local_id = 7;
 
   // This field is used for processing the change list from the
   // server. Deleted entries won't be stored in ResourceMetadata.

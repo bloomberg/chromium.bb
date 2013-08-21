@@ -131,8 +131,8 @@ std::string FormatEntry(const base::FilePath& path,
   StringAppendF(&out, "%s\n", path.AsUTF8Unsafe().c_str());
   StringAppendF(&out, "  title: %s\n", entry.title().c_str());
   StringAppendF(&out, "  resource_id: %s\n", entry.resource_id().c_str());
-  StringAppendF(&out, "  parent_resource_id: %s\n",
-                entry.parent_resource_id().c_str());
+  StringAppendF(&out, "  parent_local_id: %s\n",
+                entry.parent_local_id().c_str());
   StringAppendF(&out, "  shared_with_me: %s\n",
                 entry.shared_with_me() ? "true" : "false");
 

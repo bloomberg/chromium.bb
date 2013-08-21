@@ -242,7 +242,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry file1;
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
-    file1.set_parent_resource_id(root_resource_id);
+    file1.set_parent_local_id(root_resource_id);
     file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
@@ -253,7 +253,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry dir1;
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
-    dir1.set_parent_resource_id(root_resource_id);
+    dir1.set_parent_local_id(root_resource_id);
     dir1.mutable_file_info()->set_is_directory(true);
     if (resource_metadata->AddEntry(dir1) != FILE_ERROR_OK)
       return false;
@@ -262,7 +262,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry file2;
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
-    file2.set_parent_resource_id(dir1.resource_id());
+    file2.set_parent_local_id(dir1.resource_id());
     file2.mutable_file_specific_info()->set_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
@@ -273,7 +273,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry dir2;
     dir2.set_title("SubDir2");
     dir2.set_resource_id("resource_id:SubDir2");
-    dir2.set_parent_resource_id(dir1.resource_id());
+    dir2.set_parent_local_id(dir1.resource_id());
     dir2.mutable_file_info()->set_is_directory(true);
     if (resource_metadata->AddEntry(dir2) != FILE_ERROR_OK)
       return false;
@@ -282,7 +282,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry file3;
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
-    file3.set_parent_resource_id(dir2.resource_id());
+    file3.set_parent_local_id(dir2.resource_id());
     file3.mutable_file_specific_info()->set_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);

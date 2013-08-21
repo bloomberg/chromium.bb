@@ -180,13 +180,13 @@ void ChangeListProcessor::ApplyEntryMap(
     // - The new parent and its ancestors will no longer move during this apply.
     std::vector<ResourceEntryMap::iterator> entries;
     entries.push_back(entry_map_.begin());
-    for (std::string parent_id = entries.back()->second.parent_resource_id();
+    for (std::string parent_id = entries.back()->second.parent_local_id();
          !parent_id.empty();) {
       ResourceEntryMap::iterator it_parent = entry_map_.find(parent_id);
       if (it_parent != entry_map_.end()) {
         // This entry is going to be updated, get the parent from the new data.
         entries.push_back(it_parent);
-        parent_id = it_parent->second.parent_resource_id();
+        parent_id = it_parent->second.parent_local_id();
       } else {
         // This entry is already updated or not going to be updated, get the
         // parent from the current tree.
@@ -197,7 +197,7 @@ void ChangeListProcessor::ApplyEntryMap(
           LOG(ERROR) << "Cannot get the parent: " << FileErrorToString(error);
           break;
         }
-        parent_id = parent_entry.parent_resource_id();
+        parent_id = parent_entry.parent_local_id();
       }
     }
 

@@ -180,11 +180,11 @@ class SearchMetadataTest : public testing::Test {
   ResourceEntry GetFileEntry(const std::string& name,
                                const std::string& resource_id,
                                int64 last_accessed,
-                               const std::string& parent_resource_id) {
+                               const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
-    entry.set_parent_resource_id(parent_resource_id);
+    entry.set_parent_local_id(parent_local_id);
     entry.mutable_file_info()->set_last_accessed(last_accessed);
     return entry;
   }
@@ -192,11 +192,11 @@ class SearchMetadataTest : public testing::Test {
   ResourceEntry GetDirectoryEntry(const std::string& name,
                                     const std::string& resource_id,
                                     int64 last_accessed,
-                                    const std::string& parent_resource_id) {
+                                    const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
-    entry.set_parent_resource_id(parent_resource_id);
+    entry.set_parent_local_id(parent_local_id);
     entry.mutable_file_info()->set_last_accessed(last_accessed);
     entry.mutable_file_info()->set_is_directory(true);
     return entry;

@@ -274,7 +274,7 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
     return FILE_ERROR_EXISTS;
 
   ResourceEntry parent;
-  if (!storage_->GetEntry(entry.parent_resource_id(), &parent) ||
+  if (!storage_->GetEntry(entry.parent_local_id(), &parent) ||
       !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
@@ -445,14 +445,14 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   if (!storage_->GetEntry(entry.resource_id(), &old_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (old_entry.parent_resource_id().empty() ||  // Reject root.
+  if (old_entry.parent_local_id().empty() ||  // Reject root.
       old_entry.file_info().is_directory() !=  // Reject incompatible input.
       entry.file_info().is_directory())
     return FILE_ERROR_INVALID_OPERATION;
 
   // Update data.
   ResourceEntry new_parent;
-  if (!storage_->GetEntry(entry.parent_resource_id(), &new_parent) ||
+  if (!storage_->GetEntry(entry.parent_local_id(), &new_parent) ||
       !new_parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
@@ -495,9 +495,10 @@ void ResourceMetadata::GetChildDirectories(
 }
 
 std::string ResourceMetadata::GetChildResourceId(
-    const std::string& parent_resource_id, const std::string& base_name) {
+    const std::string& parent_local_id,
+    const std::string& base_name) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  return storage_->GetChild(parent_resource_id, base_name);
+  return storage_->GetChild(parent_local_id, base_name);
 }
 
 scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
@@ -513,8 +514,8 @@ base::FilePath ResourceMetadata::GetFilePath(
   base::FilePath path;
   ResourceEntry entry;
   if (storage_->GetEntry(resource_id, &entry)) {
-    if (!entry.parent_resource_id().empty())
-      path = GetFilePath(entry.parent_resource_id());
+    if (!entry.parent_local_id().empty())
+      path = GetFilePath(entry.parent_local_id());
     path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
   }
   return path;
@@ -543,7 +544,7 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   if (!destination.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  entry.set_parent_resource_id(destination.resource_id());
+  entry.set_parent_local_id(destination.resource_id());
 
   error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)
@@ -652,8 +653,7 @@ FileError ResourceMetadata::RefreshDirectory(
     //
     // TODO(satorux): Move the filtering logic to somewhere more appropriate.
     // crbug.com/193525.
-    if (entry.parent_resource_id() !=
-        directory_fetch_info.resource_id()) {
+    if (entry.parent_local_id() != directory_fetch_info.resource_id()) {
       DVLOG(1) << "Wrong-parent entry rejected: " << entry.resource_id();
       continue;
     }
@@ -739,7 +739,7 @@ bool ResourceMetadata::PutEntryUnderDirectory(
   std::string new_base_name = updated_entry.base_name();
   while (true) {
     const std::string existing_entry_id =
-        storage_->GetChild(entry.parent_resource_id(), new_base_name);
+        storage_->GetChild(entry.parent_local_id(), new_base_name);
     if (existing_entry_id.empty() || existing_entry_id == entry.resource_id())
       break;
 

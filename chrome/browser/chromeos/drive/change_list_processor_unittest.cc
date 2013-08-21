@@ -151,7 +151,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
     scoped_ptr<ResourceEntry> entry = GetResourceEntry(kExpected[i].path);
     ASSERT_TRUE(entry) << "for path: " << kExpected[i].path;
     EXPECT_EQ(kExpected[i].id, entry->resource_id());
-    EXPECT_EQ(kExpected[i].parent_id, entry->parent_resource_id());
+    EXPECT_EQ(kExpected[i].parent_id, entry->parent_local_id());
     EXPECT_EQ(kExpected[i].type,
               entry->file_info().is_directory() ? DIRECTORY : FILE);
   }
@@ -175,8 +175,8 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kNewFolderId));
   EXPECT_TRUE(entry_map.count(kNewFileId));
-  EXPECT_EQ(kRootId, entry_map[kNewFolderId].parent_resource_id());
-  EXPECT_EQ(kNewFolderId, entry_map[kNewFileId].parent_resource_id());
+  EXPECT_EQ(kRootId, entry_map[kNewFolderId].parent_local_id());
+  EXPECT_EQ(kNewFolderId, entry_map[kNewFileId].parent_local_id());
   EXPECT_TRUE(entry_map[kNewFolderId].file_info().is_directory());
   EXPECT_FALSE(entry_map[kNewFileId].file_info().is_directory());
   EXPECT_EQ("New Directory", entry_map[kNewFolderId].title());
@@ -215,7 +215,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kMovedId));
   EXPECT_TRUE(entry_map.count(kDestId));
-  EXPECT_EQ(kDestId, entry_map[kMovedId].parent_resource_id());
+  EXPECT_EQ(kDestId, entry_map[kMovedId].parent_local_id());
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
@@ -257,7 +257,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kMovedId));
   EXPECT_TRUE(entry_map.count(kSrcId));
-  EXPECT_EQ(kRootId, entry_map[kMovedId].parent_resource_id());
+  EXPECT_EQ(kRootId, entry_map[kMovedId].parent_local_id());
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
@@ -293,7 +293,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kRenamedId));
   EXPECT_TRUE(entry_map.count(kParentId));
-  EXPECT_EQ(kParentId, entry_map[kRenamedId].parent_resource_id());
+  EXPECT_EQ(kParentId, entry_map[kRenamedId].parent_local_id());
   EXPECT_EQ("New SubDirectory File 1.txt", entry_map[kRenamedId].title());
 
   // Apply the changelist and check the effect.
@@ -331,7 +331,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
       ParseChangeList(kTestJsonAdd), &entry_map, NULL);
   EXPECT_EQ(1U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kFileId));
-  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_local_id());
   EXPECT_EQ("Added file", entry_map[kFileId].title());
   EXPECT_FALSE(entry_map[kFileId].deleted());
 
@@ -351,7 +351,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
       ParseChangeList(kTestJsonDelete), &entry_map, NULL);
   EXPECT_EQ(1U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kFileId));
-  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_local_id());
   EXPECT_EQ("Added file", entry_map[kFileId].title());
   EXPECT_TRUE(entry_map[kFileId].deleted());
 
@@ -382,7 +382,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kFileId));
   EXPECT_TRUE(entry_map.count(kParentId));
-  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_local_id());
   EXPECT_EQ("Added file", entry_map[kFileId].title());
   EXPECT_FALSE(entry_map[kFileId].deleted());
 
@@ -405,7 +405,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
       ParseChangeList(kTestJsonDelete), &entry_map, NULL);
   EXPECT_EQ(1U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kFileId));
-  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_local_id());
   EXPECT_EQ("Added file", entry_map[kFileId].title());
   EXPECT_TRUE(entry_map[kFileId].deleted());
 
@@ -439,7 +439,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   EXPECT_EQ(2U, entry_map.size());
   EXPECT_TRUE(entry_map.count(kDirId));
   EXPECT_TRUE(entry_map.count(kFileId));
-  EXPECT_EQ(kDirId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ(kDirId, entry_map[kFileId].parent_local_id());
   EXPECT_TRUE(entry_map[kDirId].deleted());
 
   // Apply the changelist and check the effect.

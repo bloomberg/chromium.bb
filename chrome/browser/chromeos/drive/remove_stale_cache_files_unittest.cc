@@ -108,7 +108,7 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   ResourceEntry entry;
   entry.set_resource_id(resource_id_2);
   entry.mutable_file_specific_info()->set_md5(md5_2_metadata);
-  entry.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
+  entry.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
   resource_metadata_->AddEntry(entry);
 
   // Remove stale cache files.

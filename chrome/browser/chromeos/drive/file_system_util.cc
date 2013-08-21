@@ -157,7 +157,7 @@ ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id) {
   ResourceEntry mydrive_root;
   mydrive_root.mutable_file_info()->set_is_directory(true);
   mydrive_root.set_resource_id(root_resource_id);
-  mydrive_root.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
+  mydrive_root.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
   mydrive_root.set_title(util::kDriveMyDriveRootDirName);
   return mydrive_root;
 }
@@ -166,7 +166,7 @@ ResourceEntry CreateOtherDirEntry() {
   ResourceEntry other_dir;
   other_dir.mutable_file_info()->set_is_directory(true);
   other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
-  other_dir.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
+  other_dir.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
   other_dir.set_title(util::kDriveOtherDirName);
   return other_dir;
 }

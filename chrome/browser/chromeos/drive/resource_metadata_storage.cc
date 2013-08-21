@@ -396,16 +396,14 @@ bool ResourceMetadataStorage::PutEntry(const std::string& id,
 
   // Remove from the old parent.
   ResourceEntry old_entry;
-  if (GetEntry(id, &old_entry) && !old_entry.parent_resource_id().empty()) {
-    batch.Delete(GetChildEntryKey(old_entry.parent_resource_id(),
+  if (GetEntry(id, &old_entry) && !old_entry.parent_local_id().empty()) {
+    batch.Delete(GetChildEntryKey(old_entry.parent_local_id(),
                                   old_entry.base_name()));
   }
 
   // Add to the new parent.
-  if (!entry.parent_resource_id().empty()) {
-    batch.Put(GetChildEntryKey(entry.parent_resource_id(), entry.base_name()),
-              id);
-  }
+  if (!entry.parent_local_id().empty())
+    batch.Put(GetChildEntryKey(entry.parent_local_id(), entry.base_name()), id);
 
   // Put the entry itself.
   batch.Put(id, serialized_entry);
@@ -438,10 +436,9 @@ bool ResourceMetadataStorage::RemoveEntry(const std::string& id) {
   leveldb::WriteBatch batch;
 
   // Remove from the parent.
-  if (!entry.parent_resource_id().empty()) {
-    batch.Delete(GetChildEntryKey(entry.parent_resource_id(),
-                                  entry.base_name()));
-  }
+  if (!entry.parent_local_id().empty())
+    batch.Delete(GetChildEntryKey(entry.parent_local_id(), entry.base_name()));
+
   // Remove the entry itself.
   batch.Delete(id);
 
@@ -640,11 +637,11 @@ bool ResourceMetadataStorage::CheckValidity() {
       return false;
     }
 
-    if (!entry.parent_resource_id().empty()) {
+    if (!entry.parent_local_id().empty()) {
       // Check if the parent entry is stored.
       leveldb::Status status = resource_map_->Get(
           options,
-          leveldb::Slice(entry.parent_resource_id()),
+          leveldb::Slice(entry.parent_local_id()),
           &serialized_parent_entry);
       if (!status.ok()) {
         DLOG(ERROR) << "Can't get parent entry. status = " << status.ToString();
@@ -654,7 +651,7 @@ bool ResourceMetadataStorage::CheckValidity() {
       // Check if parent-child relationship is stored correctly.
       status = resource_map_->Get(
           options,
-          leveldb::Slice(GetChildEntryKey(entry.parent_resource_id(),
+          leveldb::Slice(GetChildEntryKey(entry.parent_local_id(),
                                           entry.base_name())),
           &child_id);
       if (!status.ok() || leveldb::Slice(child_id) != it->key()) {

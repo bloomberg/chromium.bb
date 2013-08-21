@@ -128,7 +128,7 @@ void MoveOperation::MoveAfterAddToDirectory(
   observer_->OnDirectoryChangedByOperation(new_path.DirName());
 
   RemoveFromDirectory(src_dest_info->first.entry->resource_id(),
-                      src_dest_info->first.entry->parent_resource_id(),
+                      src_dest_info->first.entry->parent_local_id(),
                       callback);
 }
 

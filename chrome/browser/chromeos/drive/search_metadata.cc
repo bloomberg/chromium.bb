@@ -105,7 +105,7 @@ bool IsEligibleEntry(const ResourceEntry& entry,
 
   // Exclude "drive", "drive/root", and "drive/other".
   if (entry.resource_id() == util::kDriveGrandRootSpecialResourceId ||
-      entry.parent_resource_id() == util::kDriveGrandRootSpecialResourceId) {
+      entry.parent_local_id() == util::kDriveGrandRootSpecialResourceId) {
     return false;
   }
 

@@ -93,7 +93,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Put entry2 as a child of entry1.
   ResourceEntry entry2;
-  entry2.set_parent_resource_id(key1);
+  entry2.set_parent_local_id(key1);
   entry2.set_base_name(name2);
   EXPECT_TRUE(storage_->PutEntry(key2, entry2));
 
@@ -103,7 +103,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Put entry3 as a child of entry2.
   ResourceEntry entry3;
-  entry3.set_parent_resource_id(key2);
+  entry3.set_parent_local_id(key2);
   entry3.set_base_name(name3);
   EXPECT_TRUE(storage_->PutEntry(key3, entry3));
 
@@ -112,7 +112,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_EQ(key3, storage_->GetChild(key2, name3));
 
   // Change entry3's parent to entry1.
-  entry3.set_parent_resource_id(key1);
+  entry3.set_parent_local_id(key1);
   EXPECT_TRUE(storage_->PutEntry(key3, entry3));
 
   // entry3 is a child of entry1 now.
@@ -266,7 +266,7 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
   for (size_t i = 0; i < children_name_id.size(); ++i) {
     for (size_t j = 0; j < children_name_id[i].size(); ++j) {
       ResourceEntry entry;
-      entry.set_parent_resource_id(parents_id[i]);
+      entry.set_parent_local_id(parents_id[i]);
       entry.set_base_name(children_name_id[i][j].first);
       EXPECT_TRUE(storage_->PutEntry(children_name_id[i][j].second, entry));
     }
@@ -298,7 +298,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
   ResourceEntry entry1;
   ResourceEntry entry2;
-  entry2.set_parent_resource_id(parent_id1);
+  entry2.set_parent_local_id(parent_id1);
   entry2.set_base_name(child_name1);
 
   // Put some data.
@@ -315,7 +315,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_TRUE(storage_->GetEntry(parent_id1, &result));
 
   EXPECT_TRUE(storage_->GetEntry(child_id1, &result));
-  EXPECT_EQ(parent_id1, result.parent_resource_id());
+  EXPECT_EQ(parent_id1, result.parent_local_id());
   EXPECT_EQ(child_name1, result.base_name());
 
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
@@ -371,7 +371,7 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_TRUE(CheckValidity());
 
   // Put entry with key2 under key1.
-  entry.set_parent_resource_id(key1);
+  entry.set_parent_local_id(key1);
   entry.set_base_name(name2);
   EXPECT_TRUE(storage_->PutEntry(key2, entry));
   EXPECT_TRUE(CheckValidity());
@@ -388,7 +388,7 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_FALSE(CheckValidity());  // key3 is not stored in the storage.
 
   // Put entry with key3 under key2.
-  entry.set_parent_resource_id(key2);
+  entry.set_parent_local_id(key2);
   entry.set_base_name(name3);
   EXPECT_TRUE(storage_->PutEntry(key3, entry));
   EXPECT_TRUE(CheckValidity());

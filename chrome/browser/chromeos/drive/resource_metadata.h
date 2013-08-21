@@ -151,7 +151,7 @@ class ResourceMetadata {
   void AddEntryOnUIThread(const ResourceEntry& entry,
                           const FileMoveCallback& callback);
 
-  // Adds |entry| to the metadata tree based on its parent_resource_id
+  // Adds |entry| to the metadata tree based on its parent_local_id
   // synchronously.
   FileError AddEntry(const ResourceEntry& entry);
 
@@ -233,10 +233,10 @@ class ResourceMetadata {
                            std::set<base::FilePath>* child_directories);
 
   // Returns the resource id of the resource named |base_name| directly under
-  // the directory with |parent_resource_id|.
+  // the directory with |parent_local_id|.
   // If not found, empty string will be returned.
-  std::string GetChildResourceId(
-      const std::string& parent_resource_id, const std::string& base_name);
+  std::string GetChildResourceId(const std::string& parent_local_id,
+                                 const std::string& base_name);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();
