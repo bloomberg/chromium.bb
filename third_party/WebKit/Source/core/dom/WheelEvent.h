@@ -81,12 +81,12 @@ public:
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    double deltaX() const { return m_deltaX; }
-    double deltaY() const { return m_deltaY; }
+    double deltaX() const { return m_deltaX; } // Positive when scrolling right.
+    double deltaY() const { return m_deltaY; } // Positive when scrolling down.
     double deltaZ() const { return m_deltaZ; }
-    int wheelDelta() const { return m_deltaY ? m_deltaY : m_deltaX; } // Deprecated.
-    int wheelDeltaX() const { return m_deltaX; } // Deprecated.
-    int wheelDeltaY() const { return m_deltaY; } // Deprecated.
+    int wheelDelta() const { return wheelDeltaY() ? wheelDeltaY() : wheelDeltaX(); } // Deprecated.
+    int wheelDeltaX() const { return -m_deltaX; } // Deprecated, negative when scrolling right.
+    int wheelDeltaY() const { return -m_deltaY; } // Deprecated, negative when scrolling down.
     int rawDeltaX() const { return m_rawDelta.x(); }
     int rawDeltaY() const { return m_rawDelta.y(); }
     unsigned deltaMode() const { return m_deltaMode; }

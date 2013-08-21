@@ -30,6 +30,14 @@
 
 namespace WebCore {
 
+static inline double wheelTicksToPixels(double ticks)
+{
+    // Make sure we use +0 for all zeros.
+    if (!ticks)
+        return 0;
+    return -ticks * WheelEvent::TickMultiplier;
+}
+
 WheelEventInit::WheelEventInit()
     : deltaX(0)
     , deltaY(0)
@@ -49,8 +57,8 @@ WheelEvent::WheelEvent()
 
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
     : MouseEvent(type, initializer)
-    , m_deltaX(initializer.deltaX ? initializer.deltaX : initializer.wheelDeltaX)
-    , m_deltaY(initializer.deltaY ? initializer.deltaY : initializer.wheelDeltaY)
+    , m_deltaX(initializer.deltaX ? initializer.deltaX : -initializer.wheelDeltaX)
+    , m_deltaY(initializer.deltaY ? initializer.deltaY : -initializer.wheelDeltaY)
     , m_deltaZ(initializer.deltaZ)
     , m_deltaMode(initializer.deltaMode)
 {
@@ -65,8 +73,8 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
                  pageLocation.x(), pageLocation.y(),
                  0, 0,
                  ctrlKey, altKey, shiftKey, metaKey, 0, 0, 0, false)
-    , m_deltaX(wheelTicks.x() * TickMultiplier)
-    , m_deltaY(wheelTicks.y() * TickMultiplier)
+    , m_deltaX(wheelTicksToPixels(wheelTicks.x()))
+    , m_deltaY(wheelTicksToPixels(wheelTicks.y()))
     , m_deltaZ(0) // FIXME: Not supported.
     , m_rawDelta(roundedIntPoint(rawDelta))
     , m_deltaMode(deltaMode)
@@ -90,8 +98,8 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<Abstrac
     m_shiftKey = shiftKey;
     m_metaKey = metaKey;
 
-    m_deltaX = rawDeltaX * TickMultiplier;
-    m_deltaY = rawDeltaY * TickMultiplier;
+    m_deltaX = wheelTicksToPixels(rawDeltaX);
+    m_deltaY = wheelTicksToPixels(rawDeltaY);
     m_rawDelta = IntPoint(rawDeltaX, rawDeltaY);
     m_deltaMode = DOM_DELTA_PIXEL;
     m_directionInvertedFromDevice = false;

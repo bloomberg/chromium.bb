@@ -32,8 +32,8 @@ function runTest() {
 
 var testEvent;
 var tickMultiplier = 120;
-var expectedDeltaX = deltaX * tickMultiplier;
-var expectedDeltaY = deltaY * tickMultiplier;
+var expectedDeltaX = -deltaX * tickMultiplier;
+var expectedDeltaY = -deltaY * tickMultiplier;
 function wheelHandler(e) {
     testEvent = e;
     shouldBe("testEvent.__proto__", "WheelEvent.prototype");
