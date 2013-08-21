@@ -388,6 +388,30 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_EQ(error_code, framer_.error()) << "len: " << len;
   }
 
+  void CheckStreamFrameBoundaries(unsigned char* packet,
+                                  size_t stream_id_size,
+                                  bool include_version) {
+    // Now test framing boundaries
+    for (size_t i = kQuicFrameTypeSize;
+         i < GetMinStreamFrameSize(framer_.version()); ++i) {
+      string expected_error;
+      if (i < kQuicFrameTypeSize + stream_id_size) {
+        expected_error = "Unable to read stream_id.";
+      } else if (i < kQuicFrameTypeSize + stream_id_size +
+                 kQuicMaxStreamOffsetSize) {
+        expected_error = "Unable to read offset.";
+      } else {
+        expected_error = "Unable to read frame data.";
+      }
+      CheckProcessingFails(
+          packet,
+          i + GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
+                                  PACKET_6BYTE_SEQUENCE_NUMBER,
+                                  NOT_IN_FEC_GROUP),
+          expected_error, QUIC_INVALID_STREAM_DATA);
+    }
+  }
+
   void CheckCalculatePacketSequenceNumber(
       QuicPacketSequenceNumber expected_sequence_number,
       QuicPacketSequenceNumber last_sequence_number) {
@@ -571,7 +595,7 @@ TEST_P(QuicFramerTest, PacketHeader) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -624,7 +648,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4ByteGuid) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -679,7 +703,7 @@ TEST_P(QuicFramerTest, PacketHeader1ByteGuid) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -732,7 +756,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteGuid) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -789,7 +813,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -845,7 +869,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4ByteSequenceNumber) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -900,7 +924,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2ByteSequenceNumber) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -955,7 +979,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith1ByteSequenceNumber) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
@@ -1196,7 +1220,7 @@ TEST_P(QuicFramerTest, PaddingFrame) {
       packet,
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-      "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
+      "Packet has no frames.", QUIC_MISSING_PAYLOAD);
 }
 
 TEST_P(QuicFramerTest, StreamFrame) {
@@ -1244,26 +1268,7 @@ TEST_P(QuicFramerTest, StreamFrame) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
-  }
+  CheckStreamFrameBoundaries(packet, kQuicMaxStreamIdSize, !kIncludeVersion);
 }
 
 TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
@@ -1312,26 +1317,7 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
 
   // Now test framing boundaries
   const size_t stream_id_size = 3;
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size - 1) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size +
-        kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-                                expected_error, QUIC_INVALID_FRAME_DATA);
-  }
+  CheckStreamFrameBoundaries(packet, stream_id_size, !kIncludeVersion);
 }
 
 TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
@@ -1380,26 +1366,7 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
 
   // Now test framing boundaries
   const size_t stream_id_size = 2;
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size - 1) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size +
-        kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-                                expected_error, QUIC_INVALID_FRAME_DATA);
-  }
+  CheckStreamFrameBoundaries(packet, stream_id_size, !kIncludeVersion);
 }
 
 TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
@@ -1448,26 +1415,7 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
 
   // Now test framing boundaries
   const size_t stream_id_size = 1;
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size - 1) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + stream_id_size +
-        kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-                                expected_error, QUIC_INVALID_FRAME_DATA);
-  }
+  CheckStreamFrameBoundaries(packet, stream_id_size, !kIncludeVersion);
 }
 
 TEST_P(QuicFramerTest, StreamFrameWithVersion) {
@@ -1522,24 +1470,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
-  }
+  CheckStreamFrameBoundaries(packet, kQuicMaxStreamIdSize, kIncludeVersion);
 }
 
 TEST_P(QuicFramerTest, RejectPacket) {
@@ -1763,12 +1694,10 @@ TEST_P(QuicFramerTest, AckFrame) {
       kNumberOfMissingPacketsSize;
   // Now test framing boundaries
   const size_t missing_packets_size = 1 * PACKET_6BYTE_SEQUENCE_NUMBER;
-  for (size_t i = 0;
+  for (size_t i = kQuicFrameTypeSize;
        i < QuicFramer::GetMinAckFrameSize() + missing_packets_size; ++i) {
     string expected_error;
-    if (i < kSentEntropyOffset) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kLeastUnackedOffset) {
+    if (i < kLeastUnackedOffset) {
       expected_error = "Unable to read entropy hash for sent packets.";
     } else if (i < kReceivedEntropyOffset) {
       expected_error = "Unable to read least unacked.";
@@ -1787,7 +1716,7 @@ TEST_P(QuicFramerTest, AckFrame) {
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                                 PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
+        expected_error, QUIC_INVALID_ACK_DATA);
   }
 }
 
@@ -1831,11 +1760,9 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
   EXPECT_EQ(0x4030u, frame.tcp.receive_window);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = kQuicFrameTypeSize; i < 6; ++i) {
     string expected_error;
-    if (i < 1) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < 2) {
+    if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
     } else if (i < 4) {
       expected_error = "Unable to read accumulated number of lost packets.";
@@ -1846,7 +1773,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                                 PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
+        expected_error, QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
   }
 }
 
@@ -1917,11 +1844,9 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
             iter->second.Subtract(start_).ToMicroseconds());
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 31; ++i) {
+  for (size_t i = kQuicFrameTypeSize; i < 31; ++i) {
     string expected_error;
-    if (i < 1) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < 2) {
+    if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
     } else if (i < 4) {
       expected_error = "Unable to read accumulated number of lost packets.";
@@ -1944,7 +1869,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                                 PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
+        expected_error, QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
   }
 }
 
@@ -1985,11 +1910,9 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameFixRate) {
             frame.fix_rate.bitrate.ToBytesPerSecond());
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = kQuicFrameTypeSize; i < 6; ++i) {
     string expected_error;
-    if (i < 1) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < 2) {
+    if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
     } else if (i < 6) {
       expected_error = "Unable to read bitrate.";
@@ -1998,10 +1921,9 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameFixRate) {
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                                 PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
+        expected_error, QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
   }
 }
-
 
 TEST_P(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   unsigned char packet[] = {
@@ -2025,7 +1947,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  EXPECT_EQ(QUIC_INVALID_CONGESTION_FEEDBACK_DATA, framer_.error());
 }
 
 TEST_P(QuicFramerTest, RstStreamFrame) {
@@ -2069,7 +1991,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
   EXPECT_EQ("because I can", visitor_.rst_stream_frame_.error_details);
 
   // Now test framing boundaries
-  for (size_t i = 2; i < 24; ++i) {
+  for (size_t i = kQuicFrameTypeSize; i < 24; ++i) {
     string expected_error;
     if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
       expected_error = "Unable to read stream_id.";

@@ -877,8 +877,8 @@ bool QuicFramer::ProcessPacketSequenceNumber(
 
 bool QuicFramer::ProcessFrameData() {
   if (reader_->IsDoneReading()) {
-    set_detailed_error("Unable to read frame type.");
-    return RaiseError(QUIC_INVALID_FRAME_DATA);
+    set_detailed_error("Packet has no frames.");
+    return RaiseError(QUIC_MISSING_PAYLOAD);
   }
   while (!reader_->IsDoneReading()) {
     uint8 frame_type;
@@ -890,7 +890,7 @@ bool QuicFramer::ProcessFrameData() {
     if ((frame_type & kQuicFrameType0BitMask) == 0) {
       QuicStreamFrame frame;
       if (!ProcessStreamFrame(frame_type, &frame)) {
-        return RaiseError(QUIC_INVALID_FRAME_DATA);
+        return RaiseError(QUIC_INVALID_STREAM_DATA);
       }
       if (!visitor_->OnStreamFrame(frame)) {
         DLOG(INFO) << "Visitor asked to stop further processing.";
@@ -904,7 +904,7 @@ bool QuicFramer::ProcessFrameData() {
     if ((frame_type & kQuicFrameType0BitMask) == 0) {
       QuicAckFrame frame;
       if (!ProcessAckFrame(&frame)) {
-        return RaiseError(QUIC_INVALID_FRAME_DATA);
+        return RaiseError(QUIC_INVALID_ACK_DATA);
       }
       if (!visitor_->OnAckFrame(frame)) {
         DLOG(INFO) << "Visitor asked to stop further processing.";
@@ -918,7 +918,7 @@ bool QuicFramer::ProcessFrameData() {
     if ((frame_type & kQuicFrameType0BitMask) == 0) {
       QuicCongestionFeedbackFrame frame;
       if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
-        return RaiseError(QUIC_INVALID_FRAME_DATA);
+        return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
       }
       if (!visitor_->OnCongestionFeedbackFrame(frame)) {
         DLOG(INFO) << "Visitor asked to stop further processing.";
