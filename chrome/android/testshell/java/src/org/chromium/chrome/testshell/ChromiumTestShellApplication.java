@@ -8,8 +8,8 @@ import android.app.Application;
 import android.content.Intent;
 
 import org.chromium.base.PathUtils;
-import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ResourceExtractor;
+import org.chromium.content.common.CommandLine;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,6 @@ import java.util.ArrayList;
  * loading the right resources.
  */
 public class ChromiumTestShellApplication extends Application {
-    private static final String TAG = "ChromiumTestShellApplication";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
         "chrome.pak",
@@ -26,6 +25,8 @@ public class ChromiumTestShellApplication extends Application {
         "resources.pak",
         "chrome_100_percent.pak",
     };
+    private static final String COMMAND_LINE_FILE =
+            "/data/local/tmp/chromium-testshell-command-line";
 
     ArrayList<ChromiumTestShellApplicationObserver> mObservers;
 
@@ -57,5 +58,10 @@ public class ChromiumTestShellApplication extends Application {
 
     public void removeObserver(ChromiumTestShellApplicationObserver observer) {
         mObservers.remove(observer);
+    }
+
+    public static void initCommandLine() {
+        if (!CommandLine.isInitialized())
+            CommandLine.initFromFile(COMMAND_LINE_FILE);
     }
 }

@@ -277,12 +277,6 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(true, resultAllTypes.get());
     }
 
-    @SmallTest
-    @Feature({"Sync"})
-    public void testGetContractAuthority() throws Exception {
-        assertEquals(mContext.getPackageName(), mController.getContractAuthority());
-    }
-
     /**
      * Asserts that {@code intent} is destined for the correct component.
      */

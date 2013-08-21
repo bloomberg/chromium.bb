@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.testshell;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -30,12 +29,10 @@ import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.WindowAndroid;
 
 /**
- * The {@link Activity} component of a basic test shell to test Chrome features.
+ * The {@link android.app.Activity} component of a basic test shell to test Chrome features.
  */
 public class ChromiumTestShellActivity extends ChromiumActivity implements MenuHandler {
     private static final String TAG = "ChromiumTestShellActivity";
-    private static final String COMMAND_LINE_FILE =
-            "/data/local/tmp/chromium-testshell-command-line";
     /**
      * Sending an intent with this action will simulate a memory pressure signal
      * at a critical level.
@@ -58,7 +55,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!CommandLine.isInitialized()) CommandLine.initFromFile(COMMAND_LINE_FILE);
+        ChromiumTestShellApplication.initCommandLine();
         waitForDebuggerIfNeeded();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);

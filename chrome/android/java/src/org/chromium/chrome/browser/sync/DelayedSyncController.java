@@ -16,7 +16,7 @@ import android.util.Log;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.ActivityStatus;
-import org.chromium.sync.notifier.InvalidationController;
+import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -65,7 +65,7 @@ public class DelayedSyncController {
             @Override
             protected Void doInBackground(Void... unused) {
                 String contractAuthority =
-                        InvalidationController.get(context).getContractAuthority();
+                        SyncStatusHelper.get(context).getContractAuthority();
                 ContentResolver.requestSync(account, contractAuthority, new Bundle());
                 return null;
             }

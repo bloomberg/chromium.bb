@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/android/java",
+  "+sync/android/java/src/org/chromium/sync/notifier",
   "+sync/android/java/src/org/chromium/sync/signin",
   # We should only depend on the util package of something that lives in
   # javatests.

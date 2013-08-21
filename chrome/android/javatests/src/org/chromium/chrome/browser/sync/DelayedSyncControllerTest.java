@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.test.util.Feature;
@@ -53,7 +56,7 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
         assertTrue(mController.shouldPerformSync(getActivity(), extras, TEST_ACCOUNT));
 
         // Sync should trigger for manual requests when Chrome is in the background.
-        sendChromeToBackground();
+        sendChromeToBackground(getActivity());
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         assertTrue(mController.shouldPerformSync(getActivity(), extras, TEST_ACCOUNT));
     }
@@ -70,7 +73,7 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
     @Feature({"Sync"})
     public void testSyncRequestsWhenChromeIsInBackgroundShouldBeDelayed()
             throws InterruptedException {
-        sendChromeToBackground();
+        sendChromeToBackground(getActivity());
         Bundle extras = new Bundle();
         assertFalse(mController.shouldPerformSync(getActivity(), extras, TEST_ACCOUNT));
     }
@@ -84,7 +87,7 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
         assertFalse(mController.mSyncRequested);
 
         // Trying to perform sync when Chrome is in the background should create a delayed sync.
-        sendChromeToBackground();
+        sendChromeToBackground(getActivity());
         Bundle extras = new Bundle();
         assertFalse(mController.shouldPerformSync(getActivity(), extras, TEST_ACCOUNT));
 
@@ -93,10 +96,11 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
         assertTrue(mController.mSyncRequested);
     }
 
-    private void sendChromeToBackground() throws InterruptedException {
+    @VisibleForTesting
+    static void sendChromeToBackground(Activity activity) throws InterruptedException {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
-        getActivity().startActivity(intent);
+        activity.startActivity(intent);
 
         assertTrue("Activity should have been resumed",
                 CriteriaHelper.pollForCriteria(new Criteria() {
