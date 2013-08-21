@@ -1763,11 +1763,6 @@ void FrameLoader::insertDummyHistoryItem()
     frame()->page()->backForward().setCurrentItem(currentItem.get());
 }
 
-String FrameLoader::referrer() const
-{
-    return m_documentLoader ? m_documentLoader->request().httpReferrer() : "";
-}
-
 void FrameLoader::dispatchDocumentElementAvailable()
 {
     m_client->documentElementAvailable();

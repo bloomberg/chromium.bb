@@ -118,7 +118,6 @@ public:
     bool isLoading() const;
 
     int numPendingOrLoadingRequests(bool recurse) const;
-    String referrer() const;
     String outgoingReferrer() const;
     String outgoingOrigin() const;
 

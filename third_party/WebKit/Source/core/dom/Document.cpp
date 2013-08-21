@@ -3705,8 +3705,8 @@ void Document::setCookie(const String& value, ExceptionState& es)
 
 String Document::referrer() const
 {
-    if (frame())
-        return frame()->loader()->referrer();
+    if (loader())
+        return loader()->request().httpReferrer();
     return String();
 }
 
