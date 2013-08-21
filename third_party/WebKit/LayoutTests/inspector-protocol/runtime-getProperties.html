@@ -217,8 +217,9 @@ function test()
             }
         }
     
-        function NamedThingComparator(o1, o2) {
-            return o1.name.localeCompare(o2.name);
+        function NamedThingComparator(o1, o2)
+        {
+            return o1.name === o2.name ? 0 : (o1.name < o2.name ? -1 : 1);
         }
     }
 }

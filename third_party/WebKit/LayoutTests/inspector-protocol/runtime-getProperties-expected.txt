@@ -24,10 +24,10 @@ Properties of Accessor only properties
   b own no value, getter, setter
   d own no value, setter
 Properties of array
-  __proto__ own object undefined
   0 own string red
   1 own string green
   2 own string blue
+  __proto__ own object undefined
   length own number 3
 Properties of Bound function
   __proto__ own function undefined
