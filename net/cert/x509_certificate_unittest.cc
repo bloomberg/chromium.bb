@@ -84,75 +84,6 @@ const double kGoogleParseValidFrom = 1261094400;
 // Dec 18 23:59:59 2011 GMT
 const double kGoogleParseValidTo = 1324252799;
 
-struct CertificateFormatTestData {
-  const char* file_name;
-  X509Certificate::Format format;
-  uint8* chain_fingerprints[3];
-};
-
-const CertificateFormatTestData FormatTestData[] = {
-  // DER Parsing - single certificate, DER encoded
-  { "google.single.der", X509Certificate::FORMAT_SINGLE_CERTIFICATE,
-    { google_parse_fingerprint,
-      NULL, } },
-  // DER parsing - single certificate, PEM encoded
-  { "google.single.pem", X509Certificate::FORMAT_SINGLE_CERTIFICATE,
-    { google_parse_fingerprint,
-      NULL, } },
-  // PEM parsing - single certificate, PEM encoded with a PEB of
-  // "CERTIFICATE"
-  { "google.single.pem", X509Certificate::FORMAT_PEM_CERT_SEQUENCE,
-    { google_parse_fingerprint,
-      NULL, } },
-  // PEM parsing - sequence of certificates, PEM encoded with a PEB of
-  // "CERTIFICATE"
-  { "google.chain.pem", X509Certificate::FORMAT_PEM_CERT_SEQUENCE,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, DER
-  // encoding
-  { "google.binary.p7b", X509Certificate::FORMAT_PKCS7,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, PEM
-  // encoded with a PEM PEB of "CERTIFICATE"
-  { "google.pem_cert.p7b", X509Certificate::FORMAT_PKCS7,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, PEM
-  // encoded with a PEM PEB of "PKCS7"
-  { "google.pem_pkcs7.p7b", X509Certificate::FORMAT_PKCS7,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  // All of the above, this time using auto-detection
-  { "google.single.der", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      NULL, } },
-  { "google.single.pem", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      NULL, } },
-  { "google.chain.pem", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  { "google.binary.p7b", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  { "google.pem_cert.p7b", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-  { "google.pem_pkcs7.p7b", X509Certificate::FORMAT_AUTO,
-    { google_parse_fingerprint,
-      thawte_parse_fingerprint,
-      NULL, } },
-};
-
 void CheckGoogleCert(const scoped_refptr<X509Certificate>& google_cert,
                      uint8* expected_fingerprint,
                      double valid_from, double valid_to) {
@@ -869,6 +800,73 @@ TEST(X509CertificateTest, GetDefaultNickname) {
 }
 #endif
 
+const struct CertificateFormatTestData {
+  const char* file_name;
+  X509Certificate::Format format;
+  uint8* chain_fingerprints[3];
+} kFormatTestData[] = {
+  // DER Parsing - single certificate, DER encoded
+  { "google.single.der", X509Certificate::FORMAT_SINGLE_CERTIFICATE,
+    { google_parse_fingerprint,
+      NULL, } },
+  // DER parsing - single certificate, PEM encoded
+  { "google.single.pem", X509Certificate::FORMAT_SINGLE_CERTIFICATE,
+    { google_parse_fingerprint,
+      NULL, } },
+  // PEM parsing - single certificate, PEM encoded with a PEB of
+  // "CERTIFICATE"
+  { "google.single.pem", X509Certificate::FORMAT_PEM_CERT_SEQUENCE,
+    { google_parse_fingerprint,
+      NULL, } },
+  // PEM parsing - sequence of certificates, PEM encoded with a PEB of
+  // "CERTIFICATE"
+  { "google.chain.pem", X509Certificate::FORMAT_PEM_CERT_SEQUENCE,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, DER
+  // encoding
+  { "google.binary.p7b", X509Certificate::FORMAT_PKCS7,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, PEM
+  // encoded with a PEM PEB of "CERTIFICATE"
+  { "google.pem_cert.p7b", X509Certificate::FORMAT_PKCS7,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  // PKCS#7 parsing - "degenerate" SignedData collection of certificates, PEM
+  // encoded with a PEM PEB of "PKCS7"
+  { "google.pem_pkcs7.p7b", X509Certificate::FORMAT_PKCS7,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  // All of the above, this time using auto-detection
+  { "google.single.der", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      NULL, } },
+  { "google.single.pem", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      NULL, } },
+  { "google.chain.pem", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  { "google.binary.p7b", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  { "google.pem_cert.p7b", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+  { "google.pem_pkcs7.p7b", X509Certificate::FORMAT_AUTO,
+    { google_parse_fingerprint,
+      thawte_parse_fingerprint,
+      NULL, } },
+};
+
 class X509CertificateParseTest
     : public testing::TestWithParam<CertificateFormatTestData> {
  public:
@@ -915,7 +913,7 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
 }
 
 INSTANTIATE_TEST_CASE_P(, X509CertificateParseTest,
-                        testing::ValuesIn(FormatTestData));
+                        testing::ValuesIn(kFormatTestData));
 
 struct CertificateNameVerifyTestData {
   // true iff we expect hostname to match an entry in cert_names.
@@ -1143,5 +1141,43 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
 
 INSTANTIATE_TEST_CASE_P(, X509CertificateNameVerifyTest,
                         testing::ValuesIn(kNameVerifyTestData));
+
+const struct PublicKeyInfoTestData {
+  const char* cert_file;
+  size_t expected_bits;
+  X509Certificate::PublicKeyType expected_type;
+} kPublicKeyInfoTestData[] = {
+  { "768-rsa-ee-by-768-rsa-intermediate.pem", 768,
+    X509Certificate::kPublicKeyTypeRSA },
+  { "1024-rsa-ee-by-768-rsa-intermediate.pem", 1024,
+    X509Certificate::kPublicKeyTypeRSA },
+  { "prime256v1-ecdsa-ee-by-1024-rsa-intermediate.pem", 256,
+    X509Certificate::kPublicKeyTypeECDSA },
+};
+
+class X509CertificatePublicKeyInfoTest
+    : public testing::TestWithParam<PublicKeyInfoTestData> {
+};
+
+TEST_P(X509CertificatePublicKeyInfoTest, GetPublicKeyInfo) {
+  PublicKeyInfoTestData data = GetParam();
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), data.cert_file));
+  ASSERT_TRUE(cert.get());
+
+  size_t actual_bits = 0;
+  X509Certificate::PublicKeyType actual_type =
+      X509Certificate::kPublicKeyTypeUnknown;
+
+  X509Certificate::GetPublicKeyInfo(cert->os_cert_handle(), &actual_bits,
+                                    &actual_type);
+
+  EXPECT_EQ(data.expected_bits, actual_bits);
+  EXPECT_EQ(data.expected_type, actual_type);
+}
+
+INSTANTIATE_TEST_CASE_P(, X509CertificatePublicKeyInfoTest,
+                        testing::ValuesIn(kPublicKeyInfoTestData));
 
 }  // namespace net
