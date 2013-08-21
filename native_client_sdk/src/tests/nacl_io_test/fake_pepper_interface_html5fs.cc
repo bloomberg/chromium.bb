@@ -516,6 +516,11 @@ int32_t FakeFileRefInterface::MakeDirectory(PP_Resource directory_ref,
   FakeHtml5FsFilesystem* filesystem = directory_ref_resource->filesystem;
   FakeHtml5FsFilesystem::Path path = directory_ref_resource->path;
 
+  // Pepper returns PP_ERROR_NOACCESS when trying to create the root directory,
+  // not PP_ERROR_FILEEXISTS, as you might expect.
+  if (path == "/")
+    return RunCompletionCallback(&callback, PP_ERROR_NOACCESS);
+
   FakeHtml5FsNode* node = filesystem->GetNode(path);
   if (node != NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILEEXISTS);

@@ -127,6 +127,9 @@ TEST_F(MountHtml5FsTest, Mkdir) {
   ScopedRef<MountHtml5FsForTesting> mnt(
       new MountHtml5FsForTesting(map, &ppapi_));
 
+  // mkdir at the root should return EEXIST, not EACCES.
+  EXPECT_EQ(EEXIST, mnt->Mkdir(Path("/"), 0644));
+
   Path path("/foo");
   ASSERT_EQ(ENOENT, mnt->Access(path, F_OK));
   ASSERT_EQ(0, mnt->Mkdir(path, 0644));

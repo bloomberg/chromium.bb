@@ -61,6 +61,11 @@ Error MountHtml5Fs::Mkdir(const Path& path, int permissions) {
   if (error)
     return error;
 
+  // FileRef returns PP_ERROR_NOACCESS which is translated to EACCES if you
+  // try to create the root directory. EEXIST is a better errno here.
+  if (path.Top())
+    return EEXIST;
+
   ScopedResource fileref_resource(
       ppapi(),
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
