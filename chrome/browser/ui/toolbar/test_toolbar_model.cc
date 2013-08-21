@@ -11,8 +11,7 @@ TestToolbarModel::TestToolbarModel()
       should_replace_url_(false),
       security_level_(NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
-      should_display_url_(true),
-      input_in_progress_(false) {}
+      should_display_url_(true) {}
 
 TestToolbarModel::~TestToolbarModel() {}
 
@@ -49,12 +48,4 @@ string16 TestToolbarModel::GetEVCertName() const {
 
 bool TestToolbarModel::ShouldDisplayURL() const {
   return should_display_url_;
-}
-
-void TestToolbarModel::SetInputInProgress(bool value) {
-  input_in_progress_ = value;
-}
-
-bool TestToolbarModel::GetInputInProgress() const {
-  return input_in_progress_;
 }

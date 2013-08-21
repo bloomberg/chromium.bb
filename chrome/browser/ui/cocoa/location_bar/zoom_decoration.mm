@@ -101,7 +101,7 @@ bool ZoomDecoration::IsAtDefaultZoom() const {
 }
 
 bool ZoomDecoration::ShouldShowDecoration() const {
-  if (owner_->toolbar_model()->GetInputInProgress())
+  if (owner_->toolbar_model()->input_in_progress())
     return false;
   if (bubble_)
     return true;

@@ -76,13 +76,19 @@ class ToolbarModel {
   // in the location bar.
   virtual bool ShouldDisplayURL() const = 0;
 
-  // Getter/setter of whether the text in location bar is currently being
-  // edited.
-  virtual void SetInputInProgress(bool value) = 0;
-  virtual bool GetInputInProgress() const = 0;
+  // Whether the text in the omnibox is currently being edited.
+  void set_input_in_progress(bool input_in_progress) {
+    input_in_progress_ = input_in_progress;
+  }
+  bool input_in_progress() const { return input_in_progress_; }
 
  protected:
-   ToolbarModel() {}
+  ToolbarModel() : input_in_progress_(false) {}
+
+ private:
+  bool input_in_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_H_

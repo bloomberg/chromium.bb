@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   Zoom(content::PAGE_ZOOM_IN);
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
-  test_toolbar_model_.SetInputInProgress(true);
+  test_toolbar_model_.set_input_in_progress(true);
   GetLocationBar()->ZoomChangedForActiveTab(false);
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }

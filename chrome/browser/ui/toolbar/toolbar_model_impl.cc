@@ -42,8 +42,7 @@ using content::SSLStatus;
 using content::WebContents;
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
-    : delegate_(delegate),
-      input_in_progress_(false) {
+    : delegate_(delegate) {
 }
 
 ToolbarModelImpl::~ToolbarModelImpl() {
@@ -184,7 +183,7 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
 
 ToolbarModel::SecurityLevel
     ToolbarModelImpl::GetSecurityLevel(bool ignore_editing) const {
-  if (!ignore_editing && input_in_progress_) {
+  if (!ignore_editing && input_in_progress()) {
     // When editing, assume no security style.
     return NONE;
   }
@@ -232,14 +231,6 @@ string16 ToolbarModelImpl::GetEVCertName(const net::X509Certificate& cert) {
       UTF8ToUTF16(cert.subject().country_name));
 }
 
-void ToolbarModelImpl::SetInputInProgress(bool value) {
-  input_in_progress_ = value;
-}
-
-bool ToolbarModelImpl::GetInputInProgress() const {
-  return input_in_progress_;
-}
-
 NavigationController* ToolbarModelImpl::GetNavigationController() const {
   // This |current_tab| can be NULL during the initialization of the
   // toolbar during window creation (i.e. before any tabs have been added
@@ -276,7 +267,7 @@ string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
   // If the URL is using a Google base URL specified via the command line, we
   // allow search term replacement any time the user isn't editing, bypassing
   // the security check below.
-  if ((ignore_editing || !input_in_progress_) && entry &&
+  if ((ignore_editing || !input_in_progress()) && entry &&
       google_util::StartsWithCommandLineGoogleBaseURL(entry->GetVirtualURL()))
     return search_terms;
 

@@ -497,7 +497,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   mic_search_view_->SetVisible(
-      !model_->GetInputInProgress() && browser_ &&
+      !model_->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
   RefreshContentSettingViews();
   generated_credit_card_view_->Update();
@@ -506,11 +506,11 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshPageActionViews();
   RefreshScriptBubble();
   open_pdf_in_reader_view_->Update(
-      model_->GetInputInProgress() ? NULL : GetWebContents());
+      model_->input_in_progress() ? NULL : GetWebContents());
 
-  bool star_enabled =
-      browser_defaults::bookmarks_enabled && !is_popup_mode_ && star_view_ &&
-      !model_->GetInputInProgress() && edit_bookmarks_enabled_.GetValue();
+  bool star_enabled = browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
+      star_view_ && !model_->input_in_progress() &&
+      edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
@@ -558,7 +558,7 @@ void LocationBarView::InvalidatePageActions() {
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
-      model_->GetInputInProgress() ? NULL : GetWebContents());
+      model_->input_in_progress() ? NULL : GetWebContents());
   Layout();
   SchedulePaint();
 }
@@ -1126,7 +1126,7 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(model_->GetInputInProgress() ? NULL : GetWebContents());
+    (*i)->Update(model_->input_in_progress() ? NULL : GetWebContents());
   }
 }
 
@@ -1190,7 +1190,7 @@ void LocationBarView::RefreshPageActionViews() {
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
-      (*i)->UpdateVisibility(model_->GetInputInProgress() ? NULL : contents,
+      (*i)->UpdateVisibility(model_->input_in_progress() ? NULL : contents,
                              url);
 
       // Check if the visibility of the action changed and notify if it did.
@@ -1530,8 +1530,8 @@ void LocationBarView::Observe(int type,
 
 void LocationBarView::ModelChanged(const SearchModel::State& old_state,
                                    const SearchModel::State& new_state) {
-  const bool visible =
-      !model_->GetInputInProgress() && new_state.voice_search_supported;
+  const bool visible = !model_->input_in_progress() &&
+      new_state.voice_search_supported;
   if (mic_search_view_->visible() != visible) {
     mic_search_view_->SetVisible(visible);
     Layout();

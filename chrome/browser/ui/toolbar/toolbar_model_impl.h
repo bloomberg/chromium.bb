@@ -47,8 +47,6 @@ class ToolbarModelImpl : public ToolbarModel {
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;
-  virtual void SetInputInProgress(bool value) OVERRIDE;
-  virtual bool GetInputInProgress() const OVERRIDE;
 
   // Returns "<organization_name> [<country>]".
   static string16 GetEVCertName(const net::X509Certificate& cert);
@@ -69,9 +67,6 @@ class ToolbarModelImpl : public ToolbarModel {
   string16 GetSearchTerms(bool ignore_editing) const;
 
   ToolbarModelDelegate* delegate_;
-
-  // Whether the text in the location bar is currently being edited.
-  bool input_in_progress_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelImpl);
 };

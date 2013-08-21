@@ -45,7 +45,7 @@ void GeneratedCreditCardView::OnClick() {
 autofill::GeneratedCreditCardBubbleController* GeneratedCreditCardView::
     GetController() const {
   content::WebContents* wc = delegate_->GetWebContents();
-  if (!wc || toolbar_model_->GetInputInProgress())
+  if (!wc || toolbar_model_->input_in_progress())
     return NULL;
 
   return autofill::GeneratedCreditCardBubbleController::FromWebContents(wc);

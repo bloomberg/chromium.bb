@@ -793,9 +793,9 @@ void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
   // This is identical to the Windows code, except that we don't proxy the call
   // back through the Toolbar, and just access the model here.
   // The edit should make sure we're only notified when something changes.
-  DCHECK(toolbar_model_->GetInputInProgress() != in_progress);
+  DCHECK_NE(toolbar_model_->input_in_progress(), in_progress);
 
-  toolbar_model_->SetInputInProgress(in_progress);
+  toolbar_model_->set_input_in_progress(in_progress);
   Update(NULL);
 }
 
@@ -871,8 +871,7 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
   for (ScopedVector<PageToolViewGtk>::iterator i(
            content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(
-        toolbar_model_->GetInputInProgress() ? NULL : GetWebContents());
+    (*i)->Update(toolbar_model_->input_in_progress() ? NULL : GetWebContents());
     any_visible = (*i)->IsVisible() || any_visible;
   }
 
@@ -917,7 +916,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(
-          toolbar_model_->GetInputInProgress() ? NULL : contents, url);
+          toolbar_model_->input_in_progress() ? NULL : contents, url);
     }
     gtk_widget_queue_draw(hbox_.get());
   }
@@ -1509,7 +1508,7 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
 }
 
 void LocationBarViewGtk::ShowZoomBubble() {
-  if (toolbar_model_->GetInputInProgress() || !GetWebContents())
+  if (toolbar_model_->input_in_progress() || !GetWebContents())
     return;
 
   ZoomBubbleGtk::ShowBubble(GetWebContents(), true);
@@ -1553,7 +1552,7 @@ void LocationBarViewGtk::UpdateZoomIcon() {
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
-      toolbar_model_->GetInputInProgress()) {
+      toolbar_model_->input_in_progress()) {
     gtk_widget_hide(zoom_.get());
     ZoomBubbleGtk::CloseBubble();
     return;
@@ -1593,8 +1592,8 @@ void LocationBarViewGtk::UpdateStarIcon() {
   // Indicate the star icon is not correctly sized. It will be marked as sized
   // when the next size-allocate signal is received by the star widget.
   star_sized_ = false;
-  bool star_enabled = !toolbar_model_->GetInputInProgress() &&
-                      edit_bookmarks_enabled_.GetValue();
+  bool star_enabled = !toolbar_model_->input_in_progress() &&
+      edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                          star_enabled);

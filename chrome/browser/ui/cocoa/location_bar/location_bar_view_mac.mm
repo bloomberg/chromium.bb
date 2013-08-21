@@ -302,7 +302,7 @@ void LocationBarViewMac::OnSelectionBoundsChanged() {
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  toolbar_model_->SetInputInProgress(in_progress);
+  toolbar_model_->set_input_in_progress(in_progress);
   Update(NULL, false);
 }
 
@@ -583,7 +583,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 }
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
-  const bool input_in_progress = toolbar_model_->GetInputInProgress();
+  const bool input_in_progress = toolbar_model_->input_in_progress();
   WebContents* web_contents = input_in_progress ?
       NULL : browser_->tab_strip_model()->GetActiveWebContents();
   bool icons_updated = false;
@@ -631,8 +631,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   GURL url = toolbar_model_->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->GetInputInProgress() ? NULL : web_contents,
-        url);
+        toolbar_model_->input_in_progress() ? NULL : web_contents, url);
   }
 }
 
@@ -717,7 +716,7 @@ void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
 bool LocationBarViewMac::IsStarEnabled() {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&
-         !toolbar_model_->GetInputInProgress() &&
+         !toolbar_model_->input_in_progress() &&
          edit_bookmarks_enabled_.GetValue();
 }
 
@@ -734,7 +733,7 @@ void LocationBarViewMac::UpdateStarDecorationVisibility() {
 }
 
 bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
-  bool is_visible = !toolbar_model_->GetInputInProgress() &&
+  bool is_visible = !toolbar_model_->input_in_progress() &&
                     browser_->search_model()->voice_search_supported();
   if (mic_search_decoration_->IsVisible() == is_visible)
     return false;

@@ -26,8 +26,6 @@ class TestToolbarModel : public ToolbarModel {
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;
-  virtual void SetInputInProgress(bool value) OVERRIDE;
-  virtual bool GetInputInProgress() const OVERRIDE;
 
   void set_text(const string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
@@ -53,7 +51,6 @@ class TestToolbarModel : public ToolbarModel {
   int icon_;
   string16 ev_cert_name_;
   bool should_display_url_;
-  bool input_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarModel);
 };

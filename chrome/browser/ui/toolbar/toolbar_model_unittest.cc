@@ -251,14 +251,14 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
             toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
 
   // Now pretend the user started modifying the omnibox.
-  toolbar_model->SetInputInProgress(true);
+  toolbar_model->set_input_in_progress(true);
   EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
   EXPECT_EQ(would_replace,
             toolbar_model->WouldReplaceSearchURLWithSearchTerms(true));
 
   // Tell the ToolbarModel that the user has stopped editing.  This prevents
   // this function from having side effects.
-  toolbar_model->SetInputInProgress(false);
+  toolbar_model->set_input_in_progress(false);
 }
 
 
