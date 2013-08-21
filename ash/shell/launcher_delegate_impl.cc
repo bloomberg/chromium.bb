@@ -64,6 +64,10 @@ void LauncherDelegateImpl::OnLauncherCreated(Launcher* launcher) {
 void LauncherDelegateImpl::OnLauncherDestroyed(Launcher* launcher) {
 }
 
+bool LauncherDelegateImpl::IsPerAppLauncher() {
+  return false;
+}
+
 LauncherID LauncherDelegateImpl::GetLauncherIDForAppID(
     const std::string& app_id) {
   return 0;

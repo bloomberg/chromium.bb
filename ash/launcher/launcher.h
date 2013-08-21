@@ -101,6 +101,8 @@ class ASH_EXPORT Launcher {
   // TODO(sky): remove this!
   internal::LauncherView* GetLauncherViewForTest();
 
+  LauncherDelegate* delegate() { return delegate_; }
+
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // Set the bounds of the launcher view.

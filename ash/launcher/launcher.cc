@@ -169,7 +169,10 @@ void Launcher::LaunchAppIndexAt(int item_index) {
   // There are two ways how found_index can be valid: a.) the nth item was
   // found (which is true when indexes_left is -1) or b.) the last item was
   // requested (which is true when index was passed in as a negative number).
-  if (found_index >= 0 && (indexes_left == -1 || item_index < 0)) {
+  if (found_index >= 0 && (indexes_left == -1 || item_index < 0) &&
+      (delegate_->IsPerAppLauncher() ||
+       (items[found_index].status == ash::STATUS_RUNNING ||
+        items[found_index].status == ash::STATUS_CLOSED))) {
     // Then set this one as active (or advance to the next item of its kind).
     ActivateLauncherItem(found_index);
   }

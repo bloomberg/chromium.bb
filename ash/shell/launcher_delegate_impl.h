@@ -39,6 +39,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
+  virtual bool IsPerAppLauncher() OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;

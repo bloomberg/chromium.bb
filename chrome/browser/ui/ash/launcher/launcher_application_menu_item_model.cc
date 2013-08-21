@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -36,11 +36,12 @@
 #endif
 
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
-    ChromeLauncherController* launcher_controller,
+    ChromeLauncherControllerPerApp* launcher_controller,
     Profile* profile)
     : LauncherItemController(TYPE_SHORTCUT,
                              extension_misc::kChromeAppId,
                              launcher_controller),
+      app_controller_(launcher_controller),
       profile_(profile) {
 }
 
@@ -157,7 +158,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
       continue;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
-    else if (!launcher_controller()->IsBrowserRepresentedInBrowserList(browser))
+    else if (!app_controller_->IsBrowserRepresentedInBrowserList(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
@@ -173,9 +174,8 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
       for (int index = 0; index  < tab_strip->count(); ++index) {
         content::WebContents* web_contents =
             tab_strip->GetWebContentsAt(index);
-        gfx::Image app_icon =
-            launcher_controller()->GetAppListIcon(web_contents);
-        string16 title = launcher_controller()->GetAppListTitle(web_contents);
+        gfx::Image app_icon = app_controller_->GetAppListIcon(web_contents);
+        string16 title = app_controller_->GetAppListTitle(web_contents);
         // Check if we need to insert a separator in front.
         bool leading_separator = !index;
         items.push_back(new ChromeLauncherAppMenuItemTab(
@@ -223,7 +223,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   for (BrowserList::const_iterator it =
            ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
-    if (launcher_controller()->IsBrowserRepresentedInBrowserList(*it))
+    if (app_controller_->IsBrowserRepresentedInBrowserList(*it))
       items.push_back(*it);
   }
   // If there are no suitable browsers we create a new one.
@@ -254,7 +254,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
                                           true,
                                           chrome::HOST_DESKTOP_TYPE_ASH);
       if (!browser ||
-          !launcher_controller()->IsBrowserRepresentedInBrowserList(browser))
+          !app_controller_->IsBrowserRepresentedInBrowserList(browser))
         browser = items[0];
     }
   }

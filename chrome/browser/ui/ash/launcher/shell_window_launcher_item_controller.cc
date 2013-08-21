@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
@@ -154,7 +155,8 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
     } else {
       ShowAndActivateOrMinimize(panel);
     }
-  } else {
+  } else if (launcher_controller()->GetPerAppInterface() ||
+      shell_windows_.size() == 1) {
     ShellWindow* window_to_show = last_active_shell_window_ ?
         last_active_shell_window_ : shell_windows_.front();
     // If the event was triggered by a keystroke, we try to advance to the next
@@ -166,6 +168,20 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
     } else {
       ShowAndActivateOrMinimize(window_to_show);
     }
+  } else {
+    // TODO(stevenjb): Deprecate
+    if (!last_active_shell_window_ ||
+        last_active_shell_window_->GetBaseWindow()->IsActive()) {
+      // Restore all windows since there is no other way to restore them.
+      for (ShellWindowList::iterator iter = shell_windows_.begin();
+           iter != shell_windows_.end(); ++iter) {
+        ShellWindow* shell_window = *iter;
+        if (shell_window->GetBaseWindow()->IsMinimized())
+          shell_window->GetBaseWindow()->Restore();
+      }
+    }
+    if (last_active_shell_window_)
+      ShowAndActivateOrMinimize(last_active_shell_window_);
   }
 }
 
@@ -190,7 +206,7 @@ ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
         shell_window->GetTitle(),
         image.get(),  // Will be copied
         app_id(),
-        launcher_controller(),
+        launcher_controller()->GetPerAppInterface(),
         index,
         index == 0 /* has_leading_separator */));
     ++index;

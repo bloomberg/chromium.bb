@@ -13,18 +13,21 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_browser.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/root_window.h"
 
-class TestChromeLauncherController : public ChromeLauncherController {
+class TestChromeLauncherControllerPerBrowser :
+    public ChromeLauncherControllerPerBrowser {
  public:
-  TestChromeLauncherController(Profile* profile, ash::LauncherModel* model)
-      : ChromeLauncherController(profile, model) {}
+  TestChromeLauncherControllerPerBrowser(
+      Profile* profile, ash::LauncherModel* model)
+      : ChromeLauncherControllerPerBrowser(profile, model) {}
   virtual bool IsLoggedInAsGuest() OVERRIDE {
     return false;
   }
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherController);
+  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerPerBrowser);
 };
 
 class LauncherContextMenuTest : public ash::test::AshTestBase {
@@ -40,7 +43,8 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
     controller_.reset(
-        new TestChromeLauncherController(profile(), &launcher_model_));
+        new TestChromeLauncherControllerPerBrowser(profile(),
+                                                   &launcher_model_));
   }
 
   virtual void TearDown() OVERRIDE {

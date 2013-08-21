@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,9 +40,9 @@ const int kClickSuppressionInMS = 1000;
 // item with the appropriate LauncherItemController type).
 AppShortcutLauncherItemController::AppShortcutLauncherItemController(
     const std::string& app_id,
-    ChromeLauncherController* controller)
+    ChromeLauncherControllerPerApp* controller)
     : LauncherItemController(TYPE_SHORTCUT, app_id, controller),
-      chrome_launcher_controller_(controller) {
+      app_controller_(controller) {
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =
@@ -67,7 +68,7 @@ bool AppShortcutLauncherItemController::IsCurrentlyShownInWindow(
       browser ? browser->tab_strip_model()->GetActiveWebContents() : NULL;
 
   std::vector<content::WebContents*> content =
-      chrome_launcher_controller_->GetV1ApplicationsFromAppId(app_id());
+      app_controller_->GetV1ApplicationsFromAppId(app_id());
 
   std::vector<content::WebContents*>::const_iterator iter =
       std::find(content.begin(), content.end(), active_content_of_window);
@@ -76,14 +77,13 @@ bool AppShortcutLauncherItemController::IsCurrentlyShownInWindow(
 }
 
 bool AppShortcutLauncherItemController::IsOpen() const {
-  return !chrome_launcher_controller_->
-      GetV1ApplicationsFromAppId(app_id()).empty();
+  return !app_controller_->GetV1ApplicationsFromAppId(app_id()).empty();
 }
 
 bool AppShortcutLauncherItemController::IsVisible() const {
   // Return true if any browser window associated with the app is visible.
   std::vector<content::WebContents*> content =
-      chrome_launcher_controller_->GetV1ApplicationsFromAppId(app_id());
+      app_controller_->GetV1ApplicationsFromAppId(app_id());
   for (size_t i = 0; i < content.size(); i++) {
     Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
     if (browser && browser->window()->GetNativeWindow()->IsVisible())
@@ -93,7 +93,7 @@ bool AppShortcutLauncherItemController::IsVisible() const {
 }
 
 void AppShortcutLauncherItemController::Launch(int event_flags) {
-  launcher_controller()->LaunchApp(app_id(), event_flags);
+  app_controller_->LaunchApp(app_id(), event_flags);
 }
 
 void AppShortcutLauncherItemController::Activate() {
@@ -118,7 +118,7 @@ void AppShortcutLauncherItemController::Activate() {
 void AppShortcutLauncherItemController::Close() {
   // Close all running 'programs' of this type.
   std::vector<content::WebContents*> content =
-      launcher_controller()->GetV1ApplicationsFromAppId(app_id());
+      app_controller_->GetV1ApplicationsFromAppId(app_id());
   for (size_t i = 0; i < content.size(); i++) {
     Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
     if (!browser)
@@ -161,8 +161,8 @@ AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
   for (size_t i = 0; i < content_list.size(); i++) {
     content::WebContents* web_contents = content_list[i];
     // Get the icon.
-    gfx::Image app_icon = launcher_controller()->GetAppListIcon(web_contents);
-    string16 title = launcher_controller()->GetAppListTitle(web_contents);
+    gfx::Image app_icon = app_controller_->GetAppListIcon(web_contents);
+    string16 title = app_controller_->GetAppListTitle(web_contents);
     items.push_back(new ChromeLauncherAppMenuItemTab(
         title, &app_icon, web_contents, i == 0));
   }
@@ -265,8 +265,8 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
            refocus_pattern.MatchesURL(tab_url)) ||
           (extension->OverlapsWithOrigin(tab_url) &&
            extension->web_extent().MatchesURL(tab_url)) ||
-          launcher_controller()->IsWebContentHandledByApplication(web_contents,
-                                                                  app_id()));
+          launcher_controller()->GetPerAppInterface()->
+             IsWebContentHandledByApplication(web_contents, app_id()));
 }
 
 void AppShortcutLauncherItemController::ActivateContent(
@@ -279,8 +279,7 @@ void AppShortcutLauncherItemController::ActivateContent(
   int old_index = tab_strip->active_index();
   if (index != old_index)
     tab_strip->ActivateTabAt(index, false);
-  launcher_controller()->ActivateWindowOrMinimizeIfActive(
-      browser->window(),
+  app_controller_->ActivateWindowOrMinimizeIfActive(browser->window(),
       index == old_index && GetRunningApplications().size() == 1);
 }
 
@@ -313,8 +312,7 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
 }
 
 bool AppShortcutLauncherItemController::IsV2App() {
-  const Extension* extension =
-      launcher_controller()->GetExtensionForAppID(app_id());
+  const Extension* extension = app_controller_->GetExtensionForAppID(app_id());
   return extension && extension->is_platform_app();
 }
 
