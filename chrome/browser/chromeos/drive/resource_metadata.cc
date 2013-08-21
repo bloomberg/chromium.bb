@@ -447,11 +447,13 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
       entry.file_info().is_directory())
     return FILE_ERROR_INVALID_OPERATION;
 
-  // Update data.
+  // Make sure that the new parent exists and it is a directory.
   ResourceEntry new_parent;
-  if (!storage_->GetEntry(entry.parent_local_id(), &new_parent) ||
-      !new_parent.file_info().is_directory())
+  if (!storage_->GetEntry(entry.parent_local_id(), &new_parent))
     return FILE_ERROR_NOT_FOUND;
+
+  if (!new_parent.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Remove from the old parent and add it to the new parent with the new data.
   if (!PutEntryUnderDirectory(entry))

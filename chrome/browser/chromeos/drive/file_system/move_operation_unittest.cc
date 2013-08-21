@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 
+#include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,10 +17,21 @@ class MoveOperationTest : public OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
-   operation_.reset(new MoveOperation(observer(), scheduler(), metadata()));
+   operation_.reset(new MoveOperation(blocking_task_runner(),
+                                      observer(),
+                                      scheduler(),
+                                      metadata()));
+   copy_operation_.reset(new CopyOperation(blocking_task_runner(),
+                                           observer(),
+                                           scheduler(),
+                                           metadata(),
+                                           cache(),
+                                           fake_service(),
+                                           temp_dir()));
  }
 
- scoped_ptr<MoveOperation> operation_;
+  scoped_ptr<MoveOperation> operation_;
+  scoped_ptr<CopyOperation> copy_operation_;
 };
 
 TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
@@ -150,6 +163,51 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesNoRename) {
 
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
   EXPECT_TRUE(observer()->get_changed_paths().count(src_path.DirName()));
+  EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+}
+
+TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
+  base::FilePath src_path(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  base::FilePath dest_path(FILE_PATH_LITERAL(
+      "drive/root/Directory 1/Sub Directory Folder/"
+      "SubDirectory File 1 (1).txt"));
+
+  ResourceEntry src_entry, dest_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &src_entry));
+  ASSERT_EQ(FILE_ERROR_NOT_FOUND,
+            GetLocalResourceEntry(dest_path, &dest_entry));
+
+  FileError error = FILE_ERROR_FAILED;
+  // Copy the src file into the same directory. This will make inconsistency
+  // between title and path of the copied file.
+  copy_operation_->Copy(
+      src_path,
+      src_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  base::FilePath copied_path(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1 (1).txt"));
+  ResourceEntry copied_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(copied_path, &copied_entry));
+  ASSERT_EQ("SubDirectory File 1.txt", copied_entry.title());
+
+  // Move the copied file.
+  operation_->Move(copied_path,
+                   dest_path,
+                   google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
+  EXPECT_EQ("SubDirectory File 1 (1).txt", dest_entry.title());
+  EXPECT_EQ(copied_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            GetLocalResourceEntry(copied_path, &copied_entry));
+
+  EXPECT_EQ(2U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(copied_path.DirName()));
   EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
 }
 

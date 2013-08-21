@@ -92,7 +92,10 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                                               metadata,
                                               cache,
                                               temporary_file_directory)),
-    move_operation_(new MoveOperation(observer, scheduler, metadata)),
+    move_operation_(new MoveOperation(blocking_task_runner,
+                                      observer,
+                                      scheduler,
+                                      metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

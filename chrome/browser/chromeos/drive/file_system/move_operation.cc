@@ -14,14 +14,59 @@ using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
+namespace {
 
-MoveOperation::MoveOperation(OperationObserver* observer,
+// Looks up ResourceEntry for source entry and the destination directory.
+FileError PrepareMove(internal::ResourceMetadata* metadata,
+                      const base::FilePath& src_path,
+                      const base::FilePath& dest_parent_path,
+                      ResourceEntry* src_entry,
+                      ResourceEntry* dest_parent_entry) {
+  FileError error = metadata->GetResourceEntryByPath(src_path, src_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  return metadata->GetResourceEntryByPath(dest_parent_path, dest_parent_entry);
+}
+
+// Applies renaming to the local metadata.
+FileError RenameLocally(internal::ResourceMetadata* metadata,
+                        const std::string& resource_id,
+                        const std::string& new_title) {
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryById(resource_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  entry.set_title(new_title);
+  return metadata->RefreshEntry(entry);
+}
+
+// Applies directory-moving to the local metadata.
+FileError MoveDirectoryLocally(internal::ResourceMetadata* metadata,
+                               const std::string& resource_id,
+                               const std::string& parent_resource_id) {
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryById(resource_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // TODO(hidehiko,hashimoto): Set local id, instead of resource id.
+  entry.set_parent_local_id(parent_resource_id);
+  return metadata->RefreshEntry(entry);
+}
+
+}  // namespace
+
+MoveOperation::MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
+                             OperationObserver* observer,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata)
-  : observer_(observer),
-    scheduler_(scheduler),
-    metadata_(metadata),
-    weak_ptr_factory_(this) {
+    : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
+      scheduler_(scheduler),
+      metadata_(metadata),
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -35,175 +80,201 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata_->GetResourceEntryPairByPathsOnUIThread(
-      src_file_path,
-      dest_file_path.DirName(),
-      base::Bind(&MoveOperation::MoveAfterGetResourceEntryPair,
+  scoped_ptr<ResourceEntry> src_entry(new ResourceEntry);
+  scoped_ptr<ResourceEntry> dest_parent_entry(new ResourceEntry);
+  ResourceEntry* src_entry_ptr = src_entry.get();
+  ResourceEntry* dest_parent_entry_ptr = dest_parent_entry.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&PrepareMove,
+                 metadata_, src_file_path, dest_file_path.DirName(),
+                 src_entry_ptr, dest_parent_entry_ptr),
+      base::Bind(&MoveOperation::MoveAfterPrepare,
                  weak_ptr_factory_.GetWeakPtr(),
-                 dest_file_path,
-                 callback));
+                 src_file_path, dest_file_path, callback,
+                 base::Passed(&src_entry),
+                 base::Passed(&dest_parent_entry)));
 }
 
-void MoveOperation::MoveAfterGetResourceEntryPair(
+void MoveOperation::MoveAfterPrepare(
+    const base::FilePath& src_file_path,
     const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> src_dest_info) {
+    scoped_ptr<ResourceEntry> src_entry,
+    scoped_ptr<ResourceEntry> dest_parent_entry,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(src_dest_info.get());
 
-  if (src_dest_info->first.error != FILE_ERROR_OK) {
-    callback.Run(src_dest_info->first.error);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
     return;
   }
-  if (src_dest_info->second.error != FILE_ERROR_OK) {
-    callback.Run(src_dest_info->second.error);
-    return;
-  }
-  if (!src_dest_info->second.entry->file_info().is_directory()) {
+
+  if (!dest_parent_entry->file_info().is_directory()) {
+    // The parent of the destination is not a directory.
     callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
-  const std::string& src_id = src_dest_info->first.entry->resource_id();
-  const base::FilePath& src_path = src_dest_info->first.path;
-  const base::FilePath new_name = dest_file_path.BaseName();
-  const bool new_name_has_hosted_extension =
-      src_dest_info->first.entry->has_file_specific_info() &&
-      src_dest_info->first.entry->file_specific_info().is_hosted_document() &&
-      new_name.Extension() ==
-          src_dest_info->first.entry->file_specific_info().document_extension();
+  // Strip the extension for a hosted document if necessary.
+  const bool has_hosted_document_extension =
+      src_entry->has_file_specific_info() &&
+      src_entry->file_specific_info().is_hosted_document() &&
+      dest_file_path.Extension() ==
+      src_entry->file_specific_info().document_extension();
+  const std::string new_title =
+      has_hosted_document_extension ?
+      dest_file_path.BaseName().RemoveExtension().AsUTF8Unsafe() :
+      dest_file_path.BaseName().AsUTF8Unsafe();
 
-  Rename(src_id, src_path, new_name, new_name_has_hosted_extension,
+  // TODO(hidehiko): On Drive API v2, we can move a resource by only one
+  // server request. Implement here. crbug.com/241814
+
+  ResourceEntry* src_entry_ptr = src_entry.get();
+  Rename(*src_entry_ptr, new_title,
          base::Bind(&MoveOperation::MoveAfterRename,
                     weak_ptr_factory_.GetWeakPtr(),
-                    callback,
-                    base::Passed(&src_dest_info)));
+                    src_file_path, dest_file_path, callback,
+                    base::Passed(&src_entry),
+                    base::Passed(&dest_parent_entry)));
 }
 
 void MoveOperation::MoveAfterRename(
+    const base::FilePath& src_file_path,
+    const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> src_dest_info,
-    FileError error,
-    const base::FilePath& src_path) {
+    scoped_ptr<ResourceEntry> src_entry,
+    scoped_ptr<ResourceEntry> dest_parent_entry,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
 
-  const std::string& src_id = src_dest_info->first.entry->resource_id();
-  const std::string& dest_dir_id = src_dest_info->second.entry->resource_id();
-  const base::FilePath& dest_dir_path = src_dest_info->second.path;
-
   // The source and the destination directory are the same. Nothing more to do.
-  if (src_path.DirName() == dest_dir_path) {
-    observer_->OnDirectoryChangedByOperation(dest_dir_path);
+  // TODO(hidehiko,hashimoto): Replace resource_id to local_id.
+  if (src_entry->parent_local_id() == dest_parent_entry->resource_id()) {
+    observer_->OnDirectoryChangedByOperation(dest_file_path.DirName());
     callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  AddToDirectory(src_id, dest_dir_id, src_path, dest_dir_path,
+  // TODO(hidehiko,hashimoto): For MoveAfterAddToDirectory, it will be
+  // necessary to resolve local id to resource id.
+  AddToDirectory(src_entry->resource_id(),
+                 dest_parent_entry->resource_id(),
                  base::Bind(&MoveOperation::MoveAfterAddToDirectory,
                             weak_ptr_factory_.GetWeakPtr(),
-                            callback,
-                            base::Passed(&src_dest_info)));
+                            src_file_path, dest_file_path, callback,
+                            src_entry->resource_id(),
+                            src_entry->parent_local_id()));
 }
 
 void MoveOperation::MoveAfterAddToDirectory(
+    const base::FilePath& src_file_path,
+    const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> src_dest_info,
-    FileError error,
-    const base::FilePath& new_path) {
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
 
-  const base::FilePath& src_path = src_dest_info->first.path;
-  observer_->OnDirectoryChangedByOperation(src_path.DirName());
-  observer_->OnDirectoryChangedByOperation(new_path.DirName());
+  // Notify to the observers.
+  observer_->OnDirectoryChangedByOperation(src_file_path.DirName());
+  observer_->OnDirectoryChangedByOperation(dest_file_path.DirName());
 
-  RemoveFromDirectory(src_dest_info->first.entry->resource_id(),
-                      src_dest_info->first.entry->parent_local_id(),
-                      callback);
+  RemoveFromDirectory(resource_id, parent_resource_id, callback);
 }
 
-void MoveOperation::Rename(const std::string& src_id,
-                           const base::FilePath& src_path,
-                           const base::FilePath& new_name,
-                           bool new_name_has_hosted_extension,
-                           const FileMoveCallback& callback) {
+void MoveOperation::Rename(const ResourceEntry& entry,
+                           const std::string& new_title,
+                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  // It is a no-op if the file is renamed to the same name.
-  if (src_path.BaseName() == new_name) {
-    callback.Run(FILE_ERROR_OK, src_path);
+  if (entry.title() == new_title) {
+    // We have nothing to do.
+    callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  // Drop the .g<something> extension from |new_name| if the file being
-  // renamed is a hosted document and |new_name| has the same .g<something>
-  // extension as the file.
-  const std::string new_title = new_name_has_hosted_extension ?
-      new_name.RemoveExtension().AsUTF8Unsafe() :
-      new_name.AsUTF8Unsafe();
-
-  // Rename on the server.
-  scheduler_->RenameResource(src_id,
-                             new_title,
-                             base::Bind(&MoveOperation::RenameLocally,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        src_path,
-                                        new_title,
-                                        callback));
+  // Send a rename request to the server.
+  scheduler_->RenameResource(
+      entry.resource_id(),
+      new_title,
+      base::Bind(&MoveOperation::RenameAfterRenameResource,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 entry.resource_id(), new_title, callback));
 }
 
-void MoveOperation::RenameLocally(const base::FilePath& src_path,
-                                  const std::string& new_title,
-                                  const FileMoveCallback& callback,
-                                  google_apis::GDataErrorCode status) {
+void MoveOperation::RenameAfterRenameResource(
+    const std::string& resource_id,
+    const std::string& new_title,
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   const FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
+    callback.Run(error);
     return;
   }
-  metadata_->RenameEntryOnUIThread(src_path, new_title, callback);
+
+  // Server side renaming is done. Update the local metadata.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&RenameLocally, metadata_, resource_id, new_title),
+      callback);
 }
 
-void MoveOperation::AddToDirectory(const std::string& src_id,
-                                   const std::string& dest_dir_id,
-                                   const base::FilePath& src_path,
-                                   const base::FilePath& dest_dir_path,
-                                   const FileMoveCallback& callback) {
+void MoveOperation::AddToDirectory(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scheduler_->AddResourceToDirectory(
-      dest_dir_id, src_id,
-      base::Bind(&MoveOperation::AddToDirectoryLocally,
+      parent_resource_id, resource_id,
+      base::Bind(&MoveOperation::AddToDirectoryAfterAddResourceToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
-                 src_path,
-                 dest_dir_path,
-                 callback));
+                 resource_id, parent_resource_id, callback));
 }
 
-void MoveOperation::AddToDirectoryLocally(const base::FilePath& src_path,
-                                          const base::FilePath& dest_dir_path,
-                                          const FileMoveCallback& callback,
-                                          google_apis::GDataErrorCode status) {
+void MoveOperation::AddToDirectoryAfterAddResourceToDirectory(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   const FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
+    callback.Run(error);
     return;
   }
-  metadata_->MoveEntryToDirectoryOnUIThread(src_path, dest_dir_path, callback);
+
+  // Server side moving is done. Update the local metadata.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&MoveDirectoryLocally,
+                 metadata_, resource_id, parent_resource_id),
+      callback);
 }
 
 void MoveOperation::RemoveFromDirectory(
@@ -211,9 +282,10 @@ void MoveOperation::RemoveFromDirectory(
     const std::string& directory_resource_id,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  // Moving files out from "drive/other" special folder for storing orphan files
-  // has no meaning in the server. Just skip the step.
+  // Moving files out from "drive/other" special folder for storing orphan
+  // files has no meaning in the server. Just skip the step.
   if (util::IsSpecialResourceId(directory_resource_id)) {
     callback.Run(FILE_ERROR_OK);
     return;
@@ -222,15 +294,16 @@ void MoveOperation::RemoveFromDirectory(
   scheduler_->RemoveResourceFromDirectory(
       directory_resource_id,
       resource_id,
-      base::Bind(&MoveOperation::RemoveFromDirectoryCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      base::Bind(
+          &MoveOperation::RemoveFromDirectoryAfterRemoveResourceFromDirectory,
+          weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void MoveOperation::RemoveFromDirectoryCompleted(
+void MoveOperation::RemoveFromDirectoryAfterRemoveResourceFromDirectory(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
   callback.Run(GDataToFileError(status));
 }
 

@@ -959,6 +959,11 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
       base::FilePath::FromUTF8Unsafe("drive/root/dir2"), &entry));
 
+  // Make sure that directory cannot move under a file.
+  dir_entry.set_parent_local_id(file_entry.resource_id());
+  EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY,
+            resource_metadata_->RefreshEntry(dir_entry));
+
   // Cannot refresh root.
   dir_entry.Clear();
   dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
