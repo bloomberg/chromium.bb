@@ -29,6 +29,8 @@ namespace Input {
   extern const char kParamModifiers[];
   extern const char kParamTimestamp[];
   extern const char kParamDeviceSpace[];
+  extern const char kParamX[];
+  extern const char kParamY[];
 
   namespace dispatchMouseEvent {
     extern const char kName[];
@@ -37,6 +39,13 @@ namespace Input {
     extern const char kParamButton[];
     extern const char kParamClickCount[];
   }  // dispatchMouseEvent
+
+  namespace dispatchGestureEvent {
+    extern const char kName[];
+    extern const char kParamDeltaX[];
+    extern const char kParamDeltaY[];
+    extern const char kParamPinchScale[];
+  }  // dispatchGestureEvent
 
 }  // Input
 

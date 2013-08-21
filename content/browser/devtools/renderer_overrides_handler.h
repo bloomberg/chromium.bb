@@ -61,6 +61,8 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   // Input domain.
   scoped_refptr<DevToolsProtocol::Response> InputDispatchMouseEvent(
       scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> InputDispatchGestureEvent(
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   DevToolsAgentHost* agent_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;

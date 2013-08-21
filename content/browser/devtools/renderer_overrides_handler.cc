@@ -17,6 +17,7 @@
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -133,6 +134,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       devtools::Input::dispatchMouseEvent::kName,
       base::Bind(
           &RendererOverridesHandler::InputDispatchMouseEvent,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Input::dispatchGestureEvent::kName,
+      base::Bind(
+          &RendererOverridesHandler::InputDispatchGestureEvent,
           base::Unretained(this)));
 }
 
@@ -424,8 +430,8 @@ RendererOverridesHandler::InputDispatchMouseEvent(
 
   int x;
   int y;
-  if (!params->GetInteger(devtools::Input::dispatchMouseEvent::kParamX, &x) ||
-      !params->GetInteger(devtools::Input::dispatchMouseEvent::kParamY, &y)) {
+  if (!params->GetInteger(devtools::Input::kParamX, &x) ||
+      !params->GetInteger(devtools::Input::kParamY, &y)) {
     return NULL;
   }
 
@@ -463,7 +469,84 @@ RendererOverridesHandler::InputDispatchMouseEvent(
   }
 
   host->ForwardMouseEvent(mouse_event);
+  return command->SuccessResponse(NULL);
+}
 
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::InputDispatchGestureEvent(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* params = command->params();
+  if (!params)
+    return NULL;
+
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  WebKit::WebGestureEvent event;
+  ParseGenericInputParams(params, &event);
+
+  std::string type;
+  if (params->GetString(devtools::Input::kParamType,
+                        &type)) {
+    if (type == "scrollBegin")
+      event.type = WebInputEvent::GestureScrollBegin;
+    else if (type == "scrollUpdate")
+      event.type = WebInputEvent::GestureScrollUpdate;
+    else if (type == "scrollEnd")
+      event.type = WebInputEvent::GestureScrollEnd;
+    else if (type == "tapDown")
+      event.type = WebInputEvent::GestureTapDown;
+    else if (type == "tap")
+      event.type = WebInputEvent::GestureTap;
+    else if (type == "pinchBegin")
+      event.type = WebInputEvent::GesturePinchBegin;
+    else if (type == "pinchUpdate")
+      event.type = WebInputEvent::GesturePinchUpdate;
+    else if (type == "pinchEnd")
+      event.type = WebInputEvent::GesturePinchEnd;
+    else
+      return NULL;
+  } else {
+    return NULL;
+  }
+
+  float device_scale_factor = ui::GetScaleFactorScale(
+      GetScaleFactorForView(host->GetView()));
+
+  int x;
+  int y;
+  if (!params->GetInteger(devtools::Input::kParamX, &x) ||
+      !params->GetInteger(devtools::Input::kParamY, &y)) {
+    return NULL;
+  }
+  event.x = floor(x / device_scale_factor);
+  event.y = floor(y / device_scale_factor);
+  event.globalX = event.x;
+  event.globalY = event.y;
+
+  if (type == "scrollUpdate") {
+    int dx;
+    int dy;
+    if (!params->GetInteger(
+            devtools::Input::dispatchGestureEvent::kParamDeltaX, &dx) ||
+        !params->GetInteger(
+            devtools::Input::dispatchGestureEvent::kParamDeltaY, &dy)) {
+      return NULL;
+    }
+    event.data.scrollUpdate.deltaX = floor(dx / device_scale_factor);
+    event.data.scrollUpdate.deltaY = floor(dy / device_scale_factor);
+  }
+
+  if (type == "pinchUpdate") {
+    double scale;
+    if (!params->GetDouble(
+        devtools::Input::dispatchGestureEvent::kParamPinchScale,
+        &scale)) {
+      return NULL;
+    }
+    event.data.pinchUpdate.scale = static_cast<float>(scale);
+  }
+
+  host->ForwardGestureEvent(event);
   return command->SuccessResponse(NULL);
 }
 

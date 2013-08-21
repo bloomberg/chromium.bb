@@ -22,14 +22,21 @@ const char kParamType[] = "type";
 const char kParamModifiers[] = "modifiers";
 const char kParamTimestamp[] = "timestamp";
 const char kParamDeviceSpace[] = "deviceSpace";
+const char kParamX[] = "x";
+const char kParamY[] = "y";
 
 namespace dispatchMouseEvent {
   const char kName[] = "Input.dispatchMouseEvent";
-  const char kParamX[] = "x";
-  const char kParamY[] = "y";
   const char kParamButton[] = "button";
   const char kParamClickCount[] = "clickCount";
 }  // dispatchMouseEvent
+
+namespace dispatchGestureEvent {
+  const char kName[] = "Input.dispatchGestureEvent";
+  const char kParamDeltaX[] = "deltaX";
+  const char kParamDeltaY[] = "deltaY";
+  const char kParamPinchScale[] = "pinchScale";
+}  // dispatchGestureEvent
 
 }  // Input
 
