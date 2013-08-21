@@ -472,7 +472,13 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader) {
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_URLLoader DISABLED_URLLoader
+#else
+#define MAYBE_URLLoader URLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_URLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
