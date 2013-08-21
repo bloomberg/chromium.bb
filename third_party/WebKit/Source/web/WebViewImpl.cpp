@@ -63,6 +63,7 @@
 #include "PinchViewports.h"
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SpeechInputClientImpl.h"
 #include "SpeechRecognitionClientProxy.h"
 #include "ValidationMessageClientImpl.h"
@@ -2261,6 +2262,9 @@ WebTextInputType WebViewImpl::textInputType()
 
 WebString WebViewImpl::inputModeOfFocusedElement()
 {
+    if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
+        return WebString();
+
     Element* element = focusedElement();
     if (!element)
         return WebString();
