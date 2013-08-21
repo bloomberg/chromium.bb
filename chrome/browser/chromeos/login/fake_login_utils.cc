@@ -25,6 +25,7 @@ FakeLoginUtils::~FakeLoginUtils() {}
 
 void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {
+  login_host->BeforeSessionStart();
   if (should_launch_browser_) {
     StartupBrowserCreator browser_creator;
     chrome::startup::IsFirstRun first_run =
@@ -40,6 +41,7 @@ void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
   }
   if (login_host)
     login_host->Finalize();
+  UserManager::Get()->SessionStarted();
 }
 
 void FakeLoginUtils::PrepareProfile(const UserContext& user_context,

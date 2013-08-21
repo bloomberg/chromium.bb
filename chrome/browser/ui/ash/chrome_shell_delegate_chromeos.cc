@@ -7,6 +7,7 @@
 #include "apps/native_app_window.h"
 #include "apps/shell_window_registry.h"
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
@@ -42,6 +43,21 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+
+namespace {
+
+// This function is used for restoring focus after the user session is started.
+// It's needed because some windows can be opened in background while login UI
+// is still active because we currently restore browser windows before login UI
+// is deleted.
+void RestoreFocus() {
+  ash::MruWindowTracker::WindowList mru_list =
+      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  if (!mru_list.empty())
+    mru_list.front()->Focus();
+}
+
+}  // anonymous namespace
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -243,6 +259,7 @@ void ChromeShellDelegate::Observe(int type,
       ash::Shell::GetInstance()->CreateLauncher();
       break;
     case chrome::NOTIFICATION_SESSION_STARTED:
+      RestoreFocus();
       ash::Shell::GetInstance()->ShowLauncher();
       break;
     default:
