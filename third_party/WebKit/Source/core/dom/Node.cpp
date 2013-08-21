@@ -858,8 +858,6 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
         // FIXME: This flag is only used by HTMLFrameElementBase and doesn't look needed.
         if (shouldSetAttached == SetAttached)
             node->setAttached();
-        if (isActiveInsertionPoint(node))
-            toInsertionPoint(node)->lazyAttachDistribution(shouldSetAttached);
         for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
             root->lazyAttach(shouldSetAttached);
     }

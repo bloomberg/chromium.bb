@@ -66,8 +66,6 @@ public:
     Node* nextTo(const Node* node) const { return m_distribution.nextTo(node); }
     Node* previousTo(const Node* node) const { return m_distribution.previousTo(node); }
 
-    void lazyAttachDistribution(ShouldSetAttached);
-
 protected:
     InsertionPoint(const QualifiedName&, Document*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
