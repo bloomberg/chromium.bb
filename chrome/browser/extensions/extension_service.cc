@@ -1512,7 +1512,6 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
 
   // Handle uninstalls first.
   if (extension_sync_data.uninstalled()) {
-    std::string error;
     if (!UninstallExtensionHelper(this, id)) {
       LOG(WARNING) << "Could not uninstall extension " << id
                    << " for sync";
