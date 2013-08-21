@@ -187,6 +187,7 @@ std::string TestCharSet::TestUTF16ToCharSet() {
       &utf16[0], static_cast<uint32_t>(utf16.size()),
       "latin1", PP_CHARSET_TRUSTED_CONVERSIONERROR_SUBSTITUTE,
       &output_buffer[0], &utf8result_len);
+  ASSERT_TRUE(result == PP_TRUE);
   ASSERT_TRUE(utf8result_len == 3);
   output_buffer.resize(utf8result_len);
   ASSERT_TRUE(output_buffer == "h?i");
@@ -201,6 +202,7 @@ std::string TestCharSet::TestUTF16ToCharSet() {
       &utf16[0], static_cast<uint32_t>(utf16.size()),
       "latin1", PP_CHARSET_TRUSTED_CONVERSIONERROR_SUBSTITUTE,
       &output_buffer[0], &utf8result_len);
+  ASSERT_TRUE(result == PP_TRUE);
   ASSERT_TRUE(utf8result_len == 2);
   ASSERT_TRUE(output_buffer[0] == '?' && output_buffer[1] == 'A');
 
