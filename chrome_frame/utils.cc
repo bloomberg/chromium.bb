@@ -9,6 +9,7 @@
 #include <htiframe.h>
 #include <mshtml.h>
 #include <shlobj.h>
+#include <limits>
 
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
@@ -65,6 +66,7 @@ const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
 const wchar_t kChromeFrameConfigKey[] = L"Software\\Google\\ChromeFrame";
 const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
+const wchar_t kSkipGCFMetadataCheck[] = L"SkipGCFMetadataCheck";
 const wchar_t kExcludeUAFromDomainList[] = L"ExcludeUAFromDomain";
 const wchar_t kPatchProtocols[] = L"PatchProtocols";
 const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
@@ -735,6 +737,24 @@ bool IsGcfDefaultRenderer() {
   }
 
   return is_default != 0;
+}
+
+// Check for the registry key 'SkipGCFMetadataCheck' and if true, then
+// ignore presence of <meta http-equiv="X-UA-Compatible" content="chrome=1">
+bool SkipMetadataCheck() {
+  // Check policy settings
+  PolicySettings::SkipMetadataCheck metadataCheck =
+      PolicySettings::GetInstance()->skip_metadata_check();
+  if (metadataCheck != PolicySettings::SKIP_METADATA_CHECK_NOT_SPECIFIED)
+    return (metadataCheck == PolicySettings::SKIP_METADATA_CHECK_YES);
+
+  DWORD skip = 0;
+  RegKey config_key;
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                      KEY_READ) == ERROR_SUCCESS) {
+    config_key.ReadValueDW(kSkipGCFMetadataCheck, &skip);
+  }
+  return skip != 0;
 }
 
 RendererType RendererTypeForUrl(const std::wstring& url) {

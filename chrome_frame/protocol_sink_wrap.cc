@@ -4,6 +4,7 @@
 
 #include <htiframe.h>
 #include <mshtml.h>
+#include <algorithm>
 
 #include "chrome_frame/protocol_sink_wrap.h"
 
@@ -20,6 +21,8 @@
 #include "chrome_frame/function_stub.h"
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/utils.h"
+
+using std::min;
 
 // BINDSTATUS_SERVER_MIMETYPEAVAILABLE == 54. Introduced in IE 8, so
 // not in everyone's headers yet. See:
@@ -478,7 +481,8 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
     last_chance = true;
   }
 
-  renderer_type_ = DetermineRendererType(buffer_, buffer_size_, last_chance);
+  renderer_type_ = SkipMetadataCheck() ? RENDERER_TYPE_OTHER
+      : DetermineRendererType(buffer_, buffer_size_, last_chance);
 
   if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
     // do not report anything, we need more data.

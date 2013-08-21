@@ -276,6 +276,11 @@ bool IsUnpinnedMode();
 // Returns true if all HTML pages should be rendered in GCF by default.
 bool IsGcfDefaultRenderer();
 
+// Returns true if the presence of
+// <meta http-equiv="X-UA-Compatible" content="chrome=1">
+// in HTML pages should be ignored
+bool SkipMetadataCheck();
+
 // Check if this url is opting into Chrome Frame based on static settings.
 // Returns one of:
 // - RENDERER_TYPE_UNDETERMINED if not opt-in or if explicit opt-out

@@ -84,8 +84,8 @@ void PolicySettings::ReadUrlSettings(
 
   DCHECK(value == RENDERER_NOT_SPECIFIED ||
          value == RENDER_IN_HOST ||
-         value == RENDER_IN_CHROME_FRAME) <<
-      "invalid default renderer setting: " << value;
+         value == RENDER_IN_CHROME_FRAME)
+      << "invalid default renderer setting: " << value;
 
   if (value != RENDER_IN_HOST && value != RENDER_IN_CHROME_FRAME) {
     DVLOG(1) << "default renderer not specified via policy";
@@ -101,6 +101,40 @@ void PolicySettings::ReadUrlSettings(
     DVLOG(1) << "Default renderer as specified via policy: "
              << *default_renderer
              << " exclusion list size: " << renderer_exclusion_list->size();
+  }
+}
+
+// static
+void PolicySettings::ReadMetadataCheckSettings(
+    SkipMetadataCheck* skip_metadata_check) {
+  DCHECK(skip_metadata_check);
+
+  *skip_metadata_check = SKIP_METADATA_CHECK_NOT_SPECIFIED;
+
+  base::win::RegKey config_key;
+  DWORD value = SKIP_METADATA_CHECK_NOT_SPECIFIED;
+  string16 settings_value(
+      ASCIIToWide(policy::key::kSkipMetadataCheck));
+  for (int i = 0; i < arraysize(kRootKeys); ++i) {
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
+                         KEY_READ) == ERROR_SUCCESS) &&
+        (config_key.ReadValueDW(settings_value.c_str(),
+                                &value) == ERROR_SUCCESS)) {
+      break;
+    }
+  }
+
+  DCHECK(value == SKIP_METADATA_CHECK_NOT_SPECIFIED ||
+         value == SKIP_METADATA_CHECK_NO ||
+         value == SKIP_METADATA_CHECK_YES)
+      << "invalid skip metadata check setting: " << value;
+
+  if (value != SKIP_METADATA_CHECK_NO && value != SKIP_METADATA_CHECK_YES) {
+    DVLOG(1) << "metadata check not specified via policy";
+  } else {
+    *skip_metadata_check = static_cast<SkipMetadataCheck>(value);
+    DVLOG(1) << "SkipMetadata check as specified via policy: "
+             << *skip_metadata_check;
   }
 }
 
@@ -156,6 +190,7 @@ void PolicySettings::ReadBoolSetting(const char* value_name, bool* value) {
 
 void PolicySettings::RefreshFromRegistry() {
   RendererForUrl default_renderer;
+  SkipMetadataCheck skip_metadata_check;
   std::vector<std::wstring> renderer_exclusion_list;
   std::vector<std::wstring> content_type_list;
   std::wstring application_locale;
@@ -165,6 +200,7 @@ void PolicySettings::RefreshFromRegistry() {
 
   // Read the latest settings from the registry
   ReadUrlSettings(&default_renderer, &renderer_exclusion_list);
+  ReadMetadataCheckSettings(&skip_metadata_check);
   ReadContentTypeSetting(&content_type_list);
   ReadStringSetting(policy::key::kApplicationLocaleValue, &application_locale);
   ReadStringSetting(policy::key::kAdditionalLaunchParameters,
@@ -181,6 +217,7 @@ void PolicySettings::RefreshFromRegistry() {
   using std::swap;
 
   swap(default_renderer_, default_renderer);
+  swap(skip_metadata_check_, skip_metadata_check);
   swap(renderer_exclusion_list_, renderer_exclusion_list);
   swap(content_type_list_, content_type_list);
   swap(application_locale_, application_locale);

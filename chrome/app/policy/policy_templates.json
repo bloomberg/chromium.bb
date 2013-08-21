@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 237
+#   For your editing convenience: highest ID currently used: 238
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2674,6 +2674,25 @@
           'desc': '''Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> launches <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           If this policy is not set the default command line will be used.''',
+        },
+        {
+          'name': 'SkipMetadataCheck',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_frame:31-'],
+          'features': {
+            'dynamic_refresh': False,
+          },
+          'example_value': False,
+          'id': 238,
+          'caption': '''Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
+          'desc': '''Normally pages with X-UA-Compatible set to chrome=1 will be rendered in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> regardless of the 'ChromeFrameRendererSettings' policy.
+
+          If you enable this setting, pages will not be scanned for meta tags.
+
+          If you disable this setting, pages will be scanned for meta tags.
+
+          If this policy is not set, pages will be scanned for meta tags.'''
         },
       ],
     },
