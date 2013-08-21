@@ -73,9 +73,9 @@ shouldBe("new MessageEvent('eventType', { source: this }).source", "this");
 
 // MessagePort objects.
 var channel = new MessageChannel();
-shouldBe("new MessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source", "null");
+shouldBe("new MessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source", "channel.port1");
 
-// Non-window objects.
+// Unacceptable source objects (not a Window or a MessagePort).
 shouldBe("new MessageEvent('eventType', { source: test_object }).source", "null");
 shouldBe("new MessageEvent('eventType', { source: document }).source", "null");
 shouldBe("new MessageEvent('eventType', { source: document.body }).source", "null");

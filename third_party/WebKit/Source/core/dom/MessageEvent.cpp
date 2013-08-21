@@ -53,7 +53,7 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     , m_dataType(DataTypeScriptValue)
     , m_origin(initializer.origin)
     , m_lastEventId(initializer.lastEventId)
-    , m_source(initializer.source)
+    , m_source(isValidSource(initializer.source.get()) ? initializer.source : 0)
     , m_ports(adoptPtr(new MessagePortArray(initializer.ports)))
 {
     ScriptWrappable::init(this);
