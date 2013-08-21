@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/predictor.h"
@@ -25,7 +24,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -187,19 +185,13 @@ void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
 }
 
 void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
+#if defined(OS_WIN) && defined(USE_AURA)
   if (editable) {
-#if defined(OS_WIN) && defined(USE_AURA)
     base::win::DisplayVirtualKeyboard();
-#endif
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_FOCUSED_NODE_TOUCHED,
-        content::Source<RenderViewHost>(render_view_host()),
-        content::Details<bool>(&editable));
   } else {
-#if defined(OS_WIN) && defined(USE_AURA)
     base::win::DismissVirtualKeyboard();
-#endif
   }
+#endif  // OS_WIN && USE_AURA
 }
 
 // Handles the image thumbnail for the context node, composes a image search

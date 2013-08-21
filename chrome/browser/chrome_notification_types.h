@@ -161,11 +161,6 @@ enum NotificationType {
   // invoked on.
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
-  // Notification posted when the element that is focused has been touched. A
-  // bool parameter is passed in this notification which indicates if this node
-  // accepts. The source is the RenderViewHost.
-  NOTIFICATION_FOCUSED_NODE_TOUCHED,
-
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a WebContentsDelegate. The source is the
