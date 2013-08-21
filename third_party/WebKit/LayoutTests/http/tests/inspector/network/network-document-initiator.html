@@ -4,8 +4,6 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-console.log("Page loaded.");
-
 function navigateFromScript()
 {
     window.location.href = "?foo";
@@ -13,8 +11,8 @@ function navigateFromScript()
 
 var test = function()
 {
-    InspectorTest.addConsoleSniffer(step1);
     InspectorTest.evaluateInPage("navigateFromScript()");
+    InspectorTest.runWhenPageLoads(step1);
 
     function findRequestByURL(url)
     {
@@ -45,10 +43,7 @@ var test = function()
 
     function step1()
     {
-        var request = findRequestByURL(/\?foo/);
-        if (!request)
-            return;
-        dumpInitiator(request);
+        dumpInitiator(findRequestByURL(/\?foo/));
         InspectorTest.completeTest();
     }
 }

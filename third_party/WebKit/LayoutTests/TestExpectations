@@ -1232,9 +1232,6 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
-# New flaky test added in r156227.
-crbug.com/272725 [ Release ] http/tests/inspector/network/network-document-initiator.html [ Failure Pass ]
-
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 crbug.com/276759 [ Linux ] fast/images/image-zoom-to-25.html [ Pass Failure ]
