@@ -139,7 +139,7 @@ PassRefPtr<Frame> Frame::create(Page* page, HTMLFrameOwnerElement* ownerElement,
 Frame::~Frame()
 {
     setView(0);
-    loader()->clear(false);
+    loader()->clear(ClearScriptObjects | ClearWindowObject);
 
     // FIXME: We should not be doing all this work inside the destructor
 

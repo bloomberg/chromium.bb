@@ -965,7 +965,6 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-
 PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
 {
     // Create a new document before clearing the frame, because it may need to
@@ -975,19 +974,16 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
         document = SinkDocument::create(DocumentInit(url, frame));
     bool shouldReuseDefaultView = frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
 
-    RefPtr<DOMWindow> originalDOMWindow;
-    if (shouldReuseDefaultView)
-        originalDOMWindow = frame->domWindow();
-    frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
+    ClearOptions options = 0;
+    if (!shouldReuseDefaultView)
+        options = ClearWindowProperties | ClearScriptObjects;
+    frame->loader()->clear(options);
 
-    if (!shouldReuseDefaultView) {
+    if (frame->document() && frame->document()->attached())
+        frame->document()->prepareForDestruction();
+
+    if (!shouldReuseDefaultView)
         frame->setDOMWindow(DOMWindow::create(frame));
-    } else {
-        // Note that the old Document is still attached to the DOMWindow; the
-        // setDocument() call below will detach the old Document.
-        ASSERT(originalDOMWindow);
-        frame->setDOMWindow(originalDOMWindow);
-    }
 
     frame->loader()->setOutgoingReferrer(url);
     frame->domWindow()->setDocument(document);

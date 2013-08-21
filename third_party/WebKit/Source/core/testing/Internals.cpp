@@ -210,7 +210,7 @@ void Internals::resetToConsistentState(Page* page)
 Internals::Internals(Document* document)
     : ContextLifecycleObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
-    , m_scrollingCoordinator(document->page()->scrollingCoordinator())
+    , m_scrollingCoordinator(document->page() ? document->page()->scrollingCoordinator() : 0)
 {
 }
 

@@ -1953,6 +1953,12 @@ void Document::detach(const AttachContext& context)
 void Document::prepareForDestruction()
 {
     disconnectDescendantFrames();
+
+    // The process of disconnecting descendant frames could have already
+    // detached us.
+    if (!attached())
+        return;
+
     if (DOMWindow* window = this->domWindow())
         window->willDetachDocumentFromFrame();
     detach();

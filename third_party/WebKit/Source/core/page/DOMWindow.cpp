@@ -329,6 +329,11 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
     if (m_document) {
         if (m_document->attached()) {
             // FIXME: We don't call willRemove here. Why is that OK?
+            // This detach() call is also mostly redundant. Most of the calls to
+            // this function come via DocumentLoader::createWriterFor, which
+            // always detaches the previous Document first. Only XSLTProcessor
+            // depends on this detach() call, so it seems like there's some room
+            // for cleanup.
             m_document->detach();
         }
         m_document->setDOMWindow(0);
@@ -389,7 +394,7 @@ DOMWindow::~DOMWindow()
 
     removeAllEventListeners();
 
-    // Unparent any attached Document so Document won't try to use a destroyed DOMWindow.
+    ASSERT(!m_document->attached());
     setDocument(0);
 }
 
