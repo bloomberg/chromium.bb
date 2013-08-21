@@ -29,6 +29,12 @@ void ContentLayerPainter::Paint(SkCanvas* canvas,
   base::TimeTicks paint_start = base::TimeTicks::HighResNow();
   client_->PaintContents(canvas, content_rect, opaque);
   base::TimeTicks paint_end = base::TimeTicks::HighResNow();
+  // The start and end times might be the same if the paint was very fast or if
+  // our timer granularity is poor. Treat this as a very short time duration
+  // instead of none to avoid dividing by zero.
+  if (paint_end == paint_start)
+    paint_end += base::TimeDelta::FromMicroseconds(1);
+
   double pixels_per_sec = (content_rect.width() * content_rect.height()) /
                           (paint_end - paint_start).InSecondsF();
   UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",
