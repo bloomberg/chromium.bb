@@ -10,7 +10,6 @@
 namespace chromeos {
 
 std::string NetworkProfile::ToDebugString() const {
-  std::string result;
   if (type() == NetworkProfile::TYPE_SHARED) {
     return base::StringPrintf("NetworkProfile(SHARED, %s)",
                               path.c_str());
