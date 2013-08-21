@@ -1,3 +1,4 @@
-CONSOLE MESSAGE: line 3: Viewport argument key "a" not recognized and ignored.
+CONSOLE MESSAGE: line 3: The key "a" is not recognized and ignored.
+CONSOLE MESSAGE: line 3: Note that ';' is not a key-value pair separator. The list should be comma-separated.
 ALERT: viewport size 320x352 scale 1 with limits [1, 5] and userScalable true
 

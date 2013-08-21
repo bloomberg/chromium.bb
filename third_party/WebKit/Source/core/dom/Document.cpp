@@ -2841,6 +2841,11 @@ void Document::processHttpEquivXFrameOptions(const String& content)
     }
 }
 
+static bool isInvalidSeparator(UChar c)
+{
+    return c == ';';
+}
+
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't.
 static bool isSeparator(UChar c)
 {
@@ -2849,6 +2854,8 @@ static bool isSeparator(UChar c)
 
 void Document::processArguments(const String& features, void* data, ArgumentsCallback callback)
 {
+    bool error = false;
+
     // Tread lightly in this code -- it was specifically designed to mimic Win IE's parsing behavior.
     int keyBegin, keyEnd;
     int valueBegin, valueEnd;
@@ -2866,12 +2873,15 @@ void Document::processArguments(const String& features, void* data, ArgumentsCal
         keyBegin = i;
 
         // skip to first separator
-        while (!isSeparator(buffer[i]))
+        while (!isSeparator(buffer[i])) {
+            error |= isInvalidSeparator(buffer[i]);
             i++;
+        }
         keyEnd = i;
 
         // skip to first '=', but don't skip past a ',' or the end of the string
         while (buffer[i] != '=') {
+            error |= isInvalidSeparator(buffer[i]);
             if (buffer[i] == ',' || i >= length)
                 break;
             i++;
@@ -2886,8 +2896,10 @@ void Document::processArguments(const String& features, void* data, ArgumentsCal
         valueBegin = i;
 
         // skip to first separator
-        while (!isSeparator(buffer[i]))
+        while (!isSeparator(buffer[i])) {
+            error |= isInvalidSeparator(buffer[i]);
             i++;
+        }
         valueEnd = i;
 
         ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
@@ -2896,6 +2908,8 @@ void Document::processArguments(const String& features, void* data, ArgumentsCal
         String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
         callback(keyString, valueString, this, data);
     }
+    if (error)
+        reportViewportWarning(this, InvalidKeyValuePairSeparatorError, String(), String());
 }
 
 void Document::processViewport(const String& features, ViewportArguments::Type origin)

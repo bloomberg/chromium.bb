@@ -396,11 +396,12 @@ void setViewportFeature(const String& keyString, const String& valueString, Docu
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
 {
     static const char* const errors[] = {
-        "Viewport argument key \"%replacement1\" not recognized and ignored.",
-        "Viewport argument value \"%replacement1\" for key \"%replacement2\" is invalid, and has been ignored.",
-        "Viewport argument value \"%replacement1\" for key \"%replacement2\" was truncated to its numeric prefix.",
-        "Viewport maximum-scale cannot be larger than 10.0. The maximum-scale will be set to 10.0.",
-        "Viewport target-densitydpi is not supported.",
+        "Note that ';' is not a key-value pair separator. The list should be comma-separated.",
+        "The key \"%replacement1\" is not recognized and ignored.",
+        "The value \"%replacement1\" for key \"%replacement2\" is invalid, and has been ignored.",
+        "The value \"%replacement1\" for key \"%replacement2\" was truncated to its numeric prefix.",
+        "The value for key \"maximum-scale\" is out of bounds and the value has been clamped.",
+        "The key \"target-densitydpi\" is not supported.",
     };
 
     return errors[errorCode];
@@ -409,6 +410,7 @@ static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
 static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode)
 {
     switch (errorCode) {
+    case InvalidKeyValuePairSeparatorError:
     case TruncatedViewportArgumentValueError:
     case TargetDensityDpiUnsupported:
         return WarningMessageLevel;
@@ -433,9 +435,6 @@ void reportViewportWarning(Document* document, ViewportErrorCode errorCode, cons
         message.replace("%replacement1", replacement1);
     if (!replacement2.isNull())
         message.replace("%replacement2", replacement2);
-
-    if ((errorCode == UnrecognizedViewportArgumentValueError || errorCode == TruncatedViewportArgumentValueError) && replacement1.find(';') != WTF::notFound)
-        message.append(" Note that ';' is not a separator in viewport values. The list should be comma-separated.");
 
     // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     document->addConsoleMessage(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message);

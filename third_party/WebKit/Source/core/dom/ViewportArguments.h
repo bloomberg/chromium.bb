@@ -37,6 +37,7 @@ namespace WebCore {
 class Document;
 
 enum ViewportErrorCode {
+    InvalidKeyValuePairSeparatorError,
     UnrecognizedViewportArgumentKeyError,
     UnrecognizedViewportArgumentValueError,
     TruncatedViewportArgumentValueError,
