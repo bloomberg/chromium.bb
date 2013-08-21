@@ -49,6 +49,9 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->StartDataRequest(path, render_process_id, render_view_id,
                                      callback);
   }
+  virtual bool ShouldReplaceExistingSource() const OVERRIDE {
+    return parent_->replace_existing_source_;
+  }
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
     return parent_->add_csp_;
   }
@@ -81,7 +84,8 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       object_src_set_(false),
       frame_src_set_(false),
       deny_xframe_options_(true),
-      disable_set_font_strings_(false) {
+      disable_set_font_strings_(false),
+      replace_existing_source_(true) {
 }
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
@@ -132,6 +136,10 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 void WebUIDataSourceImpl::SetRequestFilter(
     const WebUIDataSource::HandleRequestCallback& callback) {
   filter_callback_ = callback;
+}
+
+void WebUIDataSourceImpl::DisableReplaceExistingSource() {
+  replace_existing_source_ = false;
 }
 
 void WebUIDataSourceImpl::DisableContentSecurityPolicy() {

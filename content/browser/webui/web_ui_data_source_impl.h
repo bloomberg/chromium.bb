@@ -42,6 +42,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   virtual void SetDefaultResource(int resource_id) OVERRIDE;
   virtual void SetRequestFilter(
       const WebUIDataSource::HandleRequestCallback& callback) OVERRIDE;
+  virtual void DisableReplaceExistingSource() OVERRIDE;
   virtual void DisableContentSecurityPolicy() OVERRIDE;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) OVERRIDE;
@@ -99,6 +100,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   std::string frame_src_;
   bool deny_xframe_options_;
   bool disable_set_font_strings_;
+  bool replace_existing_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };
