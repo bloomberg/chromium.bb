@@ -13,82 +13,50 @@ description("Tests cypto.subtle.digest.");
 
 jsTestIsAsync = true;
 
-// Each sub-test run in this file is asynchronous. Chaining them together
-// manually leads to very unreadable code, due to having closures within
-// closures within closures. Instead of doing that, each subtest calls
-// "startNextTest()" once it has completed.
-
-currentTestIndex = 0;
-
-function startNextTest()
-{
-    var currentTest = allTests[currentTestIndex++];
-
-    if (!currentTest) {
-        finishJSTest();
-        return;
-    }
-
-    currentTest();
-}
-
-function rejectHandler(value, justPrint)
+function printRejectedResult(value)
 {
     debug("    rejected with value of " + value);
-    if (!justPrint)
-        startNextTest();
 }
 
-function resultHandler(buffer, justPrint)
+function printAcceptedResult(result)
 {
-    debug("    = " + byteArrayToHexString(new Uint8Array(buffer)));
-    if (!justPrint)
-        startNextTest();
+    debug("    = " + byteArrayToHexString(new Uint8Array(result)));
 }
 
-function failHandler(value)
-{
-    testFailed(value);
-    startNextTest();
-}
+Promise.fulfill(null).then(function() {
+    debug("SHA1 of []");
+    return crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([]));
+}).then(function(result) {
+    printAcceptedResult(result);
 
-allTests = [
-    function()
-    {
-        debug("SHA1 of []")
-        crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([])).then(resultHandler, rejectHandler);
-    },
+    debug("SHA1 of [0x0]")
+    return crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([0]));
+}).then(function(result) {
+    printAcceptedResult(result);
 
-    function()
-    {
-        debug("SHA1 of [0x0]")
-        crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([0])).then(resultHandler, rejectHandler);
-    },
+    debug("SHA-256 rejects (dummy implementation)");
+    return crypto.subtle.digest({name: 'sha-256'}, new Uint8Array([]));
 
-    function()
-    {
-        debug("SHA-256 rejects (dummy implementation)");
-        crypto.subtle.digest({name: 'sha-256'}, new Uint8Array([])).then(resultHandler, rejectHandler);
-    },
+}).then(undefined, function(result) {
+    printRejectedResult(result);
 
-    function()
-    {
-        debug("Error (dummy implementation rejects this input)");
-        var data = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-        crypto.subtle.digest({name: 'sha-1'}, data).then(resultHandler, rejectHandler);
-    },
+    debug("Error (dummy implementation rejects this input)");
+    var data = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    return crypto.subtle.digest({name: 'sha-1'}, data);
+}).then(undefined, function(result) {
+    printRejectedResult(result);
 
-    function()
-    {
-        shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
-        shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
-        shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
-        startNextTest();
-    },
-];
+    // Pass invalid data to digeset()
+    shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
+    shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
+    shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
 
-// Begin!
-startNextTest();
+    // Pass invalid algorithmIdentifiers to digest()
+    data = new Uint8Array([0]);
+    shouldThrow("crypto.subtle.digest({name: 'sha'}, data)");
+    shouldThrow("crypto.subtle.digest(null, data)");
+    shouldThrow("crypto.subtle.digest({}, data)");
+}).then(finishJSTest, failAndFinishJSTest);
 
 </script>
 

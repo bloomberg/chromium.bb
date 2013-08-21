@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -12,48 +13,60 @@ description("Tests cypto.subtle.generateKey.");
 
 jsTestIsAsync = true;
 
-// Note that fractional numbers are truncated, so this length should be
-// interpreted as 1024.
-aesCbc = { name: 'aes-cbc', length: 1024.9 };
 extractable = true;
 keyUsages = ['encrypt', 'decrypt'];
 
-// length property is missing.
-invalidAesKeyGen = { name: 'aes-cbc' };
-shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
-
-// length is invalid (outside of range of "unsigned short")
-invalidAesKeyGen = { name: 'aes-cbc', length: 70000 };
-shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
-
-// length is invalid (outside of range of "unsigned short")
-invalidAesKeyGen = { name: 'aes-cbc', length: -3 };
-shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
-
-// keyUsages is invalid.
+// Invalid keyUsages
+aesCbc = { name: 'aes-cbc', length: 1024 };
 shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, -1)");
+shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, null)");
+shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, ['boo'])");
 
-// Invalid length
-invalidHmac256 = { name: 'hmac', hash: {name: 'sha-256' }, length:-3 };
-shouldThrow("crypto.subtle.generateKey(invalidHmac256, false, ['sign'])");
+// ---------------------------------------------------
+// AES-CBC normalization failures (AesKeyGenParams)
+// ---------------------------------------------------
 
-hmacSha256 = { name: 'hmac', hash: {name: 'sha-256' } };
-hmacSha256b = { name: 'hmac', hash: {name: 'sha-256' }, length:48 };
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages)");
 
-var promise0 = crypto.subtle.generateKey(aesCbc, extractable, keyUsages);
-var promise1 = crypto.subtle.generateKey(hmacSha256, false, ['sign']);
-var promise2 = crypto.subtle.generateKey(hmacSha256b, false, ['sign']);
+// ---------------------------------------------------
+// HMAC normalization failures (HmacKeyParams)
+// ---------------------------------------------------
 
-Promise.every(promise0, promise1, promise2).then(function(results)
-{
-    key = results[0];
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -3}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -NaN}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages)");
+
+// ---------------------------------------------------
+// RSASSA-PKCS1-v1_5 normalization failures (RsaKeyGenParams)
+// ---------------------------------------------------
+
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
+
+// Note that fractional numbers are truncated, so this length should be
+// interpreted as 1024.
+crypto.subtle.generateKey({name: 'aes-cbc', length: 1024.9}, extractable, ['decrypt', 'encrypt']).then(function(result) {
+    key = result;
     shouldBe("key.type", "'private'")
     shouldBe("key.extractable", "true")
     shouldBe("key.algorithm.name", "'AES-CBC'")
     shouldBe("key.algorithm.length", "1024")
     shouldBe("key.usages.join(',')", "'encrypt,decrypt'")
 
-    key = results[1];
+    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256' }}, false, ['sign']);
+}).then(function(result) {
+    key = result;
     shouldBe("key.type", "'private'")
     shouldBe("key.extractable", "false")
     shouldBe("key.algorithm.name", "'HMAC'")
@@ -61,16 +74,16 @@ Promise.every(promise0, promise1, promise2).then(function(results)
     shouldBe("key.algorithm.length", "null")
     shouldBe("key.usages.join(',')", "'sign'")
 
-    key = results[2];
+    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256' }, length:48 }, false, ['sign']);
+}).then(function(result) {
+    key = result;
     shouldBe("key.type", "'private'")
     shouldBe("key.extractable", "false")
     shouldBe("key.algorithm.name", "'HMAC'")
     shouldBe("key.algorithm.hash.name", "'SHA-256'")
     shouldBe("key.algorithm.length", "48")
     shouldBe("key.usages.join(',')", "'sign'")
-
-    finishJSTest();
-});
+}).then(finishJSTest, failAndFinishJSTest);
 
 </script>
 

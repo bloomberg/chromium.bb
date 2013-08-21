@@ -14,6 +14,9 @@ Error (dummy implementation rejects this input)
 PASS crypto.subtle.digest({name: 'sha-1'}) threw exception TypeError: Not enough arguments.
 PASS crypto.subtle.digest({name: 'sha-1'}, null) threw exception TypeError: Type error.
 PASS crypto.subtle.digest({name: 'sha-1'}, 10) threw exception TypeError: Type error.
+PASS crypto.subtle.digest({name: 'sha'}, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.digest(null, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.digest({}, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS successfullyParsed is true
 
 TEST COMPLETE

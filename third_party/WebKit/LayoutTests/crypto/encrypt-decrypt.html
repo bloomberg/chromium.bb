@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests cypto.subtle.encrypt and crypto.subtle.decrypt");
+
+jsTestIsAsync = true;
+
+importTestKeys().then(function(importedKeys) {
+    keys = importedKeys;
+
+    data = asciiToArrayBuffer("hello");
+
+    // ---------------------------------------------------
+    // AES-CBC normalization failures (AesCbcParams)
+    // ---------------------------------------------------
+
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: null}, keys.aesCbc, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC'}, keys.aesCbc, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, keys.aesCbc, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array[0]}, keys.aesCbc, data)");
+
+    // Try calling with the wrong key type.
+    aesCbc = {name: 'AES-CBC', iv: new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])};
+    shouldThrow("crypto.subtle.encrypt(aesCbc, keys.hmacSha1, data)");
+
+    // Key doesn't support encrypt.
+    shouldThrow("crypto.subtle.encrypt(aesCbc, keys.aesCbcJustDecrypt, data)");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>

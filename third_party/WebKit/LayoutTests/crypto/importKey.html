@@ -13,201 +13,122 @@ description("Tests cypto.subtle.importKey.");
 
 jsTestIsAsync = true;
 
-// Each sub-test run in this file is asynchronous. Chaining them together
-// manually leads to very unreadable code, due to having closures within
-// closures within closures. Instead of doing that, each subtest calls
-// "startNextTest()" once it has completed.
+aesCbc = {name: 'aes-cbc'};
 
-currentTestIndex = 0;
+Promise.fulfill(null).then(function() {
+    keyFormat = "raw";
+    data = asciiToArrayBuffer("private");
+    algorithm = { name: 'hmac', hash: { name: 'sha-256' } };
+    extractable = true;
+    // Note there are duplicates
+    keyUsages = ['encrypt', 'encrypt', 'encrypt', 'sign'];
 
-function startNextTest()
-{
-    var currentTest = allTests[currentTestIndex++];
-
-    if (!currentTest) {
-        finishJSTest();
-        return;
-    }
-
-    currentTest();
-}
-
-function rejectHandler(value)
-{
-    debug("    rejected with value of " + value);
-    startNextTest();
-}
-
-function failHandler(value)
-{
-    testFailed(value);
-    startNextTest();
-}
-
-aesCbc = { name: 'aes-cbc' };
-
-allTests = [
-    function()
-    {
-        keyFormat = "raw";
-        data = asciiToArrayBuffer("private");
-        algorithm = { name: 'hmac', hash: { name: 'sha-256' } };
-        extractable = true;
-        // Note there are duplicates
-        keyUsages = ['encrypt', 'encrypt', 'encrypt', 'sign'];
-
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-        function(value) {
-            key = value;
-            shouldBe("key.type", "'private'")
-            shouldBe("key.extractable", "true")
-            shouldBe("key.algorithm.name", "'HMAC'")
-            shouldBe("key.algorithm.hash.name", "'SHA-256'")
-            shouldBe("key.usages.join(',')", "'encrypt,sign'")
-
-            startNextTest();
-        }, failHandler);
-    },
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "true")
+    shouldBe("key.algorithm.name", "'HMAC'")
+    shouldBe("key.algorithm.hash.name", "'SHA-256'")
+    shouldBe("key.usages.join(',')", "'encrypt,sign'")
 
     // Same test as above, but with an keyUsages, and AES-CBC.
-    function()
-    {
-        keyFormat = "raw";
-        data = asciiToArrayBuffer("private");
-        algorithm = aesCbc;
-        extractable = true;
-        keyUsages = [];
+    keyFormat = "raw";
+    data = asciiToArrayBuffer("private");
+    algorithm = aesCbc;
+    extractable = true;
+    keyUsages = [];
 
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-        function(value) {
-            key = value;
-            shouldBe("key.type", "'private'")
-            shouldBe("key.extractable", "true")
-            shouldBe("key.algorithm.name", "'AES-CBC'")
-            shouldBe("key.usages.join(',')", "''")
-
-            startNextTest();
-        }, failHandler);
-    },
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "true")
+    shouldBe("key.algorithm.name", "'AES-CBC'")
+    shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with extractable = false.
-    function()
-    {
-        keyFormat = "raw";
-        data = asciiToArrayBuffer("private");
-        algorithm = aesCbc;
-        extractable = false;
-        keyUsages = [];
+    keyFormat = "raw";
+    data = asciiToArrayBuffer("private");
+    algorithm = aesCbc;
+    extractable = false;
+    keyUsages = [];
 
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-        function(value) {
-            key = value;
-            shouldBe("key.type", "'private'")
-            shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'AES-CBC'")
-            shouldBe("key.usages.join(',')", "''")
-
-            startNextTest();
-        }, failHandler);
-    },
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "false")
+    shouldBe("key.algorithm.name", "'AES-CBC'")
+    shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with key.type of public.
-    function()
-    {
-        keyFormat = "raw";
-        data = asciiToArrayBuffer("public");
-        algorithm = aesCbc;
-        extractable = false;
-        keyUsages = [];
+    keyFormat = "raw";
+    data = asciiToArrayBuffer("public");
+    algorithm = aesCbc;
+    extractable = false;
+    keyUsages = [];
 
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-        function(value) {
-            key = value;
-            shouldBe("key.type", "'public'")
-            shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'AES-CBC'")
-            shouldBe("key.usages.join(',')", "''")
-
-            startNextTest();
-        }, failHandler);
-    },
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'public'")
+    shouldBe("key.extractable", "false")
+    shouldBe("key.algorithm.name", "'AES-CBC'")
+    shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with keyFormat = spki
-    function()
-    {
-        keyFormat = "spki";
-        data = asciiToArrayBuffer("public");
-        algorithm = aesCbc;
-        extractable = false;
-        keyUsages = [];
+    keyFormat = "spki";
+    data = asciiToArrayBuffer("public");
+    algorithm = aesCbc;
+    extractable = false;
+    keyUsages = [];
 
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-        function(value) {
-            key = value;
-            shouldBe("key.type", "'public'")
-            shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'AES-CBC'")
-            shouldBe("key.usages.join(',')", "''")
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'public'")
+    shouldBe("key.extractable", "false")
+    shouldBe("key.algorithm.name", "'AES-CBC'")
+    shouldBe("key.usages.join(',')", "''")
 
-            startNextTest();
-        }, failHandler);
-    },
+    keyFormat = "spki";
+    data = asciiToArrayBuffer("error");
+    algorithm = aesCbc;
+    extractable = false;
+    keyUsages = [];
 
-    function()
-    {
-        keyFormat = "spki";
-        data = asciiToArrayBuffer("error");
-        algorithm = aesCbc;
-        extractable = false;
-        keyUsages = [];
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(undefined, function(result) {
+    debug("rejected with " + result);
 
-        crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages).then(
-            failHandler,
-            function(value) {
-                debug("rejected with " + value);
-                startNextTest();
-            });
-    },
+    keyFormat = "raw";
+    data = asciiToArrayBuffer("");
+    algorithm = aesCbc;
+    extractable = true;
+    keyUsages = [];
 
-    function()
-    {
-        keyFormat = "raw";
-        data = asciiToArrayBuffer("");
-        algorithm = aesCbc;
-        extractable = true;
+    // Invalid format.
+    shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)");
 
-        // Note contains duplicates and invalid entries.
-        keyUsages = [];
+    // Invalid key usage.
+    shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
 
-        // Invalid format.
-        shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)");
+    // Undefined key usage.
+    // FIXME: http://crbug.com/262383
+    //shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, undefined)");
 
-        // Invalid key usage.
-        shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
+    // Invalid data
+    shouldThrow("crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages)");
+    shouldThrow("crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages)");
 
-        // Undefined key usage.
-        // FIXME: http://crbug.com/262383
-        //shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, undefined)");
+    // Missing hash parameter for HMAC.
+    shouldThrow("crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages)");
 
-        // Invalid data
-        shouldThrow("crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages)");
-        shouldThrow("crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages)");
+    // SHA-1 doesn't support the importKey operation.
+    shouldThrow("crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages)");
+}).then(finishJSTest, failAndFinishJSTest);
 
-        // Missing hash parameter for HMAC.
-        invalidHmac = { name: 'hmac' };
-        shouldThrow("crypto.subtle.importKey(keyFormat, data, invalidHmac, extractable, keyUsages)");
-
-        // SHA-1 doesn't support the importKey operation.
-        sha1 = { name: 'sha-1' };
-        shouldThrow("crypto.subtle.importKey(keyFormat, data, sha1, extractable, keyUsages)");
-
-        startNextTest();
-    },
-
-];
-
-// Begin!
-startNextTest();
 </script>
 
 <script src="../fast/js/resources/js-test-post.js"></script>

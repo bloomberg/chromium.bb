@@ -13,35 +13,60 @@ description("Tests cypto.subtle.sign and crypto.subtle.verify");
 
 jsTestIsAsync = true;
 
-importHmacSha1Key().then(function(key) {
-    hmacSha1Key = key;
-    hmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
+importTestKeys().then(function(importedKeys) {
+    keys = importedKeys;
+
+    hmacSha1 = {name: 'hmac', hash: {name: 'sha-1'}};
 
     data = asciiToArrayBuffer("hello");
-    var expectedSignature = asciiToArrayBuffer("signed HMAC:hello");
 
     // Pass invalid signature parameters to verify()
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, null, data)");
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a', data)");
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, [], data)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data)");
 
-    var signPromise = crypto.subtle.sign(hmacSha1, hmacSha1Key, data);
-    var verifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, expectedSignature, data);
-    var badVerifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, asciiToArrayBuffer("badsignature"), data);
+    // Operation does not support signing.
+    shouldThrow("crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data)");
 
-    Promise.every(signPromise, verifyPromise, badVerifyPromise).then(function(results)
-    {
-        signResult = results[0];
-        verifyResult1 = results[1];
-        verifyResult2 = results[2];
+    // Key's algorithm must match.
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data)");
 
-        shouldBe("signResult.byteLength", "17");
-        shouldBe("verifyResult1", "true");
-        shouldBe("verifyResult2", "false");
+    // ---------------------------------------------------
+    // HMAC normalization failures (HmacParams)
+    // ---------------------------------------------------
+    shouldThrow("crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data)");
 
-        finishJSTest();
-    });
-});
+    // ---------------------------------------------------
+    // RSASSA-PKCS1-v1_5 normalization failures (RsaSsaParams)
+    // ---------------------------------------------------
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5'}, keys.rsaSsaSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: 3}, keys.rsaSsaSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: null}, keys.rsaSsaSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {}}, keys.rsaSsaSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'foo'}}, keys.rsaSsaSha1, data)");
+    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'AES-CBC'}}, keys.rsaSsaSha1, data)");
+
+    return crypto.subtle.sign(hmacSha1, keys.hmacSha1, data);
+}).then(function(result) {
+    signResult = result;
+    shouldBe("signResult.byteLength", "17");
+
+    expectedSignature = asciiToArrayBuffer("signed HMAC:hello");
+    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, expectedSignature, data);
+}).then(function(result) {
+    verifyResult = result;
+    shouldBe("verifyResult", "true");
+
+    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, asciiToArrayBuffer("badsignature"), data);
+}).then(function(result) {
+    verifyResult = result;
+    shouldBe("verifyResult", "false");
+}).then(finishJSTest, failAndFinishJSTest);
 
 </script>
 

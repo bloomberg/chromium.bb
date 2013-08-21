@@ -1,12 +1,23 @@
-function importHmacSha1Key()
+function importTestKeys()
 {
     var keyFormat = "spki";
     var data = new Uint8Array([]);
-    var algorithm = {name: 'hmac', hash: {name: 'sha-1'}};
     var extractable = false;
     var keyUsages = ['encrypt', 'decrypt', 'sign', 'verify'];
 
-    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+    var hmacPromise = crypto.subtle.importKey(keyFormat, data, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, keyUsages);
+    var rsaSsaPromise = crypto.subtle.importKey(keyFormat, data, {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}}, extractable, keyUsages);
+    var aesCbcPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
+    var aesCbcJustDecrypt = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, ['decrypt']);
+
+    return Promise.every(hmacPromise, rsaSsaPromise, aesCbcPromise, aesCbcJustDecrypt).then(function(results) {
+        return {
+            hmacSha1: results[0],
+            rsaSsaSha1: results[1],
+            aesCbc: results[2],
+            aesCbcJustDecrypt: results[3],
+        };
+    });
 }
 
 // Builds a hex string representation of any array-like input (array or
@@ -34,3 +45,9 @@ function asciiToArrayBuffer(str)
     return new Uint8Array(chars);
 }
 
+function failAndFinishJSTest(error)
+{
+    if (error)
+       debug(error);
+    finishJSTest();
+}
