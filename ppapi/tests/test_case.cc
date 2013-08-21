@@ -105,7 +105,6 @@ std::string TestCase::MakeFailureMessage(const char* file,
   // GYP_DEFINES='branding=Chrome buildtype=Official target_arch=x64'
   //     gclient runhooks
   // make -k -j4 BUILDTYPE=Release ppapi_tests
-  std::string s;
 
   std::ostringstream output;
   output << "Failure in " << file << "(" << line << "): " << cmd;
