@@ -1245,3 +1245,8 @@ crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_rep
 
 crbug.com/277005 [ Linux ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
+
+crbug.com/277088 [ Mac ] compositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ Failure ]
+crbug.com/277088 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ Failure ]
+crbug.com/277088 [ Mac ] compositing/overflow/opt-unclipped-descendants-into-composited-scrolling.html [ Failure ]
+crbug.com/277088 [ Mac ] virtual/gpu/compositedscrolling/overflow/opt-unclipped-descendants-into-composited-scrolling.html [ Failure ]
