@@ -1016,12 +1016,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     omnibox_view->SelectAll(true);
     ASSERT_TRUE(omnibox_view->IsSelectAll());
 
-    // The first item should be the default match.
-    size_t default_line = popup_model->selected_line();
-    std::string default_url =
-        popup_model->result().match_at(default_line).destination_url.spec();
-
     // Move down.
+    size_t default_line = popup_model->selected_line();
     omnibox_view->model()->OnUpOrDownKeyPressed(1);
     ASSERT_EQ(default_line + 1, popup_model->selected_line());
     string16 selected_text =
