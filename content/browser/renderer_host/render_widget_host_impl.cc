@@ -130,6 +130,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
+      screen_info_out_of_date_(false),
       overdraw_bottom_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
@@ -570,7 +571,7 @@ void RenderWidgetHostImpl::WasResized() {
 
   bool size_changed = new_size != last_requested_size_;
   bool side_payload_changed =
-      !screen_info_.get() ||
+      screen_info_out_of_date_ ||
       old_physical_backing_size != physical_backing_size_ ||
       was_fullscreen != is_fullscreen_ ||
       old_overdraw_bottom_height != overdraw_bottom_height_;
@@ -1139,6 +1140,7 @@ void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
     static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
   else
     RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
+  screen_info_out_of_date_ = false;
 }
 
 const NativeWebKeyboardEvent*
@@ -1155,6 +1157,7 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 }
 
 void RenderWidgetHostImpl::InvalidateScreenInfo() {
+  screen_info_out_of_date_ = true;
   screen_info_.reset();
 }
 

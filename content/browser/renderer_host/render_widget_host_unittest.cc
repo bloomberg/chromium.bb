@@ -857,13 +857,12 @@ class RenderWidgetHostWithSourceTest
 // -----------------------------------------------------------------------------
 
 TEST_F(RenderWidgetHostTest, Resize) {
-  // The initial bounds is the empty rect, but the screen info hasn't been sent
-  // yet, so setting it to the same thing should send the resize message.
+  // The initial bounds is the empty rect, and the screen info hasn't been sent
+  // yet, so setting it to the same thing shouldn't send the resize message.
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->last_requested_size_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Setting the bounds to a "real" rect should send out the notification.
   // but should not expect ack for empty physical backing size.
