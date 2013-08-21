@@ -144,6 +144,8 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kExposeInternalsForTesting))
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStableReleaseMode))
+    command_line->AppendSwitch(switches::kStableReleaseMode);
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(

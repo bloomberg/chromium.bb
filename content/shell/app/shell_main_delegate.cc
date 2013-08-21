@@ -125,8 +125,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitch(switches::kDisableGpuVsync);
-    command_line.AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-    command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
     command_line.AppendSwitch(switches::kEnableGestureTapHighlight);
@@ -138,6 +136,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // painting is enabled. See http://crbug.com/250777
     command_line.AppendSwitch(cc::switches::kDisableImplSidePainting);
 #endif
+
+    if (!command_line.HasSwitch(switches::kStableReleaseMode)) {
+      command_line.AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+      command_line.AppendSwitch(switches::kEnableCssShaders);
+    }
 
     if (!command_line.HasSwitch(switches::kEnableThreadedCompositing))
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
