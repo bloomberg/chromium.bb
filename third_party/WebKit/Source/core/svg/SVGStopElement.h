@@ -52,14 +52,8 @@ private:
 
 inline SVGStopElement* toSVGStopElement(Node* node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::stopTag));
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isGradientStop());
     return static_cast<SVGStopElement*>(node);
-}
-
-inline SVGStopElement* toSVGStopElement(SVGElement* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isGradientStop());
-    return static_cast<SVGStopElement*>(element);
 }
 
 } // namespace WebCore
