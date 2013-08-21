@@ -738,6 +738,9 @@ const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 
+// Enables Translate experimental new UX which replaces the infobar.
+const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
+
 // Enables Translate settings in chrome://settings/languages.
 const char kEnableTranslateSettings[]      = "enable-translate-settings";
 
