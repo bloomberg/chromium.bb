@@ -34,6 +34,11 @@
 #include "ui/aura/test/test_screen.h"
 #endif
 
+#if defined(OS_WIN)
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 namespace content {
 
 namespace {
@@ -279,6 +284,10 @@ views::ViewsDelegate* Shell::views_delegate_ = NULL;
 
 // static
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
+#if defined(OS_WIN)
+  _setmode(_fileno(stdout), _O_BINARY);
+  _setmode(_fileno(stderr), _O_BINARY);
+#endif
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
   gfx::Screen::SetScreenInstance(
@@ -292,6 +301,11 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 }
 
 void Shell::PlatformExit() {
+  std::vector<Shell*> windows = windows_;
+  for (std::vector<Shell*>::iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    (*it)->window_widget_->Close();
+  }
 #if defined(OS_CHROMEOS)
   if (minimal_shell_)
     delete minimal_shell_;
