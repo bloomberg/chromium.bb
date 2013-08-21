@@ -91,8 +91,10 @@ void ToastContentsView::SetContents(MessageView* view) {
   Layout();
   // If it has the contents already, this invocation means an update of the
   // popup toast, and the new contents should be read through a11y feature.
+  // The notification type should be ALERT, otherwise the accessibility message
+  // won't be read for this view which returns ROLE_WINDOW.
   if (already_has_contents)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, false);
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
