@@ -210,6 +210,9 @@ std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path);
 // or an empty string if an error is found.
 std::string GetMd5Digest(const base::FilePath& file_path);
 
+// Returns true if Drive is enabled for the given Profile.
+bool IsDriveEnabledForProfile(Profile* profile);
+
 }  // namespace util
 }  // namespace drive
 

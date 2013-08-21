@@ -19,6 +19,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,11 +30,13 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
+#include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -416,6 +419,20 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);
+}
+
+bool IsDriveEnabledForProfile(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!chromeos::IsProfileAssociatedWithGaiaAccount(profile))
+    return false;
+
+  // Disable Drive if preference is set. This can happen with commandline flag
+  // --disable-drive or enterprise policy, or with user settings.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableDrive))
+    return false;
+
+  return true;
 }
 
 }  // namespace util

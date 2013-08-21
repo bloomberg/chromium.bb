@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
-#include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -47,22 +46,6 @@ using content::BrowserThread;
 
 namespace drive {
 namespace {
-
-// Returns true if Drive is enabled for the given Profile.
-bool IsDriveEnabledForProfile(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!chromeos::IsProfileAssociatedWithGaiaAccount(profile))
-    return false;
-
-  // Disable Drive if preference is set.  This can happen with commandline flag
-  // --disable-gdata or enterprise policy, or probably with user settings too
-  // in the future.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableDrive))
-    return false;
-
-  return true;
-}
 
 // Returns a user agent string used for communicating with the Drive backend,
 // both WAPI and Drive API.  The user agent looks like:
@@ -274,7 +257,7 @@ void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
 bool DriveIntegrationService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!IsDriveEnabledForProfile(profile_))
+  if (!util::IsDriveEnabledForProfile(profile_))
     return false;
 
   // Drive may be disabled for cache initialization failure, etc.

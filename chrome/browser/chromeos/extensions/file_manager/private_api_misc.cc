@@ -42,11 +42,8 @@ bool GetPreferencesFunction::RunImpl() {
 
   const PrefService* service = profile_->GetPrefs();
 
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  bool drive_enabled = (integration_service != NULL);
-
-  value->SetBoolean("driveEnabled", drive_enabled);
+  value->SetBoolean("driveEnabled",
+                    drive::util::IsDriveEnabledForProfile(profile_));
 
   value->SetBoolean("cellularDisabled",
                     service->GetBoolean(prefs::kDisableDriveOverCellular));
