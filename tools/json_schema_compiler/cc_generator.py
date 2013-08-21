@@ -45,6 +45,7 @@ class _Generator(object):
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "base/logging.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
+      .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
           (self._namespace.source_file_dir, self._namespace.unix_name))
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
@@ -925,14 +926,14 @@ class _Generator(object):
     if not self._generate_error_messages:
       return c
     (c.Append('if (error)')
-      .Append('  *error = ' + body + ';'))
+      .Append('  *error = UTF8ToUTF16(' + body + ');'))
     return c
 
   def _GenerateParams(self, params):
     """Builds the parameter list for a function, given an array of parameters.
     """
     if self._generate_error_messages:
-      params = list(params) + ['std::string* error']
+      params = list(params) + ['base::string16* error']
     return ', '.join(str(p) for p in params)
 
   def _GenerateArgs(self, args):

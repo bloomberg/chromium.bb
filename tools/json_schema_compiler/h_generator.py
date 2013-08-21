@@ -393,5 +393,5 @@ class _Generator(object):
     """Builds the parameter list for a function, given an array of parameters.
     """
     if self._generate_error_messages:
-      params += ('std::string* error = NULL',)
+      params += ('base::string16* error = NULL',)
     return ', '.join(str(p) for p in params)
