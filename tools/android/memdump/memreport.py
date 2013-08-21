@@ -4,10 +4,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+import json
+import os
 import re
+import threading
+import time
 import sys
 
 from sets import Set
+from string import Template
+
+sys.path.append(os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir,
+                             'build','android'))
+from pylib import android_commands
 
 
 _ENTRIES = [
@@ -114,7 +124,128 @@ def _DumpCSV(processes_stats):
   print ''
 
 
+def _RunManualGraph(package_name):
+  _AREA_TYPES = ('private', 'private_unevictable',
+                 'shared_app', 'shared_other', 'shared_other_unevictable')
+  all_pids = {}
+  legends = ['count'] + [entry + '_' + area
+                         for entry, _ in _ENTRIES
+                         for area in _AREA_TYPES]
+  should_quit = threading.Event()
+
+  def _GenerateGraph():
+    _HTML_TEMPLATE = """
+<html>
+  <head>
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type='text/javascript'>
+      google.load('visualization', '1', {packages:['corechart', 'table']});
+      google.setOnLoadCallback(createPidSelector);
+      var pids = $JSON_PIDS;
+      var pids_info = $JSON_PIDS_INFO;
+      function drawVisualization(pid) {
+        var data = google.visualization.arrayToDataTable(
+          pids_info[pid]
+        );
+
+        var charOptions = {
+          title: 'Memory Report (KB) for ' + pid,
+          vAxis: {title: 'Count',  titleTextStyle: {color: 'red'}},
+          isStacked : true
+        };
+
+        var chart = new google.visualization.BarChart(
+            document.getElementById('chart_div'));
+        chart.draw(data, charOptions);
+
+        var table = new google.visualization.Table(
+            document.getElementById('table_div'));
+        table.draw(data);
+      }
+
+      function createPidSelector() {
+        var pid_selector = document.getElementById('pid_selector');
+        for (pid in pids) {
+          var option = document.createElement('option');
+          option.text = option.value = pids[pid];
+          pid_selector.appendChild(option);
+        }
+        pid_selector.addEventListener('change',
+          function() {
+            drawVisualization(this.selectedOptions[0].value);
+          }
+        );
+        drawVisualization(pids[0]);
+      }
+    </script>
+  </head>
+  <body>
+    PIDS: <select id='pid_selector'></select>
+    <div id='chart_div' style="width: 1024px; height: 800px;"></div>
+    <div id='table_div' style="width: 1024px; height: 640px;"></div>
+  </body>
+</html>
+"""
+    pids = sorted(all_pids.keys())
+    pids_info = dict(zip(pids,
+                         [ [legends] +
+                           all_pids[p] for p in pids
+                         ]))
+    print Template(_HTML_TEMPLATE).safe_substitute({
+        'JSON_PIDS': json.dumps(pids),
+        'JSON_PIDS_INFO': json.dumps(pids_info)
+    })
+
+
+
+  def _CollectStats(count):
+    adb = android_commands.AndroidCommands()
+    pid_list = adb.ExtractPid('com.google.android.apps.chrome')
+    memdump = adb.RunShellCommand('/data/local/tmp/memdump ' +
+                                  ' '.join(pid_list))
+    process_stats = _CollectMemoryStats(memdump,
+                                        [value for (key, value) in _ENTRIES])
+    for (pid, process) in zip(pid_list, process_stats):
+      first_pid_entry = True
+      for (k, v) in _ENTRIES:
+        if v not in process:
+          continue
+        for area_type in _AREA_TYPES:
+          legend = k + '_' + area_type
+          if pid not in all_pids:
+            all_pids[pid] = []
+          if first_pid_entry:
+            all_pids[pid].append([count] + [0] * (len(legends) - 1))
+            first_pid_entry = False
+          mem_kb = process[v][area_type] / 1024
+          all_pids[pid][-1][legends.index(legend)] = mem_kb
+
+  def _Loop():
+    count = 0
+    while not should_quit.is_set():
+      print >>sys.stderr, 'Collecting ', count
+      _CollectStats(count)
+      count += 1
+      should_quit.wait(5)
+
+  t = threading.Thread(target=_Loop)
+
+
+  print >>sys.stderr, 'Press enter to stop'
+  t.start()
+  try:
+    _ = raw_input()
+  finally:
+    should_quit.set()
+
+  t.join()
+
+  _GenerateGraph()
+
+
 def main(argv):
+  if len(argv) >= 3 and argv[1] == 'manual-graph':
+    return _RunManualGraph(argv[2])
   _DumpCSV(_CollectMemoryStats(sys.stdin, [value for (key, value) in _ENTRIES]))
 
 
