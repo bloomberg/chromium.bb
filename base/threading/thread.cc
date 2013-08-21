@@ -173,14 +173,16 @@ bool Thread::GetThreadWasQuitProperly() {
 void Thread::ThreadMain() {
   {
     // The message loop for this thread.
-    MessageLoop message_loop(startup_data_->options.message_loop_type);
+    // Allocated on the heap to centralize any leak reports at this line.
+    scoped_ptr<MessageLoop> message_loop(
+        new MessageLoop(startup_data_->options.message_loop_type));
 
     // Complete the initialization of our Thread object.
     thread_id_ = PlatformThread::CurrentId();
     PlatformThread::SetName(name_.c_str());
     ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
-    message_loop.set_thread_name(name_);
-    message_loop_ = &message_loop;
+    message_loop->set_thread_name(name_);
+    message_loop_ = message_loop.get();
 
 #if defined(OS_WIN)
     scoped_ptr<win::ScopedCOMInitializer> com_initializer;
