@@ -374,10 +374,10 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       break;
     }
     case CONFIGURE_SYNC_FIRST:
-      ShowSettingsPageInNewTab(true);  // Show sync config UI.
+      ShowSettingsPage(true);  // Show sync config UI.
       break;
     case SHOW_SETTINGS_WITHOUT_CONFIGURE:
-      ShowSettingsPageInNewTab(false);  // Don't show sync config UI.
+      ShowSettingsPage(false);  // Don't show sync config UI.
       break;
     default:
       NOTREACHED();
@@ -411,7 +411,7 @@ void OneClickSigninSyncStarter::EnsureBrowser() {
   }
 }
 
-void OneClickSigninSyncStarter::ShowSettingsPageInNewTab(bool configure_sync) {
+void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
   // Give the user a chance to configure things. We don't clear the
   // ProfileSyncService::setup_in_progress flag because we don't want sync
   // to start up until after the configure UI is displayed (the configure UI
@@ -422,10 +422,20 @@ void OneClickSigninSyncStarter::ShowSettingsPageInNewTab(bool configure_sync) {
     login_ui->current_login_ui()->FocusUI();
   } else {
     EnsureBrowser();
+
+    // If the sign in tab is showing a blank page and is not about to be
+    // closed, use it to show the settings UI.
+    bool use_same_tab = false;
+    if (web_contents()) {
+      GURL current_url = web_contents()->GetLastCommittedURL();
+      use_same_tab = signin::IsContinueUrlForWebBasedSigninFlow(current_url) &&
+          !signin::IsAutoCloseEnabledInURL(current_url);
+    }
     if (profile_sync_service) {
       // Need to navigate to the settings page and display the sync UI.
-      if (web_contents()) {
-        ShowSyncSettingsPageInWebContents(web_contents());
+      if (use_same_tab) {
+        ShowSettingsPageInWebContents(web_contents(),
+                                      chrome::kSyncSetupSubPage);
       } else {
         // If the user is setting up sync for the first time, let them configure
         // advanced sync settings. However, in the case of re-authentication,
@@ -440,7 +450,10 @@ void OneClickSigninSyncStarter::ShowSettingsPageInNewTab(bool configure_sync) {
     } else {
       // Sync is disabled - just display the settings page.
       FinishProfileSyncServiceSetup();
-      chrome::ShowSettings(browser_);
+      if (use_same_tab)
+        ShowSettingsPageInWebContents(web_contents(), std::string());
+      else
+        chrome::ShowSettings(browser_);
     }
   }
 }
@@ -459,10 +472,10 @@ void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
     service->SetSetupInProgress(false);
 }
 
-void OneClickSigninSyncStarter::ShowSyncSettingsPageInWebContents(
-    content::WebContents* contents) {
-  std::string url = std::string(chrome::kChromeUISettingsURL) +
-      chrome::kSyncSetupSubPage;
+void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(
+    content::WebContents* contents,
+    const std::string& sub_page) {
+  std::string url = std::string(chrome::kChromeUISettingsURL) + sub_page;
   content::OpenURLParams params(GURL(url),
                                 content::Referrer(),
                                 CURRENT_TAB,

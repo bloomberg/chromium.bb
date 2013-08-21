@@ -81,9 +81,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // OneClickSigninSyncStarter from a browser, provide both.
   // If |display_confirmation| is true, the user will be prompted to confirm the
   // signin before signin completes.
-  // |web_contents| is used to show the sync setup page, if necessary. If NULL,
-  // the sync setup page will be loaded in either a new tab or a tab that is
-  // already showing it.
+  // |web_contents| is used to show the sync UI if it's showing a blank page
+  // and not about to be closed. It can be NULL.
   // |callback| is always executed before OneClickSigninSyncStarter is deleted.
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
@@ -183,12 +182,16 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   void FinishProfileSyncServiceSetup();
 
-  // Displays the settings UI in a new tab. Brings up the advanced sync settings
-  // dialog if |configure_sync| is true.
-  void ShowSettingsPageInNewTab(bool configure_sync);
+  // Displays the settings UI and brings up the advanced sync settings
+  // dialog if |configure_sync| is true. The web contents provided to the
+  // constructor is used if it's showing a blank page and not about to be
+  // closed. Otherwise, a new tab or an existing settings tab is used.
+  void ShowSettingsPage(bool configure_sync);
 
-  // Displays the sync configuration UI in the provided web contents.
-  void ShowSyncSettingsPageInWebContents(content::WebContents* contents);
+  // Displays a settings page in the provided web contents. |sub_page| can be
+  // empty to show the main settings page.
+  void ShowSettingsPageInWebContents(content::WebContents* contents,
+                                     const std::string& sub_page);
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.

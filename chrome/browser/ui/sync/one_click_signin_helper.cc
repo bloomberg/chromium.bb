@@ -909,6 +909,15 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     helper->source_ = source;
   }
 
+  // Save the email in the one-click signin manager.  The manager may
+  // not exist if the contents is incognito or if the profile is already
+  // connected to a Google account.
+  if (!session_index.empty())
+    helper->session_index_ = session_index;
+
+  if (!email.empty())
+    helper->email_ = email;
+
   CanOfferFor can_offer_for =
       (auto_accept != AUTO_ACCEPT_EXPLICIT &&
           helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
@@ -937,15 +946,6 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
       SigninManagerFactory::GetForProfile(profile) : NULL;
   helper->untrusted_confirmation_required_ |=
       (manager && !manager->IsSigninProcess(child_id));
-
-  // Save the email in the one-click signin manager.  The manager may
-  // not exist if the contents is incognito or if the profile is already
-  // connected to a Google account.
-  if (!session_index.empty())
-    helper->session_index_ = session_index;
-
-  if (!email.empty())
-    helper->email_ = email;
 
   if (continue_url.is_valid()) {
     // Set |original_continue_url_| if it is currently empty. |continue_url|
@@ -1155,17 +1155,6 @@ void OneClickSigninHelper::DidStopLoading(
     return;
   }
 
-  // When the user uses the first-run, ntp, or hotdog menu to sign in, then have
-  // the option of checking the the box "Let me choose what to sync".  When the
-  // sign in process started, the source parameter in the continue URL may have
-  // indicated one of the three options above.  However, once this box is
-  // checked, the source parameter will indicate settings.  This will only be
-  // communicated back to chrome when Gaia redirects to the continue URL, and
-  // this is considered here a last minute change to the source.  See a little
-  // further below for when this variable is set to a web contents that must be
-  // used to show the sync setup page.
-  content::WebContents* sync_setup_contents = NULL;
-
   if (!continue_url_match && IsValidGaiaSigninRedirectOrResponseURL(url))
     return;
 
@@ -1200,10 +1189,7 @@ void OneClickSigninHelper::DidStopLoading(
     signin::Source source = signin::GetSourceForPromoURL(url);
     if (source != source_) {
       source_ = source;
-      if (source == signin::SOURCE_SETTINGS) {
-        sync_setup_contents = web_contents();
-        switched_to_advanced_ = true;
-      }
+      switched_to_advanced_ = source == signin::SOURCE_SETTINGS;
     }
   }
 
@@ -1281,7 +1267,7 @@ void OneClickSigninHelper::DidStopLoading(
 
         // No need to display a second confirmation so pass false below.
         // TODO(atwilson): Move this into OneClickSigninSyncStarter.
-        // If |sync_setup_contents| is deleted before the callback execution,
+        // If |contents| is deleted before the callback execution,
         // the tab modal dialog is closed and the callback is never executed.
         ConfirmEmailDialogDelegate::AskForConfirmation(
             contents,
@@ -1290,16 +1276,15 @@ void OneClickSigninHelper::DidStopLoading(
             base::Bind(
                 &StartExplicitSync,
                 StartSyncArgs(profile, browser, auto_accept_,
-                              session_index_, email_, password_,
-                              sync_setup_contents,
+                              session_index_, email_, password_, contents,
                               false /* confirmation_required */, source_,
                               CreateSyncStarterCallback()),
                 contents,
                 start_mode));
       } else {
         StartSync(
-            StartSyncArgs(profile, browser, auto_accept_, session_index_,
-                          email_, password_, sync_setup_contents,
+            StartSyncArgs(profile, browser, auto_accept_,
+                          session_index_, email_, password_, contents,
                           untrusted_confirmation_required_, source_,
                           CreateSyncStarterCallback()),
             start_mode);
