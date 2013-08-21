@@ -451,7 +451,8 @@ void DeviceLocalAccountPolicyStatusProvider::OnDeviceLocalAccountsChanged() {
 #endif
 
 PolicyUIHandler::PolicyUIHandler()
-    : weak_factory_(this) {
+    : initialized_(false),
+      weak_factory_(this) {
 }
 
 PolicyUIHandler::~PolicyUIHandler() {
@@ -581,7 +582,7 @@ void PolicyUIHandler::SendPolicyNames() const {
       const policy::PolicySchemaMap* policies = schema->second->GetProperties();
       policy::PolicySchemaMap::const_iterator it_policies;
       for (it_policies = policies->begin(); it_policies != policies->end();
-           it_policies++) {
+           ++it_policies) {
         policy_names->SetBoolean(it_policies->first, true);
       }
     }
