@@ -56,7 +56,7 @@ namespace {
 
 const char kNotificationPrefix[] = "app.background.crashed.";
 
-void CloseBalloon(const std::string id) {
+void CloseBalloon(const std::string& id) {
   g_browser_process->notification_ui_manager()->CancelById(id);
 }
 
