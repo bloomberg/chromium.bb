@@ -21,6 +21,7 @@
 #define SVGMissingGlyphElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
@@ -34,6 +35,12 @@ private:
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 };
+
+inline SVGMissingGlyphElement* toSVGMissingGlyphElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::missing_glyphTag));
+    return static_cast<SVGMissingGlyphElement*>(node);
+}
 
 } // namespace WebCore
 

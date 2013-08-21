@@ -73,7 +73,7 @@ SVGMissingGlyphElement* SVGFontElement::firstMissingGlyphElement() const
 {
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(SVGNames::missing_glyphTag))
-            return static_cast<SVGMissingGlyphElement*>(child);
+            return toSVGMissingGlyphElement(child);
     }
 
     return 0;
@@ -141,8 +141,9 @@ void SVGFontElement::ensureGlyphCache()
         } else if (child->hasTagName(SVGNames::vkernTag)) {
             SVGVKernElement* vkern = static_cast<SVGVKernElement*>(child);
             vkern->buildVerticalKerningPair(m_verticalKerningPairs);
-        } else if (child->hasTagName(SVGNames::missing_glyphTag) && !firstMissingGlyphElement)
-            firstMissingGlyphElement = static_cast<SVGMissingGlyphElement*>(child);
+        } else if (child->hasTagName(SVGNames::missing_glyphTag) && !firstMissingGlyphElement) {
+            firstMissingGlyphElement = toSVGMissingGlyphElement(child);
+        }
     }
 
     // Register each character of each ligature, if needed.
