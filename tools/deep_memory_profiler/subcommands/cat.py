@@ -56,6 +56,19 @@ class CatCommand(SubCommand):
     json_root['default_template'] = 'l2'
     json_root['templates'] = sorters.templates.as_dict()
 
+    orders = OrderedDict()
+    orders['worlds'] = OrderedDict()
+    for world in ['vm', 'malloc']:
+      orders['worlds'][world] = OrderedDict()
+      orders['worlds'][world]['breakdown'] = OrderedDict()
+      for sorter in sorters.iter_world(world):
+        order = []
+        for rule in sorter.iter_rule():
+          if (not order) or (rule.name != order[-1]):
+            order.append(rule.name)
+        orders['worlds'][world]['breakdown'][sorter.name] = order
+    json_root['orders'] = orders
+
     json_root['snapshots'] = []
 
     for dump in dumps:
@@ -110,25 +123,23 @@ class CatCommand(SubCommand):
     for sorter in sorters.iter_world(world):
       LOGGER.info('  Sorting with %s:%s.' % (sorter.world, sorter.name))
       breakdown = OrderedDict()
+      for rule in sorter.iter_rule():
+        category = OrderedDict()
+        category['name'] = rule.name
+        subs = []
+        for sub_world, sub_breakdown in rule.iter_subs():
+          subs.append([sub_world, sub_breakdown])
+        if subs:
+          category['subs'] = subs
+        if rule.hidden:
+          category['hidden'] = True
+        category['units'] = []
+        breakdown[rule.name] = category
       for unit in unit_set:
         found = sorter.find(unit)
-        if not found:
-          # A bucket which doesn't match any rule is just dropped.
-          continue
-        if found.name not in breakdown:
-          category = OrderedDict()
-          category['name'] = found.name
-          category['color'] = 'random'
-          subs = []
-          for sub_world, sub_breakdown in found.iter_subs():
-            subs.append([sub_world, sub_breakdown])
-          if subs:
-            category['subs'] = subs
-          if found.hidden:
-            category['hidden'] = True
-          category['units'] = []
-          breakdown[found.name] = category
-        breakdown[found.name]['units'].append(unit.unit_id)
+        if found:
+          # Note that a bucket which doesn't match any rule is just dropped.
+          breakdown[found.name]['units'].append(unit.unit_id)
       root['breakdown'][sorter.name] = breakdown
 
     return root
