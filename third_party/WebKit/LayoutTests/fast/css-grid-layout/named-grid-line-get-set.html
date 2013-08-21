@@ -61,8 +61,8 @@ if (window.testRunner)
     testCSSValue("gridWithPercentElement", "53% last", "27% last");
     testCSSValue("gridWithAutoElement", "first auto", "auto last");
     testCSSValue("gridWithMinMax", "first minmax(10%, 15px)", "minmax(20px, 50%) last");
-    testCSSValue("gridWithFixedMultiple", "nav first 10px last", "nav first 15px last");
-    testCSSValue("gridWithPercentageSameStringMultipleTimes", "nav first 10% nav 15% last", "first nav2 25% nav2 75% last");
+    testCSSValue("gridWithFixedMultiple", "first nav 10px last", "first nav 15px last");
+    testCSSValue("gridWithPercentageSameStringMultipleTimes", "first nav 10% nav 15% last", "first nav2 25% nav2 75% last");
 
     debug("");
     debug("Test getting and setting grid-definition-columns and grid-definition-rows through JS");
@@ -126,13 +126,13 @@ if (window.testRunner)
     document.body.appendChild(element);
     element.style.gridDefinitionColumns = "'first' 'nav' minmax(min-content, max-content) 'last'";
     element.style.gridDefinitionRows = "'first' 'nav' minmax(max-content, min-content) 'last'";
-    testValue(element, "nav first minmax(min-content, max-content) last", "nav first minmax(max-content, min-content) last");
+    testValue(element, "first nav minmax(min-content, max-content) last", "first nav minmax(max-content, min-content) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
     element.style.gridDefinitionColumns = "'first' 'nav' minmax(min-content, max-content) 'nav' auto 'last'";
     element.style.gridDefinitionRows = "'first' 'nav2' minmax(max-content, min-content) 'nav2' minmax(10px, 15px) 'last'";
-    testValue(element, "nav first minmax(min-content, max-content) nav auto last", "first nav2 minmax(max-content, min-content) nav2 minmax(10px, 15px) last");
+    testValue(element, "first nav minmax(min-content, max-content) nav auto last", "first nav2 minmax(max-content, min-content) nav2 minmax(10px, 15px) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);

@@ -737,6 +737,8 @@ public:
     const Vector<GridTrackSize>& gridDefinitionRows() const { return rareNonInheritedData->m_grid->m_gridDefinitionRows; }
     const NamedGridLinesMap& namedGridColumnLines() const { return rareNonInheritedData->m_grid->m_namedGridColumnLines; }
     const NamedGridLinesMap& namedGridRowLines() const { return rareNonInheritedData->m_grid->m_namedGridRowLines; }
+    const OrderedNamedGridLines& orderedNamedGridColumnLines() const { return rareNonInheritedData->m_grid->m_orderedNamedGridColumnLines; }
+    const OrderedNamedGridLines& orderedNamedGridRowLines() const { return rareNonInheritedData->m_grid->m_orderedNamedGridRowLines; }
     const NamedGridAreaMap& namedGridArea() const { return rareNonInheritedData->m_grid->m_namedGridArea; }
     size_t namedGridAreaRowCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaRowCount; }
     size_t namedGridAreaColumnCount() const { return rareNonInheritedData->m_grid->m_namedGridAreaColumnCount; }
@@ -1186,6 +1188,8 @@ public:
     void setGridDefinitionRows(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridDefinitionRows, lengths); }
     void setNamedGridColumnLines(const NamedGridLinesMap& namedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridColumnLines, namedGridColumnLines); }
     void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridRowLines, namedGridRowLines); }
+    void setOrderedNamedGridColumnLines(const OrderedNamedGridLines& orderedNamedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_orderedNamedGridColumnLines, orderedNamedGridColumnLines); }
+    void setOrderedNamedGridRowLines(const OrderedNamedGridLines& orderedNamedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_orderedNamedGridRowLines, orderedNamedGridRowLines); }
     void setNamedGridArea(const NamedGridAreaMap& namedGridArea) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridArea, namedGridArea); }
     void setNamedGridAreaRowCount(size_t rowCount) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridAreaRowCount, rowCount); }
     void setNamedGridAreaColumnCount(size_t columnCount) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridAreaColumnCount, columnCount); }
@@ -1591,6 +1595,9 @@ public:
 
     static NamedGridLinesMap initialNamedGridColumnLines() { return NamedGridLinesMap(); }
     static NamedGridLinesMap initialNamedGridRowLines() { return NamedGridLinesMap(); }
+
+    static OrderedNamedGridLines initialOrderedNamedGridColumnLines() { return OrderedNamedGridLines(); }
+    static OrderedNamedGridLines initialOrderedNamedGridRowLines() { return OrderedNamedGridLines(); }
 
     static NamedGridAreaMap initialNamedGridArea() { return NamedGridAreaMap(); }
     static size_t initialNamedGridAreaCount() { return 0; }

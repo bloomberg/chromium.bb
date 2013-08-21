@@ -982,7 +982,7 @@ static bool createGridTrackSize(CSSValue* value, GridTrackSize& trackSize, const
     return true;
 }
 
-static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, const StyleResolverState& state)
+static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, const StyleResolverState& state)
 {
     // Handle 'none'.
     if (value->isPrimitiveValue()) {
@@ -999,8 +999,11 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
         if (currValue->isPrimitiveValue()) {
             CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(currValue);
             if (primitiveValue->isString()) {
-                NamedGridLinesMap::AddResult result = namedGridLines.add(primitiveValue->getStringValue(), Vector<size_t>());
+                String namedGridLine = primitiveValue->getStringValue();
+                NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
                 result.iterator->value.append(currentNamedGridLine);
+                OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
+                orderedInsertionResult.iterator->value.append(namedGridLine);
                 continue;
             }
         }
@@ -1724,40 +1727,48 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (isInherit) {
             state.style()->setGridDefinitionColumns(state.parentStyle()->gridDefinitionColumns());
             state.style()->setNamedGridColumnLines(state.parentStyle()->namedGridColumnLines());
+            state.style()->setOrderedNamedGridColumnLines(state.parentStyle()->orderedNamedGridColumnLines());
             return;
         }
         if (isInitial) {
             state.style()->setGridDefinitionColumns(RenderStyle::initialGridDefinitionColumns());
             state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
+            state.style()->setOrderedNamedGridColumnLines(RenderStyle::initialOrderedNamedGridColumnLines());
             return;
         }
 
         Vector<GridTrackSize> trackSizes;
         NamedGridLinesMap namedGridLines;
-        if (!createGridTrackList(value, trackSizes, namedGridLines, state))
+        OrderedNamedGridLines orderedNamedGridLines;
+        if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
             return;
         state.style()->setGridDefinitionColumns(trackSizes);
         state.style()->setNamedGridColumnLines(namedGridLines);
+        state.style()->setOrderedNamedGridColumnLines(orderedNamedGridLines);
         return;
     }
     case CSSPropertyGridDefinitionRows: {
         if (isInherit) {
             state.style()->setGridDefinitionRows(state.parentStyle()->gridDefinitionRows());
             state.style()->setNamedGridRowLines(state.parentStyle()->namedGridRowLines());
+            state.style()->setOrderedNamedGridRowLines(state.parentStyle()->orderedNamedGridRowLines());
             return;
         }
         if (isInitial) {
             state.style()->setGridDefinitionRows(RenderStyle::initialGridDefinitionRows());
             state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
+            state.style()->setOrderedNamedGridRowLines(RenderStyle::initialOrderedNamedGridRowLines());
             return;
         }
 
         Vector<GridTrackSize> trackSizes;
         NamedGridLinesMap namedGridLines;
-        if (!createGridTrackList(value, trackSizes, namedGridLines, state))
+        OrderedNamedGridLines orderedNamedGridLines;
+        if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
             return;
         state.style()->setGridDefinitionRows(trackSizes);
         state.style()->setNamedGridRowLines(namedGridLines);
+        state.style()->setOrderedNamedGridRowLines(orderedNamedGridLines);
         return;
     }
 

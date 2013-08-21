@@ -1037,39 +1037,28 @@ static PassRefPtr<CSSValue> valueForGridTrackSize(const GridTrackSize& trackSize
     return 0;
 }
 
-static void addValuesForNamedGridLinesAtIndex(const NamedGridLinesMap& namedGridLines, size_t i, CSSValueList& list)
+static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& orderedNamedGridLines, size_t i, CSSValueList& list)
 {
-    // Note that this won't return the results in the order specified in the style sheet,
-    // which is probably fine as we stil *do* return all the expected values.
-    NamedGridLinesMap::const_iterator it = namedGridLines.begin();
-    NamedGridLinesMap::const_iterator end = namedGridLines.end();
-    for (; it != end; ++it) {
-        const Vector<size_t>& linesIndexes = it->value;
-        for (size_t j = 0; j < linesIndexes.size(); ++j) {
-            if (linesIndexes[j] != i)
-                continue;
-
-            list.append(cssValuePool().createValue(it->key, CSSPrimitiveValue::CSS_STRING));
-            break;
-        }
-    }
+    const Vector<String>& namedGridLines = orderedNamedGridLines.get(i);
+    for (size_t j = 0; j < namedGridLines.size(); ++j)
+        list.append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_STRING));
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackList(const Vector<GridTrackSize>& trackSizes, const NamedGridLinesMap& namedGridLines, const RenderStyle* style, RenderView* renderView)
+static PassRefPtr<CSSValue> valueForGridTrackList(const Vector<GridTrackSize>& trackSizes, const OrderedNamedGridLines& orderedNamedGridLines, const RenderStyle* style, RenderView* renderView)
 {
     // Handle the 'none' case here.
     if (!trackSizes.size()) {
-        ASSERT(namedGridLines.isEmpty());
+        ASSERT(orderedNamedGridLines.isEmpty());
         return cssValuePool().createIdentifierValue(CSSValueNone);
     }
 
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < trackSizes.size(); ++i) {
-        addValuesForNamedGridLinesAtIndex(namedGridLines, i, *list);
+        addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
         list->append(valueForGridTrackSize(trackSizes[i], style, renderView));
     }
     // Those are the trailing <string>* allowed in the syntax.
-    addValuesForNamedGridLinesAtIndex(namedGridLines, trackSizes.size(), *list);
+    addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, trackSizes.size(), *list);
     return list.release();
 }
 
@@ -2002,9 +1991,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyGridAutoRows:
             return valueForGridTrackSize(style->gridAutoRows(), style.get(), m_node->document()->renderView());
         case CSSPropertyGridDefinitionColumns:
-            return valueForGridTrackList(style->gridDefinitionColumns(), style->namedGridColumnLines(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackList(style->gridDefinitionColumns(), style->orderedNamedGridColumnLines(), style.get(), m_node->document()->renderView());
         case CSSPropertyGridDefinitionRows:
-            return valueForGridTrackList(style->gridDefinitionRows(), style->namedGridRowLines(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackList(style->gridDefinitionRows(), style->orderedNamedGridRowLines(), style.get(), m_node->document()->renderView());
 
         case CSSPropertyGridColumnStart:
             return valueForGridPosition(style->gridColumnStart());

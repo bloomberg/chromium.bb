@@ -37,6 +37,7 @@
 namespace WebCore {
 
 typedef HashMap<String, Vector<size_t> > NamedGridLinesMap;
+typedef HashMap<size_t, Vector<String>, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t> > OrderedNamedGridLines;
 
 class StyleGridData : public RefCounted<StyleGridData> {
 public:
@@ -45,7 +46,7 @@ public:
 
     bool operator==(const StyleGridData& o) const
     {
-        return m_gridDefinitionColumns == o.m_gridDefinitionColumns && m_gridDefinitionRows == o.m_gridDefinitionRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount;
+        return m_gridDefinitionColumns == o.m_gridDefinitionColumns && m_gridDefinitionRows == o.m_gridDefinitionRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -58,6 +59,11 @@ public:
 
     NamedGridLinesMap m_namedGridColumnLines;
     NamedGridLinesMap m_namedGridRowLines;
+
+    // In order to reconstruct the original named grid line order, we can't rely on NamedGridLinesMap
+    // as it loses the position if multiple grid lines are set on a single track.
+    OrderedNamedGridLines m_orderedNamedGridColumnLines;
+    OrderedNamedGridLines m_orderedNamedGridRowLines;
 
     GridAutoFlow m_gridAutoFlow;
 
