@@ -172,6 +172,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         testing::Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(
+        testing::Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
+        testing::Return(QuicBandwidth::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket);
     connection_ = new TestQuicConnection(guid_, peer_addr_, helper_);
@@ -279,6 +283,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     header_.public_header.guid = guid_;
     header_.public_header.reset_flag = false;
     header_.public_header.version_flag = should_include_version;
+    header_.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header_.packet_sequence_number = sequence_number;
     header_.fec_group = 0;
     header_.entropy_flag = false;

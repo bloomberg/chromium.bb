@@ -21,6 +21,19 @@ void QuicPacketCreatorPeer::SetSendVersionInPacket(
 }
 
 // static
+void QuicPacketCreatorPeer::SetSequenceNumberLength(
+      QuicPacketCreator* creator,
+      QuicSequenceNumberLength sequence_number_length) {
+  creator->sequence_number_length_ = sequence_number_length;
+}
+
+// static
+QuicSequenceNumberLength QuicPacketCreatorPeer::GetSequenceNumberLength(
+    QuicPacketCreator* creator) {
+  return creator->sequence_number_length_;
+}
+
+// static
 void QuicPacketCreatorPeer::SetIsServer(QuicPacketCreator* creator,
                                         bool is_server) {
   creator->is_server_ = is_server;

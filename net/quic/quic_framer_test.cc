@@ -793,9 +793,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteGuid) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (version)
     0x3D,
@@ -803,7 +800,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -819,7 +816,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
             visitor_.header_->public_header.guid);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_TRUE(visitor_.header_->public_header.version_flag);
-  EXPECT_EQ(QUIC_VERSION_7, visitor_.header_->public_header.versions[0]);
+  EXPECT_EQ(GetParam(), visitor_.header_->public_header.versions[0]);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
@@ -1054,9 +1051,6 @@ TEST_P(QuicFramerTest, InvalidPublicFlag) {
 };
 
 TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid and version flag and an unknown flag)
     0x4D,
@@ -1064,7 +1058,7 @@ TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1419,9 +1413,6 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
 }
 
 TEST_P(QuicFramerTest, StreamFrameWithVersion) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -1429,7 +1420,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1457,7 +1448,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
-  EXPECT_EQ(QUIC_VERSION_7, visitor_.header_.get()->public_header.versions[0]);
+  EXPECT_EQ(GetParam(), visitor_.header_.get()->public_header.versions[0]);
   EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -1571,9 +1562,6 @@ TEST_P(QuicFramerTest, RevivedStreamFrame) {
 }
 
 TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -2210,9 +2198,6 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
 }
 
 TEST_P(QuicFramerTest, VersionNegotiationPacket) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -2220,7 +2205,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     'Q', '2', '.', '0',
   };
 
@@ -2231,8 +2216,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
   ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.version_negotiation_packet_.get());
   EXPECT_EQ(2u, visitor_.version_negotiation_packet_->versions.size());
-  EXPECT_EQ(QUIC_VERSION_7,
-            visitor_.version_negotiation_packet_->versions[0]);
+  EXPECT_EQ(GetParam(), visitor_.version_negotiation_packet_->versions[0]);
 
   for (size_t i = 0; i <= kPublicFlagsSize + PACKET_8BYTE_GUID; ++i) {
     string expected_error;
@@ -2467,9 +2451,6 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacket) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -2541,8 +2522,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
 
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
     0x3D,
@@ -2550,7 +2529,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -2593,11 +2572,11 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '7',
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8')
   };
 
   QuicVersionVector versions;
-  versions.push_back(QUIC_VERSION_7);
+  versions.push_back(GetParam());
   scoped_ptr<QuicEncryptedPacket> data(
       framer_.BuildVersionNegotiationPacket(header, versions));
 
@@ -3351,9 +3330,6 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 }
 
 TEST_P(QuicFramerTest, EntropyFlagTest) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3389,9 +3365,6 @@ TEST_P(QuicFramerTest, EntropyFlagTest) {
 };
 
 TEST_P(QuicFramerTest, FecEntropyTest) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3429,9 +3402,6 @@ TEST_P(QuicFramerTest, FecEntropyTest) {
 };
 
 TEST_P(QuicFramerTest, StopPacketProcessing) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,

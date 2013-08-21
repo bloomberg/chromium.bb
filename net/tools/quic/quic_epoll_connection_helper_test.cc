@@ -15,7 +15,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test::GetMinStreamFrameSize;
 using net::test::FramerVisitorCapturingFrames;
 using net::test::MockSendAlgorithm;
 using net::test::QuicConnectionPeer;
@@ -88,6 +87,10 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
     epoll_server_.set_timeout_in_us(-1);
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(Return(
+        QuicBandwidth::FromKBitsPerSecond(100)));
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(Return(
+        QuicTime::Delta::FromMilliseconds(100)));
   }
 
   QuicPacket* ConstructDataPacket(QuicPacketSequenceNumber number,
@@ -127,9 +130,11 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
 
   const char buffer[] = "foo";
   const size_t packet_size =
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
-                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
-      GetMinStreamFrameSize(framer_.version()) + arraysize(buffer) - 1;
+      QuicPacketCreator::StreamFramePacketOverhead(
+          framer_.version(), PACKET_8BYTE_GUID, kIncludeVersion,
+          PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
+      arraysize(buffer) - 1;
+
   EXPECT_CALL(*send_algorithm_,
               SentPacket(_, 1, packet_size, NOT_RETRANSMISSION));
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(1, packet_size));

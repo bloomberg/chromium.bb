@@ -1017,9 +1017,15 @@ void QuicConnection::RetransmitPacket(
 
   // Re-packetize the frames with a new sequence number for retransmission.
   // Retransmitted data packets do not use FEC, even when it's enabled.
+  // Retransmitted packets use the same sequence number length as the original.
+  QuicSequenceNumberLength original_sequence_number_length =
+      retransmission_it->second.sequence_number_length;
   SerializedPacket serialized_packet =
-      packet_creator_.SerializeAllFrames(unacked->frames());
-  RetransmissionInfo retransmission_info(serialized_packet.sequence_number);
+      packet_creator_.ReserializeAllFrames(unacked->frames(),
+                                           original_sequence_number_length);
+  RetransmissionInfo retransmission_info(
+      serialized_packet.sequence_number,
+      serialized_packet.sequence_number_length);
   retransmission_info.number_retransmissions =
       retransmission_it->second.number_retransmissions + 1;
   // Remove info with old sequence number.
@@ -1223,6 +1229,11 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     SetupAbandonFecTimer(sequence_number);
   }
 
+  // TODO(ianswett): Change the sequence number length and other packet creator
+  // options by a more explicit API than setting a struct value directly.
+  packet_creator_.options()->send_sequence_number_length =
+      CalculateSequenceNumberLength(sequence_number);
+
   congestion_manager_.SentPacket(sequence_number, now, packet->length(),
                                  retransmission);
 
@@ -1252,6 +1263,31 @@ int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
   return bytes_written;
 }
 
+QuicSequenceNumberLength QuicConnection::CalculateSequenceNumberLength(
+      QuicPacketSequenceNumber sequence_number) {
+  DCHECK_LE(received_packet_manager_.least_packet_awaited_by_peer(),
+            sequence_number);
+  // Since the packet creator will not change sequence number length mid FEC
+  // group, include the size of an FEC group to be safe.
+  const QuicPacketSequenceNumber current_delta =
+      packet_creator_.options()->max_packets_per_fec_group + sequence_number
+      - received_packet_manager_.least_packet_awaited_by_peer();
+  const uint64 congestion_window =
+      congestion_manager_.BandwidthEstimate().ToBytesPerPeriod(
+          congestion_manager_.SmoothedRtt()) /
+          packet_creator_.options()->max_packet_length;
+  const uint64 delta = max(current_delta, congestion_window);
+
+  if (delta < 1 << ((PACKET_1BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    return PACKET_1BYTE_SEQUENCE_NUMBER;
+  } else if (delta < 1 << ((PACKET_2BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    return PACKET_2BYTE_SEQUENCE_NUMBER;
+  } else if (delta < 1 << ((PACKET_4BYTE_SEQUENCE_NUMBER * 8) - 2)) {
+    return PACKET_4BYTE_SEQUENCE_NUMBER;
+  }
+  return PACKET_6BYTE_SEQUENCE_NUMBER;
+}
+
 bool QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   if (serialized_packet.retransmittable_frames != NULL) {
@@ -1268,7 +1304,9 @@ bool QuicConnection::OnSerializedPacket(
     // All unacked packets might be retransmitted.
     retransmission_map_.insert(
         make_pair(serialized_packet.sequence_number,
-                  RetransmissionInfo(serialized_packet.sequence_number)));
+                  RetransmissionInfo(
+                      serialized_packet.sequence_number,
+                      serialized_packet.sequence_number_length)));
   } else if (serialized_packet.packet->is_fec_packet()) {
     unacked_fec_packets_.insert(make_pair(
         serialized_packet.sequence_number,

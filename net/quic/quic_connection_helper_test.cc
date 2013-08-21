@@ -121,6 +121,10 @@ class QuicConnectionHelperTest : public ::testing::Test {
     send_algorithm_ = new testing::StrictMock<MockSendAlgorithm>();
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
+        testing::Return(QuicBandwidth::FromKBitsPerSecond(100)));
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(
+        testing::Return(QuicTime::Delta::FromMilliseconds(100)));
     connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
@@ -199,6 +203,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
     header_.public_header.guid = guid_;
     header_.public_header.reset_flag = false;
     header_.public_header.version_flag = true;
+    header_.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header_.packet_sequence_number = sequence_number;
     header_.entropy_flag = false;
     header_.fec_flag = false;
@@ -312,6 +317,7 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
 
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(1, _));
+
   // Send a packet.
   connection_->SendStreamData(1, kData, 0, false);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, IS_RETRANSMISSION));

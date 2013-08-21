@@ -456,6 +456,10 @@ class QuicConnectionTest : public ::testing::Test {
     EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(Return(
+        QuicBandwidth::FromKBitsPerSecond(100)));
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(Return(
+        QuicTime::Delta::FromMilliseconds(100)));
   }
 
   QuicAckFrame* outgoing_ack() {
@@ -807,20 +811,20 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
   }
 
   QuicAckFrame frame(0, QuicTime::Zero(), 1);
-  frame.received_info.largest_observed = 192;
-  InsertMissingPacketsBetween(&frame.received_info, 1, 192);
+  frame.received_info.largest_observed = 193;
+  InsertMissingPacketsBetween(&frame.received_info, 1, 193);
   frame.received_info.entropy_hash =
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192) ^
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 191);
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192);
 
   ProcessAckPacket(&frame, true);
 
   EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
 
-  frame.received_info.missing_packets.erase(191);
+  frame.received_info.missing_packets.erase(192);
   frame.received_info.entropy_hash =
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192) ^
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 190);
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 191);
 
   ProcessAckPacket(&frame, true);
   EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
@@ -958,6 +962,106 @@ TEST_F(QuicConnectionTest, AckAll) {
   ProcessAckPacket(&frame1, true);
 }
 
+TEST_F(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
+  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
+       QuicBandwidth::FromKBitsPerSecond(1000)));
+
+  QuicPacketSequenceNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, !kFin, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
+       QuicBandwidth::FromKBitsPerSecond(1000 * 256)));
+
+  SendStreamDataToPeer(1u, "bar", 3, !kFin, &last_packet);
+  EXPECT_EQ(2u, last_packet);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  // The 1 packet lag is due to the sequence number length being recalculated in
+  // QuicConnection after a packet is sent.
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
+       QuicBandwidth::FromKBitsPerSecond(1000 * 256 * 256)));
+
+  SendStreamDataToPeer(1, "foo", 6, !kFin, &last_packet);
+  EXPECT_EQ(3u, last_packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
+       QuicBandwidth::FromKBitsPerSecond(1000ll * 256 * 256 * 256)));
+
+  SendStreamDataToPeer(1u, "bar", 9, !kFin, &last_packet);
+  EXPECT_EQ(4u, last_packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
+      QuicBandwidth::FromKBitsPerSecond(1000ll * 256 * 256 * 256 * 256)));
+
+  SendStreamDataToPeer(1u, "foo", 12, !kFin, &last_packet);
+  EXPECT_EQ(5u, last_packet);
+  EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+}
+
+TEST_F(QuicConnectionTest, SendingDifferentSequenceNumberLengthsUnackedDelta) {
+  QuicPacketSequenceNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, !kFin, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  QuicConnectionPeer::GetPacketCreator(&connection_)->set_sequence_number(100);
+
+  SendStreamDataToPeer(1u, "bar", 3, !kFin, &last_packet);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  QuicConnectionPeer::GetPacketCreator(&connection_)->set_sequence_number(
+      100 * 256);
+
+  SendStreamDataToPeer(1, "foo", 6, !kFin, &last_packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  QuicConnectionPeer::GetPacketCreator(&connection_)->set_sequence_number(
+      100 * 256 * 256);
+
+  SendStreamDataToPeer(1u, "bar", 9, !kFin, &last_packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+
+  QuicConnectionPeer::GetPacketCreator(&connection_)->set_sequence_number(
+      100 * 256 * 256 * 256);
+
+  SendStreamDataToPeer(1u, "foo", 12, !kFin, &last_packet);
+  EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
+            connection_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            last_header()->public_header.sequence_number_length);
+}
+
 TEST_F(QuicConnectionTest, BasicSending) {
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(6);
   QuicPacketSequenceNumber last_packet;
@@ -1021,8 +1125,9 @@ TEST_F(QuicConnectionTest, FECSending) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                  IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(
+          connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
+          IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1039,8 +1144,9 @@ TEST_F(QuicConnectionTest, FECQueueing) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                  IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(
+          connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
+          IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1261,12 +1367,11 @@ TEST_F(QuicConnectionTest, RetransmitNackedPacketsOnTruncatedAck) {
 
   // Make a truncated ack frame.
   QuicAckFrame frame(0, QuicTime::Zero(), 1);
-  frame.received_info.largest_observed = 192;
-  InsertMissingPacketsBetween(&frame.received_info, 1, 192);
+  frame.received_info.largest_observed = 193;
+  InsertMissingPacketsBetween(&frame.received_info, 1, 193);
   frame.received_info.entropy_hash =
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192) ^
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 191);
-
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
+      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192);
 
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnIncomingLoss(_)).Times(1);
@@ -1277,16 +1382,16 @@ TEST_F(QuicConnectionTest, RetransmitNackedPacketsOnTruncatedAck) {
   QuicConnectionPeer::SetMaxPacketsPerRetransmissionAlarm(&connection_, 200);
   clock_.AdvanceTime(DefaultRetransmissionTime());
   // Only packets that are less than largest observed should be retransmitted.
-  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(191);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(191);
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(192);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(192);
   connection_.OnRetransmissionTimeout();
 
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(
       2 * DefaultRetransmissionTime().ToMicroseconds()));
   // Retransmit already retransmitted packets event though the sequence number
   // greater than the largest observed.
-  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(191);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(191);
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(192);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(192);
   connection_.OnRetransmissionTimeout();
 }
 
@@ -1948,8 +2053,9 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                  NOT_IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(
+          connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
+          NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -1965,8 +2071,9 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
-                                  NOT_IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(
+          connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
+          NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(7);

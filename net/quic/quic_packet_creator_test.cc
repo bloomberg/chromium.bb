@@ -131,6 +131,120 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
   delete serialized.packet;
 }
 
+TEST_F(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
+  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
+  creator_.AddSavedFrame(frames_[0]);
+  creator_.options()->send_sequence_number_length =
+      PACKET_4BYTE_SEQUENCE_NUMBER;
+  SerializedPacket serialized = creator_.SerializePacket();
+  // The sequence number length will not change mid-packet.
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+
+  creator_.AddSavedFrame(frames_[0]);
+  serialized = creator_.SerializePacket();
+  // Now the actual sequence number length should have changed.
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+  delete frames_[0].ack_frame;
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+}
+
+TEST_F(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
+  creator_.options()->max_packets_per_fec_group = 6;
+  ASSERT_FALSE(creator_.ShouldSendFec(false));
+  creator_.MaybeStartFEC();
+
+  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
+  creator_.AddSavedFrame(frames_[0]);
+  // Change the sequence number length mid-FEC group and it should not change.
+  creator_.options()->send_sequence_number_length =
+      PACKET_4BYTE_SEQUENCE_NUMBER;
+  SerializedPacket serialized = creator_.SerializePacket();
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
+    EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+
+  ASSERT_FALSE(creator_.ShouldSendFec(false));
+  ASSERT_TRUE(creator_.ShouldSendFec(true));
+
+  serialized = creator_.SerializeFec();
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+  ASSERT_EQ(2u, serialized.sequence_number);
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnFecData(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+
+  // Ensure the next FEC group starts using the new sequence number length.
+  serialized = creator_.SerializeAllFrames(frames_);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+  delete frames_[0].stream_frame;
+  delete serialized.packet;
+}
+
+TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
+  // If the original packet sequence number length, the current sequence number
+  // length, and the configured send sequence number length are different, the
+  // retransmit must sent with the original length and the others do not change.
+  creator_.options()->send_sequence_number_length =
+      PACKET_4BYTE_SEQUENCE_NUMBER;
+  QuicPacketCreatorPeer::SetSequenceNumberLength(&creator_,
+                                                 PACKET_2BYTE_SEQUENCE_NUMBER);
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, false, 0u, StringPiece(""))));
+  SerializedPacket serialized =
+      creator_.ReserializeAllFrames(frames_, PACKET_1BYTE_SEQUENCE_NUMBER);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            creator_.options()->send_sequence_number_length);
+  EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
+            QuicPacketCreatorPeer::GetSequenceNumberLength(&creator_));
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+  delete frames_[0].stream_frame;
+
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+}
+
 TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
@@ -255,7 +369,7 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   creator_.options()->max_packet_length = GetPacketLengthForOneStream(
       client_framer_.version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-      NOT_IN_FEC_GROUP, &payload_length);
+      PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP, &payload_length);
   QuicFrame frame;
   const string too_long_payload(payload_length * 2, 'a');
   size_t consumed = creator_.CreateStreamFrame(
@@ -277,8 +391,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             GetPacketHeaderSize(
                 creator_.options()->send_guid_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                PACKET_6BYTE_SEQUENCE_NUMBER,
-                NOT_IN_FEC_GROUP),
+                PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -321,7 +434,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             GetPacketHeaderSize(
                 creator_.options()->send_guid_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                PACKET_6BYTE_SEQUENCE_NUMBER,
+                PACKET_1BYTE_SEQUENCE_NUMBER,
                 NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 }

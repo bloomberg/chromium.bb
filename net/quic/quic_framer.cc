@@ -260,7 +260,8 @@ SerializedPacket QuicFramer::BuildDataPacket(
     const QuicFrames& frames,
     size_t packet_size) {
   QuicDataWriter writer(packet_size);
-  const SerializedPacket kNoPacket(0, NULL, 0, NULL);
+  const SerializedPacket kNoPacket(
+      0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
   if (!WritePacketHeader(header, &writer)) {
     return kNoPacket;
   }
@@ -331,7 +332,8 @@ SerializedPacket QuicFramer::BuildDataPacket(
                                              packet->FecProtectedData());
   }
 
-  return SerializedPacket(header.packet_sequence_number, packet,
+  return SerializedPacket(header.packet_sequence_number,
+                          header.public_header.sequence_number_length, packet,
                           GetPacketEntropyHash(header), NULL);
 }
 
@@ -343,7 +345,8 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
   len += fec.redundancy.length();
 
   QuicDataWriter writer(len);
-  SerializedPacket kNoPacket = SerializedPacket(0, NULL, 0, NULL);
+  const SerializedPacket kNoPacket(
+      0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
   if (!WritePacketHeader(header, &writer)) {
     return kNoPacket;
   }
@@ -354,6 +357,7 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
 
   return SerializedPacket(
       header.packet_sequence_number,
+      header.public_header.sequence_number_length,
       QuicPacket::NewFecPacket(writer.take(), len, true,
                                header.public_header.guid_length,
                                header.public_header.version_flag,

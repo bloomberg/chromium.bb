@@ -92,6 +92,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.public_header.guid = 0xDEADBEEF;
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
+    header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header.packet_sequence_number = num;
     header.entropy_flag = false;
     header.fec_flag = false;
@@ -108,6 +109,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.public_header.guid = 0xDEADBEEF;
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
+    header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header.packet_sequence_number = num;
     header.entropy_flag = false;
     header.fec_flag = false;
@@ -129,6 +131,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.public_header.guid = 0xDEADBEEF;
     header.public_header.reset_flag = false;
     header.public_header.version_flag = false;
+    header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header.packet_sequence_number = 2;
     header.entropy_flag = false;
     header.fec_flag = false;
@@ -207,6 +210,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header_.public_header.guid = random_generator_.RandUint64();
     header_.public_header.reset_flag = false;
     header_.public_header.version_flag = should_include_version;
+    header_.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
     header_.packet_sequence_number = sequence_number;
     header_.fec_group = 0;
     header_.entropy_flag = false;

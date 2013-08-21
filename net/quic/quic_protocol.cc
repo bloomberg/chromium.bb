@@ -74,15 +74,6 @@ QuicPacketPublicHeader::QuicPacketPublicHeader(
 
 QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
 
-QuicPacketPublicHeader& QuicPacketPublicHeader::operator=(
-    const QuicPacketPublicHeader& other) {
-  guid = other.guid;
-  reset_flag = other.reset_flag;
-  version_flag = other.version_flag;
-  versions = other.versions;
-  return *this;
-}
-
 QuicPacketHeader::QuicPacketHeader()
     : fec_flag(false),
       entropy_flag(false),
@@ -184,6 +175,8 @@ string QuicVersionArrayToString(const QuicVersion versions[],
 ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   os << "{ guid: " << header.public_header.guid
      << ", guid_length:" << header.public_header.guid_length
+     << ", sequence_number_length:"
+     << header.public_header.sequence_number_length
      << ", reset_flag: " << header.public_header.reset_flag
      << ", version_flag: " << header.public_header.version_flag;
   if (header.public_header.version_flag) {

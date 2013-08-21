@@ -34,10 +34,12 @@ void CompareCharArraysWithHexError(const std::string& description,
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
 // of bytes of stream data that will fit in such a packet.
-size_t GetPacketLengthForOneStream(QuicVersion version,
-                                   bool include_version,
-                                   InFecGroup is_in_fec_group,
-                                   size_t* payload_length);
+size_t GetPacketLengthForOneStream(
+    QuicVersion version,
+    bool include_version,
+    QuicSequenceNumberLength sequence_number_length,
+    InFecGroup is_in_fec_group,
+    size_t* payload_length);
 
 // Size in bytes of the stream frame fields for an arbitrary StreamID and
 // offset and the last frame in a packet.

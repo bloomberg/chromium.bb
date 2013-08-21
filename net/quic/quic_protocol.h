@@ -398,8 +398,6 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
   ~QuicPacketPublicHeader();
 
-  QuicPacketPublicHeader& operator=(const QuicPacketPublicHeader& other);
-
   // Universal header. All QuicPacket headers will have a guid and public flags.
   QuicGuid guid;
   QuicGuidLength guid_length;
@@ -818,15 +816,18 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
 
 struct NET_EXPORT_PRIVATE SerializedPacket {
   SerializedPacket(QuicPacketSequenceNumber sequence_number,
+                   QuicSequenceNumberLength sequence_number_length,
                    QuicPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
                    RetransmittableFrames* retransmittable_frames)
       : sequence_number(sequence_number),
+        sequence_number_length(sequence_number_length),
         packet(packet),
         entropy_hash(entropy_hash),
         retransmittable_frames(retransmittable_frames) {}
 
   QuicPacketSequenceNumber sequence_number;
+  QuicSequenceNumberLength sequence_number_length;
   QuicPacket* packet;
   QuicPacketEntropyHash entropy_hash;
   RetransmittableFrames* retransmittable_frames;

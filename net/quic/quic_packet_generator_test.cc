@@ -99,11 +99,11 @@ class QuicPacketGeneratorTest : public ::testing::Test {
       : framer_(QuicVersionMax(), QuicTime::Zero(), false),
         creator_(42, &framer_, &random_, false),
         generator_(&delegate_, NULL, &creator_),
-        packet_(0, NULL, 0, NULL),
-        packet2_(0, NULL, 0, NULL),
-        packet3_(0, NULL, 0, NULL),
-        packet4_(0, NULL, 0, NULL),
-        packet5_(0, NULL, 0, NULL) {
+        packet_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet2_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet3_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet4_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet5_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL) {
   }
 
   ~QuicPacketGeneratorTest() {
