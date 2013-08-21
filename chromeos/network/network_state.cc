@@ -117,8 +117,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (error_ == kErrorUnknown)
       error_.clear();
     return true;
-  } else if (key == shill::kErrorDetailsProperty) {
-    return GetStringValue(key, value, &error_details_);
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
     return GetStringValue(key, value, &ip_address_);
   } else if (key == IPConfigProperty(flimflam::kGatewayProperty)) {
@@ -245,8 +243,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
 
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
                                             error_);
-  dictionary->SetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
-                                            error_details_);
 
   // IPConfig properties
   base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
@@ -355,13 +351,13 @@ bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
 std::string NetworkState::GetNameFromProperties(
     const std::string& service_path,
     const base::DictionaryValue& properties) {
-  std::string name;
+  std::string name, hex_ssid;
   properties.GetStringWithoutPathExpansion(flimflam::kNameProperty, &name);
-
-  std::string hex_ssid;
   properties.GetStringWithoutPathExpansion(flimflam::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
+    if (name.empty())
+      return name;
     // Validate name for UTF8.
     std::string valid_ssid = ValidateUTF8(name);
     if (valid_ssid != name) {

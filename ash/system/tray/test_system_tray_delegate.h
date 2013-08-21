@@ -78,7 +78,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleBluetooth() OVERRIDE;
   virtual bool IsBluetoothDiscovering() OVERRIDE;
   virtual void ShowMobileSimDialog() OVERRIDE;
-  virtual void ShowMobileSetup(const std::string& network_id) OVERRIDE;
+  virtual void ShowMobileSetupDialog(const std::string& service_path) OVERRIDE;
   virtual void ShowOtherWifi() OVERRIDE;
   virtual void ShowOtherVPN() OVERRIDE;
   virtual void ShowOtherCellular() OVERRIDE;

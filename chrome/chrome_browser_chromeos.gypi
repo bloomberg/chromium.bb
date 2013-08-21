@@ -621,8 +621,6 @@
         'browser/chromeos/offline/offline_load_page.h',
         'browser/chromeos/options/network_config_view.cc',
         'browser/chromeos/options/network_config_view.h',
-        'browser/chromeos/options/network_connect.cc',
-        'browser/chromeos/options/network_connect.h',
         'browser/chromeos/options/passphrase_textfield.cc',
         'browser/chromeos/options/passphrase_textfield.h',
         'browser/chromeos/options/vpn_config_view.cc',

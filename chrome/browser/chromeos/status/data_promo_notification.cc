@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/mobile_config.h"
-#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,6 +29,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -182,7 +183,7 @@ void DataPromoNotification::NotificationLinkClicked(
       FirstNetworkByType(flimflam::kTypeCellular);
   std::string service_path = cellular ? cellular->path() : "";
   if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
-    network_connect::ShowNetworkSettings(service_path);
+    ash::network_connect::ShowNetworkSettings(service_path);
     ash::Shell::GetInstance()->system_tray_notifier()->
         NotifyClearNetworkMessage(message_type);
   }
@@ -200,7 +201,7 @@ void DataPromoNotification::NotificationLinkClicked(
     if (!deal_topup_url_.empty()) {
       deal_url_to_open = deal_topup_url_;
     } else {
-      network_connect::ShowNetworkSettings(service_path);
+      ash::network_connect::ShowNetworkSettings(service_path);
       return;
     }
   } else if (link_index == 1) {

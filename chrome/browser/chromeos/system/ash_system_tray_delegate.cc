@@ -18,6 +18,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
@@ -50,6 +51,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -61,7 +63,6 @@
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
@@ -82,6 +83,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -94,6 +96,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -216,6 +219,98 @@ void BluetoothSetDiscoveringError() {
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   // TODO(sad): Do something?
+}
+
+void ShowNetworkSettingsPage(const std::string& service_path) {
+  std::string page = chrome::kInternetOptionsSubPage;
+  const NetworkState* network = service_path.empty() ? NULL :
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (network) {
+    std::string name(network->name());
+    if (name.empty() && network->type() == flimflam::kTypeEthernet)
+      name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    page += base::StringPrintf(
+        "?servicePath=%s&networkType=%s&networkName=%s",
+        net::EscapeUrlEncodedData(service_path, true).c_str(),
+        net::EscapeUrlEncodedData(network->type(), true).c_str(),
+        net::EscapeUrlEncodedData(name, false).c_str());
+  }
+  content::RecordAction(
+      content::UserMetricsAction("OpenInternetOptionsDialog"));
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSettingsSubPage(browser, page);
+}
+
+void HandleUnconfiguredNetwork(const std::string& service_path,
+                               gfx::NativeWindow parent_window) {
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!network) {
+    NET_LOG_ERROR("Configuring unknown network", service_path);
+    return;
+  }
+
+  if (network->type() == flimflam::kTypeWifi) {
+    // Only show the config view for secure networks, otherwise do nothing.
+    if (network->security() != flimflam::kSecurityNone)
+      NetworkConfigView::Show(service_path, parent_window);
+    return;
+  }
+
+  if (network->type() == flimflam::kTypeWimax ||
+      network->type() == flimflam::kTypeVPN) {
+    NetworkConfigView::Show(service_path, parent_window);
+    return;
+  }
+
+  if (network->type() == flimflam::kTypeCellular) {
+    if (network->activation_state() != flimflam::kActivationStateActivated) {
+      ash::network_connect::ActivateCellular(service_path);
+      return;
+    }
+    if (network->cellular_out_of_credits()) {
+      ash::network_connect::ShowMobileSetup(service_path);
+      return;
+    }
+    // No special configure or setup for |network|, show the settings UI.
+    ShowNetworkSettingsPage(service_path);
+    return;
+  }
+  NOTREACHED();
+}
+
+void EnrollmentComplete(const std::string& service_path) {
+  NET_LOG_USER("Enrollment Complete", service_path);
+}
+
+bool EnrollNetwork(const std::string& service_path,
+                   gfx::NativeWindow parent_window) {
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!network) {
+    NET_LOG_ERROR("Enrolling Unknown network", service_path);
+    return false;
+  }
+  // We skip certificate patterns for device policy ONC so that an unmanaged
+  // user can't get to the place where a cert is presented for them
+  // involuntarily.
+  if (network->ui_data().onc_source() == onc::ONC_SOURCE_DEVICE_POLICY)
+    return false;
+
+  const CertificatePattern& certificate_pattern =
+      network->ui_data().certificate_pattern();
+  if (certificate_pattern.Empty())
+    return false;
+
+  NET_LOG_USER("Enrolling", service_path);
+
+  EnrollmentDelegate* enrollment = CreateEnrollmentDelegate(
+      parent_window, network->name(), ProfileManager::GetDefaultProfile());
+  return enrollment->Enroll(certificate_pattern.enrollment_uri_list(),
+                            base::Bind(&EnrollmentComplete, service_path));
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
@@ -473,7 +568,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
     if (!LoginState::Get()->IsUserLoggedIn())
       return;
-    network_connect::ShowNetworkSettings(service_path);
+    ShowNetworkSettingsPage(service_path);
   }
 
   virtual void ShowBluetoothSettings() OVERRIDE {
@@ -735,15 +830,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
-    network_connect::HandleUnconfiguredNetwork(network_id, GetNativeWindow());
+    HandleUnconfiguredNetwork(network_id, GetNativeWindow());
   }
 
   virtual void EnrollOrConfigureNetwork(
       const std::string& network_id,
       gfx::NativeWindow parent_window) OVERRIDE {
-    if (network_connect::EnrollNetwork(network_id, parent_window))
+    if (EnrollNetwork(network_id, parent_window))
       return;
-    network_connect::HandleUnconfiguredNetwork(network_id, parent_window);
+    HandleUnconfiguredNetwork(network_id, parent_window);
   }
 
   virtual void ManageBluetoothDevices() OVERRIDE {
@@ -765,8 +860,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
 
-  virtual void ShowMobileSetup(const std::string& network_id) OVERRIDE {
-    network_connect::ShowMobileSetup(network_id);
+  virtual void ShowMobileSetupDialog(const std::string& service_path) OVERRIDE {
+    MobileSetupDialog::Show(service_path);
   }
 
   virtual void ShowOtherWifi() OVERRIDE {

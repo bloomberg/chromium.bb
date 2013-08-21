@@ -23,9 +23,11 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using chromeos::DeviceState;
 using chromeos::NetworkConfigurationHandler;
@@ -34,6 +36,7 @@ using chromeos::NetworkHandler;
 using chromeos::NetworkProfile;
 using chromeos::NetworkProfileHandler;
 using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
 
 namespace ash {
 
@@ -62,6 +65,9 @@ void OnConnectFailed(const std::string& service_path,
                      scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
 
+  if (!ash::Shell::HasInstance())
+    return;
+
   // If a new connect attempt canceled this connect, no need to notify the user.
   if (error_name == NetworkConnectionHandler::kErrorConnectCanceled)
     return;
@@ -87,8 +93,7 @@ void OnConnectFailed(const std::string& service_path,
 
   if (error_name == NetworkConnectionHandler::kErrorConnected ||
       error_name == NetworkConnectionHandler::kErrorConnecting) {
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
-        service_path);
+    network_connect::ShowNetworkSettings(service_path);
     return;
   }
 
@@ -112,6 +117,8 @@ void OnConnectFailed(const std::string& service_path,
 
 void OnConnectSucceeded(const std::string& service_path) {
   NET_LOG_USER("Connect Succeeded", service_path);
+  if (!ash::Shell::HasInstance())
+    return;
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
       NetworkObserver::ERROR_CONNECT_FAILED);
 }
@@ -124,8 +131,8 @@ void OnConnectSucceeded(const std::string& service_path) {
 void CallConnectToNetwork(const std::string& service_path,
                           bool check_error_state,
                           gfx::NativeWindow owning_window) {
-  NET_LOG_USER("ConnectToNetwork", service_path);
-
+  if (!ash::Shell::HasInstance())
+    return;
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
       NetworkObserver::ERROR_CONNECT_FAILED);
 
@@ -248,6 +255,7 @@ namespace network_connect {
 
 void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow owning_window) {
+  NET_LOG_USER("ConnectToNetwork", service_path);
   const bool check_error_state = true;
   CallConnectToNetwork(service_path, check_error_state, owning_window);
 }
@@ -273,8 +281,7 @@ void ActivateCellular(const std::string& service_path) {
     // used to activate the network. Only show the dialog, if an account
     // management URL is available.
     if (!cellular->payment_url().empty())
-      ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetup(
-          service_path);
+      ShowMobileSetup(service_path);
     return;
   }
   if (cellular->activation_state() == flimflam::kActivationStateActivated) {
@@ -287,6 +294,36 @@ void ActivateCellular(const std::string& service_path) {
       "",  // carrier
       base::Bind(&OnActivateSucceeded, service_path),
       base::Bind(&OnActivateFailed, service_path));
+}
+
+void ShowMobileSetup(const std::string& service_path) {
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* cellular = handler->GetNetworkState(service_path);
+  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
+    NET_LOG_ERROR("ShowMobileSetup without Cellular network", service_path);
+    return;
+  }
+  if (cellular->activation_state() != flimflam::kActivationStateActivated &&
+      cellular->activate_over_non_cellular_networks() &&
+      !handler->DefaultNetwork()) {
+    std::string technology = cellular->network_technology();
+    ash::NetworkObserver::NetworkType network_type =
+        (technology == flimflam::kNetworkTechnologyLte ||
+         technology == flimflam::kNetworkTechnologyLteAdvanced)
+        ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
+        : ash::NetworkObserver::NETWORK_CELLULAR;
+    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
+        NULL,
+        ash::NetworkObserver::ERROR_CONNECT_FAILED,
+        network_type,
+        l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
+        l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
+                                   UTF8ToUTF16((cellular->name()))),
+        std::vector<string16>());
+    return;
+  }
+  ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetupDialog(
+      service_path);
 }
 
 void ConfigureNetworkAndConnect(const std::string& service_path,
@@ -393,6 +430,13 @@ string16 ErrorString(const std::string& error) {
   }
   return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,
                                     UTF8ToUTF16(error));
+}
+
+void ShowNetworkSettings(const std::string& service_path) {
+  if (!ash::Shell::HasInstance())
+    return;
+  ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
+      service_path);
 }
 
 }  // network_connect

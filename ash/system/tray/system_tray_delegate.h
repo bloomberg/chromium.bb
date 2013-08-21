@@ -255,7 +255,8 @@ class SystemTrayDelegate {
   virtual void GetDriveOperationStatusList(
       DriveOperationStatusList* list) = 0;
 
-  // Shows UI to configure or activate the network specified by |network_id|.
+  // Shows UI to configure or activate the network specified by |network_id|,
+  // which may include showing Payment or Portal UI when appropriate.
   virtual void ConfigureNetwork(const std::string& network_id) = 0;
 
   // Shows UI to enroll the network specified by |network_id| if appropriate,
@@ -274,7 +275,7 @@ class SystemTrayDelegate {
   virtual void ShowMobileSimDialog() = 0;
 
   // Shows UI to setup a mobile network.
-  virtual void ShowMobileSetup(const std::string& network_id) = 0;
+  virtual void ShowMobileSetupDialog(const std::string& service_path) = 0;
 
   // Shows UI to connect to an unlisted wifi network.
   virtual void ShowOtherWifi() = 0;

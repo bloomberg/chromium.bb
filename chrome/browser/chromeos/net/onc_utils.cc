@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
@@ -227,6 +229,15 @@ void ImportNetworksForUser(const chromeos::User* user,
         network_handler::StringResultCallback(),
         network_handler::ErrorCallback());
   }
+}
+
+const base::DictionaryValue* FindPolicyForActiveUser(
+    const std::string& guid,
+    onc::ONCSource* onc_source) {
+  const User* user = UserManager::Get()->GetActiveUser();
+  std::string username_hash = user ? user->username_hash() : std::string();
+  return NetworkHandler::Get()->managed_network_configuration_handler()->
+      FindPolicyByGUID(username_hash, guid, onc_source);
 }
 
 }  // namespace onc

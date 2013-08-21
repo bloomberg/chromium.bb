@@ -179,18 +179,6 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON" desc="Text of the accept button for generating a new network certificate.">
     Get new certificate
   </message>
-  <message name="IDS_NETWORK_ACTIVATION_ERROR_TITLE" desc="Title for network connection error notification">
-    Network Activation Error
-  </message>
-  <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requries a connection">
-    Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
-  </message>
-  <message name="IDS_NETWORK_CELLULAR_ACTIVATED_TITLE" desc="Title for cellular activated notification">
-    Cellular Activated
-  </message>
-  <message name="IDS_NETWORK_CELLULAR_ACTIVATED" desc="Text of the cellular activated notification">
-    Congratulations! Your '<ph name="name">$1<ex>Generic Wireless</ex></ph>' data service has been activated and is ready to go.
-  </message>
   <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
     Battery Low
   </message>

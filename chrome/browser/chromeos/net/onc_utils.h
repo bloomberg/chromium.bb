@@ -17,6 +17,7 @@ class ListValue;
 
 namespace chromeos {
 
+class NetworkState;
 class User;
 
 namespace onc {
@@ -41,6 +42,12 @@ void ExpandStringPlaceholdersInNetworksForUser(
 void ImportNetworksForUser(const chromeos::User* user,
                            const base::ListValue& network_configs,
                            std::string* error);
+
+// Looks up the policy for |guid| for the current active user and sets
+// |onc_source| accordingly.
+const base::DictionaryValue* FindPolicyForActiveUser(
+    const std::string& guid,
+    onc::ONCSource* onc_source);
 
 }  // namespace onc
 }  // namespace chromeos

@@ -141,6 +141,18 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
   <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
     Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
   </message>
+  <message name="IDS_NETWORK_CELLULAR_ACTIVATED_TITLE" desc="Title for cellular activated notification">
+    Cellular Activated
+  </message>
+  <message name="IDS_NETWORK_CELLULAR_ACTIVATED" desc="Text of the cellular activated notification">
+    Congratulations! Your '<ph name="name">$1<ex>Generic Wireless</ex></ph>' data service has been activated and is ready to go.
+  </message>
+  <message name="IDS_NETWORK_ACTIVATION_ERROR_TITLE" desc="Title for network activation error notification">
+    Network Activation Error
+  </message>
+  <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requires a connection">
+    Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
+  </message>
 
   <!-- Network state strings -->
   <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">

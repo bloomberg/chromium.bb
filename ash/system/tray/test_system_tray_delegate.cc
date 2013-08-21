@@ -238,7 +238,8 @@ bool TestSystemTrayDelegate::IsBluetoothDiscovering() {
 void TestSystemTrayDelegate::ShowMobileSimDialog() {
 }
 
-void TestSystemTrayDelegate::ShowMobileSetup(const std::string& network_id) {
+void TestSystemTrayDelegate::ShowMobileSetupDialog(
+    const std::string& service_path) {
 }
 
 void TestSystemTrayDelegate::ShowOtherWifi() {

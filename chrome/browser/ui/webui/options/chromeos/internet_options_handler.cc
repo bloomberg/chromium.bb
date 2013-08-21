@@ -35,8 +35,8 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
@@ -653,7 +653,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
-      network_connect::FindPolicyForActiveUser(vpn, &onc_source);
+      onc::FindPolicyForActiveUser(vpn->guid(), &onc_source);
 
   NetworkPropertyUIData hostname_ui_data;
   hostname_ui_data.ParseOncProperty(
@@ -1099,7 +1099,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     NOTREACHED();
     return;
   }
-  network_connect::ShowMobileSetup(service_path);
+  ash::network_connect::ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const base::ListValue* args) {
@@ -1110,7 +1110,7 @@ void InternetOptionsHandler::BuyDataPlanCallback(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  network_connect::ShowMobileSetup(service_path);
+  ash::network_connect::ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SetApnCallback(const base::ListValue* args) {
@@ -1472,7 +1472,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
-      network_connect::FindPolicyForActiveUser(network, &onc_source);
+      onc::FindPolicyForActiveUser(network->guid(), &onc_source);
   const NetworkPropertyUIData property_ui_data(onc_source);
 
   base::DictionaryValue dictionary;
