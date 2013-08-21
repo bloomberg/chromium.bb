@@ -838,7 +838,6 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::
     std::string entry;
     (*it)->GetAsString(&entry);
 
-    std::ostringstream entry_failure;
     DBusThreadManager::Get()->GetShillProfileClient()
         ->GetEntry(dbus::ObjectPath(profile_.path),
                    entry,
