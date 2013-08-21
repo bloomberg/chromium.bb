@@ -65,6 +65,7 @@ public:
     }
 
     GraphicsContext* context() const { return &m_context; }
+    bool saved() const { return m_saveAndRestore; }
 
 private:
     GraphicsContext& m_context;
