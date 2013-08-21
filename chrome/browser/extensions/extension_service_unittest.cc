@@ -1590,13 +1590,11 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   InstallCRX(path, INSTALL_FAILED);
   ValidatePrefKeyCount(pref_count);
 
-  // Extensions cannot have folders or files that have underscores except in
-  // certain whitelisted cases (eg _locales). This is an example of a broader
-  // class of validation that we do to the directory structure of the extension.
-  // We did not used to handle this correctly for installation.
+  // Packed extensions may have folders or files that have underscores.
+  // This will only cause a warning, rather than a fatal error.
   path = data_dir_.AppendASCII("bad_underscore.crx");
-  InstallCRX(path, INSTALL_FAILED);
-  ValidatePrefKeyCount(pref_count);
+  InstallCRX(path, INSTALL_NEW);
+  ValidatePrefKeyCount(++pref_count);
 
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.

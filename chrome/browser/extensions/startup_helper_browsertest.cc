@@ -36,9 +36,9 @@ IN_PROC_BROWSER_TEST_F(StartupHelperBrowserTest, ValidateCrx) {
   expectations.push_back(
       std::make_pair(test_data_dir_.AppendASCII("good2.crx"), true));
   expectations.push_back(
-      std::make_pair(test_data_dir_.AppendASCII("bad_magic.crx"), false));
+      std::make_pair(test_data_dir_.AppendASCII("bad_underscore.crx"), true));
   expectations.push_back(
-      std::make_pair(test_data_dir_.AppendASCII("bad_underscore.crx"), false));
+      std::make_pair(test_data_dir_.AppendASCII("bad_magic.crx"), false));
 
   for (std::vector<std::pair<base::FilePath, bool> >::iterator i =
            expectations.begin();

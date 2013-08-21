@@ -264,10 +264,11 @@ bool ValidateExtension(const Extension* extension,
     return false;
 
   // Check children of extension root to see if any of them start with _ and is
-  // not on the reserved list.
-  if (!CheckForIllegalFilenames(extension->path(), error)) {
-    return false;
-  }
+  // not on the reserved list. We only warn, and do not block the loading of the
+  // extension.
+  std::string warning;
+  if (!CheckForIllegalFilenames(extension->path(), &warning))
+    warnings->push_back(extensions::InstallWarning(warning));
 
   // Check that extensions don't include private key files.
   std::vector<base::FilePath> private_keys =
