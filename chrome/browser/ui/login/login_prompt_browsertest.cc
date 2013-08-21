@@ -48,8 +48,8 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
 
     AuthInfo() {}
 
-    AuthInfo(const std::string username,
-             const std::string password)
+    AuthInfo(const std::string& username,
+             const std::string& password)
         : username_(username), password_(password) {}
   };
 
