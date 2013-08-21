@@ -320,6 +320,8 @@ STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
   ExceptionBarrier barrier;
 
   HRESULT hr = MayPlayBack(BSCF_LASTDATANOTIFICATION);
+  if (FAILED(hr))
+    return hr;
   hr = CallbackImpl::OnStopBinding(hresult, error);
   ReleaseBind();
   return hr;

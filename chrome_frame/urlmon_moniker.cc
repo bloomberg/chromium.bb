@@ -243,6 +243,7 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
   CComObject<BSCBStorageBind>* callback = NULL;
   if (ShouldWrapCallback(me, iid, bind_ctx)) {
     hr = CComObject<BSCBStorageBind>::CreateInstance(&callback);
+    DCHECK(SUCCEEDED(hr));
     auto_release_callback = callback;
     DCHECK_EQ(callback->m_dwRef, 1);
     hr = callback->Initialize(me, bind_ctx);
