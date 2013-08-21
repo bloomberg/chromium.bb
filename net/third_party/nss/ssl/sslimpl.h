@@ -72,6 +72,7 @@ typedef SSLSignType     SSL3SignType;
 #define hmac_md5	ssl_hmac_md5
 #define hmac_sha	ssl_hmac_sha
 #define hmac_sha256	ssl_hmac_sha256
+#define mac_aead	ssl_mac_aead
 
 #define SET_ERROR_CODE		/* reminder */
 #define SEND_ALERT		/* reminder */
@@ -533,9 +534,8 @@ typedef SECStatus (*SSLAEADCipher)(
 			       int                  maxout,
 			       const unsigned char *in,
 			       int                  inlen,
-			       SSL3ContentType      type,
-			       SSL3ProtocolVersion  version,
-			       SSL3SequenceNumber   seqnum);
+			       const unsigned char *additionalData,
+			       int                  additionalDataLen);
 typedef SECStatus (*SSLCompressor)(void *               context,
                                    unsigned char *      out,
                                    int *                outlen,

@@ -1,5 +1,5 @@
---- net/third_party/nss/ssl/ssl3con.c.orig	2013-08-14 14:22:50.479780305 -0700
-+++ net/third_party/nss/ssl/ssl3con.c	2013-08-14 14:23:57.670788603 -0700
+--- net/third_party/nss/ssl/ssl3con.c.orig	2013-08-20 12:00:16.742760827 -0700
++++ net/third_party/nss/ssl/ssl3con.c	2013-08-20 11:59:56.782463207 -0700
 @@ -44,6 +44,9 @@
  #ifdef NSS_ENABLE_ZLIB
  #include "zlib.h"
@@ -10,7 +10,7 @@
  
  #ifndef PK11_SETATTRS
  #define PK11_SETATTRS(x,id,v,l) (x)->type = (id); \
-@@ -1807,6 +1810,69 @@ ssl3_BuildRecordPseudoHeader(unsigned ch
+@@ -1819,6 +1822,69 @@ ssl3_BuildRecordPseudoHeader(unsigned ch
      return 13;
  }
  
@@ -80,7 +80,7 @@
  static SECStatus
  ssl3_AESGCM(ssl3KeyMaterial *keys,
  	    PRBool doDecrypt,
-@@ -1869,10 +1935,10 @@ ssl3_AESGCM(ssl3KeyMaterial *keys,
+@@ -1870,10 +1936,10 @@ ssl3_AESGCM(ssl3KeyMaterial *keys,
      gcmParams.ulTagBits = tagSize * 8;
  
      if (doDecrypt) {
@@ -93,7 +93,7 @@
  			  maxout, in, inlen);
      }
      *outlen += (int) uOutLen;
-@@ -5071,6 +5137,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
+@@ -5023,6 +5089,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
@@ -104,7 +104,7 @@
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites)
-@@ -7776,6 +7846,10 @@ ssl3_HandleClientHello(sslSocket *ss, SS
+@@ -7728,6 +7798,10 @@ ssl3_HandleClientHello(sslSocket *ss, SS
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
