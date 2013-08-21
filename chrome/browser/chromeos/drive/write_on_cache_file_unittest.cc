@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_write_helper.h"
+#include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
@@ -57,23 +57,15 @@ class TestFileSystem : public DummyFileSystem {
 
 }  // namespace
 
-class FileWriteHelperTest : public testing::Test {
- public:
-  FileWriteHelperTest()
-      : test_file_system_(new TestFileSystem) {
-  }
+TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
+  content::TestBrowserThreadBundle thread_bundle;
+  TestFileSystem test_file_system;
 
- protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestFileSystem> test_file_system_;
-};
-
-TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
-  FileWriteHelper file_write_helper(test_file_system_.get());
   FileError error = FILE_ERROR_FAILED;
   base::FilePath path;
   // The file should successfully be opened.
-  file_write_helper.PrepareWritableFileAndRun(
+  WriteOnCacheFile(
+      &test_file_system,
       base::FilePath(kDrivePath),
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
   test_util::RunBlockingPoolTask();
@@ -82,16 +74,19 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
   EXPECT_EQ(kLocalPath, path.value());
 
   // Make sure that the file is actually closed.
-  EXPECT_EQ(1, test_file_system_->num_closed());
+  EXPECT_EQ(1, test_file_system.num_closed());
 }
 
-TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
-  FileWriteHelper file_write_helper(test_file_system_.get());
+TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
+  content::TestBrowserThreadBundle thread_bundle;
+  TestFileSystem test_file_system;
+
   FileError error = FILE_ERROR_FAILED;
   base::FilePath path;
   // Access to kInvalidPath should fail, and FileWriteHelper should not try to
   // open or close the file.
-  file_write_helper.PrepareWritableFileAndRun(
+  WriteOnCacheFile(
+      &test_file_system,
       base::FilePath(kInvalidPath),
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
   test_util::RunBlockingPoolTask();

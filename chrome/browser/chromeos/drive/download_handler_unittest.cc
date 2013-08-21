@@ -7,7 +7,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -77,9 +76,7 @@ class DownloadHandlerTest : public testing::Test {
     EXPECT_CALL(download_item_, GetState())
         .WillRepeatedly(testing::Return(content::DownloadItem::IN_PROGRESS));
 
-    file_write_helper_.reset(new FileWriteHelper(&test_file_system_));
-    download_handler_.reset(
-        new DownloadHandler(file_write_helper_.get(), &test_file_system_));
+    download_handler_.reset(new DownloadHandler(&test_file_system_));
     download_handler_->Initialize(download_manager_.get(), temp_dir_.path());
   }
 
@@ -88,7 +85,6 @@ class DownloadHandlerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<content::MockDownloadManager> download_manager_;
   DownloadHandlerTestFileSystem test_file_system_;
-  scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
   content::MockDownloadItem download_item_;
 };

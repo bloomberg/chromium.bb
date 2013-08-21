@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/file_write_helper.h"
+#include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -95,11 +95,8 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
 
 }  // namespace
 
-DownloadHandler::DownloadHandler(
-    FileWriteHelper* file_write_helper,
-    FileSystemInterface* file_system)
-    : file_write_helper_(file_write_helper),
-      file_system_(file_system),
+DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
+    : file_system_(file_system),
       weak_ptr_factory_(this) {
 }
 
@@ -303,7 +300,8 @@ void DownloadHandler::OnCreateDirectory(
 
 void DownloadHandler::UploadDownloadItem(DownloadItem* download) {
   DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
-  file_write_helper_->PrepareWritableFileAndRun(
+  WriteOnCacheFile(
+      file_system_,
       util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));
 }

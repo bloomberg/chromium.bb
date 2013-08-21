@@ -27,8 +27,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -71,12 +71,6 @@ FileSystemInterface* GetFileSystem(Profile* profile) {
   DriveIntegrationService* integration_service =
       DriveIntegrationServiceFactory::GetForProfile(profile);
   return integration_service ? integration_service->file_system() : NULL;
-}
-
-FileWriteHelper* GetFileWriteHelper(Profile* profile) {
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile);
-  return integration_service ? integration_service->file_write_helper() : NULL;
 }
 
 std::string ReadStringFromGDocFile(const base::FilePath& file_path,
@@ -327,19 +321,19 @@ void MigrateCacheFilesFromOldDirectories(
 
 void PrepareWritableFileAndRun(Profile* profile,
                                const base::FilePath& path,
-                               const OpenFileCallback& callback) {
+                               const PrepareWritableFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  if (IsUnderDriveMountPoint(path)) {
-    FileWriteHelper* file_write_helper = GetFileWriteHelper(profile);
-    if (!file_write_helper)
-      return;
-    base::FilePath remote_path(ExtractDrivePath(path));
-    file_write_helper->PrepareWritableFileAndRun(remote_path, callback);
-  } else {
+
+  FileSystemInterface* file_system = GetFileSystem(profile);
+  if (!file_system || !IsUnderDriveMountPoint(path)) {
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(callback, FILE_ERROR_OK, path));
+        FROM_HERE, base::Bind(callback, FILE_ERROR_FAILED, base::FilePath()));
+    return;
   }
+
+  const base::FilePath drive_path = ExtractDrivePath(path);
+  WriteOnCacheFile(file_system, drive_path, callback);
 }
 
 void EnsureDirectoryExists(Profile* profile,

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -204,9 +203,7 @@ DriveIntegrationService::DriveIntegrationService(
           resource_metadata_.get(),
           blocking_task_runner_.get(),
           cache_root_directory_.Append(util::kTemporaryFileDirectory)));
-  file_write_helper_.reset(new FileWriteHelper(file_system()));
-  download_handler_.reset(new DownloadHandler(file_write_helper(),
-                                              file_system()));
+  download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
 }
@@ -243,7 +240,6 @@ void DriveIntegrationService::Shutdown() {
   RemoveDriveMountPoint();
   debug_info_collector_.reset();
   download_handler_.reset();
-  file_write_helper_.reset();
   file_system_.reset();
   drive_app_registry_.reset();
   scheduler_.reset();

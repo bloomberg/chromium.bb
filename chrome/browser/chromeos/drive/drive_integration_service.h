@@ -29,7 +29,6 @@ class DownloadHandler;
 class DriveAppRegistry;
 class DriveServiceInterface;
 class FileSystemInterface;
-class FileWriteHelper;
 class JobListInterface;
 
 namespace internal {
@@ -99,7 +98,6 @@ class DriveIntegrationService
     return debug_info_collector_.get();
   }
   FileSystemInterface* file_system() { return file_system_.get(); }
-  FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
   DriveAppRegistry* drive_app_registry() { return drive_app_registry_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
@@ -152,7 +150,6 @@ class DriveIntegrationService
   scoped_ptr<internal::ResourceMetadata,
              util::DestroyHelper> resource_metadata_;
   scoped_ptr<FileSystemInterface> file_system_;
-  scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 
