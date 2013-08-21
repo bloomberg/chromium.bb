@@ -60,7 +60,12 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
 // Actual tests ---------------------------------------------------------------
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAllowingUserMedia) {
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_TestAllowingUserMedia DISABLED_TestAllowingUserMedia
+#else
+#define MAYBE_TestAllowingUserMedia TestAllowingUserMedia
+#endif
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, MAYBE_TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndAccept(tab_contents);
 }
@@ -75,6 +80,13 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
   GetUserMediaAndDismiss(tab_contents);
 }
 
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
+  DISABLED_TestAcceptThenDenyWhichShouldBeSticky
+#else
+#define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
+  TestAcceptThenDenyWhichShouldBeSticky
+#endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
@@ -144,6 +156,13 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                                                kVideoOnlyCallConstraints);
 }
 
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics \
+  DISABLED_DenyingCameraDoesNotCauseStickyDenyForMics
+#else
+#define MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics \
+  DenyingCameraDoesNotCauseStickyDenyForMics
+#endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
