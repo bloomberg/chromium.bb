@@ -16,49 +16,71 @@ function DirectoryModelUtil() {}
  * Returns root entries asynchronously.
  * @param {DirectoryEntry} root The root entry of the whole file system.
  * @param {boolean} isDriveEnabled True if the drive is enabled.
- * @param {function(Array.<Entry>)} callback Called when roots are resolved.
+ * @param {function(Array.<Entry>)} completionCallback Called when roots are
+ *     resolved.
  */
-DirectoryModelUtil.resolveRoots = function(root, isDriveEnabled, callback) {
-  var groups = {
-    drive: null,
-    downloads: null,
-    archives: null,
-    removables: null,
+DirectoryModelUtil.resolveRoots = function(
+    root, isDriveEnabled, completionCallback) {
+  var rootEntryGroup = {
+    drive: [],
+    downloads: [],
+    archives: [],
+    removables: [],
   };
 
-  // Use a fake instead, to return a list as fast as possible.
-  groups.drive = (isDriveEnabled ? [DirectoryModel.fakeDriveEntry_] : []);
+  // Add the entry at path as a root.
+  var addRootEntry = function(absolutePath, key, callback) {
+    root.getDirectory(
+        absolutePath.substring(1),  // Remove the leading '/'.
+        {create: false},
+        function(entry) {
+          rootEntryGroup[key] = [entry];
+          callback();
+        },
+        function(error) {
+          console.error('Error resolving ' + key + ' root dir: ' + error);
+          callback();
+        });
+  };
 
-  var addRootEntryList = function(key, rootEntryList) {
-    groups[key] = rootEntryList;
+  // Read the directory at path, and add all contained entries as roots.
+  var addRootEntryList = function(absolutePath, key, callback) {
+    util.readDirectory(
+        root,
+        absolutePath.substring(1),  // Remove the leading '/'.
+        function(entryList) {
+          rootEntryGroup[key] = entryList;
+          callback();
+        });
+  };
 
-    for (var key in groups) {
-      if (!groups[key]) {
-        // There is a pending task.
-        return;
-      }
+  var group = new AsyncUtil.Group();
+
+  // Resolve the Drive root if enabled.
+  if (isDriveEnabled) {
+    group.add(addRootEntry.bind(
+        null, RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT, 'drive'));
+  }
+
+  // Resolve Download, Archives and Removables directories.
+  group.add(addRootEntry.bind(null, RootDirectory.DOWNLOADS, 'downloads'));
+  group.add(addRootEntryList.bind(null, RootDirectory.ARCHIVE, 'archives'));
+  group.add(addRootEntryList.bind(
+      null, RootDirectory.REMOVABLE, 'removables'));
+
+  group.run(function() {
+    if (!rootEntryGroup.drive && isDriveEnabled) {
+      // Drive is enabled, but not available. Use the fake entry here.
+      rootEntryGroup.drive = [DirectoryModel.fakeDriveEntry_];
     }
 
     // Concat the result in the order.
-    callback([].concat(
-        groups.drive, groups.downloads, groups.archives, groups.removables));
-  };
-
-  // Resolve download root directory.
-  root.getDirectory(
-      RootDirectory.DOWNLOADS.substring(1),  // Remove the leading '/'.
-      { create: false },
-      function(entry) { addRootEntryList('downloads', [entry]); },
-      function(err) {
-        console.error('Error resolving downloads root dir: ' + error);
-        addRootEntryList('downloads', []);
-      });
-
-  // Reads 'archives' and 'removables' roots.
-  util.readDirectory(root, RootDirectory.ARCHIVE.substring(1),
-                     addRootEntryList.bind(null, 'archives'));
-  util.readDirectory(root, RootDirectory.REMOVABLE.substring(1),
-                     addRootEntryList.bind(null, 'removables'));
+    completionCallback([].concat(
+        rootEntryGroup.drive,
+        rootEntryGroup.downloads,
+        rootEntryGroup.archives,
+        rootEntryGroup.removables));
+  });
 };
 
 /**
@@ -1188,55 +1210,40 @@ DirectoryModel.prototype.onMountChanged_ = function(callback) {
  * @private
  */
 DirectoryModel.prototype.onDriveStatusChanged_ = function(callback) {
-  var mounted = this.isDriveMounted();
-  if (mounted) {
-    // Change fake entry to real one and rescan.
-    var onGotDirectory = function(entry) {
-      this.updateRootEntry_(entry);
-      var currentDirEntry = this.getCurrentDirEntry();
+  this.updateRoots_(function() {
+    var currentDirEntry = this.getCurrentDirEntry();
+    if (this.isDriveMounted()) {
       if (currentDirEntry == DirectoryModel.fakeDriveEntry_) {
-        this.changeDirectoryEntrySilent_(entry);
+        // Replace the fake entry by real DirectoryEntry silently.
+        for (var i = 0; i < this.rootsList_.length; i++) {
+          if (this.rootsList_.item(i).fullPath ==
+              DirectoryModel.fakeDriveEntry_.fullPath) {
+            this.changeDirectoryEntrySilent_(this.rootsList_.item(i));
+            break;
+          }
+        }
       } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
         this.rescan();
       }
-      callback();
-    };
-    this.root_.getDirectory(
-        DirectoryModel.fakeDriveEntry_.fullPath, {},
-        onGotDirectory.bind(this));
-  } else {
-    var rootType = this.getCurrentRootType();
-    if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE) {
-      callback();
-      return;
-    }
-
-    // Current entry unmounted. Replace with fake drive one.
-    this.updateRootEntry_(DirectoryModel.fakeDriveEntry_);
-    if (this.getCurrentDirPath() == DirectoryModel.fakeDriveEntry_.fullPath) {
-      // Replace silently and rescan.
-      this.changeDirectoryEntrySilent_(DirectoryModel.fakeDriveEntry_);
     } else {
-      this.changeDirectoryEntry_(false, DirectoryModel.fakeDriveEntry_);
+      // TODO(hidehiko): Conceptually, fakeDriveEntry should be a trick to
+      // initialize Drive file system mounting state lazily. So, moving back
+      // to the fakeDriveEntry sounds weird state. Disabling the Drive File
+      // System should be handled as same as other file systems (such as
+      // unmounting zip-archive, disconnecting USB flush storage, etc.).
+      // The handling code is here due to historical reason. Clean this up.
+      if (currentDirEntry.fullPath == DirectoryModel.fakeDriveEntry_.fullPath) {
+        // Replace silently and rescan.
+        this.changeDirectoryEntrySilent_(DirectoryModel.fakeDriveEntry_);
+      } else if (PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
+        // Now, Drive file system is unmounted. Go back to the fake Drive
+        // entry.
+        this.changeDirectoryEntry_(false, DirectoryModel.fakeDriveEntry_);
+      }
     }
-    callback();
-  }
-};
 
-/**
- * Update the entry in the roots list model.
- *
- * @param {DirectoryEntry} entry New entry.
- * @private
- */
-DirectoryModel.prototype.updateRootEntry_ = function(entry) {
-  for (var i = 0; i != this.rootsList_.length; i++) {
-    if (this.rootsList_.item(i).fullPath == entry.fullPath) {
-      this.rootsList_.splice(i, 1, entry);
-      return;
-    }
-  }
-  console.error('Cannot find root: ' + entry.fullPath);
+    callback();
+  }.bind(this));
 };
 
 /**
