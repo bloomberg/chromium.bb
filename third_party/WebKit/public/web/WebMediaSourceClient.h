@@ -31,36 +31,15 @@
 #ifndef WebMediaSourceClient_h
 #define WebMediaSourceClient_h
 
-#include "../platform/WebString.h"
-#include "WebTimeRange.h"
+#include "../platform/WebMediaSource.h"
 
 namespace WebKit {
 
 class WebSourceBuffer;
 
-class WebMediaSourceClient {
+class WebMediaSourceClient : public WebMediaSourceNew {
 public:
-    enum AddStatus {
-        AddStatusOk,
-        AddStatusNotSupported,
-        AddStatusReachedIdLimit
-    };
-
-    enum EndOfStreamStatus {
-        EndOfStreamStatusNoError,
-        EndOfStreamStatusNetworkError,
-        EndOfStreamStatusDecodeError,
-    };
-
     virtual ~WebMediaSourceClient() { }
-
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer**) = 0;
-    virtual double duration() = 0;
-    virtual void setDuration(double) = 0;
-    virtual void endOfStream(EndOfStreamStatus) = 0;
-    // FIXME: Remove default implementation once Chromium changes land.
-    virtual void markEndOfStream(EndOfStreamStatus status) { endOfStream(status); }
-    virtual void unmarkEndOfStream() { };
 };
 
 } // namespace WebKit

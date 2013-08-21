@@ -90,6 +90,7 @@ public:
     virtual void setWebLayer(WebLayer*);
     virtual void addTextTrack(WebInbandTextTrack*);
     virtual void removeTextTrack(WebInbandTextTrack*);
+    virtual void mediaSourceOpened(WebMediaSourceNew*);
 
     // MediaPlayer methods:
     virtual void load(const WTF::String& url) OVERRIDE;

@@ -32,7 +32,7 @@
 #include "MediaSourcePrivateImpl.h"
 
 #include "SourceBufferPrivateImpl.h"
-#include "WebMediaSourceClient.h"
+#include "WebMediaSource.h"
 #include "WebSourceBuffer.h"
 #include <algorithm>
 #include <limits>
@@ -41,20 +41,20 @@
 
 namespace WebKit {
 
-MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<WebKit::WebMediaSourceClient> client)
-    : m_client(client)
+MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<WebKit::WebMediaSourceNew> webMediaSource)
+    : m_webMediaSource(webMediaSource)
 {
 }
 
 WebCore::MediaSourcePrivate::AddStatus MediaSourcePrivateImpl::addSourceBuffer(const String& type, const CodecsArray& codecs,
     OwnPtr<WebCore::SourceBufferPrivate>* sourceBuffer)
 {
-    if (!m_client)
+    if (!m_webMediaSource)
         return WebCore::MediaSourcePrivate::NotSupported;
 
     WebSourceBuffer* webSourceBuffer = 0;
     WebCore::MediaSourcePrivate::AddStatus result =
-        static_cast<WebCore::MediaSourcePrivate::AddStatus>(m_client->addSourceBuffer(type, codecs, &webSourceBuffer));
+        static_cast<WebCore::MediaSourcePrivate::AddStatus>(m_webMediaSource->addSourceBuffer(type, codecs, &webSourceBuffer));
 
     if (result == WebCore::MediaSourcePrivate::Ok) {
         ASSERT(webSourceBuffer);
@@ -65,28 +65,28 @@ WebCore::MediaSourcePrivate::AddStatus MediaSourcePrivateImpl::addSourceBuffer(c
 
 double MediaSourcePrivateImpl::duration()
 {
-    if (!m_client)
+    if (!m_webMediaSource)
         return std::numeric_limits<float>::quiet_NaN();
 
-    return m_client->duration();
+    return m_webMediaSource->duration();
 }
 
 void MediaSourcePrivateImpl::setDuration(double duration)
 {
-    if (m_client)
-        m_client->setDuration(duration);
+    if (m_webMediaSource)
+        m_webMediaSource->setDuration(duration);
 }
 
 void MediaSourcePrivateImpl::markEndOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus status)
 {
-    if (m_client)
-        m_client->markEndOfStream(static_cast<WebMediaSourceClient::EndOfStreamStatus>(status));
+    if (m_webMediaSource)
+        m_webMediaSource->markEndOfStream(static_cast<WebMediaSourceNew::EndOfStreamStatus>(status));
 }
 
 void MediaSourcePrivateImpl::unmarkEndOfStream()
 {
-    if (m_client)
-        m_client->unmarkEndOfStream();
+    if (m_webMediaSource)
+        m_webMediaSource->unmarkEndOfStream();
 }
 
 }

@@ -28,4 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../platform/WebMediaSource.h"
+#ifndef WebSourceBuffer_h
+#define WebSourceBuffer_h
+
+#include "WebTimeRange.h"
+
+namespace WebKit {
+
+class WebSourceBuffer {
+public:
+    virtual ~WebSourceBuffer() { }
+
+    virtual WebTimeRanges buffered() = 0;
+    virtual void append(const unsigned char* data, unsigned length) = 0;
+    virtual void abort() = 0;
+    virtual void remove(double start, double end) = 0;
+    virtual bool setTimestampOffset(double) = 0;
+
+    // Set presentation timestamp for the start of append window.
+    virtual void setAppendWindowStart(double) = 0;
+
+    // Set presentation timestamp for the end of append window.
+    virtual void setAppendWindowEnd(double) = 0;
+
+    virtual void removedFromMediaSource() = 0;
+};
+
+} // namespace WebKit
+
+#endif

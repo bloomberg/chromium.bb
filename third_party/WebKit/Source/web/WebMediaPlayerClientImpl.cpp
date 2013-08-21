@@ -6,6 +6,7 @@
 #include "WebMediaPlayerClientImpl.h"
 
 #include "InbandTextTrackPrivateImpl.h"
+#include "MediaSourcePrivateImpl.h"
 #include "WebAudioSourceProvider.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
@@ -217,6 +218,12 @@ void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
     // that was passed to addTextTrack.  (The object from which we are downcasting includes
     // WebInbandTextTrack as one of the intefaces from which inherits.)
     m_client->mediaPlayerDidRemoveTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
+}
+
+void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSourceNew* webMediaSource)
+{
+    ASSERT(webMediaSource);
+    m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(webMediaSource))));
 }
 
 // MediaPlayer -------------------------------------------------

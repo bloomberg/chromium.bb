@@ -32,15 +32,15 @@
 #define WebMediaPlayer_h
 
 #include "../platform/WebCanvas.h"
+#include "../platform/WebMediaSource.h"
 #include "../platform/WebString.h"
-#include "WebTimeRange.h"
+#include "../platform/WebTimeRange.h"
 
 namespace WebKit {
 
 class WebAudioSourceProvider;
 class WebAudioSourceProviderClient;
 class WebMediaPlayerClient;
-class WebMediaSource;
 class WebString;
 class WebURL;
 struct WebRect;
@@ -87,10 +87,27 @@ public:
         CORSModeUseCredentials,
     };
 
-    virtual ~WebMediaPlayer() {}
+    enum LoadType {
+        LoadTypeURL,
+        LoadTypeMediaSource,
+        LoadTypeMediaStream,
+    };
 
-    virtual void load(const WebURL&, CORSMode) = 0;
-    virtual void load(const WebURL&, WebMediaSource*, CORSMode) = 0;
+    virtual ~WebMediaPlayer() { }
+
+    virtual void load(LoadType, const WebURL&, CORSMode) { }
+
+    // FIXME: Remove the following two load() methods once Chromium-side changes land.
+    virtual void load(const WebURL& url, CORSMode corsMode)
+    {
+        load(LoadTypeURL, url, corsMode);
+    }
+
+    virtual void load(const WebURL& url, WebMediaSource* mediaSource, CORSMode corsMode)
+    {
+        delete mediaSource;
+        load(LoadTypeMediaSource, url, corsMode);
+    }
 
     // Playback controls.
     virtual void play() = 0;

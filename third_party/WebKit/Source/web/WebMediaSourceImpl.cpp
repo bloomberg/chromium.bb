@@ -47,7 +47,6 @@ WebMediaSourceImpl::~WebMediaSourceImpl()
 {
 }
 
-
 void WebMediaSourceImpl::open(WebMediaSourceClient* client)
 {
     ASSERT(client);

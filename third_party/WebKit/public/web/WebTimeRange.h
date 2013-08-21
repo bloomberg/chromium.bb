@@ -28,23 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTimeRange_h
-#define WebTimeRange_h
-
-#include "../platform/WebVector.h"
-
-namespace WebKit {
-
-struct WebTimeRange {
-    WebTimeRange() : start(0), end(0) { }
-    WebTimeRange(float s, float e) : start(s), end(e) { }
-
-    float start;
-    float end;
-};
-
-typedef WebVector<WebTimeRange> WebTimeRanges;
-
-} // namespace WebKit
-
-#endif
+#include "../platform/WebTimeRange.h"
