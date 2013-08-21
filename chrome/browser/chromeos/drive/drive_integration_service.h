@@ -128,16 +128,10 @@ class DriveIntegrationService
   // the metadata initialization is successful.
   void InitializeAfterMetadataInitialized(FileError error);
 
-  // Disables Drive. Used to disable Drive when needed (ex. initialization of
-  // the Drive cache failed).
-  // Must be called on UI thread.
-  void DisableDrive();
-
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
-  // True if Drive is disabled due to initialization errors.
-  bool drive_disabled_;
+  bool is_initialized_;
 
   base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

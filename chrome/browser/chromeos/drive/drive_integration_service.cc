@@ -127,7 +127,7 @@ DriveIntegrationService::DriveIntegrationService(
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system)
     : profile_(profile),
-      drive_disabled_(false),
+      is_initialized_(false),
       cache_root_directory_(!test_cache_root.empty() ?
                             test_cache_root : util::GetCacheRootPath(profile)),
       weak_ptr_factory_(this) {
@@ -260,11 +260,7 @@ bool DriveIntegrationService::IsDriveEnabled() {
   if (!util::IsDriveEnabledForProfile(profile_))
     return false;
 
-  // Drive may be disabled for cache initialization failure, etc.
-  if (drive_disabled_)
-    return false;
-
-  return true;
+  return is_initialized_;
 }
 
 void DriveIntegrationService::ClearCacheAndRemountFileSystem(
@@ -344,11 +340,19 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Failed to initialize. Disabling Drive : "
-                 << FileErrorToString(error);
-    DisableDrive();
+    LOG(WARNING) << "Failed to initialize: " << FileErrorToString(error);
+
+    // Change the download directory to the default value if the download
+    // destination is set to under Drive mount point.
+    PrefService* pref_service = profile_->GetPrefs();
+    if (util::IsUnderDriveMountPoint(
+            pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
+      pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                DownloadPrefs::GetDefaultDownloadDirectory());
+    }
     return;
   }
+  is_initialized_ = true;
 
   content::DownloadManager* download_manager =
       g_browser_process->download_status_updater() ?
@@ -372,20 +376,6 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   }
 
   AddDriveMountPoint();
-}
-
-void DriveIntegrationService::DisableDrive() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  drive_disabled_ = true;
-  // Change the download directory to the default value if the download
-  // destination is set to under Drive mount point.
-  PrefService* pref_service = profile_->GetPrefs();
-  if (util::IsUnderDriveMountPoint(
-          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
-    pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
-                              DownloadPrefs::GetDefaultDownloadDirectory());
-  }
 }
 
 //===================== DriveIntegrationServiceFactory =======================
