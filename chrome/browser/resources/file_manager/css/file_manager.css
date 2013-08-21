@@ -248,11 +248,16 @@ div.splitter {
 }
 
 #volume-list li.root-item {
-  -webkit-animation: fadeIn 150ms ease-in-out;
   -webkit-box-align: center;
   display: -webkit-box;
   line-height: 22px;  /* To accomodate for icons. */
   padding-left: 11px;
+}
+
+/* TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
+   back. crbug.com/276132. */
+#volume-list li[item-type=shortcut].root-item {
+  -webkit-animation: fadeIn 150ms ease-in-out;
 }
 
 /* This selector is used by JavaScript. "fadeout" class will be dinamically

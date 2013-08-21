@@ -250,6 +250,7 @@ var NavigationListItem = cr.ui.define('li');
 
 NavigationListItem.prototype = {
   __proto__: HTMLLIElement.prototype,
+  get modelItem() { return this.modelItem_; },
 };
 
 /**
@@ -284,19 +285,21 @@ NavigationListItem.prototype.decorate = function() {
  */
 NavigationListItem.prototype.setModelItem =
     function(modelItem, opt_deviceType) {
-  if (this.path_)
+  if (this.modelItem_)
     console.warn('NavigationListItem.setModelItem should be called only once.');
 
-  this.path_ = modelItem.path;
+  this.modelItem_ = modelItem;
 
-  var rootType = PathUtil.getRootType(this.path_);
+  this.setAttribute('item-type',
+                    modelItem.isShortcut() ? 'shortcut' : 'volume');
 
+  var rootType = PathUtil.getRootType(modelItem.path);
   this.iconDiv_.setAttribute('volume-type-icon', rootType);
   if (opt_deviceType) {
     this.iconDiv_.setAttribute('volume-subtype', opt_deviceType);
   }
 
-  this.label_.textContent = PathUtil.getFolderLabel(this.path_);
+  this.label_.textContent = PathUtil.getFolderLabel(modelItem.path);
 
   if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
     this.eject_ = cr.doc.createElement('div');
@@ -321,14 +324,14 @@ NavigationListItem.prototype.setModelItem =
  * @param {cr.ui.Menu} menu Menu this item.
  */
 NavigationListItem.prototype.maybeSetContextMenu = function(menu) {
-  if (!this.path_) {
+  if (!this.modelItem_.path) {
     console.error('NavigationListItem.maybeSetContextMenu must be called ' +
                   'after setModelItem().');
     return;
   }
 
-  var isRoot = PathUtil.isRootPath(this.path_);
-  var rootType = PathUtil.getRootType(this.path_);
+  var isRoot = PathUtil.isRootPath(this.modelItem_.path);
+  var rootType = PathUtil.getRootType(this.modelItem_.path);
   // The context menu is shown on the following items:
   // - Removable and Archive volumes
   // - Folder shortcuts
@@ -427,6 +430,13 @@ NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
  * @override
  */
 NavigationList.prototype.removeChild = function(item) {
+  // TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
+  // back. crbug.com/276132.
+  if (!item.modelItem.isShortcut()) {
+    Node.prototype.removeChild.call(this, item);
+    return;
+  }
+
   var removeElement = function(e) {
     // Must keep the animation name 'fadeOut' in sync with the css.
     if (e.animationName == 'fadeOut')
