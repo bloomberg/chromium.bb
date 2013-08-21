@@ -69,7 +69,7 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
                          public ShellObserver {
  public:
   WorkAreaObserver(message_center::MessagePopupCollection* collection,
-                   ShelfLayoutManager* shelf);
+                   aura::RootWindow* root_window);
   virtual ~WorkAreaObserver();
 
   void SetSystemTrayHeight(int height);
@@ -81,7 +81,11 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
 
  private:
+  // Updates |shelf_| from |root_window_|.
+  void UpdateShelf();
+
   message_center::MessagePopupCollection* collection_;
+  aura::RootWindow* root_window_;
   ShelfLayoutManager* shelf_;
   int system_tray_height_;
 
@@ -90,18 +94,20 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
 
 WorkAreaObserver::WorkAreaObserver(
     message_center::MessagePopupCollection* collection,
-    ShelfLayoutManager* shelf)
+    aura::RootWindow* root_window)
     : collection_(collection),
-      shelf_(shelf),
+      root_window_(root_window),
+      shelf_(NULL),
       system_tray_height_(0) {
   DCHECK(collection_);
-  shelf_->AddObserver(this);
+  UpdateShelf();
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 WorkAreaObserver::~WorkAreaObserver() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  shelf_->RemoveObserver(this);
+  if (shelf_)
+    shelf_->RemoveObserver(this);
 }
 
 void WorkAreaObserver::SetSystemTrayHeight(int height) {
@@ -122,6 +128,8 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
 }
 
 void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
+  UpdateShelf();
+
   collection_->OnDisplayBoundsChanged(
       Shell::GetScreen()->GetDisplayNearestWindow(
           shelf_->shelf_widget()->GetNativeView()));
@@ -151,6 +159,15 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
       work_area.set_y(work_area.y() + system_tray_height_);
   }
   collection_->SetDisplayInfo(work_area, display.bounds());
+}
+
+void WorkAreaObserver::UpdateShelf() {
+  if (shelf_)
+    return;
+
+  shelf_ = ShelfLayoutManager::ForLauncher(root_window_);
+  if (shelf_)
+    shelf_->AddObserver(this);
 }
 
 // Class to initialize and manage the WebNotificationBubble and
@@ -366,7 +383,7 @@ bool WebNotificationTray::ShowPopups() {
       message_center_tray_.get(),
       ash::switches::UseAlternateShelfLayout()));
   work_area_observer_.reset(new internal::WorkAreaObserver(
-      popup_collection_.get(), GetShelfLayoutManager()));
+      popup_collection_.get(), GetWidget()->GetNativeView()->GetRootWindow()));
   return true;
 }
 
