@@ -133,7 +133,12 @@ const NSInteger kMiddleButtonNumber = 2;
     [self selectCell:selectedCell];
   } else {
     const NSInteger selectedRow = [self selectedRow];
-    DCHECK_GE(selectedRow, 0);
+
+    // No row could be selected if the model failed to update.
+    if (selectedRow == -1) {
+      NOTREACHED();
+      return;
+    }
 
     DCHECK(delegate_);
     delegate_->OnMatrixRowClicked(self, selectedRow);

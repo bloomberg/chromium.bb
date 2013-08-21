@@ -175,7 +175,8 @@ void OmniboxPopupViewMac::PaintUpdatesNow() {
 
 void OmniboxPopupViewMac::OnMatrixRowSelected(OmniboxPopupMatrix* matrix,
                                               size_t row) {
-  model_->SetSelectedLine(row, false, false);
+  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
+  model_->SetSelectedLine(row + start_match, false, false);
 }
 
 void OmniboxPopupViewMac::OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
@@ -403,7 +404,9 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
 
 void OmniboxPopupViewMac::OpenURLForRow(size_t row,
                                         WindowOpenDisposition disposition) {
-  DCHECK_GE(row, 0u);
+  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
+  row += start_match;
+  DCHECK_LT(row, GetResult().size());
 
   // OpenMatch() may close the popup, which will clear the result set and, by
   // extension, |match| and its contents.  So copy the relevant match out to
