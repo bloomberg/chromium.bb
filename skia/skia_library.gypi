@@ -118,6 +118,8 @@
     '../third_party/skia/src/ports/SkFontConfigParser_android.cpp',
     '../third_party/skia/src/ports/SkFontHost_mac.cpp',
     '../third_party/skia/src/ports/SkFontHost_win.cpp',
+    '../third_party/skia/src/ports/SkFontHost_win_dw.cpp',
+    '../third_party/skia/src/ports/SkFontMgr_default_gdi.cpp',
     '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
     '../third_party/skia/src/ports/SkOSFile_posix.cpp',
     '../third_party/skia/src/ports/SkOSFile_stdio.cpp',
@@ -156,6 +158,11 @@
     '../third_party/skia/src/utils/SkProxyCanvas.cpp',
     '../third_party/skia/src/utils/SkRTConf.cpp',
     '../third_party/skia/include/utils/SkRTConf.h',
+    '../third_party/skia/src/utils/win/SkDWriteFontFileStream.cpp',
+    '../third_party/skia/src/utils/win/SkDWriteFontFileStream.h',
+    '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
+    '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
+    '../third_party/skia/src/utils/win/SkHRESULT.cpp',
     '../third_party/skia/include/pdf/SkPDFDevice.h',
     '../third_party/skia/include/pdf/SkPDFDocument.h',
 
@@ -398,6 +405,24 @@
         '../third_party/skia/src/ports/SkTime_Unix.cpp',
         '../third_party/skia/src/ports/SkTLS_pthread.cpp',
       ],
+      'include_dirs': [
+        '../third_party/skia/include/utils/win',
+        '../third_party/skia/src/utils/win',
+      ],
+      'defines': [
+        'SK_FONTHOST_USES_FONTMGR',
+      ],
+    },{ # not 'OS == "win"'
+      'sources!': [
+        '../third_party/skia/src/ports/SkFontHost_win_dw.cpp',
+        '../third_party/skia/src/ports/SkFontMgr_default_gdi.cpp',
+
+        '../third_party/skia/src/utils/win/SkDWriteFontFileStream.cpp',
+        '../third_party/skia/src/utils/win/SkDWriteFontFileStream.h',
+        '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
+        '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
+        '../third_party/skia/src/utils/win/SkHRESULT.cpp',
+      ],
     }],
     # TODO(scottmg): http://crbug.com/177306
     ['clang==1', {
@@ -444,6 +469,7 @@
 
     'SKIA_IGNORE_GPU_MIPMAPS',
 
+    # this flag forces Skia not to use typographic metrics with GDI.
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
