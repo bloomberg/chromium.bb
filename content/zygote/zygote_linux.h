@@ -44,6 +44,12 @@ class Zygote {
   typedef base::SmallMap< std::map<base::ProcessHandle, ZygoteProcessInfo> >
       ZygoteProcessMap;
 
+  // Retrieve a ZygoteProcessInfo from the process_info_map_.
+  // Returns true and write to process_info if |pid| can be found, return
+  // false otherwise.
+  bool GetProcessInfo(base::ProcessHandle pid,
+                      ZygoteProcessInfo* process_info);
+
   // Returns true if the SUID sandbox is active.
   bool UsingSUIDSandbox() const;
 

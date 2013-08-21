@@ -99,6 +99,17 @@ bool Zygote::ProcessRequests() {
   }
 }
 
+bool Zygote::GetProcessInfo(base::ProcessHandle pid,
+                            ZygoteProcessInfo* process_info) {
+  DCHECK(process_info);
+  const ZygoteProcessMap::const_iterator it = process_info_map_.find(pid);
+  if (it == process_info_map_.end()) {
+    return false;
+  }
+  *process_info = it->second;
+  return true;
+}
+
 bool Zygote::UsingSUIDSandbox() const {
   return sandbox_flags_ & kSandboxLinuxSUID;
 }
@@ -166,17 +177,16 @@ void Zygote::HandleReapRequest(int fd,
     return;
   }
 
-  if (process_info_map_.find(child) == process_info_map_.end()) {
-    // TODO(jln): test on more bots and add a DCHECK.
+  ZygoteProcessInfo child_info;
+  if (!GetProcessInfo(child, &child_info)) {
     LOG(ERROR) << "Child not found!";
+    NOTREACHED();
     return;
   }
-  const base::ProcessId actual_child = process_info_map_[child].internal_pid;
-  const bool started_from_helper =
-      process_info_map_[child].started_from_helper;
-  if (!started_from_helper) {
+
+  if (!child_info.started_from_helper) {
     // TODO(jln): this old code is completely broken. See crbug.com/274855.
-    base::EnsureProcessTerminated(actual_child);
+    base::EnsureProcessTerminated(child_info.internal_pid);
   } else {
     // For processes from the helper, send a GetTerminationStatus request
     // with known_dead set to true.
@@ -195,19 +205,17 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
                                   bool known_dead,
                                   base::TerminationStatus* status,
                                   int* exit_code) {
-  // Do we know about this child?
-  if (process_info_map_.find(real_pid) == process_info_map_.end()) {
-    // TODO(jln): test on more bots and add a DCHECK.
+
+  ZygoteProcessInfo child_info;
+  if (!GetProcessInfo(real_pid, &child_info)) {
     LOG(ERROR) << "Zygote::GetTerminationStatus for unknown PID "
                << real_pid;
+    NOTREACHED();
     return false;
   }
   // We know about |real_pid|.
-  const base::ProcessHandle child =
-      process_info_map_[real_pid].internal_pid;
-  const bool started_from_helper =
-      process_info_map_[real_pid].started_from_helper;
-  if (started_from_helper) {
+  const base::ProcessHandle child = child_info.internal_pid;
+  if (child_info.started_from_helper) {
     // Let the helper handle the request.
     DCHECK(helper_);
     if (!helper_->GetTerminationStatus(child, known_dead, status, exit_code)) {
@@ -261,7 +269,7 @@ void Zygote::HandleGetTerminationStatus(int fd,
   if (!got_termination_status) {
     // Assume that if we can't find the child in the sandbox, then
     // it terminated normally.
-    // TODO(jln): add a DCHECK.
+    NOTREACHED();
     status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
     exit_code = RESULT_CODE_NORMAL_EXIT;
   }
@@ -285,17 +293,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
                                                        uma_name,
                                                        uma_sample,
                                                        uma_boundary_value));
-  // TODO(jln): this shortcut is silly and does nothing but make the code
-  // harder to follow and to test. Get rid of it.
-  if (!(use_helper || UsingSUIDSandbox())) {
-    pid_t pid = fork();
-    if (pid > 0) {
-      process_info_map_[pid].internal_pid = pid;
-      process_info_map_[pid].started_from_helper = use_helper;
-    }
-    return pid;
-  }
-
   int dummy_fd;
   ino_t dummy_inode;
   int pipe_fds[2] = { -1, -1 };
@@ -390,8 +387,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
 
     // Now set-up this process to be tracked by the Zygote.
     if (process_info_map_.find(real_pid) != process_info_map_.end()) {
-      // TODO(jln): add DCHECK.
       LOG(ERROR) << "Already tracking PID " << real_pid;
+      NOTREACHED();
     }
     process_info_map_[real_pid].internal_pid = pid;
     process_info_map_[real_pid].started_from_helper = use_helper;
