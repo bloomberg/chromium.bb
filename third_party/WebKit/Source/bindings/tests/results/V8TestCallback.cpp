@@ -188,7 +188,7 @@ bool V8TestCallback::callbackWithBoolean(bool boolParam)
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
 }
 
-bool V8TestCallback::callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam)
+bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequenceParam)
 {
     if (!canInvokeCallback())
         return true;

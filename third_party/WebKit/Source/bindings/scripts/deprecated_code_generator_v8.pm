@@ -5054,7 +5054,9 @@ sub GetNativeTypeForCallbacks
     return "PassRefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
 
     # Callbacks use raw pointers, so pass isParameter = 1
-    return GetNativeType($type, {}, "parameter");
+    my $nativeType = GetNativeType($type, {}, "parameter");
+    return "const $nativeType&" if $nativeType =~ /^Vector/;
+    return $nativeType;
 }
 
 sub JSValueToNativeStatement
