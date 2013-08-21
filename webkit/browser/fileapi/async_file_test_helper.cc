@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
@@ -160,6 +162,25 @@ base::PlatformFileError AsyncFileTestHelper::CreateFile(
   context->operation_runner()->CreateFile(
       url, false /* exclusive */,
       AssignAndQuitCallback(&run_loop, &result));
+  run_loop.Run();
+  return result;
+}
+
+base::PlatformFileError AsyncFileTestHelper::CreateFileWithData(
+    FileSystemContext* context,
+    const FileSystemURL& url,
+    const char* buf,
+    int buf_size) {
+  base::ScopedTempDir dir;
+  if (!dir.CreateUniqueTempDir())
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  base::FilePath local_path = dir.path().AppendASCII("tmp");
+  if (buf_size != file_util::WriteFile(local_path, buf, buf_size))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  context->operation_runner()->CopyInForeignFile(
+      local_path, url, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }

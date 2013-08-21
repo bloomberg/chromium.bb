@@ -54,6 +54,13 @@ class AsyncFileTestHelper {
   static base::PlatformFileError CreateFile(FileSystemContext* context,
                                             const FileSystemURL& url);
 
+  // Creates a file at |url| and fills with |buf|.
+  static base::PlatformFileError CreateFileWithData(
+      FileSystemContext* context,
+      const FileSystemURL& url,
+      const char* buf,
+      int buf_size);
+
   // Truncates the file |url| to |size|.
   static base::PlatformFileError TruncateFile(FileSystemContext* context,
                                               const FileSystemURL& url,
