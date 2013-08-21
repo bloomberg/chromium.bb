@@ -43,18 +43,24 @@
 namespace WebCore {
 
 class DOMDataStore;
+class ScriptController;
 class ScriptExecutionContext;
+
+enum WorldIdConstants {
+    MainWorldId = 0,
+    EmbedderWorldIdLimit = (1 << 29),
+    ScriptPreprocessorIsolatedWorldId
+};
 
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
-    static const int mainWorldId = 0;
     static const int mainWorldExtensionGroup = 0;
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static bool isIsolatedWorldId(int worldId) { return worldId > mainWorldId; }
+    static bool isIsolatedWorldId(int worldId) { return worldId > MainWorldId; }
     static void getAllWorlds(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     void setIsolatedWorldField(v8::Handle<v8::Context>);
@@ -92,7 +98,7 @@ public:
     static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId);
 
-    bool isMainWorld() const { return m_worldId == mainWorldId; }
+    bool isMainWorld() const { return m_worldId == MainWorldId; }
     bool isIsolatedWorld() const { return isIsolatedWorldId(m_worldId); }
 
     int worldId() const { return m_worldId; }
@@ -102,6 +108,7 @@ public:
         ASSERT(isIsolatedWorld());
         return m_domDataStore.get();
     }
+    v8::Handle<v8::Context> context(ScriptController*);
 
     static void setInitializingWindow(bool);
 

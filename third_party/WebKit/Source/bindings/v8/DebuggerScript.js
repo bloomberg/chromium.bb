@@ -302,6 +302,12 @@ DebuggerScript.getBreakpointNumbers = function(eventData)
     return numbers;
 }
 
+DebuggerScript.isEvalCompilation = function(eventData)
+{
+    var script = eventData.script();
+    return (script.compilationType() === Debug.ScriptCompilationType.Eval);
+}
+
 DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Get function name.

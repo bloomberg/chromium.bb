@@ -38,6 +38,8 @@ namespace InspectorInstrumentation {
 bool profilerEnabledImpl(InstrumentingAgents*);
 bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
+PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, Frame*, const ScriptSourceCode&);
+String preprocessEventListenerImpl(InstrumentingAgents*, Frame*, const String& source, const String& url, const String& functionName);
 
 bool canvasAgentEnabled(ScriptExecutionContext*);
 bool consoleAgentEnabled(ScriptExecutionContext*);
@@ -64,6 +66,22 @@ inline bool collectingHTMLParseErrors(Page* page)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         return collectingHTMLParseErrorsImpl(instrumentingAgents);
     return false;
+}
+
+inline String preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(source);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        return preprocessEventListenerImpl(instrumentingAgents, frame, source, url, functionName);
+    return source;
+}
+
+inline PassOwnPtr<ScriptSourceCode> preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(PassOwnPtr<ScriptSourceCode>());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        return preprocessImpl(instrumentingAgents, frame, sourceCode);
+    return PassOwnPtr<ScriptSourceCode>();
 }
 
 } // namespace InspectorInstrumentation

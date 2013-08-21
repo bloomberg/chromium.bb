@@ -33,9 +33,11 @@
 
 #include "V8Window.h"
 #include "bindings/v8/DOMDataStore.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "wtf/HashTraits.h"
@@ -54,7 +56,7 @@ void DOMWrapperWorld::setInitializingWindow(bool initializing)
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::createMainWorld()
 {
-    return adoptRef(new DOMWrapperWorld(mainWorldId, mainWorldExtensionGroup));
+    return adoptRef(new DOMWrapperWorld(MainWorldId, mainWorldExtensionGroup));
 }
 
 DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
@@ -87,7 +89,7 @@ DOMWrapperWorld* mainThreadNormalWorld()
 // FIXME: Remove this function. There is currently an issue with the inspector related to the call to dispatchDidClearWindowObjectInWorld in ScriptController::windowShell.
 DOMWrapperWorld* existingWindowShellWorkaroundWorld()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, world, (adoptRef(new DOMWrapperWorld(DOMWrapperWorld::mainWorldId - 1, DOMWrapperWorld::mainWorldExtensionGroup - 1))));
+    DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, world, (adoptRef(new DOMWrapperWorld(MainWorldId - 1, DOMWrapperWorld::mainWorldExtensionGroup - 1))));
     return world.get();
 }
 
@@ -142,7 +144,7 @@ DOMWrapperWorld::~DOMWrapperWorld()
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, int extensionGroup)
 {
-    ASSERT(worldId > mainWorldId);
+    ASSERT(worldId > MainWorldId);
 
     WorldMap& map = isolatedWorldMap();
     WorldMap::AddResult result = map.add(worldId, 0);
@@ -159,6 +161,11 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
     ASSERT(map.size() == isolatedWorldCount);
 
     return world.release();
+}
+
+v8::Handle<v8::Context> DOMWrapperWorld::context(ScriptController* controller)
+{
+    return controller->windowShell(this)->context();
 }
 
 typedef HashMap<int, RefPtr<SecurityOrigin> > IsolatedWorldSecurityOriginMap;

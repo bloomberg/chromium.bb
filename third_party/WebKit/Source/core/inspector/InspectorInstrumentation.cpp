@@ -146,6 +146,20 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
     return false;
 }
 
+PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const ScriptSourceCode& sourceCode)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        return debuggerAgent->preprocess(frame, sourceCode);
+    return PassOwnPtr<ScriptSourceCode>();
+}
+
+String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& source, const String& url, const String& functionName)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        return debuggerAgent->preprocessEventListener(frame, source, url, functionName);
+    return source;
+}
+
 bool canvasAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);

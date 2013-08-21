@@ -34,6 +34,7 @@
 
 #include "V8Window.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/V8WindowShell.h"
@@ -44,6 +45,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/TemporaryChange.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -62,6 +65,15 @@ static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context
         return 0;
 
     return toFrameIfNotDetached(context);
+}
+
+void PageScriptDebugServer::setPreprocessorSource(const String& preprocessorSource)
+{
+    if (preprocessorSource.isEmpty())
+        m_preprocessorSourceCode.clear();
+    else
+        m_preprocessorSourceCode = adoptPtr(new ScriptSourceCode(preprocessorSource));
+    m_scriptPreprocessor.clear();
 }
 
 PageScriptDebugServer& PageScriptDebugServer::shared()
@@ -189,6 +201,80 @@ void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> contex
 void PageScriptDebugServer::quitMessageLoopOnPause()
 {
     m_clientMessageLoop->quitNow();
+}
+
+void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetails& eventDetails)
+{
+    v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
+    Frame* frame = retrieveFrameWithGlobalObjectCheck(eventContext);
+    if (!frame)
+        return;
+
+    if (!canPreprocess(frame))
+        return;
+
+    v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
+    v8::Local<v8::Context> debugContext = v8::Debug::GetDebugContext();
+    v8::Context::Scope contextScope(debugContext);
+    v8::TryCatch tryCatch;
+    // <script> tag source and attribute value source are preprocessed before we enter V8.
+    // Avoid preprocessing any internal scripts by processing only eval source in this V8 event handler.
+    v8::Handle<v8::Value> argvEventData[] = { eventData };
+    v8::Handle<v8::Value> v8Value = callDebuggerMethod("isEvalCompilation", WTF_ARRAY_LENGTH(argvEventData), argvEventData);
+    if (v8Value.IsEmpty() || !v8Value->ToBoolean()->Value())
+        return;
+
+    // The name and source are in the JS event data.
+    String scriptName = toWebCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptName", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
+    String script = toWebCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptSource", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
+
+    String preprocessedSource  = m_scriptPreprocessor->preprocessSourceCode(script, scriptName);
+
+    v8::Handle<v8::Value> argvPreprocessedScript[] = { eventData, v8String(preprocessedSource, debugContext->GetIsolate()) };
+    callDebuggerMethod("setScriptSource", WTF_ARRAY_LENGTH(argvPreprocessedScript), argvPreprocessedScript);
+}
+
+static bool isCreatingPreprocessor = false;
+
+bool PageScriptDebugServer::canPreprocess(Frame* frame)
+{
+    ASSERT(frame);
+
+    if (!m_preprocessorSourceCode || !frame->page() || isCreatingPreprocessor)
+        return false;
+
+    // We delay the creation of the preprocessor until just before the first JS from the
+    // Web page to ensure that the debugger's console initialization code has completed.
+    if (!m_scriptPreprocessor) {
+        TemporaryChange<bool> isPreprocessing(isCreatingPreprocessor, true);
+        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(*m_preprocessorSourceCode.get(), frame->script(), frame->page()->console()));
+    }
+
+    if (m_scriptPreprocessor->isValid())
+        return true;
+
+    m_scriptPreprocessor.clear();
+    // Don't retry the compile if we fail one time.
+    m_preprocessorSourceCode.clear();
+    return false;
+}
+
+// Source to Source processing iff debugger enabled and it has loaded a preprocessor.
+PassOwnPtr<ScriptSourceCode> PageScriptDebugServer::preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+{
+    if (!canPreprocess(frame))
+        return PassOwnPtr<ScriptSourceCode>();
+
+    String preprocessedSource = m_scriptPreprocessor->preprocessSourceCode(sourceCode.source(), sourceCode.url());
+    return adoptPtr(new ScriptSourceCode(preprocessedSource, sourceCode.url()));
+}
+
+String PageScriptDebugServer::preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+{
+    if (!canPreprocess(frame))
+        return source;
+
+    return m_scriptPreprocessor->preprocessSourceCode(source, url, functionName);
 }
 
 } // namespace WebCore

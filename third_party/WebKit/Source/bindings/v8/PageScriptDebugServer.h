@@ -33,11 +33,16 @@
 
 
 #include "bindings/v8/ScriptDebugServer.h"
+#include "bindings/v8/ScriptPreprocessor.h"
 #include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class Page;
+class ScriptController;
+class ScriptPreprocessor;
+class ScriptSourceCode;
 
 class PageScriptDebugServer : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
@@ -58,6 +63,10 @@ public:
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
     virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
+    virtual void setPreprocessorSource(const String&);
+    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&);
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
+    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
 
 private:
     PageScriptDebugServer();
@@ -72,6 +81,10 @@ private:
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     Page* m_pausedPage;
     HashMap<String, String> m_compiledScriptURLs;
+
+    OwnPtr<ScriptSourceCode> m_preprocessorSourceCode;
+    OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
+    bool canPreprocess(Frame*);
 };
 
 } // namespace WebCore

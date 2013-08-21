@@ -46,8 +46,10 @@
 
 namespace WebCore {
 
+class ScriptController;
 class ScriptDebugListener;
 class ScriptObject;
+class ScriptSourceCode;
 class ScriptState;
 class ScriptValue;
 class JavaScriptCallFrame;
@@ -79,8 +81,6 @@ public:
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, ScriptObject* result);
     void updateCallStack(ScriptValue* callFrame);
 
-    void setScriptPreprocessor(const String& preprocessorBody);
-
     class Task {
     public:
         virtual ~Task() { }
@@ -95,11 +95,15 @@ public:
     v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
     v8::Local<v8::Value> getInternalProperties(v8::Handle<v8::Object>&);
     v8::Handle<v8::Value> setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
-
+    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);
 
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
     virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
+    virtual void setPreprocessorSource(const String&) { }
+    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) { }
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
+    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
 
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
@@ -122,10 +126,6 @@ protected:
 
     void ensureDebuggerScriptCompiled();
 
-    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);
-
-    String preprocessSourceCode(const String& sourceCode);
-
     PauseOnExceptionsState m_pauseOnExceptionsState;
     ScopedPersistent<v8::Object> m_debuggerScript;
     ScopedPersistent<v8::Object> m_executionState;
@@ -139,8 +139,6 @@ private:
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
     bool executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest, v8::Handle<v8::Object> executionState);
 
-    class ScriptPreprocessor;
-    OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
     bool m_runningNestedMessageLoop;
 };
 

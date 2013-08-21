@@ -60,6 +60,8 @@
             'v8/ScriptInstance.h',
             'v8/ScriptObject.cpp',
             'v8/ScriptObject.h',
+            'v8/ScriptPreprocessor.cpp',
+            'v8/ScriptPreprocessor.h',
             'v8/ScriptProfiler.cpp',
             'v8/ScriptProfiler.h',
             'v8/ScriptPromiseResolver.cpp',

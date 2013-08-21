@@ -33,9 +33,12 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/PageScriptDebugServer.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 
@@ -136,7 +139,25 @@ void PageDebuggerAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorl
         return;
 
     reset();
-    scriptDebugServer().setScriptPreprocessor(m_pageAgent->scriptPreprocessor());
+
+    scriptDebugServer().setPreprocessorSource(String());
+    ASSERT(m_pageAgent);
+    if (!m_pageAgent->scriptPreprocessorSource().isEmpty())
+        scriptDebugServer().setPreprocessorSource(m_pageAgent->scriptPreprocessorSource());
+}
+
+String PageDebuggerAgent::preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+{
+    ASSERT(frame);
+    ASSERT(m_pageScriptDebugServer);
+    return m_pageScriptDebugServer->preprocessEventListener(frame, source, url, functionName);
+}
+
+PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+{
+    ASSERT(m_pageScriptDebugServer);
+    ASSERT(frame);
+    return m_pageScriptDebugServer->preprocess(frame, sourceCode);
 }
 
 } // namespace WebCore

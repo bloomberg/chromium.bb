@@ -53,6 +53,7 @@ class JSONObject;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptDebugServer;
+class ScriptSourceCode;
 class ScriptValue;
 class RegularExpression;
 
@@ -81,6 +82,9 @@ public:
     bool runningNestedMessageLoop();
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, PassRefPtr<ScriptCallStack>, unsigned long);
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long);
+
+    String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
+    PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
 
     // Part of the protocol.
     virtual void enable(ErrorString*);

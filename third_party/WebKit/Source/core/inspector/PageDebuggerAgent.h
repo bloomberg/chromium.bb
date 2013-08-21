@@ -41,6 +41,7 @@ class InspectorOverlay;
 class InspectorPageAgent;
 class Page;
 class PageScriptDebugServer;
+class ScriptSourceCode;
 
 class PageDebuggerAgent :
     public InspectorDebuggerAgent,
@@ -52,6 +53,8 @@ public:
     virtual ~PageDebuggerAgent();
 
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
+    String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
+    PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
 
 protected:
     virtual void enable();

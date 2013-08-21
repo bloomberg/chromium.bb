@@ -170,7 +170,7 @@ public:
     String loaderId(DocumentLoader*);
     Frame* findFrameWithSecurityOrigin(const String& originRawString);
     Frame* assertFrame(ErrorString*, const String& frameId);
-    String scriptPreprocessor() { return m_scriptPreprocessor; }
+    String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     String resourceSourceMapURL(const String& url);
     static DocumentLoader* assertDocumentLoader(ErrorString*, Frame*);
 
@@ -194,7 +194,7 @@ private:
     String m_pendingScriptToEvaluateOnLoadOnce;
     String m_scriptToEvaluateOnLoadOnce;
     String m_pendingScriptPreprocessor;
-    String m_scriptPreprocessor;
+    String m_scriptPreprocessorSource;
     HashMap<Frame*, String> m_frameToIdentifier;
     HashMap<String, Frame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;

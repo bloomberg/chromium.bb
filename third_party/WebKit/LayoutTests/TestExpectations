@@ -18,8 +18,6 @@ crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-console.html [ Sk
 crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-search.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/linkifier.html [ Skip ]
 
-crbug.com/264934 [ Linux Mac Debug ] inspector/debugger/debugger-script-preprocessor.html [ Pass Crash ]
-
 crbug.com/264998 [ Mac ] inspector/tracing.html [ Pass Failure ]
 
 crbug.com/273119 [ XP ] inspector/styles/styles-new-API.html [ Pass Failure ]

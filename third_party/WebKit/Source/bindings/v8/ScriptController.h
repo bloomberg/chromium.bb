@@ -65,10 +65,6 @@ enum ReasonForCallingCanExecuteScripts {
     NotAboutToExecuteScript
 };
 
-enum IsolatedWorldConstants {
-    EmbedderWorldIdLimit = (1 << 29)
-};
-
 class ScriptController {
 public:
     ScriptController(Frame*);

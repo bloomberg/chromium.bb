@@ -44,6 +44,7 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 
@@ -136,6 +137,9 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     v8::Context::Scope scope(v8Context);
 
+    String listenerSource =  InspectorInstrumentation::preprocessEventListener(frame, m_code, m_sourceURL, m_functionName);
+    fprintf(stderr, "%s\n", listenerSource.utf8().data());
+
     // FIXME: Remove the following 'with' hack.
     //
     // Nodes other than the document object, when executing inline event
@@ -158,7 +162,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         "with (this[1]) {"
         "with (this[0]) {"
             "return function(" + m_eventParameterName + ") {" +
-                m_code + "\n" // Insert '\n' otherwise //-style comments could break the handler.
+                listenerSource + "\n" // Insert '\n' otherwise //-style comments could break the handler.
             "};"
         "}}}})";
 

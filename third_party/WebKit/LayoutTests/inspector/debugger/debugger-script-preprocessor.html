@@ -2,38 +2,59 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/script1.js"></script>
 <script>
 
 function load()
 {
-    eval("function dynamic" + "Script1() {}"); 
-    eval("function dynamic" + "Script2() {}"); 
+    eval("function dynamic" + "Script1() {}");
+    eval("function dynamic" + "Script2() {}");
+    eval("function dynamic" + "RuntimeError() {}");
     runTest();
 }
 
 function test()
 {
-    function preprocessor(script, name)
+    function preprocessor(script, url, functionName)
     {
+        function makeResponse(script, msg, url) {
+            // write into the console to verify that no internal scripts are preprocessed.
+            return script + ';\nconsole.log(\"' + msg + '\");\n//# sourceURL=' + url;
+        }
         if (script.indexOf("dynamic" + "Script1") !== -1)
-            return script + "//# sourceURL=dynamicScript1";
+            return makeResponse(script, 'eval works', "dynamic"+"Script1");
         if (script.indexOf("dynamic" + "Script2") !== -1) {
             try {
-                var w = eval("window");
-                return script + "//# sourceURL=FAIL_window_should_not_be_there";
+                var w = eval("window.location.href");
+                return makeResponse(script, 'verify href: ' + w, "dynamic"+"Script2");
             } catch (e) {
-                return script + "//# sourceURL=dynamicScript2";
+                return makeResponse(script, 'Did not find window href', "dynamic"+"Script2");
             }
         }
-        // Verify that the |name| argument is correct. Note: if name is not passed in
-        // the results will be a script with a sourceURL equal to the original file name.
-        return script + "//# sourceURL=" + name + ".js"; 
+        if (script.indexOf("dynamic" + "RuntimeError") !== -1) {
+            throw new Error("fake internal preprocessor error");
+        }
+        if (!this.String) {
+            throw new Error("preprocessor environment is missing built-ins");
+        }
+        // Do not report tests/inspector files, their line numbers may change.
+        if(/-test.js/.test(url))
+            return script;
+        // Verify functionName argument for DOM event handlers.
+        if (functionName)
+            url += '_' + functionName;
+        // Verify that the |url| argument is correct.
+        url = url.replace(/\.html/, '_html') + '.js';
+        return makeResponse(script, 'preprocessed ' + url, url);
     }
+
+    var failingPreprocessor = "(function() {throw new Error(\"failingPreprocessor throws\");}())"
+    var syntaxError = "(function preprocessor(script, url) {\nsyntax error\n}\n)";
 
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
-    {         
+    {
         InspectorTest.reloadPage(step2, undefined, "(" + preprocessor + ")");
     }
 
@@ -45,8 +66,23 @@ function test()
         }
         var scripts = InspectorTest.queryScripts(accept);
         for (var i = 0; i < scripts.length; ++i)
-            InspectorTest.addResult(WebInspector.displayNameForURL(scripts[i].sourceURL));
+            InspectorTest.addResult("sourceURLs[" + i +"]=" + WebInspector.displayNameForURL(scripts[i].sourceURL));
 
+         InspectorTest.reloadPage(step3, undefined, "(" + failingPreprocessor + ")");
+    }
+
+    function step3()
+    {
+         InspectorTest.reloadPage(step4, undefined, "var notAFunctionOrSyntaxError;");
+    }
+
+    function step4()
+    {
+         InspectorTest.reloadPage(step5, undefined, syntaxError);
+    }
+
+    function step5()
+    {
         InspectorTest.reloadPage(InspectorTest.completeDebuggerTest.bind(InspectorTest));
     }
 }

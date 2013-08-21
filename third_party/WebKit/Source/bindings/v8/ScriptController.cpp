@@ -672,8 +672,11 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
     if (m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
         m_frame->loader()->didAccessInitialDocument();
 
+    OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(m_frame, sourceCode);
+    const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;
+
     v8::Context::Scope scope(v8Context);
-    v8::Local<v8::Value> object = compileAndRunScript(sourceCode, corsStatus);
+    v8::Local<v8::Value> object = compileAndRunScript(sourceCodeToCompile, corsStatus);
 
     m_sourceURL = savedSourceURL;
 
