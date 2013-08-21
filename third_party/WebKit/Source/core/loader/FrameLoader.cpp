@@ -160,7 +160,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_inStopAllLoaders(false)
     , m_isComplete(false)
     , m_containsPlugins(false)
-    , m_needsClear(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_shouldCallCheckCompleted(false)
     , m_opener(0)
@@ -326,12 +325,10 @@ void FrameLoader::didExplicitOpen()
 
 void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, bool clearFrameView)
 {
-    m_frame->editor()->clear();
-
-    if (!m_needsClear)
+    if (m_stateMachine.creatingInitialEmptyDocument())
         return;
-    m_needsClear = false;
 
+    m_frame->editor()->clear();
     m_frame->document()->cancelParsing();
     m_frame->document()->stopActiveDOMObjects();
     if (m_frame->document()->attached()) {
@@ -388,7 +385,6 @@ void FrameLoader::setOutgoingReferrer(const KURL& url)
 
 void FrameLoader::didBeginDocument(bool dispatch)
 {
-    m_needsClear = true;
     m_isComplete = false;
     m_frame->document()->setReadyState(Document::Loading);
 

@@ -293,7 +293,6 @@ private:
     // FIXME: This is only used in checkCompleted(). Figure out a way to disentangle it.
     bool m_isComplete;
 
-    bool m_needsClear;
     bool m_containsPlugins;
 
     KURL m_submittedFormURL;
