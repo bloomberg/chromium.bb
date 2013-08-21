@@ -201,7 +201,6 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   std::vector<std::string> lines;
   Tokenize(fetcher_delegate.data(), "\r\n", &lines);
   for (size_t i = 0; i < lines.size(); ++i) {
-    std::vector<std::string> tokens;
     if (StartsWithASCII(lines[i], kAuthStart, false))
       return lines[i].substr(arraysize(kAuthStart) - 1);
   }
