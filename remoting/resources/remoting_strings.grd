@@ -530,8 +530,11 @@
       <message desc="Label for general-purpose OK buttons." name="IDR_OK">
         OK
       </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDR_OFFLINE">
+      <message desc="Modified version of the host name shown for hosts that are not currently accessible, and for which no last-online status is available." name="IDR_OFFLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
+      </message>
+      <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDR_LAST_ONLINE">
+        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE">$2<ex>1/6/13</ex></ph>)
       </message>
       <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDR_UPDATE_REQUIRED">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (out-of-date)

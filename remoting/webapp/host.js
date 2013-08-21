@@ -32,6 +32,8 @@ remoting.Host = function() {
   this.hostVersion = '';
   /** @type {Array.<string>} */
   this.tokenUrlPatterns = [];
+  /** @type {string} */
+  this.updatedTime = '';
 };
 
 /**

@@ -336,8 +336,23 @@ remoting.HostTableEntry.prototype.setHostName_ = function() {
     };
     hostNameNode.addEventListener('keydown', onKeyDown, false);
   } else {
-    hostNameNode.innerText = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE',
-                                                    this.host.hostName);
+    if (this.host.updatedTime) {
+      var lastOnline = new Date(this.host.updatedTime);
+      var now = new Date();
+      var displayString = '';
+      if (now.getFullYear() == lastOnline.getFullYear() &&
+          now.getMonth() == lastOnline.getMonth() &&
+          now.getDate() == lastOnline.getDate()) {
+        displayString = lastOnline.toLocaleTimeString();
+      } else {
+        displayString = lastOnline.toLocaleDateString();
+      }
+      hostNameNode.innerText = chrome.i18n.getMessage(
+          /*i18n-content*/'LAST_ONLINE', [this.host.hostName, displayString]);
+    } else {
+      hostNameNode.innerText = chrome.i18n.getMessage(
+          /*i18n-content*/'OFFLINE', this.host.hostName);
+    }
   }
   hostNameNode.classList.add('host-list-label');
   this.hostNameCell_.innerText = '';  // Remove previous contents (if any).
