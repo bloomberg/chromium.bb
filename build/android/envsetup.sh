@@ -143,6 +143,14 @@ fi
 ANDROID_GOMA_WRAPPER=""
 if [[ -d $GOMA_DIR ]]; then
   ANDROID_GOMA_WRAPPER="$GOMA_DIR/gomacc"
+  num_cores="$(grep --count ^processor /proc/cpuinfo)"
+# Goma is IO-ish you want more threads than you have cores.
+  let goma_threads=num_cores*2
+  if [ -z "${GOMA_COMPILER_PROXY_THREADS}" -a "${goma_threads}" -gt 16 ]; then
+# The default is 16 threads, if the machine has many cores we crank it up a bit
+    GOMA_COMPILER_PROXY_THREADS="${goma_threads}"
+    export GOMA_COMPILER_PROXY_THREADS
+  fi
 fi
 export ANDROID_GOMA_WRAPPER
 
