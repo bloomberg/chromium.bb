@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
-#define REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
+#ifndef REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
+#define REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
 
 #include "base/callback.h"
 #include "base/observer_list.h"
@@ -15,13 +15,13 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class PepperSignalStrategy : public SignalStrategy {
+class DelegatingSignalStrategy : public SignalStrategy {
  public:
   typedef base::Callback<void(const std::string&)> SendIqCallback;
 
-  PepperSignalStrategy(std::string local_jid,
+  DelegatingSignalStrategy(std::string local_jid,
                        const SendIqCallback& send_iq_callback);
-  virtual ~PepperSignalStrategy();
+  virtual ~DelegatingSignalStrategy();
 
   void OnIncomingMessage(const std::string& message);
 
@@ -44,9 +44,9 @@ class PepperSignalStrategy : public SignalStrategy {
 
   int last_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperSignalStrategy);
+  DISALLOW_COPY_AND_ASSIGN(DelegatingSignalStrategy);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
+#endif  // REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_

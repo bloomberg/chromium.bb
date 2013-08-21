@@ -31,10 +31,10 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/frame_consumer_proxy.h"
+#include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
-#include "remoting/client/plugin/pepper_signal_strategy.h"
 #include "remoting/client/plugin/pepper_token_fetcher.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/rectangle_update_decoder.h"
@@ -707,8 +707,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
 
-  // Setup the PepperSignalStrategy.
-  signal_strategy_.reset(new PepperSignalStrategy(
+  // Setup the signal strategy.
+  signal_strategy_.reset(new DelegatingSignalStrategy(
       config.local_jid,
       base::Bind(&ChromotingInstance::SendOutgoingIq,
                  weak_factory_.GetWeakPtr())));

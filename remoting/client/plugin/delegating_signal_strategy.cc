@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/pepper_signal_strategy.h"
+#include "remoting/client/plugin/delegating_signal_strategy.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
 
-PepperSignalStrategy::PepperSignalStrategy(
+DelegatingSignalStrategy::DelegatingSignalStrategy(
     std::string local_jid,
     const SendIqCallback& send_iq_callback)
     : local_jid_(local_jid),
@@ -17,10 +17,10 @@ PepperSignalStrategy::PepperSignalStrategy(
       last_id_(0) {
 }
 
-PepperSignalStrategy::~PepperSignalStrategy() {
+DelegatingSignalStrategy::~DelegatingSignalStrategy() {
 }
 
-void PepperSignalStrategy::OnIncomingMessage(const std::string& message) {
+void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
  scoped_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
   if (!stanza.get()) {
     LOG(WARNING) << "Malformed XMPP stanza received: " << message;
@@ -35,38 +35,38 @@ void PepperSignalStrategy::OnIncomingMessage(const std::string& message) {
   }
 }
 
-void PepperSignalStrategy::Connect() {
+void DelegatingSignalStrategy::Connect() {
 }
 
-void PepperSignalStrategy::Disconnect() {
+void DelegatingSignalStrategy::Disconnect() {
 }
 
-SignalStrategy::State PepperSignalStrategy::GetState() const {
+SignalStrategy::State DelegatingSignalStrategy::GetState() const {
   return CONNECTED;
 }
 
-SignalStrategy::Error PepperSignalStrategy::GetError() const {
+SignalStrategy::Error DelegatingSignalStrategy::GetError() const {
   return OK;
 }
 
-std::string PepperSignalStrategy::GetLocalJid() const {
+std::string DelegatingSignalStrategy::GetLocalJid() const {
   return local_jid_;
 }
 
-void PepperSignalStrategy::AddListener(Listener* listener) {
+void DelegatingSignalStrategy::AddListener(Listener* listener) {
   listeners_.AddObserver(listener);
 }
 
-void PepperSignalStrategy::RemoveListener(Listener* listener) {
+void DelegatingSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool PepperSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
+bool DelegatingSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
   send_iq_callback_.Run(stanza->Str());
   return true;
 }
 
-std::string PepperSignalStrategy::GetNextId() {
+std::string DelegatingSignalStrategy::GetNextId() {
   ++last_id_;
   return base::IntToString(last_id_);
 }

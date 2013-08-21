@@ -58,11 +58,11 @@ namespace remoting {
 class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
+class DelegatingSignalStrategy;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
 class PepperTokenFetcher;
 class PepperView;
-class PepperSignalStrategy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
@@ -209,7 +209,7 @@ class ChromotingInstance :
   // Posts trapped keys to the web-app to handle.
   void SendTrappedKey(uint32 usb_keycode, bool pressed);
 
-  // Callback for PepperSignalStrategy.
+  // Callback for DelegatingSignalStrategy.
   void SendOutgoingIq(const std::string& iq);
 
   void SendPerfStats();
@@ -240,7 +240,7 @@ class ChromotingInstance :
   // Contains the most-recently-reported desktop shape, if any.
   scoped_ptr<SkRegion> desktop_shape_;
 
-  scoped_ptr<PepperSignalStrategy> signal_strategy_;
+  scoped_ptr<DelegatingSignalStrategy> signal_strategy_;
 
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<ChromotingClient> client_;
