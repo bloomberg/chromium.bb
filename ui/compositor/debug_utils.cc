@@ -28,7 +28,6 @@ void PrintLayerHierarchyImp(const Layer* layer,
                             gfx::Point mouse_location,
                             std::wostringstream* out) {
   std::string indent_str(indent, ' ');
-  std::string content_indent_str(indent+1, ' ');
 
   layer->transform().TransformPointReverse(mouse_location);
   bool mouse_inside_layer_bounds = layer->bounds().Contains(mouse_location);
