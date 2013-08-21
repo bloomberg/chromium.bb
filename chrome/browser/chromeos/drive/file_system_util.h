@@ -88,9 +88,6 @@ bool IsSpecialResourceId(const std::string& resource_id);
 // Returns a ResourceEntry for "/drive/root" directory.
 ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id);
 
-// Returns a ResourceEntry for "/drive/other" directory.
-ResourceEntry CreateOtherDirEntry();
-
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
 

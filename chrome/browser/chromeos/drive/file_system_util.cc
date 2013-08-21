@@ -165,15 +165,6 @@ ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id) {
   return mydrive_root;
 }
 
-ResourceEntry CreateOtherDirEntry() {
-  ResourceEntry other_dir;
-  other_dir.mutable_file_info()->set_is_directory(true);
-  other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
-  other_dir.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
-  other_dir.set_title(util::kDriveOtherDirName);
-  return other_dir;
-}
-
 const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));

@@ -217,11 +217,9 @@ class ResourceMetadata {
   // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
   FileError RefreshEntry(const ResourceEntry& entry);
 
-  // Removes all child files of the directory pointed by
-  // |directory_fetch_info| and replaces them with
-  // |entry_map|. The changestamp of the directory will be updated per
-  // |directory_fetch_info|. |callback| is called with the directory path.
-  // |callback| must not be null.
+  // Updates the changestamp of a directory according to |directory_fetch_info|,
+  // and adds or refreshes the child entries from |entry_map|.
+  // |callback| is called with the directory path. |callback| must not be null.
   // Must be called on the UI thread.
   void RefreshDirectoryOnUIThread(
       const DirectoryFetchInfo& directory_fetch_info,

@@ -27,13 +27,6 @@ void SetBaseNameFromTitle(ResourceEntry* entry) {
   entry->set_base_name(util::NormalizeFileName(base_name));
 }
 
-// Creates an entry by copying |source|, and setting the base name properly.
-ResourceEntry CreateEntryWithProperBaseName(const ResourceEntry& source) {
-  ResourceEntry entry(source);
-  SetBaseNameFromTitle(&entry);
-  return entry;
-}
-
 // Returns true if enough disk space is available for DB operation.
 // TODO(hashimoto): Merge this with FileCache's FreeDiskSpaceGetterInterface.
 bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
@@ -188,19 +181,23 @@ bool ResourceMetadata::SetUpDefaultEntries() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
-  // As an intermediate change, "/drive/root" is also added here.
   ResourceEntry entry;
   if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId, &entry)) {
     ResourceEntry root;
     root.mutable_file_info()->set_is_directory(true);
     root.set_resource_id(util::kDriveGrandRootSpecialResourceId);
     root.set_title(util::kDriveGrandRootDirName);
-    if (!storage_->PutEntry(util::kDriveGrandRootSpecialResourceId,
-                            CreateEntryWithProperBaseName(root)))
+    SetBaseNameFromTitle(&root);
+    if (!storage_->PutEntry(util::kDriveGrandRootSpecialResourceId, root))
       return false;
   }
   if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId, &entry)) {
-    if (!PutEntryUnderDirectory(util::CreateOtherDirEntry()))
+    ResourceEntry other_dir;
+    other_dir.mutable_file_info()->set_is_directory(true);
+    other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
+    other_dir.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
+    other_dir.set_title(util::kDriveOtherDirName);
+    if (!PutEntryUnderDirectory(other_dir))
       return false;
   }
   return true;
@@ -457,7 +454,7 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
     return FILE_ERROR_NOT_FOUND;
 
   // Remove from the old parent and add it to the new parent with the new data.
-  if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
+  if (!PutEntryUnderDirectory(entry))
     return FILE_ERROR_FAILED;
   return FILE_ERROR_OK;
 }
@@ -658,7 +655,7 @@ FileError ResourceMetadata::RefreshDirectory(
       continue;
     }
 
-    if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
+    if (!PutEntryUnderDirectory(entry))
       return FILE_ERROR_FAILED;
   }
 

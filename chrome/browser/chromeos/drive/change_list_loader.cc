@@ -556,14 +556,14 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
     return;
   }
 
-  // Build entry map for grand root directory, which has two entries;
-  // "/drive/root" and "/drive/other".
+  // Build entry map for grand root directory, since the special static
+  // directory "drive/other" is always created during the initialization of
+  // ResourceMetadata, here we only need to create a dynamic directory
+  // "drive/root" from its resource ID.
   ResourceEntryMap grand_root_entry_map;
   const std::string& root_resource_id = about_resource->root_folder_id();
   grand_root_entry_map[root_resource_id] =
       util::CreateMyDriveRootEntry(root_resource_id);
-  grand_root_entry_map[util::kDriveOtherDirSpecialResourceId] =
-      util::CreateOtherDirEntry();
   resource_metadata_->RefreshDirectoryOnUIThread(
       directory_fetch_info,
       grand_root_entry_map,
