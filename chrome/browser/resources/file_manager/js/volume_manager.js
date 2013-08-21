@@ -112,6 +112,15 @@ function VolumeManager(root) {
    */
   this.ready_ = false;
 
+  /**
+   * True if Drive file system is enabled.
+   * TODO(hidehiko): This should be migrated into the multi-file system
+   * support. If drive file system is disabled, Files.app should receive
+   * unmounted event and UI should hide Drive.
+   * @type {boolean}
+   */
+  this.driveEnabled = false;
+
   this.initMountPoints_();
   this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
 
@@ -250,6 +259,28 @@ VolumeManager.getInstance = function(callback) {
       completionCallback();
     });
   });
+};
+
+
+/**
+ * Enables/disables Drive file system. Dispatches
+ * 'drive-enabled-status-changed' event, when the enabled state is actually
+ * changed.
+ * @param {boolean} enabled True if Drive file system is enabled.
+ */
+VolumeManager.prototype.setDriveEnabled = function(enabled) {
+  console.error('VolumeManager: setDriveEnabled: ' + enabled);
+  if (this.driveEnabled == enabled)
+    return;
+  this.driveEnabled = enabled;
+
+  // When drive is enabled, start to mount.
+  if (enabled)
+    this.mountDrive(function() {}, function() {});
+
+  var e = new cr.Event('drive-enabled-status-changed');
+  e.enabled = enabled;
+  this.dispatchEvent(e);
 };
 
 /**

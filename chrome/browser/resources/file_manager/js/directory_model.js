@@ -71,13 +71,12 @@ DirectoryModelUtil.resolveRoots = function(root, isDriveEnabled, callback) {
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManager} volumeManager The volume manager.
- * @param {boolean} isDriveEnabled True if DRIVE enabled (initial value).
  * @param {boolean} showSpecialSearchRoots True if special-search roots are
  *     available. They should be hidden for the dialogs to save files.
  * @constructor
  */
 function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
-                        metadataCache, volumeManager, isDriveEnabled,
+                        metadataCache, volumeManager,
                         showSpecialSearchRoots) {
   this.root_ = root;
   this.fileListSelection_ = singleSelection ?
@@ -87,7 +86,6 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
   this.pendingScan_ = null;
   this.rescanTime_ = null;
   this.scanFailures_ = 0;
-  this.driveEnabled_ = isDriveEnabled;
   this.showSpecialSearchRoots_ = showSpecialSearchRoots;
 
   this.fileFilter_ = fileFilter;
@@ -193,6 +191,9 @@ DirectoryModel.prototype.start = function() {
       'drive-status-changed',
       this.taskQueue_.run.bind(
           this.taskQueue_, this.onDriveStatusChanged_.bind(this)));
+  this.volumeManager_.addEventListener(
+      'drive-enabled-status-changed',
+      this.onDriveEnabledStatusChanged_.bind(this));
   this.taskQueue_.run(this.updateRoots_.bind(this));
 };
 
@@ -211,22 +212,24 @@ DirectoryModel.prototype.getFileList = function() {
 };
 
 /**
- * Sets whether DRIVE appears in the roots list and
- * if it could be used as current directory.
- * @param {boolead} enabled True if DRIVE enabled.
+ * Called when the drive enable status is changed.
+ * @param {cr.Event} event Event object for the status change.
+ * @private
  */
-DirectoryModel.prototype.setDriveEnabled = function(enabled) {
-  if (this.driveEnabled_ == enabled)
-    return;
-  // Mount Drive if it was previously disabled and is now enabled.
-  if (enabled)
-    this.volumeManager_.mountDrive(function() {}, function() {});
+DirectoryModel.prototype.onDriveEnabledStatusChanged_ = function(event) {
+  this.taskQueue_.run(function(callback) {
+    // TODO(hidehiko): This should be moved to VolumeManager, when rootsList
+    // is moved to there.
+    this.taskQueue_.run(this.updateRoots_.bind(this));
 
-  this.driveEnabled_ = enabled;
-  this.taskQueue_.run(this.updateRoots_.bind(this));
-  if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
-                   this.getCurrentRootType() == RootType.DRIVE_OFFLINE))
-    this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
+    if (!event.enabled &&
+        PathUtil.isDriveBasedPath(this.getCurrentDirEntry().fullPath)) {
+      // Currently, this is on Drive's directory, but Drive file system is
+      // disabled. So, move back to the default directory.
+      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
+    }
+    callback();
+  }.bind(this));
 };
 
 /**
@@ -1139,7 +1142,7 @@ DirectoryModel.prototype.selectIndex = function(index) {
 DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
   metrics.startInterval('Load.Roots');
   DirectoryModelUtil.resolveRoots(
-      this.root_, this.driveEnabled_,
+      this.root_, this.volumeManager_.driveEnabled,
       function(rootEntries) {
         metrics.recordInterval('Load.Roots');
 

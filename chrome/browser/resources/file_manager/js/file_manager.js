@@ -267,12 +267,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.filesystem_ = filesystem;
       callback();
     }.bind(this));
-
-    // Mount Drive if enabled.
-    // TODO(hidehiko): Mounting state of Drive file system should be handled
-    // by C++ backend side.
-    if (this.isDriveEnabled())
-      this.volumeManager_.mountDrive(function() {}, function() {});
   };
 
   /**
@@ -688,9 +682,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
     this.initializeQueue_.add(
-        this.initVolumeManager_.bind(this), [], 'initVolumeManager');
-    this.initializeQueue_.add(
         this.initPreferences_.bind(this), [], 'initPreferences');
+    this.initializeQueue_.add(
+        this.initVolumeManager_.bind(this),
+        ['initPreferences'], 'initVolumeManager');
     this.initializeQueue_.add(
         this.initFileSystem_.bind(this),
         ['initGeneral', 'initPreferences', 'initVolumeManager'],
@@ -768,6 +763,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initVolumeManager_ = function(callback) {
     VolumeManager.getInstance(function(volumeManager) {
       this.volumeManager_ = volumeManager;
+
+      // Mount Drive if enabled.
+      // TODO(hidehiko): Mounting state of Drive file system should be
+      // handled by C++ backend side.
+      volumeManager.setDriveEnabled(this.isDriveEnabled());
       callback();
     }.bind(this));
   };
@@ -1111,9 +1111,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.fileWatcher_,
         this.metadataCache_,
         this.volumeManager_,
-        this.isDriveEnabled(),
         showSpecialSearchRoots);
-
     this.directoryModel_.start();
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel();
@@ -1970,7 +1968,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
-      self.directoryModel_.setDriveEnabled(self.isDriveEnabled());
+      self.volumeManager_.setDriveEnabled(self.isDriveEnabled());
 
       if (prefs.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
