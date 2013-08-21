@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
@@ -136,12 +137,13 @@ class MediaSourcePlayerTest : public testing::Test {
   }
 
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params
-      CreateReadFromDemuxerAckForAudio() {
+      CreateReadFromDemuxerAckForAudio(int packet_id) {
     MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
     ack_params.type = DemuxerStream::AUDIO;
     ack_params.access_units.resize(1);
     ack_params.access_units[0].status = DemuxerStream::kOk;
-    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-packet-0");
+    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
+        base::StringPrintf("vorbis-packet-%d", packet_id));
     ack_params.access_units[0].data = std::vector<uint8>(
         buffer->data(), buffer->data() + buffer->data_size());
     // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
@@ -164,6 +166,15 @@ class MediaSourcePlayerTest : public testing::Test {
         buffer->data(), buffer->data() + buffer->data_size());
     return ack_params;
   }
+
+  MediaPlayerHostMsg_ReadFromDemuxerAck_Params CreateEOSAck(bool is_audio) {
+      MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
+      ack_params.type = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
+      ack_params.access_units.resize(1);
+      ack_params.access_units[0].status = DemuxerStream::kOk;
+      ack_params.access_units[0].end_of_stream = true;
+      return ack_params;
+    }
 
   base::TimeTicks StartTimeTicks() {
     return player_->start_time_ticks_;
@@ -334,7 +345,7 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
   EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
 
   // Sending data to player.
-  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio(0));
   EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
 
   // Decoder job will not immediately stop after Pause() since it is
@@ -394,15 +405,12 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   EXPECT_FALSE(video_decoder_job->is_decoding());
 
   // Sending video data to player, both decoders should start now.
-  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio(0));
   EXPECT_TRUE(audio_decoder_job->is_decoding());
   EXPECT_TRUE(video_decoder_job->is_decoding());
 }
 
-// Disabled due to http://crbug.com/266041.
-// TODO(xhwang/qinmin): Fix this test and reenable it.
-TEST_F(MediaSourcePlayerTest,
-       DISABLED_StartTimeTicksResetAfterDecoderUnderruns) {
+TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
   if (!MediaCodecBridge::IsAvailable())
     return;
 
@@ -410,12 +418,17 @@ TEST_F(MediaSourcePlayerTest,
   StartAudioDecoderJob();
   EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
   EXPECT_EQ(1, manager_->num_requests());
-  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
-  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  // For the first couple chunks, the decoder job may return
+  // DECODE_FORMAT_CHANGED status instead of DECODE_SUCCEEDED status. Decode
+  // more frames to guarantee that DECODE_SUCCEEDED will be returned.
+  for (int i = 0; i < 4; ++i) {
+    player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio(i));
+    EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+    manager_->message_loop()->Run();
+  }
 
-  manager_->message_loop()->Run();
   // The decoder job should finish and a new request will be sent.
-  EXPECT_EQ(2, manager_->num_requests());
+  EXPECT_EQ(5, manager_->num_requests());
   EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
   base::TimeTicks previous = StartTimeTicks();
 
@@ -424,7 +437,7 @@ TEST_F(MediaSourcePlayerTest,
   manager_->message_loop()->RunUntilIdle();
 
   // Send new data to the decoder. This should reset the start time ticks.
-  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  player_->ReadFromDemuxerAck(CreateEOSAck(true));
   base::TimeTicks current = StartTimeTicks();
   EXPECT_LE(100.0, (current - previous).InMillisecondsF());
 }
@@ -448,12 +461,7 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   EXPECT_EQ(2, manager_->num_requests());
 
   // Send EOS.
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
-  ack_params.type = DemuxerStream::VIDEO;
-  ack_params.access_units.resize(1);
-  ack_params.access_units[0].status = DemuxerStream::kOk;
-  ack_params.access_units[0].end_of_stream = true;
-  player_->ReadFromDemuxerAck(ack_params);
+  player_->ReadFromDemuxerAck(CreateEOSAck(false));
   manager_->message_loop()->Run();
   // No more request for data should be made.
   EXPECT_EQ(2, manager_->num_requests());
