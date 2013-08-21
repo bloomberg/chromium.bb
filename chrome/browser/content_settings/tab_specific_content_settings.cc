@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -240,7 +241,8 @@ bool TabSpecificContentSettings::IsContentAllowed(
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
       content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER &&
       content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS &&
-      content_type != CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+      content_type != CONTENT_SETTINGS_TYPE_MIDI_SYSEX &&
+      content_type != CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
     return false;
   }
 
@@ -459,6 +461,21 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
+}
+
+// TODO(npentrel): Save the password when user accepts the prompt
+void TabSpecificContentSettings::OnPasswordSubmitted(
+      PasswordFormManager* form_to_save) {
+  OnContentAllowed(CONTENT_SETTINGS_TYPE_SAVE_PASSWORD);
+  NotifySiteDataObservers();
+}
+
+TabSpecificContentSettings::PasswordSavingState
+TabSpecificContentSettings::GetPasswordSavingState() const {
+  if (IsContentAllowed(CONTENT_SETTINGS_TYPE_SAVE_PASSWORD))
+    return PASSWORD_TO_BE_SAVED;
+  else
+    return NO_PASSWORD_TO_BE_SAVED;
 }
 
 TabSpecificContentSettings::MicrophoneCameraState

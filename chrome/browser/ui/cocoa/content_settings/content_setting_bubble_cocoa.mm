@@ -238,6 +238,7 @@ MediaMenuParts::~MediaMenuParts() {}
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       nibPath = @"ContentBlockedMIDISysEx"; break;
     // These content types have no bubble:
+    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
     case CONTENT_SETTINGS_TYPE_DEFAULT:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:

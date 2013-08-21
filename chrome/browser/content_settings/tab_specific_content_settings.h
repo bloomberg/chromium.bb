@@ -26,6 +26,7 @@
 #include "net/cookies/canonical_cookie.h"
 
 class CookiesTreeModel;
+class PasswordFormManager;
 class Profile;
 
 namespace content {
@@ -53,6 +54,11 @@ class TabSpecificContentSettings
     MICROPHONE_BLOCKED,
     CAMERA_BLOCKED,
     MICROPHONE_CAMERA_BLOCKED,
+  };
+
+  enum PasswordSavingState {
+    NO_PASSWORD_TO_BE_SAVED = 0,
+    PASSWORD_TO_BE_SAVED,
   };
 
   // Classes that want to be notified about site data events must implement
@@ -197,6 +203,10 @@ class TabSpecificContentSettings
   // Returns the state of the camera and microphone usage.
   MicrophoneCameraState GetMicrophoneCameraState() const;
 
+  // TODO(npentrel): Change to bool if not needed once feature is implemented.
+  // Returns the state of whether there is a password to be saved or not.
+  PasswordSavingState GetPasswordSavingState() const;
+
   const std::set<std::string>& BlockedResourcesForType(
       ContentSettingsType content_type) const;
 
@@ -211,6 +221,8 @@ class TabSpecificContentSettings
   const ContentSettingsUsagesState& midi_usages_state() const {
     return midi_usages_state_;
   }
+
+  void OnPasswordSubmitted(PasswordFormManager* form_to_save);
 
   // Call to indicate that there is a protocol handler pending user approval.
   void set_pending_protocol_handler(const ProtocolHandler& handler) {

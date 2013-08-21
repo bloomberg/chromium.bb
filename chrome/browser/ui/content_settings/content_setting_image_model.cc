@@ -59,6 +59,13 @@ class ContentSettingMIDISysExImageModel : public ContentSettingImageModel {
   virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 };
 
+class ContentSettingSavePasswordImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingSavePasswordImageModel();
+
+  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+};
+
 namespace {
 
 struct ContentSettingsTypeIdEntry {
@@ -196,6 +203,34 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   set_icon(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
   set_tooltip(l10n_util::GetStringUTF8(allowed ?
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
+}
+
+ContentSettingSavePasswordImageModel::ContentSettingSavePasswordImageModel()
+    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+}
+
+void ContentSettingSavePasswordImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return;
+
+  TabSpecificContentSettings::PasswordSavingState state =
+      content_settings->GetPasswordSavingState();
+  switch (state) {
+    case TabSpecificContentSettings::PASSWORD_TO_BE_SAVED:
+      set_icon(IDR_SAVE_PASSWORD);
+      set_visible(true);
+      break;
+    case TabSpecificContentSettings::NO_PASSWORD_TO_BE_SAVED:
+      set_icon(IDR_SAVE_PASSWORD);
+      set_visible(false);
+      break;
+  }
 }
 
 ContentSettingMediaImageModel::ContentSettingMediaImageModel(
@@ -359,6 +394,8 @@ ContentSettingImageModel*
       return new ContentSettingMediaImageModel(content_settings_type);
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return new ContentSettingMIDISysExImageModel();
+    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
+      return new ContentSettingSavePasswordImageModel();
     default:
       return new ContentSettingBlockedImageModel(content_settings_type);
   }

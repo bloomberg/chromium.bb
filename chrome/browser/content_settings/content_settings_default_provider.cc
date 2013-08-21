@@ -54,6 +54,7 @@ const ContentSetting kDefaultSettings[] = {
 #if defined(OS_WIN)
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP
 #endif
+  CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_SAVE_PASSWORD
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
                default_settings_incorrect_size);

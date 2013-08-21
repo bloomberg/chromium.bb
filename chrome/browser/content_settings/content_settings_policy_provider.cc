@@ -47,6 +47,7 @@ const char* kPrefToManageType[] = {
 #if defined(OS_WIN)
   NULL,  // No policy for default value of "switch to desktop"
 #endif
+  NULL,  // No policy for default value of save password
 };
 COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
                managed_content_settings_pref_names_array_size_incorrect);
