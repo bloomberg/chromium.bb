@@ -224,12 +224,10 @@ class WebContents;
 // Access the avatar button controller.
 - (AvatarButtonController*)avatarButtonController;
 
-// Updates the toolbar (and transitively the location bar) with the states of
-// the specified |tab|.  If |shouldRestore| is true, we're switching
-// (back?) to this tab and should restore any previous location bar state
-// (such as user editing) as well.
-- (void)updateToolbarWithContents:(content::WebContents*)tab
-               shouldRestoreState:(BOOL)shouldRestore;
+// Forces the toolbar (and transitively the location bar) to update its current
+// state.  If |tab| is non-NULL, we're switching (back?) to this tab and should
+// restore any previous location bar state (such as user editing) as well.
+- (void)updateToolbarWithContents:(content::WebContents*)tab;
 
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;

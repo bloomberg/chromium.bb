@@ -55,7 +55,7 @@ public:
         [window->cocoa_controller() toolbarController];
     LocationBarViewMac* locationBarView =
         [toolbarController locationBarBridge];
-    locationBarView->Update(contents, false);
+    locationBarView->Update(NULL);
   }
 
   const Extension* extension_;

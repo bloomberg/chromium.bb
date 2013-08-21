@@ -423,10 +423,8 @@ void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
   [controller_ setIsLoading:is_loading force:force];
 }
 
-void BrowserWindowCocoa::UpdateToolbar(content::WebContents* contents,
-                                       bool should_restore_state) {
-  [controller_ updateToolbarWithContents:contents
-                      shouldRestoreState:should_restore_state ? YES : NO];
+void BrowserWindowCocoa::UpdateToolbar(content::WebContents* contents) {
+  [controller_ updateToolbarWithContents:contents];
 }
 
 void BrowserWindowCocoa::FocusToolbar() {

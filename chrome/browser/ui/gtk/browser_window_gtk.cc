@@ -908,10 +908,9 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
       force);
 }
 
-void BrowserWindowGtk::UpdateToolbar(content::WebContents* contents,
-                                     bool should_restore_state) {
+void BrowserWindowGtk::UpdateToolbar(content::WebContents* contents) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateToolbar");
-  toolbar_->UpdateWebContents(contents, should_restore_state);
+  toolbar_->UpdateWebContents(contents);
 }
 
 void BrowserWindowGtk::FocusToolbar() {

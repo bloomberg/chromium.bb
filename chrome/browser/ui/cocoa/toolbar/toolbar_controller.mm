@@ -435,9 +435,8 @@ class NotificationBridge
   [homeButton_ setEnabled:commands->IsCommandEnabled(IDC_HOME) ? YES : NO];
 }
 
-- (void)updateToolbarWithContents:(WebContents*)tab
-               shouldRestoreState:(BOOL)shouldRestore {
-  locationBarView_->Update(tab, shouldRestore ? true : false);
+- (void)updateToolbarWithContents:(WebContents*)tab {
+  locationBarView_->Update(tab);
 
   [locationBar_ updateMouseTracking];
 

@@ -428,9 +428,8 @@ void BrowserToolbarGtk::Observe(int type,
 
 // BrowserToolbarGtk, public ---------------------------------------------------
 
-void BrowserToolbarGtk::UpdateWebContents(WebContents* contents,
-                                          bool should_restore_state) {
-  location_bar_->Update(should_restore_state ? contents : NULL);
+void BrowserToolbarGtk::UpdateWebContents(WebContents* contents) {
+  location_bar_->Update(contents);
 
   if (actions_toolbar_.get())
     actions_toolbar_->Update();

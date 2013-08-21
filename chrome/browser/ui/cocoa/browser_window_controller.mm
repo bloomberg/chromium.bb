@@ -1249,10 +1249,8 @@ enum {
   return [view convertRect:[view bounds] toView:nil];
 }
 
-- (void)updateToolbarWithContents:(WebContents*)tab
-               shouldRestoreState:(BOOL)shouldRestore {
-  [toolbarController_ updateToolbarWithContents:tab
-                             shouldRestoreState:shouldRestore];
+- (void)updateToolbarWithContents:(WebContents*)tab {
+  [toolbarController_ updateToolbarWithContents:tab];
 }
 
 - (void)setStarredState:(BOOL)isStarred {

@@ -232,8 +232,7 @@ void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
   omnibox_view_->SaveStateToTab(contents);
 }
 
-void LocationBarViewMac::Update(const WebContents* contents,
-                                bool should_restore_state) {
+void LocationBarViewMac::Update(const WebContents* contents) {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                          IsStarEnabled());
@@ -242,8 +241,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   UpdateMicSearchDecorationVisibility();
-  // OmniboxView restores state if the tab is non-NULL.
-  omnibox_view_->Update(should_restore_state ? contents : NULL);
+  omnibox_view_->Update(contents);
   OnChanged();
 }
 
@@ -303,7 +301,7 @@ void LocationBarViewMac::OnSelectionBoundsChanged() {
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
   toolbar_model_->set_input_in_progress(in_progress);
-  Update(NULL, false);
+  Update(NULL);
 }
 
 void LocationBarViewMac::OnSetFocus() {

@@ -52,11 +52,11 @@ class ToolbarView : public views::AccessiblePaneView,
   // Create the contents of the Browser Toolbar.
   void Init();
 
-  // Updates the toolbar (and transitively the location bar) with the states of
-  // the specified |tab|.  If |should_restore_state| is true, we're switching
-  // (back?) to this tab and should restore any previous location bar state
-  // (such as user editing) as well.
-  void Update(content::WebContents* tab, bool should_restore_state);
+  // Forces the toolbar (and transitively the location bar) to update its
+  // current state.  If |tab| is non-NULL, we're switching (back?) to this tab
+  // and should restore any previous location bar state (such as user editing)
+  // as well.
+  void Update(content::WebContents* tab);
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the app menu. Focus will be restored

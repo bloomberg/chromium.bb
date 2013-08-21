@@ -79,8 +79,7 @@ class BrowserWindowCocoa :
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE;
-  virtual void UpdateToolbar(content::WebContents* contents,
-                             bool should_restore_state) OVERRIDE;
+  virtual void UpdateToolbar(content::WebContents* contents) OVERRIDE;
   virtual void FocusToolbar() OVERRIDE;
   virtual void FocusAppMenu() OVERRIDE;
   virtual void FocusBookmarksToolbar() OVERRIDE;

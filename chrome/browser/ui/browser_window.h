@@ -152,8 +152,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void UpdateReloadStopState(bool is_loading, bool force) = 0;
 
   // Updates the toolbar with the state for the specified |contents|.
-  virtual void UpdateToolbar(content::WebContents* contents,
-                             bool should_restore_state) = 0;
+  virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;

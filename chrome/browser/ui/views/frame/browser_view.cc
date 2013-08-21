@@ -973,9 +973,8 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
       is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
-void BrowserView::UpdateToolbar(content::WebContents* contents,
-                                bool should_restore_state) {
-  toolbar_->Update(contents, should_restore_state);
+void BrowserView::UpdateToolbar(content::WebContents* contents) {
+  toolbar_->Update(contents);
 }
 
 void BrowserView::FocusToolbar() {

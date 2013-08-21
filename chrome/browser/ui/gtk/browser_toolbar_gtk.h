@@ -109,8 +109,7 @@ class BrowserToolbarGtk : public CommandObserver,
   bool IsWrenchMenuShowing() const;
 
   // Message that we should react to a state change.
-  void UpdateWebContents(content::WebContents* contents,
-                         bool should_restore_state);
+  void UpdateWebContents(content::WebContents* contents);
 
  private:
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& host);

@@ -1304,12 +1304,9 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
 }
 
 void DevToolsWindow::UpdateBrowserToolbar() {
-  content::WebContents* inspected_web_contents = GetInspectedWebContents();
-  if (!inspected_web_contents)
-    return;
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window)
-    inspected_window->UpdateToolbar(inspected_web_contents, false);
+    inspected_window->UpdateToolbar(NULL);
 }
 
 bool DevToolsWindow::IsDocked() {

@@ -250,9 +250,9 @@ void ToolbarView::Init() {
   }
 }
 
-void ToolbarView::Update(WebContents* tab, bool should_restore_state) {
+void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
-    location_bar_->Update(should_restore_state ? tab : NULL);
+    location_bar_->Update(tab);
 
   if (browser_actions_)
     browser_actions_->RefreshBrowserActionViews();
