@@ -190,6 +190,8 @@ SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
       this, system_storage::OnAttached::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, system_storage::OnDetached::kEventName);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, system_display::OnDisplayChanged::kEventName);
 }
 
 SystemInfoAPI::~SystemInfoAPI() {
