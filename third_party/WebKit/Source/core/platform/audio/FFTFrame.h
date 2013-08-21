@@ -44,7 +44,6 @@
 #if !USE_ACCELERATE_FFT
 
 #if USE(WEBAUDIO_OPENMAX_DL_FFT)
-#include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
 #elif USE(WEBAUDIO_FFMPEG)
 struct RDFTContext;
