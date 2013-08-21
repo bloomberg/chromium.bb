@@ -377,6 +377,33 @@ void AutocompleteController::ResetSession() {
   in_zero_suggest_ = false;
 }
 
+GURL AutocompleteController::GetDestinationURL(
+    const AutocompleteMatch& match,
+    base::TimeDelta query_formulation_time) const {
+  GURL destination_url(match.destination_url);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+
+  // Append the query formulation time (time from when the user first typed a
+  // character into the omnibox to when the user selected a query) and whether
+  // a field trial has triggered to the AQS parameter, if other AQS parameters
+  // were already populated.
+  if (template_url && match.search_terms_args.get() &&
+      !match.search_terms_args->assisted_query_stats.empty()) {
+    TemplateURLRef::SearchTermsArgs search_terms_args(*match.search_terms_args);
+    search_terms_args.assisted_query_stats += base::StringPrintf(
+        ".%" PRId64 "j%dj%d",
+        query_formulation_time.InMilliseconds(),
+        (search_provider_ &&
+         search_provider_->field_trial_triggered_in_session()) ||
+        (zero_suggest_provider_ &&
+         zero_suggest_provider_->field_trial_triggered_in_session()),
+        input_.current_page_classification());
+    destination_url = GURL(template_url->url_ref().
+                           ReplaceSearchTerms(search_terms_args));
+  }
+  return destination_url;
+}
+
 void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
@@ -483,6 +510,40 @@ void AutocompleteController::UpdateAssociatedKeywords(
   }
 }
 
+void AutocompleteController::UpdateKeywordDescriptions(
+    AutocompleteResult* result) {
+  string16 last_keyword;
+  for (AutocompleteResult::iterator i(result->begin()); i != result->end();
+       ++i) {
+    if ((i->provider->type() == AutocompleteProvider::TYPE_KEYWORD &&
+         !i->keyword.empty()) ||
+        (i->provider->type() == AutocompleteProvider::TYPE_SEARCH &&
+         AutocompleteMatch::IsSearchType(i->type))) {
+      i->description.clear();
+      i->description_class.clear();
+      DCHECK(!i->keyword.empty());
+      if (i->keyword != last_keyword) {
+        const TemplateURL* template_url = i->GetTemplateURL(profile_, false);
+        if (template_url) {
+          // For extension keywords, just make the description the extension
+          // name -- don't assume that the normal search keyword description is
+          // applicable.
+          i->description = template_url->AdjustedShortNameForLocaleDirection();
+          if (!template_url->IsExtensionKeyword()) {
+            i->description = l10n_util::GetStringFUTF16(
+                IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
+          }
+          i->description_class.push_back(
+              ACMatchClassification(0, ACMatchClassification::DIM));
+        }
+        last_keyword = i->keyword;
+      }
+    } else {
+      last_keyword.clear();
+    }
+  }
+}
+
 void AutocompleteController::UpdateAssistedQueryStats(
     AutocompleteResult* result) {
   if (result->empty())
@@ -527,67 +588,6 @@ void AutocompleteController::UpdateAssistedQueryStats(
                            autocompletions.c_str());
     match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
         *match->search_terms_args));
-  }
-}
-
-GURL AutocompleteController::GetDestinationURL(
-    const AutocompleteMatch& match,
-    base::TimeDelta query_formulation_time) const {
-  GURL destination_url(match.destination_url);
-  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
-
-  // Append the query formulation time (time from when the user first typed a
-  // character into the omnibox to when the user selected a query) and whether
-  // a field trial has triggered to the AQS parameter, if other AQS parameters
-  // were already populated.
-  if (template_url && match.search_terms_args.get() &&
-      !match.search_terms_args->assisted_query_stats.empty()) {
-    TemplateURLRef::SearchTermsArgs search_terms_args(*match.search_terms_args);
-    search_terms_args.assisted_query_stats += base::StringPrintf(
-        ".%" PRId64 "j%dj%d",
-        query_formulation_time.InMilliseconds(),
-        (search_provider_ &&
-         search_provider_->field_trial_triggered_in_session()) ||
-        (zero_suggest_provider_ &&
-         zero_suggest_provider_->field_trial_triggered_in_session()),
-        input_.current_page_classification());
-    destination_url = GURL(template_url->url_ref().
-                           ReplaceSearchTerms(search_terms_args));
-  }
-  return destination_url;
-}
-
-void AutocompleteController::UpdateKeywordDescriptions(
-    AutocompleteResult* result) {
-  string16 last_keyword;
-  for (AutocompleteResult::iterator i(result->begin()); i != result->end();
-       ++i) {
-    if ((i->provider->type() == AutocompleteProvider::TYPE_KEYWORD &&
-         !i->keyword.empty()) ||
-        (i->provider->type() == AutocompleteProvider::TYPE_SEARCH &&
-         AutocompleteMatch::IsSearchType(i->type))) {
-      i->description.clear();
-      i->description_class.clear();
-      DCHECK(!i->keyword.empty());
-      if (i->keyword != last_keyword) {
-        const TemplateURL* template_url = i->GetTemplateURL(profile_, false);
-        if (template_url) {
-          // For extension keywords, just make the description the extension
-          // name -- don't assume that the normal search keyword description is
-          // applicable.
-          i->description = template_url->AdjustedShortNameForLocaleDirection();
-          if (!template_url->IsExtensionKeyword()) {
-            i->description = l10n_util::GetStringFUTF16(
-                IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
-          }
-          i->description_class.push_back(
-              ACMatchClassification(0, ACMatchClassification::DIM));
-        }
-        last_keyword = i->keyword;
-      }
-    } else {
-      last_keyword.clear();
-    }
   }
 }
 
