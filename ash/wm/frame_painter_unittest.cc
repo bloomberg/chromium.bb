@@ -724,14 +724,21 @@ TEST_F(FramePainterTest, NoCrashShutdownWithAlwaysOnTopWindow) {
   // and finish the test, then verify it doesn't cause a crash. See
   // crbug.com/273310.  Note that those widgets will be deleted at
   // RootWindowController::CloseChildWindows(), so this code is memory-safe.
-  Widget* w1 = CreateTestWidget();
+  Widget* w1 = new Widget;
+  Widget::InitParams params1;
+  params1.context = CurrentContext();
+  w1->Init(params1);
   FramePainterOwner* o1 = new FramePainterOwner(w1);
   FramePainter* p1 = o1->frame_painter();
   w1->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->Show();
   EXPECT_TRUE(p1->UseSoloWindowHeader());
 
-  Widget* w2 = CreateAlwaysOnTopWidget();
+  Widget* w2 = new Widget;
+  Widget::InitParams params2;
+  params2.context = CurrentContext();
+  params2.keep_on_top = true;
+  w2->Init(params2);
   FramePainterOwner* o2 = new FramePainterOwner(w2);
   FramePainter* p2 = o2->frame_painter();
   w2->Show();
