@@ -221,6 +221,7 @@ VideoDecodeDemoInstance::VideoDecodeDemoInstance(PP_Instance instance,
                                                  pp::Module* module)
     : pp::Instance(instance), pp::Graphics3DClient(this),
       pp::VideoDecoderClient_Dev(this),
+      is_painting_(false),
       num_frames_rendered_(0),
       first_frame_delivered_ticks_(-1),
       swap_ticks_(0),
