@@ -91,9 +91,15 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
     delegate_->PlayerGone(this);
 }
 
-void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
+void WebMediaPlayerMS::load(LoadType load_type,
+                            const WebKit::WebURL& url,
+                            CORSMode cors_mode) {
   DVLOG(1) << "WebMediaPlayerMS::load";
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(acolwell): Change this to DCHECK_EQ(load_type,
+  // LoadTypeMediaStream) once Blink-side changes land.
+  DCHECK_NE(load_type, LoadTypeMediaSource);
 
   GURL gurl(url);
 
@@ -126,12 +132,6 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   } else {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
   }
-}
-
-void WebMediaPlayerMS::load(const WebKit::WebURL& url,
-                            WebKit::WebMediaSource* media_source,
-                            CORSMode cors_mode) {
-  NOTIMPLEMENTED();
 }
 
 void WebMediaPlayerMS::play() {

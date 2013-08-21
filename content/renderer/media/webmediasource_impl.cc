@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webmediasourceclient_impl.h"
+#include "content/renderer/media/webmediasource_impl.h"
 
 #include "base/guid.h"
 #include "content/renderer/media/websourcebuffer_impl.h"
@@ -24,16 +24,16 @@ COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
 #undef COMPILE_ASSERT_MATCHING_STATUS_ENUM
 
-WebMediaSourceClientImpl::WebMediaSourceClientImpl(
+WebMediaSourceImpl::WebMediaSourceImpl(
     media::ChunkDemuxer* demuxer, media::LogCB log_cb)
     : demuxer_(demuxer),
       log_cb_(log_cb) {
   DCHECK(demuxer_);
 }
 
-WebMediaSourceClientImpl::~WebMediaSourceClientImpl() {}
+WebMediaSourceImpl::~WebMediaSourceImpl() {}
 
-WebMediaSourceClient::AddStatus WebMediaSourceClientImpl::addSourceBuffer(
+WebMediaSourceClient::AddStatus WebMediaSourceImpl::addSourceBuffer(
     const WebKit::WebString& type,
     const WebKit::WebVector<WebKit::WebString>& codecs,
     WebKit::WebSourceBuffer** source_buffer) {
@@ -51,22 +51,16 @@ WebMediaSourceClient::AddStatus WebMediaSourceClientImpl::addSourceBuffer(
   return result;
 }
 
-double WebMediaSourceClientImpl::duration() {
+double WebMediaSourceImpl::duration() {
   return demuxer_->GetDuration();
 }
 
-void WebMediaSourceClientImpl::setDuration(double new_duration) {
+void WebMediaSourceImpl::setDuration(double new_duration) {
   DCHECK_GE(new_duration, 0);
   demuxer_->SetDuration(new_duration);
 }
 
-// TODO(acolwell): Remove this once endOfStream() is removed from Blink.
-void WebMediaSourceClientImpl::endOfStream(
-    WebMediaSourceClient::EndOfStreamStatus status) {
-  markEndOfStream(status);
-}
-
-void WebMediaSourceClientImpl::markEndOfStream(
+void WebMediaSourceImpl::markEndOfStream(
     WebMediaSourceClient::EndOfStreamStatus status) {
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
@@ -86,7 +80,7 @@ void WebMediaSourceClientImpl::markEndOfStream(
   demuxer_->MarkEndOfStream(pipeline_status);
 }
 
-void WebMediaSourceClientImpl::unmarkEndOfStream() {
+void WebMediaSourceImpl::unmarkEndOfStream() {
   demuxer_->UnmarkEndOfStream();
 }
 

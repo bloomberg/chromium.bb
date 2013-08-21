@@ -35,6 +35,8 @@ class WebMediaPlayerProxyAndroid;
 
 class MediaSourceDelegate : public media::DemuxerHost {
  public:
+  typedef base::Callback<void(WebKit::WebMediaSourceNew*)>
+      MediaSourceOpenedCB;
   typedef base::Callback<void(WebKit::WebMediaPlayer::NetworkState)>
       UpdateNetworkStateCB;
   typedef base::Callback<void(const base::TimeDelta&)> DurationChangeCB;
@@ -56,7 +58,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
   void InitializeMediaSource(
-      WebKit::WebMediaSource* media_source,
+      const MediaSourceOpenedCB& media_source_opened_cb,
       const media::NeedKeyCB& need_key_cb,
       const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
       const UpdateNetworkStateCB& update_network_state_cb,
@@ -202,7 +204,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   DurationChangeCB duration_change_cb_;
 
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
-  scoped_ptr<WebKit::WebMediaSource> media_source_;
   media::Demuxer* demuxer_;
   bool is_demuxer_ready_;
 
@@ -219,6 +220,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Keep a list of buffered time ranges.
   WebKit::WebTimeRanges buffered_web_time_ranges_;
 
+  MediaSourceOpenedCB media_source_opened_cb_;
   media::NeedKeyCB need_key_cb_;
 
   // The currently selected key system. Empty string means that no key system

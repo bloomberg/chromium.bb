@@ -87,10 +87,9 @@ class WebMediaPlayerAndroid
   virtual bool canEnterFullscreen() const;
 
   // Resource loading.
-  virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
-  virtual void load(const WebKit::WebURL& url,
-                    WebKit::WebMediaSource* media_source,
-                    CORSMode cors_mode);
+  virtual void load(LoadType load_type,
+                    const WebKit::WebURL& url,
+                    CORSMode cors_mode) OVERRIDE;
 
   // Playback controls.
   virtual void play();
@@ -220,6 +219,8 @@ class WebMediaPlayerAndroid
   void OnKeyMessage(const std::string& session_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
+
+  void OnMediaSourceOpened(WebKit::WebMediaSourceNew* web_media_source);
 
   void OnNeedKey(const std::string& type,
                  const std::string& session_id,

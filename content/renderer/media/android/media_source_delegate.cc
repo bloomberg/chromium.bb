@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "content/renderer/media/webmediaplayer_util.h"
-#include "content/renderer/media/webmediasourceclient_impl.h"
+#include "content/renderer/media/webmediasource_impl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -94,7 +94,7 @@ void MediaSourceDelegate::Destroy() {
 
   duration_change_cb_.Reset();
   update_network_state_cb_.Reset();
-  media_source_.reset();
+  media_source_opened_cb_.Reset();
   proxy_ = NULL;
 
   main_weak_this_.InvalidateWeakPtrs();
@@ -132,14 +132,14 @@ void MediaSourceDelegate::StopDemuxer() {
 }
 
 void MediaSourceDelegate::InitializeMediaSource(
-    WebKit::WebMediaSource* media_source,
+    const MediaSourceOpenedCB& media_source_opened_cb,
     const media::NeedKeyCB& need_key_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
     const DurationChangeCB& duration_change_cb) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(media_source);
-  media_source_.reset(media_source);
+  DCHECK(!media_source_opened_cb.is_null());
+  media_source_opened_cb_ = media_source_opened_cb;
   need_key_cb_ = need_key_cb;
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
@@ -682,10 +682,10 @@ int MediaSourceDelegate::GetDurationMs() {
 
 void MediaSourceDelegate::OnDemuxerOpened() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  if (!media_source_)
+  if (media_source_opened_cb_.is_null())
     return;
 
-  media_source_->open(new WebMediaSourceClientImpl(
+  media_source_opened_cb_.Run(new WebMediaSourceImpl(
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 

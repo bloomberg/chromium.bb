@@ -63,9 +63,8 @@ class WebMediaPlayerMS
                    media::MediaLog* media_log);
   virtual ~WebMediaPlayerMS();
 
-  virtual void load(const WebKit::WebURL& url, CORSMode cors_mode) OVERRIDE;
-  virtual void load(const WebKit::WebURL& url,
-                    WebKit::WebMediaSource* media_source,
+  virtual void load(LoadType load_type,
+                    const WebKit::WebURL& url,
                     CORSMode cors_mode) OVERRIDE;
 
   // Playback controls.
