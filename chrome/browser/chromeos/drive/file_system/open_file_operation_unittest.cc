@@ -44,6 +44,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -71,6 +72,7 @@ TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -90,6 +92,7 @@ TEST_F(OpenFileOperationTest, CreateExistingFile) {
   operation_->OpenFile(
       file_in_root,
       CREATE_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -108,6 +111,7 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
   operation_->OpenFile(
       file_in_root,
       CREATE_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -138,6 +142,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   operation_->OpenFile(
       file_in_root,
       OPEN_OR_CREATE_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -165,6 +170,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
   operation_->OpenFile(
       file_in_root,
       OPEN_OR_CREATE_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -195,6 +201,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
@@ -211,6 +218,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   operation_->OpenFile(
       file_in_root,
       OPEN_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback2));
   test_util::RunBlockingPoolTask();

@@ -46,6 +46,7 @@ OpenFileOperation::~OpenFileOperation() {
 
 void OpenFileOperation::OpenFile(const base::FilePath& file_path,
                                  OpenMode open_mode,
+                                 const std::string& mime_type,
                                  const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -61,7 +62,7 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
       create_file_operation_->CreateFile(
           file_path,
           true,  // exclusive: fail if already exists
-          std::string(),  // no mime type; guess from the file name
+          mime_type,
           base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
                      weak_ptr_factory_.GetWeakPtr(), file_path, callback));
       break;
@@ -69,7 +70,7 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
       create_file_operation_->CreateFile(
           file_path,
           false,  // not-exclusive
-          std::string(),  // no mime type; guess from the file name
+          mime_type,
           base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
                      weak_ptr_factory_.GetWeakPtr(), file_path, callback));
       break;

@@ -283,6 +283,7 @@ void CreateFile(const base::FilePath& file_path,
                 FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system->CreateFile(file_path, is_exclusive,
+                          std::string(),  // no mime type; guess from file_path
                           base::Bind(&RunStatusCallbackByFileError, callback));
 }
 
@@ -313,6 +314,7 @@ void CreateWritableSnapshotFile(
   file_system->OpenFile(
       file_path,
       OPEN_FILE,
+      std::string(),  // no mime type; we never create a new file here.
       base::Bind(&RunCreateWritableSnapshotFileCallback, callback));
 }
 
@@ -343,6 +345,7 @@ void OpenFile(const base::FilePath& file_path,
 
   file_system->OpenFile(
       file_path, GetOpenMode(file_flags),
+      std::string(),  // no mime type; guess from file_path
       base::Bind(&OpenFileAfterFileSystemOpenFile, file_flags, callback));
 }
 

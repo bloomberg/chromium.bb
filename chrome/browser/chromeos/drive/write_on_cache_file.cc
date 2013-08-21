@@ -44,6 +44,7 @@ void WriteOnCacheFileAfterOpenFile(
 
 void WriteOnCacheFile(FileSystemInterface* file_system,
                       const base::FilePath& path,
+                      const std::string& mime_type,
                       const WriteOnCacheFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(file_system);
@@ -52,6 +53,7 @@ void WriteOnCacheFile(FileSystemInterface* file_system,
   file_system->OpenFile(
       path,
       OPEN_OR_CREATE_FILE,
+      mime_type,
       base::Bind(&WriteOnCacheFileAfterOpenFile, path, callback));
 }
 

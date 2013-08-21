@@ -63,6 +63,7 @@ void FakeFileSystem::TransferFileFromLocalToRemote(
 
 void FakeFileSystem::OpenFile(const base::FilePath& file_path,
                               OpenMode open_mode,
+                              const std::string& mime_type,
                               const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -95,6 +96,7 @@ void FakeFileSystem::CreateDirectory(
 
 void FakeFileSystem::CreateFile(const base::FilePath& file_path,
                                 bool is_exclusive,
+                                const std::string& mime_type,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

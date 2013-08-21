@@ -31,6 +31,7 @@ class TestFileSystem : public DummyFileSystem {
   // Mimics OpenFile. It fails if the |file_path| points to a hosted document.
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
+                        const std::string& mime_type,
                         const OpenFileCallback& callback) OVERRIDE {
     EXPECT_EQ(OPEN_OR_CREATE_FILE, open_mode);
 
@@ -67,6 +68,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
   WriteOnCacheFile(
       &test_file_system,
       base::FilePath(kDrivePath),
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
   test_util::RunBlockingPoolTask();
 
@@ -88,6 +90,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
   WriteOnCacheFile(
       &test_file_system,
       base::FilePath(kInvalidPath),
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
   test_util::RunBlockingPoolTask();
 

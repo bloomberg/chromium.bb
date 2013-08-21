@@ -48,11 +48,14 @@ class OpenFileOperation {
   // Opens the file at |file_path|.
   // If the file is not actually downloaded, this method starts
   // to download it to the cache, and then runs |callback| upon the
-  // completation with the path to the local cache file.
+  // completion with the path to the local cache file.
   // See also the definition of OpenMode for its meaning.
+  // If |mime_type| is non empty and the file is created by this OpenFile()
+  // call, the mime type is used as the file's property.
   // |callback| must not be null.
   void OpenFile(const base::FilePath& file_path,
                 OpenMode open_mode,
+                const std::string& mime_type,
                 const OpenFileCallback& callback);
 
  private:

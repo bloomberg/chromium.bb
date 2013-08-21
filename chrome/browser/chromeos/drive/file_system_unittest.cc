@@ -741,6 +741,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   file_system_->OpenFile(
       kFileInRoot,
       OPEN_FILE,
+      std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();

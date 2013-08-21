@@ -326,8 +326,10 @@ void PrepareWritableFileAndRun(Profile* profile,
     return;
   }
 
-  const base::FilePath drive_path = ExtractDrivePath(path);
-  WriteOnCacheFile(file_system, drive_path, callback);
+  WriteOnCacheFile(file_system,
+                   ExtractDrivePath(path),
+                   std::string(), // mime_type
+                   callback);
 }
 
 void EnsureDirectoryExists(Profile* profile,

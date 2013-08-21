@@ -356,10 +356,10 @@ void FileSystem::CreateDirectoryAfterLoad(
 
 void FileSystem::CreateFile(const base::FilePath& file_path,
                             bool is_exclusive,
+                            const std::string& mime_type,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  std::string mime_type; // TODO(kinaba): crbug.com/164346 take as a parameter.
   create_file_operation_->CreateFile(
       file_path, is_exclusive, mime_type, callback);
 }
@@ -945,11 +945,12 @@ void FileSystem::InitializePreferenceObserver() {
 
 void FileSystem::OpenFile(const base::FilePath& file_path,
                           OpenMode open_mode,
+                          const std::string& mime_type,
                           const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  open_file_operation_->OpenFile(file_path, open_mode, callback);
+  open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
 }
 
 }  // namespace drive

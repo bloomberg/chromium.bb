@@ -197,10 +197,14 @@ class FileSystemInterface {
   // onto the cache, and mark it dirty. The local path to the cache file is
   // returned to |callback|. After opening the file, both read and write
   // on the file can be done with normal local file operations.
+  // If |mime_type| is set and the file is newly created, the mime type is
+  // set to the specified value. If |mime_type| is empty, it is guessed from
+  // |file_path|.
   //
   // |callback| must not be null.
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
+                        const std::string& mime_type,
                         const OpenFileCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
@@ -271,10 +275,14 @@ class FileSystemInterface {
   // error is raised when a file already exists at the path. It is
   // an error if a directory or a hosted document is already present at the
   // path, or the parent directory of the path is not present yet.
+  // If |mime_type| is set and the file is newly created, the mime type is
+  // set to the specified value. If |mime_type| is empty, it is guessed from
+  // |file_path|.
   //
   // |callback| must not be null.
   virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
+                          const std::string& mime_type,
                           const FileOperationCallback& callback) = 0;
 
   // Touches the file at |file_path| by updating the timestamp to

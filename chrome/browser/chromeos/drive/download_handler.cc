@@ -303,6 +303,7 @@ void DownloadHandler::UploadDownloadItem(DownloadItem* download) {
   WriteOnCacheFile(
       file_system_,
       util::ExtractDrivePath(GetTargetPath(download)),
+      download->GetMimeType(),
       base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));
 }
 

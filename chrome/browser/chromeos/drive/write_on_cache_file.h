@@ -25,9 +25,14 @@ typedef base::Callback<void (FileError, const base::FilePath& path)>
 // The |callback| can write to the file at the path by normal local file I/O
 // operations. After it returns, the written content is synced to the server.
 //
+// If non-empty |mime_type| is set and the file is created by this function
+// call, the mime type for the entry is set to |mime_type|. Otherwise the type
+// is automatically determined from |path|.
+//
 // Must be called from UI thread.
 void WriteOnCacheFile(FileSystemInterface* file_system,
                       const base::FilePath& path,
+                      const std::string& mime_type,
                       const WriteOnCacheFileCallback& callback);
 
 }  // namespace drive
