@@ -253,7 +253,7 @@ RenderWidget::~RenderWidget() {
     current_paint_buf_ = NULL;
   }
   // If we are swapped out, we have released already.
-  if (!is_swapped_out_)
+  if (!is_swapped_out_ && RenderProcess::current())
     RenderProcess::current()->ReleaseProcess();
 }
 
