@@ -114,7 +114,7 @@ private:
 };
 
 enum AttachBehavior {
-    AttachNow,
+    DeprecatedAttachNow,
     AttachLazily,
 };
 
@@ -204,10 +204,10 @@ public:
     // These should all actually return a node, but this is only important for language bindings,
     // which will already know and hold a ref on the right node to return. Returning bool allows
     // these methods to be more efficient since they don't need to return a ref
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState&, AttachBehavior = AttachNow);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState&, AttachBehavior = AttachNow);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState&, AttachBehavior);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState&, AttachBehavior);
     void removeChild(Node* child, ExceptionState&);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionState&, AttachBehavior = AttachNow);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionState&, AttachBehavior);
 
     bool hasChildNodes() const { return firstChild(); }
     virtual PassRefPtr<Node> cloneNode(bool deep = true) = 0;

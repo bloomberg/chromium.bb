@@ -60,11 +60,11 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
     RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
-    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION);
+    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
 
     RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setAttribute(selectAttr, summarySelector);
-    content->appendChild(defaultSummary);
+    content->appendChild(defaultSummary, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
 
     root->appendChild(content, ASSERT_NO_EXCEPTION, AttachLazily);
     root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);

@@ -251,26 +251,26 @@ void TextFieldInputType::createShadowSubtree()
 
     m_innerText = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
-        element()->userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION);
+        element()->userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION, DeprecatedAttachNow);
         return;
     }
 
     ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
     m_container = TextControlInnerContainer::create(document);
     m_container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-    shadowRoot->appendChild(m_container, IGNORE_EXCEPTION);
+    shadowRoot->appendChild(m_container, IGNORE_EXCEPTION, DeprecatedAttachNow);
 
     m_innerBlock = TextControlInnerElement::create(document);
-    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION);
-    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION);
+    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION, DeprecatedAttachNow);
+    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION, DeprecatedAttachNow);
 
 #if ENABLE(INPUT_SPEECH)
     if (element()->isSpeechEnabled())
-        m_container->appendChild(InputFieldSpeechButtonElement::create(document), IGNORE_EXCEPTION);
+        m_container->appendChild(InputFieldSpeechButtonElement::create(document), IGNORE_EXCEPTION, DeprecatedAttachNow);
 #endif
 
     if (shouldHaveSpinButton)
-        m_container->appendChild(SpinButtonElement::create(document, *this), IGNORE_EXCEPTION);
+        m_container->appendChild(SpinButtonElement::create(document, *this), IGNORE_EXCEPTION, DeprecatedAttachNow);
 }
 
 HTMLElement* TextFieldInputType::containerElement() const
@@ -416,7 +416,7 @@ void TextFieldInputType::updatePlaceholderText()
     if (!m_placeholder) {
         m_placeholder = HTMLDivElement::create(element()->document());
         m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
+        element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
     }
     m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
     element()->fixPlaceholderRenderer(m_placeholder.get(), m_container ? m_container.get() : m_innerText.get());

@@ -248,10 +248,10 @@ void RangeInputType::createShadowSubtree()
     RefPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setPart(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
     track->setAttribute(idAttr, ShadowElementNames::sliderTrack());
-    track->appendChild(SliderThumbElement::create(document), IGNORE_EXCEPTION);
+    track->appendChild(SliderThumbElement::create(document), IGNORE_EXCEPTION, DeprecatedAttachNow);
     RefPtr<HTMLElement> container = SliderContainerElement::create(document);
-    container->appendChild(track.release(), IGNORE_EXCEPTION);
-    element()->userAgentShadowRoot()->appendChild(container.release(), IGNORE_EXCEPTION);
+    container->appendChild(track.release(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+    element()->userAgentShadowRoot()->appendChild(container.release(), IGNORE_EXCEPTION, DeprecatedAttachNow);
 }
 
 RenderObject* RangeInputType::createRenderer(RenderStyle*) const

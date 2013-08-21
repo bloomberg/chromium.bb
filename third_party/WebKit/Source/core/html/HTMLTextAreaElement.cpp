@@ -101,7 +101,7 @@ PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName&
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION);
+    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const
@@ -421,7 +421,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     value.replace("\r\n", "\n");
     value.replace('\r', '\n');
 
-    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION);
+    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION, DeprecatedAttachNow);
 
     if (!m_isDirty)
         setNonDirtyValue(value);
@@ -542,7 +542,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
         m_placeholder = placeholder.get();
         m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
+        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
     }
     m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
     fixPlaceholderRenderer(m_placeholder, innerTextElement());

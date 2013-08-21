@@ -865,7 +865,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
                 RefPtr<Node> newChild = importNode(oldChild, true, es);
                 if (es.hadException())
                     return 0;
-                newElement->appendChild(newChild.release(), es);
+                newElement->appendChild(newChild.release(), es, DeprecatedAttachNow);
                 if (es.hadException())
                     return 0;
             }
@@ -888,7 +888,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
                 RefPtr<Node> newChild = importNode(oldChild, true, es);
                 if (es.hadException())
                     return 0;
-                newFragment->appendChild(newChild.release(), es);
+                newFragment->appendChild(newChild.release(), es, DeprecatedAttachNow);
                 if (es.hadException())
                     return 0;
             }

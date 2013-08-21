@@ -99,10 +99,10 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState&, AttachBehavior);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState&, AttachBehavior);
     void removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionState&, AttachBehavior);
 
     // These methods are only used during parsing.
     // They don't send DOM mutation events or handle reparenting.

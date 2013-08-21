@@ -80,7 +80,7 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const
 void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& es)
 {
     deleteCaption();
-    insertBefore(newCaption, firstChild(), es);
+    insertBefore(newCaption, firstChild(), es, DeprecatedAttachNow);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
@@ -101,7 +101,7 @@ void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
 
-    insertBefore(newHead, child, es);
+    insertBefore(newHead, child, es, DeprecatedAttachNow);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
@@ -122,7 +122,7 @@ void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
 
-    insertBefore(newFoot, child, es);
+    insertBefore(newFoot, child, es, DeprecatedAttachNow);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
@@ -158,7 +158,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
     RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
 
-    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION);
+    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
     return body.release();
 }
 
@@ -220,7 +220,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
         if (!parent) {
             RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
             RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-            newBody->appendChild(newRow, es);
+            newBody->appendChild(newRow, es, DeprecatedAttachNow);
             appendChild(newBody.release(), es, AttachLazily);
             return newRow.release();
         }

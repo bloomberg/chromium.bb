@@ -62,7 +62,7 @@ void RemoveNodeCommand::doUnapply()
     if (!parent || !parent->rendererIsEditable())
         return;
 
-    parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION);
+    parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION, DeprecatedAttachNow);
 }
 
 #ifndef NDEBUG
