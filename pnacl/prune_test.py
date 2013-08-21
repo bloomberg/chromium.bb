@@ -5,16 +5,65 @@
 
 """Tests that a set of symbols are truly pruned from the translator.
 
-Compares the "on-device" translator with the "fat" host build.
+Compares the pruned down "on-device" translator with the "fat" host build
+which has not been pruned down.
 """
 
+import glob
 import os
 import re
 import subprocess
 import sys
 import unittest
 
+class SymbolInfo(object):
+
+  def __init__(self, lib_name, sym_name, t, size):
+    self.lib_name = lib_name
+    self.sym_name = sym_name
+    self.type = t
+    self.size = size
+
+
+def is_weak(t):
+  t = t.upper()
+  return t == 'V' or t == 'W'
+
+
+def is_local(t):
+  # According to the NM documentation:
+  #   "If lowercase, the symbol is usually local...  There are however a few
+  #   lowercase symbols that are shown for special global symbols
+  #   ("u", "v" and "w")."
+  return t != 'u' and not is_weak(t) and t.islower()
+
+
+def merge_symbols(sdict1, sdict2):
+  for sym_name, v2 in sdict2.iteritems():
+    # Check for duplicate symbols.
+    if sym_name in sdict1:
+      v1 = sdict1[sym_name]
+      # Only print warning if they are not weak / differently sized.
+      if (not (is_weak(v2.type) or is_weak(v1.type)) and
+          v1.size != v2.size):
+        print 'Warning symbol %s defined in both %s(%d, %s) and %s(%d, %s)' % (
+            sym_name,
+            v1.lib_name, v1.size, v1.type,
+            v2.lib_name, v2.size, v2.type)
+      # Arbitrarily take the max.  The sizes are approximate anyway,
+      # since the host binaries are built from a different compiler.
+      v1.size = max(v1.size, v2.size)
+      continue
+    # Otherwise just copy info over to sdict2.
+    sdict1[sym_name] = sdict2[sym_name]
+  return sdict1
+
+
 class TestTranslatorPruned(unittest.TestCase):
+
+  did_setup = False
+  pruned_symbols = {}
+  unpruned_symbols = {}
 
   def my_check_output(self, cmd):
     # Local version of check_output() for compatibility
@@ -25,38 +74,78 @@ class TestTranslatorPruned(unittest.TestCase):
       raise subprocess.CalledProcessError(p.returncode, cmd, stdout)
     return stdout
 
-  def setUp(self):
-    self.nm_tool = sys.argv[1]
-    self.host_binary = sys.argv[2]
-    self.target_binary = sys.argv[3]
-    nm_unpruned_cmd = [self.nm_tool,
-                       '--size-sort', '--demangle',
-                       self.host_binary]
-    self.unpruned_symbols = self.my_check_output(nm_unpruned_cmd).splitlines()
-    nm_pruned_cmd = [self.nm_tool,
-                     '--size-sort', '--demangle',
-                     self.target_binary]
-    self.pruned_symbols = self.my_check_output(nm_pruned_cmd).splitlines()
-    # Make sure we're not trying to NM a stripped binary.
-    self.assertTrue(len(self.unpruned_symbols) > 200)
-    self.assertTrue(len(self.pruned_symbols) > 200)
+  def get_symbol_info(self, bin_name):
+    results = {}
+    nm_cmd = [self.nm_tool, '--size-sort', '--demangle', bin_name]
+    for line in iter(self.my_check_output(nm_cmd).splitlines()):
+      (hex_size, t, sym_name) = line.split(' ', 2)
+      # Only track defined and non-BSS symbols.
+      if t != 'U' and t.upper() != 'B':
+        info = SymbolInfo(bin_name, sym_name, t, int(hex_size, 16))
+        # For local symbols, tack the library name on as a prefix.
+        # That should still match the regexes later.
+        if is_local(t):
+          key = bin_name + '$' + sym_name
+        else:
+          key = sym_name
+        # The same library can have the same local symbol. Just sum up sizes.
+        if key in results:
+          old = results[key]
+          old.size = old.size + info.size
+        else:
+          results[key] = info
+    return results
 
-  def sizeOfMatchingSyms(self, sym_regex, sym_list):
-    # Check if a given sym_list has symbols matching sym_regex, and
+  def setUp(self):
+    # This expensive setup should just be in setUpClass(), but that
+    # is only available in python 2.7+.
+    if not TestTranslatorPruned.did_setup:
+      self.nm_tool = sys.argv[1]
+      self.host_binaries = glob.glob(sys.argv[2])
+      self.target_binary = sys.argv[3]
+      print 'Getting symbol info from %s (host) and %s (target)' % (
+          sys.argv[2], sys.argv[3])
+      assert self.host_binaries, ('Did not glob any binaries from: ' %
+                                  sys.argv[2])
+      for b in self.host_binaries:
+        TestTranslatorPruned.unpruned_symbols = merge_symbols(
+            TestTranslatorPruned.unpruned_symbols,
+            self.get_symbol_info(b))
+      TestTranslatorPruned.pruned_symbols = self.get_symbol_info(
+          self.target_binary)
+      # Do an early check that these aren't stripped binaries.
+      assert TestTranslatorPruned.unpruned_symbols, 'No symbols from host?'
+      assert TestTranslatorPruned.pruned_symbols, 'No symbols from target?'
+      TestTranslatorPruned.did_setup = True
+
+  def size_of_matching_syms(self, sym_regex, sym_infos):
+    # Check if a given sym_infos has symbols matching sym_regex, and
     # return the total size of all matching symbols.
     total = 0
-    for sym_info in sym_list:
-      (hex_size, t, sym_name) = sym_info.split(' ', 2)
-      if re.search(sym_regex, sym_name):
-        total += int(hex_size, 16)
+    for sym_name, sym_info in sym_infos.iteritems():
+      if re.search(sym_regex, sym_info.sym_name):
+        total += sym_info.size
     return total
 
   def test_prunedNotFullyStripped(self):
-    pruned = self.sizeOfMatchingSyms('stream_init.*NaClSrpc',
-                                     self.pruned_symbols)
+    """Make sure that the test isn't accidentally passing.
+
+    The test can accidentally pass if the translator is stripped of symbols.
+    Then it would look like everything is pruned out.  Look for a symbol
+    that's guaranteed not to be pruned out.
+    """
+    pruned = self.size_of_matching_syms('stream_init.*NaClSrpc',
+                                        TestTranslatorPruned.pruned_symbols)
     self.assertNotEqual(pruned, 0)
 
   def test_didPrune(self):
+    """Check for classes/namespaces/symbols that we have intentionally pruned.
+
+    Check that the symbols are not present anymore in the translator,
+    and check that the symbols actually do exist in the developer tools.
+    That prevents the test from accidentally passing if the symbols
+    have been renamed to something else.
+    """
     total = 0
     for sym_regex in [
         'LLParser', 'LLLexer',
@@ -71,8 +160,10 @@ class TestTranslatorPruned(unittest.TestCase):
         # https://code.google.com/p/nativeclient/issues/detail?id=3326
         'ARMInstPrinter::print', 'X86.*InstPrinter::print',
         ]:
-      unpruned = self.sizeOfMatchingSyms(sym_regex, self.unpruned_symbols)
-      pruned = self.sizeOfMatchingSyms(sym_regex, self.pruned_symbols)
+      unpruned = self.size_of_matching_syms(
+          sym_regex, TestTranslatorPruned.unpruned_symbols)
+      pruned = self.size_of_matching_syms(
+          sym_regex, TestTranslatorPruned.pruned_symbols)
       self.assertNotEqual(unpruned, 0, 'Unpruned never had ' + sym_regex)
       self.assertEqual(pruned, 0, 'Pruned still has ' + sym_regex)
       # Bytes pruned is approximate since the host build is different
@@ -81,6 +172,7 @@ class TestTranslatorPruned(unittest.TestCase):
                                                                 sym_regex)
       total += unpruned
     print 'Total %d bytes' % total
+
 
 if __name__ == '__main__':
   if len(sys.argv) != 4:
