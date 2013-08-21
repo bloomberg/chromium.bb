@@ -94,6 +94,8 @@ const char kRelativeBuildToSourceRootDir_Help[] =
     "  \"/foo/src/out/Debug/\" then the relative build to source root dir\n"
     "  will be \"../..\".\n"
     "\n"
+    "  See also relative_source_root_dir.\n"
+    "\n"
     "Example:\n"
     "  This is typically used to invoke tools checked out in the tree:\n"
     "\n"
@@ -128,6 +130,30 @@ const char kRelativeRootOutputDir_Help[] =
     "  current toolchain's root build output directory.\n"
     "\n"
     "  Generally scripts should use \"relative_target_output_dir\" instead.\n";
+
+extern const char kRelativeSourceRootDir[] = "relative_source_root_dir";
+extern const char kRelativeSourceRootDir_HelpShort[] =
+    "relative_source_root_dir: [string] Relative location of root.";
+extern const char kRelativeSourceRootDir_Help[] =
+    "relative_source_root_dir: Relative location of root.\n"
+    "\n"
+    "  A relative path from the current source directory to the root of the\n"
+    "  source tree, with no terminating slash. The build directory will be\n"
+    "  the directory when executing scripts.\n"
+    "\n"
+    "  If the checkout is in \"/foo/src/\" and the build directory is in\n"
+    "  \"/foo/src/out/Debug/\" then the relative build to source root dir\n"
+    "  will be \"../..\".\n"
+    "\n"
+    "  See also relative_build_to_source_root_dir.\n"
+    "\n"
+    "Example:\n"
+    "  This is typically used to invoke tools checked out in the tree:\n"
+    "\n"
+    "  tool(\"link\") {\n"
+    "    command = \"$relative_build_to_source_root_dir/third_party/gold/ld\n"
+    "  }\n";
+
 
 const char kRelativeTargetGenDir[] = "relative_target_gen_dir";
 const char kRelativeTargetGenDir_HelpShort[] =
@@ -375,6 +401,7 @@ const VariableInfoMap& GetBuiltinVariables() {
     INSERT_VARIABLE(RelativeBuildToSourceRootDir)
     INSERT_VARIABLE(RelativeRootGenDir)
     INSERT_VARIABLE(RelativeRootOutputDir)
+    INSERT_VARIABLE(RelativeSourceRootDir)
     INSERT_VARIABLE(RelativeTargetGenDir)
     INSERT_VARIABLE(RelativeTargetOutputDir)
   }

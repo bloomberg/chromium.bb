@@ -24,7 +24,7 @@ enum SourceFileType {
   SOURCE_H,
   SOURCE_M,
   SOURCE_MM,
-  //SOURCE_S,  // TODO(brettw) what is this?
+  SOURCE_S,
   SOURCE_RC,
 };
 

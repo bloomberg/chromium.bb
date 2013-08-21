@@ -4,8 +4,15 @@
 
 group("root") {
   deps = [
-    "//tools/gn",
-    "//ipc",
     "//base(//build/toolchain/nacl:x86_newlib)",
+    "//crypto",
+    "//ipc",
+    "//net",
+    "//net/third_party/nss/ssl:crssl",
+    "//sdch",
+    "//third_party/icu:icudata",
+    "//third_party/zlib",
+    "//tools/gn",
+    "//url:url_lib",
   ]
 }

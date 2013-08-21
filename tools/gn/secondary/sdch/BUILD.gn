@@ -1,0 +1,56 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("sdch_config") {
+  includes = [ "open-vcdiff/src" ]
+}
+
+static_library("sdch") {
+  sources = [
+    "open-vcdiff/src/addrcache.cc",
+    "open-vcdiff/src/blockhash.cc",
+    "open-vcdiff/src/blockhash.h",
+    "open-vcdiff/src/checksum.h",
+    "open-vcdiff/src/codetable.cc",
+    "open-vcdiff/src/codetable.h",
+    "open-vcdiff/src/compile_assert.h",
+    "open-vcdiff/src/decodetable.cc",
+    "open-vcdiff/src/decodetable.h",
+    "open-vcdiff/src/encodetable.cc",
+    "open-vcdiff/src/encodetable.h",
+    "open-vcdiff/src/google/output_string.h",
+    "open-vcdiff/src/google/vcdecoder.h",
+    "open-vcdiff/src/headerparser.cc",
+    "open-vcdiff/src/headerparser.h",
+    "open-vcdiff/src/instruction_map.cc",
+    "open-vcdiff/src/instruction_map.h",
+    "open-vcdiff/src/logging.cc",
+    "open-vcdiff/src/logging.h",
+    "open-vcdiff/src/rolling_hash.h",
+    "open-vcdiff/src/testing.h",
+    "open-vcdiff/src/varint_bigendian.cc",
+    "open-vcdiff/src/varint_bigendian.h",
+    "open-vcdiff/src/vcdecoder.cc",
+    "open-vcdiff/src/vcdiff_defs.h",
+    "open-vcdiff/src/vcdiffengine.cc",
+    "open-vcdiff/src/vcdiffengine.h",
+    "open-vcdiff/vsprojects/config.h",
+    "open-vcdiff/vsprojects/stdint.h",
+  ]
+
+  configs += [ ":sdch_config" ]
+  direct_dependent_configs = [ ":sdch_config" ]
+
+  if (is_linux || is_android) {
+    includes = [ "linux" ]
+  } else if (is_ios) {
+    includes = [ "ios" ]
+  } else if (is_mac) {
+    includes = [ "mac" ]
+  } else if (is_win) {
+    includes = [ "win" ]
+  }
+
+  deps = [ "//third_party/zlib" ]
+}

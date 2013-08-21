@@ -1,0 +1,83 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Not named "ssl" so the lib doesn't conflict with OpenSSL's libssl
+component("crssl") {
+  sources = [
+    "authcert.c",
+    "cmpcert.c",
+    "derive.c",
+    "dtlscon.c",
+    #"os2_err.c",
+    #"os2_err.h",
+    "preenc.h",
+    "prelib.c",
+    "ssl.h",
+    "ssl3con.c",
+    "ssl3ecc.c",
+    "ssl3ext.c",
+    "ssl3gthr.c",
+    "ssl3prot.h",
+    "sslauth.c",
+    "sslcon.c",
+    "ssldef.c",
+    "sslenum.c",
+    "sslerr.c",
+    "sslerr.h",
+    "SSLerrs.h",
+    "sslerrstrs.c",
+    "sslgathr.c",
+    "sslimpl.h",
+    "sslinfo.c",
+    "sslinit.c",
+    "sslmutex.c",
+    "sslmutex.h",
+    "sslnonce.c",
+    "sslplatf.c",
+    "sslproto.h",
+    "sslreveal.c",
+    "sslsecur.c",
+    "sslsnce.c",
+    "sslsock.c",
+    "sslt.h",
+    "ssltrace.c",
+    "sslver.c",
+    "unix_err.c",
+    "unix_err.h",
+    "win32err.c",
+    "win32err.h",
+    "bodge/secitem_array.c",
+  ]
+
+  defines = [
+    "NO_PKCS11_BYPASS",
+    "NSS_ENABLE_ECC",
+    "USE_UTIL_DIRECTLY",
+  ]
+
+  configs -= "//build/config/compiler:chromium_code"
+  configs += "//build/config/compiler:no_chromium_code"
+
+  if (is_win) {
+    sources -= [
+      "unix_err.c",
+      "unix_err.h",
+    ]
+  } else {
+    sources -= [
+      "win32err.c",
+      "win32err.h",
+    ]
+  }
+
+  if (is_linux) {
+    includes = [ "bodge" ]
+    configs += "//net/third_party/nss:nss_linux_config"
+    direct_dependent_configs = [ "//net/third_party/nss:nss_linux_config" ]
+  }
+  if (is_mac) {
+    sources -= "bodge/secitem_array.c"
+  }
+
+}

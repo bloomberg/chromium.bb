@@ -53,6 +53,10 @@ extern const char kRelativeRootOutputDir[];
 extern const char kRelativeRootOutputDir_HelpShort[];
 extern const char kRelativeRootOutputDir_Help[];
 
+extern const char kRelativeSourceRootDir[];
+extern const char kRelativeSourceRootDir_HelpShort[];
+extern const char kRelativeSourceRootDir_Help[];
+
 extern const char kRelativeTargetGenDir[];
 extern const char kRelativeTargetGenDir_HelpShort[];
 extern const char kRelativeTargetGenDir_Help[];

@@ -28,6 +28,7 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   const Value* GetRelativeBuildToSourceRootDir();
   const Value* GetRelativeRootOutputDir();
   const Value* GetRelativeRootGenDir();
+  const Value* GetRelativeSourceRootDir();
   const Value* GetRelativeTargetOutputDir();
   const Value* GetRelativeTargetGenDir();
 
@@ -50,6 +51,7 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   scoped_ptr<Value> relative_build_to_source_root_dir_;
   scoped_ptr<Value> relative_root_output_dir_;
   scoped_ptr<Value> relative_root_gen_dir_;
+  scoped_ptr<Value> relative_source_root_dir_;
   scoped_ptr<Value> relative_target_output_dir_;
   scoped_ptr<Value> relative_target_gen_dir_;
 

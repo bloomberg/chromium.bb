@@ -35,6 +35,8 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
     return GetRelativeRootOutputDir();
   if (ident == variables::kRelativeRootGenDir)
     return GetRelativeRootGenDir();
+  if (ident == variables::kRelativeSourceRootDir)
+    return GetRelativeSourceRootDir();
   if (ident == variables::kRelativeTargetOutputDir)
     return GetRelativeTargetOutputDir();
   if (ident == variables::kRelativeTargetGenDir)
@@ -95,6 +97,14 @@ const Value* ScopePerFileProvider::GetRelativeRootGenDir() {
         GetRootGenDirWithNoLastSlash(scope_->settings())));
   }
   return relative_root_gen_dir_.get();
+}
+
+const Value* ScopePerFileProvider::GetRelativeSourceRootDir() {
+  if (!relative_source_root_dir_) {
+    relative_source_root_dir_.reset(new Value(NULL,
+        GetRelativeRootWithNoLastSlash()));
+  }
+  return relative_source_root_dir_.get();
 }
 
 const Value* ScopePerFileProvider::GetRelativeTargetOutputDir() {

@@ -78,6 +78,7 @@ OutputFile NinjaHelper::GetOutputFileForSource(
     case SOURCE_CC:
     case SOURCE_M:
     case SOURCE_MM:
+    case SOURCE_S:
       name.append(target->settings()->IsWin() ? "obj" : "o");
       break;
 
@@ -171,6 +172,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   ret.value().append(kObjectDirNoSlash);
   AppendStringPiece(&ret.value(),
                     target->label().dir().SourceAbsoluteWithOneSlash());
+  ret.value().append(prefix);
   ret.value().append(target->label().name());
   if (extension[0]) {
     ret.value().push_back('.');
@@ -210,9 +212,11 @@ std::string NinjaHelper::GetRuleForSourceType(const Settings* settings,
   if (settings->IsWin()) {
     if (type == SOURCE_RC)
       return prefix + "rc";
+  } else {
+    if (type == SOURCE_S)
+      return prefix + "cc";  // Assembly files just get compiled by CC.
   }
 
-  // TODO(brettw) stuff about "S" files on non-Windows.
   return std::string();
 }
 

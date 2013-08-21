@@ -86,14 +86,18 @@ SourceFileType GetSourceFileType(const SourceFile& file,
     case Settings::WIN:
       if (extension == "rc")
         return SOURCE_RC;
+      // TODO(brettw) asm files.
       break;
 
     default:
       break;
   }
 
-  // TODO(brettw) asm files.
-  // TODO(brettw) weird thing with .S on non-Windows platforms.
+  if (os != Settings::WIN) {
+    if (extension == "S")
+      return SOURCE_S;
+  }
+
   return SOURCE_UNKNOWN;
 }
 

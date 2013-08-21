@@ -206,7 +206,7 @@ template<typename T> void OutputRecursiveTargetConfig(
 
   std::string out_str = out.str();
   if (!out_str.empty()) {
-    OutputString(std::string(header_name) + "\n");
+    OutputString("\n" + std::string(header_name) + "\n");
     OutputString(out_str);
   }
 }
@@ -273,6 +273,9 @@ const char kDesc_Help[] =
     "      Shows defines set for the //base:base target, annotated by where\n"
     "      each one was set from.\n";
 
+#define OUTPUT_CONFIG_VALUE(name) \
+    OutputRecursiveTargetConfig(target, #name, &ConfigValues::name);
+
 int RunDesc(const std::vector<std::string>& args) {
   if (args.size() != 1 && args.size() != 2) {
     Err(Location(), "You're holding it wrong.",
@@ -285,8 +288,7 @@ int RunDesc(const std::vector<std::string>& args) {
     return 1;
 
 #define CONFIG_VALUE_HANDLER(name) \
-    } else if (what == #name) { \
-      OutputRecursiveTargetConfig(target, #name, &ConfigValues::name);
+    } else if (what == #name) { OUTPUT_CONFIG_VALUE(name)
 
   if (args.size() == 2) {
     // User specified one thing to display.
@@ -303,6 +305,8 @@ int RunDesc(const std::vector<std::string>& args) {
     CONFIG_VALUE_HANDLER(cflags)
     CONFIG_VALUE_HANDLER(cflags_c)
     CONFIG_VALUE_HANDLER(cflags_cc)
+    CONFIG_VALUE_HANDLER(cflags_objc)
+    CONFIG_VALUE_HANDLER(cflags_objcc)
     CONFIG_VALUE_HANDLER(ldflags)
 
     } else {
@@ -333,9 +337,15 @@ int RunDesc(const std::vector<std::string>& args) {
 
   PrintSources(target, true);
   PrintConfigs(target, true);
-  OutputString("\n  (Use \"gn desc <label> <thing you want to see>\" to show "
-               "the actual values\n   applied by the different configs. "
-               "See \"gn help desc\" for more.)\n");
+
+  OUTPUT_CONFIG_VALUE(defines)
+  OUTPUT_CONFIG_VALUE(includes)
+  OUTPUT_CONFIG_VALUE(cflags)
+  OUTPUT_CONFIG_VALUE(cflags_c)
+  OUTPUT_CONFIG_VALUE(cflags_cc)
+  OUTPUT_CONFIG_VALUE(cflags_objc)
+  OUTPUT_CONFIG_VALUE(cflags_objcc)
+
   PrintDeps(target, true);
 
   return 0;

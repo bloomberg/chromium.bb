@@ -35,6 +35,10 @@ declare_args() {
   # with a NaCl toolchain.
   is_nacl = false
 
+  # Set to true when compiling with the Clang compiler. Typically this is used
+  # to configure warnings.
+  is_clang = false
+
   # ASH is enabled.
   use_ash = false
   # Aura is enabled.

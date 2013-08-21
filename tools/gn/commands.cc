@@ -65,7 +65,8 @@ const Target* GetTargetForDesc(const std::vector<std::string>& args) {
       .GetDefaultToolchainUnlocked();
   Value arg_value(NULL, args[0]);
   Err err;
-  Label label = Label::Resolve(SourceDir(), default_toolchain, arg_value, &err);
+  Label label =
+      Label::Resolve(SourceDir("//"), default_toolchain, arg_value, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return NULL;

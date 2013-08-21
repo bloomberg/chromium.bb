@@ -1,0 +1,26 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("flags.gni")
+
+config("ssl_preprocessor_flags") {
+  if (use_openssl) {
+    defines = [ "USE_OPENSSL" ]
+  } else if (use_nss) {
+    defines = [ "USE_NSS" ]
+  } else {
+    assert(false)  # Either OpenSSL or NSS should be defined.
+  }
+}
+
+# This meta-target will include the SSL library according to the build flags.
+group("metassl") {
+  direct_dependent_configs = [ ":ssl_preprocessor_flags" ]
+
+  if (is_linux) {
+    # TODO(brettw) figure this out.
+    deps = [ "//net/third_party/nss/ssl:crssl" ]
+    direct_dependent_configs += [ "//net/third_party/nss:nss_linux_config" ]
+  }
+}

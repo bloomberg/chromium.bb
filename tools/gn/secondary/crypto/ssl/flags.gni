@@ -1,0 +1,18 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares build flags for 
+
+declare_args() {
+  use_openssl = false
+
+  # Use the built-in system SSL library rather than our tree's libnss/OpenSSL.
+  use_system_ssl = false
+}
+
+if (is_linux && !use_openssl) {
+  use_nss = true
+} else {
+  use_nss = false
+}

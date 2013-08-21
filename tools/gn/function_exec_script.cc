@@ -8,6 +8,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
@@ -190,7 +191,7 @@ bool ExecProcess(const CommandLine& cmdline,
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);
 
-        chdir(startup_dir.value().c_str());
+        file_util::SetCurrentDirectory(startup_dir);
 
         // TODO(brettw) the base version GetAppOutput does a
         // CloseSuperfluousFds call here. Do we need this?
@@ -323,6 +324,17 @@ Value RunExecScript(Scope* scope,
     cmdline.AppendArg(script_args.list_value()[i].string_value());
   }
 
+  // Log command line for debugging help.
+  base::TimeTicks begin_exec;
+  if (g_scheduler->verbose_logging()) {
+#if defined(OS_WIN)
+    g_scheduler->Log("Pythoning", UTF16ToUTF8(cmdline.GetCommandLineString()));
+#else
+    g_scheduler->Log("Pythoning", cmdline.GetCommandLineString());
+#endif
+    begin_exec = base::TimeTicks::Now();
+  }
+
   // Execute the process.
   // TODO(brettw) set the environment block.
   std::string output;
@@ -333,6 +345,12 @@ Value RunExecScript(Scope* scope,
     *err = Err(function->function(), "Could not execute python.",
         "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
     return Value();
+  }
+  if (g_scheduler->verbose_logging()) {
+    g_scheduler->Log("Pythoning", script_source.value() + " took " +
+        base::Int64ToString(
+            (base::TimeTicks::Now() - begin_exec).InMilliseconds()) +
+        "ms");
   }
 
   // TODO(brettw) maybe we need stderr also for reasonable stack dumps.

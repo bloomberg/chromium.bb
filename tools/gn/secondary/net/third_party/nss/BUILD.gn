@@ -1,0 +1,12 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_linux) {
+  pkg_script = "//build/config/linux/pkg-config.py"
+
+  config("nss_linux_config") {
+    cflags = exec_script(pkg_script, [ "--cflags", "nss" ], "list lines")
+    ldflags = exec_script(pkg_script, [ "--libs", "nss" ], "list lines")
+  }
+}
