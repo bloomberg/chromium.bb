@@ -37,12 +37,16 @@ using namespace std;
 
 namespace WebCore {
 
-static const int scrollbarWidth = 3;
-static const int scrollbarMargin = 4;
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin)
+    : ScrollbarTheme()
+    , m_thumbThickness(thumbThickness)
+    , m_scrollbarMargin(scrollbarMargin)
+{
+}
 
 int ScrollbarThemeOverlay::scrollbarThickness(ScrollbarControlSize controlSize)
 {
-    return scrollbarWidth + scrollbarMargin;
+    return m_thumbThickness + m_scrollbarMargin;
 }
 
 bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
@@ -92,9 +96,9 @@ IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
 {
     IntRect rect = scrollbar->frameRect();
     if (scrollbar->orientation() == HorizontalScrollbar)
-        rect.inflateX(-scrollbarMargin);
+        rect.inflateX(-m_scrollbarMargin);
     else
-        rect.inflateY(-scrollbarMargin);
+        rect.inflateY(-m_scrollbarMargin);
     return rect;
 }
 
@@ -102,9 +106,9 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeC
 {
     IntRect thumbRect = rect;
     if (scrollbar->orientation() == HorizontalScrollbar)
-        thumbRect.setHeight(thumbRect.height() - scrollbarMargin);
+        thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);
     else
-        thumbRect.setWidth(thumbRect.width() - scrollbarMargin);
+        thumbRect.setWidth(thumbRect.width() - m_scrollbarMargin);
     context->fillRect(thumbRect, Color(128, 128, 128, 128));
 }
 

@@ -45,7 +45,7 @@ namespace WebCore {
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
     if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, ());
+        DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (7, 0));
         return &theme;
     }
 
