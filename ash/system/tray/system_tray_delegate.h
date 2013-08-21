@@ -111,7 +111,7 @@ typedef std::vector<IMEInfo> IMEInfoList;
 
 class VolumeControlDelegate;
 
-class SystemTrayDelegate {
+class ASH_EXPORT SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
 

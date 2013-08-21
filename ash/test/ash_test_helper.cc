@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -96,6 +97,9 @@ void AshTestHelper::TearDown() {
 #endif
 
   aura::Env::DeleteInstance();
+
+  // Need to reset the initial login status.
+  TestSystemTrayDelegate::SetInitialLoginStatus(user::LOGGED_IN_USER);
 
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();

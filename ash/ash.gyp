@@ -722,6 +722,7 @@
         'shell/window_type_launcher.cc',
         'shell/window_watcher.cc',
         'shell/window_watcher_unittest.cc',
+        'system/chromeos/managed/tray_locally_managed_user_unittest.cc',
         'system/chromeos/network/network_state_notifier_unittest.cc',
         'system/chromeos/power/power_status_unittest.cc',
         'system/chromeos/power/tray_power_unittest.cc',
