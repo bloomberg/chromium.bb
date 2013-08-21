@@ -92,24 +92,22 @@ class CopyOperation {
       const FileOperationCallback& callback,
       FileError error);
 
-  // Copies a hosted document with |resource_id| to the directory at |dir_path|
-  // and names the copied document as |new_name|.
-  void CopyHostedDocumentToDirectory(const base::FilePath& dir_path,
+  // Copies a hosted document with |resource_id| to |dest_path|
+  void CopyHostedDocumentToDirectory(const base::FilePath& dest_path,
                                      const std::string& resource_id,
-                                     const base::FilePath::StringType& new_name,
                                      const FileOperationCallback& callback);
 
   // Callback for handling document copy attempt.
   void OnCopyHostedDocumentCompleted(
-      const base::FilePath& dir_path,
+      const base::FilePath& dest_path,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Moves a file or directory at |file_path| in the root directory to
-  // another directory at |dir_path|. This function does nothing if
-  // |dir_path| points to the root directory.
-  void MoveEntryFromRootDirectory(const base::FilePath& directory_path,
+  // |dest_path|. This function does nothing if |dest_path| points to a
+  // resource directly under the root directory.
+  void MoveEntryFromRootDirectory(const base::FilePath& dest_path,
                                   const FileOperationCallback& callback,
                                   FileError error,
                                   const base::FilePath& file_path);

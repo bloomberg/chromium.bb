@@ -217,24 +217,21 @@ void CopyOperation::ScheduleTransferRegularFileAfterStore(
 }
 
 void CopyOperation::CopyHostedDocumentToDirectory(
-    const base::FilePath& dir_path,
+    const base::FilePath& dest_path,
     const std::string& resource_id,
-    const base::FilePath::StringType& new_name,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scheduler_->CopyHostedDocument(
       resource_id,
-      base::FilePath(new_name).AsUTF8Unsafe(),
+      dest_path.BaseName().AsUTF8Unsafe(),
       base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dir_path,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), dest_path, callback));
 }
 
 void CopyOperation::OnCopyHostedDocumentCompleted(
-    const base::FilePath& dir_path,
+    const base::FilePath& dest_path,
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -260,13 +257,11 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   metadata_->AddEntryOnUIThread(
       entry,
       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dir_path,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), dest_path, callback));
 }
 
 void CopyOperation::MoveEntryFromRootDirectory(
-    const base::FilePath& directory_path,
+    const base::FilePath& dest_path,
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& file_path) {
@@ -280,7 +275,7 @@ void CopyOperation::MoveEntryFromRootDirectory(
 
   // Return if there is an error or |dir_path| is the root directory.
   if (error != FILE_ERROR_OK ||
-      directory_path == util::GetDriveMyDriveRootPath()) {
+      dest_path.DirName() == util::GetDriveMyDriveRootPath()) {
     callback.Run(error);
     return;
   }
@@ -288,9 +283,7 @@ void CopyOperation::MoveEntryFromRootDirectory(
   DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
             file_path.DirName().value()) << file_path.value();
 
-  move_operation_->Move(file_path,
-                        directory_path.Append(file_path.BaseName()),
-                        callback);
+  move_operation_->Move(file_path, dest_path, callback);
 }
 
 void CopyOperation::CopyAfterGetResourceEntryPair(
@@ -344,11 +337,10 @@ void CopyOperation::CopyAfterGetResourceEntryPair(
 
   if (src_file_proto->file_specific_info().is_hosted_document()) {
     CopyHostedDocumentToDirectory(
-        dest_file_path.DirName(),
-        src_file_proto->resource_id(),
         // Drop the document extension, which should not be in the title.
         // TODO(yoshiki): Remove this code with crbug.com/223304.
-        dest_file_path.BaseName().RemoveExtension().value(),
+        dest_file_path.RemoveExtension(),
+        src_file_proto->resource_id(),
         callback);
     return;
   }
@@ -505,15 +497,16 @@ void CopyOperation::TransferFileForResourceId(
   const std::string canonicalized_resource_id =
       drive_service_->CanonicalizeResourceId(resource_id);
 
+  // TODO(hidehiko): Use CopyResource for Drive API v2.
+
   // Otherwise, copy the document on the server side and add the new copy
   // to the destination directory (collection).
   CopyHostedDocumentToDirectory(
-      remote_dest_file_path.DirName(),
-      canonicalized_resource_id,
       // Drop the document extension, which should not be
       // in the document title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.
-      remote_dest_file_path.BaseName().RemoveExtension().value(),
+      remote_dest_file_path.RemoveExtension(),
+      canonicalized_resource_id,
       callback);
 }
 
