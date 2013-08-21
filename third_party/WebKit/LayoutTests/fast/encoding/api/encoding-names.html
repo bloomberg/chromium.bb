@@ -7,26 +7,20 @@ description("Test the Encoding API's use of encoding names");
 debug("Encoding names are case insensitive");
 var encodings = [
     { label: 'utf-8', encoding: 'utf-8' },
-    { label: 'utf-16', encoding: 'utf-16' },
-    { label: 'utf-16le', encoding: 'utf-16' },
+    { label: 'utf-16', encoding: 'utf-16le' },
+    { label: 'utf-16le', encoding: 'utf-16le' },
     { label: 'utf-16be', encoding: 'utf-16be' },
     { label: 'ascii', encoding: 'windows-1252' },
     { label: 'iso-8859-1', encoding: 'windows-1252' }
 ];
 
-// FIXME: Include full table from spec
+// encoding-labels.html tests the full set of names/labels; this test just
+// exercises some common cases and case-insensitivity.
 
 encodings.forEach(function(test) {
     shouldBeEqualToString("new TextDecoder('" + test.label.toLowerCase() + "').encoding", test.encoding);
     shouldBeEqualToString("new TextDecoder('" + test.label.toUpperCase() + "').encoding", test.encoding);
 });
-
-
-shouldBeEqualToString("new TextDecoder('utf-8').encoding", "utf-8"); // canonical case
-shouldBeEqualToString("new TextDecoder('UTF-16').encoding", "utf-16"); // canonical case and name
-shouldBeEqualToString("new TextDecoder('UTF-16BE').encoding", "utf-16be"); // canonical case and name
-shouldBeEqualToString("new TextDecoder('iso8859-1').encoding", "windows-1252"); // canonical case and name
-shouldBeEqualToString("new TextDecoder('iso-8859-1').encoding", "windows-1252"); // canonical case and name
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

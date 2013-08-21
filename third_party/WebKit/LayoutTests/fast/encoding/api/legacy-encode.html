@@ -5,14 +5,18 @@
 
 description("Non-UTF encodings supported only for decode, not encode");
 
-utf_encodings.forEach(function(encoding) {
-    shouldBeEqualToString("new TextDecoder('"+encoding+"').encoding", encoding);
-    shouldBeEqualToString("new TextEncoder('"+encoding+"').encoding", encoding);
-});
-
-legacy_encodings.forEach(function(encoding) {
-    shouldBeEqualToString("new TextDecoder('"+encoding+"').encoding", encoding);
-    shouldThrow("new TextEncoder('"+encoding+"').encoding");
+encodings_table.forEach(function(section) {
+    section.encodings.forEach(function(encoding) {
+        if (encoding.name === "replacement")
+            return;
+        if (utf_encodings.indexOf(encoding.name) !== -1) {
+            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
+            shouldBeEqualToString("new TextEncoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
+        } else {
+            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
+            shouldThrow("new TextEncoder(" + JSON.stringify(encoding.name) + ").encoding");
+        }
+    });
 });
 
 </script>

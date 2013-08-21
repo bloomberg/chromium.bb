@@ -11,11 +11,11 @@ debug("Should not throw or hang:");
 evalAndLog("new TextDecoder('utf-8').decode(new Uint8Array([0xff]))");
 
 debug("");
-shouldThrow("new TextDecoder('utf-16', {fatal: true}).decode(new Uint8Array([0x00]))");
+shouldThrow("new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00]))");
 
 debug("");
 debug("Should not throw or hang:");
-evalAndLog("new TextDecoder('utf-16').decode(new Uint8Array([0x00]))");
+evalAndLog("new TextDecoder('utf-16le').decode(new Uint8Array([0x00]))");
 
 debug("");
 shouldThrow("new TextDecoder('utf-16be', {fatal: true}).decode(new Uint8Array([0x00]))");

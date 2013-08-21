@@ -6,21 +6,16 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Encoding names are case insensitive
 PASS new TextDecoder('utf-8').encoding is "utf-8"
 PASS new TextDecoder('UTF-8').encoding is "utf-8"
-FAIL new TextDecoder('utf-16').encoding should be utf-16. Was utf-16le.
-FAIL new TextDecoder('UTF-16').encoding should be utf-16. Was utf-16le.
-FAIL new TextDecoder('utf-16le').encoding should be utf-16. Was utf-16le.
-FAIL new TextDecoder('UTF-16LE').encoding should be utf-16. Was utf-16le.
+PASS new TextDecoder('utf-16').encoding is "utf-16le"
+PASS new TextDecoder('UTF-16').encoding is "utf-16le"
+PASS new TextDecoder('utf-16le').encoding is "utf-16le"
+PASS new TextDecoder('UTF-16LE').encoding is "utf-16le"
 PASS new TextDecoder('utf-16be').encoding is "utf-16be"
 PASS new TextDecoder('UTF-16BE').encoding is "utf-16be"
 FAIL new TextDecoder('ascii').encoding should be windows-1252. Was us-ascii.
 FAIL new TextDecoder('ASCII').encoding should be windows-1252. Was us-ascii.
 FAIL new TextDecoder('iso-8859-1').encoding should be windows-1252. Was iso-8859-1.
 FAIL new TextDecoder('ISO-8859-1').encoding should be windows-1252. Was iso-8859-1.
-PASS new TextDecoder('utf-8').encoding is "utf-8"
-FAIL new TextDecoder('UTF-16').encoding should be utf-16. Was utf-16le.
-PASS new TextDecoder('UTF-16BE').encoding is "utf-16be"
-FAIL new TextDecoder('iso8859-1').encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder('iso-8859-1').encoding should be windows-1252. Was iso-8859-1.
 PASS successfullyParsed is true
 
 TEST COMPLETE

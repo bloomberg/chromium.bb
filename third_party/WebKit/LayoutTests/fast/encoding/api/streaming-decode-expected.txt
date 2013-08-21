@@ -96,9 +96,9 @@ out += decoder.decode(new Uint8Array([128,244,143,191,191]), {stream: true})
 out += decoder.decode()
 PASS out is "\u0000123ABCabcÿĀက�𐀀􏿿"
 
-encoded = new TextEncoder('utf-16').encode(string)
+encoded = new TextEncoder('utf-16le').encode(string)
 out = ''
-decoder = new TextDecoder('utf-16')
+decoder = new TextDecoder('utf-16le')
 out += decoder.decode(new Uint8Array([0]), {stream: true})
 out += decoder.decode(new Uint8Array([0]), {stream: true})
 out += decoder.decode(new Uint8Array([49]), {stream: true})
@@ -140,7 +140,7 @@ out += decoder.decode(new Uint8Array([223]), {stream: true})
 out += decoder.decode()
 PASS out is "\u0000123ABCabcÿĀက�𐀀􏿿"
 out = ''
-decoder = new TextDecoder('utf-16')
+decoder = new TextDecoder('utf-16le')
 out += decoder.decode(new Uint8Array([0,0]), {stream: true})
 out += decoder.decode(new Uint8Array([49,0]), {stream: true})
 out += decoder.decode(new Uint8Array([50,0]), {stream: true})
@@ -163,7 +163,7 @@ out += decoder.decode(new Uint8Array([255,223]), {stream: true})
 out += decoder.decode()
 PASS out is "\u0000123ABCabcÿĀက�𐀀􏿿"
 out = ''
-decoder = new TextDecoder('utf-16')
+decoder = new TextDecoder('utf-16le')
 out += decoder.decode(new Uint8Array([0,0,49]), {stream: true})
 out += decoder.decode(new Uint8Array([0,50,0]), {stream: true})
 out += decoder.decode(new Uint8Array([51,0,65]), {stream: true})
@@ -180,7 +180,7 @@ out += decoder.decode(new Uint8Array([255,223]), {stream: true})
 out += decoder.decode()
 PASS out is "\u0000123ABCabcÿĀက�𐀀􏿿"
 out = ''
-decoder = new TextDecoder('utf-16')
+decoder = new TextDecoder('utf-16le')
 out += decoder.decode(new Uint8Array([0,0,49,0]), {stream: true})
 out += decoder.decode(new Uint8Array([50,0,51,0]), {stream: true})
 out += decoder.decode(new Uint8Array([65,0,66,0]), {stream: true})
@@ -194,7 +194,7 @@ out += decoder.decode(new Uint8Array([255,223]), {stream: true})
 out += decoder.decode()
 PASS out is "\u0000123ABCabcÿĀက�𐀀􏿿"
 out = ''
-decoder = new TextDecoder('utf-16')
+decoder = new TextDecoder('utf-16le')
 out += decoder.decode(new Uint8Array([0,0,49,0,50]), {stream: true})
 out += decoder.decode(new Uint8Array([0,51,0,65,0]), {stream: true})
 out += decoder.decode(new Uint8Array([66,0,67,0,97]), {stream: true})

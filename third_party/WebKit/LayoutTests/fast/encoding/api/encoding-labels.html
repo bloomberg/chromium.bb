@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+
+description("Test the Encoding API's use of encoding names");
+
+encodings_table.forEach(function(section) {
+    var list = section.encodings;
+    list.forEach(function(encoding) {
+        debug("");
+        evalAndLog("name = " + JSON.stringify(encoding.name));
+        encoding.labels.forEach(function(label) {
+            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(label) + ").encoding", encoding.name);
+        });
+    });
+});
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
