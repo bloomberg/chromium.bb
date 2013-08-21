@@ -112,7 +112,6 @@ void ClearQuotaManagedOriginsOnIOThread(quota::QuotaManager* quota_manager,
     return;
   }
 
-  std::set<GURL>::const_iterator origin;
   size_t* origins_to_delete_count = new size_t(origins.size());
   for (std::set<GURL>::const_iterator origin = origins.begin();
        origin != origins.end(); ++origin) {
