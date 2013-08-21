@@ -298,17 +298,18 @@ bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
   if (ExtensionManagementPolicyImpl(extension, &tmp_error))
     return true;
 
-  // If the extension is already loaded, we allow it, otherwise we'd unload
-  // all existing extensions.
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-
-  // |extension_service| can be NULL in a unit test.
-  if (extension_service &&
-      extension_service->GetInstalledExtension(extension->id()))
-    return true;
-
+  // |extension| can be NULL in a unit test.
   if (extension) {
+    // If the extension is already loaded, we allow it, otherwise we'd unload
+    // all existing extensions.
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+
+    // |extension_service| can be NULL in a unit test.
+    if (extension_service &&
+        extension_service->GetInstalledExtension(extension->id()))
+      return true;
+
     bool was_installed_by_default = extension->was_installed_by_default();
 #if defined(OS_CHROMEOS)
     // On Chrome OS all external sources are controlled by us so it means that
