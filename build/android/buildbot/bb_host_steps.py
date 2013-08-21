@@ -96,7 +96,6 @@ def FindBugs(options):
 
 
 def BisectPerfRegression(_):
-  bb_annotations.PrintNamedStep('Bisect Perf Regression')
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
