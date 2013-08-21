@@ -63,7 +63,6 @@ void PairingHostAuthenticator::ProcessMessage(
     const base::Closure& resume_callback) {
   if (!v2_authenticator_) {
     std::string client_id;
-    std::string paired_secret;
 
     const buzz::XmlElement* pairing_tag = message->FirstNamed(kPairingInfoTag);
     if (pairing_tag) {
