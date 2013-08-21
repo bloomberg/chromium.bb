@@ -761,11 +761,6 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 }
 
 void UserView::AddLogoutButton(ash::user::LoginStatus login) {
-  // A user should not be able to modify logged-in state when screen is
-  // locked.
-  if (login == ash::user::LOGGED_IN_LOCKED)
-    return;
-
   const base::string16 title = ash::user::GetLocalizedSignOutStringForStatus(
       login, true);
   TrayPopupLabelButton* logout_button = new TrayPopupLabelButton(this, title);
