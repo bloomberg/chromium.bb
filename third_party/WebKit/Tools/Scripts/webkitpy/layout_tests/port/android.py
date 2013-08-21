@@ -785,7 +785,7 @@ class ChromiumAndroidDriver(driver.Driver):
         assert md5sum_output
         return [line.split('  ')[0] for line in md5sum_output]
 
-    def _push_file_if_needed(self, host_file, device_file):
+    def _files_match(self, host_file, device_file):
         assert os.path.exists(host_file)
         device_hashes = self._extract_hashes_from_md5sum_output(
                 self._port.host.executive.popen(self._android_commands.adb_command() + ['shell', MD5SUM_DEVICE_PATH, device_file],
@@ -793,10 +793,11 @@ class ChromiumAndroidDriver(driver.Driver):
         host_hashes = self._extract_hashes_from_md5sum_output(
                 self._port.host.executive.popen(args=['%s_host' % self._md5sum_path, host_file],
                                                 stdout=subprocess.PIPE).stdout)
-        if host_hashes and device_hashes == host_hashes:
-            return
+        return host_hashes and device_hashes == host_hashes
 
-        self._android_commands.push(host_file, device_file)
+    def _push_file_if_needed(self, host_file, device_file):
+        if not self._files_match(host_file, device_file):
+            self._android_commands.push(host_file, device_file)
 
     def _push_executable(self):
         self._push_file_if_needed(self._port.path_to_forwarder(), self._driver_details.device_forwarder_path())
@@ -805,6 +806,10 @@ class ChromiumAndroidDriver(driver.Driver):
 
         self._push_file_if_needed(self._port._build_path('android_main_fonts.xml'), self._driver_details.device_directory() + 'android_main_fonts.xml')
         self._push_file_if_needed(self._port._build_path('android_fallback_fonts.xml'), self._driver_details.device_directory() + 'android_fallback_fonts.xml')
+
+        if self._files_match(self._port._build_path('apks', 'ContentShell.apk'),
+                             '/data/app/org.chromium.content_shell_apk-1.apk'):
+            return
 
         self._android_commands.run(['uninstall', self._driver_details.package_name()])
         driver_host_path = self._port._path_to_driver()
