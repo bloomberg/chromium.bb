@@ -69,6 +69,7 @@ class PermissionMessage {
     kBluetoothDevices,
     kDownloadsOpen,
     kNetworkingPrivate,
+    kDeclarativeWebRequest,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

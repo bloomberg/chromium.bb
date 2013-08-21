@@ -263,6 +263,14 @@ std::vector<string16> PermissionSet::GetWarningMessages(
       }
     }
 
+    // The warning message for declarativeWebRequest permissions speaks about
+    // blocking parts of pages, which is a subset of what the "<all_urls>"
+    // access allows. Therefore we display only the "<all_urls>" warning message
+    // if both permissions are required.
+    if (id == PermissionMessage::kDeclarativeWebRequest &&
+        HasEffectiveAccessToAllHosts())
+      continue;
+
     messages.push_back(i->message());
   }
 
@@ -513,6 +521,14 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
   PermissionMsgSet new_warnings = permissions->GetAPIPermissionMessages();
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, current_warnings);
+
+  // A special hack: the DWR permission is weaker than all hosts permission.
+  if (delta_warnings.size() == 1u &&
+      delta_warnings.begin()->id() ==
+          PermissionMessage::kDeclarativeWebRequest &&
+      HasEffectiveAccessToAllHosts()) {
+    return false;
+  }
 
   // We have less privileges if there are additional warnings present.
   return !delta_warnings.empty();

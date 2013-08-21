@@ -674,7 +674,6 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // These are warned as part of host permission checks.
   skip.insert(APIPermission::kDeclarativeContent);
-  skip.insert(APIPermission::kDeclarativeWebRequest);
   skip.insert(APIPermission::kPageCapture);
   skip.insert(APIPermission::kProxy);
   skip.insert(APIPermission::kTabCapture);
@@ -820,6 +819,36 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
   EXPECT_TRUE(Contains(warnings, "Use your camera"));
+}
+
+TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
+  // Test that if the declarativeWebRequest permission is present
+  // in combination with all hosts permission, then only the warning
+  // for host permissions is shown, because that covers the use of
+  // declarativeWebRequest.
+
+  // Until Declarative Web Request is in stable, let's make sure it is enabled
+  // on the current channel.
+  ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_CANARY);
+
+  // First verify that declarativeWebRequest produces a message when host
+  // permissions do not cover all hosts.
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "web_request_com_host_permissions.json");
+  const PermissionSet* set = extension->GetActivePermissions().get();
+  std::vector<string16> warnings =
+      set->GetWarningMessages(extension->GetType());
+  EXPECT_TRUE(Contains(warnings, "Block parts of web pages"));
+  EXPECT_FALSE(Contains(warnings, "Access your data on all websites"));
+
+  // Now verify that declarativeWebRequest does not produce a message when host
+  // permissions do cover all hosts.
+  extension =
+      LoadManifest("permissions", "web_request_all_host_permissions.json");
+  set = extension->GetActivePermissions().get();
+  warnings = set->GetWarningMessages(extension->GetType());
+  EXPECT_FALSE(Contains(warnings, "Block parts of web pages"));
+  EXPECT_TRUE(Contains(warnings, "Access your data on all websites"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Serial) {
@@ -1333,4 +1362,18 @@ TEST(PermissionsTest, ChromeURLs) {
   permissions->GetPermissionMessages(Manifest::TYPE_EXTENSION);
 }
 
+TEST(PermissionsTest, HasLessPrivilegesThan_DeclarativeWebRequest) {
+  scoped_refptr<Extension> extension(
+      LoadManifest("permissions", "permissions_all_urls.json"));
+  scoped_refptr<const PermissionSet> permissions(
+      extension->GetActivePermissions());
+
+  scoped_refptr<Extension> extension_dwr(
+      LoadManifest("permissions", "web_request_all_host_permissions.json"));
+  scoped_refptr<const PermissionSet> permissions_dwr(
+      extension_dwr->GetActivePermissions());
+
+  EXPECT_FALSE(permissions->HasLessPrivilegesThan(permissions_dwr.get(),
+                                                  extension->GetType()));
+}
 }  // namespace extensions
