@@ -17,10 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "components/nacl/common/nacl_helper_linux.h"
@@ -64,41 +62,6 @@ bool NonZeroSegmentBaseIsSlow() {
   return false;
 }
 #endif
-
-// Send an IPC request on |ipc_channel|. The request is contained in
-// |request_pickle| and can have file descriptors attached in |attached_fds|.
-// |reply_data_buffer| must be allocated by the caller and will contain the
-// reply. The size of the reply will be written to |reply_size|.
-// This code assumes that only one thread can write to |ipc_channel| to make
-// requests.
-bool SendIPCRequestAndReadReply(int ipc_channel,
-                                const std::vector<int>& attached_fds,
-                                const Pickle& request_pickle,
-                                char* reply_data_buffer,
-                                size_t reply_data_buffer_size,
-                                ssize_t* reply_size) {
-  DCHECK_LE(static_cast<size_t>(kNaClMaxIPCMessageLength),
-            reply_data_buffer_size);
-  DCHECK(reply_size);
-
-  if (!UnixDomainSocket::SendMsg(ipc_channel, request_pickle.data(),
-                                 request_pickle.size(), attached_fds)) {
-    LOG(ERROR) << "SendIPCRequestAndReadReply: SendMsg failed";
-    return false;
-  }
-
-  // Then read the remote reply.
-  std::vector<int> received_fds;
-  const ssize_t msg_len =
-      UnixDomainSocket::RecvMsg(ipc_channel, reply_data_buffer,
-                                reply_data_buffer_size, &received_fds);
-  if (msg_len <= 0) {
-    LOG(ERROR) << "SendIPCRequestAndReadReply: RecvMsg failed";
-    return false;
-  }
-  *reply_size = msg_len;
-  return true;
-}
 
 }  // namespace.
 
@@ -256,34 +219,22 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
 }
 
 pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
+  base::ProcessId naclchild;
   VLOG(1) << "NaClForkDelegate::Fork";
 
   DCHECK(fds.size() == kNaClParentFDIndex + 1);
-
-  // First, send a remote fork request.
-  Pickle write_pickle;
-  write_pickle.WriteInt(kNaClForkRequest);
-
-  char reply_buf[kNaClMaxIPCMessageLength];
-  ssize_t reply_size = 0;
-  bool got_reply =
-      SendIPCRequestAndReadReply(fd_, fds, write_pickle,
-                                 reply_buf, sizeof(reply_buf), &reply_size);
-  if (!got_reply) {
-    LOG(ERROR) << "Could not perform remote fork.";
+  if (!UnixDomainSocket::SendMsg(fd_, kNaClForkRequest,
+                                 strlen(kNaClForkRequest), fds)) {
+    LOG(ERROR) << "NaClForkDelegate::Fork: SendMsg failed";
     return -1;
   }
-
-  // Now see if the other end managed to fork.
-  Pickle reply_pickle(reply_buf, reply_size);
-  PickleIterator iter(reply_pickle);
-  pid_t nacl_child;
-  if (!iter.ReadInt(&nacl_child)) {
-    LOG(ERROR) << "NaClForkDelegate::Fork: pickle failed";
+  int nread = HANDLE_EINTR(read(fd_, &naclchild, sizeof(naclchild)));
+  if (nread != sizeof(naclchild)) {
+    LOG(ERROR) << "NaClForkDelegate::Fork: read failed";
     return -1;
   }
-  VLOG(1) << "nacl_child is " << nacl_child;
-  return nacl_child;
+  VLOG(1) << "nacl_child is " << naclchild << " (" << nread << " bytes)";
+  return naclchild;
 }
 
 bool NaClForkDelegate::AckChild(const int fd,
@@ -293,49 +244,5 @@ bool NaClForkDelegate::AckChild(const int fd,
   if (nwritten != static_cast<int>(channel_switch.length())) {
     return false;
   }
-  return true;
-}
-
-bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
-                                            base::TerminationStatus* status,
-                                            int* exit_code) {
-  VLOG(1) << "NaClForkDelegate::GetTerminationStatus";
-  DCHECK(status);
-  DCHECK(exit_code);
-
-  Pickle write_pickle;
-  write_pickle.WriteInt(kNaClGetTerminationStatusRequest);
-  write_pickle.WriteInt(pid);
-  write_pickle.WriteBool(known_dead);
-
-  const std::vector<int> empty_fds;
-  char reply_buf[kNaClMaxIPCMessageLength];
-  ssize_t reply_size = 0;
-  bool got_reply =
-      SendIPCRequestAndReadReply(fd_, empty_fds, write_pickle,
-                                 reply_buf, sizeof(reply_buf), &reply_size);
-  if (!got_reply) {
-    LOG(ERROR) << "Could not perform remote GetTerminationStatus.";
-    return false;
-  }
-
-  Pickle reply_pickle(reply_buf, reply_size);
-  PickleIterator iter(reply_pickle);
-  int termination_status;
-  if (!iter.ReadInt(&termination_status) ||
-      termination_status < 0 ||
-      termination_status >= base::TERMINATION_STATUS_MAX_ENUM) {
-    LOG(ERROR) << "GetTerminationStatus: pickle failed";
-    return false;
-  }
-
-  int remote_exit_code;
-  if (!iter.ReadInt(&remote_exit_code)) {
-    LOG(ERROR) << "GetTerminationStatus: pickle failed";
-    return false;
-  }
-
-  *status = static_cast<base::TerminationStatus>(termination_status);
-  *exit_code = remote_exit_code;
   return true;
 }

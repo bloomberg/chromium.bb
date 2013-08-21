@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <link.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -21,12 +20,12 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
-#include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_sandbox_linux.h"
@@ -37,16 +36,12 @@
 
 namespace {
 
-struct NaClLoaderSystemInfo {
-  size_t prereserved_sandbox_size;
-  int number_of_cores;
-};
-
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
 void BecomeNaClLoader(const std::vector<int>& child_fds,
-                      const NaClLoaderSystemInfo& system_info) {
+                      size_t prereserved_sandbox_size,
+                      int number_of_cores) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
   if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
@@ -61,75 +56,61 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 
   base::MessageLoopForIO main_message_loop;
   NaClListener listener;
-  listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
-  listener.set_number_of_cores(system_info.number_of_cores);
+  listener.set_prereserved_sandbox_size(prereserved_sandbox_size);
+  listener.set_number_of_cores(number_of_cores);
   listener.Listen();
   _exit(0);
 }
 
-// Start the NaCl loader in a child created by the NaCl loader Zygote.
-void ChildNaClLoaderInit(const std::vector<int>& child_fds,
-                         const NaClLoaderSystemInfo& system_info) {
-  bool validack = false;
-  const size_t kMaxReadSize = 1024;
-  char buffer[kMaxReadSize];
-  // Wait until the parent process has discovered our PID.  We
-  // should not fork any child processes (which the seccomp
-  // sandbox does) until then, because that can interfere with the
-  // parent's discovery of our PID.
-  const int nread = HANDLE_EINTR(read(child_fds[kNaClParentFDIndex], buffer,
-                                      kMaxReadSize));
-  const std::string switch_prefix = std::string("--") +
-      switches::kProcessChannelID + std::string("=");
-  const size_t len = switch_prefix.length();
-
-  if (nread < 0) {
-    perror("read");
-    LOG(ERROR) << "read returned " << nread;
-  } else if (nread > static_cast<int>(len)) {
-    if (switch_prefix.compare(0, len, buffer, 0, len) == 0) {
-      VLOG(1) << "NaCl loader is synchronised with Chrome zygote";
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kProcessChannelID,
-          std::string(&buffer[len], nread - len));
-      validack = true;
-    }
-  }
-  if (HANDLE_EINTR(close(child_fds[kNaClDummyFDIndex])) != 0)
-    LOG(ERROR) << "close(child_fds[kNaClDummyFDIndex]) failed";
-  if (HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])) != 0)
-    LOG(ERROR) << "close(child_fds[kNaClParentFDIndex]) failed";
-  if (validack) {
-    BecomeNaClLoader(child_fds, system_info);
-  } else {
-    LOG(ERROR) << "Failed to synch with zygote";
-  }
-  _exit(1);
-}
-
-// Handle a fork request from the Zygote.
 // Some of this code was lifted from
 // content/browser/zygote_main_linux.cc:ForkWithRealPid()
-bool HandleForkRequest(const std::vector<int>& child_fds,
-                       const NaClLoaderSystemInfo& system_info,
-                       Pickle* output_pickle) {
-  if (kNaClParentFDIndex + 1 != child_fds.size()) {
-    LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
-        << child_fds.size();
-    return false;
-  }
-
+void HandleForkRequest(const std::vector<int>& child_fds,
+                       size_t prereserved_sandbox_size,
+                       int number_of_cores) {
   VLOG(1) << "nacl_helper: forking";
-  pid_t child_pid = fork();
-  if (child_pid < 0) {
-    PLOG(ERROR) << "*** fork() failed.";
-  }
+  pid_t childpid = fork();
+  if (childpid < 0) {
+    perror("fork");
+    LOG(ERROR) << "*** HandleForkRequest failed\n";
+    // fall through to parent case below
+  } else if (childpid == 0) {  // In the child process.
+    bool validack = false;
+    const size_t kMaxReadSize = 1024;
+    char buffer[kMaxReadSize];
+    // Wait until the parent process has discovered our PID.  We
+    // should not fork any child processes (which the seccomp
+    // sandbox does) until then, because that can interfere with the
+    // parent's discovery of our PID.
+    const int nread = HANDLE_EINTR(read(child_fds[kNaClParentFDIndex], buffer,
+                                        kMaxReadSize));
+    const std::string switch_prefix = std::string("--") +
+        switches::kProcessChannelID + std::string("=");
+    const size_t len = switch_prefix.length();
 
-  if (child_pid == 0) {
-    ChildNaClLoaderInit(child_fds, system_info);
-    NOTREACHED();
+    if (nread < 0) {
+      perror("read");
+      LOG(ERROR) << "read returned " << nread;
+    } else if (nread > static_cast<int>(len)) {
+      if (switch_prefix.compare(0, len, buffer, 0, len) == 0) {
+        VLOG(1) << "NaCl loader is synchronised with Chrome zygote";
+        CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+            switches::kProcessChannelID,
+            std::string(&buffer[len], nread - len));
+        validack = true;
+      }
+    }
+    if (HANDLE_EINTR(close(child_fds[kNaClDummyFDIndex])) != 0)
+      LOG(ERROR) << "close(child_fds[kNaClDummyFDIndex]) failed";
+    if (HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])) != 0)
+      LOG(ERROR) << "close(child_fds[kNaClParentFDIndex]) failed";
+    if (validack) {
+      BecomeNaClLoader(child_fds, prereserved_sandbox_size, number_of_cores);
+    } else {
+      LOG(ERROR) << "Failed to synch with zygote";
+    }
+    // NOTREACHED
+    return;
   }
-
   // I am the parent.
   // First, close the dummy_fd so the sandbox won't find me when
   // looking for the child's pid in /proc. Also close other fds.
@@ -137,47 +118,13 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
     if (HANDLE_EINTR(close(child_fds[i])) != 0)
       LOG(ERROR) << "close(child_fds[i]) failed";
   }
-  VLOG(1) << "nacl_helper: child_pid is " << child_pid;
-
-  // Now send child_pid (eventually -1 if fork failed) to the Chrome Zygote.
-  output_pickle->WriteInt(child_pid);
-  return true;
-}
-
-bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
-                                       Pickle* output_pickle) {
-  pid_t child_to_wait;
-  if (!input_iter->ReadInt(&child_to_wait)) {
-    LOG(ERROR) << "Could not read pid to wait for";
-    return false;
+  VLOG(1) << "nacl_helper: childpid is " << childpid;
+  // Now tell childpid to the Chrome zygote.
+  if (HANDLE_EINTR(send(kNaClZygoteDescriptor,
+                        &childpid, sizeof(childpid), MSG_EOR))
+      != sizeof(childpid)) {
+    LOG(ERROR) << "*** send() to zygote failed";
   }
-
-  bool known_dead;
-  if (!input_iter->ReadBool(&known_dead)) {
-    LOG(ERROR) << "Could not read known_dead status";
-    return false;
-  }
-  // TODO(jln): With NaCl, known_dead seems to never be set to true (unless
-  // called from the Zygote's kZygoteCommandReap command). This means that we
-  // will sometimes detect the process as still running when it's not. Fix
-  // this!
-
-  int exit_code;
-  base::TerminationStatus status;
-  // See the comment in the Zygote about known_dead.
-  if (known_dead) {
-    // Make sure to not perform a blocking wait on something that
-    // could still be alive.
-    if (kill(child_to_wait, SIGKILL)) {
-      PLOG(ERROR) << "kill (" << child_to_wait << ")";
-    }
-    status = base::WaitForTerminationStatus(child_to_wait, &exit_code);
-  } else {
-    status = base::GetTerminationStatus(child_to_wait, &exit_code);
-  }
-  output_pickle->WriteInt(static_cast<int>(status));
-  output_pickle->WriteInt(exit_code);
-  return true;
 }
 
 // This is a poor man's check on whether we are sandboxed.
@@ -190,76 +137,7 @@ bool IsSandboxed() {
   return true;
 }
 
-// Honor a command |command_type|. Eventual command parameters are
-// available in |input_iter| and eventual file descriptors attached to
-// the command are in |attached_fds|.
-// Reply to the command on |reply_fds|.
-bool HonorRequestAndReply(int reply_fd,
-                          int command_type,
-                          const std::vector<int>& attached_fds,
-                          const NaClLoaderSystemInfo& system_info,
-                          PickleIterator* input_iter) {
-  Pickle write_pickle;
-  bool have_to_reply = false;
-  // Commands must write anything to send back to |write_pickle|.
-  switch (command_type) {
-    case kNaClForkRequest:
-      have_to_reply = HandleForkRequest(attached_fds, system_info,
-                                        &write_pickle);
-      break;
-    case kNaClGetTerminationStatusRequest:
-      have_to_reply =
-          HandleGetTerminationStatusRequest(input_iter, &write_pickle);
-      break;
-    default:
-      LOG(ERROR) << "Unsupported command from Zygote";
-      return false;
-  }
-  if (!have_to_reply)
-    return false;
-  const std::vector<int> empty;  // We never send file descriptors back.
-  if (!UnixDomainSocket::SendMsg(reply_fd, write_pickle.data(),
-                                 write_pickle.size(), empty)) {
-    LOG(ERROR) << "*** send() to zygote failed";
-    return false;
-  }
-  return true;
-}
-
-// Read a request from the Zygote from |zygote_ipc_fd| and handle it.
-// Die on EOF from |zygote_ipc_fd|.
-bool HandleZygoteRequest(int zygote_ipc_fd,
-                         const NaClLoaderSystemInfo& system_info) {
-  std::vector<int> fds;
-  char buf[kNaClMaxIPCMessageLength];
-  const ssize_t msglen = UnixDomainSocket::RecvMsg(zygote_ipc_fd,
-      &buf, sizeof(buf), &fds);
-  // If the Zygote has started handling requests, we should be sandboxed via
-  // the setuid sandbox.
-  if (!IsSandboxed()) {
-    LOG(ERROR) << "NaCl helper process running without a sandbox!\n"
-      << "Most likely you need to configure your SUID sandbox "
-      << "correctly";
-  }
-  if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
-    // EOF from the browser. Goodbye!
-    _exit(0);
-  }
-  if (msglen < 0) {
-    PLOG(ERROR) << "nacl_helper: receive from zygote failed";
-    return false;
-  }
-
-  Pickle read_pickle(buf, msglen);
-  PickleIterator read_iter(read_pickle);
-  int command_type;
-  if (!read_iter.ReadInt(&command_type)) {
-    LOG(ERROR) << "Unable to read command from Zygote";
-    return false;
-  }
-  return HonorRequestAndReply(zygote_ipc_fd, command_type, fds, system_info,
-                              &read_iter);
-}
+}  // namespace
 
 static const char kNaClHelperReservedAtZero[] = "reserved_at_zero";
 static const char kNaClHelperRDebug[] = "r_debug";
@@ -328,8 +206,6 @@ static size_t CheckReservedAtZero() {
   return prereserved_sandbox_size;
 }
 
-}  // namespace
-
 #if defined(ADDRESS_SANITIZER)
 // Do not install the SIGSEGV handler in ASan. This should make the NaCl
 // platform qualification test pass.
@@ -364,17 +240,15 @@ int main(int argc, char* argv[]) {
   // NSS is needed to perform hashing for validation caching.
   crypto::LoadNSSLibraries();
 #endif
-  const NaClLoaderSystemInfo system_info = {
-    CheckReservedAtZero(),
-    sysconf(_SC_NPROCESSORS_ONLN)
-  };
+  std::vector<int> empty; // for SendMsg() calls
+  size_t prereserved_sandbox_size = CheckReservedAtZero();
+  int number_of_cores = sysconf(_SC_NPROCESSORS_ONLN);
 
   CheckRDebug(argv[0]);
 
   // Check that IsSandboxed() works. We should not be sandboxed at this point.
   CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
 
-  const std::vector<int> empty;
   // Send the zygote a message to let it know we are ready to help
   if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
                                  kNaClHelperStartupAck,
@@ -382,13 +256,45 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "*** send() to zygote failed";
   }
 
-  // Now handle requests from the Zygote.
   while (true) {
-    bool request_handled = HandleZygoteRequest(kNaClZygoteDescriptor,
-                                               system_info);
-    // Do not turn this into a CHECK() without thinking about robustness
-    // against malicious IPC requests.
-    DCHECK(request_handled);
+    int badpid = -1;
+    std::vector<int> fds;
+    static const unsigned kMaxMessageLength = 2048;
+    char buf[kMaxMessageLength];
+    const ssize_t msglen = UnixDomainSocket::RecvMsg(kNaClZygoteDescriptor,
+                                                     &buf, sizeof(buf), &fds);
+    // If the Zygote has started handling requests, we should be sandboxed via
+    // the setuid sandbox.
+    if (!IsSandboxed()) {
+      LOG(ERROR) << "NaCl helper process running without a sandbox!\n"
+                 << "Most likely you need to configure your SUID sandbox "
+                 << "correctly";
+    }
+    if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
+      // EOF from the browser. Goodbye!
+      _exit(0);
+    } else if (msglen < 0) {
+      LOG(ERROR) << "nacl_helper: receive from zygote failed, errno = "
+                 << errno;
+    } else if (msglen == sizeof(kNaClForkRequest) - 1 &&
+               memcmp(buf, kNaClForkRequest, msglen) == 0) {
+      if (kNaClParentFDIndex + 1 == fds.size()) {
+        HandleForkRequest(fds, prereserved_sandbox_size, number_of_cores);
+        continue;  // fork succeeded. Note: child does not return
+      } else {
+        LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
+                   << fds.size();
+      }
+    } else {
+      LOG(ERROR) << "nacl_helper unrecognized request: "
+                 << base::GetDoubleQuotedJson(std::string(buf, buf + msglen));
+      _exit(-1);
+    }
+    // if fork fails, send PID=-1 to zygote
+    if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor, &badpid,
+                                   sizeof(badpid), empty)) {
+      LOG(ERROR) << "*** send() to zygote failed";
+    }
   }
-  NOTREACHED();
+  CHECK(false);  // This routine must not return
 }
