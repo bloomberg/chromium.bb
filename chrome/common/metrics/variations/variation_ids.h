@@ -173,6 +173,8 @@ enum ReservedVariationID {
   EXTENDED_INSTANT_RANGE_ID_MAX           = 3310365,
   EXTENDED_INSTANT_RANGE2_ID_MIN          = 3310368,
   EXTENDED_INSTANT_RANGE2_ID_MAX          = 3310868,
+  EXTENDED_INSTANT_RANGE3_ID_MIN          = 3310871,
+  EXTENDED_INSTANT_RANGE3_ID_MAX          = 3311870,
 
   // Reserve 100 IDs to be used by autocomplete dynamic field trials.
   // The dynamic field trials are activated by a call to
@@ -231,7 +233,7 @@ enum ReservedVariationID {
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310871,
+  NEXT_ID = 3311871,
 
   // USABLE IDs END HERE.
   //
