@@ -66,7 +66,7 @@ void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsig
 void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
     if (Page* page = m_frame->page())
-        page->progress()->incrementProgress(identifier, r);
+        page->progress().incrementProgress(identifier, r);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_frame, identifier, r);
     m_frame->loader()->client()->dispatchDidReceiveResponse(loader, identifier, r);
     InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, ensureLoader(loader), r, resourceLoader);
@@ -75,14 +75,14 @@ void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, un
 void ResourceLoadNotifier::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
     if (Page* page = m_frame->page())
-        page->progress()->incrementProgress(identifier, data, dataLength);
+        page->progress().incrementProgress(identifier, data, dataLength);
     InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
 }
 
 void ResourceLoadNotifier::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime)
 {
     if (Page* page = m_frame->page())
-        page->progress()->completeProgress(identifier);
+        page->progress().completeProgress(identifier);
     m_frame->loader()->client()->dispatchDidFinishLoading(loader, identifier);
 
     InspectorInstrumentation::didFinishLoading(m_frame, identifier, ensureLoader(loader), finishTime);
@@ -91,7 +91,7 @@ void ResourceLoadNotifier::dispatchDidFinishLoading(DocumentLoader* loader, unsi
 void ResourceLoadNotifier::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
 {
     if (Page* page = m_frame->page())
-        page->progress()->completeProgress(identifier);
+        page->progress().completeProgress(identifier);
     InspectorInstrumentation::didFailLoading(m_frame, identifier, ensureLoader(loader), error);
 }
 

@@ -502,7 +502,7 @@ void FrameLoaderClientImpl::postProgressEstimateChangedNotification()
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->client()) {
         webview->client()->didChangeLoadProgress(
-            m_webFrame, m_webFrame->frame()->page()->progress()->estimatedProgress());
+            m_webFrame, m_webFrame->frame()->page()->progress().estimatedProgress());
     }
 }
 

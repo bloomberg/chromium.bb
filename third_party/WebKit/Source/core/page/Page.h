@@ -170,7 +170,7 @@ public:
     PassRefPtr<ClientRectList> nonFastScrollableRects(const Frame*);
 
     Settings& settings() const { return *m_settings; }
-    ProgressTracker* progress() const { return m_progress.get(); }
+    ProgressTracker& progress() const { return *m_progress; }
     BackForwardController& backForward() const { return *m_backForwardController; }
 
     UseCounter* useCounter() { return &m_UseCounter; }
