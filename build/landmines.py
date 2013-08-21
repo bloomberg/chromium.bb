@@ -4,9 +4,6 @@
 # found in the LICENSE file.
 
 """
-This file holds a list of reasons why a particular build needs to be clobbered
-(or a list of 'landmines').
-
 This script runs every build as a hook. If it detects that the build should
 be clobbered, it will touch the file <build_dir>/.landmine_triggered. The
 various build scripts will then check for the presence of this file and clobber
@@ -18,148 +15,18 @@ build is clobbered.
 """
 
 import difflib
-import functools
 import gyp_helper
 import logging
 import optparse
 import os
-import shlex
 import sys
+import subprocess
 import time
 
+import landmine_utils
+
+
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
-def memoize(default=None):
-  """This decorator caches the return value of a parameterless pure function"""
-  def memoizer(func):
-    val = []
-    @functools.wraps(func)
-    def inner():
-      if not val:
-        ret = func()
-        val.append(ret if ret is not None else default)
-        if logging.getLogger().isEnabledFor(logging.INFO):
-          print '%s -> %r' % (func.__name__, val[0])
-      return val[0]
-    return inner
-  return memoizer
-
-
-@memoize()
-def IsWindows():
-  return sys.platform in ['win32', 'cygwin']
-
-
-@memoize()
-def IsLinux():
-  return sys.platform.startswith('linux')
-
-
-@memoize()
-def IsMac():
-  return sys.platform == 'darwin'
-
-
-@memoize()
-def gyp_defines():
-  """Parses and returns GYP_DEFINES env var as a dictionary."""
-  return dict(arg.split('=', 1)
-      for arg in shlex.split(os.environ.get('GYP_DEFINES', '')))
-
-@memoize()
-def gyp_msvs_version():
-  return os.environ.get('GYP_MSVS_VERSION', '')
-
-@memoize()
-def distributor():
-  """
-  Returns a string which is the distributed build engine in use (if any).
-  Possible values: 'goma', 'ib', ''
-  """
-  if 'goma' in gyp_defines():
-    return 'goma'
-  elif IsWindows():
-    if 'CHROME_HEADLESS' in os.environ:
-      return 'ib' # use (win and !goma and headless) as approximation of ib
-
-
-@memoize()
-def platform():
-  """
-  Returns a string representing the platform this build is targetted for.
-  Possible values: 'win', 'mac', 'linux', 'ios', 'android'
-  """
-  if 'OS' in gyp_defines():
-    if 'android' in gyp_defines()['OS']:
-      return 'android'
-    else:
-      return gyp_defines()['OS']
-  elif IsWindows():
-    return 'win'
-  elif IsLinux():
-    return 'linux'
-  else:
-    return 'mac'
-
-
-@memoize()
-def builder():
-  """
-  Returns a string representing the build engine (not compiler) to use.
-  Possible values: 'make', 'ninja', 'xcode', 'msvs', 'scons'
-  """
-  if 'GYP_GENERATORS' in os.environ:
-    # for simplicity, only support the first explicit generator
-    generator = os.environ['GYP_GENERATORS'].split(',')[0]
-    if generator.endswith('-android'):
-      return generator.split('-')[0]
-    elif generator.endswith('-ninja'):
-      return 'ninja'
-    else:
-      return generator
-  else:
-    if platform() == 'android':
-      # Good enough for now? Do any android bots use make?
-      return 'ninja'
-    elif platform() == 'ios':
-      return 'xcode'
-    elif IsWindows():
-      return 'msvs'
-    elif IsLinux():
-      return 'ninja'
-    elif IsMac():
-      return 'xcode'
-    else:
-      assert False, 'Don\'t know what builder we\'re using!'
-
-
-def get_landmines(target):
-  """
-  ALL LANDMINES ARE DEFINED HERE.
-  target is 'Release' or 'Debug'
-  """
-  landmines = []
-  add = lambda item: landmines.append(item + '\n')
-
-  if (distributor() == 'goma' and platform() == 'win32' and
-      builder() == 'ninja'):
-    add('Need to clobber winja goma due to backend cwd cache fix.')
-  if platform() == 'android':
-    add('Clobber: Resources removed in r195014 require clobber.')
-  if platform() == 'win' and builder() == 'ninja':
-    add('Compile on cc_unittests fails due to symbols removed in r185063.')
-  if platform() == 'linux' and builder() == 'ninja':
-    add('Builders switching from make to ninja will clobber on this.')
-  if platform() == 'mac':
-    add('Switching from bundle to unbundled dylib (issue 14743002).')
-  if (platform() == 'win' and builder() == 'ninja' and
-      gyp_msvs_version() == '2012' and
-      gyp_defines().get('target_arch') == 'x64' and
-      gyp_defines().get('dcheck_always_on') == '1'):
-    add("Switched win x64 trybots from VS2010 to VS2012.")
-  add('Need to clobber everything due to an IDL change in r154579 (blink)')
-
-  return landmines
 
 
 def get_target_build_dir(build_tool, target, is_iphone=False):
@@ -187,15 +54,14 @@ def get_target_build_dir(build_tool, target, is_iphone=False):
   return os.path.abspath(ret)
 
 
-def set_up_landmines(target):
+def set_up_landmines(target, new_landmines):
   """Does the work of setting, planting, and triggering landmines."""
-  out_dir = get_target_build_dir(builder(), target, platform() == 'ios')
+  out_dir = get_target_build_dir(landmine_utils.builder(), target,
+                                 landmine_utils.platform() == 'ios')
 
   landmines_path = os.path.join(out_dir, '.landmines')
   if not os.path.exists(out_dir):
     os.makedirs(out_dir)
-
-  new_landmines = get_landmines(target)
 
   if not os.path.exists(landmines_path):
     with open(landmines_path, 'w') as f:
@@ -219,11 +85,17 @@ def set_up_landmines(target):
 
 def main():
   parser = optparse.OptionParser()
+  parser.add_option(
+      '-s', '--landmine-scripts', action='append',
+      default=[os.path.join(SRC_DIR, 'build', 'get_landmines.py')],
+      help='Path to the script which emits landmines to stdout. The target '
+           'is passed to this script via option -t.')
   parser.add_option('-v', '--verbose', action='store_true',
       default=('LANDMINES_VERBOSE' in os.environ),
       help=('Emit some extra debugging information (default off). This option '
           'is also enabled by the presence of a LANDMINES_VERBOSE environment '
           'variable.'))
+
   options, args = parser.parse_args()
 
   if args:
@@ -235,7 +107,14 @@ def main():
   gyp_helper.apply_chromium_gyp_env()
 
   for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
-    set_up_landmines(target)
+    landmines = []
+    for s in options.landmine_scripts:
+      print 'Getting landmines from `%s -t %s`' % (s, target)
+      proc = subprocess.Popen([sys.executable, s, '-t', target],
+                              stdout=subprocess.PIPE)
+      output, _ = proc.communicate()
+      landmines.extend([('%s\n' % l.strip()) for l in output.splitlines()])
+    set_up_landmines(target, landmines)
 
   return 0
 
