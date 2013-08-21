@@ -331,7 +331,7 @@ void Page::scheduleForcedStyleRecalcForAllPages()
 void Page::setNeedsRecalcStyleInAllFrames()
 {
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->document()->styleResolverChanged(DeferRecalcStyle);
+        frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 void Page::refreshPlugins(bool reload)

@@ -170,9 +170,7 @@ enum PageshowEventPersistence {
     PageshowEventPersisted = 1
 };
 
-// FIXME: We should rename DeferRecalcStyle to RecalcStyleDeferred to be consitent.
-
-enum StyleResolverUpdateType { RecalcStyleImmediately, DeferRecalcStyle };
+enum StyleResolverUpdateType { RecalcStyleImmediately, RecalcStyleDeferred };
 
 enum StyleResolverUpdateMode {
     // Discards the StyleResolver and rebuilds it.
@@ -451,9 +449,9 @@ public:
 
     // FIXME: Switch all callers of styleResolverChanged to these or better ones and then make them
     // do something smarter.
-    void removedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
-    void addedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
-    void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
+    void removedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
+    void addedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
+    void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
 
     void didAccessStyleResolver();
 

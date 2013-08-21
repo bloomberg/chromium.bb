@@ -316,7 +316,7 @@ void SVGFontFaceElement::rebuildFontFace()
         }
     }
 
-    document()->styleResolverChanged(DeferRecalcStyle);
+    document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 Node::InsertionNotificationRequest SVGFontFaceElement::insertedInto(ContainerNode* rootParent)
@@ -341,7 +341,7 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
         document()->accessSVGExtensions()->unregisterSVGFontFaceElement(this);
         m_fontFaceRule->mutableProperties()->clear();
 
-        document()->styleResolverChanged(DeferRecalcStyle);
+        document()->styleResolverChanged(RecalcStyleDeferred);
     } else
         ASSERT(!m_fontElement);
 }

@@ -256,7 +256,7 @@ void DocumentStyleSheetCollection::invalidateInjectedStyleSheetCache()
     m_needsDocumentStyleSheetsUpdate = true;
     // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
     // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
-    m_document->styleResolverChanged(DeferRecalcStyle);
+    m_document->styleResolverChanged(RecalcStyleDeferred);
 }
 
 void DocumentStyleSheetCollection::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)

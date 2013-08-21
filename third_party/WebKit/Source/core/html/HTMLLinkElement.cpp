@@ -559,7 +559,7 @@ void LinkStyle::setDisabledState(bool disabled)
                 process();
         } else {
             // FIXME: We don't have enough knowledge here to know if we should call addedStyleSheet() or removedStyleSheet().
-            m_owner->document()->styleResolverChanged(DeferRecalcStyle);
+            m_owner->document()->styleResolverChanged(RecalcStyleDeferred);
         }
     }
 }

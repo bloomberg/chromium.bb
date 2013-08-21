@@ -92,7 +92,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == seamlessAttr) {
         // If we're adding or removing the seamless attribute, we need to force the content document to recalculate its StyleResolver.
         if (contentDocument())
-            contentDocument()->styleResolverChanged(DeferRecalcStyle);
+            contentDocument()->styleResolverChanged(RecalcStyleDeferred);
     } else
         HTMLFrameElementBase::parseAttribute(name, value);
 }

@@ -853,7 +853,7 @@ void FrameView::performPreLayoutTasks()
     // Viewport-dependent media queries may cause us to need completely different style information.
     Document* document = m_frame->document();
     if (!document->styleResolverIfExists() || document->styleResolverIfExists()->affectedByViewportChange()) {
-        document->styleResolverChanged(DeferRecalcStyle);
+        document->styleResolverChanged(RecalcStyleDeferred);
         // FIXME: This instrumentation event is not strictly accurate since cached media query results
         //        do not persist across StyleResolver rebuilds.
         InspectorInstrumentation::mediaQueryResultChanged(document);
@@ -2408,7 +2408,7 @@ void FrameView::setPagination(const Pagination& pagination)
     m_pagination = pagination;
 
     if (m_frame)
-        m_frame->document()->styleResolverChanged(DeferRecalcStyle);
+        m_frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 IntRect FrameView::windowClipRect(bool clipToContents) const

@@ -2122,7 +2122,7 @@ PassRefPtr<DocumentParser> Document::implicitOpen()
     // collection update in order to ensure they inherit all the relevant data
     // from their parent.
     if (shouldDisplaySeamlesslyWithParent())
-        styleResolverChanged(DeferRecalcStyle);
+        styleResolverChanged(RecalcStyleDeferred);
 
     m_parser = createParser();
     setParsing(true);
@@ -2776,7 +2776,7 @@ void Document::processHttpEquivDefaultStyle(const String& content)
     // -dwh
     m_styleSheetCollection->setSelectedStylesheetSetName(content);
     m_styleSheetCollection->setPreferredStylesheetSetName(content);
-    styleResolverChanged(DeferRecalcStyle);
+    styleResolverChanged(RecalcStyleDeferred);
 }
 
 void Document::processHttpEquivRefresh(const String& content)
@@ -3109,7 +3109,7 @@ String Document::selectedStylesheetSet() const
 void Document::setSelectedStylesheetSet(const String& aString)
 {
     m_styleSheetCollection->setSelectedStylesheetSetName(aString);
-    styleResolverChanged(DeferRecalcStyle);
+    styleResolverChanged(RecalcStyleDeferred);
 }
 
 void Document::evaluateMediaQueryList()
@@ -3130,7 +3130,7 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
 
     bool needsRecalc = m_styleSheetCollection->updateActiveStyleSheets(updateMode);
 
-    if (updateType >= DeferRecalcStyle) {
+    if (updateType >= RecalcStyleDeferred) {
         setNeedsStyleRecalc();
         return;
     }

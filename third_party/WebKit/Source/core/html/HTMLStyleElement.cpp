@@ -77,7 +77,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
         scopedAttributeChanged(!value.isNull());
     } else if (name == mediaAttr && inDocument() && document()->renderer() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
-        // FIXME: This shold be DeferRecalcStyle.
+        // FIXME: This shold be RecalcStyleDeferred.
         document()->modifiedStyleSheet(m_sheet.get(), RecalcStyleImmediately);
     } else {
         HTMLElement::parseAttribute(name, value);
