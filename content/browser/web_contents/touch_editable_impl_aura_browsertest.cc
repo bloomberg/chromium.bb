@@ -333,8 +333,15 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAuraTest);
 };
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_TouchSelectionOriginatingFromWebpageTest \
+    DISABLE_TouchSelectionOriginatingFromWebpageTest
+#else
+#define MAYBE_TouchSelectionOriginatingFromWebpageTest \
+    TouchSelectionOriginatingFromWebpageTest
+#endif
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       TouchSelectionOriginatingFromWebpageTest) {
+                       MAYBE_TouchSelectionOriginatingFromWebpageTest) {
   TestTouchSelectionOriginatingFromWebpage();
 }
 
