@@ -34,7 +34,7 @@
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/FileMetadata.h"
 #include "core/platform/network/BlobData.h"
-#include "modules/filesystem/AsyncFileWriter.h"
+#include "public/platform/WebFileWriter.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -63,7 +63,7 @@ public:
     virtual void didReadDirectoryEntries(bool hasMore) { ASSERT_NOT_REACHED(); }
 
     // Called when an AsyncFileWrter has been created successfully.
-    virtual void didCreateFileWriter(PassOwnPtr<AsyncFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
+    virtual void didCreateFileWriter(PassOwnPtr<WebKit::WebFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
 
     // Called when there was an error.
     virtual void didFail(int code) = 0;

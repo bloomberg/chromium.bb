@@ -36,7 +36,6 @@
 #include "core/html/VoidCallback.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/FileMetadata.h"
-#include "modules/filesystem/AsyncFileWriter.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -51,6 +50,7 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "public/platform/WebFileWriter.h"
 
 namespace WebCore {
 
@@ -250,9 +250,9 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtr<FileWriterBase> file
 {
 }
 
-void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<AsyncFileWriter> asyncFileWriter, long long length)
+void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebKit::WebFileWriter> fileWriter, long long length)
 {
-    m_fileWriter->initialize(asyncFileWriter, length);
+    m_fileWriter->initialize(fileWriter, length);
     if (m_successCallback)
         m_successCallback->handleEvent(m_fileWriter.release().get());
     m_successCallback.clear();

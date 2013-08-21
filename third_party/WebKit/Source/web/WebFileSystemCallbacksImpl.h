@@ -40,7 +40,6 @@
 
 namespace WebCore {
 class AsyncFileSystemCallbacks;
-class AsyncFileWriterChromium;
 class BlobDataHandle;
 }
 
@@ -54,7 +53,6 @@ class WebURL;
 class WebFileSystemCallbacksImpl : public WebFileSystemCallbacks {
 public:
     WebFileSystemCallbacksImpl(PassOwnPtr<WebCore::AsyncFileSystemCallbacks>);
-    WebFileSystemCallbacksImpl(PassOwnPtr<WebCore::AsyncFileSystemCallbacks>, PassOwnPtr<WebCore::AsyncFileWriterChromium>);
     virtual ~WebFileSystemCallbacksImpl();
 
     virtual void didSucceed();
@@ -73,9 +71,6 @@ public:
 
 private:
     OwnPtr<WebCore::AsyncFileSystemCallbacks> m_callbacks;
-
-    // Used for createFileWriter callbacks.
-    OwnPtr<WebCore::AsyncFileWriterChromium> m_writer;
 };
 
 } // namespace WebKit

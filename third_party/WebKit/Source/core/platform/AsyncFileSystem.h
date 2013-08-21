@@ -36,11 +36,12 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
+namespace WebKit { class WebFileWriterClient; }
+
 namespace WebCore {
 
 class AsyncFileSystem;
 class AsyncFileSystemCallbacks;
-class AsyncFileWriterClient;
 class KURL;
 
 // This class provides async interface for platform-specific file system implementation.  Note that all the methods take platform paths.
@@ -110,10 +111,10 @@ public:
     // AsyncFileSystemCallbacks::didFail() is when there is an error.
     virtual void readDirectory(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 
-    // Creates an AsyncFileWriter for a given file path.
+    // Creates an WebFileWriter for a given file path.
     // AsyncFileSystemCallbacks::didCreateFileWriter() is called when an AsyncFileWriter is created successfully.
     // AsyncFileSystemCallbacks::didFail() is called otherwise.
-    virtual void createWriter(AsyncFileWriterClient*, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
+    virtual void createWriter(WebKit::WebFileWriterClient*, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 
     // Creates a snapshot file and read its metadata for a new File object.
     // In local filesystem cases the backend may simply return the metadata of the file itself (as well as readMetadata does),

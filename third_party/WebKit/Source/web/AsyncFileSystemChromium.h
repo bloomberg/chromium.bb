@@ -61,7 +61,7 @@ public:
     virtual void fileExists(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
     virtual void directoryExists(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
     virtual void readDirectory(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
-    virtual void createWriter(AsyncFileWriterClient*, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
+    virtual void createWriter(WebKit::WebFileWriterClient*, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
     virtual void createSnapshotFileAndReadMetadata(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks>);
 
 private:

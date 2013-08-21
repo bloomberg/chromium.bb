@@ -36,7 +36,8 @@
 #include "core/dom/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
-#include "modules/filesystem/AsyncFileWriter.h"
+#include "public/platform/WebFileWriter.h"
+#include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -230,20 +231,20 @@ void FileWriter::didTruncate()
     unsetPendingActivity(this);
 }
 
-void FileWriter::didFail(FileError::ErrorCode code)
+void FileWriter::didFail(WebKit::WebFileError code)
 {
     ASSERT(m_operationInProgress != OperationNone);
-    ASSERT(code != FileError::OK);
+    ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::OK);
     if (m_operationInProgress == OperationAbort) {
         completeAbort();
         return;
     }
-    ASSERT(code != FileError::ABORT_ERR);
+    ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::ABORT_ERR);
     ASSERT(m_queuedOperation == OperationNone);
     ASSERT(m_readyState == WRITING);
     m_blobBeingWritten.clear();
     m_operationInProgress = OperationNone;
-    signalCompletion(code);
+    signalCompletion(static_cast<FileError::ErrorCode>(code));
     unsetPendingActivity(this);
 }
 
@@ -266,7 +267,7 @@ void FileWriter::doOperation(Operation operation)
         ASSERT(m_blobBeingWritten.get());
         ASSERT(m_readyState == WRITING);
         setPendingActivity(this);
-        writer()->write(position(), m_blobBeingWritten.get());
+        writer()->write(position(), WebKit::WebURL(m_blobBeingWritten->url()));
         break;
     case OperationTruncate:
         ASSERT(m_operationInProgress == OperationNone);
@@ -283,7 +284,7 @@ void FileWriter::doOperation(Operation operation)
         break;
     case OperationAbort:
         if (m_operationInProgress == OperationWrite || m_operationInProgress == OperationTruncate)
-            writer()->abort();
+            writer()->cancel();
         else if (m_operationInProgress != OperationAbort)
             operation = OperationNone;
         m_queuedOperation = OperationNone;

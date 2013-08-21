@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,30 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileWriter_h
-#define WebFileWriter_h
-
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-
-namespace WebKit {
-
-class WebURL;
-
-class WebFileWriter {
-public:
-    virtual ~WebFileWriter() { }
-
-    // Only one write or one truncate operation can be in progress at a time.
-    // These functions are asynchronous and will report results through the WebFileWriter's associated WebFileWriterClient.
-    virtual void write(long long position, const WebURL& blobURL) = 0;
-    virtual void truncate(long long length) = 0;
-
-    // Cancel will attempt to abort a running write or truncate.  However, it may not be possible to cancel an in-progress action, or the call may have come in too late.  Partial writes are possible.
-    // Do not call cancel when there is no write or truncate in progress.
-    virtual void cancel() = 0;
-};
-
-} // namespace WebKit
-
-#endif
+#include "../platform/WebFileWriter.h"

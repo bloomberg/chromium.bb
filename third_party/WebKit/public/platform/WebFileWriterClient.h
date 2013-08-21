@@ -28,47 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AsyncFileWriterChromium_h
-#define AsyncFileWriterChromium_h
+#ifndef WebFileWriterClient_h
+#define WebFileWriterClient_h
 
-#include "WebFileWriterClient.h"
-#include "modules/filesystem/AsyncFileWriter.h"
-#include "public/platform/WebFileError.h"
-#include "wtf/PassOwnPtr.h"
+#include "WebCommon.h"
+#include "WebFileError.h"
 
 namespace WebKit {
-class WebFileWriter;
-}
 
-namespace WebCore {
-
-class Blob;
-class AsyncFileWriterClient;
-
-class AsyncFileWriterChromium : public AsyncFileWriter, public WebKit::WebFileWriterClient {
+class WebFileWriterClient {
 public:
-    static PassOwnPtr<AsyncFileWriterChromium> create(AsyncFileWriterClient*);
-    virtual ~AsyncFileWriterChromium();
+    // Called for each chunk of a write, to indicate progress.
+    // On the final chunk, when the write is finished, complete will be true.
+    virtual void didWrite(long long bytes, bool complete) = 0;
 
-    void setWebFileWriter(PassOwnPtr<WebKit::WebFileWriter> writer);
+    // Called once when the truncate completes successfully.
+    virtual void didTruncate() = 0;
 
-    // FileWriter
-    virtual void write(long long position, Blob* data);
-    virtual void truncate(long long length);
-    virtual void abort();
+    // Called if the write or truncate fails, or if it is cancelled before the write or truncate completes. Completion of an operation will be signalled exactly once, either by didFail, didTruncate, or didWrite(..., true).
+    virtual void didFail(WebFileError) = 0;
 
-    // WebFileWriterClient
-    virtual void didWrite(long long bytes, bool complete);
-    virtual void didTruncate();
-    virtual void didFail(WebKit::WebFileError);
-
-private:
-    explicit AsyncFileWriterChromium(AsyncFileWriterClient*);
-
-    OwnPtr<WebKit::WebFileWriter> m_writer;
-    AsyncFileWriterClient* m_client;
+protected:
+    virtual ~WebFileWriterClient() { }
 };
 
-} // namespace
+} // namespace WebKit
 
-#endif // AsyncFileWriterChromium_h
+#endif

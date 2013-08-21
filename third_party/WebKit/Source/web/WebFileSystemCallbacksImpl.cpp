@@ -31,14 +31,13 @@
 #include "WebFileSystemCallbacksImpl.h"
 
 #include "AsyncFileSystemChromium.h"
-#include "AsyncFileWriterChromium.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemEntry.h"
+#include "public/platform/WebFileWriter.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebFileWriter.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;
@@ -47,13 +46,6 @@ namespace WebKit {
 
 WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
     : m_callbacks(callbacks)
-{
-    ASSERT(m_callbacks);
-}
-
-WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks, PassOwnPtr<AsyncFileWriterChromium> writer)
-    : m_callbacks(callbacks)
-    , m_writer(writer)
 {
     ASSERT(m_callbacks);
 }
@@ -120,8 +112,7 @@ void WebFileSystemCallbacksImpl::didCreateFileWriter(WebFileWriter* webFileWrite
     // This object is intended to delete itself on exit.
     OwnPtr<WebFileSystemCallbacksImpl> callbacks = adoptPtr(this);
 
-    m_writer->setWebFileWriter(adoptPtr(webFileWriter));
-    m_callbacks->didCreateFileWriter(m_writer.release(), length);
+    m_callbacks->didCreateFileWriter(adoptPtr(webFileWriter), length);
 }
 
 void WebFileSystemCallbacksImpl::didFail(WebFileError error)

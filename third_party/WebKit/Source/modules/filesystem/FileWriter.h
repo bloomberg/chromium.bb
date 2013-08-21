@@ -35,8 +35,9 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "modules/filesystem/AsyncFileWriterClient.h"
+#include "core/fileapi/FileError.h"
 #include "modules/filesystem/FileWriterBase.h"
+#include "public/platform/WebFileWriterClient.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -46,7 +47,7 @@ class Blob;
 class ExceptionState;
 class ScriptExecutionContext;
 
-class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTarget, public AsyncFileWriterClient {
+class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTarget, public WebKit::WebFileWriterClient {
 public:
     static PassRefPtr<FileWriter> create(ScriptExecutionContext*);
 
@@ -63,10 +64,10 @@ public:
     ReadyState readyState() const { return m_readyState; }
     FileError* error() const { return m_error.get(); }
 
-    // AsyncFileWriterClient
-    void didWrite(long long bytes, bool complete);
-    void didTruncate();
-    void didFail(FileError::ErrorCode);
+    // WebFileWriterClient
+    virtual void didWrite(long long bytes, bool complete) OVERRIDE;
+    virtual void didTruncate() OVERRIDE;
+    virtual void didFail(WebKit::WebFileError) OVERRIDE;
 
     // ActiveDOMObject
     virtual bool canSuspend() const;

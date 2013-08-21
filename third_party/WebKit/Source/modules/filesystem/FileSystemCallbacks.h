@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-class AsyncFileWriter;
 class DOMFileSystemBase;
 class DirectoryReaderBase;
 class EntriesCallback;
@@ -146,7 +145,7 @@ private:
 class FileWriterBaseCallbacks : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<FileWriterBaseCallbacks> create(PassRefPtr<FileWriterBase>, PassRefPtr<FileWriterBaseCallback>, PassRefPtr<ErrorCallback>);
-    virtual void didCreateFileWriter(PassOwnPtr<AsyncFileWriter>, long long length);
+    virtual void didCreateFileWriter(PassOwnPtr<WebKit::WebFileWriter>, long long length);
 
 private:
     FileWriterBaseCallbacks(PassRefPtr<FileWriterBase>, PassRefPtr<FileWriterBaseCallback>, PassRefPtr<ErrorCallback>);

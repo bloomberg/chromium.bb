@@ -28,22 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AsyncFileWriterClient_h
-#define AsyncFileWriterClient_h
+#ifndef WebFileWriter_h
+#define WebFileWriter_h
 
-#include "core/fileapi/FileError.h"
+#include "WebCommon.h"
+#include "WebString.h"
 
-namespace WebCore {
+namespace WebKit {
 
-class AsyncFileWriterClient {
+class WebURL;
+
+class WebFileWriter {
 public:
-    virtual ~AsyncFileWriterClient() { }
+    virtual ~WebFileWriter() { }
 
-    virtual void didWrite(long long bytes, bool complete) = 0;
-    virtual void didTruncate() = 0;
-    virtual void didFail(FileError::ErrorCode) = 0;
+    // Only one write or one truncate operation can be in progress at a time.
+    // These functions are asynchronous and will report results through the WebFileWriter's associated WebFileWriterClient.
+    virtual void write(long long position, const WebURL& blobURL) = 0;
+    virtual void truncate(long long length) = 0;
+
+    // Cancel will attempt to abort a running write or truncate. However, it may not be possible to cancel an in-progress action, or the call may have come in too late. Partial writes are possible.
+    // Do not call cancel when there is no write or truncate in progress.
+    virtual void cancel() = 0;
 };
 
-} // namespace
+} // namespace WebKit
 
-#endif // AsyncFileWriterClient_h
+#endif

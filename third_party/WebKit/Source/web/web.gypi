@@ -8,8 +8,6 @@
       'AssociatedURLLoader.h',
       'AsyncFileSystemChromium.cpp',
       'AsyncFileSystemChromium.h',
-      'AsyncFileWriterChromium.cpp',
-      'AsyncFileWriterChromium.h',
       'AutofillPopupMenuClient.cpp',
       'AutofillPopupMenuClient.h',
       'BackForwardClientImpl.cpp',

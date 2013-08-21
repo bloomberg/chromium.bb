@@ -35,7 +35,7 @@
 #include "core/dom/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
-#include "modules/filesystem/AsyncFileWriter.h"
+#include "public/platform/WebFileWriter.h"
 
 namespace WebCore {
 
@@ -43,7 +43,7 @@ FileWriterBase::~FileWriterBase()
 {
 }
 
-void FileWriterBase::initialize(PassOwnPtr<AsyncFileWriter> writer, long long length)
+void FileWriterBase::initialize(PassOwnPtr<WebKit::WebFileWriter> writer, long long length)
 {
     ASSERT(!m_writer);
     ASSERT(length >= 0);

@@ -30,15 +30,14 @@
 #include "config.h"
 #include "AsyncFileSystemChromium.h"
 
-#include "AsyncFileWriterChromium.h"
 #include "WebFileSystemCallbacksImpl.h"
-#include "WebFileWriter.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
-#include "weborigin/SecurityOrigin.h"
+#include "public/platform/WebFileWriter.h"
+#include "public/platform/WebFileWriterClient.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -107,12 +106,9 @@ void AsyncFileSystemChromium::readDirectory(const KURL& path, PassOwnPtr<AsyncFi
     webFileSystem()->readDirectory(path, new WebKit::WebFileSystemCallbacksImpl(callbacks));
 }
 
-void AsyncFileSystemChromium::createWriter(AsyncFileWriterClient* client, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void AsyncFileSystemChromium::createWriter(WebKit::WebFileWriterClient* client, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    OwnPtr<AsyncFileWriterChromium> asyncFileWriter = AsyncFileWriterChromium::create(client);
-    WebKit::WebFileWriterClient* writerClient = asyncFileWriter.get();
-
-    webFileSystem()->createFileWriter(path, writerClient, new WebKit::WebFileSystemCallbacksImpl(callbacks, asyncFileWriter.release()));
+    webFileSystem()->createFileWriter(path, client, new WebKit::WebFileSystemCallbacksImpl(callbacks));
 }
 
 void AsyncFileSystemChromium::createSnapshotFileAndReadMetadata(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)

@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
-#include "modules/filesystem/AsyncFileWriterClient.h"
 #include "modules/filesystem/FileWriterBase.h"
+#include "public/platform/WebFileWriterClient.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -42,7 +42,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync : public ScriptWrappable, public FileWriterBase, public AsyncFileWriterClient {
+class FileWriterSync : public ScriptWrappable, public FileWriterBase, public WebKit::WebFileWriterClient {
 public:
     static PassRefPtr<FileWriterSync> create()
     {
@@ -55,10 +55,10 @@ public:
     void seek(long long position, ExceptionState&);
     void truncate(long long length, ExceptionState&);
 
-    // AsyncFileWriterClient, via FileWriterBase
-    void didWrite(long long bytes, bool complete);
-    void didTruncate();
-    void didFail(FileError::ErrorCode);
+    // WebFileWriterClient, via FileWriterBase
+    virtual void didWrite(long long bytes, bool complete) OVERRIDE;
+    virtual void didTruncate() OVERRIDE;
+    virtual void didFail(WebKit::WebFileError) OVERRIDE;
 
 private:
     FileWriterSync();
