@@ -17,6 +17,7 @@ const char kCrosScheme[] = "cros";
 const char kDriveScheme[] = "drive";
 #endif
 
+const char kAboutComponentsURL[] = "about:components";
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutVersionURL[] = "about:version";
 
@@ -29,6 +30,7 @@ const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUICertificateViewerURL[] = "chrome://view-cert/";
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
 const char kChromeUICloudPrintResourcesURL[] = "chrome://cloudprintresources/";
+const char kChromeUIComponentsURL[] = "chrome://components/";
 const char kChromeUIConflictsURL[] = "chrome://conflicts/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
 const char kChromeUICrashesURL[] = "chrome://crashes/";
@@ -191,6 +193,7 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPerformanceMonitorHost[] = "performance";
 const char kChromeUIPluginsHost[] = "plugins";
+const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIProfileSigninConfirmationHost[] =
     "profile-signin-confirmation";
@@ -543,6 +546,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUIFlashHost,
   kChromeUIInspectHost,
   kChromeUIPluginsHost,
+  kChromeUIComponentsHost,
   kChromeUISettingsHost,
 #endif
 #if defined(OS_WIN)

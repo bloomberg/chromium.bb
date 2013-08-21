@@ -178,6 +178,10 @@
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
       </if>
+      <if expr="not is_android or pp_ifdef('google_tv')">
+        <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
+      </if>
       <if expr="is_android and pp_ifdef('google_tv')">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_tv.json" type="BINDATA" />
       </if>

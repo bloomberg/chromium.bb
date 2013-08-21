@@ -481,7 +481,7 @@ void PnaclComponentInstaller::RequestFirstInstall(const InstallCallback& cb) {
   set_current_version(Version(kNullVersion));
   CrxComponent pnacl_component = GetCrxComponent();
   ComponentUpdateService::Status status = cus_->CheckForUpdateSoon(
-      pnacl_component);
+      GetCrxComponentID(pnacl_component));
   if (status != ComponentUpdateService::kOk) {
     cb.Run(false);
     return;

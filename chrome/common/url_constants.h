@@ -16,6 +16,7 @@
 namespace chrome {
 
 // TODO(msw): Resolve chrome_frame dependency on these constants.
+extern const char kAboutComponentsURL[];
 extern const char kAboutPluginsURL[];
 extern const char kAboutVersionURL[];
 
@@ -27,6 +28,7 @@ extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUICertificateViewerURL[];
 extern const char kChromeUIChromeURLsURL[];
 extern const char kChromeUICloudPrintResourcesURL[];
+extern const char kChromeUIComponentsURL[];
 extern const char kChromeUIConflictsURL[];
 extern const char kChromeUIConstrainedHTMLTestURL[];
 extern const char kChromeUICrashesURL[];
@@ -183,6 +185,7 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUIOmniboxHost[];
 extern const char kChromeUIPerformanceMonitorHost[];
 extern const char kChromeUIPluginsHost[];
+extern const char kChromeUIComponentsHost[];
 extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIProfileSigninConfirmationHost[];
 extern const char kChromeUIUserManagerHost[];

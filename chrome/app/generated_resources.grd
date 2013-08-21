@@ -4875,6 +4875,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- Components -->
+      <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
+        Components
+      </message>
+      <message name="IDS_COMPONENTS_VERSION" desc="The label in front of a component version number.">
+        Version:
+      </message>
+      <message name="IDS_COMPONENTS_NONE_INSTALLED" desc="Text that lets the user know that no components are installed.">
+        No components installed.
+      </message>
+      <message name="IDS_COMPONENTS_NO_COMPONENTS" desc="Text that indicates that no components are installed">
+        No components are installed
+      </message>
+      <message name="IDS_COMPONENTS_CHECK_FOR_UPDATE" desc="The button label for triggering update check.">
+        Check for update
+      </message>
+
       <!-- Plugins -->
       <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
         Plug-ins

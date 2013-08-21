@@ -224,6 +224,17 @@ CrxComponent::CrxComponent()
 CrxComponent::~CrxComponent() {
 }
 
+std::string GetCrxComponentID(const CrxComponent& component) {
+  return HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
+                                          component.pk_hash.size()/2)));
+}
+
+CrxComponentInfo::CrxComponentInfo() {
+}
+
+CrxComponentInfo::~CrxComponentInfo() {
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // The one and only implementation of the ComponentUpdateService interface. In
 // charge of running the show. The main method is ProcessPendingItems() which
@@ -247,7 +258,9 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual Status Start() OVERRIDE;
   virtual Status Stop() OVERRIDE;
   virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
-  virtual Status CheckForUpdateSoon(const CrxComponent& component) OVERRIDE;
+  virtual Status CheckForUpdateSoon(const std::string& component_id) OVERRIDE;
+  virtual void GetComponents(
+      std::vector<CrxComponentInfo>* components) OVERRIDE;
 
   // The only purpose of this class is to forward the
   // UtilityProcessHostClient callbacks so CrxUpdateService does
@@ -563,19 +576,11 @@ bool CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
 
 // Start the process of checking for an update, for a particular component
 // that was previously registered.
+// |component_id| is a value returned from GetCrxComponentID().
 ComponentUpdateService::Status CrxUpdateService::CheckForUpdateSoon(
-    const CrxComponent& component) {
-  if (component.pk_hash.empty() ||
-      !component.version.IsValid() ||
-      !component.installer)
-    return kError;
-
-  std::string id =
-    HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
-                                     component.pk_hash.size()/2)));
-
+    const std::string& component_id) {
   CrxUpdateItem* uit;
-  uit = FindUpdateItemById(id);
+  uit = FindUpdateItemById(component_id);
   if (!uit)
     return kError;
 
@@ -616,6 +621,20 @@ ComponentUpdateService::Status CrxUpdateService::CheckForUpdateSoon(
   }
 
   return kOk;
+}
+
+void CrxUpdateService::GetComponents(
+    std::vector<CrxComponentInfo>* components) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (UpdateItems::const_iterator it = work_items_.begin();
+       it != work_items_.end(); ++it) {
+    const CrxUpdateItem* item = *it;
+    CrxComponentInfo info;
+    info.id = GetCrxComponentID(item->component);
+    info.version = item->component.version.GetString();
+    info.name = item->component.name;
+    components->push_back(info);
+  }
 }
 
 // Here is where the work gets scheduled. Given that our |work_items_| list

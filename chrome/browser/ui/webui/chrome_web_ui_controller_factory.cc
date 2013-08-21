@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
+#include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
@@ -322,6 +323,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+  // Android does not support components for now.
+  if (url.host() == chrome::kChromeUIComponentsHost)
+    return &NewWebUI<ComponentsUI>;
   // Settings are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options::OptionsUI>;
@@ -614,6 +618,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   // Android doesn't use the plugins pages.
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes(scale_factor);
+
+  // Android doesn't use the components pages.
+  if (page_url.host() == chrome::kChromeUIComponentsHost)
+    return ComponentsUI::GetFaviconResourceBytes(scale_factor);
 #endif
 
   return NULL;

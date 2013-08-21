@@ -57,7 +57,7 @@ int TestConfigurator::NextCheckDelay() {
            i = components_to_check_.begin();
        i != components_to_check_.end(); ) {
     if (i->second == times_) {
-      cus_->CheckForUpdateSoon(*i->first);
+      cus_->CheckForUpdateSoon(GetCrxComponentID(*i->first));
       i = components_to_check_.erase(i);
     } else {
       ++i;
@@ -545,7 +545,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   // Also check what happens if previous check too soon.
   test_configurator()->SetOnDemandTime(60 * 60);
   EXPECT_EQ(ComponentUpdateService::kError,
-            component_updater()->CheckForUpdateSoon(com2));
+            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
   // Okay, now reset to 0 for the other tests.
   test_configurator()->SetOnDemandTime(0);
   component_updater()->Stop();
@@ -584,7 +584,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
-            component_updater()->CheckForUpdateSoon(com2));
+            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
 
   message_loop_.Run();
 
@@ -617,7 +617,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
-            component_updater()->CheckForUpdateSoon(com2));
+            component_updater()->CheckForUpdateSoon(GetCrxComponentID(com2)));
 
   message_loop_.Run();
 
