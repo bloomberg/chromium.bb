@@ -723,10 +723,14 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
     return;
   }
 
-  SetState(kStopping);
-  pending_callbacks_.reset();
   stop_cb_ = stop_cb;
 
+  // We may already be stopping due to a runtime error.
+  if (state_ == kStopping)
+    return;
+
+  SetState(kStopping);
+  pending_callbacks_.reset();
   DoStop(base::Bind(&Pipeline::OnStopCompleted, base::Unretained(this)));
 }
 
