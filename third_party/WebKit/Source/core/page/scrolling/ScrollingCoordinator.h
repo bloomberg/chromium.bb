@@ -97,6 +97,7 @@ public:
     void setLayerIsContainerForFixedPositionLayers(GraphicsLayer*, bool);
     void updateLayerPositionConstraint(RenderLayer*);
     void touchEventTargetRectsDidChange(const Document*);
+    void willDestroyRenderLayer(RenderLayer*);
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
@@ -139,6 +140,7 @@ private:
     typedef HashMap<ScrollableArea*, OwnPtr<WebKit::WebScrollbarLayer> > ScrollbarMap;
     ScrollbarMap m_horizontalScrollbars;
     ScrollbarMap m_verticalScrollbars;
+    HashSet<const RenderLayer*> m_layersWithTouchRects;
 };
 
 } // namespace WebCore

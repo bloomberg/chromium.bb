@@ -26,29 +26,22 @@ overhangingContainer: #document (14, 294, 102, 11)
 transform3d: DIV#transform3dChild (0, 0, 288, 12)
 transform3d: #document (13, 315, 290, 14)
 
-continuation: DIV#transform3dChild (0, 0, 288, 12)
 continuation: #document (13, 338, 101, 11)
 continuation: #document (13, 349, 290, 12)
 continuation: #document (13, 361, 121, 11)
 
-inlineAbsoluteChildContainer: DIV#transform3dChild (0, 0, 288, 12)
 inlineAbsoluteChildContainer: #document (13, 375, 262, 12)
 inlineAbsoluteChildContainer: #document (320, 376, 252, 12)
 
-list: DIV#transform3dChild (0, 0, 288, 12)
 list: #document (13, 396, 290, 14)
 list: #document (341, 397, 261, 12)
 
-styleModified: DIV#transform3dChild (0, 0, 288, 12)
 styleModified: #document (13, 420, 290, 22)
 
-scrollContent: DIV#transform3dChild (0, 0, 288, 12)
 scrollContent: #document (14, 461, 273, 12)
 
-containsSvg: DIV#transform3dChild (0, 0, 288, 12)
 containsSvg: #document (13, 477, 290, 16)
 
-svgline: DIV#transform3dChild (0, 0, 288, 12)
 svgline: #document (13, 498, 100, 10)
 
 

@@ -211,6 +211,11 @@ RenderLayer::~RenderLayer()
     destroyScrollbar(HorizontalScrollbar);
     destroyScrollbar(VerticalScrollbar);
 
+    if (renderer()->frame() && renderer()->frame()->page()) {
+        if (ScrollingCoordinator* scrollingCoordinator = renderer()->frame()->page()->scrollingCoordinator())
+            scrollingCoordinator->willDestroyRenderLayer(this);
+    }
+
     if (m_reflection)
         removeReflection();
 
