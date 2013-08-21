@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
 // Test is flaky on Win Aura. http://crbug.com/276783
 #if defined(OS_WIN) && defined(USE_AURA)
 #define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
-  DISABLE_CopyFromCompositingSurface_CallbackDespiteDelete
+  DISABLED_CopyFromCompositingSurface_CallbackDespiteDelete
 #else
 #define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
   CopyFromCompositingSurface_CallbackDespiteDelete
