@@ -80,7 +80,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
   GetUserMediaAndDismiss(tab_contents);
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// Failing on ChromiumOS Debug and Win Aura, so disabling on Aura.
+// See http://crbug.com/263333.
+#if defined(USE_AURA)
 #define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
   DISABLED_TestAcceptThenDenyWhichShouldBeSticky
 #else
