@@ -261,6 +261,8 @@ void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loadWallpaper", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("updateCurrentScreen", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("loginVisible", kDoNothingCallback);
+  // Unused callbacks from user_pod_row.js
+  web_ui()->RegisterMessageCallback("focusPod", kDoNothingCallback);
 }
 
 void UserManagerScreenHandler::GetLocalizedValues(
