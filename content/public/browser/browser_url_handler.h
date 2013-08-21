@@ -44,6 +44,11 @@ class CONTENT_EXPORT BrowserURLHandler {
                                      bool* reverse_on_redirect) = 0;
 
   // Add the specified handler pair to the list of URL handlers.
+  //
+  // Note that normally, the reverse handler is only used if the modified URL is
+  // not modified, e.g., by adding a hash fragment. To support this behavior,
+  // register the forward and reverse handlers separately, each with a
+  // null_handler() for the opposite direction.
   virtual void AddHandlerPair(URLHandler handler,
                               URLHandler reverse_handler) = 0;
 
