@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "cc/layers/layer.h"
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
@@ -20,7 +21,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/web/WebViewBenchmarkSupport.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -59,9 +59,9 @@ static SkData* EncodeBitmapToData(size_t* offset, const SkBitmap& bm) {
 
 namespace {
 
-class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
+class SkPictureSerializer {
  public:
-  explicit SkPictureRecorder(const base::FilePath& dirpath)
+  explicit SkPictureSerializer(const base::FilePath& dirpath)
       : dirpath_(dirpath),
         layer_id_(0) {
     // Let skia register known effect subclasses. This basically enables
@@ -69,13 +69,19 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
     content::SkiaBenchmarkingExtension::InitSkGraphics();
   }
 
-  virtual WebCanvas* willPaint(const WebSize& size) {
-    return picture_.beginRecording(size.width, size.height);
-  }
+  // Recursively serializes the layer tree.
+  // Each layer in the tree is serialized into a separate skp file
+  // in the given directory.
+  void Serialize(const cc::Layer* layer) {
+    const cc::LayerList& children = layer->children();
+    for (size_t i = 0; i < children.size(); ++i) {
+      Serialize(children[i].get());
+    }
 
-  virtual void didPaint(WebCanvas* canvas) {
-    DCHECK(canvas == picture_.getRecordingCanvas());
-    picture_.endRecording();
+    skia::RefPtr<SkPicture> picture = layer->GetPicture();
+    if (!picture)
+      return;
+
     // Serialize picture to file.
     // TODO(alokp): Note that for this to work Chrome needs to be launched with
     // --no-sandbox command-line flag. Get rid of this limitation.
@@ -85,13 +91,12 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
     DCHECK(!filepath.empty());
     SkFILEWStream file(filepath.c_str());
     DCHECK(file.isValid());
-    picture_.serialize(&file, &EncodeBitmapToData);
+    picture->serialize(&file, &EncodeBitmapToData);
   }
 
  private:
   base::FilePath dirpath_;
   int layer_id_;
-  SkPicture picture_;
 };
 
 class RenderingStatsEnumerator : public cc::RenderingStats::Enumerator {
@@ -333,8 +338,16 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!web_view)
       return;
 
-    WebViewBenchmarkSupport* benchmark_support = web_view->benchmarkSupport();
-    if (!benchmark_support)
+    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
+    if (!render_view_impl)
+      return;
+
+    RenderWidgetCompositor* compositor = render_view_impl->compositor();
+    if (!compositor)
+      return;
+
+    const cc::Layer* root_layer = compositor->GetRootLayer();
+    if (!root_layer)
       return;
 
     base::FilePath dirpath(
@@ -348,9 +361,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return;
     }
 
-    SkPictureRecorder recorder(dirpath);
-    benchmark_support->paint(&recorder,
-                             WebViewBenchmarkSupport::PaintModeEverything);
+    SkPictureSerializer serializer(dirpath);
+    serializer.Serialize(root_layer);
   }
 
   static void OnSmoothScrollCompleted(

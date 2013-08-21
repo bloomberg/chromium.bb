@@ -372,6 +372,10 @@ void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {
   layer_tree_host_->NotifyInputThrottledUntilCommit();
 }
 
+const cc::Layer* RenderWidgetCompositor::GetRootLayer() const {
+  return layer_tree_host_->root_layer();
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();

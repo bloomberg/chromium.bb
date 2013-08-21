@@ -145,4 +145,19 @@ bool ContentLayer::SupportsLCDText() const {
   return true;
 }
 
+skia::RefPtr<SkPicture> ContentLayer::GetPicture() const {
+  if (!DrawsContent())
+    return skia::RefPtr<SkPicture>();
+
+  int width = bounds().width();
+  int height = bounds().height();
+  gfx::RectF opaque;
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
+  SkCanvas* canvas = picture->beginRecording(width, height);
+  client_->PaintContents(canvas, gfx::Rect(width, height), &opaque);
+  picture->endRecording();
+  return picture;
+}
+
 }  // namespace cc

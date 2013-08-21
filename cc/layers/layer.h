@@ -26,6 +26,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -369,6 +370,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual bool BlocksPendingCommit() const;
   // Returns true if anything in this tree blocksPendingCommit.
   bool BlocksPendingCommitRecursive() const;
+
+  virtual skia::RefPtr<SkPicture> GetPicture() const;
 
   virtual bool CanClipSelf() const;
 

@@ -6,6 +6,7 @@
 
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/rect_conversions.h"
@@ -120,6 +121,24 @@ void PictureLayer::SetIsMask(bool is_mask) {
 
 bool PictureLayer::SupportsLCDText() const {
   return true;
+}
+
+skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
+  // We could either flatten the PicturePile into a single SkPicture,
+  // or paint a fresh one depending on what we intend to do with the
+  // picture. For now we just paint a fresh one to get consistent results.
+  if (!DrawsContent())
+    return skia::RefPtr<SkPicture>();
+
+  int width = bounds().width();
+  int height = bounds().height();
+  gfx::RectF opaque;
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
+  SkCanvas* canvas = picture->beginRecording(width, height);
+  client_->PaintContents(canvas, gfx::Rect(width, height), &opaque);
+  picture->endRecording();
+  return picture;
 }
 
 }  // namespace cc

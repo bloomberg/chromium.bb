@@ -52,6 +52,8 @@ class CC_EXPORT ContentLayer : public TiledLayer {
 
   virtual bool SupportsLCDText() const OVERRIDE;
 
+  virtual skia::RefPtr<SkPicture> GetPicture() const OVERRIDE;
+
  protected:
   explicit ContentLayer(ContentLayerClient* client);
   virtual ~ContentLayer();

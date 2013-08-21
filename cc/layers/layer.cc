@@ -195,6 +195,10 @@ bool Layer::BlocksPendingCommit() const {
   return false;
 }
 
+skia::RefPtr<SkPicture> Layer::GetPicture() const {
+  return skia::RefPtr<SkPicture>();
+}
+
 bool Layer::CanClipSelf() const {
   return false;
 }

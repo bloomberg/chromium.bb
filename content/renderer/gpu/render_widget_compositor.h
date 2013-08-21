@@ -20,6 +20,7 @@ struct LatencyInfo;
 
 namespace cc {
 class InputHandler;
+class Layer;
 class LayerTreeHost;
 }
 
@@ -51,6 +52,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();
+  const cc::Layer* GetRootLayer() const;
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

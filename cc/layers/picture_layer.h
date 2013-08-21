@@ -34,6 +34,7 @@ class CC_EXPORT PictureLayer : public Layer {
       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetIsMask(bool is_mask) OVERRIDE;
   virtual bool SupportsLCDText() const OVERRIDE;
+  virtual skia::RefPtr<SkPicture> GetPicture() const OVERRIDE;
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
