@@ -47,24 +47,6 @@ namespace mediaGalleriesPrivate {
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
   callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
 
-  // These enum bits have moved to experimental.systemInfo.storage namespace.
-  // See experimental_system_info_storage.idl.
-  [inline_doc] enum EjectDeviceResultCode {
-    // The ejection command is successful -- the application can prompt the user
-    // to remove the device.
-    success,
-    // The device is in use by another application. The ejection did not
-    // succeed; the user should not remove the device until the other
-    // application is done with the device.
-    in_use,
-    // There is no such device known.
-    no_such_device,
-    // The ejection command failed.
-    failure
-  };
-
-  callback EjectDeviceCallback = void (EjectDeviceResultCode result);
-
   // A dictionary that describes a media galleries handler.
   [inline_doc] dictionary MediaGalleriesHandler {
     // Unique action id per extension.
@@ -88,9 +70,6 @@ namespace mediaGalleriesPrivate {
     static void removeGalleryWatch(DOMString galleryId);
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
-    // The function has moved to system.storage namespace.
-    // See system_storage.idl.
-    static void ejectDevice(DOMString deviceId, EjectDeviceCallback callback);
     static void getHandlers(GetHandlersCallback callback);
   };
 };

@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 
 class Profile;
@@ -141,26 +140,6 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
 
  private:
   void OnStorageMonitorInit();
-};
-
-// Implements the chrome.mediaGalleriesPrivate.ejectDevice method.
-class MediaGalleriesPrivateEjectDeviceFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.ejectDevice",
-                             MEDIAGALLERIESPRIVATE_EJECTDEVICE);
-
- protected:
-  virtual ~MediaGalleriesPrivateEjectDeviceFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  void OnStorageMonitorInit(const std::string& transient_device_id);
-
-  // Eject device request handler.
-  void HandleResponse(chrome::StorageMonitor::EjectStatus status);
 };
 
 // Implements the chrome.mediaGalleriesPrivate.getHandlers method.

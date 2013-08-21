@@ -38,8 +38,6 @@ namespace RemoveGalleryWatch =
     extensions::api::media_galleries_private::RemoveGalleryWatch;
 namespace GetAllGalleryWatch =
     extensions::api::media_galleries_private::GetAllGalleryWatch;
-namespace EjectDevice =
-    extensions::api::media_galleries_private::EjectDevice;
 namespace media_galleries_private =
     api::media_galleries_private;
 
@@ -355,65 +353,6 @@ MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnStorageMonitorInit() {
   state_tracker->RemoveAllGalleryWatchersForExtension(
       extension_id(), preferences);
 #endif
-  SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//              MediaGalleriesPrivateEjectDeviceFunction                     //
-///////////////////////////////////////////////////////////////////////////////
-
-MediaGalleriesPrivateEjectDeviceFunction::
-~MediaGalleriesPrivateEjectDeviceFunction() {
-}
-
-bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesPrivateEjectDeviceFunction::OnStorageMonitorInit,
-      this,
-      params->device_id));
-  return true;
-}
-
-void MediaGalleriesPrivateEjectDeviceFunction::OnStorageMonitorInit(
-    const std::string& transient_device_id) {
-  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
-  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
-  std::string device_id_str =
-      monitor->GetDeviceIdForTransientId(transient_device_id);
-  if (device_id_str == "") {
-    HandleResponse(chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE);
-    return;
-  }
-
-  monitor->EjectDevice(
-      device_id_str,
-      base::Bind(&MediaGalleriesPrivateEjectDeviceFunction::HandleResponse,
-                 this));
-}
-
-void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
-    chrome::StorageMonitor::EjectStatus status) {
-  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_FAILURE;
-  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_IN_USE;
-  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
-  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_SUCCESS;
-  using media_galleries_private::EjectDeviceResultCode;
-
-  EjectDeviceResultCode result = EJECT_DEVICE_RESULT_CODE_FAILURE;
-  if (status == chrome::StorageMonitor::EJECT_OK)
-    result = EJECT_DEVICE_RESULT_CODE_SUCCESS;
-  if (status == chrome::StorageMonitor::EJECT_IN_USE)
-    result = EJECT_DEVICE_RESULT_CODE_IN_USE;
-  if (status == chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE)
-    result = EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
-
-  SetResult(new base::StringValue(
-      api::media_galleries_private::ToString(result)));
   SendResponse(true);
 }
 

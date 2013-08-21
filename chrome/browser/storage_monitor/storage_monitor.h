@@ -21,7 +21,6 @@ class ChromeBrowserMainPartsLinux;
 class ChromeBrowserMainPartsMac;
 class MediaGalleriesPlatformAppBrowserTest;
 class MediaGalleriesPrivateApiTest;
-class MediaGalleriesPrivateEjectApiTest;
 class SystemStorageApiTest;
 class SystemStorageEjectApiTest;
 
@@ -137,7 +136,6 @@ class StorageMonitor {
  protected:
   friend class ::MediaGalleriesPlatformAppBrowserTest;
   friend class ::MediaGalleriesPrivateApiTest;
-  friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
   friend class ::SystemStorageApiTest;
   friend class ::SystemStorageEjectApiTest;
