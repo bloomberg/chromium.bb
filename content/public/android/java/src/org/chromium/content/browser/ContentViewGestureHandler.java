@@ -176,6 +176,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int DOUBLE_TAP_DRAG_MODE_NONE = 0;
     static final int DOUBLE_TAP_DRAG_MODE_DETECTION_IN_PROGRESS = 1;
     static final int DOUBLE_TAP_DRAG_MODE_ZOOM = 2;
+    static final int DOUBLE_TAP_DRAG_MODE_DISABLED = 3;
 
     private class TouchEventTimeoutHandler implements Runnable {
         private static final int TOUCH_EVENT_TIMEOUT = 200;
@@ -510,6 +511,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                     @Override
                     public boolean onDoubleTapEvent(MotionEvent e) {
+                        if (isDoubleTapDragDisabled()) return false;
                         switch (e.getActionMasked()) {
                             case MotionEvent.ACTION_DOWN:
                                 sendShowPressCancelIfNecessary(e);
@@ -569,7 +571,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public void onLongPress(MotionEvent e) {
                         if (!mZoomManager.isScaleGestureDetectionInProgress() &&
-                                mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE) {
+                                (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE ||
+                                 isDoubleTapDragDisabled())) {
                             sendShowPressCancelIfNecessary(e);
                             sendMotionEventAsGesture(GESTURE_LONG_PRESS, e, null);
                         }
@@ -664,6 +667,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      *              to send. This argument is an optional and can be null.
      */
     void endDoubleTapDragMode(MotionEvent event) {
+        if (isDoubleTapDragDisabled()) return;
         if (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_ZOOM) {
             if (event == null) event = obtainActionCancelMotionEvent();
             pinchEnd(event.getEventTime());
@@ -1147,5 +1151,16 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     boolean hasScheduledTouchTimeoutEventForTesting() {
         return mTouchEventTimeoutHandler.hasScheduledTimeoutEventForTesting();
+    }
+
+    public void updateDoubleTapDragSupport(boolean supportDoubleTapDrag) {
+        assert (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_DISABLED ||
+                mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE);
+        mDoubleTapDragMode = supportDoubleTapDrag ?
+                DOUBLE_TAP_DRAG_MODE_NONE : DOUBLE_TAP_DRAG_MODE_DISABLED;
+    }
+
+    private boolean isDoubleTapDragDisabled() {
+        return mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_DISABLED;
     }
 }

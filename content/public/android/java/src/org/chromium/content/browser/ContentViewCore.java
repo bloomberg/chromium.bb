@@ -1906,6 +1906,10 @@ import java.util.Map;
         mZoomManager.updateMultiTouchSupport(supportsMultiTouchZoom);
     }
 
+    public void updateDoubleTapDragSupport(boolean supportsDoubleTapDrag) {
+        mContentViewGestureHandler.updateDoubleTapDragSupport(supportsDoubleTapDrag);
+    }
+
     public void selectPopupMenuItems(int[] indices) {
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
