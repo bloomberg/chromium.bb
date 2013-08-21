@@ -193,7 +193,7 @@ class VMRule(AbstractRule):
 
   def __repr__(self):
     result = cStringIO.StringIO()
-    result.write('{"%s"=>' % self._name)
+    result.write('%s: ' % self._name)
     attributes = []
     attributes.append('mmap: %s' % self._mmap)
     if self._backtrace_function:
@@ -206,7 +206,7 @@ class VMRule(AbstractRule):
     if self._mapped_permission:
       attributes.append('mapped_permission: "%s"' %
                         self._mapped_permission.pattern)
-    result.write('%s}' % ', '.join(attributes))
+    result.write('{ %s }' % ', '.join(attributes))
     return result.getvalue()
 
   def match(self, unit):
@@ -287,13 +287,14 @@ class MallocRule(AbstractRule):
 
   def __repr__(self):
     result = cStringIO.StringIO()
-    result.write('{"%s"=>' % self._name)
+    result.write('%s: ' % self._name)
     attributes = []
     if self._backtrace_function:
-      attributes.append('backtrace_function: "%s"' % self._backtrace_function)
+      attributes.append('backtrace_function: "%s"' %
+                        self._backtrace_function.pattern)
     if self._typeinfo:
-      attributes.append('typeinfo: "%s"' % self._typeinfo)
-    result.write('%s}' % ', '.join(attributes))
+      attributes.append('typeinfo: "%s"' % self._typeinfo.pattern)
+    result.write('{ %s }' % ', '.join(attributes))
     return result.getvalue()
 
   def match(self, unit):
@@ -344,11 +345,13 @@ class AbstractSorter(object):
 
   def __repr__(self):
     result = cStringIO.StringIO()
-    result.write('world=%s' % self._world)
-    result.write('order=%s' % self._order)
-    result.write('rules:')
+    print >> result, '%s' % self._name
+    print >> result, 'world=%s' % self._world
+    print >> result, 'name=%s' % self._name
+    print >> result, 'order=%s' % self._order
+    print >> result, 'rules:'
     for rule in self._rules:
-      result.write('  %s' % rule)
+      print >> result, '  %s' % rule
     return result.getvalue()
 
   @staticmethod
@@ -396,7 +399,7 @@ class VMSorter(AbstractSorter):
     for rule in self._rules:
       if rule.match(unit):
         return rule
-    assert False
+    return None
 
 
 class MallocSorter(AbstractSorter):
@@ -411,14 +414,12 @@ class MallocSorter(AbstractSorter):
       return self._no_bucket_rule
     assert unit.bucket.allocator_type == 'malloc'
 
-    if unit.bucket.component_cache:
-      return unit.bucket.component_cache
+    # TODO(dmikurube): Utilize component_cache again, or remove it.
 
     for rule in self._rules:
       if rule.match(unit):
-        unit.bucket.component_cache = rule
         return rule
-    assert False
+    return None
 
 
 class SorterTemplates(object):
@@ -453,7 +454,9 @@ class SorterSet(object):
 
   def __repr__(self):
     result = cStringIO.StringIO()
-    result.write(self._sorters)
+    for world, sorters in self._sorters.iteritems():
+      for sorter in sorters:
+        print >> result, '%s: %s' % (world, sorter)
     return result.getvalue()
 
   def __iter__(self):

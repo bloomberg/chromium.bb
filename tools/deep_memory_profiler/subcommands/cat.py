@@ -59,6 +59,7 @@ class CatCommand(SubCommand):
     json_root['snapshots'] = []
 
     for dump in dumps:
+      LOGGER.info('Sorting a dump %s...' % dump.path)
       json_root['snapshots'].append(
           self._fill_snapshot(dump, bucket_set, sorters))
 
@@ -107,9 +108,13 @@ class CatCommand(SubCommand):
     # Iterate for { vm | malloc } sorters.
     root['breakdown'] = OrderedDict()
     for sorter in sorters.iter_world(world):
+      LOGGER.info('  Sorting with %s:%s.' % (sorter.world, sorter.name))
       breakdown = OrderedDict()
       for unit in unit_set:
         found = sorter.find(unit)
+        if not found:
+          # A bucket which doesn't match any rule is just dropped.
+          continue
         if found.name not in breakdown:
           category = OrderedDict()
           category['name'] = found.name
