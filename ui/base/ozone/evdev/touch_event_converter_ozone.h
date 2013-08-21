@@ -42,6 +42,10 @@ class UI_EXPORT TouchEventConverterOzone : public EventConverterOzone {
   float x_scale_;
   float y_scale_;
 
+  // Maximum coordinate-values allowed for the events.
+  int x_max_;
+  int y_max_;
+
   // Touch point currently being updated from the /dev/input/event* stream.
   int current_slot_;
 

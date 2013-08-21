@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <cmath>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -36,6 +37,8 @@ TouchEventConverterOzone::TouchEventConverterOzone(int fd, int id)
       pressure_max_(0),
       x_scale_(1.),
       y_scale_(1.),
+      x_max_(std::numeric_limits<int>::max()),
+      y_max_(std::numeric_limits<int>::max()),
       current_slot_(0),
       fd_(fd),
       id_(id) {
@@ -83,6 +86,8 @@ void TouchEventConverterOzone::Init() {
     if (sc == 2) {
       x_scale_ = (double)screen_width / (x_max - x_min);
       y_scale_ = (double)screen_height / (y_max - y_min);
+      x_max_ = screen_width - 1;
+      y_max_ = screen_height - 1;
       LOG(INFO) << "touch input x_scale=" << x_scale_
                 << " y_scale=" << y_scale_;
     } else {
@@ -151,7 +156,8 @@ void TouchEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
               // TODO(rjkroege): Support elliptical finger regions.
               scoped_ptr<TouchEvent> tev(new TouchEvent(
                   events_[j].type_,
-                  gfx::Point(events_[j].x_, events_[j].y_),
+                  gfx::Point(std::min(x_max_, events_[j].x_),
+                             std::min(y_max_, events_[j].y_)),
                   /* flags */ 0,
                   /* touch_id */ j,
                   base::TimeDelta::FromMicroseconds(
@@ -160,8 +166,11 @@ void TouchEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
                   events_[j].pressure_ * kFingerWidth,
                   /* angle */ 0.,
                   events_[j].pressure_));
-              events_[j].type_ = ET_TOUCH_MOVED;
               DispatchEvent(tev.PassAs<ui::Event>());
+
+              // Subsequent events for this finger will be touch-move until it
+              // is released.
+              events_[j].type_ = ET_TOUCH_MOVED;
             }
           }
           altered_slots_.reset();
