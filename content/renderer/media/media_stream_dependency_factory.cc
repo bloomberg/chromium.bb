@@ -617,13 +617,13 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
       new content::MediaStreamSourceExtraData(webaudio_capturer_source.get());
 
   // Create a LocalAudioSource object which holds audio options.
-  // Use audio constraints where all values are false, i.e., disable
+  // Use audio constraints where all values are true, i.e., enable
   // echo cancellation, automatic gain control, noise suppression and
   // high-pass filter. SetLocalAudioSource() affects core audio parts in
   // third_party/Libjingle.
-  WebAudioConstraints webaudio_audio_constraints_all_false;
+  WebAudioConstraints webaudio_audio_constraints_all_true;
   source_data->SetLocalAudioSource(
-      CreateLocalAudioSource(&webaudio_audio_constraints_all_false).get());
+      CreateLocalAudioSource(&webaudio_audio_constraints_all_true).get());
   source->setExtraData(source_data);
 
   // Replace the default source with WebAudio as source instead.
