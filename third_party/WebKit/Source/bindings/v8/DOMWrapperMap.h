@@ -49,11 +49,6 @@ public:
     {
     }
 
-    v8::Handle<v8::Object> get(KeyType* key)
-    {
-        return m_map.get(key).deprecatedHandle();
-    }
-
     v8::Handle<v8::Object> newLocal(KeyType* key, v8::Isolate* isolate)
     {
         return m_map.get(key).newLocal(isolate);
@@ -71,6 +66,14 @@ public:
     bool containsKey(KeyType* key)
     {
         return m_map.find(key) != m_map.end();
+    }
+
+    bool containsKeyAndValue(KeyType* key, const v8::Persistent<v8::Object>& value)
+    {
+        typename MapType::iterator it = m_map.find(key);
+        if (it == m_map.end())
+            return false;
+        return *(it->value.persistent()) == value;
     }
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
@@ -94,7 +97,7 @@ public:
             MapType map;
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                toWrapperTypeInfo(it->value.deprecatedHandle())->derefObject(it->key);
+                toWrapperTypeInfo(*(it->value.persistent()))->derefObject(it->key);
                 it->value.dispose();
             }
         }
@@ -121,7 +124,7 @@ inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Pers
     WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
     ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(*wrapper));
-    ASSERT(map->get(key) == *wrapper);
+    ASSERT(*(map->m_map.get(key).persistent()) == *wrapper);
     map->removeAndDispose(key);
     type->derefObject(key);
 }

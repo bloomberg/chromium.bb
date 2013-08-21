@@ -405,7 +405,7 @@ inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::
     NPObject* npObject = static_cast<NPObject*>(toNative(*wrapper));
 
     ASSERT(npObject);
-    ASSERT(staticNPObjectMap().get(npObject) == *wrapper);
+    ASSERT(staticNPObjectMap().containsKeyAndValue(npObject, *wrapper));
 
     // Must remove from our map before calling _NPN_ReleaseObject(). _NPN_ReleaseObject can
     // call forgetV8ObjectForNPObject, which uses the table as well.

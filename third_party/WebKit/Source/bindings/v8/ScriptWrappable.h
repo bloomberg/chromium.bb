@@ -85,9 +85,8 @@ public:
         if (containsTypeInfo())
             return reinterpret_cast<const WrapperTypeInfo*>(m_wrapperOrTypeInfo);
 
-        if (containsWrapper()) {
-            return toWrapperTypeInfo(unsafePersistent().deprecatedHandle());
-        }
+        if (containsWrapper())
+            return toWrapperTypeInfo(*(unsafePersistent().persistent()));
 
         return 0;
     }
@@ -130,6 +129,18 @@ public:
     static void setTypeInfoInObject(ScriptWrappable* object, const WrapperTypeInfo* info)
     {
         object->setTypeInfo(info);
+    }
+
+    template<typename V8T, typename T>
+    static bool setReturnValueWithSecurityCheck(v8::ReturnValue<v8::Value> returnValue, T* object)
+    {
+        return ScriptWrappable::getUnsafeWrapperFromObject(object).template setReturnValueWithSecurityCheck<V8T>(returnValue, object);
+    }
+
+    template<typename T>
+    static bool setReturnValue(v8::ReturnValue<v8::Value> returnValue, T* object)
+    {
+        return ScriptWrappable::getUnsafeWrapperFromObject(object).setReturnValue(returnValue);
     }
 
 protected:
@@ -179,7 +190,7 @@ private:
 
     static void makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, ScriptWrappable* key)
     {
-        ASSERT(key->unsafePersistent().deprecatedHandle() == *wrapper);
+        ASSERT(*(key->unsafePersistent().persistent()) == *wrapper);
 
         // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
         void* object = toNative(*wrapper);

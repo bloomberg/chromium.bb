@@ -31,9 +31,9 @@
 #ifndef UnsafePersistent_h
 #define UnsafePersistent_h
 
-#include <v8.h>
+#include "bindings/v8/WrapperTypeInfo.h"
 
-struct NPObject;
+#include <v8.h>
 
 namespace WebCore {
 
@@ -62,6 +62,22 @@ public:
     T* value() const
     {
         return m_value;
+    }
+
+    template<typename V8T, typename U>
+    bool setReturnValueWithSecurityCheck(v8::ReturnValue<v8::Value> returnValue, U* object)
+    {
+        v8::Handle<v8::Object> result = deprecatedHandle();
+        // Security: always guard against malicious tampering.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
+        returnValue.Set(result);
+        return !result.IsEmpty();
+    }
+
+    bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
+    {
+        returnValue.Set(deprecatedHandle());
+        return !isEmpty();
     }
 
     // This is incredibly unsafe: the handle is valid only when this
@@ -94,13 +110,6 @@ public:
     }
 
 private:
-    // For calling deprecatedHandle. FIXME: The operations should really be done
-    // inside UnsafePersistent, but it's not possible atm.
-    friend class ScriptWrappable;
-    friend class DOMDataStore;
-    friend class DOMWrapperMap<void>;
-    friend class DOMWrapperMap<NPObject>;
-
     v8::Handle<T> deprecatedHandle()
     {
         v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
