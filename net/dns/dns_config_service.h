@@ -59,6 +59,10 @@ struct NET_EXPORT_PRIVATE DnsConfig {
 
   DnsHosts hosts;
 
+  // True if there are options set in the system configuration that are not yet
+  // supported by DnsClient.
+  bool unhandled_options;
+
   // AppendToMultiLabelName: is suffix search performed for multi-label names?
   // True, except on Windows where it can be configured.
   bool append_to_multi_label_name;

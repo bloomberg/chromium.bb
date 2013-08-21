@@ -2245,7 +2245,7 @@ void HostResolverImpl::OnDNSChanged() {
   // the newly started jobs use the new config.
   if (dns_client_.get()) {
     dns_client_->SetConfig(dns_config);
-    if (dns_config.IsValid())
+    if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
 
@@ -2311,7 +2311,7 @@ void HostResolverImpl::SetDnsClient(scoped_ptr<DnsClient> dns_client) {
   NetworkChangeNotifier::GetDnsConfig(&dns_config);
   dns_client_->SetConfig(dns_config);
   num_dns_failures_ = 0;
-  if (dns_config.IsValid())
+  if (dns_client_->GetConfig())
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
 }
 

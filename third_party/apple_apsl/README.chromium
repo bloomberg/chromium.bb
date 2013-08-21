@@ -49,3 +49,13 @@ and http://lists.apple.com/archives/apple-cdsa/2008/Aug/msg00008.html
 
 Modifications:
 - Removed unneeded definitions for internal Apple CSP DL enums and structs
+
+dnsinfo.h from:
+http://www.opensource.apple.com/source/configd/configd-453.19/dnsinfo/dnsinfo.h
+
+Provides dns_config_t which is used by /net/dns/dns_config_service_posix.cc to
+obtain system DNS configuration on Mac OS X. This private header is also used by
+Apple's open source mDNSResponder.
+
+Modifications:
+- Removed Availability.h and the corresponding macros.

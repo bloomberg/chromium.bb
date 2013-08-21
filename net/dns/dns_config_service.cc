@@ -14,7 +14,8 @@ namespace net {
 // Default values are taken from glibc resolv.h except timeout which is set to
 // |kDnsTimeoutSeconds|.
 DnsConfig::DnsConfig()
-    : append_to_multi_label_name(true),
+    : unhandled_options(false),
+      append_to_multi_label_name(true),
       randomize_ports(false),
       ndots(1),
       timeout(base::TimeDelta::FromSeconds(kDnsTimeoutSeconds)),
@@ -31,6 +32,7 @@ bool DnsConfig::Equals(const DnsConfig& d) const {
 bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
   return (nameservers == d.nameservers) &&
          (search == d.search) &&
+         (unhandled_options == d.unhandled_options) &&
          (append_to_multi_label_name == d.append_to_multi_label_name) &&
          (ndots == d.ndots) &&
          (timeout == d.timeout) &&
@@ -42,6 +44,7 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   nameservers = d.nameservers;
   search = d.search;
+  unhandled_options = d.unhandled_options;
   append_to_multi_label_name = d.append_to_multi_label_name;
   ndots = d.ndots;
   timeout = d.timeout;
@@ -63,6 +66,7 @@ base::Value* DnsConfig::ToValue() const {
     list->Append(new base::StringValue(search[i]));
   dict->Set("search", list);
 
+  dict->SetBoolean("unhandled_options", unhandled_options);
   dict->SetBoolean("append_to_multi_label_name", append_to_multi_label_name);
   dict->SetInteger("ndots", ndots);
   dict->SetDouble("timeout", timeout.InSecondsF());

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
@@ -19,6 +20,69 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/notify_watcher_mac.h"
 #include "net/dns/serial_worker.h"
+
+#if defined(OS_MACOSX)
+#include <dlfcn.h>
+
+#include "third_party/apple_apsl/dnsinfo.h"
+
+namespace {
+
+// dnsinfo symbols are available via libSystem.dylib, but can also be present in
+// SystemConfiguration.framework. To avoid confusion, load them explicitly from
+// libSystem.dylib.
+class DnsInfoApi {
+ public:
+  typedef const char* (*dns_configuration_notify_key_t)();
+  typedef dns_config_t* (*dns_configuration_copy_t)();
+  typedef void (*dns_configuration_free_t)(dns_config_t*);
+
+  DnsInfoApi()
+      : dns_configuration_notify_key(NULL),
+        dns_configuration_copy(NULL),
+        dns_configuration_free(NULL) {
+    handle_ = dlopen("/usr/lib/libSystem.dylib",
+                     RTLD_LAZY | RTLD_NOLOAD);
+    if (!handle_)
+      return;
+    dns_configuration_notify_key =
+        reinterpret_cast<dns_configuration_notify_key_t>(
+            dlsym(handle_, "dns_configuration_notify_key"));
+    dns_configuration_copy =
+        reinterpret_cast<dns_configuration_copy_t>(
+            dlsym(handle_, "dns_configuration_copy"));
+    dns_configuration_free =
+        reinterpret_cast<dns_configuration_free_t>(
+            dlsym(handle_, "dns_configuration_free"));
+  }
+
+  ~DnsInfoApi() {
+    if (handle_)
+      dlclose(handle_);
+  }
+
+  dns_configuration_notify_key_t dns_configuration_notify_key;
+  dns_configuration_copy_t dns_configuration_copy;
+  dns_configuration_free_t dns_configuration_free;
+
+ private:
+  void* handle_;
+};
+
+const DnsInfoApi& GetDnsInfoApi() {
+  static base::LazyInstance<DnsInfoApi>::Leaky api = LAZY_INSTANCE_INITIALIZER;
+  return api.Get();
+}
+
+struct DnsConfigTDeleter {
+  inline void operator()(dns_config_t* ptr) const {
+    if (GetDnsInfoApi().dns_configuration_free)
+      GetDnsInfoApi().dns_configuration_free(ptr);
+  }
+};
+
+}  // namespace
+#endif  // defined(OS_MACOSX)
 
 namespace net {
 
@@ -31,14 +95,13 @@ const base::FilePath::CharType* kFilePathHosts =
     FILE_PATH_LITERAL("/etc/hosts");
 
 #if defined(OS_MACOSX)
-// From 10.7.3 configd-395.10/dnsinfo/dnsinfo.h
-static const char* kDnsNotifyKey =
-    "com.apple.system.SystemConfiguration.dns_configuration";
-
 class ConfigWatcher {
  public:
   bool Watch(const base::Callback<void(bool succeeded)>& callback) {
-    return watcher_.Watch(kDnsNotifyKey, callback);
+    if (!GetDnsInfoApi().dns_configuration_notify_key)
+      return false;
+    return watcher_.Watch(GetDnsInfoApi().dns_configuration_notify_key(),
+                          callback);
   }
 
  private:
@@ -76,6 +139,7 @@ class ConfigWatcher {
 
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   ConfigParsePosixResult result;
+  config->unhandled_options = false;
 #if defined(OS_OPENBSD)
   // Note: res_ninit in glibc always returns 0 and sets RES_INIT.
   // res_init behaves the same way.
@@ -100,6 +164,32 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   res_nclose(&res);
 #endif
 #endif
+
+#if defined(OS_MACOSX)
+  if (!GetDnsInfoApi().dns_configuration_copy)
+    return CONFIG_PARSE_POSIX_NO_DNSINFO;
+  scoped_ptr<dns_config_t, DnsConfigTDeleter> dns_config(
+      GetDnsInfoApi().dns_configuration_copy());
+  if (!dns_config)
+    return CONFIG_PARSE_POSIX_NO_DNSINFO;
+
+  // TODO(szym): Parse dns_config_t for resolvers rather than res_state.
+  // DnsClient can't handle domain-specific unscoped resolvers.
+  unsigned num_resolvers = 0;
+  for (int i = 0; i < dns_config->n_resolver; ++i) {
+    dns_resolver_t* resolver = dns_config->resolver[i];
+    if (!resolver->n_nameserver)
+      continue;
+    if (resolver->options && !strcmp(resolver->options, "mdns"))
+      continue;
+    ++num_resolvers;
+  }
+  if (num_resolvers > 1) {
+    LOG(WARNING) << "dns_config has unhandled options!";
+    config->unhandled_options = true;
+    return CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS;
+  }
+#endif  // defined(OS_MACOSX)
   // Override timeout value to match default setting on Windows.
   config->timeout = base::TimeDelta::FromSeconds(kDnsTimeoutSeconds);
   return result;
@@ -172,7 +262,18 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   virtual void DoWork() OVERRIDE {
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
-    success_ = (result == CONFIG_PARSE_POSIX_OK);
+    switch (result) {
+      case CONFIG_PARSE_POSIX_MISSING_OPTIONS:
+      case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
+        DCHECK(dns_config_.unhandled_options);
+        // Fall through.
+      case CONFIG_PARSE_POSIX_OK:
+        success_ = true;
+        break;
+      default:
+        success_ = false;
+        break;
+    }
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ConfigParsePosix",
                               result, CONFIG_PARSE_POSIX_MAX);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ConfigParseResult", success_);
@@ -358,12 +459,16 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
   // The current implementation assumes these options are set. They normally
   // cannot be overwritten by /etc/resolv.conf
   unsigned kRequiredOptions = RES_RECURSE | RES_DEFNAMES | RES_DNSRCH;
-  if ((res.options & kRequiredOptions) != kRequiredOptions)
+  if ((res.options & kRequiredOptions) != kRequiredOptions) {
+    dns_config->unhandled_options = true;
     return CONFIG_PARSE_POSIX_MISSING_OPTIONS;
+  }
 
   unsigned kUnhandledOptions = RES_USEVC | RES_IGNTC | RES_USE_DNSSEC;
-  if (res.options & kUnhandledOptions)
+  if (res.options & kUnhandledOptions) {
+    dns_config->unhandled_options = true;
     return CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS;
+  }
 
   if (dns_config->nameservers.empty())
     return CONFIG_PARSE_POSIX_NO_NAMESERVERS;

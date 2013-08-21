@@ -27,7 +27,7 @@ class DnsClientImpl : public DnsClient {
   virtual void SetConfig(const DnsConfig& config) OVERRIDE {
     factory_.reset();
     session_ = NULL;
-    if (config.IsValid()) {
+    if (config.IsValid() && !config.unhandled_options) {
       ClientSocketFactory* factory = ClientSocketFactory::GetDefaultFactory();
       scoped_ptr<DnsSocketPool> socket_pool(
           config.randomize_ports ? DnsSocketPool::CreateDefault(factory)

@@ -1632,6 +1632,7 @@ EVENT_TYPE(NETWORK_CHANGED)
 //   {
 //     "nameservers":                <List of name server IPs>,
 //     "search":                     <List of domain suffixes>,
+//     "unhandled_options":          <See DnsConfig>,
 //     "append_to_multi_label_name": <See DnsConfig>,
 //     "ndots":                      <See DnsConfig>,
 //     "timeout":                    <See DnsConfig>,

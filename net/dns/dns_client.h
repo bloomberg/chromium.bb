@@ -22,7 +22,8 @@ class NET_EXPORT DnsClient {
  public:
   virtual ~DnsClient() {}
 
-  // Creates a new DnsTransactionFactory according to the new |config|.
+  // Destroys the current DnsTransactionFactory and creates a new one
+  // according to |config|, unless it is invalid or has |unhandled_options|.
   virtual void SetConfig(const DnsConfig& config) = 0;
 
   // Returns NULL if the current config is not valid.
