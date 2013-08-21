@@ -16,7 +16,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-# Imported just for the rmtree function.
+# Imported for the rmtree and get_as_zip_package functions.
 import run_isolated
 
 VERBOSE = False
@@ -67,6 +67,10 @@ class RunSwarmStep(unittest.TestCase):
   def setUp(self):
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated_smoke_test')
     logging.debug(self.tempdir)
+    # run_isolated.zip executable package.
+    self.run_isolated_zip = os.path.join(self.tempdir, 'run_isolated.zip')
+    run_isolated.get_as_zip_package().zip_into_file(
+        self.run_isolated_zip, compress=False)
     # The "source" hash table.
     self.table = os.path.join(self.tempdir, 'table')
     os.mkdir(self.table)
@@ -82,7 +86,7 @@ class RunSwarmStep(unittest.TestCase):
     return list_files_tree(self.tempdir)
 
   def _run(self, args):
-    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
+    cmd = [sys.executable, self.run_isolated_zip]
     cmd.extend(args)
     if VERBOSE:
       cmd.extend(['-v'] * 2)

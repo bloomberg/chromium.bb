@@ -10,17 +10,17 @@ to the Swarm server.  This is expected to be called as a build step with the cwd
 as the parent of the src/ directory.
 """
 
+import binascii
 import hashlib
 import json
 import optparse
 import os
-import StringIO
 import sys
 import time
 import urllib
-import zipfile
 
 import run_isolated
+from utils import zip_package
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -57,6 +57,8 @@ class Manifest(object):
         priority - int between 0 and 1000, lower the higher priority
     """
     self.manifest_hash = manifest_hash
+    self.bundle = zip_package.ZipPackage(ROOT_DIR)
+
     self._test_name = test_name
     self._shards = shards
     self._test_filter = test_filter
@@ -75,7 +77,6 @@ class Manifest(object):
 
     self._zip_file_hash = ''
     self._tasks = []
-    self._files = {}
     self._token_cache = None
 
   def _token(self):
@@ -100,34 +101,20 @@ class Manifest(object):
           'time_out': time_out,
         })
 
-  def add_file(self, source_path, rel_path):
-    self._files[source_path] = rel_path
-
   def zip_and_upload(self):
     """Zips up all the files necessary to run a shard and uploads to Swarming
     master.
     """
     assert not self._zip_file_hash
+
     start_time = time.time()
-
-    zip_memory_file = StringIO.StringIO()
-    zip_file = zipfile.ZipFile(zip_memory_file, 'w')
-
-    for source, relpath in self._files.iteritems():
-      zip_file.write(source, relpath)
-
-    zip_file.close()
-    print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
-
-    zip_memory_file.flush()
-    zip_contents = zip_memory_file.getvalue()
-    zip_memory_file.close()
-
+    zip_contents = self.bundle.zip_into_buffer()
     self._zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
+    print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
 
     response = run_isolated.url_open(
         self._data_server_has + '?token=%s' % self._token(),
-        data=self._zip_file_hash,
+        data=binascii.unhexlify(self._zip_file_hash),
         content_type='application/octet-stream')
     if response is None:
       print >> sys.stderr, (
@@ -193,13 +180,16 @@ def chromium_setup(manifest):
 
   Highly chromium specific.
   """
-  cleanup_script_name = 'swarm_cleanup.py'
-  cleanup_script_path = os.path.join(TOOLS_PATH, cleanup_script_name)
-  run_test_name = 'run_isolated.py'
-  run_test_path = os.path.join(ROOT_DIR, run_test_name)
+  # Add uncompressed zip here. It'll be compressed as part of the package sent
+  # to Swarming server.
+  run_test_name = 'run_isolated.zip'
+  manifest.bundle.add_buffer(run_test_name,
+    run_isolated.get_as_zip_package().zip_into_buffer(compress=False))
 
-  manifest.add_file(run_test_path, run_test_name)
-  manifest.add_file(cleanup_script_path, cleanup_script_name)
+  cleanup_script_name = 'swarm_cleanup.py'
+  manifest.bundle.add_file(os.path.join(TOOLS_PATH, cleanup_script_name),
+    cleanup_script_name)
+
   run_cmd = [
     'python', run_test_name,
     '--hash', manifest.manifest_hash,

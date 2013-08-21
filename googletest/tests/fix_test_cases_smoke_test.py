@@ -31,7 +31,7 @@ class FixTestCases(unittest.TestCase):
   def tearDown(self):
     if self.tempdir:
       if VERBOSE:
-        # If -v is used, this means the user wants to do further analisys on
+        # If -v is used, this means the user wants to do further analysis on
         # the data.
         print('Leaking %s' % self.tempdir)
       else:
@@ -82,9 +82,9 @@ class FixTestCases(unittest.TestCase):
     shutil.copy(
         os.path.join(GOOGLETEST_DIR, 'run_test_cases.py'),
         os.path.join(self.srcdir, 'run_test_cases.py'))
-    shutil.copy(
-        os.path.join(ROOT_DIR, 'run_isolated.py'),
-        os.path.join(self.srcdir, 'run_isolated.py'))
+    # Deploy run_isolated with dependencies as zip into srcdir.
+    run_isolated.get_as_zip_package(executable=False).zip_into_file(
+        os.path.join(self.srcdir, 'run_isolated.zip'))
 
     logging.debug('1. Create a .isolated file out of the .isolate file.')
     isolated = os.path.join(self.srcdir, 'gtest_fake_pass.isolated')
@@ -111,7 +111,7 @@ class FixTestCases(unittest.TestCase):
       actual_isolated = json.load(f)
     gtest_fake_base_py = os.path.join(self.srcdir, 'gtest_fake_base.py')
     gtest_fake_pass_py = os.path.join(self.srcdir, 'gtest_fake_pass.py')
-    run_isolated_py = os.path.join(self.srcdir, 'run_isolated.py')
+    run_isolated_zip = os.path.join(self.srcdir, 'run_isolated.zip')
     run_test_cases_py = os.path.join(self.srcdir, 'run_test_cases.py')
     expected_isolated = {
       u'command': [u'run_test_cases.py', u'gtest_fake_pass.py'],
@@ -128,11 +128,11 @@ class FixTestCases(unittest.TestCase):
               open(gtest_fake_pass_py, 'rb').read()).hexdigest()),
           u's': os.stat(gtest_fake_pass_py).st_size,
         },
-        u'run_isolated.py': {
-          u'm': 488,
+        u'run_isolated.zip': {
+          u'm': 416,
           u'h': unicode(hashlib.sha1(
-              open(run_isolated_py, 'rb').read()).hexdigest()),
-          u's': os.stat(run_isolated_py).st_size,
+              open(run_isolated_zip, 'rb').read()).hexdigest()),
+          u's': os.stat(run_isolated_zip).st_size,
         },
         u'run_test_cases.py': {
           u'm': 488,
@@ -163,7 +163,7 @@ class FixTestCases(unittest.TestCase):
             'isolate_dependency_tracked': [
               'gtest_fake_base.py',
               'gtest_fake_pass.py',
-              'run_isolated.py',
+              'run_isolated.zip',
               'run_test_cases.py',
             ],
           },

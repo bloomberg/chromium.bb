@@ -40,6 +40,8 @@ import urllib2
 import urlparse
 import zlib
 
+from utils import zip_package
+
 # Try to import 'upload' module used by AppEngineService for authentication.
 # If it is not there, app engine authentication support will be disabled.
 try:
@@ -51,6 +53,15 @@ try:
 except ImportError:
   upload = None
 
+
+# Absolute path to this file.
+THIS_FILE_PATH = os.path.abspath(__file__)
+
+# Directory that contains this file (might be inside zip package).
+BASE_DIR = os.path.dirname(THIS_FILE_PATH)
+
+# Directory that contains currently running script file.
+MAIN_DIR = os.path.dirname(os.path.abspath(zip_package.get_main_script_path()))
 
 # Types of action accepted by link_file().
 HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
@@ -67,11 +78,8 @@ ZIPPED_FILE_CHUNK = 16 * 1024
 # The name of the log file to use.
 RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
-# The base directory containing this file.
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # The name of the log to use for the run_test_cases.py command
-RUN_TEST_CASES_LOG = os.path.join(BASE_DIR, 'run_test_cases.log')
+RUN_TEST_CASES_LOG = 'run_test_cases.log'
 
 # The delay (in seconds) to wait between logging statements when retrieving
 # the required files. This is intended to let the user (or buildbot) know that
@@ -127,6 +135,22 @@ class TimeoutError(IOError):
   def __init__(self, inner_exc=None):
     super(TimeoutError, self).__init__(str(inner_exc or 'Timeout'))
     self.inner_exc = inner_exc
+
+
+def get_as_zip_package(executable=True):
+  """Returns ZipPackage with this module and all its dependencies.
+
+  If |executable| is True will store run_isolated.py as __main__.py so that
+  zip package is directly executable be python.
+  """
+  # Building a zip package when running from another zip package is
+  # unsupported and probably unneeded.
+  assert not zip_package.is_zipped_module(sys.modules[__name__])
+  package = zip_package.ZipPackage(root=BASE_DIR)
+  package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
+  package.add_directory(os.path.join(BASE_DIR, 'third_party'))
+  package.add_directory(os.path.join(BASE_DIR, 'utils'))
+  return package
 
 
 def get_flavor():
@@ -2058,9 +2082,11 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
       logging.info('Running %s, cwd=%s' % (cmd, cwd))
 
       # TODO(csharp): This should be specified somewhere else.
+      # TODO(vadimsh): Pass it via 'env_vars' in manifest.
       # Add a rotating log file if one doesn't already exist.
       env = os.environ.copy()
-      env.setdefault('RUN_TEST_CASES_LOG_FILE', RUN_TEST_CASES_LOG)
+      env.setdefault('RUN_TEST_CASES_LOG_FILE',
+                     os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
       try:
         with Profiler('RunTest') as _prof:
           return subprocess.call(cmd, cwd=cwd, env=env)

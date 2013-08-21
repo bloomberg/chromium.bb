@@ -25,7 +25,7 @@ def chromium_tasks(retrieval_url):
   return [
     {
       u'action': [
-        u'python', u'run_isolated.py',
+        u'python', u'run_isolated.zip',
         u'--hash', FILE_HASH,
         u'--remote', retrieval_url + u'default-gzip/',
       ],
@@ -79,17 +79,6 @@ def generate_expected_json(
   return expected
 
 
-class MockZipFile(object):
-  def __init__(self, filename, mode):
-    pass
-
-  def write(self, source, dest=None):
-    pass
-
-  def close(self):
-    pass
-
-
 def MockUrlOpen(url, _data, has_return_value):
   if '/content/contains' in url:
     return StringIO.StringIO(has_return_value)
@@ -109,7 +98,6 @@ def MockUrlOpenNoZip(url, data=None, content_type=None):
 class ManifestTest(auto_stub.TestCase):
   def setUp(self):
     self.mock(swarm_trigger_step.time, 'sleep', lambda x: None)
-    self.mock(swarm_trigger_step.zipfile, 'ZipFile', MockZipFile)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 

@@ -25,9 +25,21 @@ import time
 from xml.dom import minidom
 import xml.parsers.expat
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if not ROOT_DIR in sys.path:
-  sys.path.insert(0, ROOT_DIR)
+# Directory with this file.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Root of a repository.
+ROOT_DIR = os.path.dirname(BASE_DIR)
+# Name of the optional package with all dependencies.
+DEPENDENCIES_ZIP = os.path.join(BASE_DIR, 'run_isolated.zip')
+
+# When running in isolated environment, run_isolated is in zipped package.
+if os.path.exists(DEPENDENCIES_ZIP):
+  sys.path.insert(0, DEPENDENCIES_ZIP)
+else:
+  # Otherwise it is in the root of the repository.
+  if not ROOT_DIR in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 
 import run_isolated
 
