@@ -35,6 +35,7 @@ class TestRunner(instr_test_runner.TestRunner):
         test_options.save_perf_json,
         test_options.screenshot_failures,
         wait_for_debugger=False,
+        coverage_dir=None,
         test_apk=None,
         test_apk_path=None,
         test_apk_jar_path=None)
