@@ -315,7 +315,7 @@ crbug.com/258896 virtual/web-animations-css/animations/wrong-keyframe-name.html 
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]
 crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure ]
-crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-missing-from-to-keyframes.html [ Failure ]
