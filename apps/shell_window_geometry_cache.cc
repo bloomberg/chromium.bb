@@ -111,6 +111,9 @@ void ShellWindowGeometryCache::SyncToStorage() {
       base::DictionaryValue* value = new base::DictionaryValue;
       const gfx::Rect& bounds = it->second.bounds;
       const gfx::Rect& screen_bounds = it->second.screen_bounds;
+      DCHECK(!bounds.IsEmpty());
+      DCHECK(!screen_bounds.IsEmpty());
+      DCHECK(it->second.window_state != ui::SHOW_STATE_DEFAULT);
       value->SetInteger("x", bounds.x());
       value->SetInteger("y", bounds.y());
       value->SetInteger("w", bounds.width());

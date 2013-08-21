@@ -108,7 +108,7 @@ TEST_F(ShellWindowGeometryCacheTest, GetGeometryUnkownExtension) {
   AddGeometryAndLoadExtension(extension_id1, kWindowId,
                               gfx::Rect(4, 5, 31, 43),
                               gfx::Rect(0, 0, 1600, 900),
-                              ui::SHOW_STATE_DEFAULT);
+                              ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(cache_->GetGeometry(extension_id2, kWindowId, NULL, NULL, NULL));
 }
 
@@ -118,7 +118,7 @@ TEST_F(ShellWindowGeometryCacheTest, GetGeometryUnkownWindow) {
   AddGeometryAndLoadExtension(extension_id, kWindowId,
                               gfx::Rect(4, 5, 31, 43),
                               gfx::Rect(0, 0, 1600, 900),
-                              ui::SHOW_STATE_DEFAULT);
+                              ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(cache_->GetGeometry(extension_id, kWindowId2, NULL, NULL, NULL));
 }
 
@@ -282,28 +282,28 @@ TEST_F(ShellWindowGeometryCacheTest, NoDuplicateWrites) {
   // Write the first bounds - it should do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
   cache_->SaveGeometry(extension_id, kWindowId, bounds1,
-                       screen_bounds1, ui::SHOW_STATE_DEFAULT);
+                       screen_bounds1, ui::SHOW_STATE_NORMAL);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
   // Write a different bounds - it should also do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
   cache_->SaveGeometry(extension_id, kWindowId, bounds2,
-                       screen_bounds1, ui::SHOW_STATE_DEFAULT);
+                       screen_bounds1, ui::SHOW_STATE_NORMAL);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
   // Write a different screen bounds - it should also do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
   cache_->SaveGeometry(extension_id, kWindowId, bounds2,
-                       screen_bounds2, ui::SHOW_STATE_DEFAULT);
+                       screen_bounds2, ui::SHOW_STATE_NORMAL);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
   // Write a different state - it should also do > 0 writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_));
   cache_->SaveGeometry(extension_id, kWindowId, bounds2,
-                       screen_bounds2, ui::SHOW_STATE_NORMAL);
+                       screen_bounds2, ui::SHOW_STATE_MAXIMIZED);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -311,7 +311,7 @@ TEST_F(ShellWindowGeometryCacheTest, NoDuplicateWrites) {
   // already have. This should not do any writes.
   EXPECT_CALL(observer, OnPreferenceChanged(_)).Times(0);
   cache_->SaveGeometry(extension_id, kWindowId, bounds2_duplicate,
-                       screen_bounds2_duplicate, ui::SHOW_STATE_NORMAL);
+                       screen_bounds2_duplicate, ui::SHOW_STATE_MAXIMIZED);
   WaitForSync();
   Mock::VerifyAndClearExpectations(&observer);
 }
@@ -327,7 +327,7 @@ TEST_F(ShellWindowGeometryCacheTest, MaxWindows) {
   for (size_t i = 0; i < ShellWindowGeometryCache::kMaxCachedWindows + 1; ++i) {
     std::string window_id = "window_" + base::IntToString(i);
     cache_->SaveGeometry(extension_id, window_id, bounds,
-                         screen_bounds, ui::SHOW_STATE_DEFAULT);
+                         screen_bounds, ui::SHOW_STATE_NORMAL);
   }
 
   // The first added window should no longer have cached geometry.
