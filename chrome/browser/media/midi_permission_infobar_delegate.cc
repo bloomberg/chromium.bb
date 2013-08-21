@@ -47,6 +47,10 @@ MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
   contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
+void MIDIPermissionInfoBarDelegate::InfoBarDismissed() {
+  SetPermission(false, false);
+}
+
 int MIDIPermissionInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MIDI_SYSEX;
 }
@@ -67,7 +71,8 @@ bool MIDIPermissionInfoBarDelegate::ShouldExpireInternal(
 }
 
 string16 MIDIPermissionInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_MIDI_SYSEX_INFOBAR_QUESTION,
+  return l10n_util::GetStringFUTF16(
+      IDS_MIDI_SYSEX_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
 }
 

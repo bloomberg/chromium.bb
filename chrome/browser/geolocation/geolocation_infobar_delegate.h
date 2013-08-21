@@ -44,6 +44,7 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpireInternal(

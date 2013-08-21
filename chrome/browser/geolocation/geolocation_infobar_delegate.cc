@@ -69,6 +69,10 @@ void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                update_content_setting, allowed);
 }
 
+void GeolocationInfoBarDelegate::InfoBarDismissed() {
+  SetPermission(false, false);
+}
+
 int GeolocationInfoBarDelegate::GetIconID() const {
   return IDR_GEOLOCATION_INFOBAR_ICON;
 }

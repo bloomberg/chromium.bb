@@ -22,8 +22,8 @@ class InfoBarService;
 // permission infobars to the user.
 class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a infobar delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
+  // Creates a MIDI permission infobar delegate and adds it to
+  // |infobar_service|. Returns the delegate if it was successfully added.
   static InfoBarDelegate* Create(InfoBarService* infobar_service,
                                  PermissionQueueController* controller,
                                  const PermissionRequestID& id,
@@ -39,6 +39,7 @@ class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpireInternal(
