@@ -106,7 +106,7 @@ void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
 #endif
 }
 
-void Pasteboard::writeURL(const KURL& url, const String& titleStr, Frame* frame)
+void Pasteboard::writeURL(const KURL& url, const String& titleStr)
 {
     ASSERT(!url.isEmpty());
 
@@ -163,7 +163,7 @@ bool Pasteboard::canSmartReplace()
     return WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatSmartPaste, m_selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard);
 }
 
-String Pasteboard::plainText(Frame* frame)
+String Pasteboard::plainText()
 {
     return WebKit::Platform::current()->clipboard()->readPlainText(m_selectionMode ? WebKit::WebClipboard::BufferSelection : WebKit::WebClipboard::BufferStandard);
 }

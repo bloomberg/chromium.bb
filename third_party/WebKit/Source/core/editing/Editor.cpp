@@ -369,7 +369,7 @@ void Editor::pasteAsPlainTextBypassingDHTML()
 
 void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 {
-    String text = pasteboard->plainText(m_frame);
+    String text = pasteboard->plainText();
     if (client().shouldInsertText(text, selectedRange().get(), EditorInsertActionPasted))
         pasteAsPlainText(text, canSmartReplaceWithPasteboard(pasteboard));
 }
@@ -997,7 +997,7 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
 
 void Editor::copyURL(const KURL& url, const String& title)
 {
-    Pasteboard::generalPasteboard()->writeURL(url, title, m_frame);
+    Pasteboard::generalPasteboard()->writeURL(url, title);
 }
 
 void Editor::copyImage(const HitTestResult& result)

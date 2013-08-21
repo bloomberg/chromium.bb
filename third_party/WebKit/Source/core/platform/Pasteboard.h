@@ -61,13 +61,13 @@ public:
     static Pasteboard* generalPasteboard();
     void writeSelection(Range*, bool canSmartCopyOrDelete, Frame*, ShouldSerializeSelectedTextForClipboard = DefaultSelectedTextType);
     void writePlainText(const String&, SmartReplaceOption);
-    void writeURL(const KURL&, const String&, Frame* = 0);
+    void writeURL(const KURL&, const String&);
     void writeImage(Node*, const KURL&, const String& title);
     void writeClipboard(Clipboard*);
     void clear();
     bool canSmartReplace();
     PassRefPtr<DocumentFragment> documentFragment(Frame*, PassRefPtr<Range>, bool allowPlainText, bool& chosePlainText);
-    String plainText(Frame* = 0);
+    String plainText();
 
     bool isSelectionMode() const;
     void setSelectionMode(bool);
