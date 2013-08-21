@@ -35,6 +35,9 @@ BASE_EXPORT void DetachFromVM();
 // InitApplicationContext().
 BASE_EXPORT void InitVM(JavaVM* vm);
 
+// Returns true if the global JVM has been initialized.
+BASE_EXPORT bool IsVMInitialized();
+
 // Initializes the global application context object. The |context| can be any
 // valid reference to the application context. Internally holds a global ref to
 // the context. InitVM and InitApplicationContext maybe called in either order.

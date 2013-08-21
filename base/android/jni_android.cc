@@ -124,6 +124,10 @@ void InitVM(JavaVM* vm) {
   g_jvm = vm;
 }
 
+bool IsVMInitialized() {
+  return g_jvm != NULL;
+}
+
 void InitApplicationContext(const JavaRef<jobject>& context) {
   DCHECK(g_application_context.Get().is_null());
   g_application_context.Get().Reset(context);

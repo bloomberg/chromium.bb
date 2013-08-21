@@ -148,8 +148,10 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
   }
 
 #if defined(OS_ANDROID)
-  activity_status_listener_.reset(new base::android::ActivityStatus::Listener(
-      base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
+  if (base::android::IsVMInitialized()) {
+    activity_status_listener_.reset(new base::android::ActivityStatus::Listener(
+        base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
+  }
 #endif
 
   SimpleIndexLoadResult* load_result = new SimpleIndexLoadResult();
