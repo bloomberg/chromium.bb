@@ -227,7 +227,6 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
   if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC, iv))
     return false;
 
-  std::string plaintext;
   if (!encryptor.Decrypt(ciphertext, value))
     return false;
 
