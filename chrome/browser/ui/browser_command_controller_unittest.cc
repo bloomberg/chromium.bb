@@ -27,14 +27,14 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 #if defined(OS_CHROMEOS)
   // F1-3 keys are reserved Chrome accelerators on Chrome OS.
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_BACK, content::NativeWebKeyboardEvent(ui::ET_KEY_PRESSED, false,
-                                                ui::VKEY_F1, 0, 0)));
+      IDC_BACK, content::NativeWebKeyboardEvent(
+          ui::ET_KEY_PRESSED, false, ui::VKEY_BROWSER_BACK, 0, 0)));
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_FORWARD, content::NativeWebKeyboardEvent(ui::ET_KEY_PRESSED, false,
-                                                   ui::VKEY_F2, 0, 0)));
+      IDC_FORWARD, content::NativeWebKeyboardEvent(
+          ui::ET_KEY_PRESSED, false, ui::VKEY_BROWSER_FORWARD, 0, 0)));
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_RELOAD, content::NativeWebKeyboardEvent(ui::ET_KEY_PRESSED, false,
-                                                  ui::VKEY_F3, 0, 0)));
+      IDC_RELOAD, content::NativeWebKeyboardEvent(
+          ui::ET_KEY_PRESSED, false, ui::VKEY_BROWSER_REFRESH, 0, 0)));
 
   // When there are modifier keys pressed, don't reserve.
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(

@@ -235,14 +235,15 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     return false;
 
 #if defined(OS_CHROMEOS)
-  // On Chrome OS, the top row of keys are mapped to F1-F10.  We don't want web
-  // pages to be able to change the behavior of these keys.  Ash handles F4 and
-  // up; this leaves us needing to reserve F1-F3 here.
+  // On Chrome OS, the top row of keys are mapped to browser actions like
+  // back/forward or refresh. We don't want web pages to be able to change the
+  // behavior of these keys.  Ash handles F4 and up; this leaves us needing to
+  // reserve browser back/forward and refresh here.
   ui::KeyboardCode key_code =
     static_cast<ui::KeyboardCode>(event.windowsKeyCode);
-  if ((key_code == ui::VKEY_F1 && command_id == IDC_BACK) ||
-      (key_code == ui::VKEY_F2 && command_id == IDC_FORWARD) ||
-      (key_code == ui::VKEY_F3 && command_id == IDC_RELOAD)) {
+  if ((key_code == ui::VKEY_BROWSER_BACK && command_id == IDC_BACK) ||
+      (key_code == ui::VKEY_BROWSER_FORWARD && command_id == IDC_FORWARD) ||
+      (key_code == ui::VKEY_BROWSER_REFRESH && command_id == IDC_RELOAD)) {
     return true;
   }
 #endif
