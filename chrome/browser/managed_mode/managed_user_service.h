@@ -68,6 +68,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   // TODO(pamg, sergiu): Remove this once the feature is fully launched.
   static bool AreManagedUsersEnabled();
 
+  static void MigrateUserPrefs(PrefService* prefs);
+
   // Returns the URL filter for the IO thread, for filtering network requests
   // (in ManagedModeResourceThrottle).
   scoped_refptr<const ManagedModeURLFilter> GetURLFilterForIOThread();

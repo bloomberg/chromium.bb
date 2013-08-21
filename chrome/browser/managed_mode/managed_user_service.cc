@@ -213,6 +213,24 @@ bool ManagedUserService::AreManagedUsersEnabled() {
              switches::kEnableManagedUsers);
 }
 
+// static
+void ManagedUserService::MigrateUserPrefs(PrefService* prefs) {
+  if (!prefs->HasPrefPath(prefs::kProfileIsManaged))
+    return;
+
+  bool is_managed = prefs->GetBoolean(prefs::kProfileIsManaged);
+  prefs->ClearPref(prefs::kProfileIsManaged);
+
+  if (!is_managed)
+    return;
+
+  std::string managed_user_id = prefs->GetString(prefs::kManagedUserId);
+  if (!managed_user_id.empty())
+    return;
+
+  prefs->SetString(prefs::kManagedUserId, "Dummy ID");
+}
+
 scoped_refptr<const ManagedModeURLFilter>
 ManagedUserService::GetURLFilterForIOThread() {
   return url_filter_context_.io_url_filter();
@@ -518,8 +536,8 @@ void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
 }
 
 void ManagedUserService::InitForTesting() {
-  DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kProfileIsManaged));
-  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  DCHECK(!profile_->IsManaged());
+  profile_->GetPrefs()->SetString(prefs::kManagedUserId, "Test ID");
   Init();
 }
 

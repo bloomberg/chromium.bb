@@ -184,13 +184,12 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
-    // TODO(ibraaaa): delete this when we fully migrate to
-    // |prefs::kManagedUserId|.
+    // TODO(ibraaaa): delete this when 97% of our users are using M31.
+    // http://crbug.com/276163
     bool is_managed = false;
-    info->GetBoolean(kIsManagedKey, &is_managed);
-    if (is_managed) {
-      info->SetString(kManagedUserId, "DUMMY_ID");
+    if (info->GetBoolean(kIsManagedKey, &is_managed)) {
       info->Remove(kIsManagedKey, NULL);
+      info->SetString(kManagedUserId, is_managed ? "DUMMY_ID" : std::string());
     }
   }
 }

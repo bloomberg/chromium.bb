@@ -228,7 +228,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
 
 // Checks that managed users have their own default theme.
 TEST_F(ThemeServiceTest, ManagedUserThemeReplacesDefaultTheme) {
-  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ManagedUserServiceFactory::GetForProfile(profile_.get())->InitForTesting();
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());
   theme_service->UseDefaultTheme();
@@ -254,7 +254,7 @@ TEST_F(ThemeServiceTest, ManagedUserThemeNewUser) {
 // Checks that managed users don't use the system theme even if it is the
 // default. The system theme is only available on Linux.
 TEST_F(ThemeServiceTest, ManagedUserThemeReplacesNativeTheme) {
-  profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ManagedUserServiceFactory::GetForProfile(profile_.get())->InitForTesting();
   profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());

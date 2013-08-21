@@ -452,6 +452,10 @@ void MigrateUserPrefs(Profile* profile) {
   PrefsTabHelper::MigrateUserPrefs(prefs);
   PromoResourceService::MigrateUserPrefs(prefs);
   TranslatePrefs::MigrateUserPrefs(prefs);
+
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserService::MigrateUserPrefs(prefs);
+#endif
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {

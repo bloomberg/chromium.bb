@@ -247,10 +247,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   // Make the profile managed such that no extension installs are allowed.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(browser()->profile());
-  service->Init();
+  service->InitForTesting();
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install_prohibited.html"));

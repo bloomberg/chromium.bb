@@ -934,7 +934,6 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
 
-  bool is_managed = false;
   size_t avatar_index;
   std::string profile_name;
   std::string managed_user_id;
@@ -950,7 +949,6 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
       profile_name =
           UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
-      is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
       managed_user_id =
           cache.GetManagedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
@@ -968,9 +966,6 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
-
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged))
-    profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
 
   if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId))
     profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);

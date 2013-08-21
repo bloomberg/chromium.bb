@@ -349,7 +349,17 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
     SetFirstLoginPrefs(user_profile->GetPrefs());
 
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    user_profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+    User* active_user = UserManager::Get()->GetActiveUser();
+    std::string managed_user_sync_id =
+        UserManager::Get()->GetManagedUserSyncId(active_user->email());
+
+    // TODO(ibraaaa): Remove that when 97% of our users are using M31.
+    // http://crbug.com/276163
+    if (managed_user_sync_id.empty())
+      managed_user_sync_id = "DUMMY_ID";
+
+    user_profile->GetPrefs()->SetString(prefs::kManagedUserId,
+                                        managed_user_sync_id);
   } else {
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
