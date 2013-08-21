@@ -94,7 +94,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
     DVLOG(1) << __FUNCTION__;
   }
 
-  static HRESULT ChromeFrameMetricsDataUploader::UploadDataHelper(
+  static HRESULT UploadDataHelper(
       const std::string& upload_data,
       const std::string& server_url,
       const std::string& mime_type) {
