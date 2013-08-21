@@ -9,11 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
+class FakeSessionManagerClient;
+}
 
 namespace policy {
 
