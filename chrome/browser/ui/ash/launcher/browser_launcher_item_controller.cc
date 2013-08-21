@@ -63,17 +63,11 @@ void BrowserLauncherItemController::Init() {
   ash::LauncherItemStatus app_status =
       ash::wm::IsActiveWindow(window_) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  if (type() != TYPE_TABBED && type() != TYPE_WINDOWED_APP) {
+  if (type() != TYPE_TABBED && type() != TYPE_WINDOWED_APP)
     launcher_controller()->CreateAppLauncherItem(this, app_id(), app_status);
-  } else {
-    launcher_controller()->CreateTabbedLauncherItem(
-        this,
-        is_incognito_ ? ChromeLauncherController::STATE_INCOGNITO :
-                        ChromeLauncherController::STATE_NOT_INCOGNITO,
-        app_status);
-    if (type() == TYPE_WINDOWED_APP)
-      launcher_controller()->LockV1AppWithID(LauncherItemController::app_id());
-  }
+  else if (type() == TYPE_WINDOWED_APP)
+    launcher_controller()->LockV1AppWithID(LauncherItemController::app_id());
+
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->active_index() != TabStripModel::kNoTab)
     UpdateLauncher(tab_model_->GetActiveWebContents());
@@ -92,8 +86,7 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
     type = TYPE_TABBED;
     if (!browser->is_type_tabbed() &&
         browser->is_type_popup() &&
-        browser->is_app() &&
-        ChromeLauncherController::instance()->GetPerAppInterface()) {
+        browser->is_app()) {
       app_id = web_app::GetExtensionIdFromApplicationName(
                     browser->app_name());
       // Only allow this for known applications. Some unit tests for example
@@ -180,11 +173,6 @@ void BrowserLauncherItemController::OnRemoved() {
 void BrowserLauncherItemController::LauncherItemChanged(
     int index,
     const ash::LauncherItem& old_item) {
-  if (!launcher_controller()->GetPerAppInterface() &&
-      launcher_model()->items()[index].status == ash::STATUS_ACTIVE &&
-      old_item.status == ash::STATUS_RUNNING) {
-    Activate();
-  }
 }
 
 ChromeLauncherAppMenuItems
@@ -201,9 +189,8 @@ void BrowserLauncherItemController::ActiveTabChanged(
     int reason) {
   // Update immediately on a tab change.
   if (old_contents &&
-      (!launcher_controller()->GetPerAppInterface() ||
-       TabStripModel::kNoTab !=
-           tab_model_->GetIndexOfWebContents(old_contents)))
+      TabStripModel::kNoTab !=
+          tab_model_->GetIndexOfWebContents(old_contents))
     UpdateAppState(old_contents);
   UpdateAppState(new_contents);
   UpdateLauncher(new_contents);
@@ -257,60 +244,15 @@ void BrowserLauncherItemController::OnWindowPropertyChanged(
 }
 
 void BrowserLauncherItemController::UpdateItemStatus() {
-  if (launcher_controller()->GetPerAppInterface())
-    return;
-
-  ash::LauncherItemStatus status;
-  if (ash::wm::IsActiveWindow(window_)) {
-    // Clear attention state if active.
-    if (window_->GetProperty(aura::client::kDrawAttentionKey))
-      window_->SetProperty(aura::client::kDrawAttentionKey, false);
-    status = ash::STATUS_ACTIVE;
-  } else if (window_->GetProperty(aura::client::kDrawAttentionKey)) {
-    status = ash::STATUS_ATTENTION;
-  } else {
-    status = ash::STATUS_RUNNING;
-  }
-  launcher_controller()->SetItemStatus(launcher_id(), status);
 }
 
 void BrowserLauncherItemController::UpdateLauncher(content::WebContents* tab) {
-  if (launcher_controller()->GetPerAppInterface())
-    return;
-
-  if (type() == TYPE_APP_PANEL)
-    return;  // Maintained entirely by ChromeLauncherController.
-
-  if (!tab)
-    return;  // Assume the window is going to be closed if there are no tabs.
-
-  int item_index = launcher_model()->ItemIndexByID(launcher_id());
-  if (item_index == -1)
-    return;
-
-  ash::LauncherItem item = launcher_model()->items()[item_index];
-  DCHECK_EQ(TYPE_TABBED, type());
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(tab);
-  if (favicon_tab_helper->ShouldDisplayFavicon()) {
-    item.image = favicon_tab_helper->GetFavicon().AsImageSkia();
-    if (item.image.isNull()) {
-      item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-    }
-  } else {
-    item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-  }
-  launcher_model()->Set(item_index, item);
 }
 
 void BrowserLauncherItemController::UpdateAppState(content::WebContents* tab) {
   ChromeLauncherController::AppState app_state;
 
-  if (!launcher_controller()->GetPerAppInterface() &&
-      tab_model_->GetIndexOfWebContents(tab) == TabStripModel::kNoTab) {
-    app_state = ChromeLauncherController::APP_STATE_REMOVED;
-  } else if (tab_model_->GetActiveWebContents() == tab) {
+  if (tab_model_->GetActiveWebContents() == tab) {
     if (ash::wm::IsActiveWindow(window_))
       app_state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
     else

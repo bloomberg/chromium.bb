@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 #include <algorithm>
 #include <string>
@@ -35,6 +35,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,16 +136,55 @@ class TestAppIconLoaderImpl : public extensions::AppIconLoader {
   DISALLOW_COPY_AND_ASSIGN(TestAppIconLoaderImpl);
 };
 
+// Test implementation of AppTabHelper.
+class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
+ public:
+  TestAppTabHelperImpl() {}
+  virtual ~TestAppTabHelperImpl() {}
+
+  // Sets the id for the specified tab. The id is removed if Remove() is
+  // invoked.
+  void SetAppID(content::WebContents* tab, const std::string& id) {
+    tab_id_map_[tab] = id;
+  }
+
+  // Returns true if there is an id registered for |tab|.
+  bool HasAppID(content::WebContents* tab) const {
+    return tab_id_map_.find(tab) != tab_id_map_.end();
+  }
+
+  // AppTabHelper implementation:
+  virtual std::string GetAppID(content::WebContents* tab) OVERRIDE {
+    return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
+        std::string();
+  }
+
+  virtual bool IsValidID(const std::string& id) OVERRIDE {
+    for (TabToStringMap::const_iterator i = tab_id_map_.begin();
+         i != tab_id_map_.end(); ++i) {
+      if (i->second == id)
+        return true;
+    }
+    return false;
+  }
+
+ private:
+  typedef std::map<content::WebContents*, std::string> TabToStringMap;
+
+  TabToStringMap tab_id_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAppTabHelperImpl);
+};
+
 }  // namespace
 
-class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
+class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
-  ChromeLauncherControllerPerAppTest()
-      : extension_service_(NULL) {
+  ChromeLauncherControllerTest() : extension_service_(NULL) {
     SetHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
-  virtual ~ChromeLauncherControllerPerAppTest() {
+  virtual ~ChromeLauncherControllerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -216,7 +256,7 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
 
   void InitLauncherController() {
     launcher_controller_.reset(
-        new ChromeLauncherControllerPerApp(profile(), model_.get()));
+        new ChromeLauncherController(profile(), model_.get()));
     launcher_controller_->Init();
   }
 
@@ -230,6 +270,10 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
     launcher_controller_->SetAppIconLoaderForTest(loader);
   }
 
+  void SetAppTabHelper(ChromeLauncherController::AppTabHelper* helper) {
+    launcher_controller_->SetAppTabHelperForTest(helper);
+  }
+
   void InsertPrefValue(base::ListValue* pref_value,
                        int index,
                        const std::string& extension_id) {
@@ -239,12 +283,12 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
   }
 
   // Gets the currently configured app launchers from the controller.
-  void GetAppLaunchers(ChromeLauncherControllerPerApp* controller,
+  void GetAppLaunchers(ChromeLauncherController* controller,
                        std::vector<std::string>* launchers) {
     launchers->clear();
     for (ash::LauncherItems::const_iterator iter(model_->items().begin());
          iter != model_->items().end(); ++iter) {
-      ChromeLauncherControllerPerApp::IDToItemControllerMap::const_iterator
+      ChromeLauncherController::IDToItemControllerMap::const_iterator
           entry(controller->id_to_item_controller_map_.find(iter->id));
       if (iter->type == ash::TYPE_APP_SHORTCUT &&
           entry != controller->id_to_item_controller_map_.end()) {
@@ -297,30 +341,30 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension2_;
   scoped_refptr<Extension> extension3_;
   scoped_refptr<Extension> extension4_;
-  scoped_ptr<ChromeLauncherControllerPerApp> launcher_controller_;
+  scoped_ptr<ChromeLauncherController> launcher_controller_;
   scoped_ptr<TestLauncherModelObserver> model_observer_;
   scoped_ptr<ash::LauncherModel> model_;
 
   ExtensionService* extension_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
 
 // The testing framework to test the alternate shelf layout.
-class AlternateLayoutChromeLauncherControllerPerAppTest
-    : public ChromeLauncherControllerPerAppTest {
+class AlternateLayoutChromeLauncherControllerTest
+    : public ChromeLauncherControllerTest {
  protected:
-  AlternateLayoutChromeLauncherControllerPerAppTest() {
+  AlternateLayoutChromeLauncherControllerTest() {
   }
 
-  virtual ~AlternateLayoutChromeLauncherControllerPerAppTest() {
+  virtual ~AlternateLayoutChromeLauncherControllerTest() {
   }
 
   // Overwrite the Setup function to add the Alternate Shelf layout option.
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshUseAlternateShelfLayout);
-    ChromeLauncherControllerPerAppTest::SetUp();
+    ChromeLauncherControllerTest::SetUp();
   }
 
   // Set the index at which the chrome icon should be.
@@ -331,11 +375,11 @@ class AlternateLayoutChromeLauncherControllerPerAppTest
 
  private:
 
-  DISALLOW_COPY_AND_ASSIGN(AlternateLayoutChromeLauncherControllerPerAppTest);
+  DISALLOW_COPY_AND_ASSIGN(AlternateLayoutChromeLauncherControllerTest);
 };
 
 
-TEST_F(ChromeLauncherControllerPerAppTest, DefaultApps) {
+TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -354,7 +398,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, DefaultApps) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced reverse
 // order.
-TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsReverseOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsReverseOrder) {
   InitLauncherController();
 
   base::ListValue policy_value;
@@ -393,7 +437,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsReverseOrder) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced random
 // order.
-TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsRandomOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsRandomOrder) {
   InitLauncherController();
 
   base::ListValue policy_value;
@@ -431,8 +475,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsRandomOrder) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned / moved them (on another system) when they are synced
 // random order - including the chrome icon.
-TEST_F(ChromeLauncherControllerPerAppTest,
-    RestoreDefaultAppsRandomOrderChromeMoved) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsRandomOrderChromeMoved) {
   InitLauncherController();
 
   base::ListValue policy_value;
@@ -470,7 +513,7 @@ TEST_F(ChromeLauncherControllerPerAppTest,
 }
 
 // Check that syncing to a different state does the correct thing.
-TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsResyncOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsResyncOrder) {
   InitLauncherController();
   base::ListValue policy_value;
   InsertPrefValue(&policy_value, 0, extension1_->id());
@@ -505,7 +548,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsResyncOrder) {
   EXPECT_EQ("App2, Chrome, App3, App1, AppList, ", GetPinnedAppStatus());
 }
 
-TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest, DefaultApps) {
+TEST_F(AlternateLayoutChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -524,7 +567,7 @@ TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest, DefaultApps) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced reverse
 // order.
-TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
+TEST_F(AlternateLayoutChromeLauncherControllerTest,
     RestoreDefaultAppsReverseOrder) {
   InitLauncherController();
 
@@ -564,7 +607,7 @@ TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced random
 // order.
-TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
+TEST_F(AlternateLayoutChromeLauncherControllerTest,
     RestoreDefaultAppsRandomOrder) {
   InitLauncherController();
 
@@ -603,7 +646,7 @@ TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned / moved them (on another system) when they are synced
 // random order - including the chrome icon - using the alternate shelf layout.
-TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
+TEST_F(AlternateLayoutChromeLauncherControllerTest,
     RestoreDefaultAppsRandomOrderChromeMoved) {
   InitLauncherController();
 
@@ -642,7 +685,7 @@ TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
 
 // Check that syncing to a different state does the correct thing with the
 // alternate shelf layout.
-TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
+TEST_F(AlternateLayoutChromeLauncherControllerTest,
     RestoreDefaultAppsResyncOrder) {
   InitLauncherController();
   base::ListValue policy_value;
@@ -704,7 +747,7 @@ TEST_F(AlternateLayoutChromeLauncherControllerPerAppTest,
 }
 
 // Check that simple locking of an application will 'create' a launcher item.
-TEST_F(ChromeLauncherControllerPerAppTest, CheckLockApps) {
+TEST_F(ChromeLauncherControllerTest, CheckLockApps) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -737,7 +780,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckLockApps) {
 }
 
 // Check that multiple locks of an application will be properly handled.
-TEST_F(ChromeLauncherControllerPerAppTest, CheckMukltiLockApps) {
+TEST_F(ChromeLauncherControllerTest, CheckMukltiLockApps) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -774,7 +817,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckMukltiLockApps) {
 }
 
 // Check that already pinned items are not effected by locks.
-TEST_F(ChromeLauncherControllerPerAppTest, CheckAlreadyPinnedLockApps) {
+TEST_F(ChromeLauncherControllerTest, CheckAlreadyPinnedLockApps) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -814,7 +857,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckAlreadyPinnedLockApps) {
 }
 
 // Check that already pinned items which get locked stay after unpinning.
-TEST_F(ChromeLauncherControllerPerAppTest, CheckPinnedAppsStayAfterUnlock) {
+TEST_F(ChromeLauncherControllerTest, CheckPinnedAppsStayAfterUnlock) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -851,7 +894,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckPinnedAppsStayAfterUnlock) {
 }
 
 // Check that lock -> pin -> unlock -> unpin does properly transition.
-TEST_F(ChromeLauncherControllerPerAppTest, CheckLockPinUnlockUnpin) {
+TEST_F(ChromeLauncherControllerTest, CheckLockPinUnlockUnpin) {
   InitLauncherController();
   // Model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -887,7 +930,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckLockPinUnlockUnpin) {
   EXPECT_EQ(2, model_->item_count());
 }
 
-TEST_F(ChromeLauncherControllerPerAppTest, Policy) {
+TEST_F(ChromeLauncherControllerTest, Policy) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
 
@@ -927,7 +970,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, Policy) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerPerAppTest, UnpinWithUninstall) {
+TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
@@ -943,7 +986,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, UnpinWithUninstall) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension4_->id()));
 }
 
-TEST_F(ChromeLauncherControllerPerAppTest, PrefUpdates) {
+TEST_F(ChromeLauncherControllerTest, PrefUpdates) {
   extension_service_->AddExtension(extension2_.get());
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
@@ -999,7 +1042,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, PrefUpdates) {
   EXPECT_EQ(expected_launchers, actual_launchers);
 }
 
-TEST_F(ChromeLauncherControllerPerAppTest, PendingInsertionOrder) {
+TEST_F(ChromeLauncherControllerTest, PendingInsertionOrder) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
 
@@ -1032,7 +1075,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, PendingInsertionOrder) {
 // found item count against the |expected_items|. The |title| list contains the
 // menu titles in the order of their appearance in the menu (not including the
 // application name).
-bool CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
+bool CheckMenuCreation(ChromeLauncherController* controller,
                        const ash::LauncherItem& item,
                        size_t expected_items,
                        string16 title[],
@@ -1074,7 +1117,7 @@ bool CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
-TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
+TEST_F(ChromeLauncherControllerTest, BrowserMenuGeneration) {
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   chrome::NewTab(browser());
 
@@ -1122,7 +1165,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
 // refocus logic.
 // Note that the extension matching logic is tested by the extension system
 // and does not need a separate test here.
-TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
 
@@ -1195,7 +1238,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
 }
 
 // Checks that the generated menu list properly activates items.
-TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   InitLauncherControllerWithBrowser();
 
   // Add |extension3_| to the launcher and add two items.
@@ -1244,7 +1287,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
 }
 
 // Checks that the generated menu list properly deletes items.
-TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuDeletionExecution) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   InitLauncherControllerWithBrowser();
 
   // Add |extension3_| to the launcher and add two items.
@@ -1285,8 +1328,9 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuDeletionExecution) {
 }
 
 // Tests that panels create launcher items correctly
-TEST_F(ChromeLauncherControllerPerAppTest, AppPanels) {
+TEST_F(ChromeLauncherControllerTest, AppPanels) {
   InitLauncherControllerWithBrowser();
+  // Browser shortcut LauncherItem is added.
   EXPECT_EQ(1, model_observer_->added());
 
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl();
@@ -1330,7 +1374,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, AppPanels) {
 
 // Tests that the Gmail extension matches more then the app itself claims with
 // the manifest file.
-TEST_F(ChromeLauncherControllerPerAppTest, GmailMatching) {
+TEST_F(ChromeLauncherControllerTest, GmailMatching) {
   InitLauncherControllerWithBrowser();
 
   // Create a Gmail browser tab.
@@ -1362,7 +1406,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, GmailMatching) {
 }
 
 // Tests that the Gmail extension does not match the offline verison.
-TEST_F(ChromeLauncherControllerPerAppTest, GmailOfflineMatching) {
+TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
   InitLauncherControllerWithBrowser();
 
   // Create a Gmail browser tab.
@@ -1384,4 +1428,103 @@ TEST_F(ChromeLauncherControllerPerAppTest, GmailOfflineMatching) {
 
   // The content should not be able to be handled by the app.
   EXPECT_FALSE(launcher_controller_->ContentCanBeHandledByGmailApp(content));
+}
+
+// Verify that the launcher item positions are persisted and restored.
+TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
+  InitLauncherController();
+
+  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
+  SetAppTabHelper(app_tab_helper);
+
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(0, tab_strip_model->count());
+  chrome::NewTab(browser());
+  chrome::NewTab(browser());
+  EXPECT_EQ(2, tab_strip_model->count());
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
+
+  EXPECT_FALSE(launcher_controller_->IsAppPinned("1"));
+  launcher_controller_->PinAppWithID("1");
+  EXPECT_TRUE(launcher_controller_->IsAppPinned("1"));
+  launcher_controller_->PinAppWithID("2");
+
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[3].type);
+
+  // Move browser shortcut item from index 0 to index 2.
+  model_->Move(0, 2);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[3].type);
+
+  launcher_controller_.reset();
+  model_.reset(new ash::LauncherModel);
+  launcher_controller_.reset(
+      ChromeLauncherController::CreateInstance(profile(), model_.get()));
+  app_tab_helper = new TestAppTabHelperImpl;
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
+  SetAppTabHelper(app_tab_helper);
+
+  launcher_controller_->Init();
+
+  // Check LauncherItems are restored after resetting ChromeLauncherController.
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[2].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[3].type);
+}
+
+// Verifies pinned apps are persisted and restored.
+TEST_F(ChromeLauncherControllerTest, PersistPinned) {
+  InitLauncherControllerWithBrowser();
+  size_t initial_size = model_->items().size();
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip_model->count());
+
+  TestAppTabHelperImpl* app_tab_helper = new TestAppTabHelperImpl;
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  SetAppTabHelper(app_tab_helper);
+
+  TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl;
+  SetAppIconLoader(app_icon_loader);
+  EXPECT_EQ(0, app_icon_loader->fetch_count());
+
+  launcher_controller_->PinAppWithID("1");
+  ash::LauncherID id = launcher_controller_->GetLauncherIDForAppID("1");
+  int app_index = model_->ItemIndexByID(id);
+  EXPECT_EQ(1, app_icon_loader->fetch_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[app_index].type);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned("1"));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned("0"));
+  EXPECT_EQ(initial_size + 1, model_->items().size());
+
+  launcher_controller_.reset();
+  model_.reset(new ash::LauncherModel);
+  launcher_controller_.reset(
+      ChromeLauncherController::CreateInstance(profile(), model_.get()));
+  app_tab_helper = new TestAppTabHelperImpl;
+  app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
+  SetAppTabHelper(app_tab_helper);
+  app_icon_loader = new TestAppIconLoaderImpl;
+  SetAppIconLoader(app_icon_loader);
+  launcher_controller_->Init();
+
+  EXPECT_EQ(1, app_icon_loader->fetch_count());
+  ASSERT_EQ(initial_size + 1, model_->items().size());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned("1"));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned("0"));
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[app_index].type);
+
+  launcher_controller_->UnpinAppsWithID("1");
+  ASSERT_EQ(initial_size, model_->items().size());
 }

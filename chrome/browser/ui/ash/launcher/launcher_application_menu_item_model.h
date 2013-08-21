@@ -7,7 +7,12 @@
 
 #include "ash/launcher/launcher_delegate.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
+#include "base/memory/scoped_vector.h"
+
+class ChromeLauncherAppMenuItem;
+
+// A list of the elements which makes up a simple menu description.
+typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
 // A menu model that builds the contents of a menu for a launcher item
 // containing a list of running applications.
