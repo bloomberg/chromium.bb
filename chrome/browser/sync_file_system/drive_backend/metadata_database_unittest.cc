@@ -22,6 +22,8 @@ namespace drive_backend {
 
 namespace {
 
+typedef MetadataDatabase::FileIDList FileIDList;
+
 const int64 kInitialChangeID = 1234;
 const int64 kSyncRootTrackerID = 100;
 const char kSyncRootFolderID[] = "sync_root_folder_id";
@@ -29,9 +31,15 @@ const char kSyncRootFolderID[] = "sync_root_folder_id";
 struct TrackedFile {
   FileMetadata metadata;
   FileTracker tracker;
+
+  // Implies the file should not in the database.
   bool should_be_absent;
 
-  TrackedFile() : should_be_absent(false) {}
+  // Implies the file should have a tracker in the database but should have no
+  // metadata.
+  bool tracker_only;
+
+  TrackedFile() : should_be_absent(false), tracker_only(false) {}
 };
 
 void ExpectEquivalent(const ServiceMetadata* left,
@@ -226,14 +234,20 @@ class MetadataDatabaseTest : public testing::Test {
       const TrackedFile* file = tracked_files[i];
       if (file->should_be_absent)
         continue;
-      EXPECT_TRUE(PutFileToDB(db.get(), file->metadata).ok());
+      if (!file->tracker_only)
+        EXPECT_TRUE(PutFileToDB(db.get(), file->metadata).ok());
       EXPECT_TRUE(PutTrackerToDB(db.get(), file->tracker).ok());
     }
   }
 
   void VerifyTrackedFile(const TrackedFile& file) {
     if (!file.should_be_absent) {
-      VerifyFile(file.metadata);
+      if (file.tracker_only) {
+        EXPECT_FALSE(metadata_database()->FindFileByFileID(
+            file.metadata.file_id(), NULL));
+      } else {
+        VerifyFile(file.metadata);
+      }
       VerifyTracker(file.tracker);
       return;
     }
@@ -347,6 +361,14 @@ class MetadataDatabaseTest : public testing::Test {
     sync_root.metadata = CreateSyncRootMetadata();
     sync_root.tracker = CreateSyncRootTracker(sync_root.metadata);
     return sync_root;
+  }
+
+  TrackedFile CreateTrackedAppRoot(const TrackedFile& sync_root,
+                                   const std::string& app_id) {
+    TrackedFile app_root(CreateTrackedFolder(sync_root, app_id));
+    app_root.tracker.set_app_id(app_id);
+    app_root.tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
+    return app_root;
   }
 
   TrackedFile CreateTrackedFile(const TrackedFile& parent,
@@ -560,6 +582,16 @@ class MetadataDatabaseTest : public testing::Test {
     return status;
   }
 
+  SyncStatusCode PopulateFolder(const std::string& folder_id,
+                                const FileIDList& listed_children) {
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    metadata_database_->PopulateFolder(
+        folder_id, listed_children,
+        base::Bind(&SyncStatusResultCallback, &status));
+    message_loop_.RunUntilIdle();
+    return status;
+  }
+
  private:
   base::ScopedTempDir database_dir_;
   base::MessageLoop message_loop_;
@@ -763,6 +795,115 @@ TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
 
   new_file.should_be_absent = false;
 
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
+  app_root.tracker.set_app_id(app_root.metadata.details().title());
+
+  TrackedFile folder_to_populate(
+      CreateTrackedFolder(app_root, "folder_to_populate"));
+  folder_to_populate.tracker.set_needs_folder_listing(true);
+  folder_to_populate.tracker.set_dirty(true);
+
+  TrackedFile known_file(CreateTrackedFile(folder_to_populate, "known_file"));
+  TrackedFile new_file(CreateTrackedFile(folder_to_populate, "new_file"));
+  new_file.should_be_absent = true;
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &app_root, &folder_to_populate, &known_file, &new_file
+  };
+
+  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+
+  FileIDList listed_children;
+  listed_children.push_back(known_file.metadata.file_id());
+  listed_children.push_back(new_file.metadata.file_id());
+
+  EXPECT_EQ(SYNC_STATUS_OK,
+            PopulateFolder(folder_to_populate.metadata.file_id(),
+                           listed_children));
+
+  folder_to_populate.tracker.set_dirty(false);
+  folder_to_populate.tracker.set_needs_folder_listing(false);
+  new_file.tracker.set_tracker_id(
+      GetTrackerIDByFileID(new_file.metadata.file_id()));
+  new_file.tracker.set_dirty(true);
+  new_file.tracker.set_active(false);
+  new_file.tracker.clear_synced_details();
+  new_file.should_be_absent = false;
+  new_file.tracker_only = true;
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
+
+  TrackedFile inactive_folder(CreateTrackedFolder(app_root, "inactive_folder"));
+  inactive_folder.tracker.set_active(false);
+  inactive_folder.tracker.set_dirty(true);
+
+  TrackedFile new_file(
+      CreateTrackedFile(inactive_folder, "file_in_inactive_folder"));
+  new_file.should_be_absent = true;
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &app_root, &inactive_folder, &new_file,
+  };
+
+  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+
+  FileIDList listed_children;
+  listed_children.push_back(new_file.metadata.file_id());
+
+  EXPECT_EQ(SYNC_STATUS_OK,
+            PopulateFolder(inactive_folder.metadata.file_id(),
+                           listed_children));
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile disabled_app_root(
+      CreateTrackedAppRoot(sync_root, "disabled_app"));
+  disabled_app_root.tracker.set_dirty(true);
+  disabled_app_root.tracker.set_needs_folder_listing(true);
+
+  TrackedFile known_file(CreateTrackedFile(disabled_app_root, "known_file"));
+  TrackedFile file(CreateTrackedFile(disabled_app_root, "file"));
+  file.should_be_absent = true;
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &disabled_app_root, &disabled_app_root, &known_file, &file,
+  };
+
+  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+
+  FileIDList disabled_app_children;
+  disabled_app_children.push_back(file.metadata.file_id());
+  EXPECT_EQ(SYNC_STATUS_OK, PopulateFolder(
+      disabled_app_root.metadata.file_id(), disabled_app_children));
+  file.tracker.set_tracker_id(GetTrackerIDByFileID(file.metadata.file_id()));
+  file.tracker.clear_synced_details();
+  file.tracker.set_dirty(true);
+  file.tracker.set_active(false);
+  file.should_be_absent = false;
+  file.tracker_only = true;
+
+  disabled_app_root.tracker.set_dirty(false);
+  disabled_app_root.tracker.set_needs_folder_listing(false);
   VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
   VerifyReloadConsistency();
 }

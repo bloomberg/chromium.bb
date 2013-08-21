@@ -680,6 +680,45 @@ void MetadataDatabase::UpdateByChangeList(
   WriteToDatabase(batch.Pass(), callback);
 }
 
+void MetadataDatabase::PopulateFolder(const std::string& folder_id,
+                                      const FileIDList& child_file_ids,
+                                      const SyncStatusCallback& callback) {
+  TrackerSet trackers;
+  if (!FindTrackersByFileID(folder_id, &trackers) ||
+      !trackers.has_active()) {
+    // It's OK that there is no folder to populate its children.
+    // Inactive folders should ignore their contents updates.
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  FileTracker* folder_tracker =
+      tracker_by_id_[trackers.active_tracker()->tracker_id()];
+  DCHECK(folder_tracker);
+  std::set<std::string> children(child_file_ids.begin(), child_file_ids.end());
+
+  std::vector<int64> known_children;
+  PushChildTrackersToContainer(trackers_by_parent_and_title_,
+                               folder_tracker->tracker_id(),
+                               std::back_inserter(known_children));
+  for (std::vector<int64>::iterator itr = known_children.begin();
+       itr != known_children.end(); ++itr)
+    children.erase(tracker_by_id_[*itr]->file_id());
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  for (FileIDList::const_iterator itr = child_file_ids.begin();
+       itr != child_file_ids.end(); ++itr)
+    CreateTrackerForParentAndFileID(*folder_tracker, *itr, batch.get());
+  folder_tracker->set_needs_folder_listing(false);
+  if (!ShouldKeepDirty(*folder_tracker)) {
+    folder_tracker->set_dirty(false);
+    dirty_trackers_.erase(folder_tracker);
+  }
+  PutTrackerToBatch(*folder_tracker, batch.get());
+
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
     : task_runner_(task_runner), weak_ptr_factory_(this) {
   DCHECK(task_runner);
@@ -1097,6 +1136,34 @@ void MetadataDatabase::RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
       dirty_trackers_.insert(tracker);
     }
   }
+}
+
+bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
+  DCHECK(tracker.dirty());
+  if (!tracker.has_synced_details())
+    return true;
+
+  FileByID::const_iterator found = file_by_id_.find(tracker.file_id());
+  if (found == file_by_id_.end())
+    return true;
+  const FileMetadata& file = *found->second;
+
+  if (tracker.active()) {
+    if (tracker.needs_folder_listing())
+      return true;
+    if (tracker.synced_details().md5() != file.details().md5())
+      return true;
+  }
+
+  const FileDetails& local_details = tracker.synced_details();
+  const FileDetails& remote_details = file.details();
+
+  if (local_details.title() != remote_details.title())
+    return true;
+  if (local_details.deleted() != remote_details.deleted())
+    return true;
+
+  return false;
 }
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
