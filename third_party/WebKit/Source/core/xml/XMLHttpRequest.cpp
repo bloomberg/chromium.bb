@@ -763,11 +763,15 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
         // This is true while running onunload handlers.
         // FIXME: Maybe we need to be able to send XMLHttpRequests from onunload, <http://bugs.webkit.org/show_bug.cgi?id=10904>.
         // FIXME: Maybe create() can return null for other reasons too?
+        ASSERT(!m_loader);
         m_loader = ThreadableLoader::create(scriptExecutionContext(), this, request, options);
         if (m_loader) {
             // Neither this object nor the JavaScript wrapper should be deleted while
             // a request is in progress because we need to keep the listeners alive,
             // and they are referenced by the JavaScript wrapper.
+
+            // m_loader was null, so there should be no pending activity at this point.
+            ASSERT(!hasPendingActivity());
             setPendingActivity(this);
         }
     } else {
@@ -813,26 +817,25 @@ void XMLHttpRequest::abort()
     }
 }
 
-void XMLHttpRequest::internalAbort()
+void XMLHttpRequest::internalAbort(DropProtection async)
 {
-    bool hadLoader = m_loader;
-
     m_error = true;
 
     // FIXME: when we add the support for multi-part XHR, we will have to think be careful with this initialization.
     m_receivedLength = 0;
-
-    if (hadLoader) {
-        m_loader->cancel();
-        m_loader = 0;
-    }
-
     m_decoder = 0;
 
     InspectorInstrumentation::didFailXHRLoading(scriptExecutionContext(), this);
 
-    if (hadLoader)
-        dropProtectionSoon();
+    if (m_loader) {
+        m_loader->cancel();
+        m_loader = 0;
+
+        if (async == DropProtectionAsync)
+            dropProtectionSoon();
+        else
+            dropProtection();
+    }
 }
 
 void XMLHttpRequest::clearResponse()
@@ -1097,15 +1100,17 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
 
     InspectorInstrumentation::didFinishXHRLoading(scriptExecutionContext(), this, identifier, m_responseText, m_url, m_lastSendURL, m_lastSendLineNumber);
 
-    bool hadLoader = m_loader;
-    m_loader = 0;
+    // Prevent dropProtection releasing the last reference, and retain |this| until the end of this method.
+    RefPtr<XMLHttpRequest> protect(this);
+
+    if (m_loader) {
+        m_loader = 0;
+        dropProtection();
+    }
 
     changeState(DONE);
     m_responseEncoding = String();
     m_decoder = 0;
-
-    if (hadLoader)
-        dropProtection();
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -1241,7 +1246,7 @@ void XMLHttpRequest::resume()
 
 void XMLHttpRequest::stop()
 {
-    internalAbort();
+    internalAbort(DropProtectionAsync);
 }
 
 void XMLHttpRequest::contextDestroyed()
