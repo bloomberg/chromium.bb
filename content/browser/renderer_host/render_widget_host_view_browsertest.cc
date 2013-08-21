@@ -373,8 +373,17 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
 // Tests that the callback passed to CopyFromCompositingSurfaceToVideoFrame is
 // always called, even when the RenderWidgetHost is deleting in the middle of
 // an async copy.
+//
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
+  DISABLE_CopyFromCompositingSurface_CallbackDespiteDelete
+#else
+#define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
+  CopyFromCompositingSurface_CallbackDespiteDelete
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromCompositingSurface_CallbackDespiteDelete) {
+                       MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewPort* const view = GetRenderWidgetHostViewPort();
   if (!view->CanCopyToVideoFrame()) {
@@ -714,8 +723,16 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   std::string test_url_;
 };
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_Origin_Unscaled \
+  DISABLED_CopyFromCompositingSurface_Origin_Unscaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Origin_Unscaled \
+  CopyFromCompositingSurface_Origin_Unscaled
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Unscaled) {
+                       MAYBE_CopyFromCompositingSurface_Origin_Unscaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size = copy_rect.size();
   gfx::Size expected_bitmap_size = output_size;
@@ -728,8 +745,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_Origin_Scaled \
+  DISABLED_CopyFromCompositingSurface_Origin_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Origin_Scaled \
+  CopyFromCompositingSurface_Origin_Scaled
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_Origin_Scaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size(200, 100);
   gfx::Size expected_bitmap_size = output_size;
@@ -742,8 +767,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_Cropped_Unscaled \
+  DISABLED_CopyFromCompositingSurface_Cropped_Unscaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Cropped_Unscaled \
+  CopyFromCompositingSurface_Cropped_Unscaled
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Unscaled) {
+                       MAYBE_CopyFromCompositingSurface_Cropped_Unscaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -759,8 +792,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_Cropped_Scaled \
+  DISABLED_CopyFromCompositingSurface_Cropped_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_Cropped_Scaled \
+  CopyFromCompositingSurface_Cropped_Scaled
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_Cropped_Scaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -776,8 +817,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame \
+  DISABLED_CopyFromCompositingSurface_ForVideoFrame
+#else
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame \
+  CopyFromCompositingSurface_ForVideoFrame
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame) {
+                       MAYBE_CopyFromCompositingSurface_ForVideoFrame) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
@@ -793,8 +842,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                                 video_frame);
 }
 
+// Test is flaky on Win Aura. http://crbug.com/276783
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled \
+  DISABLED_CopyFromCompositingSurface_ForVideoFrame_Scaled
+#else
+#define MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled \
+  CopyFromCompositingSurface_ForVideoFrame_Scaled
+#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame_Scaled) {
+                       MAYBE_CopyFromCompositingSurface_ForVideoFrame_Scaled) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
