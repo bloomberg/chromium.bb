@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -26,12 +27,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/python_utils.h"
 
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
@@ -183,6 +186,28 @@ class WebrtcBrowserTest : public WebRtcTestBase {
         "'video');", tab_contents);
   }
 
+  void PrintProcessMetrics(base::ProcessMetrics* process_metrics,
+                           const std::string& suffix) {
+    perf_test::PrintResult("cpu", "", "cpu" + suffix,
+                           process_metrics->GetCPUUsage(),
+                           "%", true);
+    perf_test::PrintResult("memory", "", "ws_final" + suffix,
+                           process_metrics->GetWorkingSetSize(),
+                           "bytes", true);
+    perf_test::PrintResult("memory", "", "ws_peak" + suffix,
+                           process_metrics->GetPeakWorkingSetSize(),
+                           "bytes", true);
+
+    size_t private_mem;
+    size_t shared_mem;
+    if (process_metrics->GetMemoryBytes(&private_mem, &shared_mem)) {
+      perf_test::PrintResult("memory", "", "private_mem_final" + suffix,
+                             private_mem, "bytes", true);
+      perf_test::PrintResult("memory", "", "shared_mem_final" + suffix,
+                             shared_mem, "bytes", true);
+    }
+  }
+
  private:
   PeerConnectionServerRunner peerconnection_server_;
 };
@@ -221,6 +246,60 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
+
+  AssertNoAsynchronousErrors(left_tab);
+  AssertNoAsynchronousErrors(right_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       MANUAL_RendererCpuUsage20Seconds) {
+  EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  base::FilePath results_file;
+  EXPECT_TRUE(file_util::CreateTemporaryFile(&results_file));
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  content::WebContents* left_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::ProcessHandle renderer_pid =
+      left_tab->GetRenderProcessHost()->GetHandle();
+  scoped_ptr<base::ProcessMetrics> renderer_process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(renderer_pid));
+  scoped_ptr<base::ProcessMetrics> browser_process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(
+          base::Process::Current().handle()));
+
+  // Start measuring CPU.
+  renderer_process_metrics->GetCPUUsage();
+  browser_process_metrics->GetCPUUsage();
+
+  GetUserMediaAndAccept(left_tab);
+
+  chrome::AddBlankTabAt(browser(), -1, true);
+  content::WebContents* right_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  GetUserMediaAndAccept(right_tab);
+
+  ConnectToPeerConnectionServer("peer 1", left_tab);
+  ConnectToPeerConnectionServer("peer 2", right_tab);
+
+  EstablishCall(left_tab, right_tab);
+
+  AssertNoAsynchronousErrors(left_tab);
+  AssertNoAsynchronousErrors(right_tab);
+
+  SleepInJavascript(left_tab, 15000);
+
+  HangUp(left_tab);
+  WaitUntilHangupVerified(left_tab);
+  WaitUntilHangupVerified(right_tab);
+
+  PrintProcessMetrics(renderer_process_metrics.get(), "_r");
+  PrintProcessMetrics(browser_process_metrics.get(), "_b");
 
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
