@@ -54,11 +54,11 @@ except ImportError:
   upload = None
 
 
-# Absolute path to this file.
-THIS_FILE_PATH = os.path.abspath(__file__)
+# Absolute path to this file (can be None if running from zip on Mac).
+THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
 
 # Directory that contains this file (might be inside zip package).
-BASE_DIR = os.path.dirname(THIS_FILE_PATH)
+BASE_DIR = os.path.dirname(THIS_FILE_PATH) if __file__ else None
 
 # Directory that contains currently running script file.
 MAIN_DIR = os.path.dirname(os.path.abspath(zip_package.get_main_script_path()))
@@ -146,6 +146,8 @@ def get_as_zip_package(executable=True):
   # Building a zip package when running from another zip package is
   # unsupported and probably unneeded.
   assert not zip_package.is_zipped_module(sys.modules[__name__])
+  assert THIS_FILE_PATH
+  assert BASE_DIR
   package = zip_package.ZipPackage(root=BASE_DIR)
   package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
