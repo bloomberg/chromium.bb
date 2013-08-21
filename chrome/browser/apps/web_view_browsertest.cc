@@ -1479,6 +1479,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationRequestGone) {
             << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/common", "cleardata"))
+          << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(

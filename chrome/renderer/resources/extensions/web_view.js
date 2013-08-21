@@ -121,6 +121,9 @@ var WEB_VIEW_EXT_EVENTS = {
   }
 };
 
+// Implemented when the experimental API is available.
+WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {}
+
 /**
  * @constructor
  */
@@ -766,6 +769,7 @@ function registerWebViewElement() {
     var internal = this.internal_(secret);
     $Function.apply(internal.insertCSS_, internal, arguments);
   };
+  WebViewInternal.maybeRegisterExperimentalAPIs(proto, secret);
 
   window.WebView = register.call(document, 'webview', {prototype: proto});
 

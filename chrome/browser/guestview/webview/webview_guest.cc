@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
@@ -292,6 +293,26 @@ void WebViewGuest::Terminate() {
       guest_web_contents()->GetRenderProcessHost()->GetHandle();
   if (process_handle)
     base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+}
+
+bool WebViewGuest::ClearData(const base::Time remove_since,
+                             uint32 removal_mask,
+                             const base::Closure& callback) {
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents()->GetBrowserContext(),
+          web_contents()->GetSiteInstance());
+
+  if (!partition)
+    return false;
+
+  partition->ClearDataForRange(
+      removal_mask,
+      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      remove_since,
+      base::Time::Now(),
+      callback);
+  return true;
 }
 
 WebViewGuest::~WebViewGuest() {

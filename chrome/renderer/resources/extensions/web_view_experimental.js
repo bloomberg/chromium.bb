@@ -119,3 +119,18 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
 WebViewInternal.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {
   return WEB_VIEW_EXPERIMENTAL_EXT_EVENTS;
 };
+
+WebViewInternal.prototype.clearData_ = function(var_args) {
+  if (!this.instanceId_) {
+    return;
+  }
+  var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
+  $Function.apply(chrome.webview.clearData, null, args);
+};
+
+WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
+  proto.clearData = function(var_args) {
+    var internal = this.internal_(secret);
+    $Function.apply(internal.clearData_, internal, arguments);
+  };
+};

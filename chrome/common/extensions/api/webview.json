@@ -6,7 +6,86 @@
   {
     "namespace": "webview",
     "description": "none",
+    "types": [
+      {
+        "id": "DataTypeSet",
+        "type": "object",
+        "description": "A set of data types. Missing data types are interpreted as <code>false</code>.",
+        "properties": {
+          "appcache": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Websites' appcaches."
+          },
+          "cookies": {
+            "type": "boolean",
+            "optional": true,
+            "description": "The browser's cookies."
+          },
+          "fileSystems": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Websites' file systems."
+          },
+          "indexedDB": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Websites' IndexedDB data."
+          },
+          "localStorage": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Websites' local storage data."
+          },
+          "webSQL": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Websites' WebSQL data."
+          }
+        }
+      },
+      {
+        "id": "RemovalOptions",
+        "type": "object",
+        "description": "Options that determine exactly what data will be removed.",
+        "properties": {
+          "since": {
+            "type": "number",
+            "optional": true,
+            "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the <code>getTime</code> method of the JavaScript <code>Date</code> object). If absent, defaults to 0 (which would remove all browsing data)."
+          }
+        }
+      }
+    ],
     "functions": [
+      {
+        "name": "clearData",
+        "type": "function",
+        "description": "Clears various types of browsing data stored in a storage partition of a <webview>.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "$ref": "RemovalOptions",
+            "name": "options"
+          },
+          {
+            "name": "dataToRemove",
+            "$ref": "DataTypeSet",
+            "description": "The set of data types to remove."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when deletion has completed.",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
       {
         "name": "executeScript",
         "type": "function",
