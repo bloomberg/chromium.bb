@@ -29,6 +29,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/fetch/ImageResource.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderImage.h"

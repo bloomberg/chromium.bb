@@ -29,7 +29,10 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/ComposedShadowTreeWalker.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Chrome.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -39,6 +42,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocument.h"
+#include "core/svg/SVGImageElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "wtf/PassRefPtr.h"
@@ -60,6 +64,48 @@ SVGImage::~SVGImage()
 
     // Verify that page teardown destroyed the Chrome
     ASSERT(!m_chromeClient || !m_chromeClient->image());
+}
+
+bool SVGImage::isInSVGImage(const Element* element)
+{
+    ASSERT(element);
+
+    Page* page = element->document()->page();
+    if (!page)
+        return false;
+
+    return page->chrome().client().isSVGImageChromeClient();
+}
+
+bool SVGImage::hasSingleSecurityOrigin() const
+{
+    if (!m_page)
+        return true;
+
+    Frame* frame = m_page->mainFrame();
+    SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
+    if (!rootElement)
+        return true;
+
+    // Don't allow foreignObject elements or images that are not known to be
+    // single-origin since these can leak cross-origin information.
+    ComposedShadowTreeWalker walker(rootElement);
+    while (Node* node = walker.get()) {
+        if (node->hasTagName(SVGNames::foreignObjectTag))
+            return false;
+        // FIXME(crbug.com/249037): Images should be allowed but the
+        // implementation is difficult because images can have animations which
+        // cause them to dynamically change their single-origin state.
+        if (node->hasTagName(SVGNames::imageTag))
+            return false;
+        if (node->hasTagName(SVGNames::feImageTag))
+            return false;
+        walker.next();
+    }
+
+    // Because SVG image rendering disallows external resources and links, these
+    // images effectively are restricted to a single security origin.
+    return true;
 }
 
 void SVGImage::setContainerSize(const IntSize& size)

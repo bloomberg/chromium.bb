@@ -882,7 +882,6 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure ]
-crbug.com/224317 http/tests/security/canvas-remote-read-data-url-svg-image.html [ Failure Pass ]
 
 crbug.com/234758 [ Debug ] jquery/traversing.html [ Pass Timeout ]
 crbug.com/234758 [ Lion ] virtual/softwarecompositing/scrollbars/custom-composited-different-track-parts.html [ ImageOnlyFailure Pass ]

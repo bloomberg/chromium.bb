@@ -71,6 +71,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/RadioNodeList.h"
@@ -83,6 +84,7 @@
 #include "core/platform/Partitions.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderBox.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -780,6 +782,11 @@ void Node::recalcDistribution()
     }
 
     clearChildNeedsDistributionRecalc();
+}
+
+void Node::setIsLink(bool isLink)
+{
+    setFlag(isLink && !SVGImage::isInSVGImage(toElement(this)), IsLinkFlag);
 }
 
 void Node::markAncestorsWithChildNeedsDistributionRecalc()

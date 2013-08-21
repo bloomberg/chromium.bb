@@ -48,6 +48,7 @@
 #include "core/platform/network/DNS.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/RenderImage.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrescientNetworking.h"
 #include "public/platform/WebURL.h"
