@@ -7,8 +7,10 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -105,14 +107,14 @@ void LocaleNotificationController::OnLocaleChanged(
           IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from)));
   optional.never_timeout = true;
 
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kLocaleChangeNotificationId,
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE, from, to),
       base::string16()  /* message */,
-      // TODO(mukai): add the icon here. see crbug.com/262393
-      gfx::Image()  /* icon */,
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
       base::string16()  /* display_source */,
       std::string()  /* extension_id */,
       optional,

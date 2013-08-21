@@ -218,6 +218,7 @@ void TrayIME::UpdateOrCreateNotification() {
   IMEInfo current;
   delegate->GetCurrentIME(&current);
 
+  ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kIMENotificationId,
@@ -227,7 +228,7 @@ void TrayIME::UpdateOrCreateNotification() {
           IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
           current.medium_name),
       base::string16(),  // message
-      gfx::Image(),  // icon
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME),
       base::string16(),  // display_source
       "",  // extension_id
       message_center::RichNotificationData(),
