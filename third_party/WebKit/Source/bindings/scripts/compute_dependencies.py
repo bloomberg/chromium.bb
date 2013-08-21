@@ -30,7 +30,7 @@
 
 import optparse
 import os
-import os.path
+import posixpath
 import re
 import string
 
@@ -96,47 +96,48 @@ def write_file(new_lines, destination_filename, only_if_changed):
 
 def get_partial_interface_name_from_idl(file_contents):
     match = re.search(r'partial\s+interface\s+(\w+)', file_contents)
-    if match:
-        return match.group(1)
-    return None
+    return match and match.group(1)
 
 
 # identifier-A implements identifier-B;
 # http://www.w3.org/TR/WebIDL/#idl-implements-statements
 def get_implemented_interfaces_from_idl(file_contents, interface_name):
-    implemented_interfaces = []
-    for match in re.finditer(r'^\s*(\w+)\s+implements\s+(\w+)\s*;', file_contents, re.MULTILINE):
+    def get_implemented(left_identifier, right_identifier):
         # identifier-A must be the current interface
-        if match.group(1) != interface_name:
-            raise IdlBadFilenameError("Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, match.group(1)))
-        implemented_interfaces.append(match.group(2))
-    return implemented_interfaces
+        if left_identifier != interface_name:
+            raise IdlBadFilenameError("Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, left_identifier))
+        return right_identifier
+
+    implements_re = r'^\s*(\w+)\s+implements\s+(\w+)\s*;'
+    implements_matches = re.finditer(implements_re, file_contents, re.MULTILINE)
+    implements_pairs = [(match.group(1), match.group(2))
+                        for match in implements_matches]
+    return [get_implemented(left, right) for left, right in implements_pairs]
 
 
 def is_callback_interface_from_idl(file_contents):
     match = re.search(r'callback\s+interface\s+\w+', file_contents)
-    return match is not None
+    return bool(match)
 
 
 def get_parent_interface(file_contents):
     match = re.search(r'interface\s+\w+\s*:\s*(\w+)\s*', file_contents)
-    if match:
-        return match.group(1)
-    return None
+    return match and match.group(1)
 
 
 def get_interface_extended_attributes_from_idl(file_contents):
-    extended_attributes = {}
     match = re.search(r'\[(.*)\]\s+(callback\s+)?(interface|exception)\s+(\w+)',
                       file_contents, flags=re.DOTALL)
-    if match:
-        parts = string.split(match.group(1), ',')
-        for part in parts:
-            key, _, value = map(string.strip, part.partition('='))
-            if not key:
-                continue
-            value = value or 'VALUE_IS_MISSING'
-            extended_attributes[key] = value
+    if not match:
+        return {}
+    extended_attributes = {}
+    parts = string.split(match.group(1), ',')
+    for part in parts:
+        key, _, value = map(string.strip, part.partition('='))
+        if not key:
+            continue
+        value = value or 'VALUE_IS_MISSING'
+        extended_attributes[key] = value
     return extended_attributes
 
 
@@ -179,28 +180,28 @@ def generate_event_names_file(destination_filename, event_names, only_if_changed
     for filename, extended_attributes in sorted(event_names.iteritems()):
         attributes = []
         for key in ('ImplementedAs', 'Conditional', 'EnabledAtRuntime'):
-            suffix = ''
             if key == 'EnabledAtRuntime':
                 suffix = 'Enabled'
+            else:
+                suffix = ''
             if key in extended_attributes:
                 attributes.append('%s=%s%s' % (key, extended_attributes[key], suffix))
         refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
-        refined_filename = refined_filename.replace('\\', '/')
+        refined_filename = refined_filename.replace(os.sep, posixpath.sep)
         lines.append('%s %s\n' % (refined_filename, ', '.join(attributes)))
     write_file(lines, destination_filename, only_if_changed)
 
 
 def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list, only_if_changed):
-    lines = []
-    lines.append('partial interface %s {\n' % interface_name)
-    for constructor_attribute in constructor_attributes_list:
-        lines.append('    %s;\n' % constructor_attribute)
-    lines.append('};\n')
+    lines = (['partial interface %s {\n' % interface_name] +
+             ['    %s;\n' % constructor_attribute
+              for constructor_attribute in sorted(constructor_attributes_list)] +
+             ['};\n'])
     write_file(lines, destination_filename, only_if_changed)
 
 
 def parse_idl_files(idl_files, global_constructors_filenames):
-    """Returns dependencies between IDL files, constructors on global objects, and events.
+    """Return dependencies between IDL files, constructors on global objects, and events.
 
     Returns:
         interfaces:
@@ -311,7 +312,7 @@ def parse_idl_files(idl_files, global_constructors_filenames):
 
 
 def write_dependency_file(filename, dependencies, only_if_changed):
-    """Writes the interface dependencies file.
+    """Write the interface dependencies file.
 
     The format is as follows:
 
@@ -328,9 +329,8 @@ def write_dependency_file(filename, dependencies, only_if_changed):
     An IDL that is a dependency of another IDL (e.g. P.idl) does not have its
     own line in the dependency file.
     """
-    lines = []
-    for idl_file, dependency_files in sorted(dependencies.iteritems()):
-        lines.append('%s %s\n' % (idl_file, ' '.join(sorted(dependency_files))))
+    lines = ['%s %s\n' % (idl_file, ' '.join(sorted(dependency_files)))
+             for idl_file, dependency_files in sorted(dependencies.iteritems())]
     write_file(lines, filename, only_if_changed)
 
 
