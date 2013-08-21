@@ -5,6 +5,11 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "base/logging.h"
 
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+#include "content/public/common/content_switches.h"
+#include "v8/src/third_party/vtune/v8-vtune.h"
+#endif
+
 namespace content {
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
@@ -16,6 +21,11 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+  const CommandLine& command_line = parameters_.command_line;
+  if (command_line.HasSwitch(switches::kEnableVtune))
+    vTune::InitializeVtuneForV8();
+#endif
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
