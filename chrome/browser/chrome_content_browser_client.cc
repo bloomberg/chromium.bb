@@ -115,7 +115,6 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/compositor_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -1406,9 +1405,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
     }
 
-    if (content::IsThreadedCompositingEnabled())
-      command_line->AppendSwitch(switches::kEnableThreadedCompositing);
-
     if (message_center::IsRichNotificationEnabled())
       command_line->AppendSwitch(switches::kDisableHTMLNotifications);
 
@@ -2206,9 +2202,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->default_encoding = prefs->GetString(prefs::kDefaultCharset);
   }
   DCHECK(!web_prefs->default_encoding.empty());
-
-  if (content::IsForceCompositingModeEnabled())
-    web_prefs->force_compositing_mode = true;
 
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   extensions::ViewType view_type = extensions::GetViewType(web_contents);

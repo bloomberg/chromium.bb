@@ -52,6 +52,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_disk_cache.h"
@@ -816,6 +817,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     field_trial_states);
   }
+
+  if (content::IsThreadedCompositingEnabled())
+    command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
