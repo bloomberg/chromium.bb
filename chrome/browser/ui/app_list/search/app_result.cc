@@ -13,11 +13,14 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
 
@@ -44,7 +47,7 @@ AppResult::AppResult(Profile* profile,
       extension_misc::EXTENSION_ICON_SMALL,
       extensions::IconsInfo::GetDefaultAppIcon(),
       this));
-  SetIcon(icon_->image_skia());
+  UpdateIcon();
   StartObservingInstall();
 }
 
@@ -71,6 +74,10 @@ void AppResult::Open(int event_flags) {
       extensions::ExtensionSystem::Get(profile_)->extension_service()
           ->GetInstalledExtension(app_id_);
   if (!extension)
+    return;
+
+  // Check if enable flow is already running or should be started
+  if (RunExtensionEnableFlow())
     return;
 
   CoreAppLauncherHandler::RecordAppListSearchLaunch(extension);
@@ -118,13 +125,57 @@ void AppResult::StopObservingInstall() {
   install_tracker_ = NULL;
 }
 
+bool AppResult::RunExtensionEnableFlow() {
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (service->IsExtensionEnabledForLauncher(app_id_))
+    return false;
+
+  if (!extension_enable_flow_) {
+    controller_->OnShowExtensionPrompt();
+
+    extension_enable_flow_.reset(new ExtensionEnableFlow(
+        profile_, app_id_, this));
+    extension_enable_flow_->StartForNativeWindow(
+        controller_->GetAppListWindow());
+  }
+  return true;
+}
+
+void AppResult::UpdateIcon() {
+  gfx::ImageSkia icon = icon_->image_skia();
+
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const bool enabled = service->IsExtensionEnabledForLauncher(app_id_);
+  if (!enabled) {
+    const color_utils::HSL shift = {-1, 0, 0.6};
+    icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
+  }
+
+  SetIcon(icon);
+}
+
 void AppResult::OnExtensionIconImageChanged(extensions::IconImage* image) {
   DCHECK_EQ(icon_.get(), image);
-  SetIcon(icon_->image_skia());
+  UpdateIcon();
 }
 
 void AppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
+}
+
+void AppResult::ExtensionEnableFlowFinished() {
+  extension_enable_flow_.reset();
+  controller_->OnCloseExtensionPrompt();
+
+  // Automatically open app after enabling.
+  Open(ui::EF_NONE);
+}
+
+void AppResult::ExtensionEnableFlowAborted(bool user_initiated) {
+  extension_enable_flow_.reset();
+  controller_->OnCloseExtensionPrompt();
 }
 
 void AppResult::OnBeginExtensionInstall(const std::string& extension_id,
@@ -140,7 +191,9 @@ void AppResult::OnInstallFailure(const std::string& extension_id) {}
 
 void AppResult::OnExtensionInstalled(const extensions::Extension* extension) {}
 
-void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {}
+void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {
+  UpdateIcon();
+}
 
 void AppResult::OnExtensionUnloaded(const extensions::Extension* extension) {}
 

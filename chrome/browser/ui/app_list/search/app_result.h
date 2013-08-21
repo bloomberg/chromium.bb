@@ -12,8 +12,10 @@
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 
 class AppListControllerDelegate;
+class ExtensionEnableFlow;
 class Profile;
 
 namespace extensions {
@@ -29,6 +31,7 @@ class TokenizedStringMatch;
 class AppResult : public ChromeSearchResult,
                   public extensions::IconImage::Observer,
                   public AppContextMenuDelegate,
+                  public ExtensionEnableFlowDelegate,
                   public extensions::InstallObserver {
  public:
   AppResult(Profile* profile,
@@ -50,12 +53,24 @@ class AppResult : public ChromeSearchResult,
   void StartObservingInstall();
   void StopObservingInstall();
 
+  // Checks if extension is disabled and if enable flow should be started.
+  // Returns true if extension enable flow is started or there is already one
+  // running.
+  bool RunExtensionEnableFlow();
+
+  // Updates the app item's icon, if necessary making it gray.
+  void UpdateIcon();
+
   // extensions::IconImage::Observer overrides:
   virtual void OnExtensionIconImageChanged(
       extensions::IconImage* image) OVERRIDE;
 
   // AppContextMenuDelegate overrides:
   virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;
+
+  // ExtensionEnableFlowDelegate overrides:
+  virtual void ExtensionEnableFlowFinished() OVERRIDE;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
   // extensions::InstallObserver overrides:
   virtual void OnBeginExtensionInstall(const std::string& extension_id,
@@ -86,6 +101,7 @@ class AppResult : public ChromeSearchResult,
   bool is_platform_app_;
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<AppContextMenu> context_menu_;
+  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   extensions::InstallTracker* install_tracker_;  // Not owned.
 

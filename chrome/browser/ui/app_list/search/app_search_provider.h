@@ -12,6 +12,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class AppListControllerDelegate;
+class ExtensionService;
+class ExtensionSet;
 class Profile;
 
 namespace app_list {
@@ -31,6 +33,8 @@ class AppSearchProvider : public SearchProvider,
   class App;
   typedef ScopedVector<App> Apps;
 
+  // Adds extensions to apps container if they should be displayed.
+  void AddApps(const ExtensionSet* extensions, ExtensionService* service);
   void RefreshApps();
 
   // content::NotificationObserver overrides:
