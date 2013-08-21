@@ -35,7 +35,10 @@ using content::BrowserThread;
 
 class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
  public:
-  SSLClientCertificateSelectorTest() : io_loop_finished_event_(false, false) {
+  SSLClientCertificateSelectorTest()
+      : io_loop_finished_event_(false, false),
+        url_request_(NULL),
+        selector_(NULL) {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
