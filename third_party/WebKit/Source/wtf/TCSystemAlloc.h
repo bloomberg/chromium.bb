@@ -64,11 +64,16 @@ extern void TCMalloc_SystemRelease(void* start, size_t length);
 
 extern void TCMalloc_SystemCommit(void* start, size_t length);
 
-#if !HAVE(MADV_FREE_REUSE) && !HAVE(MADV_DONTNEED) && !HAVE(MMAP) && !HAVE(VIRTUALALLOC)
+#if OS(DARWIN)
+#define HAVE_MADV_FREE 1
+#define HAVE_MADV_FREE_REUSE 1
+#endif
+
+#if !HAVE(MADV_FREE_REUSE) && !HAVE(MADV_DONTNEED) && !HAVE(MMAP)
 inline void TCMalloc_SystemRelease(void*, size_t) { }
 #endif
 
-#if !HAVE(VIRTUALALLOC) && !HAVE(MADV_FREE_REUSE)
+#if !HAVE(MADV_FREE_REUSE)
 inline void TCMalloc_SystemCommit(void*, size_t) { }
 #endif
 

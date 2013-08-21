@@ -74,15 +74,10 @@ static size_t pagesize = 0;
 static bool use_mmap = true;
 #endif
 
-#if HAVE(VIRTUALALLOC)
-static bool use_VirtualAlloc = true;
-#endif
-
 // Flags to keep us from retrying allocators that failed.
 static bool devmem_failure = false;
 static bool sbrk_failure = false;
 static bool mmap_failure = false;
-static bool VirtualAlloc_failure = false;
 
 static const int32_t FLAGS_malloc_devmem_start = 0;
 static const int32_t FLAGS_malloc_devmem_limit = 0;
@@ -138,60 +133,6 @@ static void* TryMmap(size_t size, size_t *actual_size, size_t alignment) {
 
 #endif /* HAVE(MMAP) */
 
-#if HAVE(VIRTUALALLOC)
-
-static void* TryVirtualAlloc(size_t size, size_t *actual_size, size_t alignment) {
-  // Enforce page alignment
-  if (pagesize == 0) {
-    SYSTEM_INFO system_info;
-    GetSystemInfo(&system_info);
-    pagesize = system_info.dwPageSize;
-  }
-
-  if (alignment < pagesize) alignment = pagesize;
-  size = ((size + alignment - 1) / alignment) * alignment;
-
-  // could theoretically return the "extra" bytes here, but this
-  // is simple and correct.
-  if (actual_size)
-    *actual_size = size;
-
-  // Ask for extra memory if alignment > pagesize
-  size_t extra = 0;
-  if (alignment > pagesize) {
-    extra = alignment - pagesize;
-  }
-  void* result = VirtualAlloc(NULL, size + extra,
-                              MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
-                              PAGE_READWRITE);
-
-  if (result == NULL) {
-    VirtualAlloc_failure = true;
-    return NULL;
-  }
-
-  // Adjust the return memory so it is aligned
-  uintptr_t ptr = reinterpret_cast<uintptr_t>(result);
-  size_t adjust = 0;
-  if ((ptr & (alignment - 1)) != 0) {
-    adjust = alignment - (ptr & (alignment - 1));
-  }
-
-  // Return the unused memory to the system - we'd like to release but the best we can do
-  // is decommit, since Windows only lets you free the whole allocation.
-  if (adjust > 0) {
-    VirtualFree(reinterpret_cast<void*>(ptr), adjust, MEM_DECOMMIT);
-  }
-  if (adjust < extra) {
-    VirtualFree(reinterpret_cast<void*>(ptr + adjust + size), extra-adjust, MEM_DECOMMIT);
-  }
-
-  ptr += adjust;
-  return reinterpret_cast<void*>(ptr);
-}
-
-#endif /* HAVE(MMAP) */
-
 void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size, size_t alignment) {
   // Discard requests that overflow
   if (size + alignment < size) return NULL;
@@ -212,18 +153,10 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size, size_t alignment) {
     }
 #endif
 
-#if HAVE(VIRTUALALLOC)
-    if (use_VirtualAlloc && !VirtualAlloc_failure) {
-      void* result = TryVirtualAlloc(size, actual_size, alignment);
-      if (result != NULL) return result;
-    }
-#endif
-
     // nothing worked - reset failure flags and try again
     devmem_failure = false;
     sbrk_failure = false;
     mmap_failure = false;
-    VirtualAlloc_failure = false;
   }
   return NULL;
 }
@@ -293,32 +226,6 @@ void TCMalloc_SystemRelease(void* start, size_t length)
   ASSERT_UNUSED(newAddress, newAddress == start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
 }
 
-#elif HAVE(VIRTUALALLOC)
-
-void TCMalloc_SystemRelease(void* start, size_t length)
-{
-    if (VirtualFree(start, length, MEM_DECOMMIT))
-        return;
-
-    // The decommit may fail if the memory region consists of allocations
-    // from more than one call to VirtualAlloc.  In this case, fall back to
-    // using VirtualQuery to retrieve the allocation boundaries and decommit
-    // them each individually.
-
-    char* ptr = static_cast<char*>(start);
-    char* end = ptr + length;
-    MEMORY_BASIC_INFORMATION info;
-    while (ptr < end) {
-        size_t resultSize = VirtualQuery(ptr, &info, sizeof(info));
-        ASSERT_UNUSED(resultSize, resultSize == sizeof(info));
-
-        size_t decommitSize = min<size_t>(info.RegionSize, end - ptr);
-        BOOL success = VirtualFree(ptr, decommitSize, MEM_DECOMMIT);
-        ASSERT_UNUSED(success, success);
-        ptr += decommitSize;
-    }
-}
-
 #else
 
 // Platforms that don't support returning memory use an empty inline version of TCMalloc_SystemRelease
@@ -331,32 +238,6 @@ void TCMalloc_SystemRelease(void* start, size_t length)
 void TCMalloc_SystemCommit(void* start, size_t length)
 {
     while (madvise(start, length, MADV_FREE_REUSE) == -1 && errno == EAGAIN) { }
-}
-
-#elif HAVE(VIRTUALALLOC)
-
-void TCMalloc_SystemCommit(void* start, size_t length)
-{
-    if (VirtualAlloc(start, length, MEM_COMMIT, PAGE_READWRITE) == start)
-        return;
-
-    // The commit may fail if the memory region consists of allocations
-    // from more than one call to VirtualAlloc.  In this case, fall back to
-    // using VirtualQuery to retrieve the allocation boundaries and commit them
-    // each individually.
-
-    char* ptr = static_cast<char*>(start);
-    char* end = ptr + length;
-    MEMORY_BASIC_INFORMATION info;
-    while (ptr < end) {
-        size_t resultSize = VirtualQuery(ptr, &info, sizeof(info));
-        ASSERT_UNUSED(resultSize, resultSize == sizeof(info));
-
-        size_t commitSize = min<size_t>(info.RegionSize, end - ptr);
-        void* newAddress = VirtualAlloc(ptr, commitSize, MEM_COMMIT, PAGE_READWRITE);
-        ASSERT_UNUSED(newAddress, newAddress == ptr);
-        ptr += commitSize;
-    }
 }
 
 #else

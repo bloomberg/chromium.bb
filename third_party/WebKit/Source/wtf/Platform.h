@@ -156,13 +156,7 @@
 
 #if OS(DARWIN)
 #define HAVE_DISPATCH_H 1
-#define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
-#define HAVE_MADV_FREE_REUSE 1
 #endif /* OS(DARWIN) */
-
-#if OS(WINDOWS)
-#define HAVE_VIRTUALALLOC 1
-#endif
 
 #endif /* WTF_Platform_h */
