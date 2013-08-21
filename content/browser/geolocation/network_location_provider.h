@@ -28,8 +28,7 @@ class AccessTokenStore;
 class NetworkLocationProvider
     : public base::NonThreadSafe,
       public LocationProviderBase,
-      public WifiDataProvider::ListenerInterface,
-      public NetworkLocationRequest::ListenerInterface {
+      public WifiDataProvider::ListenerInterface {
  public:
   // Cache of recently resolved locations. Public for tests.
   class CONTENT_EXPORT PositionCache {
@@ -93,11 +92,10 @@ class NetworkLocationProvider
   // DeviceDataProvider::ListenerInterface implementation.
   virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider) OVERRIDE;
 
-  // NetworkLocationRequest::ListenerInterface implementation.
-  virtual void LocationResponseAvailable(const Geoposition& position,
-                                         bool server_error,
-                                         const string16& access_token,
-                                         const WifiData& wifi_data) OVERRIDE;
+  void LocationResponseAvailable(const Geoposition& position,
+                                 bool server_error,
+                                 const string16& access_token,
+                                 const WifiData& wifi_data);
 
   scoped_refptr<AccessTokenStore> access_token_store_;
 

@@ -118,7 +118,10 @@ NetworkLocationProvider::NetworkLocationProvider(
   // Create the position cache.
   position_cache_.reset(new PositionCache());
 
-  request_.reset(new NetworkLocationRequest(url_context_getter, url, this));
+  NetworkLocationRequest::LocationResponseCallback callback =
+      base::Bind(&NetworkLocationProvider::LocationResponseAvailable,
+                 base::Unretained(this));
+  request_.reset(new NetworkLocationRequest(url_context_getter, url, callback));
 }
 
 NetworkLocationProvider::~NetworkLocationProvider() {
@@ -156,7 +159,6 @@ void NetworkLocationProvider::DeviceDataUpdateAvailable(
   OnDeviceDataUpdated();
 }
 
-// NetworkLocationRequest::ListenerInterface implementation.
 void NetworkLocationProvider::LocationResponseAvailable(
     const Geoposition& position,
     bool server_error,

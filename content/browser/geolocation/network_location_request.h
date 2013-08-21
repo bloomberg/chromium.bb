@@ -27,25 +27,20 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
   CONTENT_EXPORT static int url_fetcher_id_for_tests;
-  // Interface for receiving callbacks from a NetworkLocationRequest object.
-  class ListenerInterface {
-   public:
-    // Updates the listener with a new position. server_error indicates whether
-    // was a server or network error - either no response or a 500 error code.
-    virtual void LocationResponseAvailable(
-        const Geoposition& position,
-        bool server_error,
-        const string16& access_token,
-        const WifiData& wifi_data) = 0;
 
-   protected:
-    virtual ~ListenerInterface() {}
-  };
+  // Called when a new geo position is available. The second argument indicates
+  // whether there was a server error or not. It is true when there was a
+  // server or network error - either no response or a 500 error code.
+  typedef base::Callback<void(const Geoposition& /* position */,
+                              bool /* server_error */,
+                              const string16& /* access_token */,
+                              const WifiData& /* wifi_data */)>
+      LocationResponseCallback;
 
   // |url| is the server address to which the request wil be sent.
   NetworkLocationRequest(net::URLRequestContextGetter* context,
                          const GURL& url,
-                         ListenerInterface* listener);
+                         LocationResponseCallback callback);
   virtual ~NetworkLocationRequest();
 
   // Makes a new request. Returns true if the new request was successfully
@@ -62,7 +57,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  ListenerInterface* listener_;
+  LocationResponseCallback callback_;
   const GURL url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
