@@ -21,6 +21,7 @@
 #ifndef SVGRadialGradientElement_h
 #define SVGRadialGradientElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
 
@@ -54,6 +55,12 @@ private:
         DECLARE_ANIMATED_LENGTH(Fr, fr)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGRadialGradientElement* toSVGRadialGradientElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::radialGradientTag));
+    return static_cast<SVGRadialGradientElement*>(node);
+}
 
 } // namespace WebCore
 
