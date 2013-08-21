@@ -106,6 +106,7 @@
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
         '../content/content.gyp:content',
+        '../content/content.gyp:content_app_browser',
       ],
       'include_dirs': [
         '..',
