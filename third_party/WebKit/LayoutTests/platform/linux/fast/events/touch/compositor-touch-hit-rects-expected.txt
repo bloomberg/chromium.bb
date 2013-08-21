@@ -11,6 +11,8 @@ absoluteChildContainer: #document (320, 173, 142, 12)
 relativeChildContainer: #document (13, 189, 290, 22)
 relativeChildContainer: #document (314, 199, 142, 12)
 
+fixed: #document (405, 98, 52, 12)
+
 translate: #document (13, 216, 290, 14)
 translate: #document (314, 219, 288, 12)
 

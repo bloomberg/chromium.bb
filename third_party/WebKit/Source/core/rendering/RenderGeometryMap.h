@@ -46,6 +46,7 @@ struct RenderGeometryMapStep {
     RenderGeometryMapStep(const RenderGeometryMapStep& o)
         : m_renderer(o.m_renderer)
         , m_offset(o.m_offset)
+        , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
         , m_accumulatingTransform(o.m_accumulatingTransform)
         , m_isNonUniform(o.m_isNonUniform)
         , m_isFixedPosition(o.m_isFixedPosition)
@@ -64,6 +65,7 @@ struct RenderGeometryMapStep {
     const RenderObject* m_renderer;
     LayoutSize m_offset;
     OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
+    LayoutSize m_offsetForFixedPosition;
     bool m_accumulatingTransform;
     bool m_isNonUniform; // Mapping depends on the input point, e.g. because of CSS columns.
     bool m_isFixedPosition;
@@ -105,11 +107,8 @@ public:
 
     // Push geometry info between this renderer and some ancestor. The ancestor must be its container() or some
     // stacking context between the renderer and its container.
-    void push(const RenderObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false);
-    void push(const RenderObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false);
-
-    // RenderView gets special treatment, because it applies the scroll offset only for elements inside in fixed position.
-    void pushView(const RenderView*, const LayoutSize& scrollOffset, const TransformationMatrix* = 0);
+    void push(const RenderObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
+    void push(const RenderObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
 
 private:
     void mapToContainer(TransformState&, const RenderLayerModelObject* container = 0) const;
@@ -120,6 +119,14 @@ private:
     bool hasNonUniformStep() const { return m_nonUniformStepsCount; }
     bool hasTransformStep() const { return m_transformedStepsCount; }
     bool hasFixedPositionStep() const { return m_fixedStepsCount; }
+
+#ifndef NDEBUG
+    void dumpSteps();
+#endif
+
+#if !ASSERT_DISABLED
+    bool isTopmostRenderView(const RenderObject* renderer) const;
+#endif
 
     typedef Vector<RenderGeometryMapStep, 32> RenderGeometryMapSteps;
 

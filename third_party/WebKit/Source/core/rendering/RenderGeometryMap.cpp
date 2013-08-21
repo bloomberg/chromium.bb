@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/rendering/RenderGeometryMap.h"
 
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -63,7 +65,7 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
         const RenderGeometryMapStep& currentStep = m_mapping[i];
 
-        // If container is the RenderView (step 0) we want to apply its scroll offset.
+        // If container is the root RenderView (step 0) we want to apply its fixed position offset.
         if (i > 0 && currentStep.m_renderer == container) {
 #if !ASSERT_DISABLED
             foundContainer = true;
@@ -79,20 +81,23 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
         else if (currentStep.m_isFixedPosition)
             inFixed = true;
 
+        ASSERT(!i == isTopmostRenderView(currentStep.m_renderer));
+
         if (!i) {
-            // A null container indicates mapping through the RenderView, so including its transform (the page scale).
+            // A null container indicates mapping through the root RenderView, so including its transform (the page scale).
             if (!container && currentStep.m_transform)
                 transformState.applyTransform(*currentStep.m_transform.get());
-
-            // The root gets special treatment for fixed position
-            if (inFixed)
-                transformState.move(currentStep.m_offset.width(), currentStep.m_offset.height());
         } else {
             TransformState::TransformAccumulation accumulate = currentStep.m_accumulatingTransform ? TransformState::AccumulateTransform : TransformState::FlattenTransform;
             if (currentStep.m_transform)
                 transformState.applyTransform(*currentStep.m_transform.get(), accumulate);
             else
                 transformState.move(currentStep.m_offset.width(), currentStep.m_offset.height(), accumulate);
+        }
+
+        if (inFixed && !currentStep.m_offsetForFixedPosition.isZero()) {
+            ASSERT(currentStep.m_renderer->isRenderView());
+            transformState.move(currentStep.m_offsetForFixedPosition);
         }
     }
 
@@ -121,6 +126,20 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
 
     return result;
 }
+
+#ifndef NDEBUG
+// Handy function to call from gdb while debugging mismatched point/rect errors.
+void RenderGeometryMap::dumpSteps()
+{
+    fprintf(stderr, "RenderGeometryMap::dumpSteps accumulatedOffset=%d,%d\n", m_accumulatedOffset.width().toInt(), m_accumulatedOffset.height().toInt());
+    for (int i = m_mapping.size() - 1; i >= 0; --i) {
+        fprintf(stderr, " [%d] %s: offset=%d,%d", i, m_mapping[i].m_renderer->debugName().ascii().data(), m_mapping[i].m_offset.width().toInt(), m_mapping[i].m_offset.height().toInt());
+        if (m_mapping[i].m_hasTransform)
+            fprintf(stderr, " hasTransform");
+        fprintf(stderr, "\n");
+    }
+}
+#endif
 
 FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderLayerModelObject* container) const
 {
@@ -155,7 +174,7 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderObject* renderer, con
         renderer = renderer->pushMappingToContainer(ancestorRenderer, *this);
     } while (renderer && renderer != ancestorRenderer);
 
-    ASSERT(m_mapping.isEmpty() || m_mapping[0].m_renderer->isRenderView());
+    ASSERT(m_mapping.isEmpty() || isTopmostRenderView(m_mapping[0].m_renderer));
 }
 
 static bool canMapBetweenRenderers(const RenderObject* renderer, const RenderObject* ancestor)
@@ -179,9 +198,12 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderLayer* layer, const R
 {
     const RenderObject* renderer = layer->renderer();
 
+    bool crossDocument = ancestorLayer && layer->renderer()->frame() != ancestorLayer->renderer()->frame();
+    ASSERT(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
+
     // We have to visit all the renderers to detect flipped blocks. This might defeat the gains
     // from mapping via layers.
-    bool canConvertInLayerTree = ancestorLayer ? canMapBetweenRenderers(layer->renderer(), ancestorLayer->renderer()) : false;
+    bool canConvertInLayerTree = (ancestorLayer && !crossDocument) ? canMapBetweenRenderers(layer->renderer(), ancestorLayer->renderer()) : false;
 
 //    fprintf(stderr, "RenderGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
 
@@ -203,46 +225,38 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderLayer* layer, const R
     pushMappingsToAncestor(renderer, ancestorRenderer);
 }
 
-void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+void RenderGeometryMap::push(const RenderObject* renderer, const LayoutSize& offsetFromContainer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
 //    fprintf(stderr, "RenderGeometryMap::push %p %d,%d isNonUniform=%d\n", renderer, offsetFromContainer.width().toInt(), offsetFromContainer.height().toInt(), isNonUniform);
 
     ASSERT(m_insertionPosition != notFound);
+    ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
+    ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 
     m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
 
     RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
     step.m_offset = offsetFromContainer;
+    step.m_offsetForFixedPosition = offsetForFixedPosition;
 
     stepInserted(step);
 }
 
-void RenderGeometryMap::push(const RenderObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+void RenderGeometryMap::push(const RenderObject* renderer, const TransformationMatrix& t, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform, LayoutSize offsetForFixedPosition)
 {
     ASSERT(m_insertionPosition != notFound);
+    ASSERT(!renderer->isRenderView() || !m_insertionPosition || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
+    ASSERT(offsetForFixedPosition.isZero() || renderer->isRenderView());
 
     m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(renderer, accumulatingTransform, isNonUniform, isFixedPosition, hasTransform));
 
     RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
+    step.m_offsetForFixedPosition = offsetForFixedPosition;
+
     if (!t.isIntegerTranslation())
         step.m_transform = adoptPtr(new TransformationMatrix(t));
     else
         step.m_offset = LayoutSize(t.e(), t.f());
-
-    stepInserted(step);
-}
-
-void RenderGeometryMap::pushView(const RenderView* view, const LayoutSize& scrollOffset, const TransformationMatrix* t)
-{
-    ASSERT(m_insertionPosition != notFound);
-    ASSERT(!m_insertionPosition); // The view should always be the first step.
-
-    m_mapping.insert(m_insertionPosition, RenderGeometryMapStep(view, false, false, false, t));
-
-    RenderGeometryMapStep& step = m_mapping[m_insertionPosition];
-    step.m_offset = scrollOffset;
-    if (t)
-        step.m_transform = adoptPtr(new TransformationMatrix(*t));
 
     stepInserted(step);
 }
@@ -265,9 +279,7 @@ void RenderGeometryMap::popMappingsToAncestor(const RenderLayer* ancestorLayer)
 
 void RenderGeometryMap::stepInserted(const RenderGeometryMapStep& step)
 {
-    // RenderView's offset, is only applied when we have fixed-positions.
-    if (!step.m_renderer->isRenderView())
-        m_accumulatedOffset += step.m_offset;
+    m_accumulatedOffset += step.m_offset;
 
     if (step.m_isNonUniform)
         ++m_nonUniformStepsCount;
@@ -281,9 +293,7 @@ void RenderGeometryMap::stepInserted(const RenderGeometryMapStep& step)
 
 void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
 {
-    // RenderView's offset, is only applied when we have fixed-positions.
-    if (!step.m_renderer->isRenderView())
-        m_accumulatedOffset -= step.m_offset;
+    m_accumulatedOffset -= step.m_offset;
 
     if (step.m_isNonUniform) {
         ASSERT(m_nonUniformStepsCount);
@@ -300,5 +310,21 @@ void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
         --m_fixedStepsCount;
     }
 }
+
+#if !ASSERT_DISABLED
+bool RenderGeometryMap::isTopmostRenderView(const RenderObject* renderer) const
+{
+    if (!renderer->isRenderView())
+        return false;
+
+    // If we're not working with multiple RenderViews, then any view is considered
+    // "topmost" (to preserve original behavior).
+    if (!(m_mapCoordinatesFlags & TraverseDocumentBoundaries))
+        return true;
+
+    Frame* thisFrame = renderer->frame();
+    return thisFrame == thisFrame->page()->mainFrame();
+}
+#endif
 
 } // namespace WebCore

@@ -326,23 +326,34 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContai
 
 const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
 {
-    // If a container was specified, and was not 0 or the RenderView,
-    // then we should have found it by now.
-    ASSERT_ARG(ancestorToStopAt, !ancestorToStopAt || ancestorToStopAt == this);
-
-    LayoutSize scrollOffset;
+    LayoutSize offsetForFixedPosition;
+    LayoutSize offset;
+    RenderObject* container = 0;
 
     if (m_frameView)
-        scrollOffset = m_frameView->scrollOffsetForFixedPosition();
+        offsetForFixedPosition = m_frameView->scrollOffsetForFixedPosition();
 
-    if (!ancestorToStopAt && shouldUseTransformFromContainer(0)) {
+    if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
+        if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
+            offset = -m_frameView->scrollOffset();
+            offset += toLayoutSize(parentDocRenderer->contentBoxRect().location());
+            container = parentDocRenderer;
+        }
+    }
+
+    // If a container was specified, and was not 0 or the RenderView, then we
+    // should have found it by now unless we're traversing to a parent document.
+    ASSERT_ARG(ancestorToStopAt, !ancestorToStopAt || ancestorToStopAt == this || container);
+
+    if ((!ancestorToStopAt || container) && shouldUseTransformFromContainer(container)) {
         TransformationMatrix t;
-        getTransformFromContainer(0, LayoutSize(), t);
-        geometryMap.pushView(this, scrollOffset, &t);
-    } else
-        geometryMap.pushView(this, scrollOffset);
+        getTransformFromContainer(container, LayoutSize(), t);
+        geometryMap.push(this, t, false, false, false, true, offsetForFixedPosition);
+    } else {
+        geometryMap.push(this, offset, false, false, false, false, offsetForFixedPosition);
+    }
 
-    return 0;
+    return container;
 }
 
 void RenderView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const

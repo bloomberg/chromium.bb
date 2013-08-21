@@ -14,6 +14,11 @@
   position: relative;
   left: 300px;
 }
+#fixed {
+  position: fixed;
+  top: 80px;
+  left: 400px;
+}
 #translateChild {
   -webkit-transform: translate(300px, 2px);
 }
@@ -74,6 +79,9 @@ to quickly validate graphically.</p>
     RELATIVE CHILD CONTAINER
     <span id="relativeChild">Relative child</span>
   </div>
+  <div class="testcase" id="fixed">
+    Fixed
+  </div>
   <div class="testcase" id="translate">
     <div id="translateChild">Translated</div>
   </div>
@@ -127,12 +135,16 @@ to quickly validate graphically.</p>
 </div>
 
 <div id="console"></div>
+<div style="height: 1000px;"></div>
 <script src="resources/compositor-touch-hit-rects.js"></script>
 <script>
 preRunHandlerForTest['styleModified'] = function(e) {
   // Adding padding to the element should force the rects to be recomputed.
   e.style.padding = '5px';
 };
+
+// Make fixed-position cases slightly more interesting
+window.scrollTo(0, 13);
 
 if (window.internals) {
   window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
