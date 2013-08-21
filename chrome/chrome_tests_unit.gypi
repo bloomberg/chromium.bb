@@ -655,6 +655,7 @@
         'browser/chromeos/drive/write_on_cache_file_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/extensions/file_manager/desktop_notifications_unittest.cc',
+        'browser/chromeos/extensions/file_manager/file_manager_util_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_watcher_unittest.cc',
         'browser/chromeos/extensions/file_manager/url_util_unittest.cc',

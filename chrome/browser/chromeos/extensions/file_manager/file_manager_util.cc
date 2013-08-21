@@ -76,29 +76,37 @@ namespace file_manager {
 namespace util {
 namespace {
 
-const char kCRXExtension[] = ".crx";
-const char kPdfExtension[] = ".pdf";
-const char kSwfExtension[] = ".swf";
-// List of file extension we can open in tab.
-const char* kBrowserSupportedExtensions[] = {
+const base::FilePath::CharType kCRXExtension[] = FILE_PATH_LITERAL(".crx");
+const base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL(".pdf");
+const base::FilePath::CharType kSwfExtension[] = FILE_PATH_LITERAL(".swf");
+
+// List of file extensions viewable in the browser.
+const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
 #if defined(GOOGLE_CHROME_BUILD)
-    ".pdf", ".swf",
+  FILE_PATH_LITERAL(".pdf"),
+  FILE_PATH_LITERAL(".swf"),
 #endif
-    ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".txt", ".html", ".htm",
-    ".mhtml", ".mht", ".svg"
+  FILE_PATH_LITERAL(".bmp"),
+  FILE_PATH_LITERAL(".jpg"),
+  FILE_PATH_LITERAL(".jpeg"),
+  FILE_PATH_LITERAL(".png"),
+  FILE_PATH_LITERAL(".webp"),
+  FILE_PATH_LITERAL(".gif"),
+  FILE_PATH_LITERAL(".txt"),
+  FILE_PATH_LITERAL(".html"),
+  FILE_PATH_LITERAL(".htm"),
+  FILE_PATH_LITERAL(".mhtml"),
+  FILE_PATH_LITERAL(".mht"),
+  FILE_PATH_LITERAL(".svg"),
 };
 
-bool IsSupportedBrowserExtension(const char* file_extension) {
-  for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
-    if (base::strcasecmp(file_extension, kBrowserSupportedExtensions[i]) == 0) {
+// Returns true if |file_path| is viewable in the browser (ex. HTML file).
+bool IsViewableInBrowser(const base::FilePath& file_path) {
+  for (size_t i = 0; i < arraysize(kFileExtensionsViewableInBrowser); i++) {
+    if (file_path.MatchesExtension(kFileExtensionsViewableInBrowser[i]))
       return true;
-    }
   }
   return false;
-}
-
-bool IsCRXFile(const char* file_extension) {
-  return base::strcasecmp(file_extension, kCRXExtension) == 0;
 }
 
 bool IsPepperPluginEnabled(Profile* profile,
@@ -142,7 +150,7 @@ void OpenNewTab(Profile* profile, const GURL& url) {
 }
 
 // Shows a warning message box saying that the file could not be opened.
-void ShowWarningMessageBox(Profile* profile, const base::FilePath& path) {
+void ShowWarningMessageBox(Profile* profile, const base::FilePath& file_path) {
   // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
   // browser is leaked.
   Browser* browser =
@@ -152,12 +160,12 @@ void ShowWarningMessageBox(Profile* profile, const base::FilePath& path) {
       browser->window()->GetNativeWindow(),
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
-          UTF8ToUTF16(path.BaseName().value())),
+          UTF8ToUTF16(file_path.BaseName().value())),
       l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE),
       chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
-void InstallCRX(Browser* browser, const base::FilePath& path) {
+void InstallCRX(Browser* browser, const base::FilePath& file_path) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(browser->profile())->extension_service();
   CHECK(service);
@@ -170,7 +178,7 @@ void InstallCRX(Browser* browser, const base::FilePath& path) {
   installer->set_error_on_unsupported_requirements(true);
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
-  installer->InstallCrx(path);
+  installer->InstallCrx(file_path);
 }
 
 // Called when a crx file on Drive was downloaded.
@@ -226,9 +234,9 @@ void OpenFileWithTask(Profile* profile,
       file_tasks::FileTaskFinishedCallback());
 }
 
-// Opens the file specified with |path|. Used to implement internal handlers
-// of special action IDs such as "auto-open", "open", and "select".
-void OpenFileWithInternalActionId(const base::FilePath& path,
+// Opens the file specified with |file_path|. Used to implement internal
+// handlers of special action IDs such as "auto-open", "open", and "select".
+void OpenFileWithInternalActionId(const base::FilePath& file_path,
                                   const std::string& action_id) {
   DCHECK(action_id == "auto-open" ||
          action_id == "open" ||
@@ -239,7 +247,7 @@ void OpenFileWithInternalActionId(const base::FilePath& path,
 
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, path, kFileManagerAppId, &url))
+          profile, file_path, kFileManagerAppId, &url))
     return;
 
   file_tasks::TaskDescriptor task(kFileManagerAppId,
@@ -262,11 +270,11 @@ Browser* GetBrowserForUrl(GURL target_url) {
   return NULL;
 }
 
-// Opens the file specified by |path| and |url| with a file handler,
+// Opens the file specified by |file_path| and |url| with a file handler,
 // preferably the default handler for the type of the file.  Returns false if
 // no file handler is found.
 bool OpenFileWithFileHandler(Profile* profile,
-                              const base::FilePath& path,
+                              const base::FilePath& file_path,
                               const GURL& url,
                               const std::string& mime_type,
                               const std::string& default_task_id) {
@@ -275,7 +283,7 @@ bool OpenFileWithFileHandler(Profile* profile,
     return false;
 
   PathAndMimeTypeSet files;
-  files.insert(std::make_pair(path, mime_type));
+  files.insert(std::make_pair(file_path, mime_type));
   const extensions::FileHandlerInfo* first_handler = NULL;
   const extensions::Extension* extension_for_first_handler = NULL;
 
@@ -343,10 +351,10 @@ bool ShouldBeOpenedWithBrowser(const std::string& action_id) {
           action_id == "open-hosted-gslides");
 }
 
-// Opens the file specified by |path| and |url| with the file browser handler
-// specified by |handler|. Returns false if failed to open the file.
+// Opens the file specified by |file_path| and |url| with the file browser
+// handler specified by |handler|. Returns false if failed to open the file.
 bool OpenFileWithFileBrowserHandler(Profile* profile,
-                                    const base::FilePath& path,
+                                    const base::FilePath& file_path,
                                     const FileBrowserHandler& handler,
                                     const GURL& url) {
   std::string extension_id = handler.extension_id();
@@ -363,7 +371,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
   // file to be directly opened with the browser.
   if (extension_id == kFileManagerAppId &&
       ShouldBeOpenedWithBrowser(action_id)) {
-    return OpenFileWithBrowser(browser, path);
+    return OpenFileWithBrowser(browser, file_path);
   }
 
   file_tasks::TaskDescriptor task(extension_id,
@@ -373,20 +381,20 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
   return true;
 }
 
-// Opens the file specified by |path| with a handler (either of file browser
-// handler or file handler, preferably the default handler for the type of
-// the file), or opens the file with the browser. Returns false if failed to
-// open the file.
+// Opens the file specified by |file_path| with a handler (either of file
+// browser handler or file handler, preferably the default handler for the
+// type of the file), or opens the file with the browser. Returns false if
+// failed to open the file.
 bool OpenFileWithHandlerOrBrowser(Profile* profile,
-                                  const base::FilePath& path) {
+                                  const base::FilePath& file_path) {
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, path, kFileManagerAppId, &url))
+          profile, file_path, kFileManagerAppId, &url))
     return false;
 
-  std::string mime_type = GetMimeTypeForPath(path);
+  std::string mime_type = GetMimeTypeForPath(file_path);
   std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-      profile, mime_type, path.Extension());
+      profile, mime_type, file_path.Extension());
 
   // We choose the file handler from the following in decreasing priority or
   // fail if none support the file type:
@@ -398,10 +406,10 @@ bool OpenFileWithHandlerOrBrowser(Profile* profile,
   // Note that there can be at most one of default extension and default app.
   const FileBrowserHandler* handler =
       file_browser_handlers::FindFileBrowserHandlerForURLAndPath(
-          profile, url, path);
+          profile, url, file_path);
   if (!handler) {
     return OpenFileWithFileHandler(
-        profile, path, url, mime_type, default_task_id);
+        profile, file_path, url, mime_type, default_task_id);
   }
 
   std::string handler_task_id = file_tasks::MakeTaskID(
@@ -411,10 +419,10 @@ bool OpenFileWithHandlerOrBrowser(Profile* profile,
   if (handler_task_id != default_task_id &&
       !file_browser_handlers::IsFallbackFileBrowserHandler(handler) &&
       OpenFileWithFileHandler(
-          profile, path, url, mime_type, default_task_id)) {
+          profile, file_path, url, mime_type, default_task_id)) {
     return true;
   }
-  return OpenFileWithFileBrowserHandler(profile, path, *handler, url);
+  return OpenFileWithFileBrowserHandler(profile, file_path, *handler, url);
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
@@ -429,17 +437,17 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
 
 // Used to implement ViewItem().
 void ContinueViewItem(Profile* profile,
-                      const base::FilePath& path,
+                      const base::FilePath& file_path,
                       base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == base::PLATFORM_FILE_OK) {
-    // A directory exists at |path|. Open it with the file manager.
-    OpenFileWithInternalActionId(path, "open");
+    // A directory exists at |file_path|. Open it with the file manager.
+    OpenFileWithInternalActionId(file_path, "open");
   } else {
-    // |path| should be a file. Open it with a handler or the browser.
-    if (!OpenFileWithHandlerOrBrowser(profile, path))
-      ShowWarningMessageBox(profile, path);
+    // |file_path| should be a file. Open it with a handler or the browser.
+    if (!OpenFileWithHandlerOrBrowser(profile, file_path))
+      ShowWarningMessageBox(profile, file_path);
   }
 }
 
@@ -511,11 +519,12 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
   return title;
 }
 
-void ViewRemovableDrive(const base::FilePath& path) {
-  OpenFileWithInternalActionId(path, "auto-open");
+void ViewRemovableDrive(const base::FilePath& file_path) {
+  OpenFileWithInternalActionId(file_path, "auto-open");
 }
 
-void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
+void OpenActionChoiceDialog(const base::FilePath& file_path,
+                            bool advanced_mode) {
   const int kDialogWidth = 394;
   // TODO(dgozman): remove 50, which is a title height once popup window
   // will have no title.
@@ -525,7 +534,7 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
 
   base::FilePath virtual_path;
   if (!ConvertAbsoluteFilePathToRelativeFileSystemPath(
-          profile, kFileManagerAppId, path, &virtual_path))
+          profile, kFileManagerAppId, file_path, &virtual_path))
     return;
   GURL dialog_url = GetActionChoiceUrl(virtual_path, advanced_mode);
 
@@ -561,15 +570,15 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
   chrome::OpenApplication(params);
 }
 
-void ViewItem(const base::FilePath& path) {
+void ViewItem(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, path, kFileManagerAppId, &url) ||
+          profile, file_path, kFileManagerAppId, &url) ||
       !GrantFileSystemAccessToFileBrowser(profile)) {
-    ShowWarningMessageBox(profile, path);
+    ShowWarningMessageBox(profile, file_path);
     return;
   }
 
@@ -578,38 +587,37 @@ void ViewItem(const base::FilePath& path) {
           profile, kFileManagerAppId);
 
   CheckIfDirectoryExists(file_system_context, url,
-                         base::Bind(&ContinueViewItem, profile, path));
+                         base::Bind(&ContinueViewItem, profile, file_path));
 }
 
-void ShowFileInFolder(const base::FilePath& path) {
+void ShowFileInFolder(const base::FilePath& file_path) {
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileWithInternalActionId(path, "select");
+  OpenFileWithInternalActionId(file_path, "select");
 }
 
-bool OpenFileWithBrowser(Browser* browser, const base::FilePath& path) {
+bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = browser->profile();
-  std::string file_extension = path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
-  if (IsSupportedBrowserExtension(file_extension.data()) ||
-      ShouldBeOpenedWithPlugin(profile, file_extension.data())) {
-    GURL page_url = net::FilePathToFileURL(path);
+  if (IsViewableInBrowser(file_path) ||
+      ShouldBeOpenedWithPlugin(profile, file_path.Extension())) {
+    GURL page_url = net::FilePathToFileURL(file_path);
     // Override drive resource to point to internal handler instead of file URL.
-    if (drive::util::IsUnderDriveMountPoint(path)) {
+    if (drive::util::IsUnderDriveMountPoint(file_path)) {
       page_url = drive::util::FilePathToDriveURL(
-          drive::util::ExtractDrivePath(path));
+          drive::util::ExtractDrivePath(file_path));
     }
     OpenNewTab(profile, page_url);
     return true;
   }
 
-  if (drive::util::HasGDocFileExtension(path)) {
-    if (drive::util::IsUnderDriveMountPoint(path)) {
+  if (drive::util::HasGDocFileExtension(file_path)) {
+    if (drive::util::IsUnderDriveMountPoint(file_path)) {
       // The file is on Google Docs. Open with drive URL.
       GURL url = drive::util::FilePathToDriveURL(
-          drive::util::ExtractDrivePath(path));
+          drive::util::ExtractDrivePath(file_path));
       OpenNewTab(profile, url);
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
@@ -617,37 +625,41 @@ bool OpenFileWithBrowser(Browser* browser, const base::FilePath& path) {
       base::PostTaskAndReplyWithResult(
           BrowserThread::GetBlockingPool(),
           FROM_HERE,
-          base::Bind(&ReadUrlFromGDocOnBlockingPool, path),
+          base::Bind(&ReadUrlFromGDocOnBlockingPool, file_path),
           base::Bind(&OpenNewTab, static_cast<Profile*>(NULL)));
     }
     return true;
   }
 
-  if (IsCRXFile(file_extension.data())) {
-    if (drive::util::IsUnderDriveMountPoint(path)) {
+  if (file_path.MatchesExtension(kCRXExtension)) {
+    if (drive::util::IsUnderDriveMountPoint(file_path)) {
       drive::DriveIntegrationService* integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile);
       if (!integration_service)
         return false;
       integration_service->file_system()->GetFileByPath(
-          drive::util::ExtractDrivePath(path),
+          drive::util::ExtractDrivePath(file_path),
           base::Bind(&OnCRXDownloadCallback, browser));
     } else {
-      InstallCRX(browser, path);
+      InstallCRX(browser, file_path);
     }
     return true;
   }
 
   // Failed to open the file of unknown type.
-  LOG(WARNING) << "Unknown file type: " << path.value();
+  LOG(WARNING) << "Unknown file type: " << file_path.value();
   return false;
 }
 
 // If a bundled plugin is enabled, we should open pdf/swf files in a tab.
-bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension) {
-  if (LowerCaseEqualsASCII(file_extension, kPdfExtension))
+bool ShouldBeOpenedWithPlugin(
+    Profile* profile,
+    const base::FilePath::StringType& file_extension) {
+  const base::FilePath file_path =
+      base::FilePath::FromUTF8Unsafe("dummy").AddExtension(file_extension);
+  if (file_path.MatchesExtension(kPdfExtension))
     return IsPdfPluginEnabled(profile);
-  if (LowerCaseEqualsASCII(file_extension, kSwfExtension))
+  if (file_path.MatchesExtension(kSwfExtension))
     return IsFlashPluginEnabled(profile);
   return false;
 }

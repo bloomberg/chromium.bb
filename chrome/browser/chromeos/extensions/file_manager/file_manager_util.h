@@ -26,25 +26,27 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 // The mount event will cause file_manager.js to show the new drive in
 // the left panel, and that is all we want.
 // If there is no File Browser open, this call opens a new one pointing to
-// |path|. In this case the tab will automatically close on |path| unmount.
-void ViewRemovableDrive(const base::FilePath& path);
+// |file_path|. In this case the tab will automatically close on |file_path|
+// unmount.
+void ViewRemovableDrive(const base::FilePath& file_path);
 
 // Opens an action choice dialog for an external drive.
 // One of the actions is opening the File Manager. Passes |advanced_mode|
 // flag to the dialog. If it is enabled, then auto-choice gets disabled.
-void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode);
+void OpenActionChoiceDialog(const base::FilePath& file_path,
+                            bool advanced_mode);
 
 // Opens an item (file or directory). If the target is a directory, the
 // directory will be opened in the file manager. If the target is a file, the
 // file will be opened using a file handler, a file browser handler, or the
 // browser (open in a tab). The default handler has precedence over other
 // handlers, if defined for the type of the target file.
-void ViewItem(const base::FilePath& path);
+void ViewItem(const base::FilePath& file_path);
 
 // Opens file browser on the folder containing the file, with the file selected.
-void ShowFileInFolder(const base::FilePath& path);
+void ShowFileInFolder(const base::FilePath& file_path);
 
-// Opens the file specified by |path| with the browser. This function takes
+// Opens the file specified by |file_path| with the browser. This function takes
 // care of the following intricacies:
 //
 // - If the file is a Drive hosted document, the hosted document will be
@@ -54,12 +56,15 @@ void ShowFileInFolder(const base::FilePath& path);
 //   needed.
 //
 // Returns false if failed to open. This happens if the file type is unknown.
-bool OpenFileWithBrowser(Browser* browser, const base::FilePath& path);
+bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
-bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
+bool ShouldBeOpenedWithPlugin(
+    Profile* profile,
+    const base::FilePath::StringType& file_extension);
 
-// Returns the MIME type of |file_path|.
+// Returns the MIME type of |file_path|. Returns "" if the MIME type is
+// unknown.
 std::string GetMimeTypeForPath(const base::FilePath& file_path);
 
 }  // namespace util

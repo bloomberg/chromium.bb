@@ -503,9 +503,11 @@ bool GetStringsFunction::RunImpl() {
 #undef SET_STRING
 
   dict->SetBoolean("PDF_VIEW_ENABLED",
-                   util::ShouldBeOpenedWithPlugin(profile(), ".pdf"));
+                   util::ShouldBeOpenedWithPlugin(profile(),
+                                                  FILE_PATH_LITERAL(".pdf")));
   dict->SetBoolean("SWF_VIEW_ENABLED",
-                   util::ShouldBeOpenedWithPlugin(profile(), ".swf"));
+                   util::ShouldBeOpenedWithPlugin(profile(),
+                                                  FILE_PATH_LITERAL(".swf")));
 
   webui::SetFontAndTextDirection(dict);
 
