@@ -1617,8 +1617,12 @@ public class AwSettingsTest extends AwTestBase {
         helper.ensureSettingHasInitialValue();
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/277077
+     */
+    @DisabledTest
     public void testUniversalAccessFromFilesWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -1630,8 +1634,12 @@ public class AwSettingsTest extends AwTestBase {
 
     // This test verifies that local image resources can be loaded from file:
     // URLs regardless of file access state.
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/277077
+     */
+    @DisabledTest
     public void testFileAccessFromFilesImage() throws Throwable {
         final String imageContainerUrl = UrlUtils.getTestFileUrl("webview/image_access.html");
         final String imageHeight = "16";
@@ -1647,8 +1655,12 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(imageHeight, getTitleOnUiThread(awContents));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/277077
+     */
+    @DisabledTest
     public void testFileAccessFromFilesIframeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -1658,8 +1670,12 @@ public class AwSettingsTest extends AwTestBase {
                 views.getContents1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/277077
+     */
+    @DisabledTest
     public void testFileAccessFromFilesXhrWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
