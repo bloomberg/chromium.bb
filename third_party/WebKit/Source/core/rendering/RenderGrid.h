@@ -142,7 +142,9 @@ private:
         return m_grid.size();
     }
 
-    Vector<Vector<Vector<RenderBox*, 1> > > m_grid;
+    typedef Vector<RenderBox*, 1> GridCell;
+    typedef Vector<Vector<GridCell> > GridRepresentation;
+    GridRepresentation m_grid;
     bool m_gridIsDirty;
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
     OrderIterator m_orderIterator;

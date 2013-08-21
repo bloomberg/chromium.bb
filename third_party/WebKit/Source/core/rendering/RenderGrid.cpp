@@ -93,7 +93,7 @@ class RenderGrid::GridIterator {
 public:
     // |direction| is the direction that is fixed to |fixedTrackIndex| so e.g
     // GridIterator(m_grid, ForColumns, 1) will walk over the rows of the 2nd column.
-    GridIterator(const Vector<Vector<Vector<RenderBox*, 1> > >& grid, TrackSizingDirection direction, size_t fixedTrackIndex)
+    GridIterator(const GridRepresentation& grid, TrackSizingDirection direction, size_t fixedTrackIndex)
         : m_grid(grid)
         , m_direction(direction)
         , m_rowIndex((direction == ForColumns) ? 0 : fixedTrackIndex)
@@ -106,13 +106,12 @@ public:
 
     RenderBox* nextGridItem()
     {
-        if (!m_grid.size())
-            return 0;
+        ASSERT(!m_grid.isEmpty());
 
         size_t& varyingTrackIndex = (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
         const size_t endOfVaryingTrackIndex = (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
         for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
-            const Vector<RenderBox*>& children = m_grid[m_rowIndex][m_columnIndex];
+            const GridCell& children = m_grid[m_rowIndex][m_columnIndex];
             if (m_childIndex < children.size())
                 return children[m_childIndex++];
 
@@ -123,13 +122,12 @@ public:
 
     PassOwnPtr<GridCoordinate> nextEmptyGridArea()
     {
-        if (m_grid.isEmpty())
-            return nullptr;
+        ASSERT(!m_grid.isEmpty());
 
         size_t& varyingTrackIndex = (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
         const size_t endOfVaryingTrackIndex = (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
         for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
-            const Vector<RenderBox*>& children = m_grid[m_rowIndex][m_columnIndex];
+            const GridCell& children = m_grid[m_rowIndex][m_columnIndex];
             if (children.isEmpty()) {
                 OwnPtr<GridCoordinate> result = adoptPtr(new GridCoordinate(GridSpan(m_rowIndex, m_rowIndex), GridSpan(m_columnIndex, m_columnIndex)));
                 // Advance the iterator to avoid an infinite loop where we would return the same grid area over and over.
@@ -141,7 +139,7 @@ public:
     }
 
 private:
-    const Vector<Vector<Vector<RenderBox*, 1> > >& m_grid;
+    const GridRepresentation& m_grid;
     TrackSizingDirection m_direction;
     size_t m_rowIndex;
     size_t m_columnIndex;
