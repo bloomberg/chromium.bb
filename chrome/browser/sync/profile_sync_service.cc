@@ -665,8 +665,6 @@ void ProfileSyncService::OnGetTokenFailure(
     }
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
       // Report time since token was issued for invalid credentials error.
-      // TODO(pavely): crbug.com/246817 Collect UMA histogram for auth token
-      // rejections from invalidation service.
       base::Time auth_token_time =
           AboutSigninInternalsFactory::GetForProfile(profile_)->
               GetTokenTime(GaiaConstants::kGaiaOAuth2LoginRefreshToken);

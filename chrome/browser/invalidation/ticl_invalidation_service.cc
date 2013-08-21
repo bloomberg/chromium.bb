@@ -5,9 +5,12 @@
 #include "chrome/browser/invalidation/ticl_invalidation_service.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/about_signin_internals.h"
+#include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -245,6 +248,23 @@ void TiclInvalidationService::OnGetTokenFailure(
     }
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
       // This is a real auth error.
+      // Report time since token was issued for invalid credentials error.
+      base::Time auth_token_time =
+          AboutSigninInternalsFactory::GetForProfile(profile_)->
+              GetTokenTime(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
+      if (!auth_token_time.is_null()) {
+        base::TimeDelta age = base::Time::Now() - auth_token_time;
+        if (age < base::TimeDelta::FromHours(1)) {
+          UMA_HISTOGRAM_CUSTOM_TIMES(
+              "Sync.AuthInvalidationRejectedTokenAgeShort",
+              age,
+              base::TimeDelta::FromSeconds(1),
+              base::TimeDelta::FromHours(1),
+              50);
+        }
+        UMA_HISTOGRAM_COUNTS("Sync.AuthInvalidationRejectedTokenAgeLong",
+                             age.InDays());
+      }
       invalidator_registrar_->UpdateInvalidatorState(
           syncer::INVALIDATION_CREDENTIALS_REJECTED);
       break;
