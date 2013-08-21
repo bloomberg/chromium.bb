@@ -483,9 +483,11 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     InSequence expect_in_sequence_for_scope;
 
     // Open 'Save As' dialog.
+    string16 initial_url(GetTestUrl(L"save_as_context_menu.html"));
     const char* kSaveDlgCaption = "Save As";
     EXPECT_CALL(acc_observer_,
-                OnAccDocLoad(TabContentsTitleEq(L"Save As download test")))
+                OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                                L"Save As download test")))
         .WillOnce(testing::DoAll(
             WatchWindow(&win_observer_mock, kSaveDlgCaption, ""),
             AccRightClick(AccObjectMatcher(L"", role))));
@@ -508,7 +510,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     EXPECT_CALL(win_observer_mock, OnWindowClose(_))
         .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 8000));
 
-    LaunchIENavigateAndLoop(GetTestUrl(L"save_as_context_menu.html"),
+    LaunchIENavigateAndLoop(initial_url,
                             kChromeFrameVeryLongNavigationTimeout);
     ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
   }
@@ -529,16 +531,18 @@ TEST_F(ContextMenuTest, CFReload) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   InSequence expect_in_sequence_for_scope;
 
+  string16 initial_url(GetSimplePageUrl());
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetSimplePageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                              GetSimplePageTitle())))
       .WillOnce(OpenContextMenuAsync());
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Reload")));
 
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(initial_url)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 // Test view source from the context menu.
@@ -554,10 +558,12 @@ TEST_F(ContextMenuTest, CFViewSource) {
   MockIEEventSink view_source_mock;
   view_source_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
+  string16 initial_url(GetSimplePageUrl());
 
   // View the page source.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetSimplePageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                              GetSimplePageTitle())))
       .WillOnce(OpenContextMenuAsync());
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"View page source")));
@@ -567,7 +573,7 @@ TEST_F(ContextMenuTest, CFViewSource) {
   std::wstring view_source_url;
   view_source_url += UTF8ToWide(content::kViewSourceScheme);
   view_source_url += L":";
-  view_source_url += GetSimplePageUrl();
+  view_source_url += initial_url;
   std::wstring url_in_new_window = kChromeProtocolPrefix;
   url_in_new_window += view_source_url;
 
@@ -583,17 +589,19 @@ TEST_F(ContextMenuTest, CFViewSource) {
       .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 TEST_F(ContextMenuTest, DISABLED_CFPageInfo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
+  string16 initial_url(GetSimplePageUrl());
 
   // View page information.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetSimplePageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                              GetSimplePageTitle())))
       .WillOnce(testing::DoAll(
           WatchWindow(&win_observer_mock, "", "Chrome_WidgetWin_*"),
           OpenContextMenuAsync()));
@@ -609,7 +617,7 @@ TEST_F(ContextMenuTest, DISABLED_CFPageInfo) {
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
     .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 TEST_F(ContextMenuTest, CFInspector) {
@@ -621,8 +629,10 @@ TEST_F(ContextMenuTest, CFInspector) {
   // Devtools begins life with "Untitled" caption and it changes
   // later to the 'Developer Tools - <url> form.
   const char* kPageInfoCaptionPattern = "Untitled*";
+  string16 initial_url(GetSimplePageUrl());
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetSimplePageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                              GetSimplePageTitle())))
       .WillOnce(testing::DoAll(
           WatchWindow(&win_observer_mock, kPageInfoCaptionPattern, ""),
           OpenContextMenuAsync()));
@@ -634,7 +644,7 @@ TEST_F(ContextMenuTest, CFInspector) {
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+  LaunchIENavigateAndLoop(initial_url,
                           kChromeFrameVeryLongNavigationTimeout);
 }
 
@@ -677,9 +687,11 @@ TEST_F(ContextMenuTest, CFAboutVersionLoads) {
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
+  string16 initial_url(GetSimplePageUrl());
 
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetSimplePageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url,
+                                              GetSimplePageTitle())))
       .WillOnce(OpenContextMenuAsync());
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"About*")));
@@ -698,16 +710,17 @@ TEST_F(ContextMenuTest, CFAboutVersionLoads) {
       .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 TEST_F(ContextMenuTest, IEOpen) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::None());
   InSequence expect_in_sequence_for_scope;
+  string16 initial_url(GetLinkPageUrl());
 
   // Open the link through the context menu.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetLinkPageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url, GetLinkPageTitle())))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Open")));
@@ -717,7 +730,7 @@ TEST_F(ContextMenuTest, IEOpen) {
           VerifyAddressBarUrl(&ie_mock_),
           CloseBrowserMock(&ie_mock_)));
 
-  LaunchIEAndNavigate(GetLinkPageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 TEST_F(ContextMenuTest, IEOpenInNewWindow) {
@@ -730,10 +743,11 @@ TEST_F(ContextMenuTest, IEOpenInNewWindow) {
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
+  string16 initial_url(GetLinkPageUrl());
 
   // Open the link in a new window.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetLinkPageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url, GetLinkPageTitle())))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Open in New Window")));
@@ -748,7 +762,7 @@ TEST_F(ContextMenuTest, IEOpenInNewWindow) {
       .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetLinkPageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 // Test Back/Forward from context menu.
@@ -761,11 +775,11 @@ TEST_F(ContextMenuTest, IEBackForward) {
   InSequence expect_in_sequence_for_scope;
 
   // Navigate to second page.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title1)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page1, title1)))
       .WillOnce(Navigate(&ie_mock_, page2));
 
   // Go back.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title2)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page2, title2)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_IE, page2),
           OpenContextMenuAsync()));
@@ -773,7 +787,7 @@ TEST_F(ContextMenuTest, IEBackForward) {
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Back")));
 
   // Go forward.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title1)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page1, title1)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_IE, page1),
           OpenContextMenuAsync()));
@@ -792,10 +806,11 @@ TEST_F(ContextMenuTest, DISABLED_CFOpenLinkInNewWindow) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
+  string16 initial_url(GetLinkPageUrl());
 
   // Invoke 'Open link in new window' context menu item.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetLinkPageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url, GetLinkPageTitle())))
       .Times(testing::AtMost(2))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")))
       .WillOnce(testing::Return());
@@ -808,23 +823,24 @@ TEST_F(ContextMenuTest, DISABLED_CFOpenLinkInNewWindow) {
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetLinkPageUrl());
+  LaunchIEAndNavigate(initial_url);
 }
 
 // Test CF link context menu - Copy link address.
 TEST_F(ContextMenuTest, CFCopyLinkAddress) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  string16 initial_url(GetLinkPageUrl());
 
   // Invoke 'Copy link address' context menu item.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(GetLinkPageTitle())))
+              OnAccDocLoad(TabContentsTitleEq(initial_url, GetLinkPageTitle())))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(testing::DoAll(
           AccLeftClick(AccObjectMatcher(L"Copy link address*")),
           CloseBrowserMock(&ie_mock_)));
 
-  LaunchIEAndNavigate(GetLinkPageUrl());
+  LaunchIEAndNavigate(initial_url);
 
   EXPECT_STREQ(GetSimplePageUrl().c_str(), GetClipboardText().c_str());
 }
@@ -837,7 +853,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldCut) {
 
   // Invoke "Cut" context menu item of text field.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccRightClick(txtfield_matcher),
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
@@ -861,7 +878,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldCopy) {
 
   // Invoke "Copy" context menu item of text field.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccRightClick(txtfield_matcher),
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
@@ -887,7 +905,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldPaste) {
 
   // Invoke "Paste" context menu item of text field.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccRightClick(txtfield_matcher),
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
@@ -911,7 +930,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldDelete) {
 
   // Invoke 'Delete' context menu item of text field.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccRightClick(txtfield_matcher),
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
@@ -931,7 +951,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldSelectAll) {
 
   // Invoke 'Select all' context menu item of text field.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(AccRightClick(AccObjectMatcher(L"", L"editable text")));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(testing::DoAll(
@@ -953,7 +974,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldUndo) {
 
   // Change the value of text field to 'A'.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
           AccSendCharMessage(txtfield_matcher, L'A')));
@@ -982,7 +1004,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldRedo) {
 
   // Change text field from its initial value to 'A'.
   EXPECT_CALL(acc_observer_,
-              OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
+              OnAccDocLoad(TabContentsTitleEq(context_menu_page_url,
+                                              context_menu_page_title)))
       .WillOnce(testing::DoAll(
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
           AccSendCharMessage(txtfield_matcher, L'A')));
@@ -1033,19 +1056,19 @@ TEST_F(ContextMenuTest, DISABLED_CFBackForward) {
   InSequence expect_in_sequence_for_scope;
 
   // Navigate to second page.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title1)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page1, title1)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_CF, page1),
           Navigate(&ie_mock_, page2)));
 
   // Navigate to third page.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title2)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page2, title2)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_IE, page2),
           Navigate(&ie_mock_, page3)));
 
   // Go back.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title3)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page3, title3)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_CF, page3),
           OpenContextMenuAsync()));
@@ -1054,7 +1077,7 @@ TEST_F(ContextMenuTest, DISABLED_CFBackForward) {
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Back")));
 
   // Go back
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title2)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page2, title2)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_IE, page2),
           OpenContextMenuAsync()));
@@ -1063,7 +1086,7 @@ TEST_F(ContextMenuTest, DISABLED_CFBackForward) {
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Back")));
 
   // Go forward.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title1)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page1, title1)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_CF, page1),
           OpenContextMenuAsync()));
@@ -1072,7 +1095,7 @@ TEST_F(ContextMenuTest, DISABLED_CFBackForward) {
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Forward")));
 
   // Go forward.
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(title2)))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(TabContentsTitleEq(page2, title2)))
       .WillOnce(testing::DoAll(
           VerifyPageLoad(&ie_mock_, IN_IE, page2),
           OpenContextMenuAsync()));

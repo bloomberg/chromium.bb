@@ -36,11 +36,15 @@ MATCHER_P(AccSatisfies, matcher, "satisfies the given AccObjectMatcher") {
 }
 
 // Returns true if the title of the page rendered in the window |arg| equals
-// |the_title|. For pages rendered in Chrome, the title of the parent of |arg|
-// is the page title. For pages rendered in IE, the title of the grandparent of
-// |arg| begins with the page title. To handle both cases, attempt a prefix
-// match on each window starting with the parent of |arg|.
-MATCHER_P(TabContentsTitleEq, the_title, "") {
+// |the_url| or |the_title|. For pages rendered in Chrome, the title of the
+// parent of |arg| is the page url or title. For pages rendered in IE, the title
+// of the grandparent of |arg| begins with the page url or title. To handle both
+// cases, attempt a prefix match on each window starting with the parent of
+// |arg|. Both url and title are matched to account for a race between the test
+// and Chrome when the window title is transitioned from the url to the title.
+MATCHER_P2(TabContentsTitleEq, the_url, the_title, "") {
+  const string16 url(the_url);
+  DCHECK(!url.empty());
   const string16 title(the_title);
   DCHECK(!title.empty());
   HWND parent = GetParent(arg);
@@ -53,8 +57,10 @@ MATCHER_P(TabContentsTitleEq, the_title, "") {
       parent_title.resize(GetWindowText(parent, &parent_title[0],
                                         parent_title.size()));
       if (parent_title.size() >= title.size() &&
-          std::equal(title.begin(), title.end(), parent_title.begin())) {
-          return true;
+          std::equal(title.begin(), title.end(), parent_title.begin()) ||
+          parent_title.size() >= url.size() &&
+          std::equal(url.begin(), url.end(), parent_title.begin())) {
+        return true;
       }
       titles_found << "\"" << UTF16ToASCII(parent_title) << "\" ";
       parent = GetParent(parent);
