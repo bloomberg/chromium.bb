@@ -22,7 +22,6 @@ namespace rcd = net::registry_controlled_domains;
 namespace extensions {
 
 namespace externally_connectable_errors {
-const char kErrorInvalid[] = "Invalid value for 'externally_connectable'";
 const char kErrorInvalidMatchPattern[] = "Invalid match pattern '*'";
 const char kErrorInvalidId[] = "Invalid ID '*'";
 const char kErrorNothingSpecified[] =
@@ -94,11 +93,9 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
     std::vector<InstallWarning>* install_warnings,
     string16* error) {
   scoped_ptr<ExternallyConnectable> externally_connectable =
-      ExternallyConnectable::FromValue(value);
-  if (!externally_connectable) {
-    *error = UTF8ToUTF16(errors::kErrorInvalid);
+      ExternallyConnectable::FromValue(value, error);
+  if (!externally_connectable)
     return scoped_ptr<ExternallyConnectableInfo>();
-  }
 
   URLPatternSet matches;
 

@@ -200,7 +200,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
 
 TEST_F(ExternallyConnectableTest, ErrorWrongFormat) {
   LoadAndExpectError("externally_connectable_error_wrong_format.json",
-                     errors::kErrorInvalid);
+                     "expected dictionary, got string");
 }
 
 TEST_F(ExternallyConnectableTest, ErrorBadID) {
