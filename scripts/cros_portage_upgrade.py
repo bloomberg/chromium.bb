@@ -722,8 +722,11 @@ class Upgrader(object):
       items = os.listdir(pkgdir)
       items = [os.path.join(catpkgsubdir, i) for i in items if i != 'Manifest']
       if items:
-        self._RunGit(self._stable_repo, ['rm', '-rf'] + items,
-                     redirect_stdout=True)
+        args = ['rm', '-rf', '--ignore-unmatch'] + items
+        self._RunGit(self._stable_repo, args, redirect_stdout=True)
+        # Now delete any files that git doesn't know about.
+        for item in items:
+          osutils.SafeUnlink(os.path.join(self._stable_repo, item))
 
     osutils.SafeMakedirs(pkgdir)
 
