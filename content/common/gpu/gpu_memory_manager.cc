@@ -79,8 +79,12 @@ GpuMemoryManager::GpuMemoryManager(
 #endif
 
   // On Android, always discard everything that is nonvisible.
-  // On Mac, use as little memory as possible to avoid stability issues.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+  // On Linux and Mac, use as little memory as possible to avoid stability
+  // issues.
+  // http://crbug.com/145600 (Linux)
+  // http://crbug.com/141377 (Mac)
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   allow_nonvisible_memory_ = false;
 #else
   allow_nonvisible_memory_ = true;
@@ -774,11 +778,12 @@ void GpuMemoryManager::AssignSurfacesAllocations() {
 
     allocation.renderer_allocation.bytes_limit_when_visible =
         client_state->bytes_allocation_when_visible_;
-    // Use a more conservative memory allocation policy on Mac because the
-    // platform is unstable when under memory pressure.
-    // http://crbug.com/141377
+    // Use a more conservative memory allocation policy on Linux and Mac
+    // because the platform is unstable when under memory pressure.
+    // http://crbug.com/145600 (Linux)
+    // http://crbug.com/141377 (Mac)
     allocation.renderer_allocation.priority_cutoff_when_visible =
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
         GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
 #else
         GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
