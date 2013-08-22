@@ -17,8 +17,14 @@ namespace picasa {
 
 struct AlbumInfo;
 
-typedef std::set<base::FilePath> AlbumImages;
+// Map of de-duplicated filenames to the platform paths for a given album.
+// Example:
+//   Bar.jpg -> /path/to/Bar.jpg
+//   Foo.jpg -> /path/to/Foo.jpg
+//   Foo (1).jpg -> /path/to/another/Foo.jpg
+typedef std::map<std::string, base::FilePath> AlbumImages;
 typedef std::set<std::string> AlbumUIDSet;
+// Map of album uids to a collection of its images.
 typedef std::map<std::string, AlbumImages> AlbumImagesMap;
 typedef std::map<std::string, AlbumInfo> AlbumMap;
 
@@ -68,6 +74,10 @@ struct AlbumTableFilesForTransit {
 struct FolderINIContents {
   base::FilePath folder_path;
   std::string ini_contents;
+
+  bool operator<(const FolderINIContents& that) const {
+    return folder_path < that.folder_path;
+  }
 };
 
 void CloseAlbumTableFiles(AlbumTableFiles* table_files);

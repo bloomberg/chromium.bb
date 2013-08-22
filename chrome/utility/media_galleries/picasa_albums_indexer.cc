@@ -4,11 +4,14 @@
 
 #include "chrome/utility/media_galleries/picasa_albums_indexer.h"
 
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/ini_parser.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 
 namespace picasa {
 
@@ -16,6 +19,7 @@ namespace {
 
 const char kAlbumSectionHeader[] = ".album:";
 const char kAlbumsKey[] = "albums";
+const int kMaxDedupeNumber = 1000;  // Chosen arbitrarily.
 
 class PicasaINIParser : public base::INIParser {
  public:
@@ -48,8 +52,28 @@ class PicasaINIParser : public base::INIParser {
       if (album_map_it == albums_images_->end())
         continue;
 
-      album_map_it->second.insert(
-          folder_path_.Append(base::FilePath::FromUTF8Unsafe(section)));
+      base::FilePath filename = base::FilePath::FromUTF8Unsafe(section);
+      AlbumImages& album_images = album_map_it->second;
+
+      // If filename is first of its name in album, simply add.
+      if (album_images.insert(
+              std::make_pair(section, folder_path_.Append(filename))).second) {
+        continue;
+      }
+
+      // Otherwise, de-dupe by appending a number starting at (1).
+      for (int i = 1; i < kMaxDedupeNumber; ++i) {
+        std::string deduped_filename =
+            filename.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", i))
+                .AsUTF8Unsafe();
+
+        // Attempt to add the de-duped name.
+        if (album_images.insert(
+                std::make_pair(deduped_filename, folder_path_.Append(filename)))
+                .second) {
+          break;
+        }
+      }
     }
   }
 
@@ -70,9 +94,20 @@ PicasaAlbumsIndexer::PicasaAlbumsIndexer(const AlbumUIDSet& album_uids) {
 PicasaAlbumsIndexer::~PicasaAlbumsIndexer() {}
 
 void PicasaAlbumsIndexer::ParseFolderINI(
-    const base::FilePath& folder_path, const std::string& ini_contents) {
-  PicasaINIParser parser(folder_path, &albums_images_);
-  parser.Parse(ini_contents);
+    const std::vector<picasa::FolderINIContents>& folders_inis) {
+  // Make a copy for sorting
+  std::vector<picasa::FolderINIContents> folders_inis_sorted = folders_inis;
+
+  // Sort here so image names are deduplicated in a stable ordering.
+  std::sort(folders_inis_sorted.begin(), folders_inis_sorted.end());
+
+  for (std::vector<picasa::FolderINIContents>::const_iterator it =
+           folders_inis_sorted.begin();
+       it != folders_inis_sorted.end();
+       ++it) {
+    PicasaINIParser parser(it->folder_path, &albums_images_);
+    parser.Parse(it->ini_contents);
+  }
 }
 
 }  // namespace picasa

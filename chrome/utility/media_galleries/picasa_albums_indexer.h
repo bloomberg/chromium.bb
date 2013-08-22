@@ -48,8 +48,8 @@ class PicasaAlbumsIndexer {
   ~PicasaAlbumsIndexer();
 
   // This method should be called once for each Folder in the PMP database.
-  void ParseFolderINI(const base::FilePath& folder_path,
-                      const std::string& ini_contents);
+  void ParseFolderINI(
+      const std::vector<picasa::FolderINIContents>& folders_inis);
 
   const AlbumImagesMap& albums_images() const { return albums_images_; }
 

@@ -597,11 +597,7 @@ void ChromeContentUtilityClient::OnIndexPicasaAlbumsContents(
     const picasa::AlbumUIDSet& album_uids,
     const std::vector<picasa::FolderINIContents>& folders_inis) {
   picasa::PicasaAlbumsIndexer indexer(album_uids);
-  for (std::vector<picasa::FolderINIContents>::const_iterator it =
-           folders_inis.begin();
-       it != folders_inis.end(); ++it) {
-    indexer.ParseFolderINI(it->folder_path, it->ini_contents);
-  }
+  indexer.ParseFolderINI(folders_inis);
 
   Send(new ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished(
       indexer.albums_images()));
