@@ -4694,14 +4694,23 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">
         Pack Extension
       </message>
+      <message name="IDS_EXTENSION_PACK_APP_DIALOG_TITLE" desc="Title of pack application dialog">
+        Pack Application
+      </message>
       <message name="IDS_EXTENSION_PACK_BUTTON" desc="Text of the pack extension button">
         Pack Extension
+      </message>
+      <message name="IDS_EXTENSION_ADT_PACK_BUTTON" desc="Text of the pack button in apps developer tool.">
+        Pack
       </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog.">
         Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.
       </message>
       <message name="IDS_EXTENSION_ADT_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog in the Apps Developer Tool.">
         The packed extension and the private key will be written in the parent directory of the root directory of the extension to pack. To update an extension, select the private key file to reuse.
+      </message>
+      <message name="IDS_EXTENSION_ADT_PACK_APP_DIALOG_HEADING" desc="The heading of the pack application dialog in the Apps Developer Tool.">
+        The packed application and the private key will be written in the parent directory of the root directory of the application to pack. To update an application, select the private key file to reuse.
       </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL" desc="Label in the pack extension dialog for the control that lets the user select the extension to pack.">
         Extension root directory:

@@ -1243,7 +1243,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
 // Pack Extension strings
   SET_STRING("packExtensionOverlay", IDS_EXTENSION_PACK_DIALOG_TITLE);
   SET_STRING("packExtensionHeading", IDS_EXTENSION_ADT_PACK_DIALOG_HEADING);
-  SET_STRING("packExtensionCommit", IDS_EXTENSION_PACK_BUTTON);
+  SET_STRING("packButton", IDS_EXTENSION_ADT_PACK_BUTTON);
   SET_STRING("ok", IDS_OK);
   SET_STRING("cancel", IDS_CANCEL);
   SET_STRING("packExtensionRootDir",
@@ -1254,6 +1254,8 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("packExtensionProceedAnyway", IDS_EXTENSION_PROCEED_ANYWAY);
   SET_STRING("packExtensionWarningTitle", IDS_EXTENSION_PACK_WARNING_TITLE);
   SET_STRING("packExtensionErrorTitle", IDS_EXTENSION_PACK_ERROR_TITLE);
+  SET_STRING("packAppOverlay", IDS_EXTENSION_PACK_APP_DIALOG_TITLE);
+  SET_STRING("packAppHeading", IDS_EXTENSION_ADT_PACK_APP_DIALOG_HEADING);
 
 // Delete confirmation dialog.
   SET_STRING("deleteConfirmationDeleteButton",

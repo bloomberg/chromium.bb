@@ -366,6 +366,17 @@ cr.define('apps_dev_tool', function() {
     setPackButton_: function(item, el) {
       var packButton = el.querySelector('.pack-link');
       packButton.addEventListener('click', function(e) {
+        if (item.isApp) {
+          $('pack-heading').textContent =
+              loadTimeData.getString('packAppHeading');
+          $('pack-title').textContent =
+              loadTimeData.getString('packAppOverlay');
+        } else {
+          $('pack-heading').textContent =
+              loadTimeData.getString('packExtensionHeading');
+          $('pack-title').textContent =
+              loadTimeData.getString('packExtensionOverlay');
+        }
         $('item-root-dir').value = item.path;
         AppsDevTool.showOverlay($('packItemOverlay'));
       });
