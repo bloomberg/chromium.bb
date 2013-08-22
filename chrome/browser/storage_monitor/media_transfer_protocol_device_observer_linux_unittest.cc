@@ -110,6 +110,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
     StorageMonitor* monitor = g_browser_process->storage_monitor();
     monitor->RemoveObserver(mock_storage_observer_.get());
     mtp_device_observer_.reset();
+    chrome::test::TestStorageMonitor::RemoveSingleton();
   }
 
   // Returns the device changed observer object.

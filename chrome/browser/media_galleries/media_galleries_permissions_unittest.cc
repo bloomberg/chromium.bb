@@ -48,6 +48,8 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
 
+    test::TestStorageMonitor::RemoveSingleton();
+
     testing::Test::TearDown();
   }
 

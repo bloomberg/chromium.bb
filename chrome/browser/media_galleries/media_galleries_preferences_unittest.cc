@@ -119,6 +119,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     Verify();
+    test::TestStorageMonitor::RemoveSingleton();
   }
 
   void Verify() {
@@ -844,6 +845,8 @@ TEST(MediaGalleryPrefInfoTest, NameGeneration) {
       StorageInfo::FIXED_MASS_STORAGE, "unique");
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("unique")).AsUTF8Unsafe(),
             UTF16ToUTF8(info.GetGalleryTooltip()));
+
+  test::TestStorageMonitor::RemoveSingleton();
 }
 
 }  // namespace chrome

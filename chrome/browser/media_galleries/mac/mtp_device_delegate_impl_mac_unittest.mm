@@ -195,6 +195,17 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     delegate_ = new chrome::MTPDeviceDelegateImplMac(kDeviceId, kDevicePath);
   }
 
+  virtual void TearDown() OVERRIDE {
+    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
+    [delegate deviceBrowser:nil didRemoveDevice:camera_ moreGoing:NO];
+
+    delegate_->CancelPendingTasksAndDeleteDelegate();
+
+    chrome::test::TestStorageMonitor::RemoveSingleton();
+
+    io_thread_->Stop();
+  }
+
   void OnError(base::WaitableEvent* event, base::PlatformFileError error) {
     error_ = error;
     event->Signal();
@@ -288,15 +299,6 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     loop.RunUntilIdle();
     wait.Wait();
     return error_;
-  }
-
-  virtual void TearDown() OVERRIDE {
-    id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
-    [delegate deviceBrowser:nil didRemoveDevice:camera_ moreGoing:NO];
-
-    delegate_->CancelPendingTasksAndDeleteDelegate();
-
-    io_thread_->Stop();
   }
 
  protected:

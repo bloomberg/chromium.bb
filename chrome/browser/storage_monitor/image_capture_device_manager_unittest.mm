@@ -262,6 +262,10 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
     monitor_ = chrome::test::TestStorageMonitor::CreateAndInstall();
   }
 
+  virtual void TearDown() OVERRIDE {
+    chrome::test::TestStorageMonitor::RemoveSingleton();
+  }
+
   MockICCameraDevice* AttachDevice(
       chrome::ImageCaptureDeviceManager* manager) {
     // Ownership will be passed to the device browser delegate.

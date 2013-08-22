@@ -61,6 +61,7 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
 
   gallery.path = base::FilePath(FILE_PATH_LITERAL("sub/path"));
   EXPECT_EQ("path - 977 KB vendor, model", GalleryName(gallery));
+  test::TestStorageMonitor::RemoveSingleton();
 }
 
 }  // namespace chrome

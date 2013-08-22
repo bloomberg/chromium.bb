@@ -32,13 +32,13 @@ TestStorageMonitor::~TestStorageMonitor() {}
 
 // static
 TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
-  RemoveSingleton();
   TestStorageMonitor* monitor = new TestStorageMonitor();
   scoped_ptr<StorageMonitor> pass_monitor(monitor);
   monitor->Init();
   monitor->MarkInitialized();
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   if (browser_process) {
+    DCHECK(browser_process->storage_monitor() == NULL);
     browser_process->SetStorageMonitor(pass_monitor.Pass());
     return monitor;
   }

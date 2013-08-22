@@ -70,6 +70,7 @@ class MediaStorageUtilTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     WaitForFileThread();
+    chrome::test::TestStorageMonitor::RemoveSingleton();
   }
 
   static void PostQuitToUIThread() {

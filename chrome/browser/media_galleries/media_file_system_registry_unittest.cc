@@ -770,6 +770,7 @@ void MediaFileSystemRegistryTest::TearDown() {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
+  test::TestStorageMonitor::RemoveSingleton();
 #if defined(OS_CHROMEOS)
   test_user_manager_.reset();
 #endif
