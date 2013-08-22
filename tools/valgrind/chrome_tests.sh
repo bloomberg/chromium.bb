@@ -50,7 +50,7 @@ esac
 
 if [ "$NEEDS_VALGRIND" == "1" ]
 then
-  CHROME_VALGRIND=`sh $THISDIR/locate_valgrind.sh`
+  export CHROME_VALGRIND=`sh $THISDIR/locate_valgrind.sh`
   if [ "$CHROME_VALGRIND" = "" ]
   then
     # locate_valgrind.sh failed

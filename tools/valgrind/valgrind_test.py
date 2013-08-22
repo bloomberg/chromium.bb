@@ -357,7 +357,11 @@ class ValgrindTool(BaseTool):
     if self.SelfContained():
       proc = ["valgrind-%s.sh" % tool_name]
     else:
-      proc = ["valgrind", "--tool=%s" % tool_name]
+      if 'CHROME_VALGRIND' in os.environ:
+        path = os.path.join(os.environ['CHROME_VALGRIND'], "bin", "valgrind")
+      else:
+        path = "valgrind"
+      proc = [path, "--tool=%s" % tool_name]
 
     proc += ["--num-callers=%i" % int(self._options.num_callers)]
 
