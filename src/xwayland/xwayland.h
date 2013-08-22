@@ -85,6 +85,7 @@ struct weston_wm {
 		xcb_atom_t		 wm_state;
 		xcb_atom_t		 wm_s0;
 		xcb_atom_t		 wm_client_machine;
+		xcb_atom_t		 net_wm_cm_s0;
 		xcb_atom_t		 net_wm_name;
 		xcb_atom_t		 net_wm_pid;
 		xcb_atom_t		 net_wm_icon;

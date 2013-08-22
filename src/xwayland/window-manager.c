@@ -1537,6 +1537,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "WM_STATE",		F(atom.wm_state) },
 		{ "WM_S0",		F(atom.wm_s0) },
 		{ "WM_CLIENT_MACHINE",	F(atom.wm_client_machine) },
+		{ "_NET_WM_CM_S0",	F(atom.net_wm_cm_s0) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
 		{ "_NET_WM_PID",	F(atom.net_wm_pid) },
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
@@ -1691,6 +1692,11 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 	xcb_set_selection_owner(wm->conn,
 				wm->wm_window,
 				wm->atom.wm_s0,
+				XCB_TIME_CURRENT_TIME);
+
+	xcb_set_selection_owner(wm->conn,
+				wm->wm_window,
+				wm->atom.net_wm_cm_s0,
 				XCB_TIME_CURRENT_TIME);
 }
 
