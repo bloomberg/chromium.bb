@@ -28,7 +28,7 @@ class MoveOperationTest : public OperationTestBase {
                                            cache(),
                                            fake_service(),
                                            temp_dir()));
- }
+  }
 
   scoped_ptr<MoveOperation> operation_;
   scoped_ptr<CopyOperation> copy_operation_;

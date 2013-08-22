@@ -8,6 +8,8 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -129,8 +131,16 @@ void MoveOperation::MoveAfterPrepare(
       dest_file_path.BaseName().RemoveExtension().AsUTF8Unsafe() :
       dest_file_path.BaseName().AsUTF8Unsafe();
 
-  // TODO(hidehiko): On Drive API v2, we can move a resource by only one
-  // server request. Implement here. crbug.com/241814
+  // If Drive API v2 is enabled, we can move the file on server side by one
+  // request.
+  if (util::IsDriveV2ApiEnabled()) {
+    scheduler_->MoveResource(
+        src_entry->resource_id(), dest_parent_entry->resource_id(), new_title,
+        base::Bind(&MoveOperation::MoveAfterMoveResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   src_file_path, dest_file_path, callback));
+    return;
+  }
 
   ResourceEntry* src_entry_ptr = src_entry.get();
   Rename(*src_entry_ptr, new_title,
@@ -139,6 +149,51 @@ void MoveOperation::MoveAfterPrepare(
                     src_file_path, dest_file_path, callback,
                     base::Passed(&src_entry),
                     base::Passed(&dest_parent_entry)));
+}
+
+void MoveOperation::MoveAfterMoveResource(
+    const base::FilePath& src_file_path,
+    const base::FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  ResourceEntry entry;
+  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+    callback.Run(FILE_ERROR_FAILED);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::RefreshEntry,
+                 base::Unretained(metadata_), entry),
+      base::Bind(&MoveOperation::MoveAfterRefreshEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 src_file_path, dest_file_path, callback));
+}
+
+void MoveOperation::MoveAfterRefreshEntry(
+    const base::FilePath& src_file_path,
+    const base::FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (error == FILE_ERROR_OK) {
+    // Notify the change of directory.
+    observer_->OnDirectoryChangedByOperation(src_file_path.DirName());
+    observer_->OnDirectoryChangedByOperation(dest_file_path.DirName());
+  }
+
+  callback.Run(error);
 }
 
 void MoveOperation::MoveAfterRename(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -13,7 +14,12 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
+
+namespace google_apis {
+class ResourceEntry;
+}  // namespace google_apis
 
 namespace drive {
 
@@ -50,6 +56,22 @@ class MoveOperation {
                         scoped_ptr<ResourceEntry> src_entry,
                         scoped_ptr<ResourceEntry> dest_parent_entry,
                         FileError error);
+
+  // Part of Move(). Called after MoveResource is completed. This is only for
+  // Drive API v2.
+  void MoveAfterMoveResource(
+      const base::FilePath& src_file_path,
+      const base::FilePath& dest_file_path,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
+  // Part of Move(). Called after ResourceMetadata::RefreshEntry is completed.
+  // This is only for Drive API v2.
+  void MoveAfterRefreshEntry(const base::FilePath& src_file_path,
+                             const base::FilePath& dest_file_path,
+                             const FileOperationCallback& callback,
+                             FileError error);
 
   // Part of Move(). Called after renaming (without moving the directory)
   // is completed.
@@ -96,7 +118,6 @@ class MoveOperation {
       const std::string& parent_resource_id,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status);
-
 
   // Removes the resource with |resource_id| from the directory with
   // |directory_resource_id|.
