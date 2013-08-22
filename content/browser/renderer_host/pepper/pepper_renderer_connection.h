@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_RENDERER_CONNECTION_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_RENDERER_CONNECTION_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -45,12 +47,12 @@ class PepperRendererConnection : public BrowserMessageFilter {
   // PepperRendererConnection, which serves as the host for in-process plugins.
   BrowserPpapiHostImpl* GetHostForChildProcess(int child_process_id) const;
 
-  void OnMsgCreateResourceHostFromHost(
+  void OnMsgCreateResourceHostsFromHost(
       int routing_id,
       int child_process_id,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,
-      const IPC::Message& nested_msg);
+      const std::vector<IPC::Message>& nested_msgs);
 
   void OnMsgFileRefGetInfoForRenderer(
       int routing_id,

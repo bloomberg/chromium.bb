@@ -49,10 +49,11 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
   virtual bool IsRunningInProcess() const OVERRIDE;
-  virtual void CreateBrowserResourceHost(
+  virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
-      const IPC::Message& nested_msg,
-      const base::Callback<void(int)>& callback) const OVERRIDE;
+      const std::vector<IPC::Message>& nested_msgs,
+      const base::Callback<void(
+          const std::vector<int>&)>& callback) const OVERRIDE;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

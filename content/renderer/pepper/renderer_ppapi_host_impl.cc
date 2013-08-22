@@ -225,19 +225,19 @@ bool RendererPpapiHostImpl::IsRunningInProcess() const {
   return is_running_in_process_;
 }
 
-void RendererPpapiHostImpl::CreateBrowserResourceHost(
+void RendererPpapiHostImpl::CreateBrowserResourceHosts(
     PP_Instance instance,
-    const IPC::Message& nested_msg,
-    const base::Callback<void(int)>& callback) const {
+    const std::vector<IPC::Message>& nested_msgs,
+    const base::Callback<void(const std::vector<int>&)>& callback) const {
   RenderView* render_view = GetRenderViewForInstance(instance);
   PepperBrowserConnection* browser_connection =
       PepperBrowserConnection::Get(render_view);
   if (!browser_connection) {
-    callback.Run(0);
+    callback.Run(std::vector<int>(nested_msgs.size(), 0));
   } else {
     browser_connection->SendBrowserCreate(module_->GetPluginChildId(),
                                           instance,
-                                          nested_msg,
+                                          nested_msgs,
                                           callback);
   }
 }
