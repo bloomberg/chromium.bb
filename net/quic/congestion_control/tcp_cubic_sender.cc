@@ -195,7 +195,7 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
     }
     // congestion_window_cnt is the number of acks since last change of snd_cwnd
     if (congestion_window_ < max_tcp_congestion_window_) {
-      // TCP slow start, exponentail growth, increase by one for each ACK.
+      // TCP slow start, exponential growth, increase by one for each ACK.
       congestion_window_++;
     }
     DLOG(INFO) << "Slow start; congestion window:" << congestion_window_;
@@ -211,8 +211,9 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
         }
         DLOG(INFO) << "Reno; congestion window:" << congestion_window_;
       } else {
-        congestion_window_ = cubic_.CongestionWindowAfterAck(congestion_window_,
-                                                             delay_min_);
+        congestion_window_ = std::min(
+            max_tcp_congestion_window_,
+            cubic_.CongestionWindowAfterAck(congestion_window_, delay_min_));
         DLOG(INFO) << "Cubic; congestion window:" << congestion_window_;
       }
     }

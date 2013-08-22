@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// TCP cubic send side congestion algorithm, emulates the behaviour of
+// TCP cubic send side congestion algorithm, emulates the behavior of
 // TCP cubic.
 
 #ifndef NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_H_
