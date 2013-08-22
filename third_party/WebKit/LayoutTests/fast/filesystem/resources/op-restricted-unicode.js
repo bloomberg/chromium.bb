@@ -6,7 +6,7 @@ var testCases = [
             function(helper) { helper.getFile('/', 'ab', {create:true}); },
 
             // Embedded NULs aren't allowed; anything else in the first 32 is fair game.
-            function(helper) { helper.getFile('/', 'a\u0000b', {create:true}, FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.getFile('/', 'a\u0000b', {create:true}, 'InvalidModificationError'); },
             function(helper) { helper.getFile('/', 'a\u0001b', {create:true}, 0); },
             function(helper) { helper.getFile('/', 'a\u0002b', {create:true}, 0); },
             function(helper) { helper.getFile('/', 'a\u0003b', {create:true}, 0); },

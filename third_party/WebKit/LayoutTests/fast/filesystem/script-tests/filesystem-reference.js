@@ -5,7 +5,7 @@ var testEntries = null;
 
 function errorCallback(error)
 {
-    testFailed("Error occurred: " + error.code);
+    testFailed("Error occurred: " + error.name);
     finishJSTest();
 }
 

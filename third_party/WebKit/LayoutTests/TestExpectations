@@ -1244,3 +1244,6 @@ crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
+
+# Temporary, cannot reproduce on local win.
+crbug.com/276861 [ Win ] fast/filesystem/op-restricted-unicode.html [ Failure Pass ]

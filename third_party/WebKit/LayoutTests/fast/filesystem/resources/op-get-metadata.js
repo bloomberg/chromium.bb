@@ -17,7 +17,7 @@ var testCases = [
             function(helper) { helper.getFile('/', '/b', {create:true}); },
             function(helper) { helper.getMetadata('/b'); },
             function(helper) { helper.remove('/tmp'); },
-            function(helper) { helper.getMetadata('/tmp', FileError.NOT_FOUND_ERR); },
+            function(helper) { helper.getMetadata('/tmp', 'NotFoundError'); },
             function(helper) { helper.shouldBeGreaterThanOrEqual('/a.returned.modificationTime', '/.returned.modificationTime'); },
             function(helper) { helper.shouldBeGreaterThanOrEqual('/b.returned.modificationTime', '/.returned.modificationTime'); },
             function(helper) { helper.shouldBeGreaterThanOrEqual('/b.returned.modificationTime', '/a.returned.modificationTime'); }

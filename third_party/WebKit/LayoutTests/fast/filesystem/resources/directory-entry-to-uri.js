@@ -11,7 +11,7 @@ var testDirectoryName = 'testDirectory';
 var testDirectoryURI = null;
 
 function errorCallback(error) {
-    testFailed("Error occured:" + error.code);
+    testFailed("Error occured:" + error.name);
     finishJSTest();
 }
 

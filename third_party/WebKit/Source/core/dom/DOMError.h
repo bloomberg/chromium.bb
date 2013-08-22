@@ -59,10 +59,11 @@ public:
     const String& name() const { return m_name; }
     const String& message() const { return m_message; }
 
-private:
+protected:
     explicit DOMError(const String& name);
-    explicit DOMError(const String& name, const String& message);
+    DOMError(const String& name, const String& message);
 
+private:
     const String m_name;
     const String m_message;
 };

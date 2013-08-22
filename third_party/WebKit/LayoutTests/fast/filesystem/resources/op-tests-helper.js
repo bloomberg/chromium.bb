@@ -52,7 +52,7 @@ function createTestEnvironment(fileSystem, entries, successCallback, errorCallba
 
         this.createErrorCallback = function(error, entry)
         {
-            testFailed('Got unexpected error ' + error.code + ' while creating ' + toString(entry));
+            testFailed('Got unexpected error ' + error.name + ' while creating ' + toString(entry));
             this.errorCallback(error);
         }
 
@@ -107,10 +107,10 @@ function verifyTestEnvironment(fileSystem, entries, successCallback, errorCallba
                 this.verifyNextEntry();
                 return;
             }
-            if (error == FileError.NOT_FOUND_ERR)
+            if (error == 'NotFoundError')
                 testFailed('Not found: ' + entry.fullPath);
             else
-                testFailed('Got unexpected error ' + error.code + ' for ' + entry.fullPath);
+                testFailed('Got unexpected error ' + error.name + ' for ' + entry.fullPath);
             this.errorCallback(error);
         }
 
@@ -161,7 +161,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testSuccessCallback = function()
         {
-            if (!this.expectedErrorCode) {
+            if (!this.expectedError) {
                 testPassed('Succeeded: ' + this.stage);
                 this.runNextTest();
             } else
@@ -171,7 +171,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
         this.entry = null;
         this.testGetSuccessCallback = function(entry)
         {
-            if (!this.expectedErrorCode) {
+            if (!this.expectedError) {
                 testPassed('Succeeded: ' + this.stage);
                 this.entry = entry;
                 shouldBe.apply(this, ['this.environment[this.entry.fullPath].fullPath', '"' + entry.fullPath + '"']);
@@ -184,7 +184,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testCreateSuccessCallback = function(entry)
         {
-            if (!this.expectedErrorCode) {
+            if (!this.expectedError) {
                 testPassed('Succeeded: ' + this.stage);
                 this.environment[entry.fullPath] = entry;
                 this.runNextTest();
@@ -194,7 +194,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testGetParentSuccessCallback = function(entry)
         {
-            if (!this.expectedErrorCode) {
+            if (!this.expectedError) {
                 testPassed('Succeeded: ' + this.stage);
                 debug('Parent entry: ' + toString(entry));
                 this.runNextTest();
@@ -204,7 +204,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testReadEntriesSuccessCallback = function(entries)
         {
-            if (this.expectedErrorCode)
+            if (this.expectedError)
                 testFailed('Unexpectedly succeeded while ' + this.stage);
 
             this.readEntries.push.apply(this.readEntries, entries);
@@ -221,7 +221,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testMetadataSuccessCallback = function(metadata, entry)
         {
-            if (!this.expectedErrorCode) {
+            if (!this.expectedError) {
                 testPassed('Succeeded: ' + this.stage);
                 var symbol = entry + '.returned.modificationTime';
                 this.environment[symbol] = metadata.modificationTime;
@@ -242,80 +242,80 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.testErrorCallback = function(error)
         {
-            if (this.expectedErrorCode) {
-                shouldBe.apply(this, ['this.expectedErrorCode + ""', '"' + error.code + '"']);
+            if (this.expectedError) {
+                shouldBe.apply(this, ['this.expectedError + ""', '"' + error.name + '"']);
                 this.runNextTest();
             } else {
-                testFailed('Got unexpected error ' + error.code + ' while ' + this.stage);
+                testFailed('Got unexpected error ' + error.name + ' while ' + this.stage);
                 this.errorCallback(error);
             }
         };
 
         // Operations ---------------------------------------------------
 
-        this.getFile = function(entry, path, flags, expectedErrorCode)
+        this.getFile = function(entry, path, flags, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".getFile("' + path + '")';
             var successCallback = (flags && flags.create) ? this.testCreateSuccessCallback : this.testGetSuccessCallback;
             this.environment[entry].getFile(path, flags, bindCallback(this, successCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.getDirectory = function(entry, path, flags, expectedErrorCode)
+        this.getDirectory = function(entry, path, flags, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".getDirectory("' + path + '")';
             var successCallback = (flags && flags.create) ? this.testCreateSuccessCallback : this.testGetSuccessCallback;
             this.environment[entry].getDirectory(path, flags, bindCallback(this, successCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.getParent = function(entry, expectedErrorCode)
+        this.getParent = function(entry, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".getParent()';
             this.environment[entry].getParent(bindCallback(this, this.testGetParentSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.getMetadata = function(entry, expectedErrorCode)
+        this.getMetadata = function(entry, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".getMetadata()';
             this.environment[entry].getMetadata(bindCallback(this, this.testMetadataSuccessCallback, entry), bindCallback(this, this.testErrorCallback));
         };
 
-        this.remove = function(entry, expectedErrorCode)
+        this.remove = function(entry, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".remove()';
             this.environment[entry].remove(bindCallback(this, this.testSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.removeRecursively = function(entry, expectedErrorCode)
+        this.removeRecursively = function(entry, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".removeRecursively()';
             this.environment[entry].removeRecursively(bindCallback(this, this.testSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.readDirectory = function(entry, expectedErrorCode)
+        this.readDirectory = function(entry, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.readEntries = [];
             this.stage = '"' + entry + '".createReader().readEntries()';
             this.currentReader = this.environment[entry].createReader();
             this.currentReader.readEntries(bindCallback(this, this.testReadEntriesSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.copy = function(entry, destinationParent, newName, expectedErrorCode)
+        this.copy = function(entry, destinationParent, newName, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".copyTo("' + destinationParent + '", "' + newName + '")';
             this.environment[entry].copyTo(this.environment[destinationParent], newName, bindCallback(this, this.testSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
 
-        this.move = function(entry, destinationParent, newName, expectedErrorCode)
+        this.move = function(entry, destinationParent, newName, expectedError)
         {
-            this.expectedErrorCode = expectedErrorCode;
+            this.expectedError = expectedError;
             this.stage = '"' + entry + '".moveTo("' + destinationParent + '", "' + newName + '")';
             this.environment[entry].moveTo(this.environment[destinationParent], newName, bindCallback(this, this.testSuccessCallback), bindCallback(this, this.testErrorCallback));
         };
@@ -335,7 +335,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
         //---------------------------------------------------------------
         this.start = function()
         {
-            this.expectedErrorCode = '';
+            this.expectedError = '';
             this.stage = 'resetting filesystem';
             // Record rounded start date (current time minus 999 msec) here for the comparison. Entry.getMetadata() may return the last mod time in seconds accuracy while new Date() is milliseconds accuracy.
             this.roundedStartDate = new Date((new Date()).getTime() - 999);
@@ -344,7 +344,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.setUp = function()
         {
-            this.expectedErrorCode = '';
+            this.expectedError = '';
             this.stage = 'setting up test precondition';
             createTestEnvironment(this.fileSystem, this.testCase.precondition, bindCallback(this, this.runTests), bindCallback(this, this.testErrorCallback));
         };
@@ -368,7 +368,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
 
         this.verify = function()
         {
-            this.expectedErrorCode = '';
+            this.expectedError = '';
             if (!this.testCase.postcondition) {
                 this.successCallback();
                 return;
@@ -397,8 +397,8 @@ function runNextTest() {
 }
 
 function errorCallback(error) {
-    if (error && error.code)
-        testFailed('Got error ' + error.code);
+    if (error && error.name)
+        testFailed('Got error ' + error.name);
     finishJSTest();
 }
 

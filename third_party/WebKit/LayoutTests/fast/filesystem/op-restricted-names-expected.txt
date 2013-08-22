@@ -1,6 +1,6 @@
 * Running: RestrictedNames
-PASS this.expectedErrorCode + "" is "2"
-PASS this.expectedErrorCode + "" is "2"
+PASS this.expectedError + "" is "SecurityError"
+PASS this.expectedError + "" is "SecurityError"
 PASS Succeeded: "/".getFile("con")
 PASS Succeeded: "/".getFile("CON")
 PASS Succeeded: "/".getFile("Con")

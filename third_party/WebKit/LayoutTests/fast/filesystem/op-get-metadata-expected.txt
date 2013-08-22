@@ -15,7 +15,7 @@ PASS Succeeded: "/".getFile("/b")
 PASS Succeeded: "/b".getMetadata()
 PASS this.environment["/b.returned.modificationTime"] is >= this.roundedStartDate
 PASS Succeeded: "/tmp".remove()
-PASS this.expectedErrorCode + "" is "1"
+PASS this.expectedError + "" is "NotFoundError"
 PASS this.environment["/a.returned.modificationTime"] is >= this.environment["/.returned.modificationTime"]
 PASS this.environment["/b.returned.modificationTime"] is >= this.environment["/.returned.modificationTime"]
 PASS this.environment["/b.returned.modificationTime"] is >= this.environment["/a.returned.modificationTime"]

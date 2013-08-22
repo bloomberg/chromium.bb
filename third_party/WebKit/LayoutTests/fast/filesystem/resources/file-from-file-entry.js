@@ -12,7 +12,7 @@ var testFileEntry = null;
 var testFile = null;
 
 function errorCallback(error) {
-    testFailed("Error occured:" + error.code);
+    testFailed("Error occured:" + error.name);
     finishJSTest();
 }
 

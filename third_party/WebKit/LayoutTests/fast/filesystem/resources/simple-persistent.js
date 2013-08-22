@@ -9,7 +9,7 @@ description("requestFileSystem PERSISTENT test.");
 var fileSystem = null;
 
 function errorCallback(error) {
-    debug("Error occured while requesting a PERSISTENT file system:" + error.code);
+    debug("Error occured while requesting a PERSISTENT file system:" + error.name);
     finishJSTest();
 }
 

@@ -32,6 +32,7 @@
 #define FileError_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/DOMError.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -39,7 +40,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class FileError : public RefCounted<FileError>, public ScriptWrappable {
+class FileError : public DOMError {
 public:
     enum ErrorCode {
         OK = 0,
@@ -76,11 +77,7 @@ public:
     static void throwDOMException(ExceptionState&, ErrorCode);
 
 private:
-    FileError(ErrorCode code)
-        : m_code(code)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit FileError(ErrorCode);
 
     ErrorCode m_code;
 };

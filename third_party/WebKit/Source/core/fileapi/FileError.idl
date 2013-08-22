@@ -29,7 +29,7 @@
  */
 
 [
-] interface FileError {
+] interface FileError : DOMError {
     const unsigned short NOT_FOUND_ERR = 1;
     const unsigned short SECURITY_ERR = 2;
     const unsigned short ABORT_ERR = 3;
@@ -42,5 +42,6 @@
     const unsigned short QUOTA_EXCEEDED_ERR = 10;
     const unsigned short TYPE_MISMATCH_ERR = 11;
     const unsigned short PATH_EXISTS_ERR = 12;
-    readonly attribute unsigned short code;
+
+    [DeprecateAs=FileError] readonly attribute unsigned short code;
 };

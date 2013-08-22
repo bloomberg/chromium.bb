@@ -8,7 +8,7 @@ var testCases = [
         tests: [
             function(helper) { helper.remove('/a'); },
             function(helper) { helper.remove('/b'); },
-            function(helper) { helper.remove('/', FileError.INVALID_MODIFICATION_ERR); }
+            function(helper) { helper.remove('/', 'InvalidModificationError'); }
         ],
         postcondition: [
             {fullPath:'/a', nonexistent:true},
@@ -23,7 +23,7 @@ var testCases = [
             {fullPath:'/a/c',}
         ],
         tests: [
-            function(helper) { helper.remove('/a', FileError.INVALID_MODIFICATION_ERR); }
+            function(helper) { helper.remove('/a', 'InvalidModificationError'); }
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -52,7 +52,7 @@ var testCases = [
         ],
         tests: [
             function(helper) { helper.removeRecursively('/a'); },
-            function(helper) { helper.removeRecursively('/', FileError.INVALID_MODIFICATION_ERR); }
+            function(helper) { helper.removeRecursively('/', 'InvalidModificationError'); }
         ],
         postcondition: [
             {fullPath:'/a', nonexistent:true},

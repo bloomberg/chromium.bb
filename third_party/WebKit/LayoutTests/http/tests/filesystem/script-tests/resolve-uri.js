@@ -9,24 +9,24 @@ var testFileName = '/testFile';
 var fileSystem = null;
 var expectedPath = null;
 var actualPath = null;
-var errorCode = null;
+var errorName = null;
 
 function errorCallback(error) {
-    if (error && error.code)
-        debug("Error occurred: " + error.code);
+    if (error && error.name)
+        debug("Error occurred: " + error.name);
     testFailed("Bailing out early");
     finishJSTest();
 }
 
 function expectSecurityErrAndRunNext(error) {
-    errorCode = error.code;
-    shouldBe("FileError.SECURITY_ERR", "errorCode");
+    errorName = error.name;
+    shouldBe('"SecurityError"', "errorName");
     cleanupAndRunNext();
 }
 
 function expectEncodingErrAndRunNext(error) {
-    errorCode = error.code;
-    shouldBe("FileError.ENCODING_ERR", "errorCode");
+    errorName = error.name;
+    shouldBe('"EncodingError"', "errorName");
     cleanupAndRunNext();
 }
 

@@ -74,14 +74,14 @@ function _readBlobAsArrayBufferSync(testFiles, blob)
         var result = reader.readAsArrayBuffer(blob);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     try {
         var result = reader.readAsArrayBuffer(12345);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     runNextTest(testFiles);
@@ -94,14 +94,14 @@ function _readBlobAsBinaryStringSync(testFiles, blob)
         var result = reader.readAsBinaryString(blob);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     try {
         var result = reader.readAsBinaryString(12345);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     runNextTest(testFiles);
@@ -114,14 +114,14 @@ function _readBlobAsTextSync(testFiles, blob, encoding)
         var result = reader.readAsText(blob, encoding);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     try {
         var result = reader.readAsText(12345, encoding);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     runNextTest(testFiles);
@@ -134,14 +134,14 @@ function _readBlobAsDataURLSync(testFiles, blob)
         var result = reader.readAsDataURL(blob);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     try {
         var result = reader.readAsDataURL(12345);
         logResult(result);
     } catch (error) {
-        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
+        log("Received exception, name: " + error.name + ", message: " + error.message);
     }
 
     runNextTest(testFiles);
@@ -209,7 +209,7 @@ function loadFailed(event)
 {
     logEvent(event);
     log("readyState: " + event.target.readyState);
-    log("error code: " + event.target.error.code);
+    log("error name: " + event.target.error.name);
     logResult(event.target.result);
 }
 

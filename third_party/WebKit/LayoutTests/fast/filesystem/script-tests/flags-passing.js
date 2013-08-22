@@ -28,7 +28,7 @@ function runNextTest(v) {
 }
 
 function errorCallback(error) {
-    debug("Error occured during requesting Temporary FileSystem:" + error.code);
+    debug("Error occured during requesting Temporary FileSystem:" + error.name);
     finishJSTest();
 }
 

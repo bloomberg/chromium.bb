@@ -9,7 +9,7 @@ description("requestFileSystem TEMPORARY test.");
 var fileSystem = null;
 
 function errorCallback(error) {
-    debug('Error occured while requesting a TEMPORARY file system:' + error.code);
+    debug('Error occured while requesting a TEMPORARY file system:' + error.name);
     finishJSTest();
 }
 

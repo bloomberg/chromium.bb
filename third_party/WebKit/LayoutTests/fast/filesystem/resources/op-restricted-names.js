@@ -7,8 +7,8 @@ var testCases = [
             {fullPath:'/c', isDirectory:true}
         ],
         tests: [
-            function(helper) { helper.getFile('/', '.', {create:true}, FileError.SECURITY_ERR); },
-            function(helper) { helper.getFile('/', '..', {create:true}, FileError.SECURITY_ERR); },
+            function(helper) { helper.getFile('/', '.', {create:true}, 'SecurityError'); },
+            function(helper) { helper.getFile('/', '..', {create:true}, 'SecurityError'); },
             function(helper) { helper.getFile('/', 'con', {create:true}, 0); },
             function(helper) { helper.getFile('/', 'CON', {create:true}, 0); },
             function(helper) { helper.getFile('/', 'Con', {create:true}, 0); },

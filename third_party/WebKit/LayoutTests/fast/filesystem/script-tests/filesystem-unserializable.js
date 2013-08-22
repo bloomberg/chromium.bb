@@ -2,7 +2,7 @@ description("This tests if the filesystem object is unserializable by default");
 
 function errorCallback(error)
 {
-    testFailed("Error occurred: " + error.code);
+    testFailed("Error occurred: " + error.name);
     finishJSTest();
 }
 

@@ -1,6 +1,6 @@
 * Running: RestrictedUnicodeChars
 PASS Succeeded: "/".getFile("ab")
-PASS this.expectedErrorCode + "" is "9"
+PASS this.expectedError + "" is "InvalidModificationError"
 PASS Succeeded: "/".getFile("ab")
 PASS Succeeded: "/".getFile("ab")
 PASS Succeeded: "/".getFile("ab")

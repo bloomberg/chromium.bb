@@ -48,68 +48,100 @@ const char FileError::securityErrorMessage[] = "It was determined that certain f
 const char FileError::syntaxErrorMessage[] = "An invalid or unsupported argument was given, like an invalid line ending specifier.";
 const char FileError::typeMismatchErrorMessage[] = "The path supplied exists, but was not an entry of requested type.";
 
+namespace {
+
+ExceptionCode errorCodeToExceptionCode(FileError::ErrorCode code)
+{
+    switch (code) {
+    case FileError::OK:
+        return 0;
+    case FileError::NOT_FOUND_ERR:
+        return NotFoundError;
+    case FileError::SECURITY_ERR:
+        return SecurityError;
+    case FileError::ABORT_ERR:
+        return AbortError;
+    case FileError::NOT_READABLE_ERR:
+        return NotReadableError;
+    case FileError::ENCODING_ERR:
+        return EncodingError;
+    case FileError::NO_MODIFICATION_ALLOWED_ERR:
+        return NoModificationAllowedError;
+    case FileError::INVALID_STATE_ERR:
+        return InvalidStateError;
+    case FileError::SYNTAX_ERR:
+        return SyntaxError;
+    case FileError::INVALID_MODIFICATION_ERR:
+        return InvalidModificationError;
+    case FileError::QUOTA_EXCEEDED_ERR:
+        return QuotaExceededError;
+    case FileError::TYPE_MISMATCH_ERR:
+        return TypeMismatchError;
+    case FileError::PATH_EXISTS_ERR:
+        return PathExistsError;
+    default:
+        ASSERT_NOT_REACHED();
+        return code;
+    }
+}
+
+const char* errorCodeToMessage(FileError::ErrorCode code)
+{
+    // Note that some of these do not set message. If message is 0 then the default message is used.
+    switch (code) {
+    case FileError::OK:
+        return 0;
+    case FileError::SECURITY_ERR:
+        return FileError::securityErrorMessage;
+    case FileError::NOT_FOUND_ERR:
+        return FileError::notFoundErrorMessage;
+    case FileError::ABORT_ERR:
+        return FileError::abortErrorMessage;
+    case FileError::NOT_READABLE_ERR:
+        return FileError::notReadableErrorMessage;
+    case FileError::ENCODING_ERR:
+        return FileError::encodingErrorMessage;
+    case FileError::NO_MODIFICATION_ALLOWED_ERR:
+        return FileError::noModificationAllowedErrorMessage;
+    case FileError::INVALID_STATE_ERR:
+        return FileError::invalidStateErrorMessage;
+    case FileError::SYNTAX_ERR:
+        return FileError::syntaxErrorMessage;
+    case FileError::INVALID_MODIFICATION_ERR:
+        return 0;
+    case FileError::QUOTA_EXCEEDED_ERR:
+        return FileError::quotaExceededErrorMessage;
+    case FileError::TYPE_MISMATCH_ERR:
+        return 0;
+    case FileError::PATH_EXISTS_ERR:
+        return FileError::pathExistsErrorMessage;
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
+} // namespace
+
 void FileError::throwDOMException(ExceptionState& es, ErrorCode code)
 {
     if (code == FileError::OK)
         return;
 
-    ExceptionCode ec;
-    const char* message = 0;
-
-    // Note that some of these do not set message. If message is 0 then the default message is used.
-    switch (code) {
-    case FileError::NOT_FOUND_ERR:
-        ec = NotFoundError;
-        message = FileError::notFoundErrorMessage;
-        break;
-    case FileError::ABORT_ERR:
-        ec = AbortError;
-        message = FileError::abortErrorMessage;
-        break;
-    case FileError::NOT_READABLE_ERR:
-        ec = NotReadableError;
-        message = FileError::notReadableErrorMessage;
-        break;
-    case FileError::ENCODING_ERR:
-        ec = EncodingError;
-        message = FileError::encodingErrorMessage;
-        break;
-    case FileError::NO_MODIFICATION_ALLOWED_ERR:
-        ec = NoModificationAllowedError;
-        message = FileError::noModificationAllowedErrorMessage;
-        break;
-    case FileError::INVALID_STATE_ERR:
-        ec = InvalidStateError;
-        message = FileError::invalidStateErrorMessage;
-        break;
-    case FileError::SYNTAX_ERR:
-        ec = SyntaxError;
-        message = FileError::syntaxErrorMessage;
-        break;
-    case FileError::INVALID_MODIFICATION_ERR:
-        ec = InvalidModificationError;
-        break;
-    case FileError::QUOTA_EXCEEDED_ERR:
-        ec = QuotaExceededError;
-        message = FileError::quotaExceededErrorMessage;
-        break;
-    case FileError::TYPE_MISMATCH_ERR:
-        ec = TypeMismatchError;
-        break;
-    case FileError::PATH_EXISTS_ERR:
-        ec = PathExistsError;
-        message = FileError::pathExistsErrorMessage;
-        break;
     // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
-    case FileError::SECURITY_ERR:
+    if (code == FileError::SECURITY_ERR) {
         es.throwSecurityError(FileError::securityErrorMessage);
-        return;
-    default:
-        ASSERT_NOT_REACHED();
         return;
     }
 
-    es.throwDOMException(ec, message);
+    es.throwDOMException(errorCodeToExceptionCode(code), errorCodeToMessage(code));
+}
+
+FileError::FileError(ErrorCode code)
+    : DOMError(DOMException::getErrorName(errorCodeToExceptionCode(code)), errorCodeToMessage(code))
+    , m_code(code)
+{
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

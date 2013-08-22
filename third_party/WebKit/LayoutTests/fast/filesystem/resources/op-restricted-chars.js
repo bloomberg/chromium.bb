@@ -29,7 +29,7 @@ var testCases = [
             function(helper) { helper.getFile('/', 'ab|', {create:true}, 0); },
 
             // Only '\\' is disallowed.
-            function(helper) { helper.getFile('/', 'a\\b', {create:true}, FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.getFile('/', 'a\\b', {create:true}, 'InvalidModificationError'); },
 
             // Test for difficult characters in 'name' parameters.
             function(helper) { helper.copy('/ab', '/', ' a<b', 0); },
@@ -40,8 +40,8 @@ var testCases = [
             function(helper) { helper.copy('/ab', '/', ' a|b', 0); },
 
             // 'Name' parameter cannot contain '/' or '\\'.
-            function(helper) { helper.copy('/ab', '/', 'a/b', FileError.INVALID_MODIFICATION_ERR); },
-            function(helper) { helper.copy('/ab', '/', 'a\\b', FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.copy('/ab', '/', 'a/b', 'InvalidModificationError'); },
+            function(helper) { helper.copy('/ab', '/', 'a\\b', 'InvalidModificationError'); },
         ],
         postcondition: [
             {fullPath:'/ab', isDirectory:true},

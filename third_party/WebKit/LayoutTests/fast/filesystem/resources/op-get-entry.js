@@ -54,14 +54,14 @@ var testCases = [
             function(helper) { helper.getDirectory('/a', '/a/../../d', {create:true}); },
             function(helper) { helper.getDirectory('/a', '/a/../../b/./c/../../../../../e', {create:true}); },
             // TODO(jschuh): Re-enable after crbug.com/181617 is fixed.
-            //function(helper) { helper.getDirectory('/a', '/a/../.../g', {create:true}, FileError.NOT_FOUND_ERR); },
+            //function(helper) { helper.getDirectory('/a', '/a/../.../g', {create:true}, 'NotFoundError'); },
             function(helper) { helper.getFile('/a', './b.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '../b.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '../../b/c.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '/a/../../d.txt', {create:true}); },
             function(helper) { helper.getFile('/a', '/a/../../b/./c/../../../../../e.txt', {create:true}); },
             // TODO(jschuh): Re-enable after crbug.com/181617 is fixed.
-            //function(helper) { helper.getFile('/a', '/a/../.../g.txt', {create:true}, FileError.NOT_FOUND_ERR); },
+            //function(helper) { helper.getFile('/a', '/a/../.../g.txt', {create:true}, 'NotFoundError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -103,10 +103,10 @@ var testCases = [
         name: 'GetNonExistent',
         precondition: [ ],
         tests: [
-            function(helper) { helper.getDirectory('/', 'a', {}, FileError.NOT_FOUND_ERR); },
-            function(helper) { helper.getFile('/', 'b', {}, FileError.NOT_FOUND_ERR); },
-            function(helper) { helper.getDirectory('/', '/nonexistent/a', {create:true}, FileError.NOT_FOUND_ERR); },
-            function(helper) { helper.getFile('/', '/nonexistent/b', {create:true}, FileError.NOT_FOUND_ERR); }
+            function(helper) { helper.getDirectory('/', 'a', {}, 'NotFoundError'); },
+            function(helper) { helper.getFile('/', 'b', {}, 'NotFoundError'); },
+            function(helper) { helper.getDirectory('/', '/nonexistent/a', {create:true}, 'NotFoundError'); },
+            function(helper) { helper.getFile('/', '/nonexistent/b', {create:true}, 'NotFoundError'); }
         ],
         postcondition: [ ],
     },
@@ -116,8 +116,8 @@ var testCases = [
             {fullPath:'/a', isDirectory:true}
         ],
         tests: [
-            function(helper) { helper.getFile('/', 'a', {}, FileError.TYPE_MISMATCH_ERR); },
-            function(helper) { helper.getFile('/', '/a', {}, FileError.TYPE_MISMATCH_ERR); },
+            function(helper) { helper.getFile('/', 'a', {}, 'TypeMismatchError'); },
+            function(helper) { helper.getFile('/', '/a', {}, 'TypeMismatchError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true}
@@ -129,8 +129,8 @@ var testCases = [
             {fullPath:'/a'}
         ],
         tests: [
-            function(helper) { helper.getDirectory('/', 'a', {}, FileError.TYPE_MISMATCH_ERR); },
-            function(helper) { helper.getDirectory('/', '/a', {}, FileError.TYPE_MISMATCH_ERR); },
+            function(helper) { helper.getDirectory('/', 'a', {}, 'TypeMismatchError'); },
+            function(helper) { helper.getDirectory('/', '/a', {}, 'TypeMismatchError'); },
         ],
         postcondition: [
             {fullPath:'/a'}
@@ -143,8 +143,8 @@ var testCases = [
             {fullPath:'/b'}
         ],
         tests: [
-            function(helper) { helper.getDirectory('/', 'a', {create:true, exclusive:true}, FileError.INVALID_MODIFICATION_ERR); },
-            function(helper) { helper.getFile('/', 'b', {create:true, exclusive:true}, FileError.INVALID_MODIFICATION_ERR); }
+            function(helper) { helper.getDirectory('/', 'a', {create:true, exclusive:true}, 'InvalidModificationError'); },
+            function(helper) { helper.getFile('/', 'b', {create:true, exclusive:true}, 'InvalidModificationError'); }
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},

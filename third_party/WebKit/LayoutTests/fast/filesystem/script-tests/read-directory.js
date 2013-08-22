@@ -25,7 +25,7 @@ function endTest()
 
 function errorCallback(error)
 {
-    debug("Error occured:" + error.code);
+    debug("Error occured:" + error.name);
     endTest();
 }
 

@@ -34,7 +34,7 @@ function onInputFileChange()
         log("Received abort event");
     };
     reader.onerror = function(event) {
-        log("Received error event: " + event.target.error.code);
+        log("Received error event: " + event.target.error.name);
     };
 }
 

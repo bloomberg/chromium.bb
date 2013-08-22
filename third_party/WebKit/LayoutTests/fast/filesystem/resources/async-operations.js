@@ -18,7 +18,7 @@ var dirsCount = 0;
 var reader = null;
 
 function errorCallback(error) {
-    debug("Got error: " + error.code);
+    debug("Got error: " + error.name);
     removeAllInDirectory(fileSystem.root);
     finishJSTest();
 }

@@ -38,7 +38,7 @@ function onWrite(e) {
 
 function onAbort(e) {
     assert(writer.readyState == writer.DONE);
-    assert(writer.error.code == writer.error.ABORT_ERR);
+    assert(writer.error.name == "AbortError");
     assert(sawWriteStart);
     assert(!sawWriteEnd);
     assert(!sawAbort);
@@ -49,7 +49,7 @@ function onAbort(e) {
 
 function onWriteEnd(e) {
     assert(writer.readyState == writer.DONE);
-    assert(writer.error.code == writer.error.ABORT_ERR);
+    assert(writer.error.name == "AbortError");
     assert(sawWriteStart);
     assert(sawAbort);
     assert(!sawWriteEnd);

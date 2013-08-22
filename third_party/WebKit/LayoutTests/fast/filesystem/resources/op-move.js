@@ -68,7 +68,7 @@ var testCases = [
             {fullPath:'/a/b'},
         ],
         tests: [
-            function(helper) { helper.move('/a/b', '/a', null, FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.move('/a/b', '/a', null, 'InvalidModificationError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -82,7 +82,7 @@ var testCases = [
             {fullPath:'/a/b'},
         ],
         tests: [
-            function(helper) { helper.move('/a/b', '/a', 'b', FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.move('/a/b', '/a', 'b', 'InvalidModificationError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -98,7 +98,7 @@ var testCases = [
         ],
         tests: [
             function(helper) { helper.remove('/a/b'); },
-            function(helper) { helper.move('/a/b', '/c', 'b', FileError.NOT_FOUND_ERR); },
+            function(helper) { helper.move('/a/b', '/c', 'b', 'NotFoundError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -114,7 +114,7 @@ var testCases = [
         ],
         tests: [
             function(helper) { helper.remove('/c'); },
-            function(helper) { helper.move('/a/b', '/c', 'b', FileError.NOT_FOUND_ERR); },
+            function(helper) { helper.move('/a/b', '/c', 'b', 'NotFoundError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -129,8 +129,8 @@ var testCases = [
             {fullPath:'/a/b/c', isDirectory:true},
         ],
         tests: [
-            function(helper) { helper.move('/a', '/a/b', 'd', FileError.INVALID_MODIFICATION_ERR); },
-            function(helper) { helper.move('/a/b', '/a/b/c', 'd', FileError.INVALID_MODIFICATION_ERR); },
+            function(helper) { helper.move('/a', '/a/b', 'd', 'InvalidModificationError'); },
+            function(helper) { helper.move('/a/b', '/a/b/c', 'd', 'InvalidModificationError'); },
         ],
         postcondition: [
             {fullPath:'/a', isDirectory:true},
@@ -194,7 +194,7 @@ var testCases = [
             {fullPath:"/b", isDirectory: true},
         ],
         tests: [
-            function(helper) {helper.move("/a","/","b",FileError.INVALID_MODIFICATION_ERR);}
+            function(helper) {helper.move("/a","/","b",'InvalidModificationError');}
         ],
         postcondition: [
             {fullPath:"/a"},
@@ -208,7 +208,7 @@ var testCases = [
             {fullPath:"/b"},
         ],
         tests: [
-            function(helper) {helper.move("/a","/","b",FileError.INVALID_MODIFICATION_ERR);}
+            function(helper) {helper.move("/a","/","b",'InvalidModificationError');}
         ],
         postcondition: [
             {fullPath:"/a", isDirectory: true},
@@ -223,7 +223,7 @@ var testCases = [
             {fullPath:"/b/c"},
         ],
         tests: [
-            function(helper) {helper.move("/a","/","b",FileError.INVALID_MODIFICATION_ERR);}
+            function(helper) {helper.move("/a","/","b",'InvalidModificationError');}
         ],
         postcondition: [
             {fullPath:"/a"},
@@ -240,7 +240,7 @@ var testCases = [
             {fullPath:"/c/d"},
         ],
         tests: [
-            function(helper) {helper.move("/a","/","c",FileError.INVALID_MODIFICATION_ERR);}
+            function(helper) {helper.move("/a","/","c",'InvalidModificationError');}
         ],
         postcondition: [
             {fullPath:"/a", isDirectory: true},

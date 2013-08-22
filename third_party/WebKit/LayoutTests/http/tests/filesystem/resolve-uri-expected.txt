@@ -10,19 +10,19 @@ PASS isFile is true
 PASS expectedPath is actualPath
 PASS isFile is true
 * Resolving a URL with the wrong security origin (domain)
-PASS FileError.SECURITY_ERR is errorCode
+PASS "SecurityError" is errorName
 * Resolving a URL with the wrong security origin (port)
-PASS FileError.SECURITY_ERR is errorCode
+PASS "SecurityError" is errorName
 * Resolving a URL with the wrong security origin (scheme)
-PASS FileError.SECURITY_ERR is errorCode
+PASS "SecurityError" is errorName
 * Resolving a completely bogus URL.
-PASS FileError.ENCODING_ERR is errorCode
+PASS "EncodingError" is errorName
 * Resolving a URL with the wrong protocol
-PASS FileError.ENCODING_ERR is errorCode
+PASS "EncodingError" is errorName
 * Resolving a URL with no slash between type and file
-PASS FileError.ENCODING_ERR is errorCode
+PASS "EncodingError" is errorName
 * Resolving a URL with no slash between protocol and type (bogus port)
-PASS FileError.SECURITY_ERR is errorCode
+PASS "SecurityError" is errorName
 * Resolve a path using backslashes
 PASS expectedPath is actualPath
 PASS isFile is true
