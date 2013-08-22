@@ -22,6 +22,9 @@ struct timeval;
 namespace nacl_io {
 
 class PepperInterface;
+class SignalEmitter;
+
+typedef sdk_util::ScopedRef<SignalEmitter> ScopedSignalEmitter;
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
 // proxy will result in IO access to the provided Mount and MountNode objects.
@@ -183,6 +186,7 @@ class KernelProxy : protected KernelObject {
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
+  sighandler_t sigwinch_handler_;
 #ifdef PROVIDES_SOCKET_API
   HostResolver host_resolver_;
 #endif
@@ -191,6 +195,7 @@ class KernelProxy : protected KernelObject {
   virtual int AcquireSocketHandle(int fd, ScopedKernelHandle* handle);
 #endif
 
+  ScopedSignalEmitter signal_emitter_;
   DISALLOW_COPY_AND_ASSIGN(KernelProxy);
 };
 

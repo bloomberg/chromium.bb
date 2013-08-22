@@ -26,6 +26,14 @@
 
 #include "sdk_util/thread_safe_queue.h"
 
+typedef void (*MessageHandler_t)(const pp::Var& key,
+                                 const pp::Var& value,
+                                 void* user_data);
+
+struct MessageHandler {
+  MessageHandler_t handler;
+  void* user_data;
+};
 
 // The basic instance class which also inherits the MouseLock and
 // Graphics3DClient interfaces.
@@ -73,7 +81,37 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   PSEvent* WaitAcquireEvent();
   void ReleaseEvent(PSEvent* event);
 
+  // Register a message handler for messages that arrive
+  // from JavaScript with a give names.  Messages are of the
+  // form:  { message_name : <value> }.
+  //
+  // PSInstance will then not generate events but instead
+  // cause the handler to be called upon message arrival.
+  // If handler is NULL then the current handler will be
+  // removed. Example usage:
+  //
+  // JavaScript:
+  //   nacl_module.postMessage({'foo': 123});
+  //
+  // C++:
+  //   void MyMessageHandler(const pp::Var& key,
+  //                         const pp::Var& value,
+  //                         void* user_data) {
+  //     assert(key.is_string());
+  //     assert(key.AsString() == "foo");
+  //     assert(value.is_int());
+  //     assert(value.AsInt() == 123);
+  //   }
+  //   ...
+  //   instance_->RegisterMessageHandler("foo", &MyMessageHandler, NULL);
+  //
+  void RegisterMessageHandler(std::string message_name,
+                              MessageHandler_t handler,
+                              void* user_data);
+
  protected:
+  typedef std::map<std::string, MessageHandler> MessageHandlerMap;
+
   // Callback functions triggered by Pepper
   //
   // These functions are called on the main pepper thread, so they must
@@ -113,6 +151,26 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
 
  private:
   static void* MainThreadThunk(void *start_info);
+  ssize_t TtyOutputHandler(const char* buf, size_t count);
+  void MessageHandlerInput(const pp::Var& message);
+  void MessageHandlerResize(const pp::Var& message);
+
+  static ssize_t TtyOutputHandlerStatic(const char* buf, size_t count,
+                                        void* user_data);
+
+  /// Handle input message from JavaScript.  The value is
+  /// expected to be of type string.
+  static void MessageHandlerInputStatic(const pp::Var& key,
+                                        const pp::Var& value,
+                                        void* user_data);
+
+
+  /// Handle resizs message from JavaScript.  The value is
+  /// expected to be an array of 2 integers representing the
+  /// number of columns and rows in the TTY.
+  static void MessageHandlerResizeStatic(const pp::Var& key,
+                                         const pp::Var& value,
+                                         void* user_data);
 
  protected:
   pp::MessageLoop* main_loop_;
@@ -120,7 +178,11 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   sdk_util::ThreadSafeQueue<PSEvent> event_queue_;
   uint32_t events_enabled_;
   Verbosity verbosity_;
-  int fd_tty_;
+
+  // TTY handling
+  int tty_fd_;
+  const char* tty_prefix_;
+  MessageHandlerMap message_handlers_;
 
   PSMainFunc_t main_cb_;
 

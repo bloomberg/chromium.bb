@@ -24,7 +24,7 @@ class AutoLock {
   }
 
   ~AutoLock() {
-    if (lock_) pthread_mutex_unlock(lock_);
+    Unlock();
   }
 
   void Unlock() {

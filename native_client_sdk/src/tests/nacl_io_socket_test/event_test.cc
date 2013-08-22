@@ -325,7 +325,7 @@ struct SignalInfo {
   uint32_t events;
 };
 
-void *SignalEmitter(void *ptr) {
+static void *SignalEmitterThread(void *ptr) {
   SignalInfo* info = (SignalInfo*) ptr;
   struct timespec ts;
   ts.tv_sec = 0;
@@ -356,7 +356,7 @@ TEST(EventTest, EmitterSignalling) {
   siginfo.ms_wait = TIMEOUT_SHORT;
   siginfo.events = KE_EXPECTED | KE_FILTERED;
   pthread_t tid;
-  pthread_create(&tid, NULL, SignalEmitter, &siginfo);
+  pthread_create(&tid, NULL, SignalEmitterThread, &siginfo);
 
   // Wait for the signal from the other thread and time it.
   gettimeofday(&start, NULL);

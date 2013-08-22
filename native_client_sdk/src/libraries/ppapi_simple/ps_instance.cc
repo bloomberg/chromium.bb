@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -96,7 +97,8 @@ PSInstance::PSInstance(PP_Instance instance)
       main_loop_(NULL),
       events_enabled_(PSE_NONE),
       verbosity_(PSV_WARN),
-      fd_tty_(-1) {
+      tty_fd_(-1),
+      tty_prefix_(NULL) {
   // Set the single Instance object
   s_InstanceObject = this;
 
@@ -207,11 +209,19 @@ bool PSInstance::ProcessProperties() {
   int fd2 = open(getenv("PS_STDERR"), O_WRONLY);
   dup2(fd2, 2);
 
-  const char* tty_prefix = getenv("PS_TTY_PREFIX");
-  if (tty_prefix) {
-    fd_tty_ = open("/dev/tty", O_WRONLY);
-    if (fd_tty_ >= 0) {
-      ioctl(fd_tty_, TIOCNACLPREFIX, const_cast<char*>(tty_prefix));
+  tty_prefix_ = getenv("PS_TTY_PREFIX");
+  if (tty_prefix_) {
+    tty_fd_ = open("/dev/tty", O_WRONLY);
+    if (tty_fd_ >= 0) {
+      RegisterMessageHandler(tty_prefix_, MessageHandlerInputStatic, this);
+      const char* tty_resize = getenv("PS_TTY_RESIZE");
+      if (tty_resize)
+        RegisterMessageHandler(tty_resize, MessageHandlerResizeStatic, this);
+
+      tioc_nacl_output handler;
+      handler.handler = TtyOutputHandlerStatic;
+      handler.user_data = this;
+      ioctl(tty_fd_, TIOCNACLOUTPUT, reinterpret_cast<char*>(&handler));
     } else {
       Error("Failed to open /dev/tty.\n");
     }
@@ -310,31 +320,113 @@ void PSInstance::PostEvent(PSEventType type, PP_Resource resource) {
   event_queue_.Enqueue(env);
 }
 
+ssize_t PSInstance::TtyOutputHandler(const char* buf, size_t count) {
+  // We prepend the prefix_ to the data in buf, then package it up
+  // and post it as a message to javascript.
+  const char* data = static_cast<const char*>(buf);
+  std::string message = tty_prefix_;
+  message.append(data, count);
+  PostMessage(pp::Var(message));
+  return count;
+}
+
+void PSInstance::MessageHandlerInput(const pp::Var& message) {
+  // Since our message may contain null characters, we can't send it as a
+  // naked C string, so we package it up in this struct before sending it
+  // to the ioctl.
+  assert(message.is_string());
+  std::string buffer = message.AsString();
+
+  struct tioc_nacl_input_string ioctl_message;
+  ioctl_message.length = buffer.size();
+  ioctl_message.buffer = buffer.c_str();
+  int ret =
+    ioctl(tty_fd_, TIOCNACLINPUT, reinterpret_cast<char*>(&ioctl_message));
+  if (ret != 0 && errno != ENOTTY) {
+    Error("ioctl returned unexpected error: %d.\n", ret);
+  }
+}
+
+void PSInstance::MessageHandlerResize(const pp::Var& message) {
+  assert(message.is_array());
+  pp::VarArray array(message);
+  assert(array.GetLength() == 2);
+
+  struct winsize size;
+  memset(&size, 0, sizeof(size));
+  size.ws_col = array.Get(0).AsInt();
+  size.ws_row = array.Get(1).AsInt();
+  ioctl(tty_fd_, TIOCSWINSZ, reinterpret_cast<char*>(&size));
+}
+
+ssize_t PSInstance::TtyOutputHandlerStatic(const char* buf,
+                                           size_t count,
+                                           void* user_data) {
+  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  return instance->TtyOutputHandler(buf, count);
+}
+
+void PSInstance::MessageHandlerInputStatic(const pp::Var& key,
+                                           const pp::Var& value,
+                                           void* user_data) {
+  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  instance->MessageHandlerInput(value);
+}
+
+void PSInstance::MessageHandlerResizeStatic(const pp::Var& key,
+                                            const pp::Var& value,
+                                            void* user_data) {
+  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  instance->MessageHandlerResize(value);
+}
+
+void PSInstance::RegisterMessageHandler(std::string message_name,
+                                        MessageHandler_t handler,
+                                        void* user_data) {
+  if (handler == NULL) {
+    message_handlers_.erase(message_name);
+    return;
+  }
+
+  MessageHandler message_handler = { handler, user_data };
+  message_handlers_[message_name] = message_handler;
+}
+
 void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   assert(PSE_INSTANCE_HANDLEMESSAGE == type);
 
-  // If the user has specified a tty_prefix_ (using ioctl), then we'll give the
-  // tty node a chance to vacuum up any messages beginning with that prefix. If
-  // the message does not start with the prefix, the ioctl call will return
-  // ENOENT and we'll pass the message through to the event queue.
-  if (fd_tty_ >= 0 && var.type == PP_VARTYPE_STRING) {
-    uint32_t message_len;
-    const char* message = PSInterfaceVar()->VarToUtf8(var, &message_len);
-    std::string message_str(message, message + message_len);
-
-    // Since our message may contain null characters, we can't send it as a
-    // naked C string, so we package it up in this struct before sending it
-    // to the ioctl.
-    struct tioc_nacl_input_string ioctl_message;
-    ioctl_message.length = message_len;
-    ioctl_message.buffer = message_str.data();
-    int ret =
-      ioctl(fd_tty_, TIOCNACLINPUT, reinterpret_cast<char*>(&ioctl_message));
-    if (ret != 0 && errno != ENOTTY) {
-      Error("ioctl returned unexpected error: %d.\n", ret);
+  // If the user has specified a tty_prefix_, then filter out the
+  // matching message here and pass them to the tty node via
+  // ioctl() rather then adding them to the event queue.
+  pp::Var event(var);
+  if (tty_fd_ >= 0 && event.is_string()) {
+    std::string message = event.AsString();
+    size_t prefix_len = strlen(tty_prefix_);
+    if (message.size() > prefix_len) {
+      if (!strncmp(message.c_str(), tty_prefix_, prefix_len)) {
+        MessageHandlerInput(pp::Var(message.substr(prefix_len)));
+        return;
+      }
     }
+  }
 
-    return;
+  // If the message is a dictionary then see if it matches one
+  // of the specific handlers, then call that handler rather than
+  // queuing an event.
+  if (tty_fd_ >= 0 && event.is_dictionary()) {
+    pp::VarDictionary dictionary(var);
+    pp::VarArray keys = dictionary.GetKeys();
+    if (keys.GetLength() == 1) {
+      pp::Var key = keys.Get(0);
+      MessageHandlerMap::iterator iter =
+          message_handlers_.find(key.AsString());
+      if (iter != message_handlers_.end()) {
+        MessageHandler_t handler = iter->second.handler;
+        void* user_data = iter->second.user_data;
+        handler(key, dictionary.Get(key), user_data);
+        return;
+      }
+    }
   }
 
   PSInterfaceVar()->AddRef(var);

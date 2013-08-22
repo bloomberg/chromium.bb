@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -50,15 +51,9 @@ TEST_F(TtyTest, InvalidIoctl) {
 }
 
 TEST_F(TtyTest, TtyInput) {
-  // TIOCNACLPREFIX is, it should set the prefix.
-  std::string prefix("__my_awesome_prefix__");
-  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCNACLPREFIX,
-                               const_cast<char*>(prefix.c_str())));
-
   // Now let's try sending some data over.
   // First we create the message.
-  std::string content("hello, how are you?\n");
-  std::string message = prefix.append(content);
+  std::string message("hello, how are you?\n");
   struct tioc_nacl_input_string packaged_message;
   packaged_message.length = message.size();
   packaged_message.buffer = message.data();
@@ -81,31 +76,54 @@ TEST_F(TtyTest, TtyInput) {
   // more than we ask for.
   EXPECT_EQ(0, dev_tty_->Read(0, buffer, 5, &bytes_read));
   EXPECT_EQ(bytes_read, 5);
-  EXPECT_EQ(0, memcmp(content.data(), buffer, 5));
+  EXPECT_EQ(0, memcmp(message.data(), buffer, 5));
   EXPECT_EQ(0, memcmp(buffer + 5, backup_buffer + 5, 95));
 
   // Now we ask for more data than is left in the tty, to ensure
   // it doesn't give us more than is there.
   EXPECT_EQ(0, dev_tty_->Read(0, buffer + 5, 95, &bytes_read));
-  EXPECT_EQ(bytes_read, content.size() - 5);
-  EXPECT_EQ(0, memcmp(content.data(), buffer, content.size()));
-  EXPECT_EQ(0, memcmp(buffer + content.size(),
-                      backup_buffer + content.size(),
-                      100 - content.size()));
+  EXPECT_EQ(bytes_read, message.size() - 5);
+  EXPECT_EQ(0, memcmp(message.data(), buffer, message.size()));
+  EXPECT_EQ(0, memcmp(buffer + message.size(),
+                      backup_buffer + message.size(),
+                      100 - message.size()));
 }
 
-TEST_F(TtyTest, InvalidPrefix) {
-  std::string prefix("__my_awesome_prefix__");
-  ASSERT_EQ(0, dev_tty_->Ioctl(TIOCNACLPREFIX,
-                               const_cast<char*>(prefix.c_str())));
+struct user_data_t {
+  const char* output_buf;
+  size_t output_count;
+};
 
-  // Now we try to send something with an invalid prefix
-  std::string bogus_message("Woah there, this message has no valid prefix");
-  struct tioc_nacl_input_string bogus_pack;
-  bogus_pack.length = bogus_message.size();
-  bogus_pack.buffer = bogus_message.data();
-  ASSERT_EQ(ENOTTY, dev_tty_->Ioctl(TIOCNACLINPUT,
-                                    reinterpret_cast<char*>(&bogus_pack)));
+static ssize_t output_handler(const char* buf, size_t count, void* data) {
+  user_data_t* user_data = static_cast<user_data_t*>(data);
+  user_data->output_buf = buf;
+  user_data->output_count = count;
+  return count;
+}
+
+TEST_F(TtyTest, TtyOutput) {
+  // When no handler is registered then all writes should return EIO
+  int bytes_written = 10;
+  const char* message = "hello\n";
+  int message_len = strlen(message);
+  EXPECT_EQ(EIO, dev_tty_->Write(0, message, message_len, &bytes_written));
+
+  // Setup output handler with user_data to record calls.
+  user_data_t user_data;
+  user_data.output_buf = NULL;
+  user_data.output_count = 0;
+
+  tioc_nacl_output handler;
+  handler.handler = output_handler;
+  handler.user_data = &user_data;
+
+  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCNACLOUTPUT,
+                               reinterpret_cast<char*>(&handler)));
+
+  EXPECT_EQ(0, dev_tty_->Write(0, message, message_len, &bytes_written));
+  EXPECT_EQ(message_len, bytes_written);
+  EXPECT_EQ(message_len, user_data.output_count);
+  EXPECT_EQ(0, strncmp(user_data.output_buf, message, message_len));
 }
 
 // Returns:
@@ -169,22 +187,63 @@ TEST_F(TtyTest, TtySelect) {
 
   // Send 4 bytes to TTY input
   struct tioc_nacl_input_string input;
-  input.buffer = "test";
-  input.length = 4;
+  input.buffer = "input:test";
+  input.length = strlen(input.buffer);
   char* ioctl_arg = reinterpret_cast<char*>(&input);
   ASSERT_EQ(0, ki_ioctl(tty_fd, TIOCNACLINPUT, ioctl_arg));
 
   // TTY should not be readable until newline in written
   ASSERT_EQ(IsReadable(tty_fd), 0);
 
-  input.buffer = "\n";
-  input.length = 1;
+  input.buffer = "input:\n";
+  input.length = strlen(input.buffer);
   ASSERT_EQ(0, ki_ioctl(tty_fd, TIOCNACLINPUT, ioctl_arg));
 
   // TTY should now be readable
   ASSERT_EQ(IsReadable(tty_fd), 1);
 
   ki_close(tty_fd);
+}
+
+int g_recieved_signal = 0;
+
+void sighandler(int sig) {
+  g_recieved_signal = sig;
+}
+
+TEST_F(TtyTest, WindowSize) {
+  // Get current window size
+  struct winsize old_winsize = { 0 };
+  ASSERT_EQ(0, dev_tty_->Ioctl(TIOCGWINSZ,
+                               reinterpret_cast<char*>(&old_winsize)));
+
+  // Install signal handler
+  sighandler_t new_handler = sighandler;
+  sighandler_t old_handler = ki_signal(SIGWINCH, new_handler);
+  ASSERT_NE(old_handler, SIG_ERR) << "signal return error: " << errno;
+
+  // Set a new windows size
+  struct winsize winsize;
+  winsize.ws_col = 100;
+  winsize.ws_row = 200;
+  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ,
+                               reinterpret_cast<char*>(&winsize)));
+  EXPECT_EQ(g_recieved_signal, SIGWINCH);
+
+  // Restore old signal handler
+  EXPECT_EQ(new_handler, ki_signal(SIGWINCH, old_handler));
+
+  // Verify new window size can be queried correctly.
+  winsize.ws_col = 0;
+  winsize.ws_row = 0;
+  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCGWINSZ,
+                               reinterpret_cast<char*>(&winsize)));
+  EXPECT_EQ(winsize.ws_col, 100);
+  EXPECT_EQ(winsize.ws_row, 200);
+
+  // Restore original windows size.
+  EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ,
+                               reinterpret_cast<char*>(&old_winsize)));
 }
 
 }

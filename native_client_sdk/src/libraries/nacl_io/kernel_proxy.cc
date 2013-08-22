@@ -19,6 +19,7 @@
 #include <iterator>
 #include <string>
 
+#include "nacl_io/dbgprint.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
@@ -46,7 +47,31 @@
 
 namespace nacl_io {
 
-KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL) {
+class SignalEmitter : public EventEmitter {
+ public:
+  // From EventEmitter.  The SignalEmitter exists in order
+  // to inturrupt anything waiting in select()/poll() when kill()
+  // is called.  It is an edge trigger only and therefore has no
+  // persistent readable/wriable/error state.
+  uint32_t GetEventStatus() {
+     return 0;
+  }
+
+  int GetType() {
+    // For lack of a better type, report socket to signify it can be in an
+    // used to signal.
+    return S_IFSOCK;
+  }
+
+  void SignalOccurred() {
+    RaiseEvent(POLLERR);
+  }
+};
+
+KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
+                             sigwinch_handler_(SIG_IGN),
+                             signal_emitter_(new SignalEmitter) {
+
 }
 
 KernelProxy::~KernelProxy() {
@@ -712,11 +737,66 @@ int KernelProxy::tcsetattr(int fd, int optional_actions,
 }
 
 int KernelProxy::kill(pid_t pid, int sig) {
-  errno = EINVAL;
-  return -1;
+  // Currently we don't even pretend that other processes exist
+  // so we can only send a signal to outselves.  For kill(2)
+  // pid 0 means the current process group and -1 means all the
+  // processes we have permission to send signals to.
+  if (pid != getpid() && pid != -1 && pid != 0) {
+    errno = ESRCH;
+    return -1;
+  }
+
+  // Raise an event so that select/poll get interrupted.
+  signal_emitter_->SignalOccurred();
+  switch (sig) {
+    case SIGWINCH:
+      if (sigwinch_handler_ != SIG_IGN)
+        sigwinch_handler_(SIGWINCH);
+      break;
+
+    case SIGUSR1:
+    case SIGUSR2:
+      break;
+
+    default:
+      errno = EINVAL;
+      return -1;
+  }
+
+  return 0;
 }
 
 sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
+  switch (signum) {
+    // Handled signals.
+    case SIGWINCH: {
+      sighandler_t old_value = sigwinch_handler_;
+      if (handler == SIG_DFL)
+        handler = SIG_IGN;
+      sigwinch_handler_ = handler;
+      return old_value;
+    }
+
+    // Known signals
+    case SIGHUP:
+    case SIGINT:
+    case SIGKILL:
+    case SIGPIPE:
+    case SIGPOLL:
+    case SIGPROF:
+    case SIGTERM:
+    case SIGCHLD:
+    case SIGURG:
+    case SIGFPE:
+    case SIGILL:
+    case SIGQUIT:
+    case SIGSEGV:
+    case SIGTRAP:
+      if (handler == SIG_DFL)
+        return SIG_DFL;
+      break;
+  }
+
   errno = EINVAL;
   return SIG_ERR;
 }
@@ -726,6 +806,7 @@ sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
 int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
                         fd_set* exceptfds, struct timeval* timeout) {
   ScopedEventListener listener(new EventListener);
+
   std::vector<struct pollfd> fds;
 
   fd_set readout, writeout, exceptout;
@@ -811,9 +892,24 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
       ms_timeout = static_cast<int>(ms);
     }
 
+    // Add a special node to listen for events
+    // coming from the KernelProxy itself (kill will
+    // generated a SIGERR event).
+    listener->Track(-1, signal_emitter_, POLLERR, -1);
+    event_track += 1;
+
     events.resize(event_track);
+
+    bool interrupted = false;
     listener->Wait(events.data(), event_track, ms_timeout, &ready_cnt);
     for (fd = 0; static_cast<int>(fd) < ready_cnt; fd++) {
+      if (events[fd].user_data == static_cast<uint64_t>(-1)) {
+        if (events[fd].events & POLLERR) {
+          interrupted = true;
+        }
+        continue;
+      }
+
       if (events[fd].events & POLLIN) {
         FD_SET(events[fd].user_data, &readout);
         event_cnt++;
@@ -828,6 +924,11 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
         FD_SET(events[fd].user_data, &exceptout);
         event_cnt++;
       }
+    }
+
+    if (0 == event_cnt && interrupted) {
+      errno = EINTR;
+      return -1;
     }
   }
 
@@ -846,10 +947,11 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
 
 int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   ScopedEventListener listener(new EventListener);
+  listener->Track(-1, signal_emitter_, POLLERR, 0);
 
   int index;
   size_t event_cnt = 0;
-  size_t event_track = 0;
+  size_t event_track = 1;
   for (index = 0; static_cast<nfds_t>(index) < nfds; index++) {
     ScopedKernelHandle handle;
     struct pollfd* info = &fds[index];
@@ -884,13 +986,22 @@ int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
     std::vector<EventData> events;
     int ready_cnt;
 
+    bool interrupted = false;
     events.resize(event_track);
     listener->Wait(events.data(), event_track, timeout, &ready_cnt);
     for (index = 0; index < ready_cnt; index++) {
       struct pollfd* info = &fds[events[index].user_data];
+      if (!info) {
+        interrupted = true;
+        continue;
+      }
 
       info->revents = events[index].events;
       event_cnt++;
+    }
+    if (0 == event_cnt && interrupted) {
+      errno = EINTR;
+      return -1;
     }
   }
 
