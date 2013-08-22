@@ -22,7 +22,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libgles2_implementation_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'defines': [
@@ -46,7 +46,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libcommand_buffer_common_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'includes': [
@@ -65,7 +65,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libgles2_cmd_helper_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'includes': [
@@ -84,7 +84,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libcommand_buffer_client_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'includes': [
@@ -103,7 +103,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libgpu_ipc_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'includes': [

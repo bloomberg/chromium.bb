@@ -26,7 +26,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libtracing_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'sources': [

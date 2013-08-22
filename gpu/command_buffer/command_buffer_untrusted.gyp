@@ -21,7 +21,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libgles2_utils_untrusted.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 1,
           },
           'dependencies': [
