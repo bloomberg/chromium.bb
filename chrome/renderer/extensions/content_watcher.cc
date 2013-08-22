@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -129,44 +130,14 @@ void ContentWatcher::ScanAndNotify(WebKit::WebFrame* frame) {
 std::vector<base::StringPiece> ContentWatcher::FindMatchingSelectors(
     WebKit::WebFrame* frame) const {
   std::vector<base::StringPiece> result;
-  v8::HandleScope scope;
-
-  // Get the indices within |css_selectors_| that match elements in
-  // |frame|, as a JS Array.
-  v8::Local<v8::Value> selector_indices;
-  if (ModuleSystem* module_system = GetModuleSystem(frame)) {
-    v8::Context::Scope context_scope(frame->mainWorldScriptContext());
-    v8::Local<v8::Array> js_css_selectors =
-        v8::Array::New(css_selectors_.size());
-    for (size_t i = 0; i < css_selectors_.size(); ++i) {
-      js_css_selectors->Set(i, v8::String::New(css_selectors_[i].data(),
-                                               css_selectors_[i].size()));
-    }
-    std::vector<v8::Handle<v8::Value> > find_selectors_args;
-    find_selectors_args.push_back(js_css_selectors);
-    selector_indices = module_system->CallModuleMethod("contentWatcher",
-                                                       "FindMatchingSelectors",
-                                                       &find_selectors_args);
-  }
-  if (selector_indices.IsEmpty() || !selector_indices->IsArray())
-    return result;
-
-  // Iterate over the array, and extract the indices, laboriously
-  // converting them back to integers.
-  v8::Local<v8::Array> index_array = selector_indices.As<v8::Array>();
-  const size_t length = index_array->Length();
-  result.reserve(length);
-  for (size_t i = 0; i < length; ++i) {
-    v8::Local<v8::Value> index_value = index_array->Get(i);
-    if (!index_value->IsNumber())
-      continue;
-    double index = index_value->NumberValue();
-    // Make sure the index is within bounds.
-    if (index < 0 || css_selectors_.size() <= index)
-      continue;
-    // Push a StringPiece referring to the CSS selector onto the result.
-    result.push_back(
-        base::StringPiece(css_selectors_[static_cast<size_t>(index)]));
+  WebKit::WebDocument document = frame->document();
+  for (size_t i = 0; i < css_selectors_.size(); ++i) {
+    WebKit::WebExceptionCode exception = 0;
+    if (!document.querySelector(WebKit::WebString::fromUTF8(css_selectors_[i]),
+                                exception).isNull())
+      result.push_back(css_selectors_[i]);
+    DCHECK_EQ(0, exception)
+        << "We should already have checked that the selectors are valid.";
   }
   return result;
 }
