@@ -118,10 +118,17 @@ class PeerConnectionEntry {
 
 static const int64 FAKE_TIME_STAMP = 3600000;
 
-class WebRTCInternalsBrowserTest: public ContentBrowserTest {
+#if defined(OS_WIN)
+// All tests are flaky on Windows: crbug.com/277322.
+#define MAYBE_WebRTCInternalsBrowserTest DISABLED_WebRTCInternalsBrowserTest
+#else
+#define MAYBE_WebRTCInternalsBrowserTest WebRTCInternalsBrowserTest
+#endif
+
+class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
  public:
-  WebRTCInternalsBrowserTest() {}
-  virtual ~WebRTCInternalsBrowserTest() {}
+  MAYBE_WebRTCInternalsBrowserTest() {}
+  virtual ~MAYBE_WebRTCInternalsBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
@@ -395,7 +402,8 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddAndRemovePeerConnection) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
+                       AddAndRemovePeerConnection) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -416,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddAndRemovePeerConnection) {
   VerifyNoElementWithId(pc_2.getIdString());
 }
 
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdateAllPeerConnections) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
+                       UpdateAllPeerConnections) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -433,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdateAllPeerConnections) {
   VerifyPeerConnectionEntry(pc_1);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdatePeerConnection) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, UpdatePeerConnection) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -470,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdatePeerConnection) {
 }
 
 // Tests that adding random named stats updates the dataSeries and graphs.
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddStats) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, AddStats) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -496,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, AddStats) {
 }
 
 // Tests that the bandwidth estimation values are drawn on a single graph.
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, BweCompoundGraph) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, BweCompoundGraph) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -536,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, BweCompoundGraph) {
 
 // Tests that the total packet/byte count is converted to count per second,
 // and the converted data is drawn.
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, ConvertedGraphs) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -578,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Disabling due to failure on Linux, Mac, Win: http://crbug.com/272413
 // Sanity check of the page content under a real PeerConnection call.
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
                        DISABLED_WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -661,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest,
   EXPECT_GT(count, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, CreatePageDump) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, CreatePageDump) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
