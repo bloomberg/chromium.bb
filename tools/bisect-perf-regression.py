@@ -1773,11 +1773,17 @@ class BisectPerformanceMetrics(object):
         bisect_utils.OutputAnnotationStepClosed()
 
       if bad_results[1]:
-        results['error'] = bad_results[0]
+        results['error'] = ('An error occurred while building and running '
+            'the \'bad\' reference value. The bisect cannot continue without '
+            'a working \'bad\' revision to start from.\n\nError: %s' %
+                bad_results[0])
         return results
 
       if good_results[1]:
-        results['error'] = good_results[0]
+        results['error'] = ('An error occurred while building and running '
+            'the \'good\' reference value. The bisect cannot continue without '
+            'a working \'good\' revision to start from.\n\nError: %s' %
+                good_results[0])
         return results
 
 
@@ -1935,6 +1941,18 @@ class BisectPerformanceMetrics(object):
     Args
       bisect_results: The results from a bisection test run.
     """
+    if bisect_results['error']:
+      if self.opts.output_buildbot_annotations:
+        bisect_utils.OutputAnnotationStepStart('Results - Bisect Failed')
+
+      print
+      print bisect_results['error']
+      print
+
+      if self.opts.output_buildbot_annotations:
+        bisect_utils.OutputAnnotationStepClosed()
+      return
+
     revision_data = bisect_results['revision_data']
     revision_data_sorted = sorted(revision_data.iteritems(),
                                   key = lambda x: x[1]['sort'])
@@ -2526,16 +2544,13 @@ def main():
                                      opts.bad_revision,
                                      opts.good_revision,
                                      metric_values)
-    if not(bisect_results['error']):
-      bisect_test.FormatAndPrintResults(bisect_results)
+    bisect_test.FormatAndPrintResults(bisect_results)
   finally:
     bisect_test.PerformCleanup()
 
-  if not(bisect_results['error']):
+  if not bisect_results['error']:
     return 0
   else:
-    print 'Error: ' + bisect_results['error']
-    print
     return 1
 
 if __name__ == '__main__':
