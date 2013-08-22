@@ -207,23 +207,24 @@ bool IsChromeInstalled(HKEY root_key) {
          key.HasValue(kChromeRegVersion);
 }
 
-bool IsC1FSent() {
+// Returns true if the |subkey| in |root| has the kC1FKey entry set to 1.
+bool RegKeyHasC1F(HKEY root, const wchar_t* subkey) {
   RegKey key;
   DWORD value;
-
-  if (key.Open(HKEY_LOCAL_MACHINE, kC1FPendingKey, KEY_READ) == ERROR_SUCCESS &&
+  return key.Open(root, subkey, KEY_READ) == ERROR_SUCCESS &&
       key.ReadValueDW(kC1FKey, &value) == ERROR_SUCCESS &&
-      value == 1) {
-    return true;
-  }
+      value == static_cast<DWORD>(1);
+}
 
-  if (key.Open(HKEY_CURRENT_USER, kC1FPendingKey, KEY_READ) == ERROR_SUCCESS &&
-      key.ReadValueDW(kC1FKey, &value) == ERROR_SUCCESS &&
-      value == 1) {
-    return true;
-  }
-
-  return false;
+bool IsC1FSent() {
+  // The C1F RLZ key can either be in HKCU or in HKLM (the HKLM RLZ key is made
+  // readable to all-users via rlz_lib::CreateMachineState()) and can either be
+  // in sent or pending state. Return true if there is a match for any of these
+  // 4 states.
+  return RegKeyHasC1F(HKEY_CURRENT_USER, kC1FSentKey) ||
+      RegKeyHasC1F(HKEY_CURRENT_USER, kC1FPendingKey) ||
+      RegKeyHasC1F(HKEY_LOCAL_MACHINE, kC1FSentKey) ||
+      RegKeyHasC1F(HKEY_LOCAL_MACHINE, kC1FPendingKey);
 }
 
 enum WindowsVersion {
