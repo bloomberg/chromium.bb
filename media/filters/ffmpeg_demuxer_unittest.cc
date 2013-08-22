@@ -433,7 +433,9 @@ TEST_F(FFmpegDemuxerTest, Stop) {
   DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
   ASSERT_TRUE(audio);
 
-  demuxer_->Stop(NewExpectedClosure());
+  WaitableMessageLoopEvent event;
+  demuxer_->Stop(event.GetClosure());
+  event.RunAndWait();
 
   // Reads after being stopped are all EOS buffers.
   StrictMock<MockReadCB> callback;
@@ -442,6 +444,9 @@ TEST_F(FFmpegDemuxerTest, Stop) {
   // Attempt the read...
   audio->Read(base::Bind(&MockReadCB::Run, base::Unretained(&callback)));
   message_loop_.RunUntilIdle();
+
+  // Don't let the test call Stop() again.
+  demuxer_.reset();
 }
 
 TEST_F(FFmpegDemuxerTest, DisableAudioStream) {

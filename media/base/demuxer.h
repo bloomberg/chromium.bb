@@ -47,8 +47,10 @@ class MEDIA_EXPORT Demuxer {
   // callback upon completion.
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& status_cb);
 
-  // The pipeline is being stopped either as a result of an error or because
-  // the client called Stop().
+  // Starts stopping this demuxer, executing the callback upon completion.
+  //
+  // After the callback completes the demuxer may be destroyed. It is illegal to
+  // call any method (including Stop()) after a demuxer has stopped.
   virtual void Stop(const base::Closure& callback);
 
   // This method is called from the pipeline when the audio renderer
