@@ -1215,7 +1215,7 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
-Bug(esprehn) fast/forms/select-initial-position.html [ NeedsRebaseline ]
+Bug(esprehn) [ Android ] fast/forms/select-initial-position.html [ NeedsRebaseline ]
 
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
