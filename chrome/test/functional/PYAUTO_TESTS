@@ -472,15 +472,6 @@
      ],
   },
 
-  # WebRTC MediaStream tests. Requires webcam and audio device to be present on
-  # the test machine.
-  'WEBRTC': {
-    'all': [
-      # The only remaining WebRTC tests which hasn't been ported.
-      'webrtc_call.WebrtcCallTest.testWebrtcJsep01CallAndMeasureCpu20Seconds',
-    ],
-  },
-
   # Trace event tests.
   'TRACING': {
     'all': [
