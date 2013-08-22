@@ -68,7 +68,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
     didModifyData(oldStr);
 
     if (parentNode())
-        parentNode()->insertBefore(newText.get(), nextSibling(), es, AttachLazily);
+        parentNode()->insertBefore(newText.get(), nextSibling(), es);
     if (es.hadException())
         return 0;
 

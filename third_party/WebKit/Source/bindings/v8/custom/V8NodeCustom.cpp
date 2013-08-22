@@ -69,7 +69,7 @@ void V8Node::insertBeforeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     Node* refChild = V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0;
-    imp->insertBefore(newChild, refChild, es, AttachLazily);
+    imp->insertBefore(newChild, refChild, es);
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, args[0]);
@@ -86,7 +86,7 @@ void V8Node::replaceChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     Node* oldChild = V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0;
-    imp->replaceChild(newChild, oldChild, es, AttachLazily);
+    imp->replaceChild(newChild, oldChild, es);
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, args[1]);
@@ -117,7 +117,7 @@ void V8Node::appendChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 
     ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
-    imp->appendChild(newChild, es, AttachLazily);
+    imp->appendChild(newChild, es);
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, args[0]);

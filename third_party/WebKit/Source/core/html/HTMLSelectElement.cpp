@@ -220,7 +220,7 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
     if (!element || !(element->hasLocalName(optionTag) || element->hasLocalName(hrTag)))
         return;
 
-    insertBefore(element, before, es, AttachLazily);
+    insertBefore(element, before, es);
     setNeedsValidityCheck();
 }
 

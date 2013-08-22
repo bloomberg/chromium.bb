@@ -471,7 +471,7 @@ void InputType::destroyShadowSubtree()
     // FIXME: Remove the PasswordGeneratorButtonElement's shadow root and then remove this loop.
     while ((root = root->youngerShadowRoot())) {
         root->removeChildren();
-        root->appendChild(HTMLShadowElement::create(shadowTag, element()->document()), ASSERT_NO_EXCEPTION, AttachLazily);
+        root->appendChild(HTMLShadowElement::create(shadowTag, element()->document()));
     }
 }
 

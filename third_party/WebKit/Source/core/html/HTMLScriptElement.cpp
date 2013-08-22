@@ -90,7 +90,7 @@ void HTMLScriptElement::setText(const String &value)
     }
 
     removeChildren();
-    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION, AttachLazily);
+    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
 void HTMLScriptElement::setAsync(bool async)

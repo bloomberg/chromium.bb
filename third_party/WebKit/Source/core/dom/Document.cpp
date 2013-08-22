@@ -1323,7 +1323,7 @@ void Document::setTitle(const String& title)
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = createElement(titleTag, false);
-            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION, AttachLazily);
+            headElement->appendChild(m_titleElement);
         }
     }
 
@@ -2169,9 +2169,9 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& es)
         return;
 
     if (oldBody)
-        documentElement()->replaceChild(newBody.release(), oldBody, es, AttachLazily);
+        documentElement()->replaceChild(newBody.release(), oldBody, es);
     else
-        documentElement()->appendChild(newBody.release(), es, AttachLazily);
+        documentElement()->appendChild(newBody.release(), es);
 }
 
 HTMLHeadElement* Document::head()

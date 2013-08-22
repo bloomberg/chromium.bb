@@ -410,7 +410,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
             element->appendChild(Text::create(m_editElement.document(), String(&rightToLeftMark, 1)), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
     }
     element->appendChild(Text::create(m_editElement.document(), text), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
-    m_editElement.fieldsWrapperElement()->appendChild(element, ASSERT_NO_EXCEPTION, AttachLazily);
+    m_editElement.fieldsWrapperElement()->appendChild(element);
 }
 
 DateTimeNumericFieldElement::Step DateTimeEditBuilder::createStep(double msPerFieldUnit, double msPerFieldSize) const
@@ -464,7 +464,7 @@ void DateTimeEditElement::addField(PassRefPtr<DateTimeFieldElement> field)
     if (m_fields.size() == m_fields.capacity())
         return;
     m_fields.append(field.get());
-    fieldsWrapperElement()->appendChild(field, ASSERT_NO_EXCEPTION, AttachLazily);
+    fieldsWrapperElement()->appendChild(field);
 }
 
 bool DateTimeEditElement::anyEditableFieldsHaveValues() const
@@ -653,7 +653,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
     if (!firstChild()) {
         RefPtr<HTMLDivElement> element = HTMLDivElement::create(document());
         element->setPart(fieldsWrapperPseudoId);
-        appendChild(element.get(), ASSERT_NO_EXCEPTION, AttachLazily);
+        appendChild(element.get());
     }
     Element* fieldsWrapper = fieldsWrapperElement();
 

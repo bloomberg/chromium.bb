@@ -25,6 +25,7 @@
 #ifndef Node_h
 #define Node_h
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MutationObserver.h"
@@ -204,10 +205,10 @@ public:
     // These should all actually return a node, but this is only important for language bindings,
     // which will already know and hold a ref on the right node to return. Returning bool allows
     // these methods to be more efficient since they don't need to return a ref
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState&, AttachBehavior);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState&, AttachBehavior);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachLazily);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachLazily);
     void removeChild(Node* child, ExceptionState&);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionState&, AttachBehavior);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachLazily);
 
     bool hasChildNodes() const { return firstChild(); }
     virtual PassRefPtr<Node> cloneNode(bool deep = true) = 0;

@@ -1713,7 +1713,7 @@ void Node::setTextContent(const String& text, ExceptionState& es)
             ChildListMutationScope mutation(this);
             container->removeChildren();
             if (!text.isEmpty())
-                container->appendChild(document()->createTextNode(text), es, AttachLazily);
+                container->appendChild(document()->createTextNode(text), es);
             return;
         }
         case DOCUMENT_NODE:

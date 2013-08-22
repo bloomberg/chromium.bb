@@ -66,8 +66,8 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     content->setAttribute(selectAttr, summarySelector);
     content->appendChild(defaultSummary, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
 
-    root->appendChild(content, ASSERT_NO_EXCEPTION, AttachLazily);
-    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
+    root->appendChild(content);
+    root->appendChild(HTMLContentElement::create(document()));
 }
 
 Element* HTMLDetailsElement::findMainSummary() const

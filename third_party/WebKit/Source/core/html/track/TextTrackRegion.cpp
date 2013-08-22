@@ -385,7 +385,7 @@ void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayB
     if (m_cueContainer->contains(displayBox.get()))
         return;
 
-    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachLazily);
+    m_cueContainer->appendChild(displayBox);
     displayLastTextTrackCueBox();
 }
 

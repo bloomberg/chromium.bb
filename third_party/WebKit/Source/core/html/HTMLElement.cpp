@@ -356,7 +356,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
     if (es.hadException())
         return;
 
-    parent->replaceChild(fragment.release(), this, es, AttachLazily);
+    parent->replaceChild(fragment.release(), this, es);
     RefPtr<Node> node = next ? next->previousSibling() : 0;
     if (!es.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(node.release(), es);
@@ -479,7 +479,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& es)
         es.throwDOMException(HierarchyRequestError);
     if (es.hadException())
         return;
-    parent->replaceChild(newChild.release(), this, es, AttachLazily);
+    parent->replaceChild(newChild.release(), this, es);
 
     RefPtr<Node> node = next ? next->previousSibling() : 0;
     if (!es.hadException() && node && node->isTextNode())
@@ -500,7 +500,7 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
 
     if (equalIgnoringCase(where, "beforeBegin")) {
         if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, this, es, AttachLazily);
+            parent->insertBefore(newChild, this, es);
             if (!es.hadException())
                 return newChild;
         }
@@ -508,18 +508,18 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
     }
 
     if (equalIgnoringCase(where, "afterBegin")) {
-        insertBefore(newChild, firstChild(), es, AttachLazily);
+        insertBefore(newChild, firstChild(), es);
         return es.hadException() ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "beforeEnd")) {
-        appendChild(newChild, es, AttachLazily);
+        appendChild(newChild, es);
         return es.hadException() ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "afterEnd")) {
         if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, nextSibling(), es, AttachLazily);
+            parent->insertBefore(newChild, nextSibling(), es);
             if (!es.hadException())
                 return newChild;
         }

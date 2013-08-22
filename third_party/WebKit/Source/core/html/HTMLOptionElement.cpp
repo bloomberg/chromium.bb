@@ -145,7 +145,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& es)
         toText(child)->setData(text);
     else {
         removeChildren();
-        appendChild(Text::create(document(), text), es, AttachLazily);
+        appendChild(Text::create(document(), text), es);
     }
 
     if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)

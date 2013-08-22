@@ -64,7 +64,7 @@ public:
 
     virtual bool undo(ExceptionState& es)
     {
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es, AttachLazily);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
         return !es.hadException();
     }
 
@@ -98,7 +98,7 @@ public:
             if (!m_removeChildAction->perform(es))
                 return false;
         }
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es, AttachLazily);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
         return !es.hadException();
     }
 
@@ -116,7 +116,7 @@ public:
     {
         if (m_removeChildAction && !m_removeChildAction->redo(es))
             return false;
-        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es, AttachLazily);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), es);
         return !es.hadException();
     }
 
@@ -303,13 +303,13 @@ public:
 
     virtual bool undo(ExceptionState& es)
     {
-        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), es, AttachLazily);
+        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), es);
         return !es.hadException();
     }
 
     virtual bool redo(ExceptionState& es)
     {
-        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), es, AttachLazily);
+        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), es);
         return !es.hadException();
     }
 

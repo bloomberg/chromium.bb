@@ -751,7 +751,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 #endif
             if (displayBox->hasChildNodes() && !contains(displayBox.get())) {
                 // Note: the display tree of a cue is removed when the active flag of the cue is unset.
-                appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachLazily);
+                appendChild(displayBox);
             }
 #if ENABLE(WEBVTT_REGIONS)
         } else {
@@ -761,7 +761,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 
             // Append the region to the viewport, if it was not already.
             if (!contains(regionNode.get()))
-                appendChild(region->getDisplayTree(), ASSERT_NO_EXCEPTION, AttachLazily);
+                appendChild(region->getDisplayTree());
 
             region->appendTextTrackCueBox(displayBox);
         }

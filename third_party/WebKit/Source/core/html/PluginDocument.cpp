@@ -85,14 +85,14 @@ void PluginDocumentParser::createDocumentStructure()
 
     RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(document());
     rootElement->insertedByParser();
-    document()->appendChild(rootElement, ASSERT_NO_EXCEPTION, AttachLazily);
+    document()->appendChild(rootElement);
     frame->loader()->dispatchDocumentElementAvailable();
 
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(document());
     body->setAttribute(marginwidthAttr, "0");
     body->setAttribute(marginheightAttr, "0");
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
-    rootElement->appendChild(body, ASSERT_NO_EXCEPTION, AttachLazily);
+    rootElement->appendChild(body);
 
     m_embedElement = HTMLEmbedElement::create(document());
     m_embedElement->setAttribute(widthAttr, "100%");
@@ -100,7 +100,7 @@ void PluginDocumentParser::createDocumentStructure()
     m_embedElement->setAttribute(nameAttr, "plugin");
     m_embedElement->setAttribute(srcAttr, document()->url().string());
     m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
-    body->appendChild(m_embedElement, ASSERT_NO_EXCEPTION, AttachLazily);
+    body->appendChild(m_embedElement);
 
     toPluginDocument(document())->setPluginNode(m_embedElement.get());
 

@@ -1535,7 +1535,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
 
         InlineStyleOverrideScope overrideScope(document);
         m_creatingViaInspectorStyleSheet = true;
-        targetNode->appendChild(styleElement, es, AttachLazily);
+        targetNode->appendChild(styleElement, es);
         // At this point the added stylesheet will get bound through the updateActiveStyleSheets() invocation.
         // We just need to pick the respective InspectorStyleSheet from m_documentToInspectorStyleSheet.
         m_creatingViaInspectorStyleSheet = false;

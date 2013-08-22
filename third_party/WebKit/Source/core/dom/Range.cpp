@@ -859,10 +859,10 @@ void Range::processNodes(ActionType action, Vector<RefPtr<Node> >& nodes, PassRe
             oldContainer->removeChild(nodes[i].get(), es);
             break;
         case EXTRACT_CONTENTS:
-            newContainer->appendChild(nodes[i].release(), es, AttachLazily); // will remove n from its parent
+            newContainer->appendChild(nodes[i].release(), es); // will remove n from its parent
             break;
         case CLONE_CONTENTS:
-            newContainer->appendChild(nodes[i]->cloneNode(true), es, AttachLazily);
+            newContainer->appendChild(nodes[i]->cloneNode(true), es);
             break;
         }
     }
@@ -1027,7 +1027,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
             return;
 
         container = m_start.container();
-        container->parentNode()->insertBefore(newNode.release(), newText.get(), es, AttachLazily);
+        container->parentNode()->insertBefore(newNode.release(), newText.get(), es);
         if (es.hadException())
             return;
 
@@ -1040,7 +1040,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
 
         int startOffset = m_start.offset();
         container = m_start.container();
-        container->insertBefore(newNode.release(), container->childNode(startOffset), es, AttachLazily);
+        container->insertBefore(newNode.release(), container->childNode(startOffset), es);
         if (es.hadException())
             return;
 
@@ -1454,7 +1454,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& es)
     insertNode(newParent, es);
     if (es.hadException())
         return;
-    newParent->appendChild(fragment.release(), es, AttachLazily);
+    newParent->appendChild(fragment.release(), es);
     if (es.hadException())
         return;
     selectNode(newParent.get(), es);

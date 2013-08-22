@@ -129,14 +129,14 @@ PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionStat
 
     RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
     if (index < 0 || index >= numCells)
-        appendChild(cell, es, AttachLazily);
+        appendChild(cell, es);
     else {
         Node* n;
         if (index < 1)
             n = firstChild();
         else
             n = children->item(index);
-        insertBefore(cell, n, es, AttachLazily);
+        insertBefore(cell, n, es);
     }
     return cell.release();
 }
