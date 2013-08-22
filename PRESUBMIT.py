@@ -124,24 +124,20 @@ def GetPreferredTrySlaves(_, change):
                              [os.path.join(NaClTopDir(), 'toolchain_build')])
          for file in change.AffectedFiles(include_dirs=True)):
     return [
-        'nacl-toolchain-lucid64-newlib-arm',
+        'nacl-toolchain-precise64-newlib-arm',
         'nacl-toolchain-mac-newlib-arm',
         'nacl-toolchain-win7-newlib-arm',
         ]
 
   return [
-      'nacl-lucid32_newlib_dbg',
-      'nacl-lucid32_newlib_opt',
-      'nacl-lucid32_glibc_opt',
-      'nacl-lucid64_newlib_dbg',
-      'nacl-lucid64_newlib_opt',
-      'nacl-lucid64_glibc_opt',
-      'nacl-lucid64_newlib_dbg_valgrind',
-      'nacl-lucid64_glibc_dbg_valgrind',
       'nacl-precise32_newlib_dbg',
+      'nacl-precise32_newlib_opt',
       'nacl-precise32_glibc_opt',
       'nacl-precise64_newlib_dbg',
+      'nacl-precise64_newlib_opt',
       'nacl-precise64_glibc_opt',
+      'nacl-precise64_newlib_dbg_valgrind',
+      'nacl-precise64_glibc_dbg_valgrind',
       'nacl-mac10.6_newlib_opt',
       'nacl-mac10.6_glibc_opt',
       'nacl-mac10.6_64_newlib_dbg',
@@ -163,17 +159,17 @@ def GetPreferredTrySlaves(_, change):
       # arm-nacl-gcc bots
       'nacl-win7_64_arm_newlib_opt',
       'nacl-mac10.7_arm_newlib_opt',
-      'nacl-lucid64_arm_newlib_opt',
+      'nacl-precise64_arm_newlib_opt',
       # Clang bots
-      'nacl-lucid_64-newlib-dbg-clang',
+      'nacl-precise_64-newlib-dbg-clang',
       'nacl-mac10.6-newlib-dbg-clang',
       # pnacl scons bots
-      'nacl-lucid_64-newlib-arm_qemu-pnacl',
-      'nacl-lucid_64-newlib-x86_32-pnacl',
-      'nacl-lucid_64-newlib-x86_64-pnacl',
+      'nacl-precise_64-newlib-arm_qemu-pnacl',
+      'nacl-precise_64-newlib-x86_32-pnacl',
+      'nacl-precise_64-newlib-x86_64-pnacl',
       'nacl-precise_64-newlib-x86_64-pnacl',
       # pnacl spec2k bots
       'nacl-arm_perf_panda',
-      'nacl-lucid_64-newlib-x86_32-pnacl-spec',
-      'nacl-lucid_64-newlib-x86_64-pnacl-spec',
+      'nacl-precise_64-newlib-x86_32-pnacl-spec',
+      'nacl-precise_64-newlib-x86_64-pnacl-spec',
   ]

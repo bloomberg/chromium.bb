@@ -124,39 +124,39 @@ BOT_ASSIGNMENT = {
     ######################################################################
     # Trybots.
     ######################################################################
-    'nacl-lucid64_validator_opt':
+    'nacl-precise64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
-    'nacl-lucid64_newlib_dbg_valgrind':
+    'nacl-precise64_newlib_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh newlib',
-    'nacl-lucid64_glibc_dbg_valgrind':
+    'nacl-precise64_glibc_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage trybots.
     'nacl-mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 64 newlib --coverage --clang'),
-    'nacl-lucid-64-32-newlib-coverage':
+    'nacl-precise-64-32-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
-    'nacl-lucid-64-64-newlib-coverage':
+    'nacl-precise-64-64-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 64 newlib --coverage'),
     'nacl-win32-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
     # Clang trybots.
-    'nacl-lucid_64-newlib-dbg-clang':
+    'nacl-precise_64-newlib-dbg-clang':
         #python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
         'echo "TODO(mcgrathr): linux clang disabled pending bot upgrades"',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # Pnacl main trybots
-    'nacl-lucid_64-newlib-arm_qemu-pnacl':
+    'nacl-precise_64-newlib-arm_qemu-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-trybot-qemu',
-    'nacl-lucid_64-newlib-x86_32-pnacl':
+    'nacl-precise_64-newlib-x86_32-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
-    'nacl-lucid_64-newlib-x86_64-pnacl':
+    'nacl-precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
-    'nacl-lucid_64-newlib-mips-pnacl':
+    'nacl-precise_64-newlib-mips-pnacl':
         'echo "TODO(mseaborn): add mips"',
     'nacl-precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
@@ -165,9 +165,9 @@ BOT_ASSIGNMENT = {
     'nacl-arm_hw_opt_panda':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     # Pnacl spec2k trybots
-    'nacl-lucid_64-newlib-x86_32-pnacl-spec':
+    'nacl-precise_64-newlib-x86_32-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
-    'nacl-lucid_64-newlib-x86_64-pnacl-spec':
+    'nacl-precise_64-newlib-x86_64-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8664',
     'nacl-arm_perf_panda':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-buildonly',
@@ -227,22 +227,16 @@ BOT_ASSIGNMENT = {
         'trusted-toolchain-creator.mipsel.debian.sh nacl_sdk',
 
     # Toolchain trybots.
-    'nacl-toolchain-lucid64-newlib':
-        'bash buildbot/buildbot_toolchain.sh linux',
     'nacl-toolchain-precise64-newlib':
         'bash buildbot/buildbot_toolchain.sh linux',
     'nacl-toolchain-mac-newlib': 'bash buildbot/buildbot_toolchain.sh mac',
     'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
-    'nacl-toolchain-lucid64-newlib-arm':
-        python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-precise64-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-mac-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-win7-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
-    'nacl-toolchain-lucid64-glibc':
-        'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-precise64-glibc':
         'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
@@ -329,17 +323,6 @@ for platform in [
               mode + ' ' + real_arch + ' ' + libc + arch_flags)
 
 
-IRT_ARCHIVE_BUILDERS = [
-    'lucid-32-newlib-dbg',
-    'lucid-64-newlib-dbg',
-]
-def CheckBuilderMap():
-  # Require a correspondence with the list above.
-  for builder in IRT_ARCHIVE_BUILDERS:
-    assert builder in BOT_ASSIGNMENT, builder
-CheckBuilderMap()
-
-
 def Main():
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
   cmd = BOT_ASSIGNMENT.get(builder)
@@ -348,7 +331,6 @@ def Main():
     sys.exit(1)
 
   env = os.environ.copy()
-  env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
 
   # Use .boto file from home-dir instead of buildbot supplied one.
   if 'AWS_CREDENTIAL_FILE' in env:
