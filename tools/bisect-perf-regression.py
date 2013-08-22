@@ -1028,8 +1028,10 @@ class BisectPerformanceMetrics(object):
 
     # If the metric is times/t, we need to sum the timings in order to get
     # similar regression results as the try-bots.
+    metrics_to_sum = [['times', 't'], ['times', 'page_load_time'],
+        ['cold_times', 'page_load_time'], ['warm_times', 'page_load_time']]
 
-    if metric == ['times', 't']:
+    if metric in metrics_to_sum:
       if values_list:
         values_list = [reduce(lambda x, y: float(x) + float(y), values_list)]
 
