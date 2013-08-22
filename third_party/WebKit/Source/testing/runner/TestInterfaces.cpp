@@ -59,10 +59,6 @@ TestInterfaces::TestInterfaces()
 {
     WebKit::setLayoutTestMode(true);
 
-    WebRuntimeFeatures::enableStableFeatures(true);
-    WebRuntimeFeatures::enableExperimentalFeatures(true);
-    WebRuntimeFeatures::enableTestOnlyFeatures(true);
-
     // NOTE: please don't put feature specific enable flags here,
     // instead add them to RuntimeEnabledFeatures.in
 

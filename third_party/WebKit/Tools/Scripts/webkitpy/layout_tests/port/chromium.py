@@ -350,6 +350,9 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/web-animations-css/animations',
                              'animations',
                              ['--enable-web-animations-css']),
+            VirtualTestSuite('virtual/stable/webexposed',
+                             'webexposed',
+                             ['--stable-release-mode']),
         ]
 
     #

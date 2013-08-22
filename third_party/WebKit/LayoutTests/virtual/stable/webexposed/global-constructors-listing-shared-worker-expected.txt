@@ -1,0 +1,70 @@
+This test documents the Constructor properties on SharedWorkerGlobalScope.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Starting worker: resources/global-context-constructors-listing.js
+[Worker] Array
+[Worker] ArrayBuffer
+[Worker] Blob
+[Worker] Boolean
+[Worker] DataView
+[Worker] Date
+[Worker] Error
+[Worker] EvalError
+[Worker] EventSource
+[Worker] FileError
+[Worker] FileReader
+[Worker] FileReaderSync
+[Worker] Float32Array
+[Worker] Float64Array
+[Worker] Function
+[Worker] IDBCursor
+[Worker] IDBCursorWithValue
+[Worker] IDBDatabase
+[Worker] IDBFactory
+[Worker] IDBIndex
+[Worker] IDBKeyRange
+[Worker] IDBObjectStore
+[Worker] IDBOpenDBRequest
+[Worker] IDBRequest
+[Worker] IDBTransaction
+[Worker] IDBVersionChangeEvent
+[Worker] Int16Array
+[Worker] Int32Array
+[Worker] Int8Array
+[Worker] MessageChannel
+[Worker] MessageEvent
+[Worker] Number
+[Worker] Object
+[Worker] RangeError
+[Worker] ReferenceError
+[Worker] RegExp
+[Worker] SharedWorkerGlobalScope
+[Worker] String
+[Worker] SyntaxError
+[Worker] TypeError
+[Worker] URIError
+[Worker] URL
+[Worker] Uint16Array
+[Worker] Uint32Array
+[Worker] Uint8Array
+[Worker] Uint8ClampedArray
+[Worker] WebSocket
+[Worker] WorkerGlobalScope
+[Worker] WorkerLocation
+[Worker] WorkerNavigator
+[Worker] XMLHttpRequest
+[Worker] webkitIDBCursor
+[Worker] webkitIDBDatabase
+[Worker] webkitIDBFactory
+[Worker] webkitIDBIndex
+[Worker] webkitIDBKeyRange
+[Worker] webkitIDBObjectStore
+[Worker] webkitIDBRequest
+[Worker] webkitIDBTransaction
+[Worker] webkitURL
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
