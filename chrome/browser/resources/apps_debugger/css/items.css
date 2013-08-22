@@ -492,6 +492,7 @@ button {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 2px;
   color: #444;
+  font-family: 'Helvetica Neue', Ubuntu, Arial, sans-serif;
   font-size: 12px;
   font-weight: bold;
   height: 29px;
