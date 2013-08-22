@@ -852,9 +852,7 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
     NOTREACHED();
     return;
   }
-  guest->Attach(embedder_web_contents,
-                extension->id(),
-                extra_params);
+  guest->Attach(embedder_web_contents, extension->id(), extra_params);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(
