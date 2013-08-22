@@ -371,6 +371,25 @@ void Resource::didAddClient(ResourceClient* c)
         c->notifyFinished(this);
 }
 
+static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
+{
+    // Some resources types default to return data synchronously.
+    // For most of these, it's because there are layout tests that
+    // expect data to return synchronously in case of cache hit. In
+    // the case of fonts, there was a performance regression.
+    // FIXME: Get to the point where we don't need to special-case sync/async
+    // behavior for different resource types.
+    if (type == Resource::Image)
+        return true;
+    if (type == Resource::CSSStyleSheet)
+        return true;
+    if (type == Resource::Script)
+        return true;
+    if (type == Resource::Font)
+        return true;
+    return false;
+}
+
 bool Resource::addClientToSet(ResourceClient* client)
 {
     ASSERT(!isPurgeable());
@@ -386,8 +405,8 @@ bool Resource::addClientToSet(ResourceClient* client)
     if (!hasClients() && inCache())
         memoryCache()->addToLiveResourcesSize(this);
 
-    // If we have existing data to send to the new client, send it asynchronously.
-    if (m_type != Image && m_type != CSSStyleSheet && m_type != Script && !m_response.isNull() && !m_proxyResource) {
+    // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
+    if (!m_response.isNull() && !m_proxyResource && !shouldSendCachedDataSynchronouslyForType(type())) {
         m_clientsAwaitingCallback.add(client);
         ResourceCallback::callbackHandler()->schedule(this);
         return false;
