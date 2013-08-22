@@ -153,6 +153,13 @@ class CONTENT_EXPORT WebContentsImpl
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
   }
+
+  // In Android WebView, the RenderView needs created even there is no
+  // navigation entry, this allows Android WebViews to use
+  // javascript: URLs that load into the DOMWindow before the first page
+  // load. This is not safe to do in any context that a web page could get a
+  // reference to the DOMWindow before the first page load.
+  bool CreateRenderViewForInitialEmptyDocument();
 #endif
 
   // Expose the render manager for testing.

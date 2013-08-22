@@ -1373,7 +1373,20 @@ import java.util.Map;
     public void evaluateJavaScript(
             String script, JavaScriptCallback callback) throws IllegalStateException {
         checkIsAlive();
-        nativeEvaluateJavaScript(mNativeContentViewCore, script, callback);
+        nativeEvaluateJavaScript(mNativeContentViewCore, script, callback, false);
+    }
+
+    /**
+     * Injects the passed Javascript code in the current page and evaluates it.
+     * If there is no page existing, a new one will be created.
+     *
+     * @param script The Javascript to execute.
+     * @throws IllegalStateException If the ContentView has been destroyed.
+     */
+    public void evaluateJavaScriptEvenIfNotYetNavigated(String script)
+            throws IllegalStateException {
+        checkIsAlive();
+        nativeEvaluateJavaScript(mNativeContentViewCore, script, null, true);
     }
 
     /**
@@ -3127,7 +3140,7 @@ import java.util.Map;
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
 
     private native void nativeEvaluateJavaScript(int nativeContentViewCoreImpl,
-            String script, JavaScriptCallback callback);
+            String script, JavaScriptCallback callback, boolean startRenderer);
 
     private native int nativeGetNativeImeAdapter(int nativeContentViewCoreImpl);
 

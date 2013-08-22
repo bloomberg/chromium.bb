@@ -1472,14 +1472,22 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
                                              jobject obj,
                                              jstring script,
-                                             jobject callback) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  DCHECK(host);
+                                             jobject callback,
+                                             jboolean start_renderer) {
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  DCHECK(rvh);
+
+  if (start_renderer && !rvh->IsRenderViewLive()) {
+    if (!web_contents_->CreateRenderViewForInitialEmptyDocument()) {
+      LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScript";
+      return;
+    }
+  }
 
   if (!callback) {
     // No callback requested.
-    host->ExecuteJavascriptInWebFrame(string16(),  // frame_xpath
-                                      ConvertJavaStringToUTF16(env, script));
+    rvh->ExecuteJavascriptInWebFrame(string16(),  // frame_xpath
+                                     ConvertJavaStringToUTF16(env, script));
     return;
   }
 
@@ -1490,7 +1498,7 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
   content::RenderViewHost::JavascriptResultCallback c_callback =
       base::Bind(&JavaScriptResultCallback, j_callback);
 
-  host->ExecuteJavascriptInWebFrameCallbackResult(
+  rvh->ExecuteJavascriptInWebFrameCallbackResult(
       string16(),  // frame_xpath
       ConvertJavaStringToUTF16(env, script),
       c_callback);

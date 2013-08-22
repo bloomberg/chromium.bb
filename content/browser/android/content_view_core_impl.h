@@ -155,7 +155,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void EvaluateJavaScript(JNIEnv* env,
                           jobject obj,
                           jstring script,
-                          jobject callback);
+                          jobject callback,
+                          jboolean start_renderer);
   int GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void SetFocus(JNIEnv* env, jobject obj, jboolean focused);
   void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);

@@ -3673,6 +3673,13 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   return true;
 }
 
+#if defined(OS_ANDROID)
+bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
+  return CreateRenderViewForRenderManager(GetRenderViewHost(),
+                                          MSG_ROUTING_NONE);
+}
+#endif
+
 void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
                                      IPC::Message* reply_msg,
                                      bool success,

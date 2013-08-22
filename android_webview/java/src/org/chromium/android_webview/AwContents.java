@@ -1367,7 +1367,7 @@ public class AwContents {
     }
 
     /**
-     * @see ContentViewCore.evaluateJavaScript(String, ContentViewCOre.JavaScriptCallback)
+     * @see ContentViewCore.evaluateJavaScript(String, ContentViewCore.JavaScriptCallback)
      */
     public void evaluateJavaScript(String script, final ValueCallback<String> callback) {
         ContentViewCore.JavaScriptCallback jsCallback = null;
@@ -1381,6 +1381,13 @@ public class AwContents {
         }
 
         mContentViewCore.evaluateJavaScript(script, jsCallback);
+    }
+
+    /**
+     * @see ContentViewCore.evaluateJavaScriptEvenIfNotYetNavigated(String)
+     */
+    public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
+        mContentViewCore.evaluateJavaScriptEvenIfNotYetNavigated(script);
     }
 
     //--------------------------------------------------------------------------------------------
