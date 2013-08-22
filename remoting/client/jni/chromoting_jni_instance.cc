@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "net/socket/client_socket_factory.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
@@ -28,16 +29,41 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                                              const char* pairing_id,
                                              const char* pairing_secret)
     : jni_runtime_(jni_runtime),
-      username_(username),
-      auth_token_(auth_token),
-      host_jid_(host_jid),
       host_id_(host_id),
-      host_pubkey_(host_pubkey),
-      pairing_id_(pairing_id),
-      pairing_secret_(pairing_secret),
       create_pairing_(false) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
 
+  // Intialize XMPP config.
+  xmpp_config_.host = kXmppServer;
+  xmpp_config_.port = kXmppPort;
+  xmpp_config_.use_tls = kXmppUseTls;
+  xmpp_config_.username = username;
+  xmpp_config_.auth_token = auth_token;
+  xmpp_config_.auth_service = "oauth2";
+
+  // Initialize ClientConfig.
+  client_config_.host_jid = host_jid;
+  client_config_.host_public_key = host_pubkey;
+
+  client_config_.fetch_secret_callback =
+      base::Bind(&ChromotingJniInstance::FetchSecret, this);
+  client_config_.authentication_tag = host_id_;
+
+  std::string pairing_id_str(pairing_id);
+  std::string pairing_secret_str(pairing_secret);
+  if (!pairing_id_str.empty() && !pairing_secret_str.empty()) {
+    client_config_.client_pairing_id = pairing_id_str;
+    client_config_.client_paired_secret = pairing_secret_str;
+    client_config_.authentication_methods.push_back(
+        protocol::AuthenticationMethod::FromString("spake2_pair"));
+  }
+
+  client_config_.authentication_methods.push_back(
+      protocol::AuthenticationMethod::FromString("spake2_hmac"));
+  client_config_.authentication_methods.push_back(
+      protocol::AuthenticationMethod::FromString("spake2_plain"));
+
+  // Post a task to start connection
   jni_runtime_->display_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ChromotingJniInstance::ConnectToHostOnDisplayThread,
@@ -89,19 +115,13 @@ void ChromotingJniInstance::RedrawDesktop() {
 }
 
 void ChromotingJniInstance::PerformMouseAction(
-    int x,
-    int y,
+    int x, int y,
     protocol::MouseEvent_MouseButton button,
     bool button_down) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::PerformMouseAction,
-                   this,
-                   x,
-                   y,
-                   button,
-                   button_down));
+        FROM_HERE, base::Bind(&ChromotingJniInstance::PerformMouseAction,
+                              this, x, y, button, button_down));
     return;
   }
 
@@ -118,11 +138,8 @@ void ChromotingJniInstance::PerformMouseAction(
 void ChromotingJniInstance::PerformKeyboardAction(int key_code, bool key_down) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::PerformKeyboardAction,
-                   this,
-                   key_code,
-                   key_down));
+        FROM_HERE, base::Bind(&ChromotingJniInstance::PerformKeyboardAction,
+                              this, key_code, key_down));
     return;
   }
 
@@ -161,7 +178,9 @@ void ChromotingJniInstance::OnConnectionReady(bool ready) {
   // We ignore this message, since OnConnectoinState tells us the same thing.
 }
 
-void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {}
+void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
+  NOTIMPLEMENTED();
+}
 
 void ChromotingJniInstance::SetPairingResponse(
     const protocol::PairingResponse& response) {
@@ -171,9 +190,7 @@ void ChromotingJniInstance::SetPairingResponse(
       FROM_HERE,
       base::Bind(&ChromotingJniRuntime::CommitPairingCredentials,
                  base::Unretained(jni_runtime_),
-                 host_id_,
-                 response.client_id(),
-                 response.shared_secret()));
+                 host_id_, response.client_id(), response.shared_secret()));
 }
 
 void ChromotingJniInstance::DeliverHostMessage(
@@ -223,52 +240,21 @@ void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
 void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
-  client_config_.reset(new ClientConfig());
-  client_config_->host_jid = host_jid_;
-  client_config_->host_public_key = host_pubkey_;
-
-  client_config_->fetch_secret_callback = base::Bind(
-      &ChromotingJniInstance::FetchSecret,
-      this);
-  client_config_->authentication_tag = host_id_;
-
-  if (!pairing_id_.empty() && !pairing_secret_.empty()) {
-    client_config_->client_pairing_id = pairing_id_;
-    client_config_->client_paired_secret = pairing_secret_;
-    client_config_->authentication_methods.push_back(
-        protocol::AuthenticationMethod::FromString("spake2_pair"));
-  }
-
-  client_config_->authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_hmac"));
-  client_config_->authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_plain"));
-
   client_context_.reset(new ClientContext(
       jni_runtime_->network_task_runner().get()));
   client_context_->Start();
 
   connection_.reset(new protocol::ConnectionToHost(true));
 
-  client_.reset(new ChromotingClient(*client_config_,
-                                     client_context_.get(),
-                                     connection_.get(),
-                                     this,
-                                     frame_consumer_,
-                                     scoped_ptr<AudioPlayer>()));
+  client_.reset(new ChromotingClient(
+      client_config_, client_context_.get(), connection_.get(),
+      this, frame_consumer_, scoped_ptr<AudioPlayer>()));
 
   view_->set_frame_producer(client_->GetFrameProducer());
 
-  signaling_config_.reset(new XmppSignalStrategy::XmppServerConfig());
-  signaling_config_->host = kXmppServer;
-  signaling_config_->port = kXmppPort;
-  signaling_config_->use_tls = kXmppUseTls;
-
-  signaling_.reset(new XmppSignalStrategy(jni_runtime_->url_requester(),
-                                          username_,
-                                          auth_token_,
-                                          "oauth2",
-                                          *signaling_config_));
+  signaling_.reset(new XmppSignalStrategy(
+      net::ClientSocketFactory::GetDefaultFactory(),
+      jni_runtime_->url_requester(), xmpp_config_));
 
   network_settings_.reset(new NetworkSettings(
       NetworkSettings::NAT_TRAVERSAL_ENABLED));
@@ -283,11 +269,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
-  username_ = "";
-  auth_token_ = "";
-  host_jid_ = "";
-  host_id_ = "";
-  host_pubkey_ = "";
+  host_id_.clear();
 
   // |client_| must be torn down before |signaling_|.
   connection_.reset();
@@ -299,15 +281,12 @@ void ChromotingJniInstance::FetchSecret(
     const protocol::SecretFetchedCallback& callback) {
   if (!jni_runtime_->ui_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->ui_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::FetchSecret,
-                   this,
-                   pairable,
-                   callback));
+        FROM_HERE, base::Bind(&ChromotingJniInstance::FetchSecret,
+                              this, pairable, callback));
     return;
   }
 
-  if (!pairing_id_.empty() || !pairing_secret_.empty()) {
+  if (!client_config_.client_pairing_id.empty()) {
     // We attempted to connect using an existing pairing that was rejected.
     // Unless we forget about the stale credentials, we'll continue trying them.
     LOG(INFO) << "Deleting rejected pairing credentials";

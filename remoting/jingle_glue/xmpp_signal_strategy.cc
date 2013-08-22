@@ -34,16 +34,15 @@ const size_t kWriteBufferSize = 4096;
 
 namespace remoting {
 
+XmppSignalStrategy::XmppServerConfig::XmppServerConfig() {}
+XmppSignalStrategy::XmppServerConfig::~XmppServerConfig() {}
+
 XmppSignalStrategy::XmppSignalStrategy(
+    net::ClientSocketFactory* socket_factory,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    const std::string& username,
-    const std::string& auth_token,
-    const std::string& auth_token_service,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config)
-    : request_context_getter_(request_context_getter),
-      username_(username),
-      auth_token_(auth_token),
-      auth_token_service_(auth_token_service),
+    : socket_factory_(socket_factory),
+      request_context_getter_(request_context_getter),
       resource_name_(kDefaultResourceName),
       xmpp_client_(NULL),
       xmpp_server_config_(xmpp_server_config),
@@ -71,23 +70,23 @@ void XmppSignalStrategy::Connect() {
   Disconnect();
 
   buzz::XmppClientSettings settings;
-  buzz::Jid login_jid(username_);
+  buzz::Jid login_jid(xmpp_server_config_.username);
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
   settings.set_resource(resource_name_);
-  settings.set_token_service(auth_token_service_);
-  settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN, auth_token_);
+  settings.set_token_service(xmpp_server_config_.auth_service);
+  settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN,
+                          xmpp_server_config_.auth_token);
   settings.set_server(talk_base::SocketAddress(
       xmpp_server_config_.host, xmpp_server_config_.port));
   settings.set_use_tls(
       xmpp_server_config_.use_tls ? buzz::TLS_ENABLED : buzz::TLS_DISABLED);
 
-  scoped_ptr<jingle_glue::XmppClientSocketFactory> socket_factory(
+  scoped_ptr<jingle_glue::XmppClientSocketFactory> xmpp_socket_factory(
       new jingle_glue::XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(),
-          net::SSLConfig(), request_context_getter_, false));
+          socket_factory_, net::SSLConfig(), request_context_getter_, false));
   buzz::AsyncSocket* socket = new jingle_glue::ChromeAsyncSocket(
-    socket_factory.release(), kReadBufferSize, kWriteBufferSize);
+    xmpp_socket_factory.release(), kReadBufferSize, kWriteBufferSize);
 
   task_runner_.reset(new jingle_glue::TaskPump());
   xmpp_client_ = new buzz::XmppClient(task_runner_.get());
@@ -175,11 +174,11 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
 
 void XmppSignalStrategy::SetAuthInfo(const std::string& username,
                                      const std::string& auth_token,
-                                     const std::string& auth_token_service) {
+                                     const std::string& auth_service) {
   DCHECK(CalledOnValidThread());
-  username_ = username;
-  auth_token_ = auth_token;
-  auth_token_service_ = auth_token_service;
+  xmpp_server_config_.username = username;
+  xmpp_server_config_.auth_token = auth_token;
+  xmpp_server_config_.auth_service = auth_service;
 }
 
 void XmppSignalStrategy::SetResourceName(const std::string &resource_name) {

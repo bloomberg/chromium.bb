@@ -549,10 +549,11 @@ void ChromotingInstance::OnFirstFrameReceived() {
 
 void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   ClientConfig config;
+  std::string local_jid;
   std::string auth_methods;
   if (!data.GetString("hostJid", &config.host_jid) ||
       !data.GetString("hostPublicKey", &config.host_public_key) ||
-      !data.GetString("localJid", &config.local_jid) ||
+      !data.GetString("localJid", &local_jid) ||
       !data.GetString("authenticationMethods", &auth_methods) ||
       !ParseAuthMethods(auth_methods, &config) ||
       !data.GetString("authenticationTag", &config.authentication_tag)) {
@@ -583,10 +584,11 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
     }
   }
 
-  ConnectWithConfig(config);
+  ConnectWithConfig(config, local_jid);
 }
 
-void ChromotingInstance::ConnectWithConfig(const ClientConfig& config) {
+void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
+                                           const std::string& local_jid) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -613,13 +615,12 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config) {
   mouse_input_filter_.set_input_size(view_->get_view_size_dips());
 
   LOG(INFO) << "Connecting to " << config.host_jid
-            << ". Local jid: " << config.local_jid << ".";
+            << ". Local jid: " << local_jid << ".";
 
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(
-      config.local_jid,
-      base::Bind(&ChromotingInstance::SendOutgoingIq,
-                 weak_factory_.GetWeakPtr())));
+      local_jid, base::Bind(&ChromotingInstance::SendOutgoingIq,
+                            weak_factory_.GetWeakPtr())));
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));

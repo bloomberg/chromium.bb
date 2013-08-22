@@ -18,8 +18,6 @@ struct ClientConfig {
   ClientConfig();
   ~ClientConfig();
 
-  std::string local_jid;
-
   std::string host_jid;
   std::string host_public_key;
 

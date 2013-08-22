@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "net/base/net_util.h"
+#include "net/socket/client_socket_factory.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/resources.h"
@@ -107,9 +108,7 @@ class HostNPScriptObject::It2MeImpl
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
-  void Connect(const std::string& uid,
-               const std::string& auth_token,
-               const std::string& auth_service);
+  void Connect();
 
   // Disconnects the host, ready for tear-down.
   // Also called internally, from the network thread.
@@ -135,14 +134,10 @@ class HostNPScriptObject::It2MeImpl
   bool IsConnected() const;
 
   // Called by Connect() to check for policies and start connection process.
-  void ReadPolicyAndConnect(const std::string& uid,
-                            const std::string& auth_token,
-                            const std::string& auth_service);
+  void ReadPolicyAndConnect();
 
   // Called by ReadPolicyAndConnect once policies have been read.
-  void FinishConnect(const std::string& uid,
-                     const std::string& auth_token,
-                     const std::string& auth_service);
+  void FinishConnect();
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(bool success,
@@ -223,15 +218,11 @@ HostNPScriptObject::It2MeImpl::It2MeImpl(
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 }
 
-void HostNPScriptObject::It2MeImpl::Connect(
-    const std::string& uid,
-    const std::string& auth_token,
-    const std::string& auth_service) {
+void HostNPScriptObject::It2MeImpl::Connect() {
   if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->ui_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&It2MeImpl::Connect, this, uid, auth_token, auth_service));
+        FROM_HERE, base::Bind(&It2MeImpl::Connect, this));
     return;
   }
 
@@ -248,9 +239,7 @@ void HostNPScriptObject::It2MeImpl::Connect(
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(
-          &It2MeImpl::ReadPolicyAndConnect, this,
-          uid, auth_token, auth_service));
+      FROM_HERE, base::Bind(&It2MeImpl::ReadPolicyAndConnect, this));
 }
 
 void HostNPScriptObject::It2MeImpl::Disconnect() {
@@ -305,10 +294,7 @@ void HostNPScriptObject::It2MeImpl::RequestNatPolicy() {
     UpdateNatPolicy(nat_traversal_enabled_);
 }
 
-void HostNPScriptObject::It2MeImpl::ReadPolicyAndConnect(
-    const std::string& uid,
-    const std::string& auth_token,
-    const std::string& auth_service) {
+void HostNPScriptObject::It2MeImpl::ReadPolicyAndConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   SetState(kStarting);
@@ -316,19 +302,15 @@ void HostNPScriptObject::It2MeImpl::ReadPolicyAndConnect(
   // Only proceed to FinishConnect() if at least one policy update has been
   // received.
   if (policy_received_) {
-    FinishConnect(uid, auth_token, auth_service);
+    FinishConnect();
   } else {
     // Otherwise, create the policy watcher, and thunk the connect.
     pending_connect_ =
-        base::Bind(&It2MeImpl::FinishConnect, this,
-                   uid, auth_token, auth_service);
+        base::Bind(&It2MeImpl::FinishConnect, this);
   }
 }
 
-void HostNPScriptObject::It2MeImpl::FinishConnect(
-    const std::string& uid,
-    const std::string& auth_token,
-    const std::string& auth_service) {
+void HostNPScriptObject::It2MeImpl::FinishConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (state_ != kStarting) {
@@ -338,7 +320,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
 
   // Check the host domain policy.
   if (!required_host_domain_.empty() &&
-      !EndsWith(uid, std::string("@") + required_host_domain_, false)) {
+      !EndsWith(xmpp_server_config_.username,
+                std::string("@") + required_host_domain_, false)) {
     SetState(kInvalidDomainError);
     return;
   }
@@ -349,8 +332,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
 
   // Create XMPP connection.
   scoped_ptr<SignalStrategy> signal_strategy(
-      new XmppSignalStrategy(host_context_->url_request_context_getter(),
-                             uid, auth_token, auth_service,
+      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
+                             host_context_->url_request_context_getter(),
                              xmpp_server_config_));
 
   // Request registration of the host for support.
@@ -405,7 +388,7 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
 
   // Connect signaling and start the host.
   signal_strategy_->Connect();
-  host_->Start(uid);
+  host_->Start(xmpp_server_config_.username);
 
   SetState(kRequestedAccessCode);
   return;
@@ -1015,7 +998,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
   return true;
 }
 
-// string uid, string auth_token
+// string username, string auth_token
 bool HostNPScriptObject::Connect(const NPVariant* args,
                                  uint32_t arg_count,
                                  NPVariant* result) {
@@ -1033,18 +1016,18 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  std::string uid = StringFromNPVariant(args[0]);
-  if (uid.empty()) {
-    SetException("connect: bad uid argument");
+  XmppSignalStrategy::XmppServerConfig xmpp_config = xmpp_server_config_;
+
+  xmpp_config.username = StringFromNPVariant(args[0]);
+  if (xmpp_config.username.empty()) {
+    SetException("connect: bad username argument");
     return false;
   }
 
   std::string auth_service_with_token = StringFromNPVariant(args[1]);
-  std::string auth_token;
-  std::string auth_service;
-  ParseAuthTokenWithService(auth_service_with_token, &auth_token,
-                            &auth_service);
-  if (auth_token.empty()) {
+  ParseAuthTokenWithService(auth_service_with_token, &xmpp_config.auth_token,
+                            &xmpp_config.auth_service);
+  if (xmpp_config.auth_token.empty()) {
     SetException("connect: auth_service_with_token argument has empty token");
     return false;
   }
@@ -1060,8 +1043,8 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
   // Create the It2Me host implementation and start connecting.
   it2me_impl_ = new It2MeImpl(
       host_context.Pass(), plugin_task_runner_, weak_ptr_,
-      xmpp_server_config_, directory_bot_jid_);
-  it2me_impl_->Connect(uid, auth_token, auth_service);
+      xmpp_config, directory_bot_jid_);
+  it2me_impl_->Connect();
 
   return true;
 }

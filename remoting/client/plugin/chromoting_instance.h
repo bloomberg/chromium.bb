@@ -64,6 +64,7 @@ class PepperAudioPlayer;
 class PepperTokenFetcher;
 class PepperView;
 class RectangleUpdateDecoder;
+class SignalStrategy;
 
 struct ClientConfig;
 
@@ -202,7 +203,8 @@ class ChromotingInstance :
   void HandleExtensionMessage(const base::DictionaryValue& data);
 
   // Helper method called from Connect() to connect with parsed config.
-  void ConnectWithConfig(const ClientConfig& config);
+  void ConnectWithConfig(const ClientConfig& config,
+                         const std::string& local_jid);
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,

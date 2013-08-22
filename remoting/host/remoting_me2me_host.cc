@@ -29,6 +29,7 @@
 #include "ipc/ipc_listener.h"
 #include "media/base/media.h"
 #include "net/base/network_change_notifier.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -267,10 +268,7 @@ class HostProcess
   std::string oauth_refresh_token_;
   std::string serialized_config_;
   std::string host_owner_;
-  std::string xmpp_login_;
   bool use_service_account_;
-  std::string xmpp_auth_token_;
-  std::string xmpp_auth_service_;
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
   std::string talkgadget_prefix_;
@@ -714,8 +712,9 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   }
 
   // Use an XMPP connection to the Talk network for session signalling.
-  if (!config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-      !(config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
+  if (!config->GetString(kXmppLoginConfigPath, &xmpp_server_config_.username) ||
+      !(config->GetString(kXmppAuthTokenConfigPath,
+                          &xmpp_server_config_.auth_token) ||
         config->GetString(kOAuthRefreshTokenConfigPath,
                           &oauth_refresh_token_))) {
     LOG(ERROR) << "XMPP credentials are not defined in the config.";
@@ -723,14 +722,15 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   }
 
   if (!oauth_refresh_token_.empty()) {
-    xmpp_auth_token_ = "";  // This will be set to the access token later.
-    xmpp_auth_service_ = "oauth2";
+    // SignalingConnector is responsible for getting OAuth token.
+    xmpp_server_config_.auth_token = "";
+    xmpp_server_config_.auth_service = "oauth2";
   } else if (!config->GetString(kXmppAuthServiceConfigPath,
-                                &xmpp_auth_service_)) {
+                                &xmpp_server_config_.auth_service)) {
     // For the me2me host, we default to ClientLogin token for chromiumsync
     // because earlier versions of the host had no HTTP stack with which to
     // request an OAuth2 access token.
-    xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
+    xmpp_server_config_.auth_service = kChromotingTokenDefaultServiceName;
   }
 
   if (config->GetString(kHostOwnerConfigPath, &host_owner_)) {
@@ -738,7 +738,7 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     use_service_account_ = true;
   } else {
     // User credential configs only have an xmpp_login, which is also the owner.
-    host_owner_ = xmpp_login_;
+    host_owner_ = xmpp_server_config_.username;
     use_service_account_ = false;
   }
   return true;
@@ -966,9 +966,9 @@ void HostProcess::StartHost() {
   state_ = HOST_STARTED;
 
   signal_strategy_.reset(
-      new XmppSignalStrategy(context_->url_request_context_getter(),
-                             xmpp_login_, xmpp_auth_token_,
-                             xmpp_auth_service_, xmpp_server_config_));
+      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
+                             context_->url_request_context_getter(),
+                             xmpp_server_config_));
 
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(
       new DnsBlackholeChecker(context_->url_request_context_getter(),
@@ -986,7 +986,8 @@ void HostProcess::StartHost() {
   if (!oauth_refresh_token_.empty()) {
     scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
         new SignalingConnector::OAuthCredentials(
-            xmpp_login_, oauth_refresh_token_, use_service_account_));
+            xmpp_server_config_.username, oauth_refresh_token_,
+            use_service_account_));
     signaling_connector_->EnableOAuth(oauth_credentials.Pass());
   }
 
