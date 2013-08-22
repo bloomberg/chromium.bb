@@ -10,6 +10,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -73,12 +74,13 @@ void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
 
 void TrayLocallyManagedUser::CreateOrUpdateNotification(
     const base::string16& new_message) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId,
       new_message,
       base::string16() /* body is empty */,
-      gfx::Image() /* icon */,
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
       base::string16() /* display_source */,
       std::string() /* extension_id */,
       message_center::RichNotificationData(),
