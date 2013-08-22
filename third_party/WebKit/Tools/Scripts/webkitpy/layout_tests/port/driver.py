@@ -394,6 +394,9 @@ class Driver(object):
     def _strip_eof(self, line):
         if line and line.endswith("#EOF\n"):
             return line[:-5], True
+        if line and line.endswith("#EOF\r\n"):
+            _log.error("Got a CRLF-terminated #EOF - this is a driver bug.")
+            return line[:-6], True
         return line, False
 
     def _read_block(self, deadline, wait_for_stderr_eof=False):
