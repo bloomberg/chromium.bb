@@ -14,8 +14,8 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/traced_value.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/quad_sink.h"
-#include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -641,7 +641,7 @@ scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
   return replica_layer_.Pass();
 }
 
-ScrollbarLayerImpl* LayerImpl::ToScrollbarLayer() {
+PaintedScrollbarLayerImpl* LayerImpl::ToScrollbarLayer() {
   return NULL;
 }
 
@@ -999,13 +999,14 @@ void LayerImpl::DidBecomeActive() {
   }
 }
 void LayerImpl::SetHorizontalScrollbarLayer(
-    ScrollbarLayerImpl* scrollbar_layer) {
+    PaintedScrollbarLayerImpl* scrollbar_layer) {
   horizontal_scrollbar_layer_ = scrollbar_layer;
   if (horizontal_scrollbar_layer_)
     horizontal_scrollbar_layer_->set_scroll_layer_id(id());
 }
 
-void LayerImpl::SetVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbar_layer) {
+void LayerImpl::SetVerticalScrollbarLayer(
+    PaintedScrollbarLayerImpl* scrollbar_layer) {
   vertical_scrollbar_layer_ = scrollbar_layer;
   if (vertical_scrollbar_layer_)
     vertical_scrollbar_layer_->set_scroll_layer_id(id());

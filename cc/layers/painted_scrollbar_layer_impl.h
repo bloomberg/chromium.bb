@@ -1,9 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYERS_SCROLLBAR_LAYER_IMPL_H_
-#define CC_LAYERS_SCROLLBAR_LAYER_IMPL_H_
+#ifndef CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
+#define CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
 
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar.h"
@@ -15,16 +15,16 @@ namespace cc {
 class LayerTreeImpl;
 class ScrollView;
 
-class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
+class CC_EXPORT PaintedScrollbarLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<ScrollbarLayerImpl> Create(
+  static scoped_ptr<PaintedScrollbarLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,
       ScrollbarOrientation orientation);
-  virtual ~ScrollbarLayerImpl();
+  virtual ~PaintedScrollbarLayerImpl();
 
   // LayerImpl implementation.
-  virtual ScrollbarLayerImpl* ToScrollbarLayer() OVERRIDE;
+  virtual PaintedScrollbarLayerImpl* ToScrollbarLayer() OVERRIDE;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
@@ -65,9 +65,9 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
   gfx::Rect ComputeThumbQuadRect() const;
 
  protected:
-  ScrollbarLayerImpl(LayerTreeImpl* tree_impl,
-                     int id,
-                     ScrollbarOrientation orientation);
+  PaintedScrollbarLayerImpl(LayerTreeImpl* tree_impl,
+                            int id,
+                            ScrollbarOrientation orientation);
 
  private:
   virtual const char* LayerTypeAsString() const OVERRIDE;
@@ -95,8 +95,8 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
 
   bool is_overlay_scrollbar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerImpl);
+  DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayerImpl);
 };
 
 }  // namespace cc
-#endif  // CC_LAYERS_SCROLLBAR_LAYER_IMPL_H_
+#endif  // CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_

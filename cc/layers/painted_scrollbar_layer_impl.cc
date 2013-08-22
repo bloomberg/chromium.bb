@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/scrollbar_layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 
 #include <algorithm>
 
@@ -17,16 +17,15 @@
 
 namespace cc {
 
-scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::Create(
+scoped_ptr<PaintedScrollbarLayerImpl> PaintedScrollbarLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
     ScrollbarOrientation orientation) {
-  return make_scoped_ptr(new ScrollbarLayerImpl(tree_impl,
-                                                id,
-                                                orientation));
+  return make_scoped_ptr(
+      new PaintedScrollbarLayerImpl(tree_impl, id, orientation));
 }
 
-ScrollbarLayerImpl::ScrollbarLayerImpl(
+PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
     ScrollbarOrientation orientation)
@@ -45,23 +44,23 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
       scroll_layer_id_(Layer::INVALID_ID),
       is_overlay_scrollbar_(false) {}
 
-ScrollbarLayerImpl::~ScrollbarLayerImpl() {}
+PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 
-ScrollbarLayerImpl* ScrollbarLayerImpl::ToScrollbarLayer() {
+PaintedScrollbarLayerImpl* PaintedScrollbarLayerImpl::ToScrollbarLayer() {
   return this;
 }
 
-scoped_ptr<LayerImpl> ScrollbarLayerImpl::CreateLayerImpl(
+scoped_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return ScrollbarLayerImpl::Create(tree_impl,
-                                    id(),
-                                    orientation_).PassAs<LayerImpl>();
+  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation_)
+      .PassAs<LayerImpl>();
 }
 
-void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 
-  ScrollbarLayerImpl* scrollbar_layer = static_cast<ScrollbarLayerImpl*>(layer);
+  PaintedScrollbarLayerImpl* scrollbar_layer =
+      static_cast<PaintedScrollbarLayerImpl*>(layer);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
@@ -73,7 +72,7 @@ void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_thumb_ui_resource_id(thumb_ui_resource_id_);
 }
 
-bool ScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
+bool PaintedScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
                                   ResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE &&
       !layer_tree_impl()->settings().solid_color_scrollbars)
@@ -81,8 +80,9 @@ bool ScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                     AppendQuadsData* append_quads_data) {
+void PaintedScrollbarLayerImpl::AppendQuads(
+    QuadSink* quad_sink,
+    AppendQuadsData* append_quads_data) {
   bool premultipled_alpha = true;
   bool flipped = false;
   gfx::PointF uv_top_left(0.f, 0.f);
@@ -147,19 +147,19 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   }
 }
 
-ScrollbarOrientation ScrollbarLayerImpl::Orientation() const {
+ScrollbarOrientation PaintedScrollbarLayerImpl::Orientation() const {
   return orientation_;
 }
 
-float ScrollbarLayerImpl::CurrentPos() const {
+float PaintedScrollbarLayerImpl::CurrentPos() const {
   return current_pos_;
 }
 
-int ScrollbarLayerImpl::Maximum() const {
+int PaintedScrollbarLayerImpl::Maximum() const {
   return maximum_;
 }
 
-gfx::Rect ScrollbarLayerImpl::ScrollbarLayerRectToContentRect(
+gfx::Rect PaintedScrollbarLayerImpl::ScrollbarLayerRectToContentRect(
     gfx::RectF layer_rect) const {
   // Don't intersect with the bounds as in layerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
@@ -169,62 +169,62 @@ gfx::Rect ScrollbarLayerImpl::ScrollbarLayerRectToContentRect(
   return gfx::ToEnclosingRect(content_rect);
 }
 
-void ScrollbarLayerImpl::SetThumbThickness(int thumb_thickness) {
+void PaintedScrollbarLayerImpl::SetThumbThickness(int thumb_thickness) {
   if (thumb_thickness_ == thumb_thickness)
     return;
   thumb_thickness_ = thumb_thickness;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetThumbLength(int thumb_length) {
+void PaintedScrollbarLayerImpl::SetThumbLength(int thumb_length) {
   if (thumb_length_ == thumb_length)
     return;
   thumb_length_ = thumb_length;
   NoteLayerPropertyChanged();
 }
-void ScrollbarLayerImpl::SetTrackStart(int track_start) {
+void PaintedScrollbarLayerImpl::SetTrackStart(int track_start) {
   if (track_start_ == track_start)
     return;
   track_start_ = track_start;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetTrackLength(int track_length) {
+void PaintedScrollbarLayerImpl::SetTrackLength(int track_length) {
   if (track_length_ == track_length)
     return;
   track_length_ = track_length;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetVerticalAdjust(float vertical_adjust) {
+void PaintedScrollbarLayerImpl::SetVerticalAdjust(float vertical_adjust) {
   if (vertical_adjust_ == vertical_adjust)
     return;
   vertical_adjust_ = vertical_adjust;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetVisibleToTotalLengthRatio(float ratio) {
+void PaintedScrollbarLayerImpl::SetVisibleToTotalLengthRatio(float ratio) {
   if (visible_to_total_length_ratio_ == ratio)
     return;
   visible_to_total_length_ratio_ = ratio;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetCurrentPos(float current_pos) {
+void PaintedScrollbarLayerImpl::SetCurrentPos(float current_pos) {
   if (current_pos_ == current_pos)
     return;
   current_pos_ = current_pos;
   NoteLayerPropertyChanged();
 }
 
-void ScrollbarLayerImpl::SetMaximum(int maximum) {
+void PaintedScrollbarLayerImpl::SetMaximum(int maximum) {
   if (maximum_ == maximum)
     return;
   maximum_ = maximum;
   NoteLayerPropertyChanged();
 }
 
-gfx::Rect ScrollbarLayerImpl::ComputeThumbQuadRect() const {
+gfx::Rect PaintedScrollbarLayerImpl::ComputeThumbQuadRect() const {
   // Thumb extent is the length of the thumb in the scrolling direction, thumb
   // thickness is in the perpendicular direction. Here's an example of a
   // horizontal scrollbar - inputs are above the scrollbar, computed values
@@ -315,8 +315,8 @@ gfx::Rect ScrollbarLayerImpl::ComputeThumbQuadRect() const {
   return ScrollbarLayerRectToContentRect(thumb_rect);
 }
 
-const char* ScrollbarLayerImpl::LayerTypeAsString() const {
-  return "cc::ScrollbarLayerImpl";
+const char* PaintedScrollbarLayerImpl::LayerTypeAsString() const {
+  return "cc::PaintedScrollbarLayerImpl";
 }
 
 }  // namespace cc

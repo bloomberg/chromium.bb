@@ -973,7 +973,7 @@ Region Layer::VisibleContentOpaqueRegion() const {
   return Region();
 }
 
-ScrollbarLayer* Layer::ToScrollbarLayer() {
+PaintedScrollbarLayer* Layer::ToScrollbarLayer() {
   return NULL;
 }
 

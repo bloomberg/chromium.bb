@@ -15,8 +15,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/layers/scrollbar_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
 #include "cc/output/begin_frame_args.h"
@@ -31,11 +31,11 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_scoped_ui_resource.h"
-#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
@@ -394,9 +394,8 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
-    scrollbar_ = FakeScrollbarLayer::Create(paint_scrollbar,
-                                            has_thumb,
-                                            root_layer_->id());
+    scrollbar_ = FakePaintedScrollbarLayer::Create(
+        paint_scrollbar, has_thumb, root_layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -437,7 +436,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_;
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -1127,8 +1126,8 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
-    scrollbar_ =
-        FakeScrollbarLayer::Create(paint_scrollbar, has_thumb, layer_->id());
+    scrollbar_ = FakePaintedScrollbarLayer::Create(
+        paint_scrollbar, has_thumb, layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -1212,7 +1211,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
  protected:
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> layer_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_;
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_;
   int drew_frame_;
 };
 
@@ -3507,7 +3506,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     child2_ = PushPropertiesCountingLayer::Create();
     grandchild_ = PushPropertiesCountingLayer::Create();
     leaf_scrollbar_layer_ =
-        FakeScrollbarLayer::Create(false, false, root_->id());
+        FakePaintedScrollbarLayer::Create(false, false, root_->id());
 
     root_->AddChild(child_);
     root_->AddChild(child2_);
@@ -3669,7 +3668,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
   scoped_refptr<PushPropertiesCountingLayer> child2_;
   scoped_refptr<PushPropertiesCountingLayer> grandchild_;
   scoped_refptr<PushPropertiesCountingLayer> other_root_;
-  scoped_refptr<FakeScrollbarLayer> leaf_scrollbar_layer_;
+  scoped_refptr<FakePaintedScrollbarLayer> leaf_scrollbar_layer_;
   size_t expected_push_properties_root_;
   size_t expected_push_properties_child_;
   size_t expected_push_properties_child2_;
@@ -3693,8 +3692,8 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
-    scrollbar_layer_ =
-        FakeScrollbarLayer::Create(paint_scrollbar, has_thumb, root_->id());
+    scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
+        paint_scrollbar, has_thumb, root_->id());
 
     root_->AddChild(scrollbar_layer_);
 
@@ -3734,7 +3733,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
   virtual void AfterTest() OVERRIDE {}
 
   scoped_refptr<Layer> root_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_layer_;
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestPropertyChangesDuringUpdateArePushed);

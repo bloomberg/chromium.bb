@@ -1,13 +1,13 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/scrollbar_layer.h"
+#include "cc/layers/painted_scrollbar_layer.h"
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
-#include "cc/layers/scrollbar_layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -20,20 +20,20 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> ScrollbarLayer::CreateLayerImpl(
+scoped_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return ScrollbarLayerImpl::Create(
+  return PaintedScrollbarLayerImpl::Create(
       tree_impl, id(), scrollbar_->Orientation()).PassAs<LayerImpl>();
 }
 
-scoped_refptr<ScrollbarLayer> ScrollbarLayer::Create(
+scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
     scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id) {
   return make_scoped_refptr(
-      new ScrollbarLayer(scrollbar.Pass(), scroll_layer_id));
+      new PaintedScrollbarLayer(scrollbar.Pass(), scroll_layer_id));
 }
 
-ScrollbarLayer::ScrollbarLayer(
+PaintedScrollbarLayer::PaintedScrollbarLayer(
     scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
@@ -42,9 +42,9 @@ ScrollbarLayer::ScrollbarLayer(
     SetShouldScrollOnMainThread(true);
 }
 
-ScrollbarLayer::~ScrollbarLayer() {}
+PaintedScrollbarLayer::~PaintedScrollbarLayer() {}
 
-void ScrollbarLayer::SetScrollLayerId(int id) {
+void PaintedScrollbarLayer::SetScrollLayerId(int id) {
   if (id == scroll_layer_id_)
     return;
 
@@ -52,20 +52,20 @@ void ScrollbarLayer::SetScrollLayerId(int id) {
   SetNeedsFullTreeSync();
 }
 
-bool ScrollbarLayer::OpacityCanAnimateOnImplThread() const {
+bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
-ScrollbarOrientation ScrollbarLayer::Orientation() const {
+ScrollbarOrientation PaintedScrollbarLayer::Orientation() const {
   return scrollbar_->Orientation();
 }
 
-int ScrollbarLayer::MaxTextureSize() {
+int PaintedScrollbarLayer::MaxTextureSize() {
   DCHECK(layer_tree_host());
   return layer_tree_host()->GetRendererCapabilities().max_texture_size;
 }
 
-float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
+float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   if (layer_tree_host()->settings().solid_color_scrollbars)
     return scale;
 
@@ -83,13 +83,14 @@ float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   return scale;
 }
 
-void ScrollbarLayer::CalculateContentsScale(float ideal_contents_scale,
-                                            float device_scale_factor,
-                                            float page_scale_factor,
-                                            bool animating_transform_to_screen,
-                                            float* contents_scale_x,
-                                            float* contents_scale_y,
-                                            gfx::Size* content_bounds) {
+void PaintedScrollbarLayer::CalculateContentsScale(
+    float ideal_contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
+    bool animating_transform_to_screen,
+    float* contents_scale_x,
+    float* contents_scale_y,
+    gfx::Size* content_bounds) {
   ContentsScalingLayer::CalculateContentsScale(
       ClampScaleToMaxTextureSize(ideal_contents_scale),
       device_scale_factor,
@@ -100,10 +101,11 @@ void ScrollbarLayer::CalculateContentsScale(float ideal_contents_scale,
       content_bounds);
 }
 
-void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
+void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   ContentsScalingLayer::PushPropertiesTo(layer);
 
-  ScrollbarLayerImpl* scrollbar_layer = static_cast<ScrollbarLayerImpl*>(layer);
+  PaintedScrollbarLayerImpl* scrollbar_layer =
+      static_cast<PaintedScrollbarLayerImpl*>(layer);
 
   if (layer_tree_host() &&
       layer_tree_host()->settings().solid_color_scrollbars) {
@@ -138,15 +140,15 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   scrollbar_layer->set_is_overlay_scrollbar(scrollbar_->IsOverlay());
 
-  // ScrollbarLayer must push properties every frame. crbug.com/259095
+  // PaintedScrollbarLayer must push properties every frame. crbug.com/259095
   needs_push_properties_ = true;
 }
 
-ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {
+PaintedScrollbarLayer* PaintedScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
-void ScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
+void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   // When the LTH is set to null or has changed, then this layer should remove
   // all of its associated resources.
   if (!host || host != layer_tree_host()) {
@@ -157,7 +159,7 @@ void ScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   ContentsScalingLayer::SetLayerTreeHost(host);
 }
 
-gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
+gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
     gfx::Rect layer_rect) const {
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
@@ -170,7 +172,7 @@ gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
   return expanded_rect;
 }
 
-gfx::Rect ScrollbarLayer::OriginThumbRect() const {
+gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
   gfx::Size thumb_size;
   if (Orientation() == HORIZONTAL) {
     thumb_size =
@@ -182,7 +184,7 @@ gfx::Rect ScrollbarLayer::OriginThumbRect() const {
   return ScrollbarLayerRectToContentRect(gfx::Rect(thumb_size));
 }
 
-void ScrollbarLayer::UpdateThumbAndTrackGeometry() {
+void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   track_rect_ = scrollbar_->TrackRect();
   if (scrollbar_->HasThumb()) {
     thumb_thickness_ = scrollbar_->ThumbThickness();
@@ -190,7 +192,7 @@ void ScrollbarLayer::UpdateThumbAndTrackGeometry() {
   }
 }
 
-bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
+bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion) {
   UpdateThumbAndTrackGeometry();
 
@@ -219,7 +221,7 @@ bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
   return true;
 }
 
-scoped_refptr<UIResourceBitmap> ScrollbarLayer::RasterizeScrollbarPart(
+scoped_refptr<UIResourceBitmap> PaintedScrollbarLayer::RasterizeScrollbarPart(
     gfx::Rect rect,
     ScrollbarPart part) {
   DCHECK(!layer_tree_host()->settings().solid_color_scrollbars);

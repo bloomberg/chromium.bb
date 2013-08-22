@@ -11,8 +11,8 @@
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/layers/scrollbar_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer.h"
@@ -25,9 +25,9 @@
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_scrollbar.h"
-#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_common.h"
@@ -1200,9 +1200,9 @@ class LayerTreeHostContextTestDontUseLostResources
     debug_state.show_property_changed_rects = true;
     layer_tree_host()->SetDebugState(debug_state);
 
-    scoped_refptr<ScrollbarLayer> scrollbar_ = ScrollbarLayer::Create(
-        scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(),
-        content_->id());
+    scoped_refptr<PaintedScrollbarLayer> scrollbar_ =
+        PaintedScrollbarLayer::Create(
+            scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content_->id());
     scrollbar_->SetBounds(gfx::Size(10, 10));
     scrollbar_->SetAnchorPoint(gfx::PointF());
     scrollbar_->SetIsDrawable(true);
@@ -1347,7 +1347,7 @@ class LayerTreeHostContextTestDontUseLostResources
   scoped_refptr<VideoLayer> video_hw_;
   scoped_refptr<VideoLayer> video_scaled_hw_;
   scoped_refptr<IOSurfaceLayer> io_surface_;
-  scoped_refptr<ScrollbarLayer> scrollbar_;
+  scoped_refptr<PaintedScrollbarLayer> scrollbar_;
 
   scoped_refptr<VideoFrame> color_video_frame_;
   scoped_refptr<VideoFrame> hw_video_frame_;
@@ -1519,7 +1519,7 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 
   virtual void BeginTest() OVERRIDE {
     scoped_refptr<Layer> scroll_layer = Layer::Create();
-    scrollbar_layer_ = FakeScrollbarLayer::Create(
+    scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
         false, true, scroll_layer->id());
     scrollbar_layer_->SetBounds(gfx::Size(10, 100));
     layer_tree_host()->root_layer()->AddChild(scrollbar_layer_);
@@ -1553,7 +1553,7 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 
  private:
   int commits_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_layer_;
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);

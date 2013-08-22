@@ -4,7 +4,7 @@
 
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
-#include "cc/layers/scrollbar_layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +19,7 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
  protected:
   virtual void SetUp() {
     scroll_layer_ = LayerImpl::Create(host_impl_.active_tree(), 1);
-    scrollbar_layer_ = ScrollbarLayerImpl::Create(
+    scrollbar_layer_ = PaintedScrollbarLayerImpl::Create(
         host_impl_.active_tree(), 2, HORIZONTAL);
 
     scroll_layer_->SetMaxScrollOffset(gfx::Vector2d(50, 50));
@@ -36,7 +36,7 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;
   scoped_ptr<LayerImpl> scroll_layer_;
-  scoped_ptr<ScrollbarLayerImpl> scrollbar_layer_;
+  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar_layer_;
 };
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, HiddenInBegin) {

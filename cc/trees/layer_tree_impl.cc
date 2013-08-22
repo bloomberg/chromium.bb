@@ -9,8 +9,8 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/size_conversions.h"
@@ -271,12 +271,14 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
   if (RootContainerLayer())
     vertical_adjust = layer_tree_host_impl_->VisibleViewportSize().height() -
                       RootContainerLayer()->bounds().height();
-  if (ScrollbarLayerImpl* horiz = root_scroll->horizontal_scrollbar_layer()) {
+  if (PaintedScrollbarLayerImpl* horiz =
+          root_scroll->horizontal_scrollbar_layer()) {
     horiz->SetVerticalAdjust(vertical_adjust);
     horiz->SetVisibleToTotalLengthRatio(
         scrollable_viewport.width() / ScrollableSize().width());
   }
-  if (ScrollbarLayerImpl* vertical = root_scroll->vertical_scrollbar_layer()) {
+  if (PaintedScrollbarLayerImpl* vertical =
+          root_scroll->vertical_scrollbar_layer()) {
     vertical->SetVerticalAdjust(vertical_adjust);
     vertical->SetVisibleToTotalLengthRatio(
         scrollable_viewport.height() / ScrollableSize().height());

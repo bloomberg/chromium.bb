@@ -1,9 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYERS_SCROLLBAR_LAYER_H_
-#define CC_LAYERS_SCROLLBAR_LAYER_H_
+#ifndef CC_LAYERS_PAINTED_SCROLLBAR_LAYER_H_
+#define CC_LAYERS_PAINTED_SCROLLBAR_LAYER_H_
 
 #include "cc/base/cc_export.h"
 #include "cc/input/scrollbar.h"
@@ -15,12 +15,12 @@
 namespace cc {
 class ScrollbarThemeComposite;
 
-class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
+class CC_EXPORT PaintedScrollbarLayer : public ContentsScalingLayer {
  public:
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
-  static scoped_refptr<ScrollbarLayer> Create(
+  static scoped_refptr<PaintedScrollbarLayer> Create(
       scoped_ptr<Scrollbar> scrollbar,
       int scroll_layer_id);
 
@@ -44,11 +44,11 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds) OVERRIDE;
 
-  virtual ScrollbarLayer* ToScrollbarLayer() OVERRIDE;
+  virtual PaintedScrollbarLayer* ToScrollbarLayer() OVERRIDE;
 
  protected:
-  ScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
-  virtual ~ScrollbarLayer();
+  PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
+  virtual ~PaintedScrollbarLayer();
 
   // For unit tests
   UIResourceId track_resource_id() {
@@ -79,9 +79,9 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   scoped_ptr<ScopedUIResource> track_resource_;
   scoped_ptr<ScopedUIResource> thumb_resource_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayer);
+  DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayer);
 };
 
 }  // namespace cc
 
-#endif  // CC_LAYERS_SCROLLBAR_LAYER_H_
+#endif  // CC_LAYERS_PAINTED_SCROLLBAR_LAYER_H_

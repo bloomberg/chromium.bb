@@ -47,10 +47,10 @@ class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeImpl;
+class PaintedScrollbarLayer;
 class PriorityCalculator;
 class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
-class ScrollbarLayer;
 struct AnimationEvent;
 
 // Base class for composited layers. Special layer types are derived from
@@ -360,7 +360,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual Region VisibleContentOpaqueRegion() const;
 
-  virtual ScrollbarLayer* ToScrollbarLayer();
+  virtual PaintedScrollbarLayer* ToScrollbarLayer();
 
   gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
 

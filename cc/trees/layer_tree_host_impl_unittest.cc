@@ -16,9 +16,9 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/io_surface_layer_impl.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
@@ -723,8 +723,8 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_BACKWARD));
 
-  scoped_ptr<cc::ScrollbarLayerImpl> vertical_scrollbar(
-      cc::ScrollbarLayerImpl::Create(
+  scoped_ptr<cc::PaintedScrollbarLayerImpl> vertical_scrollbar(
+      cc::PaintedScrollbarLayerImpl::Create(
           host_impl_->active_tree(),
           20,
           VERTICAL));
@@ -1123,10 +1123,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   contents->SetBounds(content_size);
   contents->SetContentBounds(content_size);
 
-  scoped_ptr<ScrollbarLayerImpl> scrollbar = ScrollbarLayerImpl::Create(
-      host_impl_->active_tree(),
-      4,
-      VERTICAL);
+  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
+      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 4, VERTICAL);
   scroll->SetVerticalScrollbarLayer(scrollbar.get());
 
   scroll->AddChild(contents.Pass());

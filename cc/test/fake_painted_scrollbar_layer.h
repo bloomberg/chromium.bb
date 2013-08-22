@@ -1,23 +1,22 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_SCROLLBAR_LAYER_H_
-#define CC_TEST_FAKE_SCROLLBAR_LAYER_H_
+#ifndef CC_TEST_FAKE_PAINTED_SCROLLBAR_LAYER_H_
+#define CC_TEST_FAKE_PAINTED_SCROLLBAR_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/layers/scrollbar_layer.h"
+#include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar.h"
 
 namespace base { template<typename T> class AutoReset; }
 
 namespace cc {
 
-class FakeScrollbarLayer : public ScrollbarLayer {
+class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
  public:
-  static scoped_refptr<FakeScrollbarLayer> Create(bool paint_during_update,
-                                                  bool has_thumb,
-                                                  int scrolling_layer_id);
+  static scoped_refptr<FakePaintedScrollbarLayer>
+      Create(bool paint_during_update, bool has_thumb, int scrolling_layer_id);
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
@@ -33,20 +32,20 @@ class FakeScrollbarLayer : public ScrollbarLayer {
 
   // For unit tests
   UIResourceId track_resource_id() {
-    return ScrollbarLayer::track_resource_id();
+    return PaintedScrollbarLayer::track_resource_id();
   }
   UIResourceId thumb_resource_id() {
-    return ScrollbarLayer::thumb_resource_id();
+    return PaintedScrollbarLayer::thumb_resource_id();
   }
   FakeScrollbar* fake_scrollbar() {
     return fake_scrollbar_;
   }
-  using ScrollbarLayer::UpdateThumbAndTrackGeometry;
+  using PaintedScrollbarLayer::UpdateThumbAndTrackGeometry;
 
  private:
-  FakeScrollbarLayer(FakeScrollbar* fake_scrollbar,
-                     int scrolling_layer_id);
-  virtual ~FakeScrollbarLayer();
+  FakePaintedScrollbarLayer(FakeScrollbar* fake_scrollbar,
+                            int scrolling_layer_id);
+  virtual ~FakePaintedScrollbarLayer();
 
   int update_count_;
   size_t push_properties_count_;
@@ -55,4 +54,4 @@ class FakeScrollbarLayer : public ScrollbarLayer {
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_SCROLLBAR_LAYER_H_
+#endif  // CC_TEST_FAKE_PAINTED_SCROLLBAR_LAYER_H_

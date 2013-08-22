@@ -6,7 +6,7 @@
 
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_scrollbar_layer.h"
+#include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -306,7 +306,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     root_layer->AddChild(content_layer);
 
     scoped_refptr<Layer> scrollbar_layer =
-        FakeScrollbarLayer::Create(false, true, content_layer->id());
+        FakePaintedScrollbarLayer::Create(false, true, content_layer->id());
     scrollbar_layer->SetPosition(gfx::Point(300, 300));
     scrollbar_layer->SetBounds(gfx::Size(10, 100));
     root_layer->AddChild(scrollbar_layer);

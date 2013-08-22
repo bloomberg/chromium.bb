@@ -11,8 +11,8 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/scrollbar_layer.h"
-#include "cc/layers/scrollbar_layer_impl.h"
+#include "cc/layers/painted_scrollbar_layer.h"
+#include "cc/layers/painted_scrollbar_layer_impl.h"
 
 namespace cc {
 
@@ -155,9 +155,10 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
 
   RawPtrLayerImplMap::const_iterator iter =
       new_layers->find(scrollbar_layer->id());
-  ScrollbarLayerImpl* scrollbar_layer_impl =
-      iter != new_layers->end() ? static_cast<ScrollbarLayerImpl*>(iter->second)
-                               : NULL;
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl =
+      iter != new_layers->end()
+          ? static_cast<PaintedScrollbarLayerImpl*>(iter->second)
+          : NULL;
   iter = new_layers->find(scrollbar_layer->scroll_layer_id());
   LayerImpl* scroll_layer_impl =
       iter != new_layers->end() ? iter->second : NULL;
@@ -173,14 +174,15 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
 
 void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
                                            Layer* layer) {
-  UpdateScrollbarLayerPointersRecursiveInternal<Layer, ScrollbarLayer>(
+  UpdateScrollbarLayerPointersRecursiveInternal<Layer, PaintedScrollbarLayer>(
       new_layers, layer);
 }
 
 void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
                                            LayerImpl* layer) {
-  UpdateScrollbarLayerPointersRecursiveInternal<LayerImpl, ScrollbarLayerImpl>(
-      new_layers, layer);
+  UpdateScrollbarLayerPointersRecursiveInternal<
+      LayerImpl,
+      PaintedScrollbarLayerImpl>(new_layers, layer);
 }
 
 // static
