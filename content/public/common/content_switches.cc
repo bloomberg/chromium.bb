@@ -745,12 +745,6 @@ const char kSingleProcess[]                 = "single-process";
 // http://crbug.com/159215.
 const char kSitePerProcess[]                = "site-per-process";
 
-// Skip gpu info collection, blacklist loading, and blacklist auto-update
-// scheduling at browser startup time.
-// Therefore, all GPU features are available, and about:gpu page shows empty
-// content. The switch is intended only for tests.
-const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
-
 // Specifies the request key for the continuous speech recognition webservice.
 const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 
@@ -936,6 +930,16 @@ const char kChildCleanExit[]                = "child-clean-exit";
 #if defined(USE_AURA)
 // Forces usage of the test compositor. Needed to run ui tests on bots.
 extern const char kTestCompositor[]         = "test-compositor";
+#endif
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Skip gpu info collection, blacklist loading, and blacklist auto-update
+// scheduling at browser startup time.
+// Therefore, all GPU features are available, and about:gpu page shows empty
+// content. The switch is intended only for tests.
+// TODO(gab): Remove this flag entriely and enable GPU blacklist usage on all
+// the bots (http://crbug.com/277242).
+const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 #endif
 
 // Don't dump stuff here, follow the same order as the header.

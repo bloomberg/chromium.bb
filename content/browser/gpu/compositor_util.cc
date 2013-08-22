@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "build/build_config.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -36,11 +37,6 @@ bool CanDoAcceleratedCompositing() {
   return true;
 }
 
-bool IsForceCompositingModeBlacklisted() {
-  return GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
-}
-
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
@@ -49,14 +45,17 @@ bool IsThreadedCompositingEnabled() {
   return true;
 #endif
 
-  if (!CanDoAcceleratedCompositing())
-    return false;
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklist and field trials.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
-      command_line.HasSwitch(switches::kDisableThreadedCompositing))
+      command_line.HasSwitch(switches::kDisableThreadedCompositing)) {
+    return false;
+  } else if (command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
+    return true;
+  }
+
+  if (!CanDoAcceleratedCompositing())
     return false;
 
 #if defined(OS_CHROMEOS)
@@ -64,12 +63,6 @@ bool IsThreadedCompositingEnabled() {
   // disabled above.
   return true;
 #endif
-
-  if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
-    return true;
-
-  if (IsForceCompositingModeBlacklisted())
-    return false;
 
   base::FieldTrial* trial =
       base::FieldTrialList::Find(kGpuCompositingFieldTrialName);
@@ -83,25 +76,29 @@ bool IsForceCompositingModeEnabled() {
   return true;
 #endif
 
-  if (!CanDoAcceleratedCompositing())
-    return false;
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklisting and field trials.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
     return false;
+  else if (command_line.HasSwitch(switches::kForceCompositingMode))
+    return true;
+
+  if (!CanDoAcceleratedCompositing())
+    return false;
 
 #if defined(OS_CHROMEOS)
   // We always want compositing ChromeOS unless it's explicitly disabled above.
   return true;
+#elif defined(OS_WIN)
+  // Windows Vista+ has been shipping with FCM enabled at 100% since M24; skip
+  // the field trial check to ensure this is always enabled on the try bots.
+  // TODO(gab): Do the same thing in IsThreadedCompositingEnabled() once this is
+  // stable.
+  // TODO(gab): Do the same thing for Mac OS (which has been enabled at 100%
+  // since M28) as well and get rid of the field trial code.
+  return true;
 #endif
-
-  if (command_line.HasSwitch(switches::kForceCompositingMode))
-    return true;
-
-  if (IsForceCompositingModeBlacklisted())
-    return false;
 
   base::FieldTrial* trial =
       base::FieldTrialList::Find(kGpuCompositingFieldTrialName);

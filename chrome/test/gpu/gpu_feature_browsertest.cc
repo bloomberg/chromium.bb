@@ -187,8 +187,10 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
 
 class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    GpuFeatureTest::SetUpInProcessBrowserTestFixture();
+  // Override the blacklist after browser initialization has completed, just
+  // before launching the actual test.
+  virtual void SetUpOnMainThread() OVERRIDE {
+    GpuFeatureTest::SetUpOnMainThread();
     const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
