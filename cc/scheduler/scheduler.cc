@@ -229,10 +229,6 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_DRAW_FORCED:
         DrawAndSwapForced();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
-        // No action is actually performed, but this allows the state machine to
-        // advance out of its waiting to draw state without actually drawing.
-        break;
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();
         break;
@@ -247,7 +243,7 @@ void Scheduler::ProcessScheduledActions() {
 }
 
 bool Scheduler::WillDrawIfNeeded() const {
-  return !state_machine_.PendingDrawsShouldBeAborted();
+  return !state_machine_.DrawSuspendedUntilCommit();
 }
 
 }  // namespace cc

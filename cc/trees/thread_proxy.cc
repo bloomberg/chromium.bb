@@ -974,7 +974,6 @@ void ThreadProxy::ScheduledActionActivatePendingTreeIfNeeded() {
 
 void ThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionBeginOutputSurfaceCreation");
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::CreateAndInitializeOutputSurface,
