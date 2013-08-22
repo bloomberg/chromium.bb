@@ -39,10 +39,13 @@ void SyncFileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
   DCHECK(context);
   DCHECK(!delegate_);
   delegate_ = context->sandbox_delegate();
-  update_observers_ = update_observers_.AddObserver(
+
+  delegate_->AddFileUpdateObserver(
+      fileapi::kFileSystemTypeSyncable,
       delegate_->quota_observer(),
       delegate_->file_task_runner());
-  syncable_update_observers_ = syncable_update_observers_.AddObserver(
+  delegate_->AddFileUpdateObserver(
+      fileapi::kFileSystemTypeSyncableForInternalSync,
       delegate_->quota_observer(),
       delegate_->file_task_runner());
 }
@@ -87,23 +90,18 @@ SyncFileSystemBackend::CreateFileSystemOperation(
   DCHECK(CanHandleType(url.type()));
   DCHECK(context);
   DCHECK(error_code);
-  if (!delegate_->IsAccessValid(url)) {
-    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
-    return NULL;
-  }
 
-  scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
-      new fileapi::FileSystemOperationContext(context));
+  DCHECK(delegate_);
+  scoped_ptr<fileapi::FileSystemOperationContext> operation_context =
+      delegate_->CreateFileSystemOperationContext(url, context, error_code);
+  if (!operation_context)
+    return NULL;
 
   if (url.type() == fileapi::kFileSystemTypeSyncableForInternalSync) {
-    operation_context->set_update_observers(update_observers_);
-    operation_context->set_change_observers(change_observers_);
     return new fileapi::FileSystemOperationImpl(
         url, context, operation_context.Pass());
   }
 
-  operation_context->set_update_observers(syncable_update_observers_);
-  operation_context->set_change_observers(syncable_change_observers_);
   return new SyncableFileSystemOperation(
       url, context, operation_context.Pass());
 }
@@ -115,11 +113,9 @@ SyncFileSystemBackend::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     fileapi::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  if (!delegate_->IsAccessValid(url))
-    return scoped_ptr<webkit_blob::FileStreamReader>();
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      new fileapi::FileSystemFileStreamReader(
-          context, url, offset, expected_modification_time));
+  DCHECK(delegate_);
+  return delegate_->CreateFileStreamReader(
+      url, offset, expected_modification_time, context);
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
@@ -128,99 +124,13 @@ SyncFileSystemBackend::CreateFileStreamWriter(
     int64 offset,
     fileapi::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  if (!delegate_->IsAccessValid(url))
-    return scoped_ptr<fileapi::FileStreamWriter>();
-  return scoped_ptr<fileapi::FileStreamWriter>(
-      new fileapi::SandboxFileStreamWriter(
-          context, url, offset, update_observers_));
+  DCHECK(delegate_);
+  return delegate_->CreateFileStreamWriter(
+      url, offset, context, fileapi::kFileSystemTypeSyncableForInternalSync);
 }
 
 fileapi::FileSystemQuotaUtil* SyncFileSystemBackend::GetQuotaUtil() {
-  return this;
-}
-
-base::PlatformFileError SyncFileSystemBackend::DeleteOriginDataOnFileThread(
-    fileapi::FileSystemContext* context,
-    quota::QuotaManagerProxy* proxy,
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  return delegate_->DeleteOriginDataOnFileThread(
-      context, proxy, origin_url, type);
-}
-
-void SyncFileSystemBackend::GetOriginsForTypeOnFileThread(
-    fileapi::FileSystemType type,
-    std::set<GURL>* origins) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  delegate_->GetOriginsForTypeOnFileThread(type, origins);
-}
-
-void SyncFileSystemBackend::GetOriginsForHostOnFileThread(
-    fileapi::FileSystemType type,
-    const std::string& host,
-    std::set<GURL>* origins) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  delegate_->GetOriginsForHostOnFileThread(type, host, origins);
-}
-
-int64 SyncFileSystemBackend::GetOriginUsageOnFileThread(
-    fileapi::FileSystemContext* context,
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  return delegate_->GetOriginUsageOnFileThread(context, origin_url, type);
-}
-
-void SyncFileSystemBackend::AddFileUpdateObserver(
-    fileapi::FileSystemType type,
-    fileapi::FileUpdateObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK_EQ(fileapi::kFileSystemTypeSyncable, type);
-  fileapi::UpdateObserverList* list = &syncable_update_observers_;
-  *list = list->AddObserver(observer, task_runner);
-}
-
-void SyncFileSystemBackend::AddFileChangeObserver(
-    fileapi::FileSystemType type,
-    fileapi::FileChangeObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK_EQ(fileapi::kFileSystemTypeSyncable, type);
-  fileapi::ChangeObserverList* list = &syncable_change_observers_;
-  *list = list->AddObserver(observer, task_runner);
-}
-
-void SyncFileSystemBackend::AddFileAccessObserver(
-    fileapi::FileSystemType type,
-    fileapi::FileAccessObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  NOTREACHED() << "SyncFileSystemBackend does not support access observers.";
-}
-
-const fileapi::UpdateObserverList* SyncFileSystemBackend::GetUpdateObservers(
-    fileapi::FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  if (type != fileapi::kFileSystemTypeSyncable)
-    return NULL;
-  return &syncable_update_observers_;
-}
-
-const fileapi::ChangeObserverList* SyncFileSystemBackend::GetChangeObservers(
-    fileapi::FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  DCHECK_EQ(fileapi::kFileSystemTypeSyncable, type);
-  if (type != fileapi::kFileSystemTypeSyncable)
-    return NULL;
-  return &syncable_change_observers_;
-}
-
-const fileapi::AccessObserverList* SyncFileSystemBackend::GetAccessObservers(
-    fileapi::FileSystemType type) const {
-  return NULL;
+  return delegate_;
 }
 
 // static
@@ -239,12 +149,14 @@ void SyncFileSystemBackend::SetLocalFileChangeTracker(
   change_tracker_ = tracker.Pass();
 
   DCHECK(delegate_);
-  AddFileUpdateObserver(fileapi::kFileSystemTypeSyncable,
-                        change_tracker_.get(),
-                        delegate_->file_task_runner());
-  AddFileChangeObserver(fileapi::kFileSystemTypeSyncable,
-                        change_tracker_.get(),
-                        delegate_->file_task_runner());
+  delegate_->AddFileUpdateObserver(
+      fileapi::kFileSystemTypeSyncable,
+      change_tracker_.get(),
+      delegate_->file_task_runner());
+  delegate_->AddFileChangeObserver(
+      fileapi::kFileSystemTypeSyncable,
+      change_tracker_.get(),
+      delegate_->file_task_runner());
 }
 
 void SyncFileSystemBackend::set_sync_context(

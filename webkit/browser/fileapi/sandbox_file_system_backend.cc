@@ -31,13 +31,6 @@ using quota::SpecialStoragePolicy;
 
 namespace fileapi {
 
-namespace {
-
-const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
-const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
-
-}  // anonymous namespace
-
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxFileSystemBackendDelegate* delegate)
     : delegate_(delegate),
@@ -53,11 +46,23 @@ bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
 }
 
 void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
+  DCHECK(delegate_);
+
   // Set quota observers.
-  update_observers_ = update_observers_.AddObserver(
+  delegate_->AddFileUpdateObserver(
+      fileapi::kFileSystemTypeTemporary,
       delegate_->quota_observer(),
       delegate_->file_task_runner());
-  access_observers_ = access_observers_.AddObserver(
+  delegate_->AddFileAccessObserver(
+      fileapi::kFileSystemTypeTemporary,
+      delegate_->quota_observer(), NULL);
+
+  delegate_->AddFileUpdateObserver(
+      fileapi::kFileSystemTypePersistent,
+      delegate_->quota_observer(),
+      delegate_->file_task_runner());
+  delegate_->AddFileAccessObserver(
+      fileapi::kFileSystemTypePersistent,
       delegate_->quota_observer(), NULL);
 }
 
@@ -106,16 +111,13 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
   DCHECK(CanHandleType(url.type()));
-  DCHECK(delegate_);
-  if (!delegate_->IsAccessValid(url)) {
-    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
-    return NULL;
-  }
+  DCHECK(error_code);
 
-  scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(context));
-  operation_context->set_update_observers(update_observers_);
-  operation_context->set_change_observers(change_observers_);
+  DCHECK(delegate_);
+  scoped_ptr<FileSystemOperationContext> operation_context =
+      delegate_->CreateFileSystemOperationContext(url, context, error_code);
+  if (!operation_context)
+    return NULL;
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
   if (policy && policy->IsStorageUnlimited(url.origin()))
@@ -134,11 +136,8 @@ SandboxFileSystemBackend::CreateFileStreamReader(
     FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
   DCHECK(delegate_);
-  if (!delegate_->IsAccessValid(url))
-    return scoped_ptr<webkit_blob::FileStreamReader>();
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      new FileSystemFileStreamReader(
-          context, url, offset, expected_modification_time));
+  return delegate_->CreateFileStreamReader(
+      url, offset, expected_modification_time, context);
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
@@ -148,111 +147,17 @@ SandboxFileSystemBackend::CreateFileStreamWriter(
     FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
   DCHECK(delegate_);
-  if (!delegate_->IsAccessValid(url))
-    return scoped_ptr<fileapi::FileStreamWriter>();
-  return scoped_ptr<fileapi::FileStreamWriter>(
-      new SandboxFileStreamWriter(context, url, offset, update_observers_));
+  return delegate_->CreateFileStreamWriter(url, offset, context, url.type());
 }
 
 FileSystemQuotaUtil* SandboxFileSystemBackend::GetQuotaUtil() {
-  return this;
+  return delegate_;
 }
 
 SandboxFileSystemBackendDelegate::OriginEnumerator*
 SandboxFileSystemBackend::CreateOriginEnumerator() {
   DCHECK(delegate_);
   return delegate_->CreateOriginEnumerator();
-}
-
-base::PlatformFileError
-SandboxFileSystemBackend::DeleteOriginDataOnFileThread(
-    FileSystemContext* file_system_context,
-    QuotaManagerProxy* proxy,
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  return delegate_->DeleteOriginDataOnFileThread(
-      file_system_context, proxy, origin_url, type);
-}
-
-void SandboxFileSystemBackend::GetOriginsForTypeOnFileThread(
-    fileapi::FileSystemType type, std::set<GURL>* origins) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  delegate_->GetOriginsForTypeOnFileThread(type, origins);
-  switch (type) {
-    case kFileSystemTypeTemporary:
-      UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel, origins->size());
-      break;
-    case kFileSystemTypePersistent:
-      UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
-      break;
-    default:
-      break;
-  }
-}
-
-void SandboxFileSystemBackend::GetOriginsForHostOnFileThread(
-    fileapi::FileSystemType type, const std::string& host,
-    std::set<GURL>* origins) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  delegate_->GetOriginsForHostOnFileThread(type, host, origins);
-}
-
-int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
-    FileSystemContext* file_system_context,
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(delegate_);
-  return delegate_->GetOriginUsageOnFileThread(
-      file_system_context, origin_url, type);
-}
-
-void SandboxFileSystemBackend::AddFileUpdateObserver(
-    FileSystemType type,
-    FileUpdateObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK(CanHandleType(type));
-  UpdateObserverList* list = &update_observers_;
-  *list = list->AddObserver(observer, task_runner);
-}
-
-void SandboxFileSystemBackend::AddFileChangeObserver(
-    FileSystemType type,
-    FileChangeObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK(CanHandleType(type));
-  ChangeObserverList* list = &change_observers_;
-  *list = list->AddObserver(observer, task_runner);
-}
-
-void SandboxFileSystemBackend::AddFileAccessObserver(
-    FileSystemType type,
-    FileAccessObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK(CanHandleType(type));
-  access_observers_ = access_observers_.AddObserver(observer, task_runner);
-}
-
-const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
-    FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  return &update_observers_;
-}
-
-const ChangeObserverList* SandboxFileSystemBackend::GetChangeObservers(
-    FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  return &change_observers_;
-}
-
-const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
-    FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  return &access_observers_;
 }
 
 }  // namespace fileapi

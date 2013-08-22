@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -13,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_options.h"
@@ -28,10 +30,16 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
+namespace webkit_blob {
+class FileStreamReader;
+}
+
 namespace fileapi {
 
 class AsyncFileUtil;
+class FileStreamWriter;
 class FileSystemFileUtil;
+class FileSystemOperationContext;
 class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
@@ -41,7 +49,8 @@ class SandboxQuotaObserver;
 
 // Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.
 // An instance of this class is created and owned by FileSystemContext.
-class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
+class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
+    : public FileSystemQuotaUtil {
  public:
   typedef FileSystemBackend::OpenFileSystemCallback OpenFileSystemCallback;
 
@@ -68,7 +77,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
       quota::SpecialStoragePolicy* special_storage_policy,
       const FileSystemOptions& file_system_options);
 
-  ~SandboxFileSystemBackendDelegate();
+  virtual ~SandboxFileSystemBackendDelegate();
 
   // Performs API-specific validity checks on the given path |url|.
   // Returns true if access to |url| is valid in this filesystem.
@@ -100,30 +109,61 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback,
       const GURL& root_url);
+  scoped_ptr<FileSystemOperationContext> CreateFileSystemOperationContext(
+      const FileSystemURL& url,
+      FileSystemContext* context,
+      base::PlatformFileError* error_code) const;
+  scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
+      const FileSystemURL& url,
+      int64 offset,
+      const base::Time& expected_modification_time,
+      FileSystemContext* context) const;
+  scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
+      const FileSystemURL& url,
+      int64 offset,
+      FileSystemContext* context,
+      FileSystemType type) const;
 
-  // FileSystemQuotaUtil helpers.
-  base::PlatformFileError DeleteOriginDataOnFileThread(
+  // FileSystemQuotaUtil overrides.
+  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      FileSystemType type);
-  void GetOriginsForTypeOnFileThread(
+      FileSystemType type) OVERRIDE;
+  virtual void GetOriginsForTypeOnFileThread(
       FileSystemType type,
-      std::set<GURL>* origins);
-  void GetOriginsForHostOnFileThread(
+      std::set<GURL>* origins) OVERRIDE;
+  virtual void GetOriginsForHostOnFileThread(
       FileSystemType type,
       const std::string& host,
-      std::set<GURL>* origins);
-  int64 GetOriginUsageOnFileThread(
+      std::set<GURL>* origins) OVERRIDE;
+  virtual int64 GetOriginUsageOnFileThread(
       FileSystemContext* context,
       const GURL& origin_url,
-      FileSystemType type);
-  void InvalidateUsageCache(
-      const GURL& origin_url,
-      FileSystemType type);
-  void StickyInvalidateUsageCache(
-      const GURL& origin_url,
-      FileSystemType type);
+      FileSystemType type) OVERRIDE;
+  virtual void AddFileUpdateObserver(
+      FileSystemType type,
+      FileUpdateObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual void AddFileChangeObserver(
+      FileSystemType type,
+      FileChangeObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual void AddFileAccessObserver(
+      FileSystemType type,
+      FileAccessObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE;
+
+  void InvalidateUsageCache(const GURL& origin_url,
+                            FileSystemType type);
+  void StickyInvalidateUsageCache(const GURL& origin_url,
+                                  FileSystemType type);
 
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
@@ -133,7 +173,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
 
   AsyncFileUtil* file_util() { return sandbox_file_util_.get(); }
   FileSystemUsageCache* usage_cache() { return file_system_usage_cache_.get(); }
-  SandboxQuotaObserver* quota_observer() { return quota_observer_.get(); };
+  SandboxQuotaObserver* quota_observer() { return quota_observer_.get(); }
 
   quota::SpecialStoragePolicy* special_storage_policy() {
     return special_storage_policy_.get();
@@ -177,10 +217,16 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
 
   FileSystemOptions file_system_options_;
 
-  // Acccessed only on the file thread.
+  bool is_filesystem_opened_;
+
+  // Accessed only on the file thread.
   std::set<GURL> visited_origins_;
 
   std::set<std::pair<GURL, FileSystemType> > sticky_dirty_origins_;
+
+  std::map<FileSystemType, UpdateObserverList> update_observers_;
+  std::map<FileSystemType, ChangeObserverList> change_observers_;
+  std::map<FileSystemType, AccessObserverList> access_observers_;
 
   base::Time next_release_time_for_open_filesystem_stat_;
 

@@ -15,8 +15,7 @@ class LocalFileChangeTracker;
 class LocalFileSyncContext;
 
 class SyncFileSystemBackend
-    : public fileapi::FileSystemBackend,
-      public fileapi::FileSystemQuotaUtil {
+    : public fileapi::FileSystemBackend {
  public:
   SyncFileSystemBackend();
   virtual ~SyncFileSystemBackend();
@@ -52,42 +51,6 @@ class SyncFileSystemBackend
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
-  // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
-      fileapi::FileSystemContext* context,
-      quota::QuotaManagerProxy* proxy,
-      const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
-  virtual void GetOriginsForTypeOnFileThread(
-      fileapi::FileSystemType type,
-      std::set<GURL>* origins) OVERRIDE;
-  virtual void GetOriginsForHostOnFileThread(
-      fileapi::FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) OVERRIDE;
-  virtual int64 GetOriginUsageOnFileThread(
-      fileapi::FileSystemContext* context,
-      const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
-  virtual void AddFileUpdateObserver(
-      fileapi::FileSystemType type,
-      fileapi::FileUpdateObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileChangeObserver(
-      fileapi::FileSystemType type,
-      fileapi::FileChangeObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileAccessObserver(
-      fileapi::FileSystemType type,
-      fileapi::FileAccessObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual const fileapi::UpdateObserverList* GetUpdateObservers(
-      fileapi::FileSystemType type) const OVERRIDE;
-  virtual const fileapi::ChangeObserverList* GetChangeObservers(
-      fileapi::FileSystemType type) const OVERRIDE;
-  virtual const fileapi::AccessObserverList* GetAccessObservers(
-      fileapi::FileSystemType type) const OVERRIDE;
-
   static SyncFileSystemBackend* GetBackend(
       const fileapi::FileSystemContext* context);
 
@@ -103,13 +66,6 @@ class SyncFileSystemBackend
   void set_sync_context(sync_file_system::LocalFileSyncContext* sync_context);
 
  private:
-  // Observers for internal sync.
-  fileapi::UpdateObserverList update_observers_;
-  fileapi::ChangeObserverList change_observers_;
-
-  fileapi::UpdateObserverList syncable_update_observers_;
-  fileapi::ChangeObserverList syncable_change_observers_;
-
   // Owned by FileSystemContext.
   fileapi::SandboxFileSystemBackendDelegate* delegate_;
 

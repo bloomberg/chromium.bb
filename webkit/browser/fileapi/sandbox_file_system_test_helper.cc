@@ -124,7 +124,7 @@ SandboxFileSystemTestHelper::NewOperationContext() {
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
     FileChangeObserver* observer) {
-  file_system_context_->sandbox_backend()->
+  file_system_context_->sandbox_backend()->GetQuotaUtil()->
       AddFileChangeObserver(type_, observer, NULL);
 }
 

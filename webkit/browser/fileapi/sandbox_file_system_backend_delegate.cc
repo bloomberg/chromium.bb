@@ -12,10 +12,12 @@
 #include "net/base/net_util.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -24,6 +26,9 @@
 namespace fileapi {
 
 namespace {
+
+const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
+const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
 
 const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
 const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
@@ -64,7 +69,7 @@ class ObfuscatedOriginEnumerator
     return enum_->Next();
   }
 
-  virtual bool HasFileSystemType(fileapi::FileSystemType type) const OVERRIDE {
+  virtual bool HasFileSystemType(FileSystemType type) const OVERRIDE {
     return enum_->HasFileSystemType(type);
   }
 
@@ -128,6 +133,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
           usage_cache())),
       special_storage_policy_(special_storage_policy),
       file_system_options_(file_system_options),
+      is_filesystem_opened_(false),
       weak_factory_(this) {
 }
 
@@ -204,7 +210,7 @@ SandboxFileSystemBackendDelegate::CreateOriginEnumerator() {
 base::FilePath
 SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url,
-    fileapi::FileSystemType type,
+    FileSystemType type,
     bool create) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
@@ -216,7 +222,7 @@ SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
 
 void SandboxFileSystemBackendDelegate::OpenFileSystem(
     const GURL& origin_url,
-    fileapi::FileSystemType type,
+    FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback,
     const GURL& root_url) {
@@ -237,6 +243,58 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
                  weak_factory_.GetWeakPtr(),
                  base::Bind(callback, root_url, name),
                  base::Owned(error_ptr)));
+
+  is_filesystem_opened_ = true;
+}
+
+scoped_ptr<FileSystemOperationContext>
+SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
+    const FileSystemURL& url,
+    FileSystemContext* context,
+    base::PlatformFileError* error_code) const {
+  if (!IsAccessValid(url)) {
+    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    return scoped_ptr<FileSystemOperationContext>();
+  }
+
+  const UpdateObserverList* update_observers = GetUpdateObservers(url.type());
+  const ChangeObserverList* change_observers = GetChangeObservers(url.type());
+  DCHECK(update_observers);
+
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(context));
+  operation_context->set_update_observers(*update_observers);
+  operation_context->set_change_observers(
+      change_observers ? *change_observers : ChangeObserverList());
+
+  return operation_context.Pass();
+}
+
+scoped_ptr<webkit_blob::FileStreamReader>
+SandboxFileSystemBackendDelegate::CreateFileStreamReader(
+    const FileSystemURL& url,
+    int64 offset,
+    const base::Time& expected_modification_time,
+    FileSystemContext* context) const {
+  if (!IsAccessValid(url))
+    return scoped_ptr<webkit_blob::FileStreamReader>();
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new FileSystemFileStreamReader(
+          context, url, offset, expected_modification_time));
+}
+
+scoped_ptr<FileStreamWriter>
+SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
+    const FileSystemURL& url,
+    int64 offset,
+    FileSystemContext* context,
+    FileSystemType type) const {
+  if (!IsAccessValid(url))
+    return scoped_ptr<FileStreamWriter>();
+  const UpdateObserverList* observers = GetUpdateObservers(type);
+  DCHECK(observers);
+  return scoped_ptr<FileStreamWriter>(
+      new SandboxFileStreamWriter(context, url, offset, *observers));
 }
 
 base::PlatformFileError
@@ -244,7 +302,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
     FileSystemContext* file_system_context,
     quota::QuotaManagerProxy* proxy,
     const GURL& origin_url,
-    fileapi::FileSystemType type) {
+    FileSystemType type) {
   int64 usage = GetOriginUsageOnFileThread(
       file_system_context, origin_url, type);
   usage_cache()->CloseCacheFiles();
@@ -264,7 +322,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
 }
 
 void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileThread(
-    fileapi::FileSystemType type, std::set<GURL>* origins) {
+    FileSystemType type, std::set<GURL>* origins) {
   DCHECK(origins);
   scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   GURL origin;
@@ -272,10 +330,20 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileThread(
     if (enumerator->HasFileSystemType(type))
       origins->insert(origin);
   }
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel, origins->size());
+      break;
+    case kFileSystemTypePersistent:
+      UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
+      break;
+    default:
+      break;
+  }
 }
 
 void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileThread(
-    fileapi::FileSystemType type, const std::string& host,
+    FileSystemType type, const std::string& host,
     std::set<GURL>* origins) {
   DCHECK(origins);
   scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
@@ -290,7 +358,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileThread(
 int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileThread(
     FileSystemContext* file_system_context,
     const GURL& origin_url,
-    fileapi::FileSystemType type) {
+    FileSystemType type) {
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
   if (ContainsKey(sticky_dirty_origins_, std::make_pair(origin_url, type)))
@@ -325,9 +393,63 @@ int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileThread(
   return usage;
 }
 
+void SandboxFileSystemBackendDelegate::AddFileUpdateObserver(
+    FileSystemType type,
+    FileUpdateObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(!is_filesystem_opened_);
+  update_observers_[type] =
+      update_observers_[type].AddObserver(observer, task_runner);
+}
+
+void SandboxFileSystemBackendDelegate::AddFileChangeObserver(
+    FileSystemType type,
+    FileChangeObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(!is_filesystem_opened_);
+  change_observers_[type] =
+      change_observers_[type].AddObserver(observer, task_runner);
+}
+
+void SandboxFileSystemBackendDelegate::AddFileAccessObserver(
+    FileSystemType type,
+    FileAccessObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(!is_filesystem_opened_);
+  access_observers_[type] =
+      access_observers_[type].AddObserver(observer, task_runner);
+}
+
+const UpdateObserverList* SandboxFileSystemBackendDelegate::GetUpdateObservers(
+    FileSystemType type) const {
+  std::map<FileSystemType, UpdateObserverList>::const_iterator iter =
+      update_observers_.find(type);
+  if (iter == update_observers_.end())
+    return NULL;
+  return &iter->second;
+}
+
+const ChangeObserverList* SandboxFileSystemBackendDelegate::GetChangeObservers(
+    FileSystemType type) const {
+  std::map<FileSystemType, ChangeObserverList>::const_iterator iter =
+      change_observers_.find(type);
+  if (iter == change_observers_.end())
+    return NULL;
+  return &iter->second;
+}
+
+const AccessObserverList* SandboxFileSystemBackendDelegate::GetAccessObservers(
+    FileSystemType type) const {
+  std::map<FileSystemType, AccessObserverList>::const_iterator iter =
+      access_observers_.find(type);
+  if (iter == access_observers_.end())
+    return NULL;
+  return &iter->second;
+}
+
 void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     const GURL& origin,
-    fileapi::FileSystemType type) {
+    FileSystemType type) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       obfuscated_file_util(), origin, type, &error);
@@ -338,7 +460,7 @@ void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
 
 void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
     const GURL& origin,
-    fileapi::FileSystemType type) {
+    FileSystemType type) {
   sticky_dirty_origins_.insert(std::make_pair(origin, type));
   quota_observer()->SetUsageCacheEnabled(origin, type, false);
   InvalidateUsageCache(origin, type);
@@ -365,7 +487,7 @@ base::FilePath
 SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const GURL& origin_url,
-    fileapi::FileSystemType type,
+    FileSystemType type,
     base::PlatformFileError* error_out) {
   DCHECK(error_out);
   *error_out = base::PLATFORM_FILE_OK;

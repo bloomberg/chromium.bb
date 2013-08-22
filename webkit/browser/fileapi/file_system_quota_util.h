@@ -68,6 +68,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
       FileSystemType type,
       FileAccessObserver* observer,
       base::SequencedTaskRunner* task_runner) = 0;
+
+  // Returns the observer list for |type|, or returns NULL if any observers
+  // have not been registered on |type|.
   virtual const UpdateObserverList* GetUpdateObservers(
       FileSystemType type) const = 0;
   virtual const ChangeObserverList* GetChangeObservers(

@@ -27,8 +27,7 @@ namespace fileapi {
 // This interface also lets one enumerate and remove storage for the origins
 // that use the filesystem.
 class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
-    : public FileSystemBackend,
-      public FileSystemQuotaUtil {
+    : public FileSystemBackend {
  public:
   explicit SandboxFileSystemBackend(SandboxFileSystemBackendDelegate* delegate);
   virtual ~SandboxFileSystemBackend();
@@ -65,42 +64,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   // This method can only be called on the file thread.
   SandboxFileSystemBackendDelegate::OriginEnumerator* CreateOriginEnumerator();
 
-  // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
-      FileSystemContext* context,
-      quota::QuotaManagerProxy* proxy,
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
-  virtual void GetOriginsForTypeOnFileThread(
-      FileSystemType type,
-      std::set<GURL>* origins) OVERRIDE;
-  virtual void GetOriginsForHostOnFileThread(
-      FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) OVERRIDE;
-  virtual int64 GetOriginUsageOnFileThread(
-      FileSystemContext* context,
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
-  virtual void AddFileUpdateObserver(
-      FileSystemType type,
-      FileUpdateObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileChangeObserver(
-      FileSystemType type,
-      FileChangeObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual void AddFileAccessObserver(
-      FileSystemType type,
-      FileAccessObserver* observer,
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
-  virtual const UpdateObserverList* GetUpdateObservers(
-      FileSystemType type) const OVERRIDE;
-  virtual const ChangeObserverList* GetChangeObservers(
-      FileSystemType type) const OVERRIDE;
-  virtual const AccessObserverList* GetAccessObservers(
-      FileSystemType type) const OVERRIDE;
-
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;
   }
@@ -109,11 +72,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   SandboxFileSystemBackendDelegate* delegate_;  // Not owned.
 
   bool enable_temporary_file_system_in_incognito_;
-
-  // Observers.
-  UpdateObserverList update_observers_;
-  ChangeObserverList change_observers_;
-  AccessObserverList access_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);
 };
