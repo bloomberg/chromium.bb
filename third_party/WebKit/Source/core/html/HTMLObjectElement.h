@@ -88,6 +88,8 @@ private:
     virtual void updateWidget(PluginCreationOption);
     void updateDocNamedItem();
 
+    void reattachFallbackContent();
+
     bool hasFallbackContent() const;
 
     // FIXME: This function should not deal with url or serviceType

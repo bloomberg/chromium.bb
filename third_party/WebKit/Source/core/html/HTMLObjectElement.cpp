@@ -356,6 +356,17 @@ const AtomicString& HTMLObjectElement::imageSourceURL() const
     return getAttribute(dataAttr);
 }
 
+// FIXME: Remove this hack.
+void HTMLObjectElement::reattachFallbackContent()
+{
+    // This can happen inside of attach() in the middle of a recalcStyle so we need to
+    // reattach synchronously here.
+    if (document()->inStyleRecalc())
+        reattach();
+    else
+        lazyReattach();
+}
+
 void HTMLObjectElement::renderFallbackContent()
 {
     if (useFallbackContent())
@@ -370,7 +381,7 @@ void HTMLObjectElement::renderFallbackContent()
         if (!isImageType()) {
             // If we don't think we have an image type anymore, then clear the image from the loader.
             m_imageLoader->setImage(0);
-            lazyReattach();
+            reattachFallbackContent();
             return;
         }
     }
@@ -378,7 +389,7 @@ void HTMLObjectElement::renderFallbackContent()
     m_useFallbackContent = true;
 
     // FIXME: Style gets recalculated which is suboptimal.
-    lazyReattach();
+    reattachFallbackContent();
 }
 
 // FIXME: This should be removed, all callers are almost certainly wrong.
