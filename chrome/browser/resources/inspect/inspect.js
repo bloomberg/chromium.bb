@@ -262,7 +262,7 @@ function populateDeviceLists(devices) {
       for (var p = 0; p < browser.pages.length; p++) {
         var page = browser.pages[p];
         var row = addTargetToList(
-            page, pageList, ['faviconUrl', 'name', 'url']);
+            page, pageList, ['faviconUrl', 'name', 'url', 'description']);
         if (isChrome) {
           row.appendChild(createActionLink(
               'reload', reload.bind(null, page), page.attached));
@@ -323,13 +323,46 @@ function formatValue(data, property) {
   return span;
 }
 
+function addWebViewDescription(webview, list) {
+  var viewStatus = { visibility: 'empty', position: '', size: '' };
+  if (!webview.empty) {
+    if (webview.attached)
+      viewStatus.visibility = webview.visible ? 'visible' : 'hidden';
+    else
+      viewStatus.visibility = 'detached';
+    viewStatus.size = 'size ' + webview.width + ' \u00d7 ' + webview.height;
+  }
+  if (webview.attached) {
+      viewStatus.position =
+        'at (' + webview.screenX + ', ' + webview.screenY + ')';
+  }
+
+  var row = document.createElement('div');
+  row.className = 'subrow';
+  if (webview.empty || !webview.attached || !webview.visible)
+    row.className += ' invisible-view';
+  row.appendChild(formatValue(viewStatus, 'visibility'));
+  row.appendChild(formatValue(viewStatus, 'position'));
+  row.appendChild(formatValue(viewStatus, 'size'));
+  list.appendChild(row);
+  return row;
+}
+
 function addTargetToList(data, list, properties) {
   var row = document.createElement('div');
   row.className = 'row';
-  for (var j = 0; j < properties.length; j++)
-    row.appendChild(formatValue(data, properties[j]));
+  var description = null;
+  for (var j = 0; j < properties.length; j++) {
+    if (properties[j] != 'description')
+      row.appendChild(formatValue(data, properties[j]));
+    else if (data['description'])
+      description = JSON.parse(data['description']);
+  }
 
   row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
+
+  if (description)
+    addWebViewDescription(description, row);
 
   row.processId = data.processId;
   row.routeId = data.routeId;

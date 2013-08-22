@@ -136,6 +136,14 @@ img {
   padding: 5px 0;
 }
 
+.subrow {
+  padding: 5px 24px;
+}
+
+.invisible-view {
+  color: rgb(151, 156, 160);
+}
+
 .url {
   color: #A0A0A0;
 }

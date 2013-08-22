@@ -630,7 +630,7 @@ DevToolsAdbBridge::RemotePage::RemotePage(
   value.GetString("id", &id_);
   value.GetString("url", &url_);
   value.GetString("title", &title_);
-  value.GetString("descirption", &description_);
+  value.GetString("description", &description_);
   value.GetString("faviconUrl", &favicon_url_);
   value.GetString("webSocketDebuggerUrl", &debug_url_);
   value.GetString("devtoolsFrontendUrl", &frontend_url_);
