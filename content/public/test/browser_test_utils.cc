@@ -24,12 +24,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
+#include "grit/webui_resources.h"
 #include "net/base/net_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 static const int kDefaultWsPort = 8880;
 
@@ -372,6 +374,39 @@ bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
                                    std::string* result) {
   return ExecuteScriptInFrameAndExtractString(adapter, std::string(), script,
                                               result);
+}
+
+bool ExecuteWebUIResourceTest(
+    const internal::ToRenderViewHost& adapter,
+    const std::vector<int>& js_resource_ids) {
+  // Inject WebUI test runner script first prior to other scripts required to
+  // run the test as scripts may depend on it being declared.
+  std::vector<int> ids;
+  ids.push_back(IDR_WEBUI_JS_WEBUI_RESOURCE_TEST);
+  ids.insert(ids.end(), js_resource_ids.begin(), js_resource_ids.end());
+
+  std::string script;
+  for (std::vector<int>::iterator iter = ids.begin();
+       iter != ids.end();
+       ++iter) {
+    ResourceBundle::GetSharedInstance().GetRawDataResource(*iter)
+        .AppendToString(&script);
+    script.append("\n");
+  }
+  if (!content::ExecuteScript(adapter, script))
+    return false;
+
+  content::DOMMessageQueue message_queue;
+  if (!content::ExecuteScript(adapter, "runTests()"))
+    return false;
+
+  std::string message;
+  do {
+    if (!message_queue.WaitForMessage(&message))
+      return false;
+  } while (message.compare("\"PENDING\"") == 0);
+
+  return message.compare("\"SUCCESS\"") == 0;
 }
 
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {

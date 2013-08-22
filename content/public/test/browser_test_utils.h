@@ -147,6 +147,13 @@ bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
 
+// Executes the WebUI resource test runner injecting each resource ID in
+// |js_resource_ids| prior to executing the tests.
+//
+// Returns true if tests ran successfully, false otherwise.
+bool ExecuteWebUIResourceTest(const internal::ToRenderViewHost& adapter,
+                              const std::vector<int>& js_resource_ids);
+
 // Returns the cookies for the given url.
 std::string GetCookies(BrowserContext* browser_context, const GURL& url);
 

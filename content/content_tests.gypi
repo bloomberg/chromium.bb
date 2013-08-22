@@ -14,6 +14,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_test_support',
         '../url/url.gyp:url_lib',
         'content_app_both',
@@ -746,6 +747,7 @@
             'content_gpu',
             'content_plugin',
             'content_renderer',
+            'content_resources.gyp:content_resources',
             'content_shell_lib',
             'content_shell_pak',
             'test_support_content',
@@ -868,6 +870,7 @@
             'test/content_test_launcher.cc',
             'test/cpp_binding_example.cc',
             'test/cpp_binding_example.h',
+            'test/webui_resource_browsertest.cc',
           ],
           'conditions': [
             ['chromeos==0', {

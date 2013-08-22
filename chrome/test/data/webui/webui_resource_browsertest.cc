@@ -13,41 +13,19 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/webui_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 class WebUIResourceBrowserTest : public InProcessBrowserTest {
  public:
-
-  // Runs all test functions in |file| and waits for a single
-  // "SUCCESS" or "FAILURE" at the conclusion of the tests.
+  // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file) {
     GURL url = ui_test_utils::GetTestUrl(
-        base::FilePath(FILE_PATH_LITERAL("webui")),
-        file);
+        base::FilePath(FILE_PATH_LITERAL("webui")), file);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    // Inject scripts for internal libraries.
-    std::string script;
-    std::vector<int>::iterator include_libraries_iterator;
-    for (include_libraries_iterator = include_libraries.begin();
-         include_libraries_iterator != include_libraries.end();
-         ++include_libraries_iterator) {
-      base::StringPiece library_content =
-          ResourceBundle::GetSharedInstance().GetRawDataResource(
-              *include_libraries_iterator);
-      library_content.AppendToString(&script);
-      script.append("\n");
-    }
-    ExecuteJavascriptOnCurrentTab(script);
-
-    content::DOMMessageQueue message_queue;
-    std::string message;
-    ExecuteJavascriptOnCurrentTab("runTests()");
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    while (message.compare("\"PENDING\"") == 0) {
-      ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    }
-    EXPECT_STREQ("\"SUCCESS\"", message.c_str());
+    content::RenderViewHost* rvh = browser()->tab_strip_model()
+        ->GetActiveWebContents()->GetRenderViewHost();
+    ASSERT_TRUE(rvh);
+    EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, include_libraries_));
   }
 
   // Queues the library corresponding to |resource_id| for injection into the
@@ -55,19 +33,12 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
   // initialization that depends on the library should be placed in a setUp
   // function.
   void AddLibrary(int resource_id) {
-    include_libraries.push_back(resource_id);
+    include_libraries_.push_back(resource_id);
   }
 
  private:
-  void ExecuteJavascriptOnCurrentTab(const std::string& script) {
-    content::RenderViewHost* rvh = browser()->tab_strip_model()->
-        GetActiveWebContents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
-    ASSERT_TRUE(content::ExecuteScript(rvh, script));
-  }
-
   // Resource IDs for internal javascript libraries to inject into the test.
-  std::vector<int> include_libraries;
+  std::vector<int> include_libraries_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ArrayDataModelTest) {
