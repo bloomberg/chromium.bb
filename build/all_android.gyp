@@ -116,6 +116,22 @@
       ],
     },
     {
+      # WebRTC Android APK tests.
+      'target_name': 'android_builder_webrtc',
+      'type': 'none',
+      'variables': {
+        # WebRTC tests are normally not built by Chromium bots.
+        'include_tests%': 0,
+      },
+      'conditions': [
+        ['"<(gtest_target_type)"=="shared_library" and include_tests==1', {
+          'dependencies': [
+            '../third_party/webrtc/build/apk_tests.gyp:*',
+          ],
+        }],
+      ],
+    },  # target_name: android_builder_webrtc
+    {
       # Experimental / in-progress targets that are expected to fail
       # but we still try to compile them on bots (turning the stage
       # orange, not red).

@@ -161,6 +161,10 @@ def GetBotStepMap():
       B('webkit-latest-contentshell', H(compile_step),
         T(['webkit_layout'], ['--auto-reconnect'])),
       B('builder-unit-tests', H(compile_step), T(['unit'])),
+      B('webrtc-builder',
+        H(std_build_steps,
+          extra_args=['--build-targets=android_builder_webrtc'],
+          extra_gyp='include_tests=1 enable_tracing=1')),
       B('webrtc-tests', H(std_test_steps), T(['webrtc'], [flakiness_server])),
 
       # Generic builder config (for substring match).
@@ -180,7 +184,6 @@ def GetBotStepMap():
       ('try-tests', 'main-tests'),
       ('try-fyi-tests', 'fyi-tests'),
       ('webkit-latest-tests', 'main-tests'),
-      ('webrtc-builder', 'main-builder-rel'),
   ]
   for to_id, from_id in copy_map:
     assert to_id not in bot_map
