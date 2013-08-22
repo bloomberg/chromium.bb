@@ -847,6 +847,43 @@ function testRemoveWebviewOnExit() {
   document.body.appendChild(webview);
 }
 
+function testResizeWebviewResizesContent() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = new WebView();
+  webview.src = triggerNavUrl;
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'inject_resize_test.js'},
+      function(results) {
+        console.log('Script has been injected into webview.');
+        // Establish a communication channel with the guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      }
+    );
+  });
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    if (data[0] == 'connected') {
+      console.log('A communication channel has been established with webview.');
+      console.log('Resizing <webview> width from 300px to 400px.');
+      webview.style.width = '400px';
+      return;
+    }
+    if (data[0] == 'resize') {
+      var width = data[1];
+      var height = data[2];
+      embedder.test.assertEq(400, width);
+      embedder.test.assertEq(300, height);
+      embedder.test.succeed();
+      return;
+    }
+    console.log('Unexpected message: \'' + data[0]  + '\'');
+    embedder.test.fail();
+  });
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
@@ -877,7 +914,8 @@ embedder.test.testList = {
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
   'testReload': testReload,
-  'testRemoveWebviewOnExit': testRemoveWebviewOnExit
+  'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
+  'testResizeWebviewResizesContent': testResizeWebviewResizesContent
 };
 
 onload = function() {

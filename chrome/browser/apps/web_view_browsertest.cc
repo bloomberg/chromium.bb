@@ -830,6 +830,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   observer.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
+  TestHelper("testResizeWebviewResizesContent",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 // This test makes sure we do not crash if app is closed while interstitial
 // page is being shown in guest.
 IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
