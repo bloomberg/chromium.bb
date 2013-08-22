@@ -780,7 +780,7 @@ void TextTrackCue::updateDisplayTree(double movieTime)
     // Update the two sets containing past and future WebVTT objects.
     RefPtr<DocumentFragment> referenceTree = createCueRenderingTree();
     markFutureAndPastNodes(referenceTree.get(), startTime(), movieTime);
-    m_cueBackgroundBox->appendChild(referenceTree, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    m_cueBackgroundBox->appendChild(referenceTree, ASSERT_NO_EXCEPTION);
 }
 
 PassRefPtr<TextTrackCueBox> TextTrackCue::getDisplayTree(const IntSize& videoSize)
