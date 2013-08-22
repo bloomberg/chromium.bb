@@ -142,6 +142,10 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/local_discovery/privet_notifications_factory.h"
+#endif
+
 namespace chrome {
 
 void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
@@ -271,6 +275,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   HistoryServiceFactory::GetInstance();
   invalidation::InvalidationServiceFactory::GetInstance();
   InstantServiceFactory::GetInstance();
+#if defined(ENABLE_MDNS)
+  local_discovery::PrivetNotificationServiceFactory::GetInstance();
+#endif
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserServiceFactory::GetInstance();
   ManagedUserSyncServiceFactory::GetInstance();

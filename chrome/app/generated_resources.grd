@@ -14969,8 +14969,16 @@ Do you accept?
     <message name="IDS_LOCAL_DISCOVERY_SERVICE_INFO" desc="Table header and button for info requests">
       Info
     </message>
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER" desc="Title of notification for a new printer showing up on your network">
+      New printer on your network
+    </message>
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER" desc="Contents of notification for a new printer showing up on your network">
+      Add <ph name="PRINTER_NAME">$1</ph> to Cloud Print so you can print from anywhere.
+    </message>
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER" desc="Display name for notification for a new printer showing up on your network">
+      Google Cloud Print
+    </message>
   </messages>
-
 
   <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->

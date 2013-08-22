@@ -2134,6 +2134,7 @@
               'utility/local_discovery/local_domain_resolver_unittest.cc',
               'utility/local_discovery/service_discovery_client_unittest.cc',
               'browser/local_discovery/privet_device_lister_unittest.cc',
+              'browser/local_discovery/privet_notifications_unittest.cc'
             ]
         }],
         ['configuration_policy==0', {

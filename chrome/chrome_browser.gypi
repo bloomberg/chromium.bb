@@ -3276,6 +3276,10 @@
               'browser/local_discovery/privet_device_lister_impl.cc',
               'browser/local_discovery/privet_http_asynchronous_factory.cc',
               'browser/local_discovery/privet_http_asynchronous_factory.h',
+              'browser/local_discovery/privet_notifications.cc',
+              'browser/local_discovery/privet_notifications.h',
+              'browser/local_discovery/privet_notifications_factory.cc',
+              'browser/local_discovery/privet_notifications_factory.h',
               'browser/local_discovery/service_discovery_host_client.cc',
               'browser/local_discovery/service_discovery_host_client.h',
             ]
