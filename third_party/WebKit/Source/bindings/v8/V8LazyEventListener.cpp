@@ -138,7 +138,6 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
     v8::Context::Scope scope(v8Context);
 
     String listenerSource =  InspectorInstrumentation::preprocessEventListener(frame, m_code, m_sourceURL, m_functionName);
-    fprintf(stderr, "%s\n", listenerSource.utf8().data());
 
     // FIXME: Remove the following 'with' hack.
     //
