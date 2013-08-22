@@ -118,7 +118,6 @@
 #include "base/message_loop/message_pump_aurax11.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
 #endif  // defined(USE_X11)
 #include "ash/system/chromeos/power/power_status.h"
@@ -226,9 +225,7 @@ Shell::Shell(ShellDelegate* delegate)
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   bool is_panel_fitting_disabled =
       content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_PANEL_FITTING) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisablePanelFitting);
+          gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
 
   output_configurator_->Init(!is_panel_fitting_disabled);
 

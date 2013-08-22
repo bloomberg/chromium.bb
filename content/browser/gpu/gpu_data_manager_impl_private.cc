@@ -358,6 +358,13 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
 }
 
 bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
+#if defined(OS_CHROMEOS)
+  if (feature == gpu::GPU_FEATURE_TYPE_PANEL_FITTING &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePanelFitting)) {
+    return true;
+  }
+#endif  // OS_CHROMEOS
   if (use_swiftshader_) {
     // Skia's software rendering is probably more efficient than going through
     // software emulation of the GPU, so use that.
@@ -1252,4 +1259,3 @@ void GpuDataManagerImplPrivate::OnGpuProcessInitFailure() {
 }
 
 }  // namespace content
-
