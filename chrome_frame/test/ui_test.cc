@@ -360,7 +360,8 @@ void NavigateToCurrentUrl(MockIEEventSink* mock) {
 
 // Tests that Chrome gets re-instantiated after crash if we reload via
 // the address bar or via a new navigation.
-TEST_P(FullTabUITest, TabCrashReload) {
+// Flaky on ie7, http://crbug.com/277406.
+TEST_P(FullTabUITest, DISABLED_TabCrashReload) {
   using testing::DoAll;
 
   if (!GetParam().invokes_cf()) {
