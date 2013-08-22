@@ -22,6 +22,7 @@
 
 #if defined(OS_WIN)
 #define snprintf _snprintf
+typedef SSIZE_T ssize_t;
 #if !defined(__clang__)
 # define va_copy(a, b) do { (a) = (b); } while (0)
 #endif
