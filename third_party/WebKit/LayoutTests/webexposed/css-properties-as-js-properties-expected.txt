@@ -175,6 +175,7 @@ page
 pageBreakAfter
 pageBreakBefore
 pageBreakInside
+paintOrder
 parentRule
 pointerEvents
 position
