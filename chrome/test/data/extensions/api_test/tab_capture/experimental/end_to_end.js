@@ -14,6 +14,11 @@
 // uses an entirely event-based scheme, which ensures everything is synchronized
 // as the test advances through its stages.
 
+
+// Video needs to be global, or the big bad garbage collector will come and
+// huff and puff it all away.
+var video = null;
+
 function TestStream(stream) {
   chrome.test.assertTrue(stream != null);
 
@@ -23,7 +28,7 @@ function TestStream(stream) {
 
   // Create video and canvas elements, but no need to append them to the
   // DOM.
-  var video = document.createElement("video");
+  video = document.createElement("video");
   video.width = 64;
   video.height = 48;
   video.addEventListener("error", chrome.test.fail);
@@ -146,10 +151,8 @@ function endToEndVideoTestWithWebRTC() {
 }
 
 chrome.test.runTests([
-  endToEndVideoTest
-  // TODO(miu): Disabled test, since it is flaky on the bots.
-  // http://crbug.com/269659
-  //endToEndVideoTestWithWebRTC
+  endToEndVideoTest,
+  endToEndVideoTestWithWebRTC
 ]);
 
 // TODO(miu): Once the WebAudio API is finalized, we should add a test to emit a
