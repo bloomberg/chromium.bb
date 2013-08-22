@@ -5,21 +5,18 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 
-class InfoBarDelegate;
 class Profile;
-
-namespace content {
-class WebContents;
-}
 
 class ExtensionInstallUIDefault : public ExtensionInstallUI {
  public:
   explicit ExtensionInstallUIDefault(Profile* profile);
   virtual ~ExtensionInstallUIDefault();
 
-  // ExtensionInstallUI implementation:
+  // ExtensionInstallUI:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) OVERRIDE;
   virtual void OnInstallFailure(

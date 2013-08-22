@@ -7,23 +7,18 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/strings/string16.h"
-#include "chrome/browser/extensions/crx_installer_error.h"
+#include "base/basictypes.h"
 
 class Browser;
 class ExtensionInstallPrompt;
 class Profile;
 class SkBitmap;
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
+class CrxInstallerError;
 class Extension;
 class ExtensionWebstorePrivateApiTest;
-}  // namespace extensions
+}
 
 // Interface that should be implemented for each platform to display all the UI
 // around extension installation.
@@ -36,6 +31,7 @@ class ExtensionInstallUI {
   // Called when an extension was installed.
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) = 0;
+
   // Called when an extension failed to install.
   virtual void OnInstallFailure(const extensions::CrxInstallerError& error) = 0;
 
@@ -61,17 +57,20 @@ class ExtensionInstallUI {
       Browser* browser);
 
   // Creates an ExtensionInstallPrompt from |profile|.
-  // Caller assumes ownership. This method is deperecated
-  // and should not be used in new code.
+  // Caller assumes ownership. This method is deprecated and should not be used
+  // in new code.
   static ExtensionInstallPrompt* CreateInstallPromptWithProfile(
       Profile* profile);
 
   Profile* profile() { return profile_; }
 
  protected:
-  ExtensionInstallUI();
+  explicit ExtensionInstallUI(Profile* profile);
 
+ private:
   Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallUI);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

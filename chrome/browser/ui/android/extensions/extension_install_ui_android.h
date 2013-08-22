@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_EXTENSIONS_EXTENSION_INSTALL_UI_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_EXTENSIONS_EXTENSION_INSTALL_UI_ANDROID_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 
 class ExtensionInstallUIAndroid : public ExtensionInstallUI {
@@ -12,7 +14,7 @@ class ExtensionInstallUIAndroid : public ExtensionInstallUI {
   ExtensionInstallUIAndroid();
   virtual ~ExtensionInstallUIAndroid();
 
-  // ExtensionInstallUI implementation:
+  // ExtensionInstallUI:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) OVERRIDE;
   virtual void OnInstallFailure(

@@ -204,13 +204,12 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
 // ExtensionInstallUIDefault --------------------------------------------------
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
-    : skip_post_install_ui_(false),
+    : ExtensionInstallUI(profile),
+      skip_post_install_ui_(false),
       previous_using_native_theme_(false),
       use_app_installed_bubble_(false) {
-  profile_ = profile;
-
-  // |profile_| can be NULL during tests.
-  if (profile_) {
+  // |profile| can be NULL during tests.
+  if (profile) {
     // Remember the current theme in case the user presses undo.
     const Extension* previous_theme =
         ThemeServiceFactory::GetThemeForProfile(profile);
@@ -221,15 +220,14 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
   }
 }
 
-ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {
-}
+ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                                  SkBitmap* icon) {
   if (skip_post_install_ui_)
     return;
 
-  if (!profile_) {
+  if (!profile()) {
     // TODO(zelidrag): Figure out what exact conditions cause crash
     // http://crbug.com/159437 and write browser test to cover it.
     NOTREACHED();
@@ -238,13 +236,13 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 
   if (extension->is_theme()) {
     ThemeInstalledInfoBarDelegate::Create(
-        extension, profile_, previous_theme_id_, previous_using_native_theme_);
+        extension, profile(), previous_theme_id_, previous_using_native_theme_);
     return;
   }
 
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
-  Profile* current_profile = profile_->GetOriginalProfile();
+  Profile* current_profile = profile()->GetOriginalProfile();
   if (extension->is_app()) {
     bool use_bubble = false;
 
@@ -282,8 +280,8 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
-  Browser* browser = chrome::FindLastActiveWithProfile(profile_,
-      chrome::GetActiveDesktop());
+  Browser* browser =
+      chrome::FindLastActiveWithProfile(profile(), chrome::GetActiveDesktop());
   if (!browser)  // Can be NULL in unittests.
     return;
   WebContents* web_contents =
