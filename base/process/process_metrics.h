@@ -264,6 +264,22 @@ BASE_EXPORT extern const char kProcSelfExe[];
 size_t GetMaxFds();
 #endif  // defined(OS_POSIX)
 
+// Collects and holds performance metrics for system memory and disk.
+// Provides functionality to retrieve the data on various platforms and
+// to serialize the stored data.
+class SystemMetrics {
+ public:
+  SystemMetrics() : committed_memory_(0) { }
+
+  static SystemMetrics Sample();
+
+ private:
+  size_t committed_memory_;
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  SystemMemoryInfoKB memory_info_;
+#endif
+};
+
 }  // namespace base
 
 #endif  // BASE_PROCESS_PROCESS_METRICS_H_
