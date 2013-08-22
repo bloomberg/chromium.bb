@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include <iterator>
 #include <string>
@@ -708,6 +709,16 @@ int KernelProxy::tcsetattr(int fd, int optional_actions,
   }
 
   return 0;
+}
+
+int KernelProxy::kill(pid_t pid, int sig) {
+  errno = EINVAL;
+  return -1;
+}
+
+sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
+  errno = EINVAL;
+  return SIG_ERR;
 }
 
 #ifdef PROVIDES_SOCKET_API

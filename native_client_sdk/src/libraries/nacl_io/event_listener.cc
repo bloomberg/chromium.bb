@@ -175,9 +175,9 @@ Error EventListener::Wait(EventData* events,
 }
 
 Error EventListener::Track(int id,
-                          const ScopedEventEmitter& emitter,
-                          uint32_t filter,
-                          uint64_t user_data) {
+                           const ScopedEventEmitter& emitter,
+                           uint32_t filter,
+                           uint64_t user_data) {
   AUTO_LOCK(info_lock_);
   EventInfoMap_t::iterator it = event_info_map_.find(id);
 

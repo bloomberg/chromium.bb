@@ -5,9 +5,11 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_WRAP_H_
 #define LIBRARIES_NACL_IO_KERNEL_WRAP_H_
 
-#include <sys/types.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
 
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
@@ -62,7 +64,6 @@ int ftruncate(int fd, off_t length) NOTHROW;
 char* NAME(getcwd)(char* buf, getcwd_size_t size) NOTHROW;
 char* getwd(char* buf) NOTHROW;
 int getdents(int fd, void* buf, unsigned int count) NOTHROW;
-int ioctl(int d, int request, char* argp) NOTHROW;
 int NAME(isatty)(int fd) NOTHROW;
 int lchown(const char* path, uid_t owner, gid_t group) NOTHROW;
 int link(const char* oldpath, const char* newpath) NOTHROW;
@@ -81,6 +82,7 @@ int NAME(open)(const char* path, int oflag, ...);
 read_ssize_t NAME(read)(int fd, void* buf, size_t nbyte);
 int remove(const char* path) NOTHROW;
 int NAME(rmdir)(const char* path) NOTHROW;
+sighandler_t sigset(int sig, sighandler_t disp);
 #if defined(WIN32)
 int setenv(const char* name, const char* value, int overwrite);
 int _stat32(const char* path, struct _stat32* buf);

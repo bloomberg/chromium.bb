@@ -8,6 +8,7 @@
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/pp_instance.h>
 
+#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/ostermios.h"
@@ -75,6 +76,9 @@ int ki_tcflush(int fd, int queue_selector);
 int ki_tcgetattr(int fd, struct termios* termios_p);
 int ki_tcsetattr(int fd, int optional_actions,
                  const struct termios *termios_p);
+int ki_kill(pid_t pid, int sig);
+sighandler_t ki_signal(int signum, sighandler_t handler);
+sighandler_t ki_sigset(int signum, sighandler_t handler);
 
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions

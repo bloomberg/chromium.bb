@@ -10,6 +10,7 @@
 #include "gmock/gmock.h"
 
 #include "nacl_io/kernel_proxy.h"
+#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostermios.h"
 
@@ -34,25 +35,28 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(getwd, char*(char*));
   MOCK_METHOD3(ioctl, int(int, int, char*));
   MOCK_METHOD1(isatty, int(int));
+  MOCK_METHOD2(kill, int(int, int));
   MOCK_METHOD3(lchown, int(const char*, uid_t, gid_t));
+  MOCK_METHOD2(link, int(const char*, const char*));
   MOCK_METHOD3(lseek, off_t(int, off_t, int));
   MOCK_METHOD2(mkdir, int(const char*, mode_t));
+  MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD5(mount, int(const char*, const char*, const char*, unsigned long,
                           const void*));
   MOCK_METHOD2(open, int(const char*, int));
   MOCK_METHOD3(read, ssize_t(int, void*, size_t));
   MOCK_METHOD1(remove, int(const char*));
   MOCK_METHOD1(rmdir, int(const char*));
+  MOCK_METHOD2(signal, sighandler_t(int, sighandler_t));
+  MOCK_METHOD2(sigset, sighandler_t(int, sighandler_t));
   MOCK_METHOD2(stat, int(const char*, struct stat*));
+  MOCK_METHOD2(symlink, int(const char*, const char*));
   MOCK_METHOD2(tcgetattr, int(int, struct termios*));
   MOCK_METHOD3(tcsetattr, int(int, int, const struct termios*));
   MOCK_METHOD1(umount, int(const char*));
   MOCK_METHOD1(unlink, int(const char*));
   MOCK_METHOD2(utime, int(const char*, const struct utimbuf*));
   MOCK_METHOD3(write, ssize_t(int, const void*, size_t));
-  MOCK_METHOD2(link, int(const char*, const char*));
-  MOCK_METHOD2(symlink, int(const char*, const char*));
-  MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD1(open_resource, int(const char*));
 
 #ifdef PROVIDES_SOCKET_API

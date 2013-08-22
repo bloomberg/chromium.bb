@@ -213,6 +213,11 @@ TEST_F(KernelWrapTest, isatty) {
   isatty(678);
 }
 
+TEST_F(KernelWrapTest, kill) {
+  EXPECT_CALL(mock, kill(22, 33)).Times(1);
+  kill(22, 33);
+}
+
 TEST_F(KernelWrapTest, lchown) {
   uid_t uid = kDummyUid;
   gid_t gid = kDummyGid;
@@ -260,6 +265,19 @@ TEST_F(KernelWrapTest, remove) {
 TEST_F(KernelWrapTest, rmdir) {
   EXPECT_CALL(mock, rmdir(StrEq("rmdir"))).Times(1);
   rmdir("rmdir");
+}
+
+static void handler(int) {
+}
+
+TEST_F(KernelWrapTest, sigset) {
+  EXPECT_CALL(mock, sigset(22, handler)).Times(1);
+  sigset(22, handler);
+}
+
+TEST_F(KernelWrapTest, signal) {
+  EXPECT_CALL(mock, sigset(22, handler)).Times(1);
+  signal(22, handler);
 }
 
 TEST_F(KernelWrapTest, stat) {

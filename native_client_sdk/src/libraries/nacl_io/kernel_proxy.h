@@ -12,6 +12,7 @@
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount_factory.h"
 #include "nacl_io/mount_socket.h"
+#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
@@ -124,6 +125,9 @@ class KernelProxy : protected KernelObject {
   virtual int tcgetattr(int fd, struct termios* termios_p);
   virtual int tcsetattr(int fd, int optional_actions,
                            const struct termios *termios_p);
+
+  virtual int kill(pid_t pid, int sig);
+  virtual sighandler_t sigset(int signum, sighandler_t handler);
 
 #ifdef PROVIDES_SOCKET_API
   virtual int select(int nfds, fd_set* readfds, fd_set* writefds,
