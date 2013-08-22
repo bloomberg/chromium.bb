@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 

@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_loader.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 class Profile;
 

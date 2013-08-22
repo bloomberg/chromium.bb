@@ -8,8 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 class Extension;

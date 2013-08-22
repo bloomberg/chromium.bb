@@ -7,7 +7,7 @@
 
 #include "chrome/common/extensions/api/extension_api.h"
 
-#include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/features/feature.h"
 
 namespace extensions {
 

@@ -9,11 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
+#include "extensions/common/features/feature.h"
 #include "v8/include/v8.h"
 
 namespace WebKit {

@@ -15,9 +15,9 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_item_model.h"
 

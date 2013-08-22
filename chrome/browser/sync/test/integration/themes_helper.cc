@@ -11,8 +11,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
 

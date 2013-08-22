@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 
 namespace extensions {

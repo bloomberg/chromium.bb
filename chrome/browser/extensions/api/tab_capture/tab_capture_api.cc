@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 
 using extensions::api::tab_capture::MediaStreamConstraint;

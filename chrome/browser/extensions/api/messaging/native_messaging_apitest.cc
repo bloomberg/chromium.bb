@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/features/feature.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessageBasic) {
   base::ScopedTempDir temp_dir;

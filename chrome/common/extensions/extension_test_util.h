@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 class Extension;

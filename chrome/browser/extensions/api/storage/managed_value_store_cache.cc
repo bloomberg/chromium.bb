@@ -26,13 +26,13 @@
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "components/policy/core/common/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 
 using content::BrowserThread;

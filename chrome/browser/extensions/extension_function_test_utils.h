@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 class AsyncExtensionFunction;
 class Browser;

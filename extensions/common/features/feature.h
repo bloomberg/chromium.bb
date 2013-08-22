@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_H_
-#define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_H_
+#ifndef EXTENSIONS_COMMON_FEATURES_FEATURE_H_
+#define EXTENSIONS_COMMON_FEATURES_FEATURE_H_
 
 #include <set>
 #include <string>
 
 #include "base/values.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 class GURL;
 
@@ -152,4 +152,4 @@ class Feature {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_H_
+#endif  // EXTENSIONS_COMMON_FEATURES_FEATURE_H_

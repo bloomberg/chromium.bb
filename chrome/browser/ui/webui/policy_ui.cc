@@ -64,8 +64,8 @@
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/manifest.h"
 #include "components/policy/core/common/policy_schema.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
 

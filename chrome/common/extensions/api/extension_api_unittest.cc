@@ -23,8 +23,8 @@
 #include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

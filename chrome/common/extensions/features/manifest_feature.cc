@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/features/manifest_feature.h"
 
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 
@@ -50,4 +50,4 @@ std::string ManifestFeature::Parse(const base::DictionaryValue* value) {
   return std::string();
 }
 
-}  // namespace
+}  // namespace extensions

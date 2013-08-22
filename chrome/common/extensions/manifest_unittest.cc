@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 #include <algorithm>
 #include <set>
@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/install_warning.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

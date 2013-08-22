@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 #include "webkit/common/webpreferences.h"
 
 namespace extension_webkit_preferences {
@@ -61,4 +61,4 @@ void SetPreferences(const extensions::Extension* extension,
   }
 }
 
-}  // extension_webkit_preferences
+}  // namespace extension_webkit_preferences

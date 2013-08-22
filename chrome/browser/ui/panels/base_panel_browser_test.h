@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
 #define CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
 
-#include "base/values.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "extensions/common/manifest.h"
 #include "ui/gfx/rect.h"
 
 class NativePanelTesting;

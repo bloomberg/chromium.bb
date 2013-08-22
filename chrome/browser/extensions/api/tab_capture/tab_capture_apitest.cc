@@ -20,12 +20,12 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/complex_feature.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/common/features/feature.h"
 
 namespace chrome {
 

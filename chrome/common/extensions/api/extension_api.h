@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/url_pattern_set.h"
 

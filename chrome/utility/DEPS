@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/child",
   "+content/public/utility",
+  "+extensions/common",
 
   # For generated headers.
   "+grit",

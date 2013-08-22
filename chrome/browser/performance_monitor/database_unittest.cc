@@ -15,7 +15,7 @@
 #include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"

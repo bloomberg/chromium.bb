@@ -9,8 +9,8 @@
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 

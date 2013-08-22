@@ -6,9 +6,9 @@
 #define CHROME_RENDERER_EXTENSIONS_API_ACTIVITY_LOGGER_H_
 
 #include <string>
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "extensions/common/features/feature.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

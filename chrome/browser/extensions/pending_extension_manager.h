@@ -10,7 +10,7 @@
 
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 class ExtensionServiceInterface;
 class GURL;

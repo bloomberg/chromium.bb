@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 class Profile;
 

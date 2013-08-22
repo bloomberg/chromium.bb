@@ -6,10 +6,10 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/common_param_traits.h"
+#include "extensions/common/manifest.h"
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;

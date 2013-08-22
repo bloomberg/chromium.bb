@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/manifest.h"
 
 using extensions::Extension;
 using extensions::Manifest;

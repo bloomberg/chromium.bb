@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "extensions/common/manifest.h"
 
 class SkBitmap;
 

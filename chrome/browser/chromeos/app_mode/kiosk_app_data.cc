@@ -20,8 +20,8 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/gfx/codec/png_codec.h"
 

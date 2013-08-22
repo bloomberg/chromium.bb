@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 class Extension;

@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

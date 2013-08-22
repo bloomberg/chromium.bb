@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest.h"
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
@@ -10,8 +10,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"

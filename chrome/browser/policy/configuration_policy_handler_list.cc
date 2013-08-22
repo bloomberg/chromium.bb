@@ -12,8 +12,8 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
