@@ -647,11 +647,7 @@ weston_wm_window_transform(struct wl_listener *listener, void *data)
 	struct weston_wm_window *window = get_wm_window(surface);
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, transform_listener);
-	struct weston_output *output = surface->output;
 	uint32_t mask, values[2];
-	float sxf, syf;
-	int sx, sy;
-	static int old_sx = -1, old_sy = -1;
 
 	if (!window || !wm)
 		return;
@@ -659,24 +655,15 @@ weston_wm_window_transform(struct wl_listener *listener, void *data)
 	if (!weston_surface_is_mapped(surface))
 		return;
 
-	weston_surface_to_global_float(surface, output->x, output->y,
-				       &sxf, &syf);
+	if (window->x != surface->geometry.x ||
+	    window->y != surface->geometry.y) {
+		values[0] = surface->geometry.x;
+		values[1] = surface->geometry.y;
+		mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
 
-	sx = (int) sxf;
-	sy = (int) syf;
-
-	if (old_sx == sx && old_sy == sy)
-		return;
-
-	values[0] = sx;
-	values[1] = sy;
-	mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
-
-	xcb_configure_window(wm->conn, window->frame_id, mask, values);
-	xcb_flush(wm->conn);
-
-	old_sx = sx;
-	old_sy = sy;
+		xcb_configure_window(wm->conn, window->frame_id, mask, values);
+		xcb_flush(wm->conn);
+	}
 }
 
 #define ICCCM_WITHDRAWN_STATE	0
