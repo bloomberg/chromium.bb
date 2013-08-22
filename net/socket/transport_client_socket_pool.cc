@@ -358,11 +358,11 @@ TransportClientSocketPool::TransportClientSocketPool(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     NetLog* net_log)
-    : base_(max_sockets, max_sockets_per_group, histograms,
+    : base_(NULL, max_sockets, max_sockets_per_group, histograms,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new TransportConnectJobFactory(client_socket_factory,
-                                     host_resolver, net_log)) {
+                                           host_resolver, net_log)) {
   base_.EnableConnectBackupJobs();
 }
 
@@ -426,10 +426,6 @@ void TransportClientSocketPool::FlushWithError(int error) {
   base_.FlushWithError(error);
 }
 
-bool TransportClientSocketPool::IsStalled() const {
-  return base_.IsStalled();
-}
-
 void TransportClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
@@ -448,14 +444,6 @@ LoadState TransportClientSocketPool::GetLoadState(
   return base_.GetLoadState(group_name, handle);
 }
 
-void TransportClientSocketPool::AddLayeredPool(LayeredPool* layered_pool) {
-  base_.AddLayeredPool(layered_pool);
-}
-
-void TransportClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
-  base_.RemoveLayeredPool(layered_pool);
-}
-
 base::DictionaryValue* TransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
@@ -469,6 +457,20 @@ base::TimeDelta TransportClientSocketPool::ConnectionTimeout() const {
 
 ClientSocketPoolHistograms* TransportClientSocketPool::histograms() const {
   return base_.histograms();
+}
+
+bool TransportClientSocketPool::IsStalled() const {
+  return base_.IsStalled();
+}
+
+void TransportClientSocketPool::AddHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.AddHigherLayeredPool(higher_pool);
+}
+
+void TransportClientSocketPool::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.RemoveHigherLayeredPool(higher_pool);
 }
 
 }  // namespace net

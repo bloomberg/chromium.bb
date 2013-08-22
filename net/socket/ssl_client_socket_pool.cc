@@ -518,7 +518,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     : transport_pool_(transport_pool),
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
-      base_(max_sockets, max_sockets_per_group, histograms,
+      base_(this, max_sockets, max_sockets_per_group, histograms,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new SSLConnectJobFactory(transport_pool,
@@ -536,20 +536,14 @@ SSLClientSocketPool::SSLClientSocketPool(
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
   if (transport_pool_)
-    transport_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(transport_pool_);
   if (socks_pool_)
-    socks_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(socks_pool_);
   if (http_proxy_pool_)
-    http_proxy_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(http_proxy_pool_);
 }
 
 SSLClientSocketPool::~SSLClientSocketPool() {
-  if (http_proxy_pool_)
-    http_proxy_pool_->RemoveLayeredPool(this);
-  if (socks_pool_)
-    socks_pool_->RemoveLayeredPool(this);
-  if (transport_pool_)
-    transport_pool_->RemoveLayeredPool(this);
   if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
 }
@@ -610,13 +604,6 @@ void SSLClientSocketPool::FlushWithError(int error) {
   base_.FlushWithError(error);
 }
 
-bool SSLClientSocketPool::IsStalled() const {
-  return base_.IsStalled() ||
-      (transport_pool_ && transport_pool_->IsStalled()) ||
-      (socks_pool_ && socks_pool_->IsStalled()) ||
-      (http_proxy_pool_ && http_proxy_pool_->IsStalled());
-}
-
 void SSLClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
@@ -633,14 +620,6 @@ int SSLClientSocketPool::IdleSocketCountInGroup(
 LoadState SSLClientSocketPool::GetLoadState(
     const std::string& group_name, const ClientSocketHandle* handle) const {
   return base_.GetLoadState(group_name, handle);
-}
-
-void SSLClientSocketPool::AddLayeredPool(LayeredPool* layered_pool) {
-  base_.AddLayeredPool(layered_pool);
-}
-
-void SSLClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
-  base_.RemoveLayeredPool(layered_pool);
 }
 
 base::DictionaryValue* SSLClientSocketPool::GetInfoAsValue(
@@ -678,14 +657,27 @@ ClientSocketPoolHistograms* SSLClientSocketPool::histograms() const {
   return base_.histograms();
 }
 
-void SSLClientSocketPool::OnSSLConfigChanged() {
-  FlushWithError(ERR_NETWORK_CHANGED);
+bool SSLClientSocketPool::IsStalled() const {
+  return base_.IsStalled();
+}
+
+void SSLClientSocketPool::AddHigherLayeredPool(HigherLayeredPool* higher_pool) {
+  base_.AddHigherLayeredPool(higher_pool);
+}
+
+void SSLClientSocketPool::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.RemoveHigherLayeredPool(higher_pool);
 }
 
 bool SSLClientSocketPool::CloseOneIdleConnection() {
   if (base_.CloseOneIdleSocket())
     return true;
-  return base_.CloseOneIdleConnectionInLayeredPool();
+  return base_.CloseOneIdleConnectionInHigherLayeredPool();
+}
+
+void SSLClientSocketPool::OnSSLConfigChanged() {
+  FlushWithError(ERR_NETWORK_CHANGED);
 }
 
 }  // namespace net

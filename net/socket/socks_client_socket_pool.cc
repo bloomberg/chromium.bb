@@ -197,7 +197,7 @@ SOCKSClientSocketPool::SOCKSClientSocketPool(
     TransportClientSocketPool* transport_pool,
     NetLog* net_log)
     : transport_pool_(transport_pool),
-      base_(max_sockets, max_sockets_per_group, histograms,
+      base_(this, max_sockets, max_sockets_per_group, histograms,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new SOCKSConnectJobFactory(transport_pool,
@@ -205,13 +205,10 @@ SOCKSClientSocketPool::SOCKSClientSocketPool(
                                        net_log)) {
   // We should always have a |transport_pool_| except in unit tests.
   if (transport_pool_)
-    transport_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(transport_pool_);
 }
 
 SOCKSClientSocketPool::~SOCKSClientSocketPool() {
-  // We should always have a |transport_pool_| except in unit tests.
-  if (transport_pool_)
-    transport_pool_->RemoveLayeredPool(this);
 }
 
 int SOCKSClientSocketPool::RequestSocket(
@@ -251,10 +248,6 @@ void SOCKSClientSocketPool::FlushWithError(int error) {
   base_.FlushWithError(error);
 }
 
-bool SOCKSClientSocketPool::IsStalled() const {
-  return base_.IsStalled() || transport_pool_->IsStalled();
-}
-
 void SOCKSClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
@@ -271,14 +264,6 @@ int SOCKSClientSocketPool::IdleSocketCountInGroup(
 LoadState SOCKSClientSocketPool::GetLoadState(
     const std::string& group_name, const ClientSocketHandle* handle) const {
   return base_.GetLoadState(group_name, handle);
-}
-
-void SOCKSClientSocketPool::AddLayeredPool(LayeredPool* layered_pool) {
-  base_.AddLayeredPool(layered_pool);
-}
-
-void SOCKSClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
-  base_.RemoveLayeredPool(layered_pool);
 }
 
 base::DictionaryValue* SOCKSClientSocketPool::GetInfoAsValue(
@@ -304,10 +289,24 @@ ClientSocketPoolHistograms* SOCKSClientSocketPool::histograms() const {
   return base_.histograms();
 };
 
+bool SOCKSClientSocketPool::IsStalled() const {
+  return base_.IsStalled();
+}
+
+void SOCKSClientSocketPool::AddHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.AddHigherLayeredPool(higher_pool);
+}
+
+void SOCKSClientSocketPool::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.RemoveHigherLayeredPool(higher_pool);
+}
+
 bool SOCKSClientSocketPool::CloseOneIdleConnection() {
   if (base_.CloseOneIdleSocket())
     return true;
-  return base_.CloseOneIdleConnectionInLayeredPool();
+  return base_.CloseOneIdleConnectionInHigherLayeredPool();
 }
 
 }  // namespace net

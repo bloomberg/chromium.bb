@@ -517,7 +517,7 @@ Error SpdySession::InitializeWithSocket(
     error = OK;
   if (error == OK) {
     DCHECK_NE(availability_state_, STATE_CLOSED);
-    connection_->AddLayeredPool(this);
+    connection_->AddHigherLayeredPool(this);
     if (enable_sending_initial_data_)
       SendInitialData();
     pool_ = pool;
@@ -1048,9 +1048,25 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   // push is hardly used. Write tests for this and fix this. (See
   // http://crbug.com/261712 .)
   if (owned_stream->type() == SPDY_PUSH_STREAM)
-      unclaimed_pushed_streams_.erase(owned_stream->url());
+    unclaimed_pushed_streams_.erase(owned_stream->url());
+
+  base::WeakPtr<SpdySession> weak_this = GetWeakPtr();
 
   DeleteStream(owned_stream.Pass(), status);
+
+  if (!weak_this)
+    return;
+
+  if (availability_state_ == STATE_CLOSED)
+    return;
+
+  // If there are no active streams and the socket pool is stalled, close the
+  // session to free up a socket slot.
+  if (active_streams_.empty() && connection_->IsPoolStalled()) {
+    CloseSessionResult result =
+        DoCloseSession(ERR_CONNECTION_CLOSED, "Closing idle connection.");
+    DCHECK_NE(result, SESSION_ALREADY_CLOSED);
+  }
 }
 
 void SpdySession::CloseCreatedStreamIterator(CreatedStreamSet::iterator it,

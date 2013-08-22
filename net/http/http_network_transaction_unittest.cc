@@ -95,6 +95,11 @@ int GetIdleSocketCountInSSLSocketPool(net::HttpNetworkSession* session) {
       net::HttpNetworkSession::NORMAL_SOCKET_POOL)->IdleSocketCount();
 }
 
+bool IsTransportSocketPoolStalled(net::HttpNetworkSession* session) {
+  return session->GetTransportSocketPool(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL)->IsStalled();
+}
+
 // Takes in a Value created from a NetLogHttpResponseParameter, and returns
 // a JSONified list of headers as a single string.  Uses single quotes instead
 // of double quotes for easier comparison.  Returns false on failure.
@@ -12001,6 +12006,170 @@ TEST_P(HttpNetworkTransactionTest, SetStreamPriority) {
 
   trans.SetPriority(LOWEST);
   EXPECT_EQ(LOWEST, fake_stream->priority());
+}
+
+// Tests that when a used socket is returned to the SSL socket pool, it's closed
+// if the transport socket pool is stalled on the global socket limit.
+TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  // Set up SSL request.
+
+  HttpRequestInfo ssl_request;
+  ssl_request.method = "GET";
+  ssl_request.url = GURL("https://www.google.com/");
+
+  MockWrite ssl_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead ssl_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 11\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider ssl_data(ssl_reads, arraysize(ssl_reads),
+                                    ssl_writes, arraysize(ssl_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&ssl_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // Set up HTTP request.
+
+  HttpRequestInfo http_request;
+  http_request.method = "GET";
+  http_request.url = GURL("http://www.google.com/");
+
+  MockWrite http_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 7\r\n\r\n"),
+    MockRead("falafel"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Start the SSL request.
+  TestCompletionCallback ssl_callback;
+  scoped_ptr<HttpTransaction> ssl_trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  ASSERT_EQ(ERR_IO_PENDING,
+            ssl_trans->Start(&ssl_request, ssl_callback.callback(),
+            BoundNetLog()));
+
+  // Start the HTTP request.  Pool should stall.
+  TestCompletionCallback http_callback;
+  scoped_ptr<HttpTransaction> http_trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  ASSERT_EQ(ERR_IO_PENDING,
+            http_trans->Start(&http_request, http_callback.callback(),
+                              BoundNetLog()));
+  EXPECT_TRUE(IsTransportSocketPoolStalled(session));
+
+  // Wait for response from SSL request.
+  ASSERT_EQ(OK, ssl_callback.WaitForResult());
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(ssl_trans.get(), &response_data));
+  EXPECT_EQ("hello world", response_data);
+
+  // The SSL socket should automatically be closed, so the HTTP request can
+  // start.
+  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session));
+  ASSERT_FALSE(IsTransportSocketPoolStalled(session));
+
+  // The HTTP request can now complete.
+  ASSERT_EQ(OK, http_callback.WaitForResult());
+  ASSERT_EQ(OK, ReadTransaction(http_trans.get(), &response_data));
+  EXPECT_EQ("falafel", response_data);
+
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
+}
+
+// Tests that when a SSL connection is established but there's no corresponding
+// request that needs it, the new socket is closed if the transport socket pool
+// is stalled on the global socket limit.
+TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  // Set up an ssl request.
+
+  HttpRequestInfo ssl_request;
+  ssl_request.method = "GET";
+  ssl_request.url = GURL("https://www.foopy.com/");
+
+  // No data will be sent on the SSL socket.
+  StaticSocketDataProvider ssl_data;
+  session_deps_.socket_factory->AddSocketDataProvider(&ssl_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // Set up HTTP request.
+
+  HttpRequestInfo http_request;
+  http_request.method = "GET";
+  http_request.url = GURL("http://www.google.com/");
+
+  MockWrite http_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 7\r\n\r\n"),
+    MockRead("falafel"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Preconnect an SSL socket.  A preconnect is needed because connect jobs are
+  // cancelled when a normal transaction is cancelled.
+  net::HttpStreamFactory* http_stream_factory = session->http_stream_factory();
+  net::SSLConfig ssl_config;
+  session->ssl_config_service()->GetSSLConfig(&ssl_config);
+  http_stream_factory->PreconnectStreams(1, ssl_request, DEFAULT_PRIORITY,
+                                         ssl_config, ssl_config);
+  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session));
+
+  // Start the HTTP request.  Pool should stall.
+  TestCompletionCallback http_callback;
+  scoped_ptr<HttpTransaction> http_trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  ASSERT_EQ(ERR_IO_PENDING,
+            http_trans->Start(&http_request, http_callback.callback(),
+                              BoundNetLog()));
+  EXPECT_TRUE(IsTransportSocketPoolStalled(session));
+
+  // The SSL connection will automatically be closed once the connection is
+  // established, to let the HTTP request start.
+  ASSERT_EQ(OK, http_callback.WaitForResult());
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(http_trans.get(), &response_data));
+  EXPECT_EQ("falafel", response_data);
+
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
 }
 
 }  // namespace net

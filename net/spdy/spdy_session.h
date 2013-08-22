@@ -186,7 +186,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
 class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                                public SpdyFramerDebugVisitorInterface,
-                               public LayeredPool {
+                               public HigherLayeredPool {
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
@@ -480,7 +480,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Must be used only by |pool_|.
   base::WeakPtr<SpdySession> GetWeakPtr();
 
-  // LayeredPool implementation:
+  // HigherLayeredPool implementation:
   virtual bool CloseOneIdleConnection() OVERRIDE;
 
  private:

@@ -417,7 +417,7 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     NetLog* net_log)
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
-      base_(max_sockets, max_sockets_per_group, histograms,
+      base_(this, max_sockets, max_sockets_per_group, histograms,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
             new HttpProxyConnectJobFactory(transport_pool,
@@ -426,17 +426,12 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
                                            net_log)) {
   // We should always have a |transport_pool_| except in unit tests.
   if (transport_pool_)
-    transport_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(transport_pool_);
   if (ssl_pool_)
-    ssl_pool_->AddLayeredPool(this);
+    base_.AddLowerLayeredPool(ssl_pool_);
 }
 
 HttpProxyClientSocketPool::~HttpProxyClientSocketPool() {
-  if (ssl_pool_)
-    ssl_pool_->RemoveLayeredPool(this);
-  // We should always have a |transport_pool_| except in unit tests.
-  if (transport_pool_)
-    transport_pool_->RemoveLayeredPool(this);
 }
 
 int HttpProxyClientSocketPool::RequestSocket(
@@ -477,12 +472,6 @@ void HttpProxyClientSocketPool::FlushWithError(int error) {
   base_.FlushWithError(error);
 }
 
-bool HttpProxyClientSocketPool::IsStalled() const {
-  return base_.IsStalled() ||
-      (transport_pool_ && transport_pool_->IsStalled()) ||
-      (ssl_pool_ && ssl_pool_->IsStalled());
-}
-
 void HttpProxyClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
@@ -499,14 +488,6 @@ int HttpProxyClientSocketPool::IdleSocketCountInGroup(
 LoadState HttpProxyClientSocketPool::GetLoadState(
     const std::string& group_name, const ClientSocketHandle* handle) const {
   return base_.GetLoadState(group_name, handle);
-}
-
-void HttpProxyClientSocketPool::AddLayeredPool(LayeredPool* layered_pool) {
-  base_.AddLayeredPool(layered_pool);
-}
-
-void HttpProxyClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
-  base_.RemoveLayeredPool(layered_pool);
 }
 
 base::DictionaryValue* HttpProxyClientSocketPool::GetInfoAsValue(
@@ -539,10 +520,24 @@ ClientSocketPoolHistograms* HttpProxyClientSocketPool::histograms() const {
   return base_.histograms();
 }
 
+bool HttpProxyClientSocketPool::IsStalled() const {
+  return base_.IsStalled();
+}
+
+void HttpProxyClientSocketPool::AddHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.AddHigherLayeredPool(higher_pool);
+}
+
+void HttpProxyClientSocketPool::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  base_.RemoveHigherLayeredPool(higher_pool);
+}
+
 bool HttpProxyClientSocketPool::CloseOneIdleConnection() {
   if (base_.CloseOneIdleSocket())
     return true;
-  return base_.CloseOneIdleConnectionInLayeredPool();
+  return base_.CloseOneIdleConnectionInHigherLayeredPool();
 }
 
 }  // namespace net

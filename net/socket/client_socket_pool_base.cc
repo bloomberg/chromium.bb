@@ -167,6 +167,7 @@ ClientSocketPoolBaseHelper::Request::Request(
 ClientSocketPoolBaseHelper::Request::~Request() {}
 
 ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
+    HigherLayeredPool* pool,
     int max_sockets,
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
@@ -183,6 +184,7 @@ ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
       connect_job_factory_(connect_job_factory),
       connect_backup_jobs_enabled_(false),
       pool_generation_number_(0),
+      pool_(pool),
       weak_factory_(this) {
   DCHECK_LE(0, max_sockets_per_group);
   DCHECK_LE(max_sockets_per_group, max_sockets);
@@ -198,9 +200,16 @@ ClientSocketPoolBaseHelper::~ClientSocketPoolBaseHelper() {
   DCHECK(group_map_.empty());
   DCHECK(pending_callback_map_.empty());
   DCHECK_EQ(0, connecting_socket_count_);
-  CHECK(higher_layer_pools_.empty());
+  CHECK(higher_pools_.empty());
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
+
+  // Remove from lower layer pools.
+  for (std::set<LowerLayeredPool*>::iterator it = lower_pools_.begin();
+       it != lower_pools_.end();
+       ++it) {
+    (*it)->RemoveHigherLayeredPool(pool_);
+  }
 }
 
 ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair()
@@ -240,16 +249,54 @@ ClientSocketPoolBaseHelper::RemoveRequestFromQueue(
   return req;
 }
 
-void ClientSocketPoolBaseHelper::AddLayeredPool(LayeredPool* pool) {
-  CHECK(pool);
-  CHECK(!ContainsKey(higher_layer_pools_, pool));
-  higher_layer_pools_.insert(pool);
+bool ClientSocketPoolBaseHelper::IsStalled() const {
+  // If a lower layer pool is stalled, consider |this| stalled as well.
+  for (std::set<LowerLayeredPool*>::const_iterator it = lower_pools_.begin();
+       it != lower_pools_.end();
+       ++it) {
+    if ((*it)->IsStalled())
+      return true;
+  }
+
+  // If fewer than |max_sockets_| are in use, then clearly |this| is not
+  // stalled.
+  if ((handed_out_socket_count_ + connecting_socket_count_) < max_sockets_)
+    return false;
+  // So in order to be stalled, |this| must be using at least |max_sockets_| AND
+  // |this| must have a request that is actually stalled on the global socket
+  // limit.  To find such a request, look for a group that has more requests
+  // than jobs AND where the number of sockets is less than
+  // |max_sockets_per_group_|.  (If the number of sockets is equal to
+  // |max_sockets_per_group_|, then the request is stalled on the group limit,
+  // which does not count.)
+  for (GroupMap::const_iterator it = group_map_.begin();
+       it != group_map_.end(); ++it) {
+    if (it->second->IsStalledOnPoolMaxSockets(max_sockets_per_group_))
+      return true;
+  }
+  return false;
 }
 
-void ClientSocketPoolBaseHelper::RemoveLayeredPool(LayeredPool* pool) {
-  CHECK(pool);
-  CHECK(ContainsKey(higher_layer_pools_, pool));
-  higher_layer_pools_.erase(pool);
+void ClientSocketPoolBaseHelper::AddLowerLayeredPool(
+    LowerLayeredPool* lower_pool) {
+  DCHECK(pool_);
+  CHECK(!ContainsKey(lower_pools_, lower_pool));
+  lower_pools_.insert(lower_pool);
+  lower_pool->AddHigherLayeredPool(pool_);
+}
+
+void ClientSocketPoolBaseHelper::AddHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  CHECK(higher_pool);
+  CHECK(!ContainsKey(higher_pools_, higher_pool));
+  higher_pools_.insert(higher_pool);
+}
+
+void ClientSocketPoolBaseHelper::RemoveHigherLayeredPool(
+    HigherLayeredPool* higher_pool) {
+  CHECK(higher_pool);
+  CHECK(ContainsKey(higher_pools_, higher_pool));
+  higher_pools_.erase(higher_pool);
 }
 
 int ClientSocketPoolBaseHelper::RequestSocket(
@@ -792,8 +839,18 @@ void ClientSocketPoolBaseHelper::CheckForStalledSocketGroups() {
   // If we have idle sockets, see if we can give one to the top-stalled group.
   std::string top_group_name;
   Group* top_group = NULL;
-  if (!FindTopStalledGroup(&top_group, &top_group_name))
+  if (!FindTopStalledGroup(&top_group, &top_group_name)) {
+    // There may still be a stalled group in a lower level pool.
+    for (std::set<LowerLayeredPool*>::iterator it = lower_pools_.begin();
+         it != lower_pools_.end();
+         ++it) {
+       if ((*it)->IsStalled()) {
+         CloseOneIdleSocket();
+         break;
+       }
+    }
     return;
+  }
 
   if (ReachedMaxSocketsLimit()) {
     if (idle_socket_count() > 0) {
@@ -924,25 +981,6 @@ void ClientSocketPoolBaseHelper::FlushWithError(int error) {
   CancelAllConnectJobs();
   CloseIdleSockets();
   CancelAllRequestsWithError(error);
-}
-
-bool ClientSocketPoolBaseHelper::IsStalled() const {
-  // If we are not using |max_sockets_|, then clearly we are not stalled
-  if ((handed_out_socket_count_ + connecting_socket_count_) < max_sockets_)
-    return false;
-  // So in order to be stalled we need to be using |max_sockets_| AND
-  // we need to have a request that is actually stalled on the global
-  // socket limit.  To find such a request, we look for a group that
-  // a has more requests that jobs AND where the number of jobs is less
-  // than |max_sockets_per_group_|.  (If the number of jobs is equal to
-  // |max_sockets_per_group_|, then the request is stalled on the group,
-  // which does not count.)
-  for (GroupMap::const_iterator it = group_map_.begin();
-       it != group_map_.end(); ++it) {
-    if (it->second->IsStalledOnPoolMaxSockets(max_sockets_per_group_))
-      return true;
-  }
-  return false;
 }
 
 void ClientSocketPoolBaseHelper::RemoveConnectJob(ConnectJob* job,
@@ -1110,12 +1148,12 @@ bool ClientSocketPoolBaseHelper::CloseOneIdleSocketExceptInGroup(
   return false;
 }
 
-bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInLayeredPool() {
+bool ClientSocketPoolBaseHelper::CloseOneIdleConnectionInHigherLayeredPool() {
   // This pool doesn't have any idle sockets. It's possible that a pool at a
   // higher layer is holding one of this sockets active, but it's actually idle.
   // Query the higher layers.
-  for (std::set<LayeredPool*>::const_iterator it = higher_layer_pools_.begin();
-       it != higher_layer_pools_.end(); ++it) {
+  for (std::set<HigherLayeredPool*>::const_iterator it = higher_pools_.begin();
+       it != higher_pools_.end(); ++it) {
     if ((*it)->CloseOneIdleConnection())
       return true;
   }
@@ -1151,7 +1189,7 @@ void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
   while (IsStalled()) {
     // Closing a socket will result in calling back into |this| to use the freed
     // socket slot, so nothing else is needed.
-    if (!CloseOneIdleConnectionInLayeredPool())
+    if (!CloseOneIdleConnectionInHigherLayeredPool())
       return;
   }
 }

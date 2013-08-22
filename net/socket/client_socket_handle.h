@@ -94,9 +94,15 @@ class NET_EXPORT ClientSocketHandle {
 
   bool IsPoolStalled() const;
 
-  void AddLayeredPool(LayeredPool* layered_pool);
+  // Adds a higher layered pool on top of the socket pool that |socket_| belongs
+  // to.  At most one higher layered pool can be added to a
+  // ClientSocketHandle at a time.  On destruction or reset, automatically
+  // removes the higher pool if RemoveHigherLayeredPool has not been called.
+  void AddHigherLayeredPool(HigherLayeredPool* higher_pool);
 
-  void RemoveLayeredPool(LayeredPool* layered_pool);
+  // Removes a higher layered pool from the socket pool that |socket_| belongs
+  // to.  |higher_pool| must have been added by the above function.
+  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool);
 
   // Returns true when Init() has completed successfully.
   bool is_initialized() const { return is_initialized_; }
@@ -184,7 +190,7 @@ class NET_EXPORT ClientSocketHandle {
 
   bool is_initialized_;
   ClientSocketPool* pool_;
-  LayeredPool* layered_pool_;
+  HigherLayeredPool* higher_pool_;
   scoped_ptr<StreamSocket> socket_;
   std::string group_name_;
   bool is_reused_;

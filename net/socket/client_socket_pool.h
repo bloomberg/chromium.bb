@@ -31,19 +31,38 @@ class StreamSocket;
 
 // ClientSocketPools are layered. This defines an interface for lower level
 // socket pools to communicate with higher layer pools.
-class NET_EXPORT LayeredPool {
+class NET_EXPORT HigherLayeredPool {
  public:
-  virtual ~LayeredPool() {};
+  virtual ~HigherLayeredPool() {}
 
-  // Instructs the LayeredPool to close an idle connection. Return true if one
-  // was closed.
+  // Instructs the HigherLayeredPool to close an idle connection. Return true if
+  // one was closed.  Closing an idle connection will call into the lower layer
+  // pool it came from, so must be careful of re-entrancy when using this.
   virtual bool CloseOneIdleConnection() = 0;
+};
+
+// ClientSocketPools are layered. This defines an interface for higher level
+// socket pools to communicate with lower layer pools.
+class NET_EXPORT LowerLayeredPool {
+ public:
+  virtual ~LowerLayeredPool() {}
+
+  // Returns true if a there is currently a request blocked on the per-pool
+  // (not per-host) max socket limit, either in this pool, or one that it is
+  // layered on top of.
+  virtual bool IsStalled() const = 0;
+
+  // Called to add or remove a higher layer pool on top of |this|.  A higher
+  // layer pool may be added at most once to |this|, and must be removed prior
+  // to destruction of |this|.
+  virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) = 0;
+  virtual void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) = 0;
 };
 
 // A ClientSocketPool is used to restrict the number of sockets open at a time.
 // It also maintains a list of idle persistent sockets.
 //
-class NET_EXPORT ClientSocketPool {
+class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
  public:
   // Subclasses must also have an inner class SocketParams which is
   // the type for the |params| argument in RequestSocket() and
@@ -126,10 +145,6 @@ class NET_EXPORT ClientSocketPool {
   // Does not flush any pools wrapped by |this|.
   virtual void FlushWithError(int error) = 0;
 
-  // Returns true if a there is currently a request blocked on the
-  // per-pool (not per-host) max socket limit.
-  virtual bool IsStalled() const = 0;
-
   // Called to close any idle connections held by the connection manager.
   virtual void CloseIdleSockets() = 0;
 
@@ -142,12 +157,6 @@ class NET_EXPORT ClientSocketPool {
   // Determine the LoadState of a connecting ClientSocketHandle.
   virtual LoadState GetLoadState(const std::string& group_name,
                                  const ClientSocketHandle* handle) const = 0;
-
-  // Adds a LayeredPool on top of |this|.
-  virtual void AddLayeredPool(LayeredPool* layered_pool) = 0;
-
-  // Removes a LayeredPool from |this|.
-  virtual void RemoveLayeredPool(LayeredPool* layered_pool) = 0;
 
   // Retrieves information on the current state of the pool as a
   // DictionaryValue.  Caller takes possession of the returned value.

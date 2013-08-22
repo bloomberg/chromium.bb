@@ -2854,9 +2854,9 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   EXPECT_TRUE(session2 == NULL);
 }
 
-// Tests that a non-SPDY request can't close a SPDY session that's currently in
-// use.
-TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
+// Tests that when a SPDY session becomes idle, it closes itself if there is
+// a lower layer pool stalled on the per-pool socket limit.
+TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(
@@ -2875,9 +2875,18 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
     CreateMockWrite(*cancel1, 1),
   };
   StaticSocketDataProvider data(reads, arraysize(reads),
-                                     writes, arraysize(writes));
+                                writes, arraysize(writes));
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  MockRead http_reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  http_data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
 
   CreateNetworkSession();
 
@@ -2933,14 +2942,13 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
   EXPECT_TRUE(pool->IsStalled());
   EXPECT_FALSE(callback2.have_result());
 
-  // Cancelling the request should still not release the session's socket,
-  // since the session is still kept alive by the SpdySessionPool.
+  // Cancelling the request should result in the session's socket being
+  // closed, since the pool is stalled.
   ASSERT_TRUE(spdy_stream1.get());
   spdy_stream1->Cancel();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pool->IsStalled());
-  EXPECT_FALSE(callback2.have_result());
-  EXPECT_TRUE(session1 != NULL);
+  ASSERT_FALSE(pool->IsStalled());
+  EXPECT_EQ(OK, callback2.WaitForResult());
 }
 
 // Verify that SpdySessionKey and therefore SpdySession is different when
