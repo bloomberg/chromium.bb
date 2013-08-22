@@ -15,23 +15,21 @@ namespace {
 
 void TestExceptionSetHandler(void) {
   int retval = nacl_exception_set_handler(NULL);
-  // TODO(sehr,mseaborn): the IRT method currently returns -ENOSYS and
-  // should return ENOSYS.  Remove the second clause when this is fixed.
-  EXPECT((retval == ENOSYS) || (retval == -ENOSYS));
+  EXPECT(retval == ENOSYS);
 
   TEST_PASSED;
 }
 
 void TestExceptionSetStack(void) {
   int retval = nacl_exception_set_stack(NULL, 0);
-  EXPECT((retval == ENOSYS) || (retval == -ENOSYS));
+  EXPECT(retval == ENOSYS);
 
   TEST_PASSED;
 }
 
 void TestExceptionClearFlag(void) {
   int retval = nacl_exception_clear_flag();
-  EXPECT((retval == ENOSYS) || (retval == -ENOSYS));
+  EXPECT(retval == ENOSYS);
 
   TEST_PASSED;
 }
