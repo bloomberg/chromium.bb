@@ -39,6 +39,12 @@ AccessibilityScrollbar::AccessibilityScrollbar(Scrollbar* scrollbar)
     ASSERT(scrollbar);
 }
 
+void AccessibilityScrollbar::detachFromParent()
+{
+    m_scrollbar = 0;
+    AccessibilityMockObject::detachFromParent();
+}
+
 PassRefPtr<AccessibilityScrollbar> AccessibilityScrollbar::create(Scrollbar* scrollbar)
 {
     return adoptRef(new AccessibilityScrollbar(scrollbar));

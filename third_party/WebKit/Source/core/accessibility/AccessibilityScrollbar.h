@@ -44,6 +44,8 @@ public:
 private:
     explicit AccessibilityScrollbar(Scrollbar*);
 
+    virtual void detachFromParent();
+
     virtual bool canSetValueAttribute() const OVERRIDE { return true; }
 
     virtual bool isAccessibilityScrollbar() const OVERRIDE { return true; }
