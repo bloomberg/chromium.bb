@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/signin_delegate_observer.h"
 
 class AppListControllerDelegate;
 class AppsModelBuilder;
@@ -43,7 +42,6 @@ class AppSyncUIStateWatcher;
 #endif
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
-                            public app_list::SigninDelegateObserver,
                             public content::NotificationObserver,
                             public ProfileInfoCacheObserver {
  public:
@@ -75,9 +73,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void OpenSettings() OVERRIDE;
   virtual void OpenHelp() OVERRIDE;
   virtual void OpenFeedback() OVERRIDE;
-
-  // Overridden from app_list::SigninDelegateObserver:
-  virtual void OnSigninSuccess() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

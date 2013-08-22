@@ -69,8 +69,6 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
-  if (signin_delegate_)
-    signin_delegate_->RemoveObserver(this);
   g_browser_process->
       profile_manager()->GetProfileInfoCache().RemoveObserver(this);
 }
@@ -91,8 +89,6 @@ void AppListViewDelegate::OnProfileChanged() {
 }
 
 void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
-  if (signin_delegate_)
-    signin_delegate_->RemoveObserver(this);
   if (model) {
     model_ = model;
     apps_builder_.reset(new AppsModelBuilder(profile_,
@@ -104,7 +100,6 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
         profile_, model->search_box(), model->results(), controller_.get()));
 
     signin_delegate_.reset(new ChromeSigninDelegate(profile_));
-    signin_delegate_->AddObserver(this);
 
 #if defined(USE_ASH)
     app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_,
@@ -223,10 +218,6 @@ void AppListViewDelegate::OpenFeedback() {
       profile_, desktop);
   chrome::ShowFeedbackPage(browser, std::string(),
                            chrome::kAppLauncherCategoryTag);
-}
-
-void AppListViewDelegate::OnSigninSuccess() {
-  OnProfileChanged();
 }
 
 void AppListViewDelegate::Observe(

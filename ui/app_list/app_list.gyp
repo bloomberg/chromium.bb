@@ -75,7 +75,6 @@
         'search_result.h',
         'signin_delegate.cc',
         'signin_delegate.h',
-        'signin_delegate_observer.h',
         'views/app_list_background.cc',
         'views/app_list_background.h',
         'views/app_list_drag_and_drop_host.h',

@@ -3,24 +3,11 @@
 // found in the LICENSE file.
 
 #include "ui/app_list/signin_delegate.h"
-#include "ui/app_list/signin_delegate_observer.h"
 
 namespace app_list {
 
 SigninDelegate::SigninDelegate() {}
 
 SigninDelegate::~SigninDelegate() {}
-
-void SigninDelegate::AddObserver(SigninDelegateObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void SigninDelegate::RemoveObserver(SigninDelegateObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void SigninDelegate::NotifySigninSuccess() {
-  FOR_EACH_OBSERVER(SigninDelegateObserver, observers_, OnSigninSuccess());
-}
 
 }  // namespace app_list
