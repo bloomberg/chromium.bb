@@ -62,8 +62,13 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
   SpdyHeaderBlock header_block =
       SpdyUtils::RequestHeadersToSpdyHeaders(headers);
 
-  string headers_string =
-      session()->compressor()->CompressHeaders(header_block);
+  string headers_string;
+  if (session()->connection()->version() >= QUIC_VERSION_9) {
+    headers_string = session()->compressor()->CompressHeadersWithPriority(
+        priority(), header_block);
+  } else {
+    headers_string = session()->compressor()->CompressHeaders(header_block);
+  }
 
   bool has_body = !body.empty();
 

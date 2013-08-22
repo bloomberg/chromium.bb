@@ -216,7 +216,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
     QuicSpdyCompressor compressor;
-    return compressor.CompressHeaders(headers);
+    return compressor.CompressHeadersWithPriority(0, headers);
   }
 
   // Returns a newly created packet to send kData on stream 1.

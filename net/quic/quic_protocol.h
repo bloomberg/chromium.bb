@@ -41,6 +41,7 @@ typedef uint32 QuicHeaderId;
 // QuicTag is the type of a tag in the wire protocol.
 typedef uint32 QuicTag;
 typedef std::vector<QuicTag> QuicTagVector;
+typedef uint32 QuicPriority;
 
 // TODO(rch): Consider Quic specific names for these constants.
 // Maximum size in bytes of a QUIC packet.
@@ -188,7 +189,8 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_7 = 7,
-  QUIC_VERSION_8 = 8,  // Current version.
+  QUIC_VERSION_8 = 8,
+  QUIC_VERSION_9 = 9,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -196,7 +198,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_8, QUIC_VERSION_7};
+    {QUIC_VERSION_9, QUIC_VERSION_8, QUIC_VERSION_7};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -215,6 +217,10 @@ NET_EXPORT_PRIVATE QuicTag QuicVersionToQuicTag(const QuicVersion version);
 // Returns appropriate QuicVersion from a QuicTag.
 // Returns QUIC_VERSION_UNSUPPORTED if version_tag cannot be understood.
 NET_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
+
+// Returns the appropriate QuicTag for a properly formed version string
+// (e.g. Q008).
+NET_EXPORT_PRIVATE QuicTag StringToQuicTag(std::string version);
 
 // Helper function which translates from a QuicVersion to a string.
 // Returns strings corresponding to enum names (e.g. QUIC_VERSION_6).

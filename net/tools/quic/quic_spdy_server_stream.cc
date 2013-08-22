@@ -69,10 +69,16 @@ void QuicSpdyServerStream::SendHeaders(
     const BalsaHeaders& response_headers) {
   SpdyHeaderBlock header_block =
       SpdyUtils::ResponseHeadersToSpdyHeaders(response_headers);
-  string headers =
-      session()->compressor()->CompressHeaders(header_block);
 
-  WriteData(headers, false);
+  string headers_string;
+  if (session()->connection()->version() >= QUIC_VERSION_9) {
+    headers_string = session()->compressor()->CompressHeadersWithPriority(
+        priority(), header_block);
+  } else {
+    headers_string = session()->compressor()->CompressHeaders(header_block);
+  }
+
+  WriteData(headers_string, false);
 }
 
 int QuicSpdyServerStream::ParseRequestHeaders() {

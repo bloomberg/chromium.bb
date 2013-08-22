@@ -597,6 +597,28 @@ TEST_P(EndToEndTest, ResetConnection) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
+TEST_P(EndToEndTest, MaxStreamsUberTest) {
+  //  FLAGS_fake_packet_loss_percentage = 1;
+  ASSERT_TRUE(Initialize());
+  string large_body;
+  GenerateBody(&large_body, 10240);
+  int max_streams = 100;
+
+  AddToCache("GET", "/large_response", "HTTP/1.1", "200", "OK", large_body);;
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  // FLAGS_fake_packet_loss_percentage = 10;
+
+  for (int i = 0; i < max_streams; ++i) {
+    EXPECT_LT(0, client_->SendRequest("/large_response"));
+  }
+
+  // WaitForEvents waits 50ms and returns true if there are outstanding
+  // requests.
+  while (client_->client()->WaitForEvents() == true) {
+  }
+}
+
 class WrongAddressWriter : public QuicPacketWriter {
  public:
   explicit WrongAddressWriter(int fd) : fd_(fd) {

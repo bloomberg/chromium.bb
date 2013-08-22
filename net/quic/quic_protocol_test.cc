@@ -133,10 +133,11 @@ TEST(QuicProtocolTest, QuicVersionToString) {
             QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
 
   QuicVersion single_version[] = {QUIC_VERSION_7};
-  EXPECT_EQ("QUIC_VERSION_7,", QuicVersionArrayToString(single_version,
-                                   arraysize(single_version)));
-  QuicVersion multiple_versions[] = {QUIC_VERSION_8, QUIC_VERSION_7};
-  EXPECT_EQ("QUIC_VERSION_8,QUIC_VERSION_7,",
+  EXPECT_EQ("QUIC_VERSION_7,", QuicVersionArrayToString(
+                                   single_version, arraysize(single_version)));
+  QuicVersion multiple_versions[] =
+      {QUIC_VERSION_9, QUIC_VERSION_8, QUIC_VERSION_7};
+  EXPECT_EQ("QUIC_VERSION_9,QUIC_VERSION_8,QUIC_VERSION_7,",
             QuicVersionArrayToString(multiple_versions,
                                      arraysize(multiple_versions)));
 }

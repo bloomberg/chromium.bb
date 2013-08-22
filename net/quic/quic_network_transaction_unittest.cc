@@ -172,12 +172,12 @@ class QuicNetworkTransactionTest : public PlatformTest {
     headers[":status"] = status;
     headers[":version"] = "HTTP/1.1";
     headers["content-type"] = "text/plain";
-    return compressor_->CompressHeaders(headers) + body;
+    return compressor_->CompressHeadersWithPriority(0, headers) + body;
   }
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
     QuicSpdyCompressor compressor;
-    return compressor.CompressHeaders(headers);
+    return compressor.CompressHeadersWithPriority(0, headers);
   }
 
   // Returns a newly created packet to send kData on stream 1.
