@@ -1,7 +1,7 @@
 /*
  * FFV1 encoder
  *
- * Copyright (c) 2003-2012 Michael Niedermayer <michaelni@gmx.at>
+ * Copyright (c) 2003-2013 Michael Niedermayer <michaelni@gmx.at>
  *
  * This file is part of FFmpeg.
  *
@@ -25,6 +25,7 @@
  * FF Video Codec 1 (a lossless codec) encoder
  */
 
+#include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
 #include "libavutil/crc.h"
 #include "libavutil/opt.h"
@@ -528,14 +529,16 @@ static int write_extradata(FFV1Context *f)
     f->avctx->extradata_size = 10000 + 4 +
                                     (11 * 11 * 5 * 5 * 5 + 11 * 11 * 11) * 32;
     f->avctx->extradata = av_malloc(f->avctx->extradata_size);
+    if (!f->avctx->extradata)
+        return AVERROR(ENOMEM);
     ff_init_range_encoder(c, f->avctx->extradata, f->avctx->extradata_size);
     ff_build_rac_states(c, 0.05 * (1LL << 32), 256 - 8);
 
     put_symbol(c, state, f->version, 0);
     if (f->version > 2) {
         if (f->version == 3)
-            f->minor_version = 2;
-        put_symbol(c, state, f->minor_version, 0);
+            f->micro_version = 4;
+        put_symbol(c, state, f->micro_version, 0);
     }
 
     put_symbol(c, state, f->ac, 0);
@@ -575,6 +578,7 @@ static int write_extradata(FFV1Context *f)
 
     if (f->version > 2) {
         put_symbol(c, state, f->ec, 0);
+        put_symbol(c, state, f->intra = (f->avctx->gop_size < 2), 0);
     }
 
     f->avctx->extradata_size = ff_rac_terminate(c);
@@ -639,14 +643,15 @@ static av_cold int encode_init(AVCodecContext *avctx)
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
     int i, j, k, m, ret;
 
-    ffv1_common_init(avctx);
+    if ((ret = ffv1_common_init(avctx)) < 0)
+        return ret;
 
     s->version = 0;
 
     if ((avctx->flags & (CODEC_FLAG_PASS1|CODEC_FLAG_PASS2)) || avctx->slices>1)
         s->version = FFMAX(s->version, 2);
 
-    if (avctx->level == 3) {
+    if (avctx->level == 3 || (s->version==2 && avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL)) {
         s->version = 3;
     }
 
@@ -716,9 +721,11 @@ static av_cold int encode_init(AVCodecContext *avctx)
     case AV_PIX_FMT_RGB32:
         s->colorspace = 1;
         s->transparency = 1;
+        s->chroma_planes = 1;
         break;
     case AV_PIX_FMT_0RGB32:
         s->colorspace = 1;
+        s->chroma_planes = 1;
         break;
     case AV_PIX_FMT_GBRP9:
         if (!avctx->bits_per_raw_sample)
@@ -792,9 +799,11 @@ static av_cold int encode_init(AVCodecContext *avctx)
     if ((ret = ffv1_allocate_initial_states(s)) < 0)
         return ret;
 
-    avctx->coded_frame = &s->picture;
     if (!s->transparency)
         s->plane_count = 2;
+    if (!s->chroma_planes && s->version > 3)
+        s->plane_count--;
+
     avcodec_get_chroma_sub_sample(avctx->pix_fmt, &s->chroma_h_shift, &s->chroma_v_shift);
     s->picture_number = 0;
 
@@ -895,7 +904,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
                avctx->slices);
         return AVERROR(ENOSYS);
 slices_ok:
-        write_extradata(s);
+        if ((ret = write_extradata(s)) < 0)
+            return ret;
     }
 
     if ((ret = ffv1_init_slice_contexts(s)) < 0)
@@ -937,12 +947,12 @@ static void encode_slice_header(FFV1Context *f, FFV1Context *fs)
         put_symbol(c, state, f->plane[j].quant_table_index, 0);
         av_assert0(f->plane[j].quant_table_index == f->avctx->context_model);
     }
-    if (!f->picture.interlaced_frame)
+    if (!f->picture.f->interlaced_frame)
         put_symbol(c, state, 3, 0);
     else
-        put_symbol(c, state, 1 + !f->picture.top_field_first, 0);
-    put_symbol(c, state, f->picture.sample_aspect_ratio.num, 0);
-    put_symbol(c, state, f->picture.sample_aspect_ratio.den, 0);
+        put_symbol(c, state, 1 + !f->picture.f->top_field_first, 0);
+    put_symbol(c, state, f->picture.f->sample_aspect_ratio.num, 0);
+    put_symbol(c, state, f->picture.f->sample_aspect_ratio.den, 0);
 }
 
 static int encode_slice(AVCodecContext *c, void *arg)
@@ -953,7 +963,7 @@ static int encode_slice(AVCodecContext *c, void *arg)
     int height       = fs->slice_height;
     int x            = fs->slice_x;
     int y            = fs->slice_y;
-    AVFrame *const p = &f->picture;
+    AVFrame *const p = f->picture.f;
     const int ps     = av_pix_fmt_desc_get(c->pix_fmt)->comp[0].step_minus1 + 1;
 
     if (p->key_frame)
@@ -971,8 +981,8 @@ static int encode_slice(AVCodecContext *c, void *arg)
     }
 
     if (f->colorspace == 0) {
-        const int chroma_width  = -((-width) >> f->chroma_h_shift);
-        const int chroma_height = -((-height) >> f->chroma_v_shift);
+        const int chroma_width  = FF_CEIL_RSHIFT(width,  f->chroma_h_shift);
+        const int chroma_height = FF_CEIL_RSHIFT(height, f->chroma_v_shift);
         const int cx            = x >> f->chroma_h_shift;
         const int cy            = y >> f->chroma_v_shift;
 
@@ -1000,7 +1010,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 {
     FFV1Context *f      = avctx->priv_data;
     RangeCoder *const c = &f->slice_context[0]->c;
-    AVFrame *const p    = &f->picture;
+    AVFrame *const p    = f->picture.f;
     int used_count      = 0;
     uint8_t keystate    = 128;
     uint8_t *buf_p;
@@ -1013,7 +1023,9 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     ff_init_range_encoder(c, pkt->data, pkt->size);
     ff_build_rac_states(c, 0.05 * (1LL << 32), 256 - 8);
 
-    *p           = *pict;
+    av_frame_unref(p);
+    if ((ret = av_frame_ref(p, pict)) < 0)
+        return ret;
     p->pict_type = AV_PICTURE_TYPE_I;
 
     if (avctx->gop_size == 0 || f->picture_number % avctx->gop_size == 0) {
@@ -1131,7 +1143,7 @@ static const AVOption options[] = {
     { NULL }
 };
 
-static const AVClass class = {
+static const AVClass ffv1_class = {
     .class_name = "ffv1 encoder",
     .item_name  = av_default_item_name,
     .option     = options,
@@ -1165,5 +1177,5 @@ AVCodec ff_ffv1_encoder = {
     },
     .long_name      = NULL_IF_CONFIG_SMALL("FFmpeg video codec #1"),
     .defaults       = ffv1_defaults,
-    .priv_class     = &class,
+    .priv_class     = &ffv1_class,
 };

@@ -21,8 +21,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//#define DEBUG
-
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
@@ -461,6 +459,7 @@ static int gif_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, A
 
     if (s->keyframe) {
         s->keyframe_ok = 0;
+        s->gce_prev_disposal = GCE_DISPOSAL_NONE;
         if ((ret = gif_read_header1(s)) < 0)
             return ret;
 

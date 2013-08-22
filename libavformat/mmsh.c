@@ -66,9 +66,9 @@ static int mmsh_close(URLContext *h)
     MMSHContext *mmsh = (MMSHContext *)h->priv_data;
     MMSContext *mms   = &mmsh->mms;
     if (mms->mms_hd)
-        ffurl_close(mms->mms_hd);
-    av_free(mms->streams);
-    av_free(mms->asf_header);
+        ffurl_closep(&mms->mms_hd);
+    av_freep(&mms->streams);
+    av_freep(&mms->asf_header);
     return 0;
 }
 
@@ -368,23 +368,26 @@ static int mmsh_read(URLContext *h, uint8_t *buf, int size)
 static int64_t mmsh_read_seek(URLContext *h, int stream_index,
                         int64_t timestamp, int flags)
 {
-    MMSHContext *mmsh = h->priv_data;
-    MMSContext *mms   = &mmsh->mms;
+    MMSHContext *mmsh_old = h->priv_data;
+    MMSHContext *mmsh     = av_mallocz(sizeof(*mmsh));
     int ret;
 
-    ret= mmsh_open_internal(h, mmsh->location, 0, FFMAX(timestamp, 0), 0);
+    if (!mmsh)
+        return AVERROR(ENOMEM);
 
+    h->priv_data = mmsh;
+    ret= mmsh_open_internal(h, mmsh_old->location, 0, FFMAX(timestamp, 0), 0);
     if(ret>=0){
-        if (mms->mms_hd)
-            ffurl_close(mms->mms_hd);
-        av_freep(&mms->streams);
-        av_freep(&mms->asf_header);
+        h->priv_data = mmsh_old;
+        mmsh_close(h);
+        h->priv_data = mmsh;
+        av_free(mmsh_old);
+        mmsh->mms.asf_header_read_size = mmsh->mms.asf_header_size;
+    }else {
+        h->priv_data = mmsh_old;
         av_free(mmsh);
-        mmsh = h->priv_data;
-        mms   = &mmsh->mms;
-        mms->asf_header_read_size= mms->asf_header_size;
-    }else
-        h->priv_data= mmsh;
+    }
+
     return ret;
 }
 

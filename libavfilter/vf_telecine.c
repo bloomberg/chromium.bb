@@ -103,7 +103,7 @@ static int query_formats(AVFilterContext *ctx)
 
     for (fmt = 0; fmt < AV_PIX_FMT_NB; fmt++) {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
-        if (!(desc->flags & PIX_FMT_HWACCEL))
+        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL))
             ff_add_format(&pix_fmts, fmt);
     }
 
@@ -129,7 +129,7 @@ static int config_input(AVFilterLink *inlink)
     if ((ret = av_image_fill_linesizes(tc->stride, inlink->format, inlink->w)) < 0)
         return ret;
 
-    tc->planeheight[1] = tc->planeheight[2] = inlink->h >> desc->log2_chroma_h;
+    tc->planeheight[1] = tc->planeheight[2] = FF_CEIL_RSHIFT(inlink->h, desc->log2_chroma_h);
     tc->planeheight[0] = tc->planeheight[3] = inlink->h;
 
     tc->nb_planes = av_pix_fmt_count_planes(inlink->format);
@@ -156,6 +156,8 @@ static int config_output(AVFilterLink *outlink)
     outlink->flags |= FF_LINK_FLAG_REQUEST_LOOP;
     outlink->frame_rate = fps;
     outlink->time_base = av_mul_q(inlink->time_base, tc->pts);
+    av_log(ctx, AV_LOG_VERBOSE, "TB: %d/%d -> %d/%d\n",
+           inlink->time_base.num, inlink->time_base.den, outlink->time_base.num, outlink->time_base.den);
 
     tc->ts_unit = av_q2d(av_inv_q(av_mul_q(fps, outlink->time_base)));
 

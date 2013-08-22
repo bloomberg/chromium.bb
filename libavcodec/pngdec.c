@@ -28,6 +28,7 @@
 #include "internal.h"
 #include "png.h"
 #include "pngdsp.h"
+#include "thread.h"
 
 /* TODO:
  * - add 16 bit depth support
@@ -35,14 +36,13 @@
 
 #include <zlib.h>
 
-//#define DEBUG
-
 typedef struct PNGDecContext {
     PNGDSPContext dsp;
     AVCodecContext *avctx;
 
     GetByteContext gb;
-    AVFrame *prev;
+    ThreadFrame last_picture;
+    ThreadFrame picture;
 
     int state;
     int width, height;
@@ -370,8 +370,8 @@ static int png_decode_idat(PNGDecContext *s, int length)
     while (s->zstream.avail_in > 0) {
         ret = inflate(&s->zstream, Z_PARTIAL_FLUSH);
         if (ret != Z_OK && ret != Z_STREAM_END) {
-            av_log(s->avctx, AV_LOG_ERROR, "inflate returned %d\n", ret);
-            return -1;
+            av_log(s->avctx, AV_LOG_ERROR, "inflate returned error %d\n", ret);
+            return AVERROR_EXTERNAL;
         }
         if (s->zstream.avail_out == 0) {
             if (!(s->state & PNG_ALLIMAGE)) {
@@ -507,12 +507,16 @@ static int decode_frame(AVCodecContext *avctx,
     PNGDecContext * const s = avctx->priv_data;
     const uint8_t *buf      = avpkt->data;
     int buf_size            = avpkt->size;
-    AVFrame *p              = data;
+    AVFrame *p;
     AVDictionary *metadata  = NULL;
     uint8_t *crow_buf_base  = NULL;
     uint32_t tag, length;
     int64_t sig;
     int ret;
+
+    ff_thread_release_buffer(avctx, &s->last_picture);
+    FFSWAP(ThreadFrame, s->picture, s->last_picture);
+    p = s->picture.f;
 
     bytestream2_init(&s->gb, buf, buf_size);
 
@@ -521,7 +525,7 @@ static int decode_frame(AVCodecContext *avctx,
     if (sig != PNGSIG &&
         sig != MNGSIG) {
         av_log(avctx, AV_LOG_ERROR, "Missing png signature\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     s->y = s->state = 0;
@@ -532,8 +536,8 @@ static int decode_frame(AVCodecContext *avctx,
     s->zstream.opaque = NULL;
     ret = inflateInit(&s->zstream);
     if (ret != Z_OK) {
-        av_log(avctx, AV_LOG_ERROR, "inflateInit returned %d\n", ret);
-        return -1;
+        av_log(avctx, AV_LOG_ERROR, "inflateInit returned error %d\n", ret);
+        return AVERROR_EXTERNAL;
     }
     for (;;) {
         if (bytestream2_get_bytes_left(&s->gb) <= 0) {
@@ -637,8 +641,10 @@ static int decode_frame(AVCodecContext *avctx,
                     goto fail;
                 }
 
-                if (ff_get_buffer(avctx, p, AV_GET_BUFFER_FLAG_REF) < 0)
+                if (ff_thread_get_buffer(avctx, &s->picture, AV_GET_BUFFER_FLAG_REF) < 0)
                     goto fail;
+                ff_thread_finish_setup(avctx);
+
                 p->pict_type        = AV_PICTURE_TYPE_I;
                 p->key_frame        = 1;
                 p->interlaced_frame = !!s->interlace_type;
@@ -822,16 +828,17 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
      /* handle p-frames only if a predecessor frame is available */
-     if (s->prev->data[0]) {
-         if (   !(avpkt->flags & AV_PKT_FLAG_KEY)
-            && s->prev->width == p->width
-            && s->prev->height== p->height
-            && s->prev->format== p->format
+     if (s->last_picture.f->data[0]) {
+         if (   !(avpkt->flags & AV_PKT_FLAG_KEY) && avctx->codec_tag != AV_RL32("MPNG")
+            && s->last_picture.f->width == p->width
+            && s->last_picture.f->height== p->height
+            && s->last_picture.f->format== p->format
          ) {
             int i, j;
             uint8_t *pd      = p->data[0];
-            uint8_t *pd_last = s->prev->data[0];
+            uint8_t *pd_last = s->last_picture.f->data[0];
 
+            ff_thread_await_progress(&s->last_picture, INT_MAX, 0);
             for (j = 0; j < s->height; j++) {
                 for (i = 0; i < s->width * s->bpp; i++) {
                     pd[i] += pd_last[i];
@@ -841,13 +848,13 @@ static int decode_frame(AVCodecContext *avctx,
             }
         }
     }
+    ff_thread_report_progress(&s->picture, INT_MAX, 0);
 
     av_frame_set_metadata(p, metadata);
     metadata   = NULL;
 
-    av_frame_unref(s->prev);
-     if ((ret = av_frame_ref(s->prev, p)) < 0)
-         goto fail;
+    if ((ret = av_frame_ref(data, s->picture.f)) < 0)
+        return ret;
 
     *got_frame = 1;
 
@@ -861,21 +868,40 @@ static int decode_frame(AVCodecContext *avctx,
     return ret;
  fail:
     av_dict_free(&metadata);
-    ret = -1;
+    ret = AVERROR_INVALIDDATA;
+    ff_thread_release_buffer(avctx, &s->picture);
     goto the_end;
+}
+
+static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
+{
+    PNGDecContext *psrc = src->priv_data;
+    PNGDecContext *pdst = dst->priv_data;
+
+    if (dst == src)
+        return 0;
+
+    ff_thread_release_buffer(dst, &pdst->picture);
+    if (psrc->picture.f->data[0])
+        return ff_thread_ref_frame(&pdst->picture, &psrc->picture);
+
+    return 0;
 }
 
 static av_cold int png_dec_init(AVCodecContext *avctx)
 {
     PNGDecContext *s = avctx->priv_data;
 
-    s->prev = av_frame_alloc();
-    if (!s->prev)
+    s->avctx = avctx;
+    s->last_picture.f = av_frame_alloc();
+    s->picture.f = av_frame_alloc();
+    if (!s->last_picture.f || !s->picture.f)
         return AVERROR(ENOMEM);
 
-    ff_pngdsp_init(&s->dsp);
-
-    s->avctx = avctx;
+    if (!avctx->internal->is_copy) {
+        avctx->internal->allocate_progress = 1;
+        ff_pngdsp_init(&s->dsp);
+    }
 
     return 0;
 }
@@ -884,7 +910,10 @@ static av_cold int png_dec_end(AVCodecContext *avctx)
 {
     PNGDecContext *s = avctx->priv_data;
 
-    av_frame_free(&s->prev);
+    ff_thread_release_buffer(avctx, &s->last_picture);
+    av_frame_free(&s->last_picture.f);
+    ff_thread_release_buffer(avctx, &s->picture);
+    av_frame_free(&s->picture.f);
 
     return 0;
 }
@@ -897,6 +926,8 @@ AVCodec ff_png_decoder = {
     .init           = png_dec_init,
     .close          = png_dec_end,
     .decode         = decode_frame,
-    .capabilities   = CODEC_CAP_DR1 /*| CODEC_CAP_DRAW_HORIZ_BAND*/,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(png_dec_init),
+    .update_thread_context = ONLY_IF_THREADS_ENABLED(update_thread_context),
+    .capabilities   = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS /*| CODEC_CAP_DRAW_HORIZ_BAND*/,
     .long_name      = NULL_IF_CONFIG_SMALL("PNG (Portable Network Graphics) image"),
 };

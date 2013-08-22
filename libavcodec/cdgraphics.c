@@ -265,7 +265,7 @@ static int cdg_decode_frame(AVCodecContext *avctx,
     int buf_size       = avpkt->size;
     int ret;
     uint8_t command, inst;
-    uint8_t cdg_data[CDG_DATA_SIZE];
+    uint8_t cdg_data[CDG_DATA_SIZE] = {0};
     AVFrame *frame = data;
     CDGraphicsContext *cc = avctx->priv_data;
 
@@ -289,7 +289,9 @@ static int cdg_decode_frame(AVCodecContext *avctx,
     inst    = bytestream_get_byte(&buf);
     inst    &= CDG_MASK;
     buf += 2;  /// skipping 2 unneeded bytes
-    bytestream_get_buffer(&buf, cdg_data, buf_size - CDG_HEADER_SIZE);
+
+    if (buf_size > CDG_HEADER_SIZE)
+        bytestream_get_buffer(&buf, cdg_data, buf_size - CDG_HEADER_SIZE);
 
     if ((command & CDG_MASK) == CDG_COMMAND) {
         switch (inst) {

@@ -30,6 +30,7 @@
 #include "avcodec.h"
 #include "bytestream.h"
 #include "internal.h"
+#include "libavutil/common.h"
 
 #define KMVC_KEYFRAME 0x80
 #define KMVC_PALETTE  0x40
@@ -46,7 +47,7 @@ typedef struct KmvcContext {
     int palsize;
     uint32_t pal[MAX_PALSIZE];
     uint8_t *cur, *prev;
-    uint8_t *frm0, *frm1;
+    uint8_t frm0[320 * 200], frm1[320 * 200];
     GetByteContext g;
 } KmvcContext;
 
@@ -55,7 +56,7 @@ typedef struct BitBuf {
     int bitbuf;
 } BitBuf;
 
-#define BLK(data, x, y)  data[(x) + (y) * 320]
+#define BLK(data, x, y)  data[av_clip((x) + (y) * 320, 0, 320 * 200 -1)]
 
 #define kmvc_init_getbits(bb, g)  bb.bits = 7; bb.bitbuf = bytestream2_get_byte(g);
 
@@ -106,7 +107,7 @@ static int kmvc_decode_intra_8x8(KmvcContext * ctx, int w, int h)
                             val = bytestream2_get_byte(&ctx->g);
                             mx = val & 0xF;
                             my = val >> 4;
-                            if ((l0x-mx) + 320*(l0y-my) < 0 || (l0x-mx) + 320*(l0y-my) > 316*196) {
+                            if ((l0x-mx) + 320*(l0y-my) < 0 || (l0x-mx) + 320*(l0y-my) > 320*197 - 4) {
                                 av_log(ctx->avctx, AV_LOG_ERROR, "Invalid MV\n");
                                 return AVERROR_INVALIDDATA;
                             }
@@ -131,7 +132,7 @@ static int kmvc_decode_intra_8x8(KmvcContext * ctx, int w, int h)
                                     val = bytestream2_get_byte(&ctx->g);
                                     mx = val & 0xF;
                                     my = val >> 4;
-                                    if ((l1x-mx) + 320*(l1y-my) < 0 || (l1x-mx) + 320*(l1y-my) > 318*198) {
+                                    if ((l1x-mx) + 320*(l1y-my) < 0 || (l1x-mx) + 320*(l1y-my) > 320*199 - 2) {
                                         av_log(ctx->avctx, AV_LOG_ERROR, "Invalid MV\n");
                                         return AVERROR_INVALIDDATA;
                                     }
@@ -206,7 +207,7 @@ static int kmvc_decode_inter_8x8(KmvcContext * ctx, int w, int h)
                             val = bytestream2_get_byte(&ctx->g);
                             mx = (val & 0xF) - 8;
                             my = (val >> 4) - 8;
-                            if ((l0x+mx) + 320*(l0y+my) < 0 || (l0x+mx) + 320*(l0y+my) > 318*198) {
+                            if ((l0x+mx) + 320*(l0y+my) < 0 || (l0x+mx) + 320*(l0y+my) > 320*197 - 4) {
                                 av_log(ctx->avctx, AV_LOG_ERROR, "Invalid MV\n");
                                 return AVERROR_INVALIDDATA;
                             }
@@ -231,7 +232,7 @@ static int kmvc_decode_inter_8x8(KmvcContext * ctx, int w, int h)
                                     val = bytestream2_get_byte(&ctx->g);
                                     mx = (val & 0xF) - 8;
                                     my = (val >> 4) - 8;
-                                    if ((l1x+mx) + 320*(l1y+my) < 0 || (l1x+mx) + 320*(l1y+my) > 318*198) {
+                                    if ((l1x+mx) + 320*(l1y+my) < 0 || (l1x+mx) + 320*(l1y+my) > 320*199 - 2) {
                                         av_log(ctx->avctx, AV_LOG_ERROR, "Invalid MV\n");
                                         return AVERROR_INVALIDDATA;
                                     }
@@ -378,8 +379,6 @@ static av_cold int decode_init(AVCodecContext * avctx)
         return AVERROR(EINVAL);
     }
 
-    c->frm0 = av_mallocz(320 * 200);
-    c->frm1 = av_mallocz(320 * 200);
     c->cur = c->frm0;
     c->prev = c->frm1;
 
@@ -414,28 +413,12 @@ static av_cold int decode_init(AVCodecContext * avctx)
     return 0;
 }
 
-
-
-/*
- * Uninit kmvc decoder
- */
-static av_cold int decode_end(AVCodecContext * avctx)
-{
-    KmvcContext *const c = avctx->priv_data;
-
-    av_freep(&c->frm0);
-    av_freep(&c->frm1);
-
-    return 0;
-}
-
 AVCodec ff_kmvc_decoder = {
     .name           = "kmvc",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_KMVC,
     .priv_data_size = sizeof(KmvcContext),
     .init           = decode_init,
-    .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("Karl Morton's video codec"),

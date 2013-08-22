@@ -21,6 +21,8 @@
 #ifndef AVUTIL_BPRINT_H
 #define AVUTIL_BPRINT_H
 
+#include <stdarg.h>
+
 #include "attributes.h"
 #include "avstring.h"
 
@@ -74,10 +76,10 @@
  */
 typedef struct AVBPrint {
     FF_PAD_STRUCTURE(1024,
-    char *str;         /** string so far */
-    unsigned len;      /** length so far */
-    unsigned size;     /** allocated memory */
-    unsigned size_max; /** maximum allocated memory */
+    char *str;         /**< string so far */
+    unsigned len;      /**< length so far */
+    unsigned size;     /**< allocated memory */
+    unsigned size_max; /**< maximum allocated memory */
     char reserved_internal_buffer[1];
     )
 } AVBPrint;
@@ -120,6 +122,11 @@ void av_bprint_init_for_buffer(AVBPrint *buf, char *buffer, unsigned size);
  * Append a formatted string to a print buffer.
  */
 void av_bprintf(AVBPrint *buf, const char *fmt, ...) av_printf_format(2, 3);
+
+/**
+ * Append a formatted string to a print buffer.
+ */
+void av_vbprintf(AVBPrint *buf, const char *fmt, va_list vl_arg);
 
 /**
  * Append char c n times to a print buffer.

@@ -27,10 +27,6 @@
 #include "mem.h"
 #include "samplefmt.h"
 
-#define MAKE_ACCESSORS(str, name, type, field) \
-    type av_##name##_get_##field(const str *s) { return s->field; } \
-    void av_##name##_set_##field(str *s, type v) { s->field = v; }
-
 MAKE_ACCESSORS(AVFrame, frame, int64_t, best_effort_timestamp)
 MAKE_ACCESSORS(AVFrame, frame, int64_t, pkt_duration)
 MAKE_ACCESSORS(AVFrame, frame, int64_t, pkt_pos)
@@ -40,6 +36,8 @@ MAKE_ACCESSORS(AVFrame, frame, int,     sample_rate)
 MAKE_ACCESSORS(AVFrame, frame, AVDictionary *, metadata)
 MAKE_ACCESSORS(AVFrame, frame, int,     decode_error_flags)
 MAKE_ACCESSORS(AVFrame, frame, int,     pkt_size)
+MAKE_ACCESSORS(AVFrame, frame, enum AVColorSpace, colorspace)
+MAKE_ACCESSORS(AVFrame, frame, enum AVColorRange, color_range)
 
 #define CHECK_CHANNELS_CONSISTENCY(frame) \
     av_assert2(!(frame)->channel_layout || \
@@ -89,6 +87,7 @@ static void get_frame_defaults(AVFrame *frame)
     frame->key_frame           = 1;
     frame->sample_aspect_ratio = (AVRational){ 0, 1 };
     frame->format              = -1; /* unknown */
+    frame->colorspace          = AVCOL_SPC_UNSPECIFIED;
     frame->extended_data       = frame->data;
 }
 
@@ -126,10 +125,14 @@ static int get_video_buffer(AVFrame *frame, int align)
         return ret;
 
     if (!frame->linesize[0]) {
-        ret = av_image_fill_linesizes(frame->linesize, frame->format,
-                                      frame->width);
-        if (ret < 0)
-            return ret;
+        for(i=1; i<=align; i+=i) {
+            ret = av_image_fill_linesizes(frame->linesize, frame->format,
+                                          FFALIGN(frame->width, i));
+            if (ret < 0)
+                return ret;
+            if (!(frame->linesize[0] & (align-1)))
+                break;
+        }
 
         for (i = 0; i < 4 && frame->linesize[i]; i++)
             frame->linesize[i] = FFALIGN(frame->linesize[i], align);
@@ -138,7 +141,7 @@ static int get_video_buffer(AVFrame *frame, int align)
     for (i = 0; i < 4 && frame->linesize[i]; i++) {
         int h = FFALIGN(frame->height, 32);
         if (i == 1 || i == 2)
-            h = -((-h) >> desc->log2_chroma_h);
+            h = FF_CEIL_RSHIFT(h, desc->log2_chroma_h);
 
         frame->buf[i] = av_buffer_alloc(frame->linesize[i] * h + 16);
         if (!frame->buf[i])
@@ -146,7 +149,7 @@ static int get_video_buffer(AVFrame *frame, int align)
 
         frame->data[i] = frame->buf[i]->data;
     }
-    if (desc->flags & PIX_FMT_PAL || desc->flags & PIX_FMT_PSEUDOPAL) {
+    if (desc->flags & AV_PIX_FMT_FLAG_PAL || desc->flags & AV_PIX_FMT_FLAG_PSEUDOPAL) {
         av_buffer_unref(&frame->buf[1]);
         frame->buf[1] = av_buffer_alloc(1024);
         if (!frame->buf[1])
@@ -219,7 +222,7 @@ int av_frame_get_buffer(AVFrame *frame, int align)
 
     if (frame->width > 0 && frame->height > 0)
         return get_video_buffer(frame, align);
-    else if (frame->nb_samples > 0 && frame->channel_layout)
+    else if (frame->nb_samples > 0 && (frame->channel_layout || frame->channels > 0))
         return get_audio_buffer(frame, align);
 
     return AVERROR(EINVAL);
@@ -259,7 +262,9 @@ int av_frame_ref(AVFrame *dst, AVFrame *src)
     }
 
     /* ref the buffers */
-    for (i = 0; i < FF_ARRAY_ELEMS(src->buf) && src->buf[i]; i++) {
+    for (i = 0; i < FF_ARRAY_ELEMS(src->buf); i++) {
+        if (!src->buf[i])
+            continue;
         dst->buf[i] = av_buffer_ref(src->buf[i]);
         if (!dst->buf[i]) {
             ret = AVERROR(ENOMEM);
@@ -366,8 +371,9 @@ int av_frame_is_writable(AVFrame *frame)
     if (!frame->buf[0])
         return 0;
 
-    for (i = 0; i < FF_ARRAY_ELEMS(frame->buf) && frame->buf[i]; i++)
-        ret &= !!av_buffer_is_writable(frame->buf[i]);
+    for (i = 0; i < FF_ARRAY_ELEMS(frame->buf); i++)
+        if (frame->buf[i])
+            ret &= !!av_buffer_is_writable(frame->buf[i]);
     for (i = 0; i < frame->nb_extended_buf; i++)
         ret &= !!av_buffer_is_writable(frame->extended_buf[i]);
 
@@ -449,6 +455,8 @@ int av_frame_copy_props(AVFrame *dst, const AVFrame *src)
     dst->coded_picture_number = src->coded_picture_number;
     dst->display_picture_number = src->display_picture_number;
     dst->decode_error_flags  = src->decode_error_flags;
+    dst->colorspace          = src->colorspace;
+    dst->color_range         = src->color_range;
 
     av_dict_copy(&dst->metadata, src->metadata, 0);
 
@@ -550,7 +558,7 @@ AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
     return ret;
 }
 
-AVFrameSideData *av_frame_get_side_data(AVFrame *frame,
+AVFrameSideData *av_frame_get_side_data(const AVFrame *frame,
                                         enum AVFrameSideDataType type)
 {
     int i;

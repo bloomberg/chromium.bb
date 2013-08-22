@@ -27,9 +27,9 @@
  * h263 bitstream encoder.
  */
 
-//#define DEBUG
 #include <limits.h>
 
+#include "libavutil/attributes.h"
 #include "avcodec.h"
 #include "mpegvideo.h"
 #include "h263.h"
@@ -679,7 +679,7 @@ void ff_h263_encode_motion(MpegEncContext * s, int val, int f_code)
     }
 }
 
-static void init_mv_penalty_and_fcode(MpegEncContext *s)
+static av_cold void init_mv_penalty_and_fcode(MpegEncContext *s)
 {
     int f_code;
     int mv;
@@ -721,7 +721,9 @@ static void init_mv_penalty_and_fcode(MpegEncContext *s)
     }
 }
 
-static void init_uni_h263_rl_tab(RLTable *rl, uint32_t *bits_tab, uint8_t *len_tab){
+static av_cold void init_uni_h263_rl_tab(RLTable *rl, uint32_t *bits_tab,
+                                         uint8_t *len_tab)
+{
     int slevel, run, last;
 
     av_assert0(MAX_LEVEL >= 64);
@@ -764,7 +766,7 @@ static void init_uni_h263_rl_tab(RLTable *rl, uint32_t *bits_tab, uint8_t *len_t
     }
 }
 
-void ff_h263_encode_init(MpegEncContext *s)
+av_cold void ff_h263_encode_init(MpegEncContext *s)
 {
     static int done = 0;
 

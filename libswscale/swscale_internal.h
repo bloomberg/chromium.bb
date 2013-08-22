@@ -61,6 +61,14 @@
 
 struct SwsContext;
 
+typedef enum SwsDither {
+    SWS_DITHER_NONE = 0,
+    SWS_DITHER_AUTO,
+    SWS_DITHER_BAYER,
+    SWS_DITHER_ED,
+    NB_SWS_DITHER,
+} SwsDither;
+
 typedef int (*SwsFunc)(struct SwsContext *context, const uint8_t *src[],
                        int srcStride[], int srcSliceY, int srcSliceH,
                        uint8_t *dst[], int dstStride[]);
@@ -380,6 +388,12 @@ typedef struct SwsContext {
     int dstRange;                 ///< 0 = MPG YUV range, 1 = JPG YUV range (destination image).
     int src0Alpha;
     int dst0Alpha;
+    int srcXYZ;
+    int dstXYZ;
+    int src_h_chr_pos;
+    int dst_h_chr_pos;
+    int src_v_chr_pos;
+    int dst_v_chr_pos;
     int yuv2rgb_y_offset;
     int yuv2rgb_y_coeff;
     int yuv2rgb_v2r_coeff;
@@ -473,6 +487,16 @@ typedef struct SwsContext {
 #endif
     int use_mmx_vfilter;
 
+/* pre defined color-spaces gamma */
+#define XYZ_GAMMA (2.6f)
+#define RGB_GAMMA (2.2f)
+    int16_t *xyzgamma;
+    int16_t *rgbgamma;
+    int16_t *xyzgammainv;
+    int16_t *rgbgammainv;
+    int16_t xyz2rgb_matrix[3][4];
+    int16_t rgb2xyz_matrix[3][4];
+
     /* function pointers for swScale() */
     yuv2planar1_fn yuv2plane1;
     yuv2planarX_fn yuv2planeX;
@@ -495,12 +519,13 @@ typedef struct SwsContext {
 
     /**
      * Functions to read planar input, such as planar RGB, and convert
-     * internally to Y/UV.
+     * internally to Y/UV/A.
      */
     /** @{ */
     void (*readLumPlanar)(uint8_t *dst, const uint8_t *src[4], int width, int32_t *rgb2yuv);
     void (*readChrPlanar)(uint8_t *dstU, uint8_t *dstV, const uint8_t *src[4],
                           int width, int32_t *rgb2yuv);
+    void (*readAlpPlanar)(uint8_t *dst, const uint8_t *src[4], int width, int32_t *rgb2yuv);
     /** @} */
 
     /**
@@ -576,6 +601,8 @@ typedef struct SwsContext {
     void (*chrConvertRange)(int16_t *dst1, int16_t *dst2, int width);
 
     int needs_hcscale; ///< Set if there are chroma planes to be converted.
+
+    SwsDither dither;
 } SwsContext;
 //FIXME check init (where 0)
 
@@ -623,33 +650,33 @@ static av_always_inline int isBE(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return desc->flags & PIX_FMT_BE;
+    return desc->flags & AV_PIX_FMT_FLAG_BE;
 }
 
 static av_always_inline int isYUV(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return !(desc->flags & PIX_FMT_RGB) && desc->nb_components >= 2;
+    return !(desc->flags & AV_PIX_FMT_FLAG_RGB) && desc->nb_components >= 2;
 }
 
 static av_always_inline int isPlanarYUV(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return ((desc->flags & PIX_FMT_PLANAR) && isYUV(pix_fmt));
+    return ((desc->flags & AV_PIX_FMT_FLAG_PLANAR) && isYUV(pix_fmt));
 }
 
 static av_always_inline int isRGB(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return (desc->flags & PIX_FMT_RGB);
+    return (desc->flags & AV_PIX_FMT_FLAG_RGB);
 }
 
 #if 0 // FIXME
 #define isGray(x) \
-    (!(av_pix_fmt_desc_get(x)->flags & PIX_FMT_PAL) && \
+    (!(av_pix_fmt_desc_get(x)->flags & AV_PIX_FMT_FLAG_PAL) && \
      av_pix_fmt_desc_get(x)->nb_components <= 2)
 #else
 #define isGray(x)                      \
@@ -725,23 +752,16 @@ static av_always_inline int isRGB(enum AVPixelFormat pix_fmt)
     (           \
           isRGBinInt(x)       ||    \
           isBGRinInt(x)       ||    \
-          isRGB(x)            ||    \
-          (x)==AV_PIX_FMT_GBRP9LE  || \
-          (x)==AV_PIX_FMT_GBRP9BE  || \
-          (x)==AV_PIX_FMT_GBRP10LE || \
-          (x)==AV_PIX_FMT_GBRP10BE || \
-          (x)==AV_PIX_FMT_GBRP12LE || \
-          (x)==AV_PIX_FMT_GBRP12BE || \
-          (x)==AV_PIX_FMT_GBRP14LE || \
-          (x)==AV_PIX_FMT_GBRP14BE || \
-          (x)==AV_PIX_FMT_GBR24P     \
+          isRGB(x)      \
     )
 
 static av_always_inline int isALPHA(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return desc->flags & PIX_FMT_ALPHA;
+    if (pix_fmt == AV_PIX_FMT_PAL8)
+        return 1;
+    return desc->flags & AV_PIX_FMT_FLAG_ALPHA;
 }
 
 #if 1
@@ -758,7 +778,7 @@ static av_always_inline int isPacked(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return ((desc->nb_components >= 2 && !(desc->flags & PIX_FMT_PLANAR)) ||
+    return ((desc->nb_components >= 2 && !(desc->flags & AV_PIX_FMT_FLAG_PLANAR)) ||
             pix_fmt == AV_PIX_FMT_PAL8);
 }
 
@@ -767,36 +787,43 @@ static av_always_inline int isPlanar(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return (desc->nb_components >= 2 && (desc->flags & PIX_FMT_PLANAR));
+    return (desc->nb_components >= 2 && (desc->flags & AV_PIX_FMT_FLAG_PLANAR));
 }
 
 static av_always_inline int isPackedRGB(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return ((desc->flags & (PIX_FMT_PLANAR | PIX_FMT_RGB)) == PIX_FMT_RGB);
+    return ((desc->flags & (AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB)) == AV_PIX_FMT_FLAG_RGB);
 }
 
 static av_always_inline int isPlanarRGB(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return ((desc->flags & (PIX_FMT_PLANAR | PIX_FMT_RGB)) ==
-            (PIX_FMT_PLANAR | PIX_FMT_RGB));
+    return ((desc->flags & (AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB)) ==
+            (AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_RGB));
 }
 
 static av_always_inline int usePal(enum AVPixelFormat pix_fmt)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
     av_assert0(desc);
-    return (desc->flags & PIX_FMT_PAL) || (desc->flags & PIX_FMT_PSEUDOPAL);
+    return (desc->flags & AV_PIX_FMT_FLAG_PAL) || (desc->flags & AV_PIX_FMT_FLAG_PSEUDOPAL);
 }
 
 extern const uint64_t ff_dither4[2];
 extern const uint64_t ff_dither8[2];
-extern const uint8_t dithers[8][8][8];
-extern const uint16_t dither_scale[15][16];
 
+extern const uint8_t ff_dither_2x2_4[3][8];
+extern const uint8_t ff_dither_2x2_8[3][8];
+extern const uint8_t ff_dither_4x4_16[5][8];
+extern const uint8_t ff_dither_8x8_32[9][8];
+extern const uint8_t ff_dither_8x8_73[9][8];
+extern const uint8_t ff_dither_8x8_128[9][8];
+extern const uint8_t ff_dither_8x8_220[9][8];
+
+extern const int32_t ff_yuv2rgb_coeffs[8][4];
 
 extern const AVClass sws_context_class;
 

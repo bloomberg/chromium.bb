@@ -26,6 +26,8 @@
 
 #include <stddef.h>
 
+#include "libavutil/attributes.h"
+
 #undef PREFETCH
 #undef MOVNTQ
 #undef EMMS
@@ -2352,7 +2354,7 @@ static void RENAME(yuyvtoyuv420)(uint8_t *ydst, uint8_t *udst, uint8_t *vdst, co
                                  int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth= -((-width)>>1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y=0; y<height; y++) {
         RENAME(extract_even)(src, ydst, width);
@@ -2378,7 +2380,7 @@ static void RENAME(yuyvtoyuv422)(uint8_t *ydst, uint8_t *udst, uint8_t *vdst, co
                                  int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth= -((-width)>>1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y=0; y<height; y++) {
         RENAME(extract_even)(src, ydst, width);
@@ -2402,7 +2404,7 @@ static void RENAME(uyvytoyuv420)(uint8_t *ydst, uint8_t *udst, uint8_t *vdst, co
                                  int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth= -((-width)>>1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y=0; y<height; y++) {
         RENAME(extract_even)(src+1, ydst, width);
@@ -2428,7 +2430,7 @@ static void RENAME(uyvytoyuv422)(uint8_t *ydst, uint8_t *udst, uint8_t *vdst, co
                                  int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth= -((-width)>>1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y=0; y<height; y++) {
         RENAME(extract_even)(src+1, ydst, width);
@@ -2448,7 +2450,7 @@ static void RENAME(uyvytoyuv422)(uint8_t *ydst, uint8_t *udst, uint8_t *vdst, co
 #endif /* !COMPILE_TEMPLATE_AMD3DNOW */
 #endif /* !COMPILE_TEMPLATE_SSE2 */
 
-static inline void RENAME(rgb2rgb_init)(void)
+static av_cold void RENAME(rgb2rgb_init)(void)
 {
 #if !COMPILE_TEMPLATE_SSE2
 #if !COMPILE_TEMPLATE_AMD3DNOW

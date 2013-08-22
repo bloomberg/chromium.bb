@@ -169,7 +169,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     AVFrame *outpicref = showwaves->outpicref;
     int linesize = outpicref ? outpicref->linesize[0] : 0;
     int16_t *p = (int16_t *)insamples->data[0];
-    int nb_channels = av_get_channel_layout_nb_channels(insamples->channel_layout);
+    int nb_channels = inlink->channels;
     int i, j, k, h, ret = 0;
     const int n = showwaves->n;
     const int x = 255 / (nb_channels * n); /* multiplication factor, pre-computed to avoid in-loop divisions */
@@ -188,7 +188,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
                                           (AVRational){ 1, inlink->sample_rate },
                                           outlink->time_base);
             linesize = outpicref->linesize[0];
-            memset(outpicref->data[0], 0, showwaves->h*linesize);
+            for (j = 0; j < outlink->h; j++)
+                memset(outpicref->data[0] + j * linesize, 0, outlink->w);
         }
         for (j = 0; j < nb_channels; j++) {
             h = showwaves->h/2 - av_rescale(*p++, showwaves->h/2, MAX_INT16);

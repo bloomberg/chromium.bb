@@ -37,6 +37,7 @@ typedef struct {
     int split_planes;       /**< use independent file for each Y, U, V plane */
     char path[1024];
     int update;
+    int use_strftime;
 } VideoMuxData;
 
 static int write_header(AVFormatContext *s)
@@ -60,7 +61,7 @@ static int write_header(AVFormatContext *s)
                          && s->nb_streams == 1
                          && st->codec->codec_id == AV_CODEC_ID_RAWVIDEO
                          && desc
-                         &&(desc->flags & PIX_FMT_PLANAR)
+                         &&(desc->flags & AV_PIX_FMT_FLAG_PLANAR)
                          && desc->nb_components >= 3;
     return 0;
 }
@@ -77,6 +78,15 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     if (!img->is_pipe) {
         if (img->update) {
             av_strlcpy(filename, img->path, sizeof(filename));
+        } else if (img->use_strftime) {
+            time_t now0;
+            struct tm *tm;
+            time(&now0);
+            tm = localtime(&now0);
+            if (!strftime(filename, sizeof(filename), img->path, tm)) {
+                av_log(s, AV_LOG_ERROR, "Could not get frame filename with strftime\n");
+                return AVERROR(EINVAL);
+            }
         } else if (av_get_frame_filename(filename, sizeof(filename), img->path, img->img_number) < 0 &&
                    img->img_number > 1) {
             av_log(s, AV_LOG_ERROR,
@@ -101,7 +111,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (img->split_planes) {
         int ysize = codec->width * codec->height;
-        int usize = ((-codec->width)>>desc->log2_chroma_w) * ((-codec->height)>>desc->log2_chroma_h);
+        int usize = FF_CEIL_RSHIFT(codec->width, desc->log2_chroma_w) * FF_CEIL_RSHIFT(codec->height, desc->log2_chroma_h);
         if (desc->comp[0].depth_minus1 >= 8) {
             ysize *= 2;
             usize *= 2;
@@ -132,7 +142,8 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 static const AVOption muxoptions[] = {
     { "updatefirst",  "continuously overwrite one file", OFFSET(update),  AV_OPT_TYPE_INT, { .i64 = 0 }, 0,       1, ENC },
     { "update",       "continuously overwrite one file", OFFSET(update),  AV_OPT_TYPE_INT, { .i64 = 0 }, 0,       1, ENC },
-    { "start_number", "set first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT,  { .i64 = 1 }, 1, INT_MAX, ENC },
+    { "start_number", "set first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT,  { .i64 = 1 }, 0, INT_MAX, ENC },
+    { "strftime",     "use strftime for filename", OFFSET(use_strftime), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, ENC },
     { NULL },
 };
 
@@ -148,7 +159,7 @@ AVOutputFormat ff_image2_muxer = {
     .name           = "image2",
     .long_name      = NULL_IF_CONFIG_SMALL("image2 sequence"),
     .extensions     = "bmp,dpx,jls,jpeg,jpg,ljpg,pam,pbm,pcx,pgm,pgmyuv,png,"
-                      "ppm,sgi,tga,tif,tiff,jp2,j2c,xwd,sun,ras,rs,im1,im8,im24,"
+                      "ppm,sgi,tga,tif,tiff,jp2,j2c,j2k,xwd,sun,ras,rs,im1,im8,im24,"
                       "sunras,xbm,xface",
     .priv_data_size = sizeof(VideoMuxData),
     .video_codec    = AV_CODEC_ID_MJPEG,

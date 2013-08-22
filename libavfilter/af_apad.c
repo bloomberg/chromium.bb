@@ -89,7 +89,7 @@ static int request_frame(AVFilterLink *outlink)
 
     ret = ff_request_frame(ctx->inputs[0]);
 
-    if (ret == AVERROR_EOF) {
+    if (ret == AVERROR_EOF && !ctx->is_disabled) {
         int n_out = apad->packet_size;
         AVFrame *outsamplesref;
 
@@ -152,4 +152,5 @@ AVFilter avfilter_af_apad = {
     .inputs        = apad_inputs,
     .outputs       = apad_outputs,
     .priv_class    = &apad_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

@@ -48,6 +48,9 @@
 #define RSHIFT(a,b) ((a) > 0 ? ((a) + ((1<<(b))>>1))>>(b) : ((a) + ((1<<(b))>>1)-1)>>(b))
 /* assume b>0 */
 #define ROUNDED_DIV(a,b) (((a)>0 ? (a) + ((b)>>1) : (a) - ((b)>>1))/(b))
+/* assume a>0 and b>0 */
+#define FF_CEIL_RSHIFT(a,b) (!av_builtin_constant_p(b) ? -((-(a)) >> (b)) \
+                                                       : ((a) + (1<<(b)) - 1) >> (b))
 #define FFUDIV(a,b) (((a)>0 ?(a):(a)-(b)+1) / (b))
 #define FFUMOD(a,b) ((a)-(b)*FFUDIV(a,b))
 #define FFABS(a) ((a) >= 0 ? (a) : (-(a)))
@@ -297,7 +300,7 @@ static av_always_inline av_const int av_popcount64_c(uint64_t x)
     val= GET_BYTE;\
     {\
         uint32_t top = (val & 128) >> 1;\
-        if ((val & 0xc0) == 0x80)\
+        if ((val & 0xc0) == 0x80 || val >= 0xFE)\
             ERROR\
         while (val & top) {\
             int tmp= GET_BYTE - 128;\

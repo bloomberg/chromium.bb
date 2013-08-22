@@ -527,7 +527,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     return ff_filter_frame(outlink, outpicref);
 }
 
-static void uninit(AVFilterContext *ctx)
+static av_cold void uninit(AVFilterContext *ctx)
 {
     RemovelogoContext *removelogo = ctx->priv;
     int a, b;
@@ -578,5 +578,5 @@ AVFilter avfilter_vf_removelogo = {
     .inputs        = removelogo_inputs,
     .outputs       = removelogo_outputs,
     .priv_class    = &removelogo_class,
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

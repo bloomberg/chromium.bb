@@ -91,27 +91,16 @@ static int config_output(AVFilterLink *outlink)
     ColorChannelMixerContext *cm = ctx->priv;
     int i, j, size, *buffer;
 
+    ff_fill_rgba_map(cm->rgba_map, outlink->format);
+
     switch (outlink->format) {
     case AV_PIX_FMT_RGB48:
     case AV_PIX_FMT_BGR48:
     case AV_PIX_FMT_RGBA64:
     case AV_PIX_FMT_BGRA64:
-        if (outlink->format == AV_PIX_FMT_RGB48 ||
-            outlink->format == AV_PIX_FMT_RGBA64) {
-            cm->rgba_map[R] = 0;
-            cm->rgba_map[G] = 1;
-            cm->rgba_map[B] = 2;
-            cm->rgba_map[A] = 3;
-        } else {
-            cm->rgba_map[R] = 2;
-            cm->rgba_map[G] = 1;
-            cm->rgba_map[B] = 0;
-            cm->rgba_map[A] = 3;
-        }
         size = 65536;
         break;
     default:
-        ff_fill_rgba_map(cm->rgba_map, outlink->format);
         size = 256;
     }
 
@@ -124,25 +113,25 @@ static int config_output(AVFilterLink *outlink)
             cm->lut[i][j] = buffer;
 
     for (i = 0; i < size; i++) {
-        cm->lut[R][R][i] = i * cm->rr;
-        cm->lut[R][G][i] = i * cm->rg;
-        cm->lut[R][B][i] = i * cm->rb;
-        cm->lut[R][A][i] = i * cm->ra;
+        cm->lut[R][R][i] = round(i * cm->rr);
+        cm->lut[R][G][i] = round(i * cm->rg);
+        cm->lut[R][B][i] = round(i * cm->rb);
+        cm->lut[R][A][i] = round(i * cm->ra);
 
-        cm->lut[G][R][i] = i * cm->gr;
-        cm->lut[G][G][i] = i * cm->gg;
-        cm->lut[G][B][i] = i * cm->gb;
-        cm->lut[G][A][i] = i * cm->ga;
+        cm->lut[G][R][i] = round(i * cm->gr);
+        cm->lut[G][G][i] = round(i * cm->gg);
+        cm->lut[G][B][i] = round(i * cm->gb);
+        cm->lut[G][A][i] = round(i * cm->ga);
 
-        cm->lut[B][R][i] = i * cm->br;
-        cm->lut[B][G][i] = i * cm->bg;
-        cm->lut[B][B][i] = i * cm->bb;
-        cm->lut[B][A][i] = i * cm->ba;
+        cm->lut[B][R][i] = round(i * cm->br);
+        cm->lut[B][G][i] = round(i * cm->bg);
+        cm->lut[B][B][i] = round(i * cm->bb);
+        cm->lut[B][A][i] = round(i * cm->ba);
 
-        cm->lut[A][R][i] = i * cm->ar;
-        cm->lut[A][G][i] = i * cm->ag;
-        cm->lut[A][B][i] = i * cm->ab;
-        cm->lut[A][A][i] = i * cm->aa;
+        cm->lut[A][R][i] = round(i * cm->ar);
+        cm->lut[A][G][i] = round(i * cm->ag);
+        cm->lut[A][B][i] = round(i * cm->ab);
+        cm->lut[A][A][i] = round(i * cm->aa);
     }
 
     return 0;
@@ -342,20 +331,20 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static const AVFilterPad colorchannelmixer_inputs[] = {
     {
-        .name           = "default",
-        .type           = AVMEDIA_TYPE_VIDEO,
-        .filter_frame   = filter_frame,
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .filter_frame = filter_frame,
     },
     { NULL }
 };
 
 static const AVFilterPad colorchannelmixer_outputs[] = {
-     {
-         .name         = "default",
-         .type         = AVMEDIA_TYPE_VIDEO,
-         .config_props = config_output,
-     },
-     { NULL }
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .config_props = config_output,
+    },
+    { NULL }
 };
 
 AVFilter avfilter_vf_colorchannelmixer = {
@@ -367,4 +356,5 @@ AVFilter avfilter_vf_colorchannelmixer = {
     .query_formats = query_formats,
     .inputs        = colorchannelmixer_inputs,
     .outputs       = colorchannelmixer_outputs,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

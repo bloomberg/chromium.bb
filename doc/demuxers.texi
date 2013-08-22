@@ -1,7 +1,7 @@
 @chapter Demuxers
 @c man begin DEMUXERS
 
-Demuxers are configured elements in FFmpeg which allow to read the
+Demuxers are configured elements in FFmpeg that can read the
 multimedia streams from a particular type of file.
 
 When you configure your FFmpeg build, all the supported demuxers
@@ -102,6 +102,19 @@ The default is -1, it is equivalent to 1 if the format was automatically
 probed and 0 otherwise.
 
 @end table
+
+@section libgme
+
+The Game Music Emu library is a collection of video game music file emulators.
+
+See @url{http://code.google.com/p/game-music-emu/} for more information.
+
+Some files have multiple tracks. The demuxer will pick the first track by
+default. The @option{track_index} option can be used to select a different
+track. Track indexes start at 0. The demuxer exports the number of tracks as
+@var{tracks} meta data entry.
+
+For very large files, the @option{max_size} option may have to be adjusted.
 
 @section libquvi
 
@@ -210,6 +223,10 @@ to read from. Default value is 0.
 Set the index interval range to check when looking for the first image
 file in the sequence, starting from @var{start_number}. Default value
 is 5.
+@item ts_from_file
+If set to 1, will set frame timestamp to modification time of image file. Note
+that monotonity of timestamps is not provided: images go in the same order as
+without this option. Default value is 0.
 @item video_size
 Set the video size of the images to read. If not specified the video
 size is guessed from the first image file in the sequence.
@@ -239,6 +256,19 @@ terminating with the ".png" suffix:
 ffmpeg -pattern_type glob -i "*.png" -r 10 out.mkv
 @end example
 @end itemize
+
+@section mpegts
+
+MPEG-2 transport stream demuxer.
+
+@table @option
+
+@item fix_teletext_pts
+Overrides teletext packet PTS and DTS values with the timestamps calculated
+from the PCR of the first program which the teletext stream is part of and is
+not discarded. Default value is 1, set this option to 0 if you want your
+teletext packet PTS and DTS values untouched.
+@end table
 
 @section rawvideo
 

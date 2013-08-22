@@ -82,7 +82,7 @@ typedef struct AVCodecInternal {
      * Internal sample count used by avcodec_encode_audio() to fabricate pts.
      * Can be removed along with avcodec_encode_audio().
      */
-    int sample_count;
+    int64_t sample_count;
 #endif
 
     /**
@@ -139,11 +139,6 @@ int ff_init_buffer_info(AVCodecContext *s, AVFrame *frame);
 
 
 void avpriv_color_frame(AVFrame *frame, const int color[4]);
-
-/**
- * Remove and free all side data from packet.
- */
-void ff_packet_free_side_data(AVPacket *pkt);
 
 extern volatile int ff_avcodec_locked;
 int ff_lock_avcodec(AVCodecContext *log_ctx);
@@ -206,8 +201,6 @@ int ff_get_buffer(AVCodecContext *avctx, AVFrame *frame, int flags);
 int ff_reget_buffer(AVCodecContext *avctx, AVFrame *frame);
 
 int ff_thread_can_start_frame(AVCodecContext *avctx);
-
-int ff_get_logical_cpus(AVCodecContext *avctx);
 
 int avpriv_h264_has_num_reorder_frames(AVCodecContext *avctx);
 

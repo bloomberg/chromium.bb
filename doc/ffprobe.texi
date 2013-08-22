@@ -44,7 +44,8 @@ name (which may be shared by other sections), and an unique
 name. See the output of @option{sections}.
 
 Metadata tags stored in the container or in the streams are recognized
-and printed in the corresponding "FORMAT" or "STREAM" section.
+and printed in the corresponding "FORMAT", "STREAM" or "PROGRAM_STREAM"
+section.
 
 @c man end
 
@@ -112,7 +113,7 @@ ffprobe -show_packets -select_streams v:1 INPUT
 @end example
 
 @item -show_data
-Show payload data, as an hexadecimal and ASCII dump. Coupled with
+Show payload data, as a hexadecimal and ASCII dump. Coupled with
 @option{-show_packets}, it will dump the packets' data. Coupled with
 @option{-show_streams}, it will dump the codec extradata.
 
@@ -209,6 +210,18 @@ multimedia stream.
 Each media stream information is printed within a dedicated section
 with name "STREAM".
 
+@item -show_programs
+Show information about programs and their streams contained in the input
+multimedia stream.
+
+Each media stream information is printed within a dedicated section
+with name "PROGRAM_STREAM".
+
+@item -show_chapters
+Show information about chapters stored in the format.
+
+Each chapter is printed within a dedicated section with name "CHAPTER".
+
 @item -count_frames
 Count the number of frames per stream and report it in the
 corresponding stream section.
@@ -274,8 +287,8 @@ keyN=valN
 [/SECTION]
 @end example
 
-Metadata tags are printed as a line in the corresponding FORMAT or
-STREAM section, and are prefixed by the string "TAG:".
+Metadata tags are printed as a line in the corresponding FORMAT, STREAM or
+PROGRAM_STREAM section, and are prefixed by the string "TAG:".
 
 A description of the accepted options follows.
 
@@ -487,8 +500,31 @@ DV, GXF and AVI timecodes are available in format metadata
 @end itemize
 @c man end TIMECODE
 
+@include config.texi
 @ifset config-all
-@include all-components.texi
+@ifset config-avutil
+@include utils.texi
+@end ifset
+@ifset config-avcodec
+@include codecs.texi
+@include bitstream_filters.texi
+@end ifset
+@ifset config-avformat
+@include formats.texi
+@include protocols.texi
+@end ifset
+@ifset config-avdevice
+@include devices.texi
+@end ifset
+@ifset config-swresample
+@include resampler.texi
+@end ifset
+@ifset config-swscale
+@include scaler.texi
+@end ifset
+@ifset config-avfilter
+@include filters.texi
+@end ifset
 @end ifset
 
 @chapter See Also

@@ -36,6 +36,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "libavutil/attributes.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/libm.h"
 #include "avcodec.h"
@@ -664,8 +665,8 @@ static int decode_channel_sound_unit(ATRAC3Context *q, GetBitContext *gb,
 
     snd->num_components = decode_tonal_components(gb, snd->components,
                                                   snd->bands_coded);
-    if (snd->num_components == -1)
-        return -1;
+    if (snd->num_components < 0)
+        return snd->num_components;
 
     num_subbands = decode_spectrum(gb, snd->spectrum);
 
@@ -838,7 +839,7 @@ static int atrac3_decode_frame(AVCodecContext *avctx, void *data,
     return avctx->block_align;
 }
 
-static void atrac3_init_static_data(void)
+static av_cold void atrac3_init_static_data(void)
 {
     int i;
 
@@ -922,11 +923,6 @@ static av_cold int atrac3_decode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    if (q->coding_mode == JOINT_STEREO && avctx->channels < 2) {
-        av_log(avctx, AV_LOG_ERROR, "Invalid coding mode\n");
-        return AVERROR_INVALIDDATA;
-    }
-
     /* Check the extradata */
 
     if (version != 4) {
@@ -949,9 +945,13 @@ static av_cold int atrac3_decode_init(AVCodecContext *avctx)
 
     if (q->coding_mode == STEREO)
         av_log(avctx, AV_LOG_DEBUG, "Normal stereo detected.\n");
-    else if (q->coding_mode == JOINT_STEREO)
+    else if (q->coding_mode == JOINT_STEREO) {
+        if (avctx->channels != 2) {
+            av_log(avctx, AV_LOG_ERROR, "Invalid coding mode\n");
+            return AVERROR_INVALIDDATA;
+        }
         av_log(avctx, AV_LOG_DEBUG, "Joint stereo detected.\n");
-    else {
+    } else {
         av_log(avctx, AV_LOG_ERROR, "Unknown channel coding mode %x!\n",
                q->coding_mode);
         return AVERROR_INVALIDDATA;

@@ -1,7 +1,24 @@
 Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
-version <next>:
+version <next>
+
+- aecho filter
+- perspective filter ported from libmpcodecs
+- ffprobe -show_programs option
+- compand filter
+- RTMP seek support
+- when transcoding with ffmpeg (i.e. not streamcopying), -ss is now accurate
+  even when used as an input option. Previous behavior can be restored with
+  the -noaccurate_seek option.
+- ffmpeg -t option can now be used for inputs, to limit the duration of
+  data read from an input file
+- incomplete Voxware MetaSound decoder
+- read EXIF metadata from JPEG
+
+
+version 2.0:
+
 - curves filter
 - reference-counting for AVFrame and AVPacket data
 - ffmpeg now fails when input options are used for output file
@@ -33,6 +50,43 @@ version <next>:
 - timeline editing with filters
 - vidstabdetect and vidstabtransform filters for video stabilization using
   the vid.stab library
+- astats filter
+- trim and atrim filters
+- ffmpeg -t and -ss (output-only) options are now sample-accurate when
+  transcoding audio
+- Matroska muxer can now put the index at the beginning of the file.
+- extractplanes filter
+- avectorscope filter
+- ADPCM DTK decoder
+- ADP demuxer
+- RSD demuxer
+- RedSpark demuxer
+- ADPCM IMA Radical decoder
+- zmq filters
+- DCT denoiser filter (dctdnoiz)
+- Wavelet denoiser filter ported from libmpcodecs as owdenoise (formerly "ow")
+- Apple Intermediate Codec decoder
+- Escape 130 video decoder
+- FTP protocol support
+- V4L2 output device
+- 3D LUT filter (lut3d)
+- SMPTE 302M audio encoder
+- support for slice multithreading in libavfilter
+- Hald CLUT support (generation and filtering)
+- VC-1 interlaced B-frame support
+- support for WavPack muxing (raw and in Matroska)
+- XVideo output device
+- vignette filter
+- True Audio (TTA) encoder
+- Go2Webinar decoder
+- mcdeint filter ported from libmpcodecs
+- sab filter ported from libmpcodecs
+- ffprobe -show_chapters option
+- WavPack encoding through libwavpack
+- rotate filter
+- spp filter ported from libmpcodecs
+- libgme support
+- psnr filter
 
 
 version 1.2:
@@ -669,7 +723,7 @@ version 0.5:
 - MXF demuxer
 - VC-1/WMV3/WMV9 video decoder
 - MacIntel support
-- AVISynth support
+- AviSynth support
 - VMware video decoder
 - VP5 video decoder
 - VP6 video decoder

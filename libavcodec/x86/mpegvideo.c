@@ -24,9 +24,9 @@
 #include "libavutil/x86/asm.h"
 #include "libavcodec/avcodec.h"
 #include "libavcodec/mpegvideo.h"
-#include "dsputil_mmx.h"
+#include "dsputil_x86.h"
 
-#if HAVE_INLINE_ASM
+#if HAVE_MMX_INLINE
 
 static void dct_unquantize_h263_intra_mmx(MpegEncContext *s,
                                   int16_t *block, int n, int qscale)
@@ -164,28 +164,6 @@ __asm__ volatile(
         );
 }
 
-
-/*
-  We can suppose that result of two multiplications can't be greater than 0xFFFF
-  i.e. is 16-bit, so we use here only PMULLW instruction and can avoid
-  a complex multiplication.
-=====================================================
- Full formula for multiplication of 2 integer numbers
- which are represent as high:low words:
- input: value1 = high1:low1
-        value2 = high2:low2
- output: value3 = value1*value2
- value3=high3:low3 (on overflow: modulus 2^32 wrap-around)
- this mean that for 0x123456 * 0x123456 correct result is 0x766cb0ce4
- but this algorithm will compute only 0x66cb0ce4
- this limited by 16-bit size of operands
- ---------------------------------
- tlow1 = high1*low2
- tlow2 = high2*low1
- tlow1 = tlow1 + tlow2
- high3:low3 = low1*low2
- high3 += tlow1
-*/
 static void dct_unquantize_mpeg1_intra_mmx(MpegEncContext *s,
                                      int16_t *block, int n, int qscale)
 {
@@ -574,14 +552,14 @@ static void  denoise_dct_sse2(MpegEncContext *s, int16_t *block){
     );
 }
 
-#endif /* HAVE_INLINE_ASM */
+#endif /* HAVE_MMX_INLINE */
 
 av_cold void ff_MPV_common_init_x86(MpegEncContext *s)
 {
-#if HAVE_INLINE_ASM
-    int mm_flags = av_get_cpu_flags();
+#if HAVE_MMX_INLINE
+    int cpu_flags = av_get_cpu_flags();
 
-    if (mm_flags & AV_CPU_FLAG_MMX) {
+    if (cpu_flags & AV_CPU_FLAG_MMX) {
         s->dct_unquantize_h263_intra = dct_unquantize_h263_intra_mmx;
         s->dct_unquantize_h263_inter = dct_unquantize_h263_inter_mmx;
         s->dct_unquantize_mpeg1_intra = dct_unquantize_mpeg1_intra_mmx;
@@ -590,11 +568,11 @@ av_cold void ff_MPV_common_init_x86(MpegEncContext *s)
             s->dct_unquantize_mpeg2_intra = dct_unquantize_mpeg2_intra_mmx;
         s->dct_unquantize_mpeg2_inter = dct_unquantize_mpeg2_inter_mmx;
 
-        if (mm_flags & AV_CPU_FLAG_SSE2) {
+        if (cpu_flags & AV_CPU_FLAG_SSE2) {
             s->denoise_dct= denoise_dct_sse2;
         } else {
                 s->denoise_dct= denoise_dct_mmx;
         }
     }
-#endif /* HAVE_INLINE_ASM */
+#endif /* HAVE_MMX_INLINE */
 }

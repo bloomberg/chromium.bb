@@ -43,7 +43,7 @@ void ff_vp3_v_loop_filter_mmxext(uint8_t *src, int stride,
 void ff_vp3_h_loop_filter_mmxext(uint8_t *src, int stride,
                                  int *bounding_values);
 
-#if HAVE_INLINE_ASM
+#if HAVE_MMX_INLINE
 
 #define MOVQ_BFE(regd)                                  \
     __asm__ volatile (                                  \
@@ -95,24 +95,24 @@ static void put_vp_no_rnd_pixels8_l2_mmx(uint8_t *dst, const uint8_t *a, const u
         :"memory");
 //    STOP_TIMER("put_vp_no_rnd_pixels8_l2_mmx")
 }
-#endif /* HAVE_INLINE_ASM */
+#endif /* HAVE_MMX_INLINE */
 
 av_cold void ff_vp3dsp_init_x86(VP3DSPContext *c, int flags)
 {
-    int cpuflags = av_get_cpu_flags();
+    int cpu_flags = av_get_cpu_flags();
 
-#if HAVE_INLINE_ASM
+#if HAVE_MMX_INLINE
     c->put_no_rnd_pixels_l2 = put_vp_no_rnd_pixels8_l2_mmx;
-#endif /* HAVE_INLINE_ASM */
+#endif /* HAVE_MMX_INLINE */
 
 #if ARCH_X86_32
-    if (EXTERNAL_MMX(cpuflags)) {
+    if (EXTERNAL_MMX(cpu_flags)) {
         c->idct_put  = ff_vp3_idct_put_mmx;
         c->idct_add  = ff_vp3_idct_add_mmx;
     }
 #endif
 
-    if (EXTERNAL_MMXEXT(cpuflags)) {
+    if (EXTERNAL_MMXEXT(cpu_flags)) {
         c->idct_dc_add = ff_vp3_idct_dc_add_mmxext;
 
         if (!(flags & CODEC_FLAG_BITEXACT)) {
@@ -121,7 +121,7 @@ av_cold void ff_vp3dsp_init_x86(VP3DSPContext *c, int flags)
         }
     }
 
-    if (EXTERNAL_SSE2(cpuflags)) {
+    if (EXTERNAL_SSE2(cpu_flags)) {
         c->idct_put  = ff_vp3_idct_put_sse2;
         c->idct_add  = ff_vp3_idct_add_sse2;
     }

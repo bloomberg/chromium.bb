@@ -129,17 +129,11 @@ extern const vf_info_t ff_vf_info_eq;
 extern const vf_info_t ff_vf_info_fil;
 extern const vf_info_t ff_vf_info_fspp;
 extern const vf_info_t ff_vf_info_ilpack;
-extern const vf_info_t ff_vf_info_mcdeint;
-extern const vf_info_t ff_vf_info_ow;
-extern const vf_info_t ff_vf_info_perspective;
 extern const vf_info_t ff_vf_info_phase;
 extern const vf_info_t ff_vf_info_pp7;
 extern const vf_info_t ff_vf_info_pullup;
 extern const vf_info_t ff_vf_info_qp;
-extern const vf_info_t ff_vf_info_sab;
 extern const vf_info_t ff_vf_info_softpulldown;
-extern const vf_info_t ff_vf_info_spp;
-extern const vf_info_t ff_vf_info_tinterlace;
 extern const vf_info_t ff_vf_info_uspp;
 
 
@@ -150,17 +144,11 @@ static const vf_info_t* const filters[]={
     &ff_vf_info_fil,
     &ff_vf_info_fspp,
     &ff_vf_info_ilpack,
-    &ff_vf_info_mcdeint,
-    &ff_vf_info_ow,
-    &ff_vf_info_perspective,
     &ff_vf_info_phase,
     &ff_vf_info_pp7,
     &ff_vf_info_pullup,
     &ff_vf_info_qp,
-    &ff_vf_info_sab,
     &ff_vf_info_softpulldown,
-    &ff_vf_info_spp,
-    &ff_vf_info_tinterlace,
     &ff_vf_info_uspp,
 
     NULL
@@ -197,61 +185,6 @@ enum AVPixelFormat ff_mp2ff_pix_fmt(int mp){
     return mp == conversion_map[i].fmt ? conversion_map[i].pix_fmt : AV_PIX_FMT_NONE;
 }
 
-static void ff_sws_getFlagsAndFilterFromCmdLine(int *flags, SwsFilter **srcFilterParam, SwsFilter **dstFilterParam)
-{
-        static int firstTime=1;
-        *flags=0;
-
-#if ARCH_X86
-        if(ff_gCpuCaps.hasMMX)
-                __asm__ volatile("emms\n\t"::: "memory"); //FIXME this should not be required but it IS (even for non-MMX versions)
-#endif
-        if(firstTime)
-        {
-                firstTime=0;
-                *flags= SWS_PRINT_INFO;
-        }
-        else if( ff_mp_msg_test(MSGT_VFILTER,MSGL_DBG2) ) *flags= SWS_PRINT_INFO;
-
-        switch(SWS_BILINEAR)
-        {
-                case 0: *flags|= SWS_FAST_BILINEAR; break;
-                case 1: *flags|= SWS_BILINEAR; break;
-                case 2: *flags|= SWS_BICUBIC; break;
-                case 3: *flags|= SWS_X; break;
-                case 4: *flags|= SWS_POINT; break;
-                case 5: *flags|= SWS_AREA; break;
-                case 6: *flags|= SWS_BICUBLIN; break;
-                case 7: *flags|= SWS_GAUSS; break;
-                case 8: *flags|= SWS_SINC; break;
-                case 9: *flags|= SWS_LANCZOS; break;
-                case 10:*flags|= SWS_SPLINE; break;
-                default:*flags|= SWS_BILINEAR; break;
-        }
-
-        *srcFilterParam= NULL;
-        *dstFilterParam= NULL;
-}
-
-//exact copy from vf_scale.c
-// will use sws_flags & src_filter (from cmd line)
-struct SwsContext *ff_sws_getContextFromCmdLine(int srcW, int srcH, int srcFormat, int dstW, int dstH, int dstFormat)
-{
-        int flags, i;
-        SwsFilter *dstFilterParam, *srcFilterParam;
-        enum AVPixelFormat dfmt, sfmt;
-
-        for(i=0; conversion_map[i].fmt && dstFormat != conversion_map[i].fmt; i++);
-        dfmt= conversion_map[i].pix_fmt;
-        for(i=0; conversion_map[i].fmt && srcFormat != conversion_map[i].fmt; i++);
-        sfmt= conversion_map[i].pix_fmt;
-
-        if (srcFormat == IMGFMT_RGB8 || srcFormat == IMGFMT_BGR8) sfmt = AV_PIX_FMT_PAL8;
-        ff_sws_getFlagsAndFilterFromCmdLine(&flags, &srcFilterParam, &dstFilterParam);
-
-        return sws_getContext(srcW, srcH, sfmt, dstW, dstH, dfmt, flags , srcFilterParam, dstFilterParam, NULL);
-}
-
 typedef struct {
     const AVClass *class;
     vf_instance_t vf;
@@ -259,6 +192,7 @@ typedef struct {
     AVFilterContext *avfctx;
     int frame_returned;
     char *filter;
+    enum AVPixelFormat in_pix_fmt;
 } MPContext;
 
 #define OFFSET(x) offsetof(MPContext, x)
@@ -532,8 +466,6 @@ mp_image_t* ff_vf_get_image(vf_instance_t* vf, unsigned int outfmt, int mp_imgty
   return mpi;
 }
 
-static void dummy_free(void *opaque, uint8_t *data){}
-
 int ff_vf_next_put_image(struct vf_instance *vf,mp_image_t *mpi, double pts){
     MPContext *m= (MPContext*)(((uint8_t*)vf) - offsetof(MPContext, vf));
     AVFilterLink *outlink     = m->avfctx->outputs[0];
@@ -554,6 +486,10 @@ int ff_vf_next_put_image(struct vf_instance *vf,mp_image_t *mpi, double pts){
 
     for(i=0; conversion_map[i].fmt && mpi->imgfmt != conversion_map[i].fmt; i++);
     picref->format = conversion_map[i].pix_fmt;
+
+    for(i=0; conversion_map[i].fmt && m->in_pix_fmt != conversion_map[i].pix_fmt; i++);
+    if (mpi->imgfmt == conversion_map[i].fmt)
+        picref->format = conversion_map[i].pix_fmt;
 
     memcpy(picref->linesize, mpi->stride, FFMIN(sizeof(picref->linesize), sizeof(mpi->stride)));
 
@@ -808,11 +744,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     for(i=0; conversion_map[i].fmt && conversion_map[i].pix_fmt != inlink->format; i++);
     ff_mp_image_setfmt(mpi,conversion_map[i].fmt);
+    m->in_pix_fmt = inlink->format;
 
     memcpy(mpi->planes, inpic->data,     FFMIN(sizeof(inpic->data)    , sizeof(mpi->planes)));
     memcpy(mpi->stride, inpic->linesize, FFMIN(sizeof(inpic->linesize), sizeof(mpi->stride)));
 
-    //FIXME pass interleced & tff flags around
+    if (inpic->interlaced_frame)
+        mpi->fields |= MP_IMGFIELD_INTERLACED;
+    if (inpic->top_field_first)
+        mpi->fields |= MP_IMGFIELD_TOP_FIRST;
+    if (inpic->repeat_pict)
+        mpi->fields |= MP_IMGFIELD_REPEAT_FIRST;
 
     // mpi->flags|=MP_IMGFLAG_ALLOCATED; ?
     mpi->flags |= MP_IMGFLAG_READABLE;

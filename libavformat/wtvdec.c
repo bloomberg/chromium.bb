@@ -47,11 +47,11 @@
  */
 
 typedef struct {
-    AVIOContext *pb_filesystem;  /** file system (AVFormatContext->pb) */
+    AVIOContext *pb_filesystem;  /**< file system (AVFormatContext->pb) */
 
-    int sector_bits;     /** sector shift bits; used to convert sector number into pb_filesystem offset */
-    uint32_t *sectors;   /** file allocation table */
-    int nb_sectors;      /** number of sectors */
+    int sector_bits;     /**< sector shift bits; used to convert sector number into pb_filesystem offset */
+    uint32_t *sectors;   /**< file allocation table */
+    int nb_sectors;      /**< number of sectors */
 
     int error;
     int64_t position;
@@ -88,7 +88,7 @@ static int wtvfile_read_packet(void *opaque, uint8_t *buf, int buf_size)
             int i = wf->position >> wf->sector_bits;
             if (i >= wf->nb_sectors ||
                 (wf->sectors[i] != wf->sectors[i - 1] + (1 << (wf->sector_bits - WTV_SECTOR_BITS)) &&
-                avio_seek(pb, (int64_t)wf->sectors[i] << WTV_SECTOR_BITS, SEEK_SET) < 0)) {
+                avio_seek(pb, wf->sectors[i] << WTV_SECTOR_BITS, SEEK_SET) < 0)) {
                 wf->error = 1;
                 break;
             }
@@ -113,7 +113,7 @@ static int64_t wtvfile_seek(void *opaque, int64_t offset, int whence)
         offset = wf->length;
 
     wf->error = offset < 0 || offset >= wf->length ||
-                avio_seek(pb, ((int64_t)wf->sectors[offset >> wf->sector_bits] << WTV_SECTOR_BITS)
+                avio_seek(pb, (wf->sectors[offset >> wf->sector_bits] << WTV_SECTOR_BITS)
                               + (offset & ((1 << wf->sector_bits) - 1)), SEEK_SET) < 0;
     wf->position = offset;
     return offset;
@@ -183,7 +183,7 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
         }
         wf->nb_sectors = 0;
         for (i = 0; i < nb_sectors1; i++) {
-            if (avio_seek(s->pb, (int64_t)sectors1[i] << WTV_SECTOR_BITS, SEEK_SET) < 0)
+            if (avio_seek(s->pb, sectors1[i] << WTV_SECTOR_BITS, SEEK_SET) < 0)
                 break;
             wf->nb_sectors += read_ints(s->pb, wf->sectors + i * WTV_SECTOR_SIZE / 4, WTV_SECTOR_SIZE / 4);
         }
@@ -213,7 +213,7 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
 
     /* seek to initial sector */
     wf->position = 0;
-    if (avio_seek(s->pb, (int64_t)wf->sectors[0] << WTV_SECTOR_BITS, SEEK_SET) < 0) {
+    if (avio_seek(s->pb, wf->sectors[0] << WTV_SECTOR_BITS, SEEK_SET) < 0) {
         av_free(wf->sectors);
         av_free(wf);
         return NULL;
@@ -306,10 +306,10 @@ typedef struct {
 } WtvStream;
 
 typedef struct {
-    AVIOContext *pb;       /** timeline file */
+    AVIOContext *pb;       /**< timeline file */
     int64_t epoch;
-    int64_t pts;             /** pts for next data chunk */
-    int64_t last_valid_pts;  /** latest valid pts, used for interative seeking */
+    int64_t pts;             /**< pts for next data chunk */
+    int64_t last_valid_pts;  /**< latest valid pts, used for interative seeking */
 
     /* maintain private seek index, as the AVIndexEntry->pos is relative to the
        start of the 'timeline' file, not the file system (AVFormatContext->pb) */
@@ -436,6 +436,7 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     av_dict_set(&st->metadata, "title", description, 0);
     st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id   = AV_CODEC_ID_MJPEG;
+    st->id = -1;
     ret = av_get_packet(pb, &st->attached_pic, filesize);
     if (ret < 0)
         goto done;

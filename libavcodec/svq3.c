@@ -39,6 +39,8 @@
  * correctly decodes this file:
  *  http://samples.mplayerhq.hu/V-codecs/SVQ3/Vertical400kbit.sorenson3.mov
  */
+
+#include "libavutil/attributes.h"
 #include "internal.h"
 #include "avcodec.h"
 #include "mpegvideo.h"
@@ -103,6 +105,13 @@ static const uint8_t svq3_scan[16] = {
     2 + 2 * 4, 3 + 0 * 4, 3 + 1 * 4, 3 + 2 * 4,
     0 + 1 * 4, 0 + 2 * 4, 1 + 1 * 4, 1 + 2 * 4,
     0 + 3 * 4, 1 + 3 * 4, 2 + 3 * 4, 3 + 3 * 4,
+};
+
+static const uint8_t luma_dc_zigzag_scan[16] = {
+    0 * 16 + 0 * 64, 1 * 16 + 0 * 64, 2 * 16 + 0 * 64, 0 * 16 + 2 * 64,
+    3 * 16 + 0 * 64, 0 * 16 + 1 * 64, 1 * 16 + 1 * 64, 2 * 16 + 1 * 64,
+    1 * 16 + 2 * 64, 2 * 16 + 2 * 64, 3 * 16 + 2 * 64, 0 * 16 + 3 * 64,
+    3 * 16 + 1 * 64, 1 * 16 + 3 * 64, 2 * 16 + 3 * 64, 3 * 16 + 3 * 64,
 };
 
 static const uint8_t svq3_pred_0[25][2] = {
@@ -648,8 +657,8 @@ static int svq3_decode_mb(SVQ3Context *s, unsigned int mb_type)
         dir = i_mb_type_info[mb_type - 8].pred_mode;
         dir = (dir >> 1) ^ 3 * (dir & 1) ^ 1;
 
-        if ((h->intra16x16_pred_mode = ff_h264_check_intra_pred_mode(h, dir, 0)) == -1) {
-            av_log(h->avctx, AV_LOG_ERROR, "check_intra_pred_mode = -1\n");
+        if ((h->intra16x16_pred_mode = ff_h264_check_intra_pred_mode(h, dir, 0)) < 0) {
+            av_log(h->avctx, AV_LOG_ERROR, "check_intra_pred_mode < 0\n");
             return -1;
         }
 
@@ -1310,7 +1319,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     return buf_size;
 }
 
-static int svq3_decode_end(AVCodecContext *avctx)
+static av_cold int svq3_decode_end(AVCodecContext *avctx)
 {
     SVQ3Context *s = avctx->priv_data;
     H264Context *h = &s->h;

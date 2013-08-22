@@ -89,7 +89,7 @@ static int config_props(AVFilterLink *inlink)
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
     int ret;
 
-    kerndeint->is_packed_rgb = av_pix_fmt_desc_get(inlink->format)->flags & PIX_FMT_RGB;
+    kerndeint->is_packed_rgb = av_pix_fmt_desc_get(inlink->format)->flags & AV_PIX_FMT_FLAG_RGB;
     kerndeint->vsub = desc->log2_chroma_h;
 
     ret = av_image_alloc(kerndeint->tmp_data, kerndeint->tmp_linesize,
@@ -150,8 +150,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     av_frame_copy_props(outpic, inpic);
     outpic->interlaced_frame = 0;
 
-    for (plane = 0; inpic->data[plane] && plane < 4; plane++) {
-        h = plane == 0 ? inlink->h : inlink->h >> kerndeint->vsub;
+    for (plane = 0; plane < 4 && inpic->data[plane] && inpic->linesize[plane]; plane++) {
+        h = plane == 0 ? inlink->h : FF_CEIL_RSHIFT(inlink->h, kerndeint->vsub);
         bwidth = kerndeint->tmp_bwidth[plane];
 
         srcp = srcp_saved = inpic->data[plane];

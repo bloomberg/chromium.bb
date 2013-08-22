@@ -19,13 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/attributes.h"
 #include "avcodec.h"
 #include "internal.h"
 #include "wma.h"
 #include "libavutil/avassert.h"
 
 
-static int encode_init(AVCodecContext * avctx){
+static av_cold int encode_init(AVCodecContext *avctx)
+{
     WMACodecContext *s = avctx->priv_data;
     int i, flags1, flags2, block_align;
     uint8_t *extradata;
@@ -175,7 +177,7 @@ static int encode_block(WMACodecContext *s, float (*src_coefs)[BLOCK_MAX_SIZE], 
     }
 
     s->block_len = 1 << s->block_len_bits;
-//     assert((s->block_pos + s->block_len) <= s->frame_len);
+//     av_assert0((s->block_pos + s->block_len) <= s->frame_len);
     bsize = s->frame_len_bits - s->block_len_bits;
 
     //FIXME factor
@@ -374,6 +376,11 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
 
     while(total_gain <= 128 && error > 0)
         error = encode_frame(s, s->coefs, avpkt->data, avpkt->size, total_gain++);
+    if (error > 0) {
+        av_log(avctx, AV_LOG_ERROR, "Invalid input data or requested bitrate too low, cannot encode\n");
+        avpkt->size = 0;
+        return AVERROR(EINVAL);
+    }
     av_assert0((put_bits_count(&s->pb) & 7) == 0);
     i= avctx->block_align - (put_bits_count(&s->pb)+7)/8;
     av_assert0(i>=0);

@@ -175,7 +175,7 @@ static int mimic_decode_update_thread_context(AVCodecContext *avctx, const AVCod
 
     for (i = 0; i < FF_ARRAY_ELEMS(dst->frames); i++) {
         ff_thread_release_buffer(avctx, &dst->frames[i]);
-        if (src->frames[i].f->data[0]) {
+        if (i != src->next_cur_index && src->frames[i].f->data[0]) {
             ret = ff_thread_ref_frame(&dst->frames[i], &src->frames[i]);
             if (ret < 0)
                 return ret;
@@ -388,8 +388,8 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
         avctx->height  = height;
         avctx->pix_fmt = AV_PIX_FMT_YUV420P;
         for (i = 0; i < 3; i++) {
-            ctx->num_vblocks[i] = -((-height) >> (3 + !!i));
-            ctx->num_hblocks[i] =     width   >> (3 + !!i);
+            ctx->num_vblocks[i] = FF_CEIL_RSHIFT(height,   3 + !!i);
+            ctx->num_hblocks[i] =                width >> (3 + !!i);
         }
     } else if (width != ctx->avctx->width || height != ctx->avctx->height) {
         avpriv_request_sample(avctx, "Resolution changing");

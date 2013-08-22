@@ -27,6 +27,7 @@
  * DSP utils
  */
 
+#include "libavutil/attributes.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 #include "avcodec.h"
@@ -107,7 +108,9 @@ static const uint8_t simple_mmx_permutation[64]={
 
 static const uint8_t idct_sse2_row_perm[8] = {0, 4, 1, 5, 2, 6, 3, 7};
 
-void ff_init_scantable(uint8_t *permutation, ScanTable *st, const uint8_t *src_scantable){
+av_cold void ff_init_scantable(uint8_t *permutation, ScanTable *st,
+                               const uint8_t *src_scantable)
+{
     int i;
     int end;
 
@@ -128,8 +131,8 @@ void ff_init_scantable(uint8_t *permutation, ScanTable *st, const uint8_t *src_s
     }
 }
 
-void ff_init_scantable_permutation(uint8_t *idct_permutation,
-                                   int idct_permutation_type)
+av_cold void ff_init_scantable_permutation(uint8_t *idct_permutation,
+                                           int idct_permutation_type)
 {
     int i;
 
@@ -2598,12 +2601,12 @@ static void vector_clip_int32_c(int32_t *dst, const int32_t *src, int32_t min,
     } while (len > 0);
 }
 
-static void ff_jref_idct_put(uint8_t *dest, int line_size, int16_t *block)
+static void jref_idct_put(uint8_t *dest, int line_size, int16_t *block)
 {
     ff_j_rev_dct (block);
     put_pixels_clamped_c(block, dest, line_size);
 }
-static void ff_jref_idct_add(uint8_t *dest, int line_size, int16_t *block)
+static void jref_idct_add(uint8_t *dest, int line_size, int16_t *block)
 {
     ff_j_rev_dct (block);
     add_pixels_clamped_c(block, dest, line_size);
@@ -2719,8 +2722,8 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
             c->idct_permutation_type = FF_NO_IDCT_PERM;
         } else {
         if(avctx->idct_algo==FF_IDCT_INT){
-            c->idct_put= ff_jref_idct_put;
-            c->idct_add= ff_jref_idct_add;
+            c->idct_put= jref_idct_put;
+            c->idct_add= jref_idct_add;
             c->idct    = ff_j_rev_dct;
             c->idct_permutation_type= FF_LIBMPEG2_IDCT_PERM;
         }else if(avctx->idct_algo==FF_IDCT_FAAN){

@@ -50,18 +50,18 @@ enum CurveType { TRI, QSIN, ESIN, HSIN, LOG, PAR, QUA, CUB, SQU, CBR };
 static const AVOption afade_options[] = {
     { "type",         "set the fade direction",                      OFFSET(type),         AV_OPT_TYPE_INT,    {.i64 = 0    }, 0, 1, FLAGS, "type" },
     { "t",            "set the fade direction",                      OFFSET(type),         AV_OPT_TYPE_INT,    {.i64 = 0    }, 0, 1, FLAGS, "type" },
-    { "in",           NULL,                                          0,                    AV_OPT_TYPE_CONST,  {.i64 = 0    }, 0, 0, FLAGS, "type" },
-    { "out",          NULL,                                          0,                    AV_OPT_TYPE_CONST,  {.i64 = 1    }, 0, 0, FLAGS, "type" },
-    { "start_sample", "set expression of sample to start fading",    OFFSET(start_sample), AV_OPT_TYPE_INT64,  {.i64 = 0    }, 0, INT64_MAX, FLAGS },
-    { "ss",           "set expression of sample to start fading",    OFFSET(start_sample), AV_OPT_TYPE_INT64,  {.i64 = 0    }, 0, INT64_MAX, FLAGS },
-    { "nb_samples",   "set expression for fade duration in samples", OFFSET(nb_samples),   AV_OPT_TYPE_INT,    {.i64 = 44100}, 1, INT32_MAX, FLAGS },
-    { "ns",           "set expression for fade duration in samples", OFFSET(nb_samples),   AV_OPT_TYPE_INT,    {.i64 = 44100}, 1, INT32_MAX, FLAGS },
-    { "start_time",   "set expression of time to start fading",      OFFSET(start_time),   AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
-    { "st",           "set expression of time to start fading",      OFFSET(start_time),   AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
-    { "duration",     "set expression for fade duration",            OFFSET(duration),     AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
-    { "d",            "set expression for fade duration",            OFFSET(duration),     AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
-    { "curve",        "set expression for fade curve",               OFFSET(curve),        AV_OPT_TYPE_INT,    {.i64 = TRI  }, TRI, CBR, FLAGS, "curve" },
-    { "c",            "set expression for fade curve",               OFFSET(curve),        AV_OPT_TYPE_INT,    {.i64 = TRI  }, TRI, CBR, FLAGS, "curve" },
+    { "in",           "fade-in",                                     0,                    AV_OPT_TYPE_CONST,  {.i64 = 0    }, 0, 0, FLAGS, "type" },
+    { "out",          "fade-out",                                    0,                    AV_OPT_TYPE_CONST,  {.i64 = 1    }, 0, 0, FLAGS, "type" },
+    { "start_sample", "set number of first sample to start fading",  OFFSET(start_sample), AV_OPT_TYPE_INT64,  {.i64 = 0    }, 0, INT64_MAX, FLAGS },
+    { "ss",           "set number of first sample to start fading",  OFFSET(start_sample), AV_OPT_TYPE_INT64,  {.i64 = 0    }, 0, INT64_MAX, FLAGS },
+    { "nb_samples",   "set number of samples for fade duration",     OFFSET(nb_samples),   AV_OPT_TYPE_INT,    {.i64 = 44100}, 1, INT32_MAX, FLAGS },
+    { "ns",           "set number of samples for fade duration",     OFFSET(nb_samples),   AV_OPT_TYPE_INT,    {.i64 = 44100}, 1, INT32_MAX, FLAGS },
+    { "start_time",   "set time to start fading",                    OFFSET(start_time),   AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
+    { "st",           "set time to start fading",                    OFFSET(start_time),   AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
+    { "duration",     "set fade duration",                           OFFSET(duration),     AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
+    { "d",            "set fade duration",                           OFFSET(duration),     AV_OPT_TYPE_DURATION, {.i64 = 0. }, 0, INT32_MAX, FLAGS },
+    { "curve",        "set fade curve type",                         OFFSET(curve),        AV_OPT_TYPE_INT,    {.i64 = TRI  }, TRI, CBR, FLAGS, "curve" },
+    { "c",            "set fade curve type",                         OFFSET(curve),        AV_OPT_TYPE_INT,    {.i64 = TRI  }, TRI, CBR, FLAGS, "curve" },
     { "tri",          "linear slope",                                0,                    AV_OPT_TYPE_CONST,  {.i64 = TRI  }, 0, 0, FLAGS, "curve" },
     { "qsin",         "quarter of sine wave",                        0,                    AV_OPT_TYPE_CONST,  {.i64 = QSIN }, 0, 0, FLAGS, "curve" },
     { "esin",         "exponential sine wave",                       0,                    AV_OPT_TYPE_CONST,  {.i64 = ESIN }, 0, 0, FLAGS, "curve" },
@@ -200,11 +200,10 @@ FADE(flt, float)
 FADE(s16, int16_t)
 FADE(s32, int32_t)
 
-static int config_output(AVFilterLink *outlink)
+static int config_input(AVFilterLink *inlink)
 {
-    AVFilterContext *ctx    = outlink->src;
+    AVFilterContext *ctx    = inlink->dst;
     AudioFadeContext *afade = ctx->priv;
-    AVFilterLink *inlink    = ctx->inputs[0];
 
     switch (inlink->format) {
     case AV_SAMPLE_FMT_DBL:  afade->fade_samples = fade_samples_dbl;  break;
@@ -218,9 +217,9 @@ static int config_output(AVFilterLink *outlink)
     }
 
     if (afade->duration)
-        afade->nb_samples = afade->duration * inlink->sample_rate / AV_TIME_BASE;
+        afade->nb_samples = av_rescale(afade->duration, inlink->sample_rate, AV_TIME_BASE);
     if (afade->start_time)
-        afade->start_sample = afade->start_time * inlink->sample_rate / AV_TIME_BASE;
+        afade->start_sample = av_rescale(afade->start_time, inlink->sample_rate, AV_TIME_BASE);
 
     return 0;
 }
@@ -275,6 +274,7 @@ static const AVFilterPad avfilter_af_afade_inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
+        .config_props = config_input,
     },
     { NULL }
 };
@@ -283,7 +283,6 @@ static const AVFilterPad avfilter_af_afade_outputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
-        .config_props = config_output,
     },
     { NULL }
 };
@@ -297,4 +296,5 @@ AVFilter avfilter_af_afade = {
     .inputs        = avfilter_af_afade_inputs,
     .outputs       = avfilter_af_afade_outputs,
     .priv_class    = &afade_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

@@ -41,6 +41,7 @@
 #include "mathops.h"
 #include "put_bits.h"
 #include "rangecoder.h"
+#include "thread.h"
 
 #ifdef __INTEL_COMPILER
 #undef av_flatten
@@ -82,14 +83,15 @@ typedef struct FFV1Context {
     uint64_t rc_stat[256][2];
     uint64_t (*rc_stat2[MAX_QUANT_TABLES])[32][2];
     int version;
-    int minor_version;
+    int micro_version;
     int width, height;
     int chroma_planes;
     int chroma_h_shift, chroma_v_shift;
     int transparency;
     int flags;
     int picture_number;
-    AVFrame picture, last_picture;
+    ThreadFrame picture, last_picture;
+    struct FFV1Context *fsrc;
 
     AVFrame *cur;
     int plane_count;
@@ -106,6 +108,7 @@ typedef struct FFV1Context {
     int16_t *sample_buffer;
 
     int ec;
+    int intra;
     int slice_damaged;
     int key_frame_ok;
 

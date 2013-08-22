@@ -42,10 +42,10 @@ typedef struct MTVDemuxContext {
     unsigned int audio_br;          ///< bitrate of audio channel (mp3)
     unsigned int img_colorfmt;      ///< frame colorfmt rgb 565/555
     unsigned int img_bpp;           ///< frame bits per pixel
-    unsigned int img_width;         //
-    unsigned int img_height;        //
+    unsigned int img_width;
+    unsigned int img_height;
     unsigned int img_segment_size;  ///< size of image segment
-    unsigned int video_fps;         //
+    unsigned int video_fps;
     unsigned int full_segment_size;
 
 } MTVDemuxContext;
@@ -64,13 +64,13 @@ static int mtv_probe(AVProbeData *p)
     if(!AV_RL16(&p->buf[52]) || !AV_RL16(&p->buf[54]))
     {
         if(!!AV_RL16(&p->buf[56]))
-            return AVPROBE_SCORE_MAX/2;
+            return AVPROBE_SCORE_EXTENSION;
         else
             return 0;
     }
 
     if(p->buf[51] != 16)
-        return AVPROBE_SCORE_MAX/4; // But we are going to assume 16bpp anyway ..
+        return AVPROBE_SCORE_EXTENSION / 2; // But we are going to assume 16bpp anyway ..
 
     return AVPROBE_SCORE_MAX;
 }

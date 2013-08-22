@@ -732,6 +732,11 @@ static int process_frame_obj(SANMVideoContext *ctx)
     w     = bytestream2_get_le16u(&ctx->gb);
     h     = bytestream2_get_le16u(&ctx->gb);
 
+    if (!w || !h) {
+        av_log(ctx->avctx, AV_LOG_ERROR, "dimensions are invalid\n");
+        return AVERROR_INVALIDDATA;
+    }
+
     if (ctx->width < left + w || ctx->height < top + h) {
         if (av_image_check_size(FFMAX(left + w, ctx->width),
                                 FFMAX(top  + h, ctx->height), 0, ctx->avctx) < 0)
@@ -1039,8 +1044,10 @@ static int decode_5(SANMVideoContext *ctx)
 #if HAVE_BIGENDIAN
     npixels = ctx->npixels;
     frm = ctx->frm0;
-    while (npixels--)
-        *frm++ = av_bswap16(*frm);
+    while (npixels--) {
+        *frm = av_bswap16(*frm);
+        frm++;
+    }
 #endif
 
     return 0;

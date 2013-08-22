@@ -153,7 +153,8 @@ static int parse_label(AVIOContext *pb, int *cur_byte, AVBPrint *bp)
 
 static int parse_boolean(AVIOContext *pb, int *cur_byte, int *result)
 {
-    const char *text[] = { "false", "true" }, *p;
+    static const char * const text[] = { "false", "true" };
+    const char *p;
     int i;
 
     skip_spaces(pb, cur_byte);
@@ -340,7 +341,7 @@ static av_cold int tedcaptions_read_probe(AVProbeData *p)
             count++;
     }
     return count == FF_ARRAY_ELEMS(tags) ? AVPROBE_SCORE_MAX :
-           count                         ? AVPROBE_SCORE_MAX / 2 : 0;
+           count                         ? AVPROBE_SCORE_EXTENSION : 0;
 }
 
 static int tedcaptions_read_seek(AVFormatContext *avf, int stream_index,

@@ -26,6 +26,8 @@
 
 #include <stddef.h>
 
+#include "libavutil/attributes.h"
+
 static inline void rgb24tobgr32_c(const uint8_t *src, uint8_t *dst,
                                   int src_size)
 {
@@ -821,7 +823,7 @@ static void yuyvtoyuv420_c(uint8_t *ydst, uint8_t *udst, uint8_t *vdst,
                            int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth = -((-width) >> 1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y = 0; y < height; y++) {
         extract_even_c(src, ydst, width);
@@ -841,7 +843,7 @@ static void yuyvtoyuv422_c(uint8_t *ydst, uint8_t *udst, uint8_t *vdst,
                            int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth = -((-width) >> 1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y = 0; y < height; y++) {
         extract_even_c(src, ydst, width);
@@ -859,7 +861,7 @@ static void uyvytoyuv420_c(uint8_t *ydst, uint8_t *udst, uint8_t *vdst,
                            int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth = -((-width) >> 1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y = 0; y < height; y++) {
         extract_even_c(src + 1, ydst, width);
@@ -879,7 +881,7 @@ static void uyvytoyuv422_c(uint8_t *ydst, uint8_t *udst, uint8_t *vdst,
                            int lumStride, int chromStride, int srcStride)
 {
     int y;
-    const int chromWidth = -((-width) >> 1);
+    const int chromWidth = FF_CEIL_RSHIFT(width, 1);
 
     for (y = 0; y < height; y++) {
         extract_even_c(src + 1, ydst, width);
@@ -892,7 +894,7 @@ static void uyvytoyuv422_c(uint8_t *ydst, uint8_t *udst, uint8_t *vdst,
     }
 }
 
-static inline void rgb2rgb_init_c(void)
+static av_cold void rgb2rgb_init_c(void)
 {
     rgb15to16          = rgb15to16_c;
     rgb15tobgr24       = rgb15tobgr24_c;

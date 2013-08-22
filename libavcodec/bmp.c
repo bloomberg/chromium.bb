@@ -244,7 +244,7 @@ static int bmp_decode_frame(AVCodecContext *avctx,
         // OS/2 bitmap, 3 bytes per palette entry
         if ((hsize-ihsize-14) < (colors << 2)) {
             if ((hsize-ihsize-14) < colors * 3) {
-                av_log(avctx, AV_LOG_ERROR, "palette doesnt fit in packet\n");
+                av_log(avctx, AV_LOG_ERROR, "palette doesn't fit in packet\n");
                 return AVERROR_INVALIDDATA;
             }
             for (i = 0; i < colors; i++)
@@ -256,7 +256,7 @@ static int bmp_decode_frame(AVCodecContext *avctx,
         buf = buf0 + hsize;
     }
     if (comp == BMP_RLE4 || comp == BMP_RLE8) {
-        if (height < 0) {
+        if (comp == BMP_RLE8 && height < 0) {
             p->data[0]    +=  p->linesize[0] * (avctx->height - 1);
             p->linesize[0] = -p->linesize[0];
         }

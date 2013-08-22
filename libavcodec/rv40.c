@@ -359,7 +359,7 @@ static void rv40_loop_filter(RV34DecContext *r, int row)
     int uvcbp[4][2];
     /**
      * This mask represents the pattern of luma subblocks that should be filtered
-     * in addition to the coded ones because because they lie at the edge of
+     * in addition to the coded ones because they lie at the edge of
      * 8x8 block with different enough motion vectors
      */
     unsigned mvmasks[4];
@@ -547,9 +547,12 @@ static void rv40_loop_filter(RV34DecContext *r, int row)
 static av_cold int rv40_decode_init(AVCodecContext *avctx)
 {
     RV34DecContext *r = avctx->priv_data;
+    int ret;
 
     r->rv30 = 0;
-    ff_rv34_decode_init(avctx);
+    ret = ff_rv34_decode_init(avctx);
+    if (ret < 0)
+        return ret;
     if(!aic_top_vlc.bits)
         rv40_init_tables();
     r->parse_slice_header = rv40_parse_slice_header;

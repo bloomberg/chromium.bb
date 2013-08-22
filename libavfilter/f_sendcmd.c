@@ -39,7 +39,7 @@
 
 static inline char *make_command_flags_str(AVBPrint *pbuf, int flags)
 {
-    const char *flag_strings[] = { "enter", "leave" };
+    static const char * const flag_strings[] = { "enter", "leave" };
     int i, is_first = 1;
 
     av_bprint_init(pbuf, 0, AV_BPRINT_SIZE_AUTOMATIC);
@@ -422,7 +422,7 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static void av_cold uninit(AVFilterContext *ctx)
+static av_cold void uninit(AVFilterContext *ctx)
 {
     SendCmdContext *sendcmd = ctx->priv;
     int i, j;

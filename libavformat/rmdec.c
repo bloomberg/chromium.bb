@@ -22,6 +22,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
@@ -95,13 +96,14 @@ static int rm_read_extradata(AVIOContext *pb, AVCodecContext *avctx, unsigned si
     return 0;
 }
 
-static void rm_read_metadata(AVFormatContext *s, int wide)
+static void rm_read_metadata(AVFormatContext *s, AVIOContext *pb, int wide)
 {
     char buf[1024];
     int i;
+
     for (i=0; i<FF_ARRAY_ELEMS(ff_rm_metadata); i++) {
-        int len = wide ? avio_rb16(s->pb) : avio_r8(s->pb);
-        get_strl(s->pb, buf, sizeof(buf), len);
+        int len = wide ? avio_rb16(pb) : avio_r8(pb);
+        get_strl(pb, buf, sizeof(buf), len);
         av_dict_set(&s->metadata, ff_rm_metadata[i], buf, 0);
     }
 }
@@ -134,7 +136,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         avio_skip(pb, 8);
         bytes_per_minute = avio_rb16(pb);
         avio_skip(pb, 4);
-        rm_read_metadata(s, 0);
+        rm_read_metadata(s, pb, 0);
         if ((startpos + header_size) >= avio_tell(pb) + 2) {
             // fourcc (should always be "lpcJ")
             avio_r8(pb);
@@ -293,7 +295,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             avio_r8(pb);
             avio_r8(pb);
             avio_r8(pb);
-            rm_read_metadata(s, 0);
+            rm_read_metadata(s, pb, 0);
         }
     }
     return 0;
@@ -516,7 +518,7 @@ static int rm_read_header(AVFormatContext *s)
             flags = avio_rb16(pb); /* flags */
             break;
         case MKTAG('C', 'O', 'N', 'T'):
-            rm_read_metadata(s, 1);
+            rm_read_metadata(s, pb, 1);
             break;
         case MKTAG('M', 'D', 'P', 'R'):
             st = avformat_new_stream(s, NULL);
@@ -721,6 +723,8 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
 
     if(++vst->cur_slice > vst->slices)
         return 1;
+    if(!vst->pkt.data)
+        return AVERROR(ENOMEM);
     AV_WL32(vst->pkt.data - 7 + 8*vst->cur_slice, 1);
     AV_WL32(vst->pkt.data - 3 + 8*vst->cur_slice, vst->videobufpos - 8*vst->slices - 1);
     if(vst->videobufpos + len > vst->videobufsize)
@@ -737,7 +741,9 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
         vst->pkt.size= 0;
         vst->pkt.buf = NULL;
 #if FF_API_DESTRUCT_PACKET
+FF_DISABLE_DEPRECATION_WARNINGS
         vst->pkt.destruct = NULL;
+FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         if(vst->slices != vst->cur_slice) //FIXME find out how to set slices correct from the begin
             memmove(pkt->data + 1 + 8*vst->cur_slice, pkt->data + 1 + 8*vst->slices,
@@ -773,11 +779,13 @@ ff_rm_parse_packet (AVFormatContext *s, AVIOContext *pb,
                     int *seq, int flags, int64_t timestamp)
 {
     RMDemuxContext *rm = s->priv_data;
+    int ret;
 
     if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
         rm->current_stream= st->id;
-        if(rm_assemble_video_frame(s, pb, rm, ast, pkt, len, seq, &timestamp))
-            return -1; //got partial frame
+        ret = rm_assemble_video_frame(s, pb, rm, ast, pkt, len, seq, &timestamp);
+        if(ret)
+            return ret; //got partial frame or error
     } else if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
         if ((ast->deint_id == DEINT_ID_GENR) ||
             (ast->deint_id == DEINT_ID_INT4) ||
@@ -924,6 +932,8 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             res = ff_rm_parse_packet (s, s->pb, st, st->priv_data, len, pkt,
                                       &seq, flags, timestamp);
+            if (res < -1)
+                return res;
             if((flags&2) && (seq&0x7F) == 1)
                 av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
             if (res)

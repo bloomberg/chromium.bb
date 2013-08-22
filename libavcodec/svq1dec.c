@@ -34,6 +34,7 @@
 
 #include "avcodec.h"
 #include "get_bits.h"
+#include "h263.h"
 #include "hpeldsp.h"
 #include "internal.h"
 #include "mathops.h"
@@ -41,8 +42,6 @@
 
 #undef NDEBUG
 #include <assert.h>
-
-extern const uint8_t ff_mvtab[33][2];
 
 static VLC svq1_block_type;
 static VLC svq1_motion_component;
@@ -555,7 +554,7 @@ static int svq1_decode_frame_header(AVCodecContext *avctx, AVFrame *frame)
             svq1_parse_string(bitbuf, msg);
 
             av_log(avctx, AV_LOG_INFO,
-                   "embedded message: \"%s\"\n", (char *)msg);
+                   "embedded message:\n%s\n", (char *)msg);
         }
 
         skip_bits(bitbuf, 2);
@@ -615,7 +614,7 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
     svq1_pmv *pmv;
 
     /* initialize bit buffer */
-    init_get_bits(&s->gb, buf, buf_size * 8);
+    init_get_bits8(&s->gb, buf, buf_size);
 
     /* decode frame header */
     s->frame_code = get_bits(&s->gb, 22);

@@ -27,6 +27,7 @@
  */
 
 #include <float.h>
+#include "attributes.h"
 #include "avutil.h"
 #include "common.h"
 #include "eval.h"
@@ -52,7 +53,7 @@ typedef struct Parser {
     double *var;
 } Parser;
 
-static const AVClass class = { "Eval", av_default_item_name, NULL, LIBAVUTIL_VERSION_INT, offsetof(Parser,log_offset), offsetof(Parser,log_ctx) };
+static const AVClass eval_class = { "Eval", av_default_item_name, NULL, LIBAVUTIL_VERSION_INT, offsetof(Parser,log_offset), offsetof(Parser,log_ctx) };
 
 static const int8_t si_prefixes['z' - 'E' + 1] = {
     ['y'-'E']= -24,
@@ -487,7 +488,7 @@ static int parse_dB(AVExpr **e, Parser *p, int *sign)
        for example, -3dB is not the same as -(3dB) */
     if (*p->s == '-') {
         char *next;
-        double av_unused v = strtod(p->s, &next);
+        double av_unused ignored = strtod(p->s, &next);
         if (next != p->s && next[0] == 'd' && next[1] == 'B') {
             *sign = 0;
             return parse_primary(e, p);
@@ -657,7 +658,7 @@ int av_expr_parse(AVExpr **expr, const char *s,
         if (!av_isspace(*s++)) *wp++ = s[-1];
     *wp++ = 0;
 
-    p.class      = &class;
+    p.class      = &eval_class;
     p.stack_index=100;
     p.s= w;
     p.const_names = const_names;

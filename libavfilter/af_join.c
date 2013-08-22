@@ -77,12 +77,7 @@ static const AVOption join_options[] = {
     { NULL },
 };
 
-static const AVClass join_class = {
-    .class_name = "join filter",
-    .item_name  = av_default_item_name,
-    .option     = join_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
+AVFILTER_DEFINE_CLASS(join);
 
 static int filter_frame(AVFilterLink *link, AVFrame *frame)
 {
@@ -187,7 +182,7 @@ static int parse_maps(AVFilterContext *ctx)
     return 0;
 }
 
-static int join_init(AVFilterContext *ctx)
+static av_cold int join_init(AVFilterContext *ctx)
 {
     JoinContext *s = ctx->priv;
     int ret, i;
@@ -235,7 +230,7 @@ fail:
     return ret;
 }
 
-static void join_uninit(AVFilterContext *ctx)
+static av_cold void join_uninit(AVFilterContext *ctx)
 {
     JoinContext *s = ctx->priv;
     int i;

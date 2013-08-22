@@ -34,6 +34,7 @@ HEADERS = adler32.h                                                     \
           mathematics.h                                                 \
           md5.h                                                         \
           mem.h                                                         \
+          murmur3.h                                                     \
           dict.h                                                        \
           old_pix_fmts.h                                                \
           opt.h                                                         \
@@ -42,8 +43,10 @@ HEADERS = adler32.h                                                     \
           pixfmt.h                                                      \
           random_seed.h                                                 \
           rational.h                                                    \
+          ripemd.h                                                      \
           samplefmt.h                                                   \
           sha.h                                                         \
+          sha512.h                                                      \
           time.h                                                        \
           timecode.h                                                    \
           timestamp.h                                                   \
@@ -78,8 +81,10 @@ OBJS = adler32.o                                                        \
        eval.o                                                           \
        fifo.o                                                           \
        file.o                                                           \
+       file_open.o                                                      \
        float_dsp.o                                                      \
        frame.o                                                          \
+       hash.o                                                           \
        hmac.o                                                           \
        imgutils.o                                                       \
        intfloat_readwrite.o                                             \
@@ -91,6 +96,7 @@ OBJS = adler32.o                                                        \
        mathematics.o                                                    \
        md5.o                                                            \
        mem.o                                                            \
+       murmur3.o                                                        \
        dict.o                                                           \
        opt.o                                                            \
        parseutils.o                                                     \
@@ -98,8 +104,10 @@ OBJS = adler32.o                                                        \
        random_seed.o                                                    \
        rational.o                                                       \
        rc4.o                                                            \
+       ripemd.o                                                         \
        samplefmt.o                                                      \
        sha.o                                                            \
+       sha512.o                                                         \
        time.o                                                           \
        timecode.o                                                       \
        tree.o                                                           \
@@ -108,7 +116,7 @@ OBJS = adler32.o                                                        \
        xtea.o                                                           \
 
 OBJS-$(CONFIG_LZO)                      += lzo.o
-OBJS-$(CONFIG_OPENCL)                   += opencl.o
+OBJS-$(CONFIG_OPENCL)                   += opencl.o opencl_internal.o
 
 OBJS += $(COMPAT_OBJS:%=../compat/%)
 
@@ -137,17 +145,20 @@ TESTPROGS = adler32                                                     \
             lfg                                                         \
             lls                                                         \
             md5                                                         \
+            murmur3                                                     \
             opt                                                         \
             pca                                                         \
             parseutils                                                  \
             random_seed                                                 \
             rational                                                    \
+            ripemd                                                      \
             sha                                                         \
+            sha512                                                      \
             tree                                                        \
             xtea                                                        \
 
 TESTPROGS-$(HAVE_LZO1X_999_COMPRESS) += lzo
 
-TOOLS = ffeval ffescape
+TOOLS = ffhash ffeval ffescape
 
 $(SUBDIR)lzo-test$(EXESUF): ELIBS = -llzo2

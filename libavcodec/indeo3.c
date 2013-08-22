@@ -148,6 +148,20 @@ static av_cold void build_requant_tab(void)
 }
 
 
+static av_cold void free_frame_buffers(Indeo3DecodeContext *ctx)
+{
+    int p;
+
+    ctx->width = ctx->height = 0;
+
+    for (p = 0; p < 3; p++) {
+        av_freep(&ctx->planes[p].buffers[0]);
+        av_freep(&ctx->planes[p].buffers[1]);
+        ctx->planes[p].pixels[0] = ctx->planes[p].pixels[1] = 0;
+    }
+}
+
+
 static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
                                           AVCodecContext *avctx, int luma_width, int luma_height)
 {
@@ -188,6 +202,11 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
         ctx->planes[p].buffers[0] = av_malloc(!p ? luma_size : chroma_size);
         ctx->planes[p].buffers[1] = av_malloc(!p ? luma_size : chroma_size);
 
+        if (!ctx->planes[p].buffers[0] || !ctx->planes[p].buffers[1]) {
+            free_frame_buffers(ctx);
+            return AVERROR(ENOMEM);
+        }
+
         /* fill the INTRA prediction lines with the middle pixel value = 64 */
         memset(ctx->planes[p].buffers[0], 0x40, ctx->planes[p].pitch);
         memset(ctx->planes[p].buffers[1], 0x40, ctx->planes[p].pitch);
@@ -201,22 +220,6 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
 
     return 0;
 }
-
-
-static av_cold void free_frame_buffers(Indeo3DecodeContext *ctx)
-{
-    int p;
-
-    ctx->width=
-    ctx->height= 0;
-
-    for (p = 0; p < 3; p++) {
-        av_freep(&ctx->planes[p].buffers[0]);
-        av_freep(&ctx->planes[p].buffers[1]);
-        ctx->planes[p].pixels[0] = ctx->planes[p].pixels[1] = 0;
-    }
-}
-
 
 /**
  *  Copy pixels of the cell(x + mv_x, y + mv_y) from the previous frame into
@@ -242,8 +245,8 @@ static int copy_cell(Indeo3DecodeContext *ctx, Plane *plane, Cell *cell)
 
     /* -1 because there is an extra line on top for prediction */
     if ((cell->ypos << 2) + mv_y < -1 || (cell->xpos << 2) + mv_x < 0 ||
-        ((cell->ypos + cell->height) << 2) + mv_y >= plane->height    ||
-        ((cell->xpos + cell->width)  << 2) + mv_x >= plane->width) {
+        ((cell->ypos + cell->height) << 2) + mv_y > plane->height     ||
+        ((cell->xpos + cell->width)  << 2) + mv_x > plane->width) {
         av_log(ctx->avctx, AV_LOG_ERROR,
                "Motion vectors point out of the frame.\n");
         return AVERROR_INVALIDDATA;
@@ -258,19 +261,17 @@ static int copy_cell(Indeo3DecodeContext *ctx, Plane *plane, Cell *cell)
         /* copy using 16xH blocks */
         if (!((cell->xpos << 2) & 15) && w >= 4) {
             for (; w >= 4; src += 16, dst += 16, w -= 4)
-                ctx->hdsp.put_no_rnd_pixels_tab[0][0](dst, src, plane->pitch, h);
+                ctx->hdsp.put_pixels_tab[0][0](dst, src, plane->pitch, h);
         }
 
         /* copy using 8xH blocks */
         if (!((cell->xpos << 2) & 7) && w >= 2) {
-            ctx->hdsp.put_no_rnd_pixels_tab[1][0](dst, src, plane->pitch, h);
+            ctx->hdsp.put_pixels_tab[1][0](dst, src, plane->pitch, h);
             w -= 2;
             src += 8;
             dst += 8;
-        }
-
-        if (w >= 1) {
-            copy_block4(dst, src, plane->pitch, plane->pitch, h);
+        } else if (w >= 1) {
+            ctx->hdsp.put_pixels_tab[2][0](dst, src, plane->pitch, h);
             w--;
             src += 4;
             dst += 4;
@@ -283,10 +284,10 @@ static int copy_cell(Indeo3DecodeContext *ctx, Plane *plane, Cell *cell)
 
 /* Average 4/8 pixels at once without rounding using SWAR */
 #define AVG_32(dst, src, ref) \
-    AV_WN32A(dst, ((AV_RN32A(src) + AV_RN32A(ref)) >> 1) & 0x7F7F7F7FUL)
+    AV_WN32A(dst, ((AV_RN32(src) + AV_RN32(ref)) >> 1) & 0x7F7F7F7FUL)
 
 #define AVG_64(dst, src, ref) \
-    AV_WN64A(dst, ((AV_RN64A(src) + AV_RN64A(ref)) >> 1) & 0x7F7F7F7F7F7F7F7FULL)
+    AV_WN64A(dst, ((AV_RN64(src) + AV_RN64(ref)) >> 1) & 0x7F7F7F7F7F7F7F7FULL)
 
 
 /*
@@ -345,7 +346,7 @@ if (*data_ptr >= last_ptr) \
         copy_block4(dst, ref, row_offset, row_offset, 4 << v_zoom)
 
 #define RLE_BLOCK_COPY_8 \
-    pix64 = AV_RN64A(ref);\
+    pix64 = AV_RN64(ref);\
     if (is_first_row) {/* special prediction case: top line of a cell */\
         pix64 = replicate64(pix64);\
         fill_64(dst + row_offset, pix64, 7, row_offset);\
@@ -357,7 +358,7 @@ if (*data_ptr >= last_ptr) \
     copy_block4(dst, ref, row_offset, row_offset, num_lines << v_zoom)
 
 #define RLE_LINES_COPY_M10 \
-    pix64 = AV_RN64A(ref);\
+    pix64 = AV_RN64(ref);\
     if (is_top_of_cell) {\
         pix64 = replicate64(pix64);\
         fill_64(dst + row_offset, pix64, (num_lines << 1) - 1, row_offset);\
@@ -367,12 +368,12 @@ if (*data_ptr >= last_ptr) \
 
 #define APPLY_DELTA_4 \
     AV_WN16A(dst + line_offset    ,\
-             (AV_RN16A(ref    ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
+             (AV_RN16(ref    ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
     AV_WN16A(dst + line_offset + 2,\
-             (AV_RN16A(ref + 2) + delta_tab->deltas[dyad2]) & 0x7F7F);\
+             (AV_RN16(ref + 2) + delta_tab->deltas[dyad2]) & 0x7F7F);\
     if (mode >= 3) {\
         if (is_top_of_cell && !cell->ypos) {\
-            AV_COPY32(dst, dst + row_offset);\
+            AV_COPY32U(dst, dst + row_offset);\
         } else {\
             AVG_32(dst, ref, dst + row_offset);\
         }\
@@ -382,20 +383,20 @@ if (*data_ptr >= last_ptr) \
     /* apply two 32-bit VQ deltas to next even line */\
     if (is_top_of_cell) { \
         AV_WN32A(dst + row_offset    , \
-                 (replicate32(AV_RN32A(ref    )) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
+                 (replicate32(AV_RN32(ref    )) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
         AV_WN32A(dst + row_offset + 4, \
-                 (replicate32(AV_RN32A(ref + 4)) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
+                 (replicate32(AV_RN32(ref + 4)) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
     } else { \
         AV_WN32A(dst + row_offset    , \
-                 (AV_RN32A(ref    ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
+                 (AV_RN32(ref    ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
         AV_WN32A(dst + row_offset + 4, \
-                 (AV_RN32A(ref + 4) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
+                 (AV_RN32(ref + 4) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
     } \
     /* odd lines are not coded but rather interpolated/replicated */\
     /* first line of the cell on the top of image? - replicate */\
     /* otherwise - interpolate */\
     if (is_top_of_cell && !cell->ypos) {\
-        AV_COPY64(dst, dst + row_offset);\
+        AV_COPY64U(dst, dst + row_offset);\
     } else \
         AVG_64(dst, ref, dst + row_offset);
 
@@ -403,22 +404,22 @@ if (*data_ptr >= last_ptr) \
 #define APPLY_DELTA_1011_INTER \
     if (mode == 10) { \
         AV_WN32A(dst                 , \
-                 (AV_RN32A(dst                 ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
+                 (AV_RN32(dst                 ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
         AV_WN32A(dst + 4             , \
-                 (AV_RN32A(dst + 4             ) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
+                 (AV_RN32(dst + 4             ) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
         AV_WN32A(dst + row_offset    , \
-                 (AV_RN32A(dst + row_offset    ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
+                 (AV_RN32(dst + row_offset    ) + delta_tab->deltas_m10[dyad1]) & 0x7F7F7F7F);\
         AV_WN32A(dst + row_offset + 4, \
-                 (AV_RN32A(dst + row_offset + 4) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
+                 (AV_RN32(dst + row_offset + 4) + delta_tab->deltas_m10[dyad2]) & 0x7F7F7F7F);\
     } else { \
         AV_WN16A(dst                 , \
-                 (AV_RN16A(dst                 ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
+                 (AV_RN16(dst                 ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
         AV_WN16A(dst + 2             , \
-                 (AV_RN16A(dst + 2             ) + delta_tab->deltas[dyad2]) & 0x7F7F);\
+                 (AV_RN16(dst + 2             ) + delta_tab->deltas[dyad2]) & 0x7F7F);\
         AV_WN16A(dst + row_offset    , \
-                 (AV_RN16A(dst + row_offset    ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
+                 (AV_RN16(dst + row_offset    ) + delta_tab->deltas[dyad1]) & 0x7F7F);\
         AV_WN16A(dst + row_offset + 2, \
-                 (AV_RN16A(dst + row_offset + 2) + delta_tab->deltas[dyad2]) & 0x7F7F);\
+                 (AV_RN16(dst + row_offset + 2) + delta_tab->deltas[dyad2]) & 0x7F7F);\
     }
 
 
@@ -615,8 +616,8 @@ static int decode_cell(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
 
         /* -1 because there is an extra line on top for prediction */
         if ((cell->ypos << 2) + mv_y < -1 || (cell->xpos << 2) + mv_x < 0 ||
-            ((cell->ypos + cell->height) << 2) + mv_y >= plane->height    ||
-            ((cell->xpos + cell->width)  << 2) + mv_x >= plane->width) {
+            ((cell->ypos + cell->height) << 2) + mv_y > plane->height     ||
+            ((cell->xpos + cell->width)  << 2) + mv_x > plane->width) {
             av_log(ctx->avctx, AV_LOG_ERROR,
                    "Motion vectors point out of the frame.\n");
             return AVERROR_INVALIDDATA;

@@ -96,7 +96,7 @@ static int create_filter(AVFilterContext **filt_ctx, AVFilterGraph *ctx, int ind
 {
     AVFilter *filt;
     char inst_name[30];
-    char tmp_args[256];
+    char *tmp_args = NULL;
     int ret;
 
     snprintf(inst_name, sizeof(inst_name), "Parsed_%s_%d", filt_name, index);
@@ -118,19 +118,24 @@ static int create_filter(AVFilterContext **filt_ctx, AVFilterGraph *ctx, int ind
 
     if (!strcmp(filt_name, "scale") && args && !strstr(args, "flags") &&
         ctx->scale_sws_opts) {
-        snprintf(tmp_args, sizeof(tmp_args), "%s:%s",
+        tmp_args = av_asprintf("%s:%s",
                  args, ctx->scale_sws_opts);
+        if (!tmp_args)
+            return AVERROR(ENOMEM);
         args = tmp_args;
     }
 
     ret = avfilter_init_str(*filt_ctx, args);
     if (ret < 0) {
         av_log(log_ctx, AV_LOG_ERROR,
-               "Error initializing filter '%s' with args '%s'\n", filt_name, args);
-        return ret;
+               "Error initializing filter '%s'", filt_name);
+        if (args)
+            av_log(log_ctx, AV_LOG_ERROR, " with args '%s'", args);
+        av_log(log_ctx, AV_LOG_ERROR, "\n");
     }
 
-    return 0;
+    av_free(tmp_args);
+    return ret;
 }
 
 /**
@@ -444,14 +449,12 @@ int avfilter_graph_parse2(AVFilterGraph *graph, const char *filters,
     return ret;
 }
 
+#if HAVE_INCOMPATIBLE_LIBAV_ABI || !FF_API_OLD_GRAPH_PARSE
 int avfilter_graph_parse(AVFilterGraph *graph, const char *filters,
-                         AVFilterInOut **open_inputs_ptr, AVFilterInOut **open_outputs_ptr,
-                         void *log_ctx)
+                         AVFilterInOut *open_inputs,
+                         AVFilterInOut *open_outputs, void *log_ctx)
 {
-#if 0
     int ret;
-    AVFilterInOut *open_inputs  = open_inputs_ptr  ? *open_inputs_ptr  : NULL;
-    AVFilterInOut *open_outputs = open_outputs_ptr ? *open_outputs_ptr : NULL;
     AVFilterInOut *cur, *match, *inputs = NULL, *outputs = NULL;
 
     if ((ret = avfilter_graph_parse2(graph, filters, &inputs, &outputs)) < 0)
@@ -505,14 +508,22 @@ int avfilter_graph_parse(AVFilterGraph *graph, const char *filters,
     }
     avfilter_inout_free(&inputs);
     avfilter_inout_free(&outputs);
-    /* clear open_in/outputs only if not passed as parameters */
-    if (open_inputs_ptr) *open_inputs_ptr = open_inputs;
-    else avfilter_inout_free(&open_inputs);
-    if (open_outputs_ptr) *open_outputs_ptr = open_outputs;
-    else avfilter_inout_free(&open_outputs);
+    avfilter_inout_free(&open_inputs);
+    avfilter_inout_free(&open_outputs);
     return ret;
-}
 #else
+int avfilter_graph_parse(AVFilterGraph *graph, const char *filters,
+                         AVFilterInOut **inputs, AVFilterInOut **outputs,
+                         void *log_ctx)
+{
+    return avfilter_graph_parse_ptr(graph, filters, inputs, outputs, log_ctx);
+#endif
+}
+
+int avfilter_graph_parse_ptr(AVFilterGraph *graph, const char *filters,
+                         AVFilterInOut **open_inputs_ptr, AVFilterInOut **open_outputs_ptr,
+                         void *log_ctx)
+{
     int index = 0, ret = 0;
     char chr = 0;
 
@@ -592,5 +603,3 @@ end:
     }
     return ret;
 }
-
-#endif

@@ -54,8 +54,9 @@ fate-vsynth%-dv-50:              ENCOPTS = -dct int -s pal -pix_fmt yuv422p \
 fate-vsynth%-dv-50:              DECOPTS = -sws_flags neighbor
 fate-vsynth%-dv-50:              FMT     = dv
 
-FATE_VCODEC-$(call ENCDEC, FFV1, AVI)   += ffv1
+FATE_VCODEC-$(call ENCDEC, FFV1, AVI)   += ffv1 ffv1.0
 fate-vsynth%-ffv1:               ENCOPTS = -slices 4 -strict -2
+fate-vsynth%-ffv1.0:             CODEC   = ffv1
 
 FATE_VCODEC-$(call ENCDEC, FFVHUFF, AVI) += ffvhuff
 
@@ -89,9 +90,11 @@ FATE_VCODEC-$(call ENCDEC, JPEGLS, AVI) += jpegls
 fate-vsynth%-jpegls:             ENCOPTS = -sws_flags neighbor+full_chroma_int
 fate-vsynth%-jpegls:             DECOPTS = -sws_flags area
 
-FATE_VCODEC-$(call ENCDEC, J2K, AVI) += j2k
-fate-vsynth%-j2k:                ENCOPTS = -qscale 7 -strict experimental -pix_fmt rgb24
-fate-vsynth%-j2k:                DECINOPTS = -vcodec j2k -strict experimental
+FATE_VCODEC-$(call ENCDEC, JPEG2000, AVI) += jpeg2000 jpeg2000-97
+fate-vsynth%-jpeg2000:                ENCOPTS = -qscale 7 -strict experimental -pred 1 -pix_fmt rgb24
+fate-vsynth%-jpeg2000:                DECINOPTS = -vcodec jpeg2000
+fate-vsynth%-jpeg2000-97:             ENCOPTS = -qscale 7 -strict experimental -pix_fmt rgb24
+fate-vsynth%-jpeg2000-97:             DECINOPTS = -vcodec jpeg2000
 
 FATE_VCODEC-$(call ENCDEC, LJPEG MJPEG, AVI) += ljpeg
 fate-vsynth%-ljpeg:              ENCOPTS = -strict -1

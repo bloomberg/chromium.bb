@@ -74,7 +74,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .id        = AV_CODEC_ID_RV20,
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "rv20",
-        .long_name = NULL_IF_CONFIG_SMALL("RealVideo 1.0"),
+        .long_name = NULL_IF_CONFIG_SMALL("RealVideo 2.0"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
     {
@@ -1248,6 +1248,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
     },
     {
+        .id        = AV_CODEC_ID_AIC,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "aic",
+        .long_name = NULL_IF_CONFIG_SMALL("Apple Intermediate Codec"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+    },
+    {
         .id        = AV_CODEC_ID_Y41P,
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "y41p",
@@ -1282,12 +1289,6 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "012v",
         .long_name = NULL_IF_CONFIG_SMALL("Uncompressed 4:2:2 10-bit"),
         .props     = AV_CODEC_PROP_INTRA_ONLY,
-    },
-    {
-        .id        = AV_CODEC_ID_G2M,
-        .type      = AVMEDIA_TYPE_VIDEO,
-        .name      = "g2m",
-        .long_name = NULL_IF_CONFIG_SMALL("GoToMeeting"),
     },
     {
         .id        = AV_CODEC_ID_AVUI,
@@ -1370,6 +1371,20 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "brender_pix",
         .long_name = NULL_IF_CONFIG_SMALL("BRender PIX image"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSLESS,
+    },
+    {
+        .id        = AV_CODEC_ID_SMVJPEG,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "smv",
+        .long_name = NULL_IF_CONFIG_SMALL("Sigmatel Motion Video"),
+    },
+
+    {
+        .id        = AV_CODEC_ID_G2M,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "g2m",
+        .long_name = NULL_IF_CONFIG_SMALL("Go2Meeting"),
+        .props     = AV_CODEC_PROP_LOSSY,
     },
 
     /* various PCM "codecs" */
@@ -1581,7 +1596,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "s302m",
         .long_name = NULL_IF_CONFIG_SMALL("SMPTE 302M"),
-        .props     = AV_CODEC_PROP_LOSSY,
+        .props     = AV_CODEC_PROP_LOSSLESS,
     },
     {
         .id        = AV_CODEC_ID_PCM_S8_PLANAR,
@@ -1814,6 +1829,20 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "adpcm_ima_oki",
         .long_name = NULL_IF_CONFIG_SMALL("ADPCM IMA Dialogic OKI"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_ADPCM_DTK,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "adpcm_dtk",
+        .long_name = NULL_IF_CONFIG_SMALL("ADPCM Nintendo Gamecube DTK"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_ADPCM_IMA_RAD,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "adpcm_ima_rad",
+        .long_name = NULL_IF_CONFIG_SMALL("ADPCM IMA Radical"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
 
@@ -2103,6 +2132,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("Atrac 3 (Adaptive TRansform Acoustic Coding 3)"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
+#if FF_API_VOXWARE
     {
         .id        = AV_CODEC_ID_VOXWARE,
         .type      = AVMEDIA_TYPE_AUDIO,
@@ -2110,6 +2140,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("Voxware RT29 Metasound"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
+#endif
     {
         .id        = AV_CODEC_ID_APE,
         .type      = AVMEDIA_TYPE_AUDIO,
@@ -2358,6 +2389,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "tak",
         .long_name = NULL_IF_CONFIG_SMALL("TAK (Tom's lossless Audio Kompressor)"),
         .props     = AV_CODEC_PROP_LOSSLESS,
+    },
+    {
+        .id        = AV_CODEC_ID_METASOUND,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "metasound",
+        .long_name = NULL_IF_CONFIG_SMALL("Voxware MetaSound"),
+        .props     = AV_CODEC_PROP_LOSSY,
     },
     {
         .id        = AV_CODEC_ID_EVRC,

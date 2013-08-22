@@ -81,8 +81,8 @@ void ff_snow_reset_contexts(SnowContext *s){ //FIXME better initial contexts
 }
 
 int ff_snow_alloc_blocks(SnowContext *s){
-    int w= -((-s->avctx->width )>>LOG2_MB_SIZE);
-    int h= -((-s->avctx->height)>>LOG2_MB_SIZE);
+    int w= FF_CEIL_RSHIFT(s->avctx->width,  LOG2_MB_SIZE);
+    int h= FF_CEIL_RSHIFT(s->avctx->height, LOG2_MB_SIZE);
 
     s->b_width = w;
     s->b_height= h;
@@ -92,7 +92,7 @@ int ff_snow_alloc_blocks(SnowContext *s){
     return 0;
 }
 
-static void init_qexp(void){
+static av_cold void init_qexp(void){
     int i;
     double v=128;
 
@@ -618,7 +618,7 @@ int ff_snow_frame_start(SnowContext *s){
 
     av_frame_move_ref(&tmp, &s->last_picture[s->max_ref_frames-1]);
     for(i=s->max_ref_frames-1; i>0; i--)
-        av_frame_move_ref(&s->last_picture[i+1], &s->last_picture[i]);
+        av_frame_move_ref(&s->last_picture[i], &s->last_picture[i-1]);
     memmove(s->halfpel_plane+1, s->halfpel_plane, (s->max_ref_frames-1)*sizeof(void*)*4*4);
     if(USE_HALFPEL_PLANE && s->current_picture.data[0])
         halfpel_interpol(s, s->halfpel_plane[0], &s->current_picture);

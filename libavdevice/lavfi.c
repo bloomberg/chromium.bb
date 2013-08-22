@@ -60,7 +60,7 @@ static int *create_all_formats(int n)
 
     for (i = 0; i < n; i++) {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(i);
-        if (!(desc->flags & PIX_FMT_HWACCEL))
+        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL))
             count++;
     }
 
@@ -68,7 +68,7 @@ static int *create_all_formats(int n)
         return NULL;
     for (j = 0, i = 0; i < n; i++) {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(i);
-        if (!(desc->flags & PIX_FMT_HWACCEL))
+        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL))
             fmts[j++] = i;
     }
     fmts[j] = -1;
@@ -141,7 +141,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
     if (!(lavfi->graph = avfilter_graph_alloc()))
         FAIL(AVERROR(ENOMEM));
 
-    if ((ret = avfilter_graph_parse(lavfi->graph, lavfi->graph_str,
+    if ((ret = avfilter_graph_parse_ptr(lavfi->graph, lavfi->graph_str,
                                     &input_links, &output_links, avctx)) < 0)
         FAIL(ret);
 
@@ -286,7 +286,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
                                      30);
         } else if (link->type == AVMEDIA_TYPE_AUDIO) {
             st->codec->codec_id    = av_get_pcm_codec(link->format, -1);
-            st->codec->channels    = av_get_channel_layout_nb_channels(link->channel_layout);
+            st->codec->channels    = avfilter_link_get_channels(link);
             st->codec->sample_fmt  = link->format;
             st->codec->sample_rate = link->sample_rate;
             st->codec->time_base   = link->time_base;

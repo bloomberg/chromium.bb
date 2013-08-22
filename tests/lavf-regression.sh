@@ -50,7 +50,7 @@ do_image_formats()
     outfile="$datadir/images/$1/"
     mkdir -p "$outfile"
     file=${outfile}%02d.$1
-    run_avconv $DEC_OPTS -f image2 -vcodec pgmyuv -i $raw_src $2 $ENC_OPTS -t 0.5 -y -qscale 10 $target_path/$file
+    run_avconv $DEC_OPTS -f image2 -vcodec pgmyuv -i $raw_src $2 $ENC_OPTS -frames 13 -y -qscale 10 $target_path/$file
     do_md5sum ${outfile}02.$1
     do_avconv_crc $file $DEC_OPTS -i $target_path/$file $3
     echo $(wc -c ${outfile}02.$1)
@@ -235,8 +235,8 @@ if [ -n "$do_pam" ] ; then
 do_image_formats pam
 do_image_formats pam "-pix_fmt rgba"
 do_image_formats pam "-pix_fmt gray"
-do_image_formats pam "-pix_fmt gray16be"
-do_image_formats pam "-pix_fmt rgb48be"
+do_image_formats pam "-pix_fmt gray16be" "-pix_fmt gray16be"
+do_image_formats pam "-pix_fmt rgb48be" "-pix_fmt rgb48be"
 do_image_formats pam "-pix_fmt monob"
 fi
 
@@ -246,8 +246,11 @@ fi
 
 if [ -n "$do_dpx" ] ; then
 do_image_formats dpx
+do_image_formats dpx "-pix_fmt gbrp10le" "-pix_fmt gbrp10le"
+do_image_formats dpx "-pix_fmt gbrp12le"
 do_image_formats dpx "-pix_fmt rgb48le"
 do_image_formats dpx "-pix_fmt rgb48le -bits_per_raw_sample 10" "-pix_fmt rgb48le"
+do_image_formats dpx "-pix_fmt rgba64le"
 fi
 
 if [ -n "$do_xwd" ] ; then

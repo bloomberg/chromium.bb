@@ -31,8 +31,12 @@
 #ifndef LIBAVUTIL_OPENCL_H
 #define LIBAVUTIL_OPENCL_H
 
-#include <CL/cl.h>
 #include "config.h"
+#if HAVE_CL_CL_H
+#include <CL/cl.h>
+#else
+#include <OpenCL/cl.h>
+#endif
 #include "dict.h"
 
 #define AV_OPENCL_KERNEL( ... )# __VA_ARGS__
@@ -149,6 +153,14 @@ AVOpenCLExternalEnv *av_opencl_alloc_external_env(void);
  *                       created by av_opencl_alloc_external_env()
  */
 void av_opencl_free_external_env(AVOpenCLExternalEnv **ext_opencl_env);
+
+/**
+ * Get OpenCL error string.
+ *
+ * @param status    OpenCL error code
+ * @return OpenCL error string
+ */
+const char *av_opencl_errstr(cl_int status);
 
 /**
  * Register kernel code.

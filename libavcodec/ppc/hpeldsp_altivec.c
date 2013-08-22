@@ -21,18 +21,19 @@
  */
 
 #include "config.h"
-#include "libavutil/attributes.h"
-#include "libavutil/cpu.h"
-#include "libavcodec/hpeldsp.h"
 
-#if HAVE_ALTIVEC
 #if HAVE_ALTIVEC_H
 #include <altivec.h>
 #endif
+
+#include "libavutil/attributes.h"
+#include "libavutil/cpu.h"
 #include "libavutil/ppc/types_altivec.h"
 #include "libavutil/ppc/util_altivec.h"
+#include "libavcodec/hpeldsp.h"
 #include "dsputil_altivec.h"
 
+#if HAVE_ALTIVEC
 /* next one assumes that ((line_size % 16) == 0) */
 void ff_put_pixels16_altivec(uint8_t *block, const uint8_t *pixels, ptrdiff_t line_size, int h)
 {
@@ -448,9 +449,7 @@ static void avg_pixels8_xy2_altivec(uint8_t *block, const uint8_t *pixels, ptrdi
 av_cold void ff_hpeldsp_init_ppc(HpelDSPContext *c, int flags)
 {
 #if HAVE_ALTIVEC
-    int mm_flags = av_get_cpu_flags();
-
-    if (mm_flags & AV_CPU_FLAG_ALTIVEC) {
+    if (av_get_cpu_flags() & AV_CPU_FLAG_ALTIVEC) {
         c->avg_pixels_tab[0][0]        = ff_avg_pixels16_altivec;
         c->avg_pixels_tab[1][0]        = avg_pixels8_altivec;
         c->avg_pixels_tab[1][3]        = avg_pixels8_xy2_altivec;
