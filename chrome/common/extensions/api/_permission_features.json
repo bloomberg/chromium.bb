@@ -535,7 +535,7 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "sessionRestore": {
+  "sessions": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"]
   },

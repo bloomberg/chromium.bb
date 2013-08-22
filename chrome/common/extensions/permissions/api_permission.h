@@ -115,7 +115,7 @@ class APIPermission {
     kRtcPrivate,
     kScreensaver,
     kSerial,
-    kSessionRestore,
+    kSessions,
     kSocket,
     kSocketsUdp,
     kStorage,

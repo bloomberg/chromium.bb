@@ -28,7 +28,8 @@ def _GetParseErrors(input_api, output_api):
         input_api, output_api, '.', whitelist=[r'^PRESUBMIT_test\.py$'])
 
   for affected_file in input_api.AffectedFiles(
-      file_filter=lambda f: f.LocalPath().endswith('.json')):
+      file_filter=lambda f: f.LocalPath().endswith('.json'),
+      include_deletes=False):
     filename = affected_file.AbsoluteLocalPath()
     contents = input_api.ReadFile(filename)
     parse_error = _GetJSONParseError(input_api, contents)

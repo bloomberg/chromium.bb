@@ -269,7 +269,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // null.
   // TODO(zea): Figure out a better way to expose this to the UI elements that
   // need it.
-  browser_sync::SessionModelAssociator* GetSessionModelAssociator();
+  virtual browser_sync::SessionModelAssociator* GetSessionModelAssociator();
 
   // Returns sync's representation of the local device info.
   // Return value is an empty scoped_ptr if the device info is unavailable.
