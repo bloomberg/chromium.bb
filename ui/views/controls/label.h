@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/view.h"
 
@@ -54,12 +54,16 @@ class VIEWS_EXPORT Label : public View {
 
   Label();
   explicit Label(const string16& text);
-  Label(const string16& text, const gfx::Font& font);
+  Label(const string16& text, const gfx::FontList& font_list);
+  Label(const string16& text, const gfx::Font& font);  // OBSOLETE
   virtual ~Label();
 
-  // Get or set the font used by this label.
-  const gfx::Font& font() const { return font_; }
-  virtual void SetFont(const gfx::Font& font);
+  // Gets or sets the fonts used by this label.
+  const gfx::FontList& font_list() const { return font_list_; }
+  virtual void SetFontList(const gfx::FontList& font_list);
+  // Obsolete gfx::Font version.  Should use gfx::FontList version instead.
+  const gfx::Font& font() const;  // OBSOLETE
+  virtual void SetFont(const gfx::Font& font);  // OBSOLETE
 
   // Get or set the label text.
   const string16& text() const { return text_; }
@@ -119,7 +123,7 @@ class VIEWS_EXPORT Label : public View {
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
-  // one for the label's text, font, and platform.
+  // one for the label's text, font list, and platform.
   int line_height() const { return line_height_; }
   void SetLineHeight(int height);
 
@@ -208,9 +212,7 @@ class VIEWS_EXPORT Label : public View {
   // Calls ComputeDrawStringFlags().
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DisableSubpixelRendering);
 
-  static gfx::Font GetDefaultFont();
-
-  void Init(const string16& text, const gfx::Font& font);
+  void Init(const string16& text, const gfx::FontList& font_list);
 
   void RecalculateColors();
 
@@ -236,7 +238,7 @@ class VIEWS_EXPORT Label : public View {
   bool ShouldShowDefaultTooltip() const;
 
   string16 text_;
-  gfx::Font font_;
+  gfx::FontList font_list_;
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;
   SkColor requested_disabled_color_;

@@ -19,9 +19,9 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 
@@ -31,6 +31,11 @@ namespace {
 const int kFocusBorderPadding = 1;
 const int kCachedSizeLimit = 10;
 
+gfx::FontList GetDefaultFontList() {
+  return ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont);
+}
+
 }  // namespace
 
 namespace views {
@@ -39,25 +44,37 @@ namespace views {
 const char Label::kViewClassName[] = "Label";
 
 Label::Label() {
-  Init(string16(), GetDefaultFont());
+  Init(string16(), GetDefaultFontList());
 }
 
 Label::Label(const string16& text) {
-  Init(text, GetDefaultFont());
+  Init(text, GetDefaultFontList());
+}
+
+Label::Label(const string16& text, const gfx::FontList& font_list) {
+  Init(text, font_list);
 }
 
 Label::Label(const string16& text, const gfx::Font& font) {
-  Init(text, font);
+  Init(text, gfx::FontList(font));
 }
 
 Label::~Label() {
 }
 
-void Label::SetFont(const gfx::Font& font) {
-  font_ = font;
+void Label::SetFontList(const gfx::FontList& font_list) {
+  font_list_ = font_list;
   ResetCachedSize();
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+const gfx::Font& Label::font() const {
+  return font_list_.GetPrimaryFont();
+}
+
+void Label::SetFont(const gfx::Font& font) {
+  SetFontList(gfx::FontList(font));
 }
 
 void Label::SetText(const string16& text) {
@@ -172,7 +189,7 @@ void Label::SizeToFit(int max_width) {
   int label_width = 0;
   for (std::vector<string16>::const_iterator iter = lines.begin();
        iter != lines.end(); ++iter) {
-    label_width = std::max(label_width, font_.GetStringWidth(*iter));
+    label_width = std::max(label_width, gfx::GetStringWidth(*iter, font_list_));
   }
 
   label_width += GetInsets().width();
@@ -202,7 +219,7 @@ gfx::Insets Label::GetInsets() const {
 }
 
 int Label::GetBaseline() const {
-  return GetInsets().top() + font_.GetBaseline();
+  return GetInsets().top() + font_list_.GetBaseline();
 }
 
 gfx::Size Label::GetPreferredSize() {
@@ -234,9 +251,9 @@ int Label::GetHeightForWidth(int w) {
 
   int cache_width = w;
 
-  int h = font_.GetHeight();
+  int h = font_list_.GetHeight();
   const int flags = ComputeDrawStringFlags();
-  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, line_height_, flags);
+  gfx::Canvas::SizeStringInt(text_, font_list_, &w, &h, line_height_, flags);
   cached_heights_[cached_heights_cursor_] = gfx::Size(cache_width, h);
   cached_heights_cursor_ = (cached_heights_cursor_ + 1) % kCachedSizeLimit;
   return h + GetInsets().height();
@@ -297,7 +314,7 @@ void Label::PaintText(gfx::Canvas* canvas,
   if (has_shadow_)
     shadows.push_back(gfx::ShadowValue(shadow_offset_, 0,
         enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
-  canvas->DrawStringWithShadows(text, font_,
+  canvas->DrawStringRectWithShadows(text, font_list_,
       enabled() ? actual_enabled_color_ : actual_disabled_color_,
       text_bounds, line_height_, flags, shadows);
 
@@ -316,13 +333,13 @@ gfx::Size Label::GetTextSize() const {
     // on Linux.
     int w = is_multi_line_ ?
         GetAvailableRect().width() : std::numeric_limits<int>::max();
-    int h = font_.GetHeight();
+    int h = font_list_.GetHeight();
     // For single-line strings, ignore the available width and calculate how
     // wide the text wants to be.
     int flags = ComputeDrawStringFlags();
     if (!is_multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, line_height_, flags);
+    gfx::Canvas::SizeStringInt(text_, font_list_, &w, &h, line_height_, flags);
     text_size_.SetSize(w, h);
     text_size_valid_ = true;
   }
@@ -352,13 +369,8 @@ void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
 }
 
-// static
-gfx::Font Label::GetDefaultFont() {
-  return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-}
-
-void Label::Init(const string16& text, const gfx::Font& font) {
-  font_ = font;
+void Label::Init(const string16& text, const gfx::FontList& font_list) {
+  font_list_ = font_list;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
   auto_color_readability_ = true;
   UpdateColorsFromTheme(ui::NativeTheme::instance());
@@ -483,14 +495,14 @@ void Label::CalculateDrawStringParams(string16* paint_text,
   if (is_multi_line_ || (elide_behavior_ == NO_ELIDE)) {
     *paint_text = text_;
   } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
-    *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
+    *paint_text = ui::ElideText(text_, font_list_, GetAvailableRect().width(),
                                 ui::ELIDE_IN_MIDDLE);
   } else if (elide_behavior_ == ELIDE_AT_END) {
-    *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
+    *paint_text = ui::ElideText(text_, font_list_, GetAvailableRect().width(),
                                 ui::ELIDE_AT_END);
   } else {
     DCHECK_EQ(ELIDE_AS_EMAIL, elide_behavior_);
-    *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
+    *paint_text = ui::ElideEmail(text_, font_list_, GetAvailableRect().width());
   }
 
   *text_bounds = GetTextBounds();
@@ -524,7 +536,7 @@ void Label::ResetCachedSize() {
 
 bool Label::ShouldShowDefaultTooltip() const {
   return !is_multi_line_ &&
-      font_.GetStringWidth(text_) > GetAvailableRect().width();
+      gfx::GetStringWidth(text_, font_list_) > GetAvailableRect().width();
 }
 
 }  // namespace views

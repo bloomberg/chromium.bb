@@ -16,17 +16,13 @@ namespace views {
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-TEST(LabelTest, FontPropertyCourier) {
+TEST(LabelTest, FontPropertySymbol) {
   Label label;
-  std::string font_name("courier");
-  // Note: This test is size dependent since Courier does not support all sizes.
+  std::string font_name("symbol");
   gfx::Font font(font_name, 26);
-  label.SetFont(font);
-  gfx::Font font_used = label.font();
-#if defined(OS_WIN)
-  // On Linux, this results in "Sans" instead of "courier".
+  label.SetFontList(gfx::FontList(font));
+  gfx::Font font_used = label.font_list().GetPrimaryFont();
   EXPECT_EQ(font_name, font_used.GetFontName());
-#endif
   EXPECT_EQ(26, font_used.GetFontSize());
 }
 
@@ -34,8 +30,8 @@ TEST(LabelTest, FontPropertyArial) {
   Label label;
   std::string font_name("arial");
   gfx::Font font(font_name, 30);
-  label.SetFont(font);
-  gfx::Font font_used = label.font();
+  label.SetFontList(gfx::FontList(font));
+  gfx::Font font_used = label.font_list().GetPrimaryFont();
   EXPECT_EQ(font_name, font_used.GetFontName());
   EXPECT_EQ(30, font_used.GetFontSize());
 }
