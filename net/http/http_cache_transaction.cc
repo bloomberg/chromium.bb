@@ -231,14 +231,6 @@ HttpCache::Transaction::~Transaction() {
       cache_->RemovePendingTransaction(this);
     }
   }
-
-  // Cancel any outstanding callbacks before we drop our reference to the
-  // HttpCache.  This probably isn't strictly necessary, but might as well.
-  weak_factory_.InvalidateWeakPtrs();
-
-  // We could still have a cache read or write in progress, so we just null the
-  // cache_ pointer to signal that we are dead.  See DoCacheReadCompleted.
-  cache_.reset();
 }
 
 int HttpCache::Transaction::WriteMetadata(IOBuffer* buf, int buf_len,
