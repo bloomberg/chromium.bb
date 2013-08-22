@@ -426,7 +426,7 @@ void Resource::removeClient(ResourceClient* client)
             if (url().protocolIs("https"))
                 memoryCache()->remove(this);
         } else {
-            memoryCache()->prune();
+            memoryCache()->prune(this);
         }
     }
     // This object may be dead here.

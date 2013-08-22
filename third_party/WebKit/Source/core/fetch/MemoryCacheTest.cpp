@@ -158,7 +158,6 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
 
         virtual void run() OVERRIDE
         {
-
             // The resource size has to be nonzero for this test to be meaningful, but
             // we do not rely on it having any particular value.
             ASSERT_GT(m_live->size(), 0u);
@@ -206,6 +205,57 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
     WebKit::Platform::current()->currentThread()->postTask(new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     WebKit::Platform::current()->currentThread()->enterRunLoop();
     cachedLiveResource->removeClient(&client);
+}
+
+// Verifies that cached resources are evicted immediately after release when
+// the total dead resource size is more than double the dead resource capacity.
+TEST_F(MemoryCacheTest, ClientRemoval)
+{
+    const char data[6] = "abcde";
+    ResourcePtr<Resource> resource1 =
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+    MockImageResourceClient client1;
+    resource1->addClient(&client1);
+    resource1->appendData(data, 4);
+    ResourcePtr<Resource> resource2 =
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+    MockImageResourceClient client2;
+    resource2->addClient(&client2);
+    resource2->appendData(data, 4);
+
+    const unsigned minDeadCapacity = 0;
+    const unsigned maxDeadCapacity = resource1->size() - 1;
+    const unsigned totalCapacity = maxDeadCapacity;
+    memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
+    memoryCache()->add(resource1.get());
+    memoryCache()->add(resource2.get());
+    // Call prune. There is nothing to prune, but this will initialize
+    // the prune timestamp, allowing future prunes to be deferred.
+    memoryCache()->prune();
+    ASSERT_GT(resource1->decodedSize(), 0u);
+    ASSERT_GT(resource2->decodedSize(), 0u);
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), resource1->size() + resource2->size());
+
+    // Removing the client from resource1 should result in all resources
+    // remaining in cache since the prune is deferred.
+    resource1->removeClient(&client1);
+    ASSERT_GT(resource1->decodedSize(), 0u);
+    ASSERT_GT(resource2->decodedSize(), 0u);
+    ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
+    ASSERT_EQ(memoryCache()->liveSize(), resource2->size());
+    ASSERT_TRUE(resource1->inCache());
+    ASSERT_TRUE(resource2->inCache());
+
+    // Removing the client from resource2 should result in immediate
+    // eviction of resource2 because we are over the prune deferral limit.
+    resource2->removeClient(&client2);
+    ASSERT_GT(resource1->decodedSize(), 0u);
+    ASSERT_GT(resource2->decodedSize(), 0u);
+    ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
+    ASSERT_EQ(memoryCache()->liveSize(), 0u);
+    ASSERT_TRUE(resource1->inCache());
+    ASSERT_FALSE(resource2->inCache());
 }
 
 // Verifies that CachedResources are evicted from the decode cache

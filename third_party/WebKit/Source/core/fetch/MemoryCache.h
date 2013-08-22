@@ -126,7 +126,7 @@ public:
 
     void evictResources();
 
-    void prune();
+    void prune(Resource* justReleasedResource = 0);
 
     // Calls to put the cached resource into and out of LRU lists.
     void insertInLRUList(Resource*);
@@ -187,6 +187,7 @@ private:
     unsigned m_capacity;
     unsigned m_minDeadCapacity;
     unsigned m_maxDeadCapacity;
+    unsigned m_maxDeferredPruneDeadCapacity;
     double m_delayBeforeLiveDecodedPrune;
     double m_deadDecodedDataDeletionInterval;
 

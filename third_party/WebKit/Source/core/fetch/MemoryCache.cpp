@@ -48,7 +48,8 @@ namespace WebCore {
 
 static MemoryCache* gMemoryCache;
 
-static const int cDefaultCacheCapacity = 8192 * 1024;
+static const unsigned cDefaultCacheCapacity = 8192 * 1024;
+static const unsigned cDeferredPruneDeadCapacityFactor = 2;
 static const int cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
 static const double cMaxPruneDeferralDelay = 0.5; // Seconds.
 static const float cTargetPrunePercentage = .95f; // Percentage of capacity toward which we prune, to avoid immediately pruning again.
@@ -73,6 +74,7 @@ MemoryCache::MemoryCache()
     , m_capacity(cDefaultCacheCapacity)
     , m_minDeadCapacity(0)
     , m_maxDeadCapacity(cDefaultCacheCapacity)
+    , m_maxDeferredPruneDeadCapacity(cDeferredPruneDeadCapacityFactor * cDefaultCacheCapacity)
     , m_liveSize(0)
     , m_deadSize(0)
     , m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune)
@@ -285,6 +287,7 @@ void MemoryCache::setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, un
     ASSERT(maxDeadBytes <= totalBytes);
     m_minDeadCapacity = minDeadBytes;
     m_maxDeadCapacity = maxDeadBytes;
+    m_maxDeferredPruneDeadCapacity = cDeferredPruneDeadCapacityFactor * maxDeadBytes;
     m_capacity = totalBytes;
     prune();
 }
@@ -566,7 +569,7 @@ void MemoryCache::evictResources()
     }
 }
 
-void MemoryCache::prune()
+void MemoryCache::prune(Resource* justReleasedResource)
 {
     ASSERT(WebKit::Platform::current()); // This method should not be called after WebKit::shutdown().
 
@@ -585,9 +588,6 @@ void MemoryCache::prune()
     double currentTime = WTF::currentTime();
     if (m_prunePending) {
         if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
-            // Delay exceeded, prune now and cancel deferral
-            m_prunePending = false;
-            WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
             pruneNow(currentTime);
         }
     } else {
@@ -599,6 +599,20 @@ void MemoryCache::prune()
             m_prunePending = true;
         }
     }
+
+    if (m_prunePending && m_deadSize > m_maxDeferredPruneDeadCapacity && justReleasedResource) {
+        // The following eviction does not respect LRU order, but it can be done
+        // immediately in constant time, as opposed to pruneDeadResources, which
+        // we would rather defer because it is O(N), which would make tear-down of N
+        // objects O(N^2) if we pruned immediately. This immediate eviction is a
+        // safeguard against runaway memory consumption by dead resources
+        // while a prune is pending.
+        evict(justReleasedResource);
+
+        // As a last resort, prune immediately
+        if (m_deadSize > m_maxDeferredPruneDeadCapacity)
+            pruneNow(currentTime);
+    }
 }
 
 void MemoryCache::willProcessTask()
@@ -609,14 +623,16 @@ void MemoryCache::didProcessTask()
 {
     // Perform deferred pruning
     ASSERT(m_prunePending);
-
-    m_prunePending = false;
-    WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
     pruneNow(WTF::currentTime());
 }
 
 void MemoryCache::pruneNow(double currentTime)
 {
+    if (m_prunePending) {
+        m_prunePending = false;
+        WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+    }
+
     TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
     pruneDeadResources(); // Prune dead first, in case it was "borrowing" capacity from live.
     pruneLiveResources();
