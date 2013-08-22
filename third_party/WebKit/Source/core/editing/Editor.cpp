@@ -613,11 +613,8 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
     RefPtr<Event> evt = ClipboardEvent::create(eventType, true, true, clipboard);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
-    if (noDefaultProcessing && policy == ClipboardWritable) {
-        Pasteboard* pasteboard = Pasteboard::generalPasteboard();
-        pasteboard->clear();
-        pasteboard->writeClipboard(clipboard.get());
-    }
+    if (noDefaultProcessing && policy == ClipboardWritable)
+        Pasteboard::generalPasteboard()->writeClipboard(clipboard.get());
 
     // invalidate clipboard here for security
     clipboard->setAccessPolicy(ClipboardNumb);

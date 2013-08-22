@@ -65,12 +65,6 @@ Pasteboard::Pasteboard()
 {
 }
 
-void Pasteboard::clear()
-{
-    // The ScopedClipboardWriter class takes care of clearing the clipboard's
-    // previous contents.
-}
-
 bool Pasteboard::isSelectionMode() const
 {
     return m_selectionMode;
