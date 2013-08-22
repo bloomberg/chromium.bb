@@ -9,6 +9,10 @@
 </div>
 <script>
 description('Check adoptNode dispatchs blur event for multiple fields time input UI');
+
+// Trigger a recalc style so that autofocus takes effect.
+document.body.offsetTop;
+
 var container = document.getElementById("container");
 var testInput = document.getElementById('test');
 var logs = [];
