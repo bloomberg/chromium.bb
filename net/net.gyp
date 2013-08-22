@@ -399,6 +399,8 @@
         'disk_cache/simple/simple_index.h',
         'disk_cache/simple/simple_index_file.cc',
         'disk_cache/simple/simple_index_file.h',
+        'disk_cache/simple/simple_index_file_posix.cc',
+        'disk_cache/simple/simple_index_file_win.cc',
         'disk_cache/simple/simple_net_log_parameters.cc',
         'disk_cache/simple/simple_net_log_parameters.h',
         'disk_cache/simple/simple_synchronous_entry.cc',
@@ -2389,6 +2391,17 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      'target_name': 'cache_mem_test',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'net',
+      ],
+      'sources': [
+        'tools/cache_mem_test/cache_mem_test.cc',
+      ],
     },
   ],
   'conditions': [
