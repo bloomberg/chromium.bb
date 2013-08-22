@@ -19,6 +19,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import constants
 
 
+CHROMIUM_COVERAGE_BUCKET = 'chromium-code-coverage'
+
 _BotConfig = collections.namedtuple(
     'BotConfig', ['bot_id', 'host_obj', 'test_obj'])
 
@@ -144,12 +146,14 @@ def GetBotStepMap():
       B('fyi-x86-builder-dbg',
         H(compile_step + std_host_tests, experimental, target_arch='x86')),
       B('fyi-builder-dbg',
-        H(std_build_steps + std_host_tests, experimental)),
+        H(std_build_steps + std_host_tests, experimental,
+          extra_gyp='emma_coverage=1')),
       B('x86-builder-dbg',
         H(compile_step + std_host_tests, target_arch='x86')),
       B('fyi-builder-rel', H(std_build_steps,  experimental)),
       B('fyi-tests', H(std_test_steps),
-        T(std_tests, ['--experimental', flakiness_server])),
+        T(std_tests, ['--experimental', flakiness_server,
+                      '--coverage-bucket', CHROMIUM_COVERAGE_BUCKET])),
       B('fyi-component-builder-tests-dbg',
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),

@@ -5,8 +5,10 @@
 
 import collections
 import glob
+import hashlib
 import multiprocessing
 import os
+import random
 import shutil
 import sys
 
@@ -168,6 +170,8 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
   if options.flakiness_server:
     args.append('--flakiness-dashboard-server=%s' %
                 options.flakiness_server)
+  if options.coverage_bucket:
+    args.append('--coverage-dir=%s' % options.coverage_dir)
   if test.host_driven_root:
     args.append('--host-driven-root=%s' % test.host_driven_root)
   if test.annotation:
@@ -297,6 +301,43 @@ def GetTestStepCmds():
   ]
 
 
+def UploadCoverageData(options, path, coverage_type):
+  """Uploads directory at |path| to Google Storage.
+
+  The directory at path should ostensibly contain HTML coverage data.
+
+  Args:
+    options: Command line options.
+    path: Path to the directory to be uploaded.
+    coverage_type: String used as the first component of the url.
+
+  Returns:
+    None.
+  """
+  revision = options.build_properties.get('got_revision', 'testing')
+  bot_id = options.build_properties.get('buildername', 'testing')
+  randhash = hashlib.sha1(str(random.random())).hexdigest()
+  gs_path = '%s/%s/%s/%s/%s' % (options.coverage_bucket, coverage_type,
+                                bot_id, revision, randhash)
+
+  RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-R', path, 'gs://%s' % gs_path])
+  bb_annotations.PrintLink(
+      'Coverage report',
+      'https://storage.googleapis.com/%s/index.html' % gs_path)
+
+
+def GenerateJavaCoverageReport(options):
+  """Generates an HTML coverage report using EMMA and uploads it."""
+  bb_annotations.PrintNamedStep('java_coverage_report')
+
+  coverage_html = os.path.join(options.coverage_dir, 'coverage_html')
+  RunCmd(['build/android/generate_emma_html.py',
+          '--coverage-dir', options.coverage_dir,
+          '--metadata-dir', os.path.join(CHROME_SRC, 'out', options.target),
+          '--output', os.path.join(coverage_html, 'index.html')])
+  UploadCoverageData(options, coverage_html, 'java')
+
+
 def LogcatDump(options):
   # Print logcat, kill logcat monitor
   bb_annotations.PrintNamedStep('logcat_dump')
@@ -332,6 +373,9 @@ def MainTestWrapper(options):
     if options.test_filter:
       bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
 
+    if options.coverage_bucket:
+      GenerateJavaCoverageReport(options)
+
     if options.experimental:
       RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
 
@@ -357,6 +401,9 @@ def GetDeviceStepsOptParser():
                     help='Install an apk by name')
   parser.add_option('--reboot', action='store_true',
                     help='Reboot devices before running tests')
+  parser.add_option('--coverage-bucket',
+                    help=('Bucket name to store coverage results. Coverage is '
+                          'only run if this is set.'))
   parser.add_option(
       '--flakiness-server',
       help='The flakiness dashboard server to which the results should be '
@@ -383,6 +430,9 @@ def main(argv):
     return sys.exit('Unknown tests %s' % list(unknown_tests))
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
+  if options.coverage_bucket:
+    setattr(options, 'coverage_dir',
+            os.path.join(CHROME_SRC, 'out', options.target, 'coverage'))
 
   MainTestWrapper(options)
 

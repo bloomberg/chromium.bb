@@ -16,8 +16,8 @@
     'conditions': [
       ['emma_instrument != 0', {
         'extra_instr_args': [
-          '--coverage-file=<(intermediate_dir)/coverage.em',
-          '--sources-file=<(intermediate_dir)/emma_sources.txt',
+          '--coverage-file=<(_target_name).em',
+          '--sources-file=<(_target_name)_sources.txt',
           '--sources=<(java_in_dir)/src >(additional_src_dirs) >(generated_src_dirs)',
           '--src-root=<(DEPTH)',
           '--emma-jar=<(emma_jar)',

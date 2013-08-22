@@ -11,6 +11,7 @@ import json
 import optparse
 import os
 import sys
+import traceback
 
 from pylib import cmd_helper
 from pylib import constants
@@ -54,26 +55,45 @@ def main(argv):
   print 'Found coverage files: %s' % str(coverage_files)
   print 'Found metadata files: %s' % str(metadata_files)
   sources_files = []
+  final_metadata_files = []
+  err = None
   for f in metadata_files:
-    sources_file = os.path.join(os.path.dirname(f), 'emma_sources.txt')
-    with open(sources_file, 'r') as f:
-      sources_files.extend(json.load(f))
+    sources_file = os.path.splitext(f)[0] + '_sources.txt'
+    # TODO(gkanwar): Remove this once old coverage.em files have been cleaned
+    # from all bots.
+    # Warn if we have old metadata files lying around that don't correspond
+    # to a *_sources.txt (these should be manually cleaned).
+    try:
+      with open(sources_file, 'r') as sf:
+        sources_files.extend(json.load(sf))
+    except IOError as e:
+      traceback.print_exc()
+      err = e
+    else:
+      final_metadata_files.append(f)
   sources_files = [os.path.join(constants.DIR_SOURCE_ROOT, s)
                    for s in sources_files]
 
   input_args = []
-  for f in coverage_files + metadata_files:
+  for f in coverage_files + final_metadata_files:
     input_args.append('-in')
     input_args.append(f)
 
   output_args = ['-Dreport.html.out.file', options.output]
   source_args = ['-sp', ','.join(sources_files)]
 
-  return cmd_helper.RunCmd(
+  exit_code = cmd_helper.RunCmd(
       ['java', '-cp',
        os.path.join(constants.ANDROID_SDK_ROOT, 'tools', 'lib', 'emma.jar'),
        'emma', 'report', '-r', 'html']
       + input_args + output_args + source_args)
+
+  if exit_code > 0:
+    return exit_code
+  elif err:
+    return constants.WARNING_EXIT_CODE
+  else:
+    return 0
 
 
 if __name__ == '__main__':

@@ -26,6 +26,8 @@ CHROME_SRC = os.path.abspath(
 
 GOMA_DIR = os.environ.get('GOMA_DIR', os.path.join(BB_BUILD_DIR, 'goma'))
 
+GSUTIL_PATH = os.path.join(BB_BUILD_DIR, 'third_party', 'gsutil', 'gsutil')
+
 def CommandToString(command):
   """Returns quoted command that can be run in bash shell."""
   return ' '.join(map(pipes.quote, command))

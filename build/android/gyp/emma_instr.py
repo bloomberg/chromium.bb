@@ -48,7 +48,7 @@ def _AddInstrumentOptions(option_parser):
   """Adds options related to instrumentation to |option_parser|."""
   _AddCommonOptions(option_parser)
   option_parser.add_option('--coverage-file',
-                           help='File to create with coverage metadata')
+                           help='File to create with coverage metadata.')
   option_parser.add_option('--sources-file',
                            help='File to create with the list of sources.')
   option_parser.add_option('--sources',
@@ -132,6 +132,10 @@ def _RunInstrumentCommand(command, options, args, option_parser):
           options.src_root and options.emma_jar):
     option_parser.error('All arguments are required.')
 
+  coverage_file = os.path.join(os.path.dirname(options.output_path),
+                               options.coverage_file)
+  sources_file = os.path.join(os.path.dirname(options.output_path),
+                              options.sources_file)
   temp_dir = tempfile.mkdtemp()
   try:
     # TODO(gkanwar): Add '-ix' option to filter out useless classes.
@@ -139,7 +143,7 @@ def _RunInstrumentCommand(command, options, args, option_parser):
                               'emma', 'instr',
                               '-ip', options.input_path,
                               '-d', temp_dir,
-                              '-out', options.coverage_file,
+                              '-out', coverage_file,
                               '-m', 'fullcopy'], suppress_output=True)
 
     if command == 'instrument_jar':
@@ -154,7 +158,7 @@ def _RunInstrumentCommand(command, options, args, option_parser):
   finally:
     shutil.rmtree(temp_dir)
 
-  _CreateSourcesFile(options.sources, options.sources_file, options.src_root)
+  _CreateSourcesFile(options.sources, sources_file, options.src_root)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
