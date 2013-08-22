@@ -80,6 +80,7 @@
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/scoped_browser_locale.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -4676,23 +4677,6 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(0u, loaded_.size());
 }
-
-namespace {
-  class ScopedBrowserLocale {
-   public:
-    explicit ScopedBrowserLocale(const std::string& new_locale)
-      : old_locale_(g_browser_process->GetApplicationLocale()) {
-      g_browser_process->SetApplicationLocale(new_locale);
-    }
-
-    ~ScopedBrowserLocale() {
-      g_browser_process->SetApplicationLocale(old_locale_);
-    }
-
-   private:
-    std::string old_locale_;
-  };
-}  // namespace
 
 TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionService();

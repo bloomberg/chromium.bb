@@ -232,6 +232,8 @@
         'test/base/module_system_test.h',
         'test/base/profile_mock.cc',
         'test/base/profile_mock.h',
+        'test/base/scoped_browser_locale.cc',
+        'test/base/scoped_browser_locale.h',
         'test/base/scoped_testing_local_state.cc',
         'test/base/scoped_testing_local_state.h',
         'test/base/test_browser_window.cc',

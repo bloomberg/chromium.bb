@@ -89,6 +89,8 @@ class TranslatePrefs {
  private:
   friend class TranslatePrefsTest;
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, CreateBlockedLanguages);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
+                           CreateBlockedLanguagesNonEnglishUI);
 
   // Merges two language sets to migrate to the language setting UI.
   static void CreateBlockedLanguages(
@@ -115,6 +117,8 @@ class TranslatePrefs {
   base::DictionaryValue* GetTranslationAcceptedCountDictionary() const;
 
   PrefService* prefs_;  // Weak.
+
+  DISALLOW_COPY_AND_ASSIGN(TranslatePrefs);
 };
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_PREFS_H_
