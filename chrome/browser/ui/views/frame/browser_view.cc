@@ -1270,13 +1270,14 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // the |browser_| object then send the keyboard event to the
   // |focus_manager| as if we are activating an accelerator key.
   // Then we can retrieve the command id from the |browser_| object.
+  bool original_block_command_state = controller->block_command_execution();
   controller->SetBlockCommandExecution(true);
   // If the |accelerator| is a non-browser shortcut (e.g. Ash shortcut), the
   // command execution cannot be blocked and true is returned. However, it is
   // okay as long as is_app() is false. See comments in this function.
   const bool processed = focus_manager->ProcessAccelerator(accelerator);
   const int id = controller->GetLastBlockedCommand(NULL);
-  controller->SetBlockCommandExecution(false);
+  controller->SetBlockCommandExecution(original_block_command_state);
 
   // Executing the command may cause |this| object to be destroyed.
   if (controller->IsReservedCommandOrKey(id, event)) {

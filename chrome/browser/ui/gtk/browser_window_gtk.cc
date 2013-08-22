@@ -1072,12 +1072,15 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
     // 1. The logic is a little complicated.
     // 2. We should be careful not to introduce any accelerators that trigger
     //    customized code instead of browser commands.
+    bool original_block_command_state =
+        browser_->command_controller()->block_command_execution();
     browser_->command_controller()->SetBlockCommandExecution(true);
     gtk_window_activate_key(window_, os_event);
     // We don't need to care about the WindowOpenDisposition value,
     // because all commands executed in this path use the default value.
     id = browser_->command_controller()->GetLastBlockedCommand(NULL);
-    browser_->command_controller()->SetBlockCommandExecution(false);
+    browser_->command_controller()->SetBlockCommandExecution(
+        original_block_command_state);
   }
 
   if (id == -1)
