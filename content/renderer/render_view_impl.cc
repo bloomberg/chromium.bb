@@ -32,10 +32,7 @@
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/child_thread.h"
-#include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/fileapi/webfilesystem_callback_adapters.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
-#include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/clipboard_messages.h"
@@ -140,7 +137,6 @@
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
-#include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
@@ -165,7 +161,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFileChooserParams.h"
-#include "third_party/WebKit/public/web/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -276,8 +271,6 @@ using WebKit::WebElement;
 using WebKit::WebExternalPopupMenu;
 using WebKit::WebExternalPopupMenuClient;
 using WebKit::WebFileChooserCompletion;
-using WebKit::WebFileSystem;
-using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFindOptions;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
@@ -4238,22 +4231,6 @@ void RenderViewImpl::reportFindInPageMatchCount(int request_id,
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::openFileSystem(
-    WebFrame* frame,
-    WebKit::WebFileSystemType type,
-    long long size,
-    bool create,
-    WebFileSystemCallbacks* callbacks) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::deleteFileSystem(
-    WebFrame* frame,
-    WebKit::WebFileSystemType type ,
-    WebFileSystemCallbacks* callbacks) {
   NOTREACHED();
 }
 

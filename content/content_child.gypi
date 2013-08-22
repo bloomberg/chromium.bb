@@ -43,8 +43,6 @@
     'child/db_message_filter.h',
     'child/fileapi/file_system_dispatcher.cc',
     'child/fileapi/file_system_dispatcher.h',
-    'child/fileapi/webfilesystem_callback_adapters.cc',
-    'child/fileapi/webfilesystem_callback_adapters.h',
     'child/fileapi/webfilesystem_impl.cc',
     'child/fileapi/webfilesystem_impl.h',
     'child/fileapi/webfilewriter_base.cc',

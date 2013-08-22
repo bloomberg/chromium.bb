@@ -42,7 +42,6 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -665,14 +664,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
                                          const WebKit::WebRect& sel);
-  virtual void openFileSystem(WebKit::WebFrame* frame,
-                              WebKit::WebFileSystemType type,
-                              long long size,
-                              bool create,
-                              WebKit::WebFileSystemCallbacks* callbacks);
-  virtual void deleteFileSystem(WebKit::WebFrame* frame,
-                                WebKit::WebFileSystemType type,
-                                WebKit::WebFileSystemCallbacks* callbacks);
   virtual void requestStorageQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,

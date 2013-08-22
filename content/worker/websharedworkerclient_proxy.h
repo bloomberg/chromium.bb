@@ -8,11 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
-#include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/public/web/WebStorageQuotaType.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;
@@ -77,14 +73,7 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
                              const WebKit::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
-  virtual void openFileSystem(
-                              WebKit::WebFileSystemType type,
-                              long long size,
-                              bool create,
-                              WebKit::WebFileSystemCallbacks* callbacks);
   virtual bool allowIndexedDB(const WebKit::WebString&);
-  virtual void queryUsageAndQuota(WebKit::WebStorageQuotaType,
-                                  WebKit::WebStorageQuotaCallbacks*);
   virtual void dispatchDevToolsMessage(const WebKit::WebString&);
   virtual void saveDevToolsAgentState(const WebKit::WebString&);
 

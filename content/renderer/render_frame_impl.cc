@@ -7,8 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/child/appcache/appcache_dispatcher.h"
-#include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/fileapi/webfilesystem_callback_adapters.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/common/socket_stream_handle_data.h"
@@ -35,7 +33,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
@@ -49,7 +46,6 @@
 
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
-using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPluginParams;
@@ -748,47 +744,6 @@ void RenderFrameImpl::reportFindInPageSelection(
                                   selection_rect,
                                   active_match_ordinal,
                                   false));
-}
-
-void RenderFrameImpl::openFileSystem(
-    WebKit::WebFrame* frame,
-    WebKit::WebFileSystemType type,
-    long long size,
-    bool create,
-    WebKit::WebFileSystemCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebFileErrorAbort);
-    return;
-  }
-
-  ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
-      GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
-      size, create,
-      base::Bind(&OpenFileSystemCallbackAdapter, callbacks),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
-}
-
-void RenderFrameImpl::deleteFileSystem(
-    WebKit::WebFrame* frame,
-    WebKit::WebFileSystemType type,
-    WebKit::WebFileSystemCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didSucceed();
-    return;
-  }
-
-  ChildThread::current()->file_system_dispatcher()->DeleteFileSystem(
-      GURL(origin.toString()),
-      static_cast<fileapi::FileSystemType>(type),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void RenderFrameImpl::requestStorageQuota(

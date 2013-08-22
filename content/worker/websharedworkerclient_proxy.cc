@@ -7,9 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/fileapi/webfilesystem_callback_adapters.h"
-#include "content/child/quota_dispatcher.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
@@ -21,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
@@ -161,31 +157,11 @@ bool WebSharedWorkerClientProxy::allowFileSystem() {
   return result;
 }
 
-void WebSharedWorkerClientProxy::openFileSystem(
-    WebKit::WebFileSystemType type,
-    long long size,
-    bool create,
-    WebKit::WebFileSystemCallbacks* callbacks) {
-  ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
-      stub_->url().GetOrigin(), static_cast<fileapi::FileSystemType>(type),
-      size, create,
-      base::Bind(&OpenFileSystemCallbackAdapter, callbacks),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
-}
-
 bool WebSharedWorkerClientProxy::allowIndexedDB(const WebKit::WebString& name) {
   bool result = false;
   Send(new WorkerProcessHostMsg_AllowIndexedDB(
       route_id_, stub_->url().GetOrigin(), name, &result));
   return result;
-}
-
-void WebSharedWorkerClientProxy::queryUsageAndQuota(
-    WebKit::WebStorageQuotaType type,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
-  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
-      stub_->url().GetOrigin(), static_cast<quota::StorageType>(type),
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
 void WebSharedWorkerClientProxy::dispatchDevToolsMessage(

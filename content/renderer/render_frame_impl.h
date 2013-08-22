@@ -153,16 +153,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
                                          const WebKit::WebRect& sel);
-  virtual void openFileSystem(
-      WebKit::WebFrame* frame,
-      WebKit::WebFileSystemType type,
-      long long size,
-      bool create,
-      WebKit::WebFileSystemCallbacks* callbacks);
-  virtual void deleteFileSystem(
-      WebKit::WebFrame* frame,
-      WebKit::WebFileSystemType type,
-      WebKit::WebFileSystemCallbacks* callbacks);
   virtual void requestStorageQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,
