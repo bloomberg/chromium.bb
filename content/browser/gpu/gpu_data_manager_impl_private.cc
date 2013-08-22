@@ -834,6 +834,7 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->accelerated_compositing_enabled = true;
     prefs->accelerated_compositing_for_3d_transforms_enabled = true;
     prefs->accelerated_compositing_for_plugins_enabled = true;
+    prefs->accelerated_compositing_for_video_enabled = true;
   }
 
 #if defined(USE_AURA)
