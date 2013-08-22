@@ -8,12 +8,18 @@
   "permissions": [
     "tabs",
     "https://support.google.com/chromeos/*/*",
+    "https://support.google.com/chromebook/*/*",
     "https://gweb-gettingstartedguide.appspot.com/*",
     "chromeosInfoPrivate"
   ],
   "content_scripts": [
     {
-      "matches": ["http://support.google.com/chromeos/*", "https://support.google.com/chromeos/*"],
+      "matches": [
+        "http://support.google.com/chromeos/*",
+        "https://support.google.com/chromeos/*",
+        "http://support.google.com/chromebook/*",
+        "https://support.google.com/chromebook/*"
+      ],
       "js": ["javascript/contentscript.js"],
       "run_at": "document_end",
       "all_frames": true
