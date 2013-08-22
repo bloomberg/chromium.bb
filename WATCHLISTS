@@ -137,6 +137,9 @@
       'filepath': 'ui/views/bubble/|'\
                   'chrome/browser/ui/views/bubble/',
     },
+    'cast': {
+      'filepath': 'media/cast/',
+    },
     'cc': {
       'filepath': 'cc/|'\
                   'webkit/renderer/compositor_bindings/|'\
@@ -642,6 +645,7 @@
     'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
+    'cast': ['miu+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
                      'robertshield@chromium.org'],
