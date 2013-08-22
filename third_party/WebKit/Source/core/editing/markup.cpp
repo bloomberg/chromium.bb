@@ -752,7 +752,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
     Document* document = paragraph->document();
 
     if (string.isEmpty()) {
-        paragraph->appendChild(createBlockPlaceholderElement(document), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        paragraph->appendChild(createBlockPlaceholderElement(document));
         return;
     }
 
@@ -769,11 +769,11 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         // append the non-tab textual part
         if (!s.isEmpty()) {
             if (!tabText.isEmpty()) {
-                paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+                paragraph->appendChild(createTabSpanElement(document, tabText));
                 tabText = emptyString();
             }
             RefPtr<Node> textNode = document->createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
-            paragraph->appendChild(textNode.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            paragraph->appendChild(textNode.release());
         }
 
         // there is a tab after every entry, except the last entry
@@ -781,7 +781,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         if (i + 1 != numEntries)
             tabText.append('\t');
         else if (!tabText.isEmpty())
-            paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            paragraph->appendChild(createTabSpanElement(document, tabText));
 
         first = false;
     }
