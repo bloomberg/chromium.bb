@@ -19,16 +19,21 @@
 
 namespace {
 
-std::string GenerateGetUserMediaCall(int min_width,
+static const char kGetUserMedia[] = "getUserMedia";
+static const char kGetUserMediaWithAnalysis[] = "getUserMediaWithAnalysis";
+
+std::string GenerateGetUserMediaCall(const char* function_name,
+                                     int min_width,
                                      int max_width,
                                      int min_height,
                                      int max_height,
                                      int min_frame_rate,
                                      int max_frame_rate) {
   return base::StringPrintf(
-      "getUserMedia({video: {mandatory: {minWidth: %d, maxWidth: %d, "
+      "%s({video: {mandatory: {minWidth: %d, maxWidth: %d, "
       "minHeight: %d, maxHeight: %d, minFrameRate: %d, maxFrameRate: %d}, "
       "optional: []}});",
+      function_name,
       min_width,
       max_width,
       min_height,
@@ -264,19 +269,19 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
 
   std::vector<std::string> list_of_get_user_media_calls;
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(320, 320, 180, 180, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 320, 320, 180, 180, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(320, 320, 240, 240, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 320, 320, 240, 240, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(640, 640, 360, 360, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 640, 640, 360, 360, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(640, 640, 480, 480, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 640, 640, 480, 480, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(960, 960, 720, 720, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 960, 960, 720, 720, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(1280, 1280, 720, 720, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 1280, 1280, 720, 720, 30, 30));
   list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(1920, 1920, 1080, 1080, 30, 30));
+      GenerateGetUserMediaCall(kGetUserMedia, 1920, 1920, 1080, 1080, 30, 30));
 
   for (std::vector<std::string>::iterator const_iterator =
            list_of_get_user_media_calls.begin();
@@ -287,6 +292,26 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
     EXPECT_TRUE(ExecuteJavascript(*const_iterator));
     ExpectTitle("OK");
   }
+}
+
+// This test calls getUserMedia and checks for aspect ratio behavior.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  std::string constraints_4_3 = GenerateGetUserMediaCall(
+      kGetUserMediaWithAnalysis, 640, 640, 480, 480, 30, 30);
+  std::string constraints_16_9 = GenerateGetUserMediaCall(
+      kGetUserMediaWithAnalysis, 640, 640, 360, 360, 30, 30);
+
+  // TODO(mcasas): add more aspect ratios, in particular 16:10 crbug.com/275594.
+
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(ExecuteJavascript(constraints_4_3));
+  ExpectTitle("4:3 letterbox");
+
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(ExecuteJavascript(constraints_16_9));
+  ExpectTitle("16:9 letterbox");
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {

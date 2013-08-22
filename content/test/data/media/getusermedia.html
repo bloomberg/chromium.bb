@@ -19,7 +19,12 @@
     navigator.webkitGetUserMedia(constraints, displayAndWaitForVideo,
         failedCallback);
   }
-  
+
+  function getUserMediaWithAnalysis(constraints) {
+    navigator.webkitGetUserMedia(
+        constraints, displayAndWaitForAndAnalyzeVideo, failedCallback);
+  }
+
   // This test that a MediaStream can be cloned and that the clone can 
   // be rendered.
   function getUserMediaAndClone() {
@@ -37,7 +42,14 @@
     $('local-view').src = localStreamUrl;
     waitForVideo('local-view');   
   }
-  
+
+  function displayAndWaitForAndAnalyzeVideo(stream) {
+    gLocalStream = stream;
+    var localStreamUrl = webkitURL.createObjectURL(stream);
+    $('local-view').src = localStreamUrl;
+    analyzeVideo();
+  }
+
   function createAndRenderClone(stream) {
     gLocalStream = stream;
     // TODO(perkj):  --use-fake-device-for-media-stream do not currently
@@ -56,7 +68,16 @@
     $('local-view').src = newStreamUrl;  
     waitForVideo('local-view');
   }
-  
+
+  function analyzeVideo() {
+    document.title = 'Waiting for video...';
+    addExpectedEvent();
+    detectAspectRatio(function(aspectRatio) {
+      document.title = aspectRatio;
+      eventOccured();
+    });
+  }
+
   </script>  
 </head>
 <body>
