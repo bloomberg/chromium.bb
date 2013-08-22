@@ -72,7 +72,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // In the shared build, all methods from the STL container will be exported
     // so even though they're not used, they're still depended upon.
     bool operator==(const Name& other) const {
-      return other.id() == unique_id_ && other.name() == device_name_;
+      return other.id() == unique_id_;
     }
     bool operator<(const Name& other) const {
       return unique_id_ < other.id();

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_variant.h"
 #include "media/base/media_switches.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
@@ -150,22 +151,15 @@ void DeleteMediaType(AM_MEDIA_TYPE* mt) {
 
 // static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  Names::iterator it;
-
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (VideoCaptureDeviceMFWin::PlatformSupported() &&
+  // Use Media Foundation for Metro processes (after and including Win8)
+  // and DirectShow for any other platforms.
+  if (base::win::IsMetroProcess() &&
       !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) {
     VideoCaptureDeviceMFWin::GetDeviceNames(device_names);
+  } else {
+    VideoCaptureDeviceWin::GetDeviceNames(device_names);
   }
-  // Retrieve the devices with DirectShow (DS) interface. They might (partially)
-  // overlap with the MediaFoundation (MF), so the list has to be consolidated.
-  Names temp_names;
-  VideoCaptureDeviceWin::GetDeviceNames(&temp_names);
-
-  // Merge the DS devices into the MF device list, and next remove
-  // the duplicates, giving priority to the MF "versions".
-  device_names->merge(temp_names);
-  device_names->unique();
 }
 
 // static
