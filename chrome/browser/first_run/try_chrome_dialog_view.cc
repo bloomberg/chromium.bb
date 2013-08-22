@@ -86,15 +86,11 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   icon->SetImage(rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32).ToImageSkia());
   gfx::Size icon_size = icon->GetPreferredSize();
 
-  popup_ = new views::Widget;
-  if (!popup_) {
-    NOTREACHED();
-    return DIALOG_ERROR;
-  }
   // An approximate window size. After Layout() we'll get better bounds.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.can_activate = true;
   params.bounds = gfx::Rect(310, 200);
+  popup_ = new views::Widget;
   popup_->Init(params);
 
   views::View* root_view = popup_->GetRootView();
@@ -103,10 +99,6 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
       views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
-  if (!layout) {
-    NOTREACHED();
-    return DIALOG_ERROR;
-  }
   root_view->SetLayoutManager(layout);
   views::ColumnSet* columns;
 
