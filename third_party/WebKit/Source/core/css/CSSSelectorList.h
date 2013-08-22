@@ -59,7 +59,6 @@ public:
     }
 
     bool selectorsNeedNamespaceResolution();
-    bool hasInvalidSelector() const;
 
     bool hasShadowDistributedAt(size_t index) const;
 

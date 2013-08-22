@@ -165,20 +165,6 @@ bool CSSSelectorList::selectorsNeedNamespaceResolution()
     return forEachSelector(functor, this);
 }
 
-class SelectorHasInvalidSelectorFunctor {
-public:
-    bool operator()(const CSSSelector* selector)
-    {
-        return selector->isUnknownPseudoElement() || selector->isCustomPseudoElement();
-    }
-};
-
-bool CSSSelectorList::hasInvalidSelector() const
-{
-    SelectorHasInvalidSelectorFunctor functor;
-    return forEachSelector(functor, this);
-}
-
 class SelectorHasShadowDistributed {
 public:
     bool operator()(const CSSSelector* selector)

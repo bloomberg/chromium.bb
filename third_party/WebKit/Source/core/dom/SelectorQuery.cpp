@@ -490,7 +490,7 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* 
     CSSSelectorList selectorList;
     parser.parseSelector(selectors, selectorList);
 
-    if (!selectorList.first() || selectorList.hasInvalidSelector()) {
+    if (!selectorList.first()) {
         es.throwDOMException(SyntaxError);
         return 0;
     }
