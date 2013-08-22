@@ -375,7 +375,7 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
-  window_widget_->Close();
+  window_widget_->CloseNow();
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
