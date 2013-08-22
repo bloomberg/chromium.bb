@@ -57,6 +57,7 @@
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OVERHANG_PATTERN" file="overhang_pattern.png" />
+        <structure type="chrome_scaled_image" name="IDR_OVERHANG_SHADOW" file="overhang_shadow.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PAN_SCROLL_ICON" file="pan_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_CANCEL" file="search_cancel.png" />

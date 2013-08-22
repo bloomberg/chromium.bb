@@ -605,6 +605,7 @@ const DataResource kDataResources[] = {
 #endif
 #if defined(OS_MACOSX)
   { "overhangPattern", IDR_OVERHANG_PATTERN, ui::SCALE_FACTOR_100P },
+  { "overhangShadow", IDR_OVERHANG_SHADOW, ui::SCALE_FACTOR_100P },
 #endif
   { "panIcon", IDR_PAN_SCROLL_ICON, ui::SCALE_FACTOR_100P },
   { "searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P },
