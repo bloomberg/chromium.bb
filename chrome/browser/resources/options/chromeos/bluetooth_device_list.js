@@ -6,6 +6,7 @@ cr.define('options.system.bluetooth', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var DeletableItem = options.DeletableItem;
   /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Bluetooth settings constants.
@@ -127,6 +128,7 @@ cr.define('options.system.bluetooth', function() {
       this.autoExpands = true;
       this.fixedHeight = true;
       this.clear();
+      this.selectionModel = new ListSingleSelectionModel();
     },
 
     /**
@@ -284,27 +286,22 @@ cr.define('options.system.bluetooth', function() {
       if (!target.classList.contains('row-delete-button'))
         return;
 
-      var listItem = this.getListItemAncestor(target);
-      var selected = this.selectionModel.selectedIndexes;
-      var index = this.getIndexOfListItem(listItem);
-      if (selected.indexOf(index) == -1)
-        selected = [index];
-      for (var j = selected.length - 1; j >= 0; j--) {
-        var index = selected[j];
-        var item = this.getListItemByIndex(index);
-        if (item && item.deletable) {
-          // Device is busy until we hear back from the Bluetooth adapter.
-          // Prevent double removal request.
-          item.deletable = false;
-          // TODO(kevers): Provide visual feedback that the device is busy.
+      var item = this.getListItemAncestor(target);
+      var selected = this.selectionModel.selectedIndex;
+      var index = this.getIndexOfListItem(item);
+      if (item && item.deletable) {
+        if (selected != index)
+          this.setSelectedDevice_(item.data.address);
+        // Device is busy until we hear back from the Bluetooth adapter.
+        // Prevent double removal request.
+        item.deletable = false;
+        // TODO(kevers): Provide visual feedback that the device is busy.
 
-          // Inform the bluetooth adapter that we are disconnecting or
-          // forgetting the device.
-          chrome.send('updateBluetoothDevice',
-            [item.data.address, item.connected ? 'disconnect' : 'forget']);
-        }
+        // Inform the bluetooth adapter that we are disconnecting or
+        // forgetting the device.
+        chrome.send('updateBluetoothDevice',
+          [item.data.address, item.connected ? 'disconnect' : 'forget']);
       }
-      this.selectionModel.unselectAll();
     },
 
     /** @override */

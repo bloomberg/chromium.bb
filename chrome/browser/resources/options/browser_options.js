@@ -293,12 +293,6 @@ cr.define('options', function() {
           OptionsPage.closeOverlay();
         };
 
-        $('bluetooth-reconnect-device').onmousedown = function(event) {
-          // Prevent 'blur' event, which would reset the list selection,
-          // thereby disabling the apply button.
-          event.preventDefault();
-        };
-
         $('bluetooth-paired-devices-list').addEventListener('change',
             function() {
           var item = $('bluetooth-paired-devices-list').selectedItem;
