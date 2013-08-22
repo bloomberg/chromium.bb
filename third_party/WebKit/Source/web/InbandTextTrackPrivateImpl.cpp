@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "InbandTextTrackPrivateImpl.h"
-
 #include "WebInbandTextTrack.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
 #include "public/platform/WebString.h"

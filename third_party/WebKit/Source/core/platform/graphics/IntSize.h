@@ -27,6 +27,8 @@
 #ifndef IntSize_h
 #define IntSize_h
 
+#include "wtf/Platform.h"
+
 #if OS(DARWIN)
 typedef struct CGSize CGSize;
 

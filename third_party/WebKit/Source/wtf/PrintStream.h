@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Platform.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WTF {

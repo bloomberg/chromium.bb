@@ -28,6 +28,8 @@
 #ifndef Uint8ClampedArray_h
 #define Uint8ClampedArray_h
 
+#include "wtf/Platform.h"
+
 #include "wtf/Uint8Array.h"
 #include "wtf/MathExtras.h"
 

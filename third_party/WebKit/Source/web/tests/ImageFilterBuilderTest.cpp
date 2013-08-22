@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
 #include "SkImageFilter.h"
 #include "core/platform/graphics/filters/FEBlend.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"

@@ -29,6 +29,7 @@
 
 #include "core/platform/graphics/IntSize.h"
 #include "wtf/MathExtras.h"
+#include "wtf/Platform.h"
 
 #if OS(DARWIN)
 typedef struct CGPoint CGPoint;

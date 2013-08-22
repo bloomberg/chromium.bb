@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "wtf/FilePrintStream.h"
+#include "wtf/Platform.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WTF {

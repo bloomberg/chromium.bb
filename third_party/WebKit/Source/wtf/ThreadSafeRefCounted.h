@@ -34,6 +34,7 @@
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Platform.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {

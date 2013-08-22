@@ -32,6 +32,7 @@
 #define WTF_ByteOrder_h
 
 #include "wtf/CPU.h"
+#include "wtf/Platform.h"
 
 #if OS(UNIX)
 #include <arpa/inet.h>

@@ -22,6 +22,8 @@
 #ifndef TypeTraits_h
 #define TypeTraits_h
 
+#include "wtf/Platform.h"
+
 #if (defined(__GLIBCXX__) && (__GLIBCXX__ >= 20070724) && defined(__GXX_EXPERIMENTAL_CXX0X__)) || (defined(_MSC_VER) && (_MSC_VER >= 1600))
 #include <type_traits>
 #if defined(__GLIBCXX__) && (__GLIBCXX__ >= 20070724) && defined(__GXX_EXPERIMENTAL_CXX0X__)
