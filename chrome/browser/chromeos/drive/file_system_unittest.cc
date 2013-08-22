@@ -16,6 +16,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
@@ -150,7 +151,7 @@ class FileSystemTest : public testing::Test {
   bool LoadFullResourceList() {
     FileError error = FILE_ERROR_FAILED;
     file_system_->change_list_loader_for_testing()->LoadIfNeeded(
-        DirectoryFetchInfo(),
+        internal::DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
     return error == FILE_ERROR_OK;

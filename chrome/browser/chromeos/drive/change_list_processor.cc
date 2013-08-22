@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -14,6 +15,11 @@
 
 namespace drive {
 namespace internal {
+
+std::string DirectoryFetchInfo::ToString() const {
+  return ("resource_id: " + resource_id_ +
+          ", changestamp: " + base::Int64ToString(changestamp_));
+}
 
 ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
     : largest_changestamp_(resource_list.largest_changestamp()) {
@@ -283,6 +289,54 @@ void ChangeListProcessor::ConvertToMap(
           << "Found duplicated file: " << entry->base_name();
     }
   }
+}
+
+// static
+FileError ChangeListProcessor::RefreshDirectory(
+    ResourceMetadata* resource_metadata,
+    const DirectoryFetchInfo& directory_fetch_info,
+    const ResourceEntryMap& entry_map,
+    base::FilePath* out_file_path) {
+  DCHECK(!directory_fetch_info.empty());
+
+  ResourceEntry directory;
+  FileError error = resource_metadata->GetResourceEntryById(
+      directory_fetch_info.resource_id(), &directory);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  if (!directory.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
+
+  // Go through the entry map. Handle existing entries and new entries.
+  for (ResourceEntryMap::const_iterator it = entry_map.begin();
+       it != entry_map.end(); ++it) {
+    const ResourceEntry& entry = it->second;
+    // Skip if the parent resource ID does not match. This is needed to
+    // handle entries with multiple parents. For such entries, the first
+    // parent is picked and other parents are ignored, hence some entries may
+    // have a parent resource ID which does not match the target directory's.
+    if (entry.parent_local_id() != directory_fetch_info.resource_id()) {
+      DVLOG(1) << "Wrong-parent entry rejected: " << entry.resource_id();
+      continue;
+    }
+
+    error = resource_metadata->RefreshEntry(entry);
+    if (error == FILE_ERROR_NOT_FOUND)  // If refreshing fails, try adding.
+      error = resource_metadata->AddEntry(entry);
+
+    if (error != FILE_ERROR_OK)
+      return error;
+  }
+
+  directory.mutable_directory_specific_info()->set_changestamp(
+      directory_fetch_info.changestamp());
+  error = resource_metadata->RefreshEntry(directory);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  *out_file_path = resource_metadata->GetFilePath(directory.resource_id());
+  return FILE_ERROR_OK;
 }
 
 void ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {

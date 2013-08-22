@@ -31,7 +31,6 @@ class ResourceList;
 
 namespace drive {
 
-class DirectoryFetchInfo;
 class JobScheduler;
 class ResourceEntry;
 
@@ -40,6 +39,7 @@ namespace internal {
 class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
+class DirectoryFetchInfo;
 class ResourceMetadata;
 
 // Callback run as a response to SearchFromServer.
@@ -210,8 +210,8 @@ class ChangeListLoader {
   void DoLoadDirectoryFromServerAfterRefresh(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      FileError error,
-      const base::FilePath& directory_path);
+      const base::FilePath* directory_path,
+      FileError error);
 
   // ================= Implementation for other stuff =================
 

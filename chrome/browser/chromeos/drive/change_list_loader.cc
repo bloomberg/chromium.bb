@@ -556,21 +556,22 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
     return;
   }
 
-  // Build entry map for grand root directory, since the special static
-  // directory "drive/other" is always created during the initialization of
-  // ResourceMetadata, here we only need to create a dynamic directory
-  // "drive/root" from its resource ID.
-  ResourceEntryMap grand_root_entry_map;
+  // Grand root will be changed.
+  base::FilePath* changed_directory_path =
+      new base::FilePath(util::GetDriveGrandRootPath());
+  // Add "My Drive".
   const std::string& root_resource_id = about_resource->root_folder_id();
-  grand_root_entry_map[root_resource_id] =
-      util::CreateMyDriveRootEntry(root_resource_id);
-  resource_metadata_->RefreshDirectoryOnUIThread(
-      directory_fetch_info,
-      grand_root_entry_map,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::AddEntry,
+                 base::Unretained(resource_metadata_),
+                 util::CreateMyDriveRootEntry(root_resource_id)),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback));
+                 callback,
+                 base::Owned(changed_directory_path)));
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
@@ -592,20 +593,27 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
 
   ChangeListProcessor::ResourceEntryMap entry_map;
   ChangeListProcessor::ConvertToMap(change_lists.Pass(), &entry_map, NULL);
-  resource_metadata_->RefreshDirectoryOnUIThread(
-      directory_fetch_info,
-      entry_map,
+  base::FilePath* directory_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ChangeListProcessor::RefreshDirectory,
+                 resource_metadata_,
+                 directory_fetch_info,
+                 entry_map,
+                 directory_path),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback));
+                 callback,
+                 base::Owned(directory_path)));
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& directory_path) {
+    const base::FilePath* directory_path,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -614,7 +622,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
   // Also notify the observers.
   if (error == FILE_ERROR_OK) {
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                      OnDirectoryChanged(directory_path));
+                      OnDirectoryChanged(*directory_path));
   }
 }
 

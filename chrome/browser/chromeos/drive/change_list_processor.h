@@ -28,6 +28,35 @@ namespace internal {
 
 class ResourceMetadata;
 
+// Holds information needed to fetch contents of a directory.
+// This object is copyable.
+class DirectoryFetchInfo {
+ public:
+  DirectoryFetchInfo() : changestamp_(0) {}
+  DirectoryFetchInfo(const std::string& resource_id,
+                     int64 changestamp)
+      : resource_id_(resource_id),
+        changestamp_(changestamp) {
+  }
+
+  // Returns true if the object is empty.
+  bool empty() const { return resource_id_.empty(); }
+
+  // Resource ID of the directory.
+  const std::string& resource_id() const { return resource_id_; }
+
+  // Changestamp of the directory. The changestamp is used to determine if
+  // the directory contents should be fetched.
+  int64 changestamp() const { return changestamp_; }
+
+  // Returns a string representation of this object.
+  std::string ToString() const;
+
+ private:
+  const std::string resource_id_;
+  const int64 changestamp_;
+};
+
 // Class to represent a change list.
 class ChangeList {
  public:
@@ -81,6 +110,14 @@ class ChangeListProcessor {
 
   // The set of changed directories as a result of change list processing.
   const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
+
+  // Updates the changestamp of a directory according to |directory_fetch_info|
+  // and adds or refreshes the child entries from |entry_map|.
+  static FileError RefreshDirectory(
+      ResourceMetadata* resource_metadata,
+      const DirectoryFetchInfo& directory_fetch_info,
+      const ResourceEntryMap& entry_map,
+      base::FilePath* out_file_path);
 
  private:
   // Applies the pre-processed metadata from entry_map_ onto the resource

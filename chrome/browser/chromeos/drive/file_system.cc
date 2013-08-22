@@ -242,7 +242,7 @@ void FileSystem::ReloadAfterReset(FileError error) {
   SetupChangeListLoader();
 
   change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(),
+      internal::DirectoryFetchInfo(),
       base::Bind(&FileSystem::OnUpdateChecked,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -333,7 +333,7 @@ void FileSystem::CreateDirectory(
   DCHECK(!callback.is_null());
 
   change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(),
+      internal::DirectoryFetchInfo(),
       base::Bind(&FileSystem::CreateDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path, is_exclusive, is_recursive, callback));
@@ -635,7 +635,7 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
     // If we don't know about the directory, or it is the "drive/other"
     // directory that has to gather all orphan entries, start loading full
     // resource list.
-    change_list_loader_->LoadIfNeeded(DirectoryFetchInfo(), callback);
+    change_list_loader_->LoadIfNeeded(internal::DirectoryFetchInfo(), callback);
     return;
   }
 
@@ -646,7 +646,7 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
 
   // Pass the directory fetch info so we can fetch the contents of the
   // directory before loading change lists.
-  DirectoryFetchInfo directory_fetch_info(
+  internal::DirectoryFetchInfo directory_fetch_info(
       entry->resource_id(),
       entry->directory_specific_info().changestamp());
   change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);

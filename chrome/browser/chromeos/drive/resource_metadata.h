@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -24,40 +23,8 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class ResourceEntry;
-
 typedef std::vector<ResourceEntry> ResourceEntryVector;
-typedef std::map<std::string /* resource_id */, ResourceEntry>
-    ResourceEntryMap;
 
-// Holds information needed to fetch contents of a directory.
-// This object is copyable.
-class DirectoryFetchInfo {
- public:
-  DirectoryFetchInfo() : changestamp_(0) {}
-  DirectoryFetchInfo(const std::string& resource_id,
-                     int64 changestamp)
-      : resource_id_(resource_id),
-        changestamp_(changestamp) {
-  }
-
-  // Returns true if the object is empty.
-  bool empty() const { return resource_id_.empty(); }
-
-  // Resource ID of the directory.
-  const std::string& resource_id() const { return resource_id_; }
-
-  // Changestamp of the directory. The changestamp is used to determine if
-  // the directory contents should be fetched.
-  int64 changestamp() const { return changestamp_; }
-
-  // Returns a string representation of this object.
-  std::string ToString() const;
-
- private:
-  const std::string resource_id_;
-  const int64 changestamp_;
-};
 
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
@@ -217,15 +184,6 @@ class ResourceMetadata {
   // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
   FileError RefreshEntry(const ResourceEntry& entry);
 
-  // Updates the changestamp of a directory according to |directory_fetch_info|,
-  // and adds or refreshes the child entries from |entry_map|.
-  // |callback| is called with the directory path. |callback| must not be null.
-  // Must be called on the UI thread.
-  void RefreshDirectoryOnUIThread(
-      const DirectoryFetchInfo& directory_fetch_info,
-      const ResourceEntryMap& entry_map,
-      const FileMoveCallback& callback);
-
   // Recursively get child directories of entry pointed to by |resource_id|.
   void GetChildDirectories(const std::string& resource_id,
                            std::set<base::FilePath>* child_directories);
@@ -261,11 +219,6 @@ class ResourceMetadata {
   FileError RenameEntry(const base::FilePath& file_path,
                         const std::string& new_name,
                         base::FilePath* out_file_path);
-
-  // Used to implement RefreshDirectoryOnUIThread().
-  FileError RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,
-                             const ResourceEntryMap& entry_map,
-                             base::FilePath* out_file_path);
 
   // Continues with GetResourceEntryPairByPathsOnUIThread after the first
   // entry has been asynchronously fetched. This fetches the second entry

@@ -98,11 +98,6 @@ FileError AddEntryWithFilePath(internal::ResourceMetadata* metadata,
 
 }  // namespace
 
-std::string DirectoryFetchInfo::ToString() const {
-  return ("resource_id: " + resource_id_ +
-          ", changestamp: " + base::Int64ToString(changestamp_));
-}
-
 EntryInfoResult::EntryInfoResult() : error(FILE_ERROR_FAILED) {
 }
 
@@ -461,21 +456,6 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::RefreshDirectoryOnUIThread(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const ResourceEntryMap& entry_map,
-    const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  PostFileMoveTask(blocking_task_runner_.get(),
-                   base::Bind(&ResourceMetadata::RefreshDirectory,
-                              base::Unretained(this),
-                              directory_fetch_info,
-                              entry_map),
-                   callback);
-}
-
 void ResourceMetadata::GetChildDirectories(
     const std::string& resource_id,
     std::set<base::FilePath>* child_directories) {
@@ -619,57 +599,6 @@ void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(
           first_path,
           second_path,
           callback));
-}
-
-FileError ResourceMetadata::RefreshDirectory(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const ResourceEntryMap& entry_map,
-    base::FilePath* out_file_path) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!directory_fetch_info.empty());
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  ResourceEntry directory;
-  if (!storage_->GetEntry(directory_fetch_info.resource_id(), &directory))
-    return FILE_ERROR_NOT_FOUND;
-
-  if (!directory.file_info().is_directory())
-    return FILE_ERROR_NOT_A_DIRECTORY;
-
-  // Go through the entry map. Handle existing entries and new entries.
-  for (ResourceEntryMap::const_iterator it = entry_map.begin();
-       it != entry_map.end(); ++it) {
-    if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-      return FILE_ERROR_NO_LOCAL_SPACE;
-
-    const ResourceEntry& entry = it->second;
-    // Skip if the parent resource ID does not match. This is needed to
-    // handle entries with multiple parents. For such entries, the first
-    // parent is picked and other parents are ignored, hence some entries may
-    // have a parent resource ID which does not match the target directory's.
-    //
-    // TODO(satorux): Move the filtering logic to somewhere more appropriate.
-    // crbug.com/193525.
-    if (entry.parent_local_id() != directory_fetch_info.resource_id()) {
-      DVLOG(1) << "Wrong-parent entry rejected: " << entry.resource_id();
-      continue;
-    }
-
-    if (!PutEntryUnderDirectory(entry))
-      return FILE_ERROR_FAILED;
-  }
-
-  directory.mutable_directory_specific_info()->set_changestamp(
-      directory_fetch_info.changestamp());
-  if (!storage_->PutEntry(directory.resource_id(), directory))
-    return FILE_ERROR_FAILED;
-
-  if (out_file_path)
-    *out_file_path = GetFilePath(directory.resource_id());
-
-  return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(
