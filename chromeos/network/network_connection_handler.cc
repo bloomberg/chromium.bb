@@ -93,7 +93,7 @@ bool VPNIsConfigured(const std::string& service_path,
     provider_properties.GetBooleanWithoutPathExpansion(
         flimflam::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG_EVENT("VPN: Passphrase Required", service_path);
+      NET_LOG_EVENT("VPN: PSK Required", service_path);
       return false;
     }
     NET_LOG_EVENT("VPN Is Configured", service_path);

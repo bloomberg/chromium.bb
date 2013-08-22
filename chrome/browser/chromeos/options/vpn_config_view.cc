@@ -824,8 +824,10 @@ void VPNConfigView::SetConfigProperties(
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT: {
       std::string ca_cert_pem = GetServerCACertPEM();
       if (!ca_cert_pem.empty()) {
-        properties->SetStringWithoutPathExpansion(
-            shill::kL2tpIpsecCaCertPemProperty, ca_cert_pem);
+        base::ListValue* pem_list = new base::ListValue;
+        pem_list->AppendString(ca_cert_pem);
+        properties->SetWithoutPathExpansion(
+            shill::kL2tpIpsecCaCertPemProperty, pem_list);
       }
       properties->SetStringWithoutPathExpansion(
           flimflam::kL2tpIpsecClientCertIdProperty, GetUserCertID());
@@ -847,7 +849,7 @@ void VPNConfigView::SetConfigProperties(
       std::string ca_cert_pem = GetServerCACertPEM();
       if (!ca_cert_pem.empty()) {
         base::ListValue* pem_list = new base::ListValue;
-        pem_list->AppendString(GetServerCACertPEM());
+        pem_list->AppendString(ca_cert_pem);
         properties->SetWithoutPathExpansion(
             shill::kOpenVPNCaCertPemProperty, pem_list);
       }
