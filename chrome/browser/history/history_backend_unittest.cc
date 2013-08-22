@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/history/history_backend.h"
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -9,21 +11,18 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -34,17 +33,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 using base::Time;
@@ -56,10 +50,6 @@ using base::TimeDelta;
 // harder than calling it directly for many things.
 
 namespace {
-
-// data we'll put into the thumbnail database
-static const unsigned char blob1[] =
-    "12346102356120394751634516591348710478123649165419234519234512349134";
 
 static const gfx::Size kTinySize = gfx::Size(10, 10);
 static const gfx::Size kSmallSize = gfx::Size(16, 16);
@@ -96,7 +86,6 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details) OVERRIDE;
   virtual void DBLoaded(int backend_id) OVERRIDE;
-  virtual void StartTopSitesMigration(int backend_id) OVERRIDE;
   virtual void NotifyVisitDBObserversOnAddVisit(
       const BriefVisitInfo& info) OVERRIDE {}
 
@@ -438,10 +427,6 @@ void HistoryBackendTestDelegate::DBLoaded(int backend_id) {
   test_->loaded_ = true;
 }
 
-void HistoryBackendTestDelegate::StartTopSitesMigration(int backend_id) {
-  test_->backend_->MigrateThumbnailsDatabase();
-}
-
 // http://crbug.com/114287
 #if defined(OS_WIN)
 #define MAYBE_Loaded DISABLED_Loaded
@@ -517,24 +502,6 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   URLRow outrow1;
   EXPECT_TRUE(mem_backend_->db_->GetRowForURL(row1.url(), NULL));
 
-  // Add thumbnails for each page. The |Images| take ownership of SkBitmap
-  // created from decoding the images.
-  ThumbnailScore score(0.25, true, true);
-  scoped_ptr<SkBitmap> google_bitmap(
-      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-
-  gfx::Image google_image = gfx::Image::CreateFrom1xBitmap(*google_bitmap);
-
-  Time time;
-  GURL gurl;
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row1_id, &google_image,
-                                            score, time);
-  scoped_ptr<SkBitmap> weewar_bitmap(
-     gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
-  gfx::Image weewar_image = gfx::Image::CreateFrom1xBitmap(*weewar_bitmap);
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, &weewar_image,
-                                            score, time);
-
   // Star row1.
   bookmark_model_.AddURL(
       bookmark_model_.bookmark_bar_node(), 0, string16(), row1.url());
@@ -557,12 +524,6 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   VisitVector all_visits;
   backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
   ASSERT_EQ(0U, all_visits.size());
-
-  // All thumbnails should be deleted.
-  std::vector<unsigned char> out_data;
-  EXPECT_FALSE(backend_->thumbnail_db_->GetPageThumbnail(outrow1.id(),
-                                                         &out_data));
-  EXPECT_FALSE(backend_->thumbnail_db_->GetPageThumbnail(row2_id, &out_data));
 
   // We should have a favicon and favicon bitmaps for the first URL only. We
   // look them up by favicon URL since the IDs may have changed.

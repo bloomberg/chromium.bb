@@ -70,9 +70,6 @@ class TopSitesImpl : public TopSites {
                                      ThumbnailScore* score) OVERRIDE;
   virtual bool GetTemporaryPageThumbnailScore(const GURL& url,
                                               ThumbnailScore* score) OVERRIDE;
-  virtual void MigrateFromHistory() OVERRIDE;
-  virtual void FinishHistoryMigration(const ThumbnailMigration& data) OVERRIDE;
-  virtual void HistoryLoaded() OVERRIDE;
   virtual void SyncWithHistory() OVERRIDE;
   virtual bool HasBlacklistedItems() const OVERRIDE;
   virtual void AddBlacklistedURL(const GURL& url) OVERRIDE;
@@ -109,34 +106,6 @@ class TopSitesImpl : public TopSites {
   static void DiffMostVisited(const MostVisitedURLList& old_list,
                               const MostVisitedURLList& new_list,
                               TopSitesDelta* delta);
-
-  // Enumeration of the possible states history can be in. These values do not
-  // necessarily reflect the loaded state of history. In particular if the
-  // history backend is unloaded |history_state_| may be HISTORY_LOADED.
-  enum HistoryLoadState {
-    // We're waiting for history to finish loading.
-    HISTORY_LOADING,
-
-    // History finished loading and we need to migrate top sites out of history.
-    HISTORY_MIGRATING,
-
-    // History is loaded.
-    HISTORY_LOADED
-  };
-
-  // Enumeration of possible states the top sites backend can be in.
-  enum TopSitesLoadState {
-    // We're waiting for the backend to finish loading.
-    TOP_SITES_LOADING,
-
-    // The backend finished loading, but we may need to migrate. This is true if
-    // the top sites db didn't exist, or if the db existed but is from an old
-    // version.
-    TOP_SITES_LOADED_WAITING_FOR_HISTORY,
-
-    // Top sites is loaded.
-    TOP_SITES_LOADED
-  };
 
   // Sets the thumbnail without writing to the database. Useful when
   // reading last known top sites from the DB.
@@ -215,16 +184,10 @@ class TopSitesImpl : public TopSites {
   // Stops and starts timer with a delay of |delta|.
   void RestartQueryForTopSitesTimer(base::TimeDelta delta);
 
-  // Callback after TopSitesBackend has finished migration. This tells history
-  // to finish it's side of migration (nuking thumbnails on disk). Should be
-  // called from the UI thread.
-  void OnHistoryMigrationWrittenToDisk();
-
   // Callback from TopSites with the top sites/thumbnails. Should be called
   // from the UI thread.
   void OnGotMostVisitedThumbnails(
-      const scoped_refptr<MostVisitedThumbnails>& thumbnails,
-      const bool* need_history_migration);
+      const scoped_refptr<MostVisitedThumbnails>& thumbnails);
 
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailableFromHistory(CancelableRequestProvider::Handle handle,
@@ -272,12 +235,6 @@ class TopSitesImpl : public TopSites {
   // enough Top Sites (new profile), we store it until the next
   // SetTopSites call.
   TempImages temp_images_;
-
-  // See description above HistoryLoadState.
-  HistoryLoadState history_state_;
-
-  // See description above TopSitesLoadState.
-  TopSitesLoadState top_sites_state_;
 
   // URL List of prepopulated page.
   std::vector<GURL> prepopulated_page_urls_;

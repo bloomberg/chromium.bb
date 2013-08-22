@@ -28,8 +28,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
  public:
   // The boolean parameter indicates if the DB existed on disk or needs to be
   // migrated.
-  typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&,
-                              const bool*)>
+  typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&)>
       GetMostVisitedThumbnailsCallback;
 
   TopSitesBackend();
@@ -74,8 +73,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
 
   // Does the work of getting the most visted thumbnails.
   void GetMostVisitedThumbnailsOnDBThread(
-      scoped_refptr<MostVisitedThumbnails> thumbnails,
-      bool* need_history_migration);
+      scoped_refptr<MostVisitedThumbnails> thumbnails);
 
   // Updates top sites.
   void UpdateTopSitesOnDBThread(const TopSitesDelta& delta);

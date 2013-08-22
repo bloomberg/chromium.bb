@@ -367,22 +367,6 @@ class HistoryService : public CancelableRequestProvider,
       CancelableRequestConsumerBase* consumer,
       const QueryFilteredURLsCallback& callback);
 
-  // Thumbnails ----------------------------------------------------------------
-
-  // Implemented by consumers to get thumbnail data. Called when a request for
-  // the thumbnail data is complete. Once this callback is made, the request
-  // will be completed and no other calls will be made for that handle.
-  //
-  // This function will be called even on error conditions or if there is no
-  // thumbnail for that page. In these cases, the data pointer will be NULL.
-  typedef base::Callback<void(Handle, scoped_refptr<base::RefCountedBytes>)>
-      ThumbnailDataCallback;
-
-  // Requests a page thumbnail. See ThumbnailDataCallback definition above.
-  Handle GetPageThumbnail(const GURL& page_url,
-                          CancelableRequestConsumerBase* consumer,
-                          const ThumbnailDataCallback& callback);
-
   // Database management operations --------------------------------------------
 
   // Delete all the information related to a single url.
@@ -541,10 +525,6 @@ class HistoryService : public CancelableRequestProvider,
   virtual void ScheduleDBTask(history::HistoryDBTask* task,
                               CancelableRequestConsumerBase* consumer);
 
-  // Returns true if top sites needs to be migrated out of history into its own
-  // db.
-  bool needs_top_sites_migration() const { return needs_top_sites_migration_; }
-
   // Adds or removes observers for the VisitDatabase.
   void AddVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
   void RemoveVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
@@ -589,14 +569,6 @@ class HistoryService : public CancelableRequestProvider,
   // The same as AddPageWithDetails() but takes a vector.
   void AddPagesWithDetails(const history::URLRows& info,
                            history::VisitSource visit_source);
-
-  // Starts the TopSites migration in the HistoryThread. Called by the
-  // BackendDelegate.
-  void StartTopSitesMigration(int backend_id);
-
-  // Called by TopSites after the thumbnails were read and it is safe
-  // to delete the thumbnails DB.
-  void OnTopSitesReady();
 
   // Returns true if this looks like the type of URL we want to add to the
   // history. We filter out some URLs such as JavaScript.
@@ -1077,9 +1049,6 @@ class HistoryService : public CancelableRequestProvider,
   base::FilePath history_dir_;
   BookmarkService* bookmark_service_;
   bool no_db_;
-
-  // True if needs top site migration.
-  bool needs_top_sites_migration_;
 
   // The index used for quick history lookups.
   // TODO(mrossetti): Move in_memory_url_index out of history_service.

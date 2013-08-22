@@ -564,7 +564,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // Compute the file names.
   base::FilePath history_name = history_dir_.Append(chrome::kHistoryFilename);
-  base::FilePath thumbnail_name = GetThumbnailFileName();
+  base::FilePath thumbnail_name = GetFaviconsFileName();
   base::FilePath archived_name = GetArchivedFileName();
 
   // Delete the old index database files which are no longer used.
@@ -619,11 +619,11 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   }
 
   // Thumbnail database.
+  // TODO(shess): "thumbnail database" these days only stores
+  // favicons.  Thumbnails are stored in "top sites".  Consider
+  // renaming "thumbnail" references to "favicons" or something of the
+  // sort.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (!db_->GetNeedsThumbnailMigration()) {
-    // No convertion needed - use new filename right away.
-    thumbnail_name = GetFaviconsFileName();
-  }
   if (thumbnail_db_->Init(thumbnail_name,
                           history_publisher_.get(),
                           db_.get()) != sql::INIT_OK) {
@@ -634,11 +634,6 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     // other error.
     LOG(WARNING) << "Could not initialize the thumbnail database.";
     thumbnail_db_.reset();
-  }
-
-  if (db_->GetNeedsThumbnailMigration()) {
-    VLOG(1) << "Starting TopSites migration";
-    delegate_->StartTopSitesMigration(id_);
   }
 
   // Archived database.
@@ -1651,89 +1646,6 @@ void HistoryBackend::ScheduleAutocomplete(HistoryURLProvider* provider,
   provider->ExecuteWithDB(this, db_.get(), params);
 }
 
-void HistoryBackend::SetPageThumbnail(
-    const GURL& url,
-    const gfx::Image* thumbnail,
-    const ThumbnailScore& score) {
-  if (!db_ || !thumbnail_db_)
-    return;
-
-  URLRow url_row;
-  URLID url_id = db_->GetRowForURL(url, &url_row);
-  if (url_id) {
-    thumbnail_db_->SetPageThumbnail(url, url_id, thumbnail, score,
-                                    url_row.last_visit());
-  }
-
-  ScheduleCommit();
-}
-
-void HistoryBackend::GetPageThumbnail(
-    scoped_refptr<GetPageThumbnailRequest> request,
-    const GURL& page_url) {
-  if (request->canceled())
-    return;
-
-  scoped_refptr<base::RefCountedBytes> data;
-  GetPageThumbnailDirectly(page_url, &data);
-
-  request->ForwardResult(request->handle(), data);
-}
-
-void HistoryBackend::GetPageThumbnailDirectly(
-    const GURL& page_url,
-    scoped_refptr<base::RefCountedBytes>* data) {
-  if (thumbnail_db_) {
-    *data = new base::RefCountedBytes;
-
-    // Time the result.
-    TimeTicks beginning_time = TimeTicks::Now();
-
-    history::RedirectList redirects;
-    URLID url_id;
-    bool success = false;
-
-    // If there are some redirects, try to get a thumbnail from the last
-    // redirect destination.
-    if (GetMostRecentRedirectsFrom(page_url, &redirects) &&
-        !redirects.empty()) {
-      if ((url_id = db_->GetRowForURL(redirects.back(), NULL)))
-        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data());
-    }
-
-    // If we don't have a thumbnail from redirects, try the URL directly.
-    if (!success) {
-      if ((url_id = db_->GetRowForURL(page_url, NULL)))
-        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data());
-    }
-
-    // In this rare case, we start to mine the older redirect sessions
-    // from the visit table to try to find a thumbnail.
-    if (!success) {
-      success = GetThumbnailFromOlderRedirect(page_url, &(*data)->data());
-    }
-
-    if (!success)
-      *data = NULL;  // This will tell the callback there was an error.
-
-    UMA_HISTOGRAM_TIMES("History.GetPageThumbnail",
-                        TimeTicks::Now() - beginning_time);
-  }
-}
-
-void HistoryBackend::MigrateThumbnailsDatabase() {
-  // If there is no History DB, we can't record that the migration was done.
-  // It will be recorded on the next run.
-  if (db_) {
-    // If there is no thumbnail DB, we can still record a successful migration.
-    if (thumbnail_db_) {
-      thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
-                                             GetFaviconsFileName());
-    }
-    db_->ThumbnailMigrationDone();
-  }
-}
-
 void HistoryBackend::DeleteFTSIndexDatabases() {
   // Find files on disk matching the text databases file pattern so we can
   // quickly test for and delete them.
@@ -1749,37 +1661,6 @@ void HistoryBackend::DeleteFTSIndexDatabases() {
   }
   UMA_HISTOGRAM_COUNTS("History.DeleteFTSIndexDatabases",
                        num_databases_deleted);
-}
-
-bool HistoryBackend::GetThumbnailFromOlderRedirect(
-    const GURL& page_url,
-    std::vector<unsigned char>* data) {
-  // Look at a few previous visit sessions.
-  VisitVector older_sessions;
-  URLID page_url_id = db_->GetRowForURL(page_url, NULL);
-  static const int kVisitsToSearchForThumbnail = 4;
-  db_->GetMostRecentVisitsForURL(
-      page_url_id, kVisitsToSearchForThumbnail, &older_sessions);
-
-  // Iterate across all those previous visits, and see if any of the
-  // final destinations of those redirect chains have a good thumbnail
-  // for us.
-  bool success = false;
-  for (VisitVector::const_iterator it = older_sessions.begin();
-       !success && it != older_sessions.end(); ++it) {
-    history::RedirectList redirects;
-    if (it->visit_id) {
-      GetRedirectsFromSpecificVisit(it->visit_id, &redirects);
-
-      if (!redirects.empty()) {
-        URLID url_id;
-        if ((url_id = db_->GetRowForURL(redirects.back(), NULL)))
-          success = thumbnail_db_->GetPageThumbnail(url_id, data);
-      }
-    }
-  }
-
-  return success;
 }
 
 void HistoryBackend::GetFavicons(
@@ -2871,6 +2752,9 @@ bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {
     // error opening it. In this case, we just try to blow it away to try to
     // fix the error if it exists. This may fail, in which case either the
     // file doesn't exist or there's no more we can do.
+    sql::Connection::Delete(GetFaviconsFileName());
+
+    // Older version of the database.
     sql::Connection::Delete(GetThumbnailFileName());
     return true;
   }
@@ -2899,8 +2783,6 @@ bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {
   // avaliable in HistoryBackend.
   db_->ClearAndroidURLRows();
 #endif
-
-  thumbnail_db_->RecreateThumbnailTable();
 
   // Vacuum to remove all the pages associated with the dropped tables. There
   // must be no transaction open on the table when we do this. We assume that

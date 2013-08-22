@@ -76,7 +76,6 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
     }
   }
   virtual void DBLoaded(int backend_id) OVERRIDE {}
-  virtual void StartTopSitesMigration(int backend_id) OVERRIDE {}
   virtual void NotifyVisitDBObserversOnAddVisit(
       const history::BriefVisitInfo& info) OVERRIDE {}
 

@@ -82,80 +82,12 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 // artifacts for these small sized, highly detailed images.
 static const int kTopSitesImageQuality = 100;
 
-namespace {
-
-// HistoryDBTask used during migration of thumbnails from history to top sites.
-// When run on the history thread it collects the top sites and the
-// corresponding thumbnails. When run back on the ui thread it calls into
-// TopSitesImpl::FinishHistoryMigration.
-class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
- public:
-  LoadThumbnailsFromHistoryTask(TopSites* top_sites,
-                                int result_count)
-      : top_sites_(top_sites),
-        result_count_(result_count) {
-    // l10n_util isn't thread safe, so cache for use on the db thread.
-    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
-    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_WEBSTORE_URL));
-#if defined(OS_ANDROID)
-    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_MOBILE_WELCOME_URL));
-#endif
-  }
-
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
-    // Get the most visited urls.
-    backend->QueryMostVisitedURLsImpl(result_count_,
-                                      kDaysOfHistory,
-                                      &data_.most_visited);
-
-    // And fetch the thumbnails.
-    for (size_t i = 0; i < data_.most_visited.size(); ++i) {
-      const GURL& url = data_.most_visited[i].url;
-      if (ShouldFetchThumbnailFor(url)) {
-        scoped_refptr<base::RefCountedBytes> data;
-        backend->GetPageThumbnailDirectly(url, &data);
-        data_.url_to_thumbnail_map[url] = data;
-      }
-    }
-    return true;
-  }
-
-  virtual void DoneRunOnMainThread() OVERRIDE {
-    top_sites_->FinishHistoryMigration(data_);
-  }
-
- private:
-  virtual ~LoadThumbnailsFromHistoryTask() {}
-
-  bool ShouldFetchThumbnailFor(const GURL& url) {
-    return ignore_urls_.find(url.spec()) == ignore_urls_.end();
-  }
-
-  // Set of URLs we don't load thumbnails for. This is created on the UI thread
-  // and used on the history thread.
-  std::set<std::string> ignore_urls_;
-
-  scoped_refptr<TopSites> top_sites_;
-
-  // Number of results to request from history.
-  const int result_count_;
-
-  ThumbnailMigration data_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoadThumbnailsFromHistoryTask);
-};
-
-}  // namespace
-
 TopSitesImpl::TopSitesImpl(Profile* profile)
     : backend_(NULL),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
       profile_(profile),
       last_num_urls_changed_(0),
-      history_state_(HISTORY_LOADING),
-      top_sites_state_(TOP_SITES_LOADING),
       loaded_(false) {
   if (!profile_)
     return;
@@ -184,16 +116,6 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
       base::Bind(&TopSitesImpl::OnGotMostVisitedThumbnails,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
-
-  // History may have already finished loading by the time we're created.
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-  if (history && history->backend_loaded()) {
-    if (history->needs_top_sites_migration())
-      MigrateFromHistory();
-    else
-      history_state_ = HISTORY_LOADED;
-  }
 }
 
 bool TopSitesImpl::SetPageThumbnail(const GURL& url,
@@ -339,71 +261,6 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
       return i;
   }
   return -1;
-}
-
-void TopSitesImpl::MigrateFromHistory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (history_state_ != HISTORY_LOADING) {
-    // This can happen if history was unloaded then loaded again.
-    return;
-  }
-
-  history_state_ = HISTORY_MIGRATING;
-  HistoryServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS)->ScheduleDBTask(
-          new LoadThumbnailsFromHistoryTask(
-              this,
-              num_results_to_request_from_history()),
-          &history_consumer_);
-}
-
-void TopSitesImpl::FinishHistoryMigration(const ThumbnailMigration& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(history_state_, HISTORY_MIGRATING);
-
-  history_state_ = HISTORY_LOADED;
-
-  SetTopSites(data.most_visited);
-
-  for (size_t i = 0; i < data.most_visited.size(); ++i) {
-    URLToThumbnailMap::const_iterator image_i =
-        data.url_to_thumbnail_map.find(data.most_visited[i].url);
-    if (image_i != data.url_to_thumbnail_map.end()) {
-      SetPageThumbnailEncoded(
-          data.most_visited[i].url, image_i->second.get(), ThumbnailScore());
-    }
-  }
-
-  MoveStateToLoaded();
-
-  ResetThreadSafeImageCache();
-
-  // We've scheduled all the thumbnails and top sites to be written to the top
-  // sites db, but it hasn't happened yet. Schedule a request on the db thread
-  // that notifies us when done. When done we'll know everything was written and
-  // we can tell history to finish its part of migration.
-  backend_->DoEmptyRequest(
-      base::Bind(&TopSitesImpl::OnHistoryMigrationWrittenToDisk,
-                 base::Unretained(this)),
-      &cancelable_task_tracker_);
-}
-
-void TopSitesImpl::HistoryLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (history_state_ != HISTORY_MIGRATING) {
-    // No migration from history is needed.
-    history_state_ = HISTORY_LOADED;
-    if (top_sites_state_ == TOP_SITES_LOADED_WAITING_FOR_HISTORY) {
-      // TopSites thought it needed migration, but it really didn't. This
-      // typically happens the first time a profile is run with Top Sites
-      // enabled
-      SetTopSites(MostVisitedURLList());
-      MoveStateToLoaded();
-    }
-  }
-  // else case can happen if history is unloaded, then loaded again.
 }
 
 void TopSitesImpl::SyncWithHistory() {
@@ -888,54 +745,23 @@ void TopSitesImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
   timer_.Start(FROM_HERE, delta, this, &TopSitesImpl::TimerFired);
 }
 
-void TopSitesImpl::OnHistoryMigrationWrittenToDisk() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!profile_)
-    return;
-
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (history)
-    history->OnTopSitesReady();
-}
-
 void TopSitesImpl::OnGotMostVisitedThumbnails(
-    const scoped_refptr<MostVisitedThumbnails>& thumbnails,
-    const bool* need_history_migration) {
+    const scoped_refptr<MostVisitedThumbnails>& thumbnails) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(top_sites_state_, TOP_SITES_LOADING);
 
-  if (!*need_history_migration) {
-    top_sites_state_ = TOP_SITES_LOADED;
+  // Set the top sites directly in the cache so that SetTopSites diffs
+  // correctly.
+  cache_->SetTopSites(thumbnails->most_visited);
+  SetTopSites(thumbnails->most_visited);
+  cache_->SetThumbnails(thumbnails->url_to_images_map);
 
-    // Set the top sites directly in the cache so that SetTopSites diffs
-    // correctly.
-    cache_->SetTopSites(thumbnails->most_visited);
-    SetTopSites(thumbnails->most_visited);
-    cache_->SetThumbnails(thumbnails->url_to_images_map);
+  ResetThreadSafeImageCache();
 
-    ResetThreadSafeImageCache();
+  MoveStateToLoaded();
 
-    MoveStateToLoaded();
-
-    // Start a timer that refreshes top sites from history.
-    RestartQueryForTopSitesTimer(
-        base::TimeDelta::FromSeconds(kUpdateIntervalSecs));
-  } else {
-    // The top sites file didn't exist or is the wrong version. We need to wait
-    // for history to finish loading to know if we really needed to migrate.
-    if (history_state_ == HISTORY_LOADED) {
-      top_sites_state_ = TOP_SITES_LOADED;
-      SetTopSites(MostVisitedURLList());
-      MoveStateToLoaded();
-    } else {
-      top_sites_state_ = TOP_SITES_LOADED_WAITING_FOR_HISTORY;
-      // Ask for history just in case it hasn't been loaded yet. When history
-      // finishes loading we'll do migration and/or move to loaded.
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-    }
-  }
+  // Start a timer that refreshes top sites from history.
+  RestartQueryForTopSitesTimer(
+      base::TimeDelta::FromSeconds(kUpdateIntervalSecs));
 }
 
 void TopSitesImpl::OnTopSitesAvailableFromHistory(

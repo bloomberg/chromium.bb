@@ -32,13 +32,6 @@ class TopSitesDatabase {
   // Returns true on success. If false, no other functions should be called.
   bool Init(const base::FilePath& db_name);
 
-  // Returns true if migration of top sites from history may be needed. A value
-  // of true means either migration is definitely needed (the top sites file is
-  // old) or doesn't exist (as would happen for a new user).
-  bool may_need_history_migration() const {
-    return may_need_history_migration_;
-  }
-
   // Thumbnails ----------------------------------------------------------------
 
   // Returns a list of all URLs currently in the table.
@@ -104,9 +97,6 @@ class TopSitesDatabase {
 
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
-
-  // See description above class.
-  bool may_need_history_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesDatabase);
 };

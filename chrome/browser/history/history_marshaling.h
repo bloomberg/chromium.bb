@@ -50,11 +50,6 @@ typedef CancelableRequest1<HistoryService::QueryFilteredURLsCallback,
                            history::FilteredURLList>
     QueryFilteredURLsRequest;
 
-// Thumbnails -----------------------------------------------------------------
-
-typedef CancelableRequest<HistoryService::ThumbnailDataCallback>
-    GetPageThumbnailRequest;
-
 // Segment usage --------------------------------------------------------------
 
 typedef CancelableRequest1<HistoryService::SegmentQueryCallback,

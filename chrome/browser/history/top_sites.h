@@ -90,19 +90,6 @@ class TopSites
   virtual bool GetTemporaryPageThumbnailScore(const GURL& url,
                                               ThumbnailScore* score) = 0;
 
-  // Invoked from History if migration is needed. If this is invoked it will
-  // be before HistoryLoaded is invoked. Should be called from the UI thread.
-  virtual void MigrateFromHistory() = 0;
-
-  // Invoked with data from migrating thumbnails out of history. Should be
-  // called from the UI thread.
-  virtual void FinishHistoryMigration(const ThumbnailMigration& data) = 0;
-
-  // Invoked from history when it finishes loading. If MigrateFromHistory was
-  // not invoked at this point then we load from the top sites service. Should
-  // be called from the UI thread.
-  virtual void HistoryLoaded() = 0;
-
   // Asks TopSites to refresh what it thinks the top sites are. This may do
   // nothing. Should be called from the UI thread.
   virtual void SyncWithHistory() = 0;

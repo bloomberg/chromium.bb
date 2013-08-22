@@ -421,8 +421,6 @@ void ExpireHistoryBackend::DeleteOneURL(
 
     // Delete stuff that references this URL.
     if (thumb_db_) {
-      thumb_db_->DeleteThumbnail(url_row.id());
-
       // Collect shared information.
       std::vector<IconMapping> icon_mappings;
       if (thumb_db_->GetIconMappingsForPageURL(url_row.url(), &icon_mappings)) {

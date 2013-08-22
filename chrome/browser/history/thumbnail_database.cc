@@ -7,29 +7,23 @@
 #include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_publisher.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/dump_without_crashing.h"
-#include "chrome/common/thumbnail_score.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "ui/gfx/image/image_util.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -281,10 +275,6 @@ namespace history {
 static const int kCurrentVersionNumber = 7;
 static const int kCompatibleVersionNumber = 7;
 
-// Use 90 quality (out of 100) which is pretty high, because we're very
-// sensitive to artifacts for these small sized, highly detailed images.
-static const int kImageQuality = 90;
-
 ThumbnailDatabase::IconMappingEnumerator::IconMappingEnumerator() {
 }
 
@@ -300,8 +290,7 @@ bool ThumbnailDatabase::IconMappingEnumerator::GetNextIconMapping(
 }
 
 ThumbnailDatabase::ThumbnailDatabase()
-    : history_publisher_(NULL),
-      use_top_sites_(false) {
+    : history_publisher_(NULL) {
 }
 
 sql::InitStatus ThumbnailDatabase::CantUpgradeToVersion(int cur_version) {
@@ -333,10 +322,13 @@ sql::InitStatus ThumbnailDatabase::Init(
   base::mac::SetFileBackupExclusion(db_name);
 #endif
 
+  // thumbnails table has been obsolete for a long time, remove any
+  // detrious.
+  ignore_result(db_.Execute("DROP TABLE IF EXISTS thumbnails"));
+
   // Create the tables.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber) ||
-      !InitThumbnailTable() ||
       !InitFaviconBitmapsTable(&db_) ||
       !InitFaviconBitmapsIndex() ||
       !InitFaviconsTable(&db_) ||
@@ -460,49 +452,11 @@ void ThumbnailDatabase::ComputeDatabaseMetrics() {
       favicon_count.Step() ? favicon_count.ColumnInt(0) : 0);
 }
 
-bool ThumbnailDatabase::InitThumbnailTable() {
-  if (!db_.DoesTableExist("thumbnails")) {
-    use_top_sites_ = true;
-  }
-  return true;
-}
-
 bool ThumbnailDatabase::UpgradeToVersion3() {
-  if (use_top_sites_) {
-    meta_table_.SetVersionNumber(3);
-    meta_table_.SetCompatibleVersionNumber(
-        std::min(3, kCompatibleVersionNumber));
-    return true;  // Not needed after migration to TopSites.
-  }
-
-  // sqlite doesn't like the "ALTER TABLE xxx ADD (column_one, two,
-  // three)" syntax, so list out the commands we need to execute:
-  const char* alterations[] = {
-    "ALTER TABLE thumbnails ADD boring_score DOUBLE DEFAULT 1.0",
-    "ALTER TABLE thumbnails ADD good_clipping INTEGER DEFAULT 0",
-    "ALTER TABLE thumbnails ADD at_top INTEGER DEFAULT 0",
-    "ALTER TABLE thumbnails ADD last_updated INTEGER DEFAULT 0",
-    NULL
-  };
-
-  for (int i = 0; alterations[i] != NULL; ++i) {
-    if (!db_.Execute(alterations[i])) {
-      return false;
-    }
-  }
-
+  // Version 3 migrated table thumbnails, which is obsolete.
   meta_table_.SetVersionNumber(3);
   meta_table_.SetCompatibleVersionNumber(std::min(3, kCompatibleVersionNumber));
   return true;
-}
-
-bool ThumbnailDatabase::RecreateThumbnailTable() {
-  if (use_top_sites_)
-    return true;  // Not needed after migration to TopSites.
-
-  if (!db_.Execute("DROP TABLE thumbnails"))
-    return false;
-  return InitThumbnailTable();
 }
 
 bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db) {
@@ -568,115 +522,6 @@ void ThumbnailDatabase::Vacuum() {
 
 void ThumbnailDatabase::TrimMemory(bool aggressively) {
   db_.TrimMemory(aggressively);
-}
-
-bool ThumbnailDatabase::SetPageThumbnail(
-    const GURL& url,
-    URLID id,
-    const gfx::Image* thumbnail,
-    const ThumbnailScore& score,
-    base::Time time) {
-  if (use_top_sites_) {
-    LOG(WARNING) << "Use TopSites instead.";
-    return false;  // Not possible after migration to TopSites.
-  }
-
-  if (!thumbnail)
-    return DeleteThumbnail(id);
-
-  bool add_thumbnail = true;
-  ThumbnailScore current_score;
-  if (ThumbnailScoreForId(id, &current_score)) {
-    add_thumbnail = ShouldReplaceThumbnailWith(current_score, score);
-  }
-
-  if (!add_thumbnail)
-    return true;
-
-  std::vector<unsigned char> jpeg_data;
-  bool encoded = gfx::JPEG1xEncodedDataFromImage(
-      *thumbnail, kImageQuality, &jpeg_data);
-  if (encoded) {
-    sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-        "INSERT OR REPLACE INTO thumbnails "
-        "(url_id, boring_score, good_clipping, at_top, last_updated, data) "
-        "VALUES (?,?,?,?,?,?)"));
-    statement.BindInt64(0, id);
-    statement.BindDouble(1, score.boring_score);
-    statement.BindBool(2, score.good_clipping);
-    statement.BindBool(3, score.at_top);
-    statement.BindInt64(4, score.time_at_snapshot.ToInternalValue());
-    statement.BindBlob(5, &jpeg_data[0],
-                       static_cast<int>(jpeg_data.size()));
-
-    if (!statement.Run())
-      return false;
-  }
-
-  // Publish the thumbnail to any indexers listening to us.
-  // The tests may send an invalid url. Hence avoid publishing those.
-  if (url.is_valid() && history_publisher_ != NULL)
-    history_publisher_->PublishPageThumbnail(jpeg_data, url, time);
-
-  return true;
-}
-
-bool ThumbnailDatabase::GetPageThumbnail(URLID id,
-                                         std::vector<unsigned char>* data) {
-  if (use_top_sites_) {
-    LOG(WARNING) << "Use TopSites instead.";
-    return false;  // Not possible after migration to TopSites.
-  }
-
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT data FROM thumbnails WHERE url_id=?"));
-  statement.BindInt64(0, id);
-
-  if (!statement.Step())
-    return false;  // don't have a thumbnail for this ID
-
-  statement.ColumnBlobAsVector(0, data);
-  return true;
-}
-
-bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
-  if (use_top_sites_) {
-    return true;  // Not possible after migration to TopSites.
-  }
-
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM thumbnails WHERE url_id = ?"));
-  statement.BindInt64(0, id);
-
-  return statement.Run();
-}
-
-bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
-                                            ThumbnailScore* score) {
-  DCHECK(score);
-  if (use_top_sites_) {
-    LOG(WARNING) << "Use TopSites instead.";
-    return false;  // Not possible after migration to TopSites.
-  }
-
-  // Fetch the current thumbnail's information to make sure we
-  // aren't replacing a good thumbnail with one that's worse.
-  sql::Statement select_statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT boring_score, good_clipping, at_top, last_updated "
-      "FROM thumbnails WHERE url_id=?"));
-  select_statement.BindInt64(0, id);
-
-  if (!select_statement.Step())
-    return false;
-
-  double current_boring_score = select_statement.ColumnDouble(0);
-  bool current_clipping = select_statement.ColumnBool(1);
-  bool current_at_top = select_statement.ColumnBool(2);
-  base::Time last_updated =
-      base::Time::FromInternalValue(select_statement.ColumnInt64(3));
-  *score = ThumbnailScore(current_boring_score, current_clipping,
-                          current_at_top, last_updated);
-  return true;
 }
 
 bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
@@ -816,14 +661,6 @@ bool ThumbnailDatabase::SetFaviconBitmapLastUpdateTime(
       "UPDATE favicon_bitmaps SET last_updated=? WHERE id=?"));
   statement.BindInt64(0, time.ToInternalValue());
   statement.BindInt64(1, bitmap_id);
-  return statement.Run();
-}
-
-bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(
-    chrome::FaviconID icon_id) {
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM favicon_bitmaps WHERE icon_id=?"));
-  statement.BindInt64(0, icon_id);
   return statement.Run();
 }
 
@@ -1164,92 +1001,6 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
     return false;
 
   return transaction.Commit();
-}
-
-bool ThumbnailDatabase::NeedsMigrationToTopSites() {
-  return !use_top_sites_;
-}
-
-bool ThumbnailDatabase::RenameAndDropThumbnails(
-    const base::FilePath& old_db_file,
-    const base::FilePath& new_db_file) {
-  // Init favicons tables - same schema as the thumbnails.
-  sql::Connection favicons;
-  if (OpenDatabase(&favicons, new_db_file) != sql::INIT_OK)
-    return false;
-
-  if (!InitFaviconBitmapsTable(&favicons) ||
-      !InitFaviconsTable(&favicons) ||
-      !InitIconMappingTable(&favicons)) {
-    favicons.Close();
-    return false;
-  }
-  favicons.Close();
-
-  // Can't attach within a transaction.
-  if (transaction_nesting())
-    CommitTransaction();
-
-  // Attach new DB.
-  {
-    // This block is needed because otherwise the attach statement is
-    // never cleared from cache and we can't close the DB :P
-    sql::Statement attach(db_.GetUniqueStatement("ATTACH ? AS new_favicons"));
-    if (!attach.is_valid()) {
-      // Keep the transaction open, even though we failed.
-      BeginTransaction();
-      return false;
-    }
-
-#if defined(OS_POSIX)
-    attach.BindString(0, new_db_file.value());
-#else
-    attach.BindString(0, WideToUTF8(new_db_file.value()));
-#endif
-
-    if (!attach.Run()) {
-      BeginTransaction();
-      return false;
-    }
-  }
-
-  // Move favicons and favicon_bitmaps to new DB.
-  bool successfully_moved_data =
-     db_.Execute("INSERT OR REPLACE INTO new_favicons.favicon_bitmaps "
-                 "SELECT * FROM favicon_bitmaps") &&
-     db_.Execute("INSERT OR REPLACE INTO new_favicons.favicons "
-                 "SELECT * FROM favicons");
-  if (!successfully_moved_data) {
-    DLOG(FATAL) << "Unable to copy favicons and favicon_bitmaps.";
-    BeginTransaction();
-    return false;
-  }
-
-  if (!db_.Execute("DETACH new_favicons")) {
-    DLOG(FATAL) << "Unable to detach database.";
-    BeginTransaction();
-    return false;
-  }
-
-  db_.Close();
-
-  // Reset the DB to point to new file.
-  if (OpenDatabase(&db_, new_db_file) != sql::INIT_OK)
-    return false;
-
-  sql::Connection::Delete(old_db_file);
-
-  meta_table_.Reset();
-  if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
-    return false;
-
-  if (!InitFaviconBitmapsIndex() || !InitFaviconsIndex())
-    return false;
-
-  // Reopen the transaction.
-  BeginTransaction();
-  use_top_sites_ = true;
-  return true;
 }
 
 bool ThumbnailDatabase::InitIconMappingTable(sql::Connection* db) {

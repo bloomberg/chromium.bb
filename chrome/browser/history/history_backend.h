@@ -99,9 +99,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded(int backend_id) = 0;
 
-    // Tell TopSites to start reading thumbnails from the ThumbnailsDB.
-    virtual void StartTopSitesMigration(int backend_id) = 0;
-
     virtual void NotifyVisitDBObserversOnAddVisit(
         const history::BriefVisitInfo& info) = 0;
   };
@@ -230,28 +227,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // then calling this function with url=C would fill redirects with {B, A}.
   bool GetMostRecentRedirectsTo(const GURL& url,
                                 history::RedirectList* redirects);
-
-  // Thumbnails ----------------------------------------------------------------
-
-  void SetPageThumbnail(const GURL& url,
-                        const gfx::Image* thumbnail,
-                        const ThumbnailScore& score);
-
-  // Retrieves a thumbnail, passing it across thread boundaries
-  // via. the included callback.
-  void GetPageThumbnail(scoped_refptr<GetPageThumbnailRequest> request,
-                        const GURL& page_url);
-
-  // Backend implementation of GetPageThumbnail. Unlike
-  // GetPageThumbnail(), this method has way to transport data across
-  // thread boundaries.
-  //
-  // Exposed for testing reasons.
-  void GetPageThumbnailDirectly(
-      const GURL& page_url,
-      scoped_refptr<base::RefCountedBytes>* data);
-
-  void MigrateThumbnailsDatabase();
 
   // Favicon -------------------------------------------------------------------
 
@@ -563,13 +538,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
+  base::FilePath GetArchivedFileName() const;
   base::FilePath GetThumbnailFileName() const;
 
   // Returns the name of the Favicons database. This is the new name
   // of the Thumbnails database.
-  // See ThumbnailDatabase::RenameAndDropThumbnails.
   base::FilePath GetFaviconsFileName() const;
-  base::FilePath GetArchivedFileName() const;
 
 #if defined(OS_ANDROID)
   // Returns the name of android cache database.
@@ -628,16 +602,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Update the visit_duration information in visits table.
   void UpdateVisitDuration(VisitID visit_id, const base::Time end_ts);
-
-  // Thumbnail Helpers ---------------------------------------------------------
-
-  // When a simple GetMostRecentRedirectsFrom() fails, this method is
-  // called which searches the last N visit sessions instead of just
-  // the current one. Returns true and puts thumbnail data in |data|
-  // if a proper thumbnail was found. Returns false otherwise. Assumes
-  // that this HistoryBackend object has been Init()ed successfully.
-  bool GetThumbnailFromOlderRedirect(
-      const GURL& page_url, std::vector<unsigned char>* data);
 
   // Querying ------------------------------------------------------------------
 

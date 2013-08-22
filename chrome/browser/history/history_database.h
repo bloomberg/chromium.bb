@@ -149,12 +149,6 @@ class HistoryDatabase : public DownloadDatabase,
     return needs_version_17_migration_;
   }
 
-  // Marks the database as no longer needing migration.
-  void ThumbnailMigrationDone();
-
-  // Returns true if thumbnails needs to be migrated.
-  bool GetNeedsThumbnailMigration();
-
   // Visit table functions ----------------------------------------------------
 
   // Update the segment id of a visit. Return true on success.

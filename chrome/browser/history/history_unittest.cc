@@ -95,7 +95,6 @@ class BackendDelegate : public HistoryBackend::Delegate {
   virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details) OVERRIDE;
   virtual void DBLoaded(int backend_id) OVERRIDE {}
-  virtual void StartTopSitesMigration(int backend_id) OVERRIDE {}
   virtual void NotifyVisitDBObserversOnAddVisit(
       const BriefVisitInfo& info) OVERRIDE {}
  private:

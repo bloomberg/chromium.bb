@@ -497,8 +497,6 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   content::WindowedNotificationObserver top_sites_loaded_observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
       content::NotificationService::AllSources());
-  if (!HistoryServiceFactory::GetForProfile(this, Profile::EXPLICIT_ACCESS))
-    GetTopSites()->HistoryLoaded();
   top_sites_loaded_observer.Wait();
 }
 

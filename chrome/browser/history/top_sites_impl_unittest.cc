@@ -3,42 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_db_task.h"
-#include "chrome/browser/history/history_marshaling.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/history_unittest_base.h"
-#include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/browser/history/top_sites_cache.h"
-#include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/top_sites_impl.h"
-#include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_utils.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
 
@@ -340,64 +321,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesImplTest);
 };  // Class TopSitesImplTest
-
-class TopSitesMigrationTest : public TopSitesImplTest {
- public:
-  TopSitesMigrationTest() {}
-
-  virtual void SetUp() {
-    TopSitesImplTest::SetUp();
-
-    base::FilePath data_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    data_path = data_path.AppendASCII("top_sites");
-
-    // Set up history and thumbnails as they would be before migration.
-    ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
-        data_path.AppendASCII("history.19.sql"),
-        profile()->GetPath().Append(chrome::kHistoryFilename)));
-    ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
-        data_path.AppendASCII("thumbnails.3.sql"),
-        profile()->GetPath().Append(chrome::kThumbnailsFilename)));
-
-    ASSERT_TRUE(profile()->CreateHistoryService(false, false));
-    profile()->CreateTopSites();
-    profile()->BlockUntilTopSitesLoaded();
-  }
-
-  // Returns true if history and top sites should be created in SetUp.
-  virtual bool CreateHistoryAndTopSites() OVERRIDE {
-    return false;
-  }
-
- protected:
-  // Assertions for the migration test. This is extracted into a standalone
-  // method so that it can be invoked twice.
-  void MigrationAssertions() {
-    TopSitesQuerier querier;
-    querier.QueryTopSites(top_sites(), false);
-
-    // We shouldn't have gotten a callback.
-    EXPECT_EQ(1, querier.number_of_callbacks());
-
-    // The data we loaded should contain google and yahoo.
-    ASSERT_EQ(2u + GetPrepopulatePages().size(), querier.urls().size());
-    EXPECT_EQ(GURL("http://google.com/"), querier.urls()[0].url);
-    EXPECT_EQ(GURL("http://yahoo.com/"), querier.urls()[1].url);
-    ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 2));
-
-    SkBitmap goog_thumbnail = GetThumbnail(GURL("http://google.com/"));
-    EXPECT_EQ(1, goog_thumbnail.width());
-
-    SkBitmap yahoo_thumbnail = GetThumbnail(GURL("http://yahoo.com/"));
-    EXPECT_EQ(2, yahoo_thumbnail.width());
-
-    // Favicon assertions are handled in ThumbnailDatabase.
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TopSitesMigrationTest);
-};
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
@@ -899,27 +822,6 @@ TEST_F(TopSitesImplTest, GetUpdateDelay) {
   EXPECT_EQ(1, GetUpdateDelay().InMinutes());
 }
 
-TEST_F(TopSitesMigrationTest, Migrate) {
-  EXPECT_TRUE(IsTopSitesLoaded());
-
-  // Make sure the data was migrated to top sites.
-  ASSERT_NO_FATAL_FAILURE(MigrationAssertions());
-
-  // We need to wait for top sites and history to finish processing requests.
-  WaitForTopSites();
-  WaitForHistory();
-
-  // Make sure there is no longer a Thumbnails file on disk.
-  ASSERT_FALSE(base::PathExists(
-                   profile()->GetPath().Append(chrome::kThumbnailsFilename)));
-
-  // Recreate top sites and make sure everything is still there.
-  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
-  RecreateTopSitesAndBlock();
-
-  ASSERT_NO_FATAL_FAILURE(MigrationAssertions());
-}
-
 // Verifies that callbacks are notified correctly if requested before top sites
 // has loaded.
 TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
@@ -1189,79 +1091,6 @@ TEST_F(TopSitesImplTest, AddPrepopulatedPages) {
   EXPECT_EQ(GetPrepopulatePages().size(), pages.size());
   q.set_urls(pages);
   ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(q, 0));
-}
-
-// Makes sure creating top sites before history is created works.
-TEST_F(TopSitesImplTest, CreateTopSitesThenHistory) {
-  profile()->DestroyTopSites();
-  profile()->DestroyHistoryService();
-
-  // Remove the TopSites file. This forces TopSites to wait until history loads
-  // before TopSites is considered loaded.
-  sql::Connection::Delete(
-      profile()->GetPath().Append(chrome::kTopSitesFilename));
-
-  // Create TopSites, but not History.
-  profile()->CreateTopSites();
-  WaitForTopSites();
-  EXPECT_FALSE(IsTopSitesLoaded());
-
-  // Load history, which should make TopSites finish loading too.
-  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
-  profile()->BlockUntilTopSitesLoaded();
-  EXPECT_TRUE(IsTopSitesLoaded());
-}
-
-class TopSitesUnloadTest : public TopSitesImplTest {
- public:
-  TopSitesUnloadTest() {}
-
-  virtual bool CreateHistoryAndTopSites() OVERRIDE {
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TopSitesUnloadTest);
-};
-
-// Makes sure if history is unloaded after topsites is loaded we don't hit any
-// assertions.
-TEST_F(TopSitesUnloadTest, UnloadHistoryTest) {
-  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
-  profile()->CreateTopSites();
-  profile()->BlockUntilTopSitesLoaded();
-  HistoryServiceFactory::GetForProfile(
-      profile(), Profile::EXPLICIT_ACCESS)->UnloadBackend();
-  profile()->BlockUntilHistoryProcessesPendingRequests();
-}
-
-// Makes sure if history (with migration code) is unloaded after topsites is
-// loaded we don't hit any assertions.
-TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
-  // Set up history and thumbnails as they would be before migration.
-  base::FilePath data_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-  data_path = data_path.AppendASCII("top_sites");
-  ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
-      data_path.AppendASCII("history.19.sql"),
-      profile()->GetPath().Append(chrome::kHistoryFilename)));
-  ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
-      data_path.AppendASCII("thumbnails.3.sql"),
-      profile()->GetPath().Append(chrome::kThumbnailsFilename)));
-
-  // Create history and block until it's loaded.
-  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
-  profile()->BlockUntilHistoryProcessesPendingRequests();
-
-  // Create top sites and unload history.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TOP_SITES_LOADED,
-      content::Source<Profile>(profile()));
-  profile()->CreateTopSites();
-  HistoryServiceFactory::GetForProfile(
-      profile(), Profile::EXPLICIT_ACCESS)->UnloadBackend();
-  profile()->BlockUntilHistoryProcessesPendingRequests();
-  observer.Wait();
 }
 
 }  // namespace history

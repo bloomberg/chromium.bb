@@ -175,13 +175,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                    backend_id));
   }
 
-  virtual void StartTopSitesMigration(int backend_id) OVERRIDE {
-    service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&HistoryService::StartTopSitesMigration,
-                   history_service_, backend_id));
-  }
-
   virtual void NotifyVisitDBObserversOnAddVisit(
       const history::BriefVisitInfo& info) OVERRIDE {
     service_task_runner_->PostTask(
@@ -206,8 +199,7 @@ HistoryService::HistoryService()
       backend_loaded_(false),
       current_backend_id_(-1),
       bookmark_service_(NULL),
-      no_db_(false),
-      needs_top_sites_migration_(false) {
+      no_db_(false) {
 }
 
 HistoryService::HistoryService(Profile* profile)
@@ -219,8 +211,7 @@ HistoryService::HistoryService(Profile* profile)
       backend_loaded_(false),
       current_backend_id_(-1),
       bookmark_service_(NULL),
-      no_db_(false),
-      needs_top_sites_migration_(false) {
+      no_db_(false) {
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  content::Source<Profile>(profile_));
@@ -591,15 +582,6 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
 
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::AddPagesWithDetails, info, visit_source);
-}
-
-HistoryService::Handle HistoryService::GetPageThumbnail(
-    const GURL& page_url,
-    CancelableRequestConsumerBase* consumer,
-    const ThumbnailDataCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetPageThumbnail, consumer,
-                  new history::GetPageThumbnailRequest(callback), page_url);
 }
 
 CancelableTaskTracker::TaskId HistoryService::GetFavicons(
@@ -1228,39 +1210,12 @@ void HistoryService::OnDBLoaded(int backend_id) {
       chrome::NOTIFICATION_HISTORY_LOADED,
       content::Source<Profile>(profile_),
       content::Details<HistoryService>(this));
-  if (thread_ && profile_) {
-    // We don't want to force creation of TopSites.
-    history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
-    if (ts)
-      ts->HistoryLoaded();
-  }
 }
 
 bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
   DCHECK(thread_checker_.CalledOnValidThread());
   history::URLDatabase* db = InMemoryDatabase();
   return db && (db->GetRowForURL(url, url_row) != 0);
-}
-
-void HistoryService::StartTopSitesMigration(int backend_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_.get() || current_backend_id_ != backend_id) {
-    DVLOG(1) << "Message from obsolete backend";
-    return;
-  }
-  needs_top_sites_migration_ = true;
-  if (thread_ && profile_) {
-    // We don't want to force creation of TopSites.
-    history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
-    if (ts)
-      ts->MigrateFromHistory();
-  }
-}
-
-void HistoryService::OnTopSitesReady() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::MigrateThumbnailsDatabase);
 }
 
 void HistoryService::AddVisitDatabaseObserver(

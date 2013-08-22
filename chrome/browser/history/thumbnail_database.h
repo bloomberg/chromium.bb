@@ -78,33 +78,6 @@ class ThumbnailDatabase {
   // true try to trim all unused cache, otherwise trim by half.
   void TrimMemory(bool aggressively);
 
-  // Thumbnails ----------------------------------------------------------------
-
-  // Sets the given data to be the thumbnail for the given URL,
-  // overwriting any previous data. If the SkBitmap contains no pixel
-  // data, the thumbnail will be deleted.
-  bool SetPageThumbnail(const GURL& url,
-                        URLID id,
-                        const gfx::Image* thumbnail,
-                        const ThumbnailScore& score,
-                        base::Time time);
-
-  // Retrieves thumbnail data for the given URL, returning true on success,
-  // false if there is no such thumbnail or there was some other error.
-  bool GetPageThumbnail(URLID id, std::vector<unsigned char>* data);
-
-  // Delete the thumbnail with the provided id. Returns false on failure
-  bool DeleteThumbnail(URLID id);
-
-  // If there is a thumbnail score for the id provided, retrieves the
-  // current thumbnail score and places it in |score| and returns
-  // true. Returns false otherwise.
-  bool ThumbnailScoreForId(URLID id, ThumbnailScore* score);
-
-  // Called by the to delete all old thumbnails and make a clean table.
-  // Returns true on success.
-  bool RecreateThumbnailTable();
-
   // Favicon Bitmaps -----------------------------------------------------------
 
   // Returns true if there are favicon bitmaps for |icon_id|. If
@@ -154,10 +127,6 @@ class ThumbnailDatabase {
   // Returns true if successful.
   bool SetFaviconBitmapLastUpdateTime(FaviconBitmapID bitmap_id,
                                       base::Time time);
-
-  // Deletes the favicon bitmaps for the favicon with with |icon_id|.
-  // Returns true if successful.
-  bool DeleteFaviconBitmapsForFavicon(chrome::FaviconID icon_id);
 
   // Deletes the favicon bitmap with |bitmap_id|.
   // Returns true if successful.
@@ -279,14 +248,6 @@ class ThumbnailDatabase {
   // so failure causes any outer transaction to be rolled back.
   bool RetainDataForPageUrls(const std::vector<GURL>& urls_to_keep);
 
-  // Returns true iff the thumbnails table exists.
-  // Migrating to TopSites is dropping the thumbnails table.
-  bool NeedsMigrationToTopSites();
-
-  // Renames the database file and drops the Thumbnails table.
-  bool RenameAndDropThumbnails(const base::FilePath& old_db_file,
-                               const base::FilePath& new_db_file);
-
  private:
   friend class ExpireHistoryBackend;
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,
@@ -373,10 +334,6 @@ class ThumbnailDatabase {
   // This can be NULL if there are no indexers registered to receive indexing
   // data from us.
   const HistoryPublisher* history_publisher_;
-
-  // True if migration to TopSites has been done and the thumbnails
-  // table should not be used.
-  bool use_top_sites_;
 };
 
 }  // namespace history
