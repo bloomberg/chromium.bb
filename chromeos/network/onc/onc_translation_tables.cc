@@ -205,6 +205,7 @@ const StringTranslationEntry kWiFiSecurityTable[] = {
   { wifi::kWPA_PSK, flimflam::kSecurityPsk },
   { wifi::kWPA_EAP, flimflam::kSecurity8021x },
   { wifi::kWPA_PSK, flimflam::kSecurityRsn },
+  { wifi::kWPA_PSK, flimflam::kSecurityWpa },
   { NULL }
 };
 

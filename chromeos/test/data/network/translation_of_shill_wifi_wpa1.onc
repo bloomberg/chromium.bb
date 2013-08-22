@@ -1,0 +1,10 @@
+{
+  "GUID":"{64c4f86b-cf6a-4e4a-8eff-456def}",
+  "Name":"OpenWrt",
+  "Type":"WiFi",
+  "WiFi":{
+    "Passphrase":"some passphrase",
+    "SSID":"OpenWrt",
+    "Security":"WPA-PSK"
+  }
+}
