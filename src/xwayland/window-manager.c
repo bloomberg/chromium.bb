@@ -1900,7 +1900,6 @@ xserver_map_shell_surface(struct weston_wm *wm,
 {
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
-	struct theme *t = window->wm->theme;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1922,8 +1921,8 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		return;
 	} else {
 		shell_interface->set_xwayland(window->shsurf,
-					      window->x + t->margin,
-					      window->y + t->margin,
+					      window->x,
+					      window->y,
 					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 	}
 }
