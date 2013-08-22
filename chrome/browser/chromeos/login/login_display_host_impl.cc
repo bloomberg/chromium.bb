@@ -973,6 +973,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       // Set the application locale here so that the language switch
       // menu works properly with the newly loaded locale.
       g_browser_process->SetApplicationLocale(loaded_locale);
+
+      // Reload font settings here to use correct font for initial_locale.
+      LanguageSwitchMenu::LoadFontsForCurrentLocale();
     }
   }
 

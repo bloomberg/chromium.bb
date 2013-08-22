@@ -48,9 +48,9 @@ class LanguageSwitchMenu : public views::MenuButtonListener,
   static void SwitchLanguageAndEnableKeyboardLayouts(
       const std::string& locale);
 
- private:
   static void LoadFontsForCurrentLocale();
 
+ private:
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
