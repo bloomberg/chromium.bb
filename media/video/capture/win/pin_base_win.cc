@@ -246,8 +246,18 @@ STDMETHODIMP PinBase::GetAllocatorRequirements(
 STDMETHODIMP PinBase::ReceiveMultiple(IMediaSample** samples,
                                       long sample_count,
                                       long* processed) {
-  NOTREACHED();
-  return VFW_E_INVALIDMEDIATYPE;
+  DCHECK(samples);
+
+  HRESULT hr = S_OK;
+  *processed = 0;
+  while (sample_count--) {
+    hr = Receive(samples[*processed]);
+    // S_FALSE means don't send any more.
+    if (hr != S_OK)
+      break;
+    ++(*processed);
+  }
+  return hr;
 }
 
 STDMETHODIMP PinBase::ReceiveCanBlock() {
