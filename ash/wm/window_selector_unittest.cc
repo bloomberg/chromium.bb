@@ -20,64 +20,12 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace ash {
 namespace internal {
-
-namespace {
-
-class LayerAnimationObserver : public ui::LayerAnimationObserver {
- public:
-  LayerAnimationObserver(ui::Layer* layer)
-      : layer_(layer), animating_(false), message_loop_running_(false) {
-    layer_->GetAnimator()->AddObserver(this);
-  }
-
-  virtual ~LayerAnimationObserver() {
-    layer_->GetAnimator()->RemoveObserver(this);
-  }
-
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
-    AnimationDone();
-  }
-
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
-    animating_ = true;
-  }
-
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
-    AnimationDone();
-  }
-
-  void WaitUntilDone() {
-    while (animating_) {
-      message_loop_running_ = true;
-      base::MessageLoop::current()->Run();
-      message_loop_running_ = false;
-    }
-  }
-
- private:
-  void AnimationDone() {
-    animating_ = false;
-    if (message_loop_running_)
-      base::MessageLoop::current()->Quit();
-  }
-
-  ui::Layer* layer_;
-  bool animating_;
-  bool message_loop_running_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerAnimationObserver);
-};
-
-}  // namespace
 
 class WindowSelectorTest : public test::AshTestBase {
  public:
@@ -95,33 +43,12 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   void ToggleOverview() {
-    std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
-        mru_window_tracker()->BuildMruWindowList();
-    ScopedVector<LayerAnimationObserver> animations;
-    for (size_t i = 0; i < windows.size(); ++i) {
-      animations.push_back(new LayerAnimationObserver(windows[i]->layer()));
-    }
     ash::Shell::GetInstance()->window_selector_controller()->ToggleOverview();
-    for (size_t i = 0; i < animations.size(); ++i) {
-      animations[i]->WaitUntilDone();
-    }
   }
 
   void Cycle(WindowSelector::Direction direction) {
-    if (!IsSelecting()) {
-      std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
-          mru_window_tracker()->BuildMruWindowList();
-      ScopedVector<LayerAnimationObserver> animations;
-      for (size_t i = 0; i < windows.size(); ++i)
-        animations.push_back(new LayerAnimationObserver(windows[i]->layer()));
-      ash::Shell::GetInstance()->window_selector_controller()->
-          HandleCycleWindow(direction);
-      for (size_t i = 0; i < animations.size(); ++i)
-        animations[i]->WaitUntilDone();
-    } else {
-      ash::Shell::GetInstance()->window_selector_controller()->
-          HandleCycleWindow(direction);
-    }
+    ash::Shell::GetInstance()->window_selector_controller()->
+        HandleCycleWindow(direction);
   }
 
   void StopCycling() {
@@ -210,6 +137,31 @@ TEST_F(WindowSelectorTest, LastWindowDestroyed) {
   window1.reset();
   window2.reset();
   EXPECT_FALSE(IsSelecting());
+}
+
+// Tests that entering overview mode restores a window to its original
+// target location.
+TEST_F(WindowSelectorTest, QuickReentryRestoresInitialTransform) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window(CreateWindow(bounds));
+  gfx::Rect initial_bounds = ToEnclosingRect(
+      GetTransformedBounds(window.get()));
+  ToggleOverview();
+  // Quickly exit and reenter overview mode. The window should still be
+  // animating when we reenter. We cannot short circuit animations for this but
+  // we also don't have to wait for them to complete.
+  {
+    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ToggleOverview();
+    ToggleOverview();
+  }
+  EXPECT_NE(initial_bounds, ToEnclosingRect(
+      GetTransformedTargetBounds(window.get())));
+  ToggleOverview();
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_EQ(initial_bounds, ToEnclosingRect(
+      GetTransformedTargetBounds(window.get())));
 }
 
 // Tests that windows remain on the display they are currently on in overview

@@ -219,7 +219,7 @@ WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
       layer_(NULL),
       minimized_(window->GetProperty(aura::client::kShowStateKey) ==
                  ui::SHOW_STATE_MINIMIZED),
-      original_transform_(window->layer()->transform()) {
+      original_transform_(window->layer()->GetTargetTransform()) {
   if (minimized_)
     window_->Show();
 }
