@@ -275,12 +275,9 @@ def revertExportRevision(url, revision):
     os.system(command)
 
 def revertRevision(url, revision):
-  paths = getBestMergePaths(url, revision)
-  for path in paths:
-    command = ('svn merge -N -r ' + str(revision) + ":" + str(revision-1) +
-                " " + url + path + " ." + path)
-    print command
-    os.system(command)
+  command = ('svn merge --ignore-ancestry -c -%d %s .' % (revision, url))
+  print command
+  os.system(command)
 
 def getFileInfo(url, revision):
   global files_info_
