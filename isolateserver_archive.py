@@ -18,6 +18,7 @@ import urllib
 import zlib
 
 import run_isolated
+from utils import threading_utils
 
 
 # The minimum size of files to upload directly to the blobstore.
@@ -272,10 +273,10 @@ def batch_files_for_check(infiles):
 
 def get_files_to_upload(contains_hash_url, infiles):
   """Yields files that are missing on the server."""
-  with run_isolated.ThreadPool(1, 16, 0, prefix='get_files_to_upload') as pool:
+  with threading_utils.ThreadPool(1, 16, 0, prefix='get_files_to_upload') as tp:
     for files in batch_files_for_check(infiles):
-      pool.add_task(0, check_files_exist_on_server, contains_hash_url, files)
-    for missing_file in itertools.chain.from_iterable(pool.iter_results()):
+      tp.add_task(0, check_files_exist_on_server, contains_hash_url, files)
+    for missing_file in itertools.chain.from_iterable(tp.iter_results()):
       yield missing_file
 
 
@@ -301,9 +302,9 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.
-  num_threads = run_isolated.num_processors()
-  zipping_pool = run_isolated.ThreadPool(min(2, num_threads),
-                                         num_threads, 0, 'zip')
+  num_threads = threading_utils.num_processors()
+  zipping_pool = threading_utils.ThreadPool(min(2, num_threads),
+                                            num_threads, 0, 'zip')
   remote_uploader = UploadRemote(namespace, base_url, token)
 
   # Starts the zip and upload process for files that are missing

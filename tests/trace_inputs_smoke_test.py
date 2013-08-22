@@ -17,8 +17,8 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
 import trace_inputs
+from utils import threading_utils
 
 FILENAME = os.path.basename(__file__)
 REL_DATA = os.path.join(u'tests', 'trace_inputs')
@@ -473,7 +473,7 @@ class TraceInputsImport(TraceInputsBase):
       resultcode, output = tracer.trace(cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
-    with run_isolated.ThreadPool(parallel, parallel, 0) as pool:
+    with threading_utils.ThreadPool(parallel, parallel, 0) as pool:
       api = trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(

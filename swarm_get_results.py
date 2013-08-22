@@ -11,7 +11,6 @@ import json
 import logging
 import optparse
 import sys
-import threading
 import time
 import urllib
 
@@ -21,6 +20,7 @@ import urllib
 #import fix_encoding
 
 import run_isolated
+from utils import threading_utils
 
 
 # The default time to wait for a shard to finish running.
@@ -59,20 +59,6 @@ def get_test_keys(swarm_base_url, test_name, _=None):
   raise Failure(
       'Error: Unable to find any tests with the name, %s, on swarm server'
       % test_name)
-
-
-class Bit(object):
-  """Thread safe setable bit."""
-  _lock = threading.Lock()
-  _value = False
-
-  def get(self):
-    with self._lock:
-      return self._value
-
-  def set(self):
-    with self._lock:
-      self._value = True
 
 
 def now():
@@ -124,9 +110,9 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
   shards_remaining = range(len(test_keys))
   number_threads = (
       min(max_threads, len(test_keys)) if max_threads else len(test_keys))
-  should_stop = Bit()
+  should_stop = threading_utils.Bit()
   results_remaining = len(test_keys)
-  with run_isolated.ThreadPool(number_threads, number_threads, 0) as pool:
+  with threading_utils.ThreadPool(number_threads, number_threads, 0) as pool:
     try:
       for test_key in test_keys:
         pool.add_task(

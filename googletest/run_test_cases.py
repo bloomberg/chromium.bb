@@ -42,6 +42,7 @@ else:
 
 
 import run_isolated
+from utils import threading_utils
 
 
 # These are known to influence the way the output is generated.
@@ -367,7 +368,7 @@ class QueueWithProgress(Queue.PriorityQueue):
       self.all_tasks_done.release()
 
 
-class ThreadPool(run_isolated.ThreadPool):
+class ThreadPool(threading_utils.ThreadPool):
   QUEUE_CLASS = QueueWithProgress
 
   def __init__(self, progress, *args, **kwargs):
@@ -1606,12 +1607,12 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
     self.add_option(
         '-j', '--jobs',
         type='int',
-        default=run_isolated.num_processors(),
+        default=threading_utils.num_processors(),
         help='Number of parallel jobs; default=%default')
     self.add_option(
         '--use-less-jobs',
         action='store_const',
-        const=max(1, run_isolated.num_processors() / 2),
+        const=max(1, threading_utils.num_processors() / 2),
         dest='jobs',
         help='Starts less parallel jobs than the default, used to help reduce'
              'contention between threads if all the tests are very CPU heavy.')
