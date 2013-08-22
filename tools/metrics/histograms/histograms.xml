@@ -7152,11 +7152,6 @@ other types of suffix sets.
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCode"
     enum="QuicErrorCodes">
-  <obsolete>
-    Deprecated as of 8/21/2013, replaced by
-    Net.QuicSession.ConnectionCloseErrorCodeClient and
-    Net.QuicSession.ConnectionCloseErrorCodeServer
-  </obsolete>
   <summary>
     The QUIC error code which resulted in the connection being closed.
   </summary>
