@@ -97,7 +97,7 @@ void SplitTextNodeCommand::doReapply()
 void SplitTextNodeCommand::insertText1AndTrimText2()
 {
     TrackExceptionState es;
-    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), es, DeprecatedAttachNow);
+    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), es);
     if (es.hadException())
         return;
     m_text2->deleteData(0, m_offset, es, DeprecatedAttachNow);

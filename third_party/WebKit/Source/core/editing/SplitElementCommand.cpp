@@ -58,7 +58,7 @@ void SplitElementCommand::executeApply()
     ContainerNode* parent = m_element2->parentNode();
     if (!parent || !parent->rendererIsEditable())
         return;
-    parent->insertBefore(m_element1.get(), m_element2.get(), es, DeprecatedAttachNow);
+    parent->insertBefore(m_element1.get(), m_element2.get(), es);
     if (es.hadException())
         return;
 
@@ -67,7 +67,7 @@ void SplitElementCommand::executeApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i], es, DeprecatedAttachNow);
+        m_element1->appendChild(children[i], es);
 }
 
 void SplitElementCommand::doApply()
@@ -90,7 +90,7 @@ void SplitElementCommand::doUnapply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].get(), refChild.get(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+        m_element2->insertBefore(children[i].get(), refChild.get(), IGNORE_EXCEPTION);
 
     // Recover the id attribute of the original element.
     if (m_element1->hasAttribute(HTMLNames::idAttr))
