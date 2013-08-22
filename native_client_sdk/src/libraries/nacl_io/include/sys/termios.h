@@ -99,6 +99,11 @@
 #define TCSADRAIN 1
 #define TCSAFLUSH 2
 
+#define TCOOFF    0
+#define TCOON     1
+#define TCIOFF    2
+#define TCION     3
+
 typedef unsigned char cc_t;
 typedef unsigned short tcflag_t;
 typedef char speed_t;
@@ -120,8 +125,17 @@ struct termios {
 
 __BEGIN_DECLS
 
+speed_t cfgetispeed(const struct termios *termios_p);
+speed_t cfgetospeed(const struct termios *termios_p);
+int cfsetispeed(struct termios *termios_p, speed_t speed);
+int cfsetospeed(struct termios *termios_p, speed_t speed);
+int cfsetspeed(struct termios *termios_p, speed_t speed);
+
+int tcdrain(int fd);
+int tcflow(int fd, int action);
 int tcflush(int fd, int queue_selector);
 int tcgetattr(int fd, struct termios *termios_p);
+int tcsendbreak(int fd, int duration);
 int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
 
 __END_DECLS
