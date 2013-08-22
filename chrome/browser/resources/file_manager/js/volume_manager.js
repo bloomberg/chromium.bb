@@ -565,16 +565,6 @@ VolumeManager.prototype.getMountError = function(mountPath) {
 
 /**
  * @param {string} mountPath Volume mounted path.
- * @return {boolean} True if volume at |mountedPath| is mounted but not usable.
- */
-VolumeManager.prototype.isUnreadable = function(mountPath) {
-  var error = this.getMountError(mountPath);
-  return error == VolumeManager.Error.UNKNOWN_FILESYSTEM ||
-         error == VolumeManager.Error.UNSUPPORTED_FILESYSTEM;
-};
-
-/**
- * @param {string} mountPath Volume mounted path.
  * @return {string} Device type ('usb'|'sd'|'optical'|'mobile'|'unknown')
  *   (as defined in chromeos/disks/disk_mount_manager.cc).
  */
