@@ -126,7 +126,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void AssignGpuMemoryToTiles(
       PrioritizedTileSet* tiles,
       TileVector* tiles_that_need_to_be_rasterized);
-  void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
   void GetPrioritizedTileSet(PrioritizedTileSet* tiles);
 
  private:
