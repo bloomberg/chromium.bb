@@ -29,6 +29,16 @@ var gAddStreamConstraints = {};
 var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
 
 /**
+ * Used as a shortcut. Moved to the top of the page due to race conditions.
+ * @param {string} id is a case-sensitive string representing the unique ID of
+ *     the element being sought.
+ * @return {string} id returns the element object specified as a parameter
+ */
+$ = function(id) {
+  return document.getElementById(id);
+};
+
+/**
  * This function asks permission to use the webcam and mic from the browser. It
  * will return ok-requested to PyAuto. This does not mean the request was
  * approved though. The test will then have to click past the dialog that
@@ -160,8 +170,7 @@ function updateVideoTagSize_(videoTagId, width, height) {
       videoTag.height = videoTag.videoHeight;
     }
     else {
-      return debug('"' + videoTagId + '" video stream size is 0, skipping ' +
-                   'resize');
+      debug('"' + videoTagId + '" video stream size is 0, skipping resize');
     }
   }
   debug('Set video tag "' + videoTagId + '" size to ' + videoTag.width + 'x' +
@@ -191,6 +200,92 @@ function displayVideoSize_(videoTag) {
 }
 
 /**
+ * Enumerates the audio and video devices available in Chrome and adds the
+ * devices to the HTML elements with Id 'audiosrc' and 'videosrc'.
+ * Checks if device enumeration is supported and if the 'audiosrc' + 'videosrc'
+ * elements exists, if not a debug printout will be displayed.
+ * If the device label is empty, audio/video + sequence number will be used to
+ * populate the name. Also makes sure the children has been loaded in order
+ * to update the constraints.
+ */
+function getDevices() {
+  if ($('audiosrc') && $('videosrc') && $('refresh-devices')) {
+    var audio_select = $('audiosrc');
+    var video_select = $('videosrc');
+    var refresh_devices = $('refresh-devices');
+    audio_select.innerHTML = '';
+    video_select.innerHTML = '';
+    try {
+      eval(MediaStreamTrack.getSources(function() {}));
+    } catch (exception) {
+      audio_select.disabled = true;
+      video_select.disabled = true;
+      refresh_devices.disabled = true;
+      updateGetUserMediaConstraints();
+      debug('Device enumeration not supported. ' + exception);
+      return;
+    }
+    MediaStreamTrack.getSources(function(devices) {
+      for (var i = 0; i < devices.length; i++) {
+        var option = document.createElement('option');
+        option.value = devices[i].id;
+        option.text = devices[i].label;
+        if (devices[i].kind == 'audio') {
+          if (option.text == '') {
+            option.text = 'Audio: ' + devices[i].id;
+          }
+          audio_select.appendChild(option);
+        }
+        else if (devices[i].kind == 'video') {
+          if (option.text == '') {
+            option.text = 'Video: ' + devices[i].id;
+          }
+          video_select.appendChild(option);
+        }
+        else {
+          debug('Device type ' + devices[i].kind + ' not recognized, cannot ' +
+                'enumerate device. Currently only device types \'audio\' and ' +
+                '\'video\' are supported');
+          updateGetUserMediaConstraints();
+          return;
+        }
+      }
+    });
+    checkIfDeviceDropdownsArePopulated();
+  }
+  else {
+    debug('Device DOM elements cannot be found, cannot display devices');
+    updateGetUserMediaConstraints();
+  }
+}
+
+/**
+ * This provides the selected source id from the objects in the parameters
+ * provided to this function. If the audio_select or video_select objects does
+ * not have any HTMLOptions children it will return null in the source object.
+ * @param {object} audio_select HTML drop down element with audio devices added
+ *     as HTMLOptionsCollection children.
+ * @param {object} video_select HTML drop down element with audio devices added
+ *     as HTMLPptionsCollection children.
+ * @return {object} audio_id video_id Containing audio and video source ID from
+ *     the selected devices in the drop down menus provided as parameters to
+ *     this function.
+ */
+function getSourcesFromField(audio_select, video_select) {
+  var source = {
+    audio_id: null,
+    video_id: null
+  };
+  if (audio_select.options.length > 0) {
+    source.audio_id = audio_select.options[audio_select.selectedIndex].value;
+  }
+  if (video_select.options.length > 0) {
+    source.video_id = video_select.options[video_select.selectedIndex].value;
+  }
+  return source;
+}
+
+/**
  * @private
  * @param {NavigatorUserMediaError} error Error containing details.
  */
@@ -199,7 +294,3 @@ function getUserMediaFailedCallback_(error) {
   gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.name;
   debug(gRequestWebcamAndMicrophoneResult);
 }
-
-$ = function(id) {
-  return document.getElementById(id);
-};

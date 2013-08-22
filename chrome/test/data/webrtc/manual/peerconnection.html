@@ -26,6 +26,12 @@
         onclick="updateGetUserMediaConstraints();"/>
     <button id="re-request" onclick="getUserMediaFromHere();">
         Request GetUserMedia</button><br/>
+    Audio source <select class="drop-down" id="audiosrc"
+        onclick="updateGetUserMediaConstraints();"></select>
+    Video source <select class="drop-down" id="videosrc"
+        onclick="updateGetUserMediaConstraints();"></select>
+    <button id="refresh-devices" onclick="getDevices();">
+        Refresh devices</button>
     Use <a href="constraints.html">constraints.html</a> to create more
         advanced constraints (then paste them into the Constraints box above).
     <a href="peerconnection-help.html" target="_blank">Help</a>

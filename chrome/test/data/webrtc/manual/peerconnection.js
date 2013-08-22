@@ -4,6 +4,16 @@
  * found in the LICENSE file.
  */
 
+/**
+ * Used as a shortcut. Moved to the top of the page due to race conditions.
+ * @param {string} id is a case-sensitive string representing the unique ID of
+ *     the element being sought.
+ * @return {object} id returns the element object specified as a parameter
+ */
+$ = function(id) {
+  return document.getElementById(id);
+};
+
 // The *Here functions are called from peerconnection.html and will make calls
 // into our underlying JavaScript library with the values from the page
 // (have to be named differently to avoid name clashes with existing functions).
@@ -119,15 +129,38 @@ function forceOpusChanged() {
 /**
  * Updates the constraints in the getusermedia-constraints text box with a
  * MediaStreamConstraints string. This string is created based on the status of
- * the checkboxes for audio and video. Fetches the screen size using "screen"
- * in Chrome as we need to pass a max resolution else it defaults to 640x480 in
- * the constraints for screen capturing.
+ * the checkboxes for audio and video. If device enumeration is supported and
+ * device source id's are not null they will be added to the constraints string.
+ * Fetches the screen size using "screen" in Chrome as we need to pass a max
+ * resolution else it defaults to 640x480 in the constraints for screen
+ * capturing.
  */
 function updateGetUserMediaConstraints() {
+  var audio_selected = $('audiosrc');
+  var video_selected = $('videosrc');
   var constraints = {
     audio: $('audio').checked,
     video: $('video').checked
   };
+  if (audio_selected.disabled == false && video_selected.disabled == false) {
+    var devices = getSourcesFromField(audio_selected, video_selected);
+    if ($('audio').checked == true) {
+      if (devices.audio_id != null) {
+        constraints.audio = {optional: [{sourceId: devices.audio_id}]};
+      }
+      else {
+        constraints.audio = true;
+      }
+    }
+    if ($('video').checked == true) {
+      if (devices.video_id != null) {
+        constraints.video = {optional: [{sourceId: devices.video_id}]};
+      }
+      else {
+        constraints.video = true;
+      }
+    }
+  }
   if ($('screencapture').checked) {
     var constraints = {
       audio: $('audio').checked,
@@ -136,7 +169,7 @@ function updateGetUserMediaConstraints() {
                           maxHeight: screen.height}}
     };
     if ($('audio').checked == true)
-      debug('Audio for screencapture is not implemented as of M28, please ' +
+      debug('Audio for screencapture is not implemented yet, please ' +
             'try to set audio = false prior requesting screencapture');
   }
   $('getusermedia-constraints').value =
@@ -166,7 +199,7 @@ function clearLog() {
 
 /**
  * Prepopulate constraints from JS to the UI and setup callbacks in the scripts
- * shared with PyAuto tests.
+ * shared with PyAuto tests. Enumerates devices available via getUserMedia.
  */
 window.onload = function() {
   $('pc-createoffer-constraints').value = JSON.stringify(
@@ -175,13 +208,34 @@ window.onload = function() {
     gCreateAnswerConstraints, null, ' ');
   replaceReturnCallback(print_);
   replaceDebugCallback(debug_);
-  updateGetUserMediaConstraints();
   doNotAutoAddLocalStreamWhenCalled();
   hookupDataChannelCallbacks_();
   hookupDtmfSenderCallback_();
   displayVideoSize_($('local-view'));
   displayVideoSize_($('remote-view'));
+  getDevices();
 };
+
+/**
+ * Checks if the 'audiosrc' and 'videosrc' drop down menu elements has had all
+ * of its children appended in order to provide device ID's to the function
+ * 'updateGetUserMediaConstraints()', used in turn to populate the getUserMedia
+ * constraints text box when the page has loaded. If not the user is informed
+ * and instructions on how to populate the field is provided.
+ */
+function checkIfDeviceDropdownsArePopulated() {
+  if (document.addEventListener) {
+    $('audiosrc').addEventListener('DOMNodeInserted',
+         updateGetUserMediaConstraints, false);
+    $('videosrc').addEventListener('DOMNodeInserted',
+         updateGetUserMediaConstraints, false);
+  }
+  else {
+    debug('addEventListener is not supported by your browser, cannot update' +
+          'device source ID\'s automatically. Select a device from the audio ' +
+          'or video source drop down menu to update device source id\'s');
+  }
+}
 
 /**
  * Disconnect before the tab is closed.
@@ -313,7 +367,3 @@ function hookupDtmfSenderCallback_() {
       tone.tone + '\n' + $('dtmf-tones-sent').value;
   });
 }
-
-$ = function(id) {
-  return document.getElementById(id);
-};

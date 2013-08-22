@@ -46,6 +46,10 @@ input[type=checkbox] {
   top: 2px;
 }
 
+.drop-down {
+  width: 10%;
+}
+
 .video-area {
   background: #eee;
   border:1px solid #aaa;
