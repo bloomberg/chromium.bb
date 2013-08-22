@@ -216,11 +216,26 @@ class BASE_EXPORT ProcessMetrics {
 // Returns 0 if it can't compute the commit charge.
 BASE_EXPORT size_t GetSystemCommitCharge();
 
+#if defined(OS_POSIX)
+// Returns the maximum number of file descriptors that can be open by a process
+// at once. If the number is unavailable, a conservative best guess is returned.
+size_t GetMaxFds();
+#endif  // defined(OS_POSIX)
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 // Parse the data found in /proc/<pid>/stat and return the sum of the
 // CPU-related ticks.  Returns -1 on parse error.
 // Exposed for testing.
 BASE_EXPORT int ParseProcStatCPU(const std::string& input);
+
+// Get the number of threads of |process| as available in /proc/<pid>/stat.
+// This should be used with care as no synchronization with running threads is
+// done. This is mostly useful to guarantee being single-threaded.
+// Returns 0 on failure.
+BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
+
+// /proc/self/exe refers to the current executable.
+BASE_EXPORT extern const char kProcSelfExe[];
 
 // Data from /proc/meminfo about system-wide memory consumption.
 // Values are in KB.
@@ -241,28 +256,12 @@ struct BASE_EXPORT SystemMemoryInfoKB {
   int gem_objects;
   long long gem_size;
 };
+
 // Retrieves data from /proc/meminfo about system-wide memory consumption.
 // Fills in the provided |meminfo| structure. Returns true on success.
 // Exposed for memory debugging widget.
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-// Get the number of threads of |process| as available in /proc/<pid>/stat.
-// This should be used with care as no synchronization with running threads is
-// done. This is mostly useful to guarantee being single-threaded.
-// Returns 0 on failure.
-BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
-
-// /proc/self/exe refers to the current executable.
-BASE_EXPORT extern const char kProcSelfExe[];
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_POSIX)
-// Returns the maximum number of file descriptors that can be open by a process
-// at once. If the number is unavailable, a conservative best guess is returned.
-size_t GetMaxFds();
-#endif  // defined(OS_POSIX)
 
 // Collects and holds performance metrics for system memory and disk.
 // Provides functionality to retrieve the data on various platforms and

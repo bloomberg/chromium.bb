@@ -382,6 +382,13 @@ int ParseProcStatCPU(const std::string& input) {
   return utime + stime;
 }
 
+const char kProcSelfExe[] = "/proc/self/exe";
+
+int GetNumberOfThreads(ProcessHandle process) {
+  return internal::ReadProcStatsAndGetFieldAsInt(process,
+                                                 internal::VM_NUMTHREADS);
+}
+
 namespace {
 
 // The format of /proc/meminfo is:
@@ -504,13 +511,6 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 #endif  // defined(OS_CHROMEOS)
 
   return true;
-}
-
-const char kProcSelfExe[] = "/proc/self/exe";
-
-int GetNumberOfThreads(ProcessHandle process) {
-  return internal::ReadProcStatsAndGetFieldAsInt(process,
-                                                 internal::VM_NUMTHREADS);
 }
 
 }  // namespace base
