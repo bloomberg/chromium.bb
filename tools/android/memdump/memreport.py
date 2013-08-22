@@ -6,6 +6,7 @@
 
 import collections
 import json
+import optparse
 import os
 import re
 import threading
@@ -18,6 +19,7 @@ from string import Template
 sys.path.append(os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir,
                              'build','android'))
 from pylib import android_commands
+from pylib import constants
 
 
 _ENTRIES = [
@@ -124,13 +126,13 @@ def _DumpCSV(processes_stats):
   print ''
 
 
-def _RunManualGraph(package_name):
+def _RunManualGraph(package_name, interval):
   _AREA_TYPES = ('private', 'private_unevictable',
                  'shared_app', 'shared_other', 'shared_other_unevictable')
   all_pids = {}
-  legends = ['count'] + [entry + '_' + area
-                         for entry, _ in _ENTRIES
-                         for area in _AREA_TYPES]
+  legends = ['Seconds'] + [entry + '_' + area
+                           for entry, _ in _ENTRIES
+                           for area in _AREA_TYPES]
   should_quit = threading.Event()
 
   def _GenerateGraph():
@@ -150,7 +152,7 @@ def _RunManualGraph(package_name):
 
         var charOptions = {
           title: 'Memory Report (KB) for ' + pid,
-          vAxis: {title: 'Count',  titleTextStyle: {color: 'red'}},
+          vAxis: {title: 'Time',  titleTextStyle: {color: 'red'}},
           isStacked : true
         };
 
@@ -215,7 +217,8 @@ def _RunManualGraph(package_name):
           if pid not in all_pids:
             all_pids[pid] = []
           if first_pid_entry:
-            all_pids[pid].append([count] + [0] * (len(legends) - 1))
+            all_pids[pid].append(['%ds' % (count * interval)] +
+                                 [0] * (len(legends) - 1))
             first_pid_entry = False
           mem_kb = process[v][area_type] / 1024
           all_pids[pid][-1][legends.index(legend)] = mem_kb
@@ -226,7 +229,7 @@ def _RunManualGraph(package_name):
       print >>sys.stderr, 'Collecting ', count
       _CollectStats(count)
       count += 1
-      should_quit.wait(5)
+      should_quit.wait(interval)
 
   t = threading.Thread(target=_Loop)
 
@@ -244,8 +247,24 @@ def _RunManualGraph(package_name):
 
 
 def main(argv):
-  if len(argv) >= 3 and argv[1] == 'manual-graph':
-    return _RunManualGraph(argv[2])
+  parser = optparse.OptionParser(usage='Usage: %prog [options]',
+                                 description=__doc__)
+  parser.add_option('-m',
+                    '--manual-graph',
+                    action='store_true',
+                    help='Manually collect data and generate a graph.')
+  parser.add_option('-p',
+                    '--package',
+                    default=constants.CHROME_PACKAGE,
+                    help='Package name to collect.')
+  parser.add_option('-i',
+                    '--interval',
+                    default=5,
+                    type='int',
+                    help='Interval in seconds for manual collections.')
+  options, args = parser.parse_args(argv)
+  if options.manual_graph:
+    return _RunManualGraph(options.package, options.interval)
   _DumpCSV(_CollectMemoryStats(sys.stdin, [value for (key, value) in _ENTRIES]))
 
 
