@@ -65,10 +65,12 @@ int CompareEffectiveRequestPriority(
 
 ConnectJob::ConnectJob(const std::string& group_name,
                        base::TimeDelta timeout_duration,
+                       RequestPriority priority,
                        Delegate* delegate,
                        const BoundNetLog& net_log)
     : group_name_(group_name),
       timeout_duration_(timeout_duration),
+      priority_(priority),
       delegate_(delegate),
       net_log_(net_log),
       idle_(true) {

@@ -73,6 +73,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
                                   RequestHandle* handle,
                                   const BoundNetLog& net_log) {
   DCHECK(CalledOnValidThread());
+  last_request_priority_ = priority;
   num_resolve_++;
   size_t id = next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(info, addresses);
@@ -136,7 +137,8 @@ void MockHostResolverBase::ResolveAllPending() {
 
 // start id from 1 to distinguish from NULL RequestHandle
 MockHostResolverBase::MockHostResolverBase(bool use_caching)
-    : synchronous_mode_(false),
+    : last_request_priority_(DEFAULT_PRIORITY),
+      synchronous_mode_(false),
       ondemand_mode_(false),
       next_request_id_(1),
       num_resolve_(0),

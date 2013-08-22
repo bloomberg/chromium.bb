@@ -105,6 +105,12 @@ class MockHostResolverBase : public HostResolver,
     return num_resolve_from_cache_;
   }
 
+  // Returns the RequestPriority of the last call to Resolve() (or
+  // DEFAULT_PRIORITY if Resolve() hasn't been called yet).
+  RequestPriority last_request_priority() const {
+    return last_request_priority_;
+  }
+
  protected:
   explicit MockHostResolverBase(bool use_caching);
 
@@ -121,6 +127,7 @@ class MockHostResolverBase : public HostResolver,
   // Resolve request stored in |requests_|. Pass rv to callback.
   void ResolveNow(size_t id);
 
+  RequestPriority last_request_priority_;
   bool synchronous_mode_;
   bool ondemand_mode_;
   scoped_refptr<RuleBasedHostResolverProc> rules_;

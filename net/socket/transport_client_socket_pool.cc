@@ -48,12 +48,10 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
-    RequestPriority priority,
     bool disable_resolver_cache,
     bool ignore_limits,
     const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
-      priority_(priority),
       ignore_limits_(ignore_limits),
       host_resolution_callback_(host_resolution_callback) {
   if (disable_resolver_cache)
@@ -75,13 +73,14 @@ static const int kTransportConnectJobTimeoutInSeconds = 240;  // 4 minutes.
 
 TransportConnectJob::TransportConnectJob(
     const std::string& group_name,
+    RequestPriority priority,
     const scoped_refptr<TransportSocketParams>& params,
     base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, delegate,
+    : ConnectJob(group_name, timeout_duration, priority, delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       params_(params),
       client_socket_factory_(client_socket_factory),
@@ -162,7 +161,7 @@ int TransportConnectJob::DoResolveHost() {
 
   return resolver_.Resolve(
       params_->destination(),
-      params_->priority(),
+      priority(),
       &addresses_,
       base::Bind(&TransportConnectJob::OnIOComplete, base::Unretained(this)),
       net_log());
@@ -337,6 +336,7 @@ scoped_ptr<ConnectJob>
     ConnectJob::Delegate* delegate) const {
   return scoped_ptr<ConnectJob>(
       new TransportConnectJob(group_name,
+                              request.priority(),
                               request.params(),
                               ConnectionTimeout(),
                               client_socket_factory_,

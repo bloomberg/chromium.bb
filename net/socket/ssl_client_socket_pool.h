@@ -99,6 +99,7 @@ class SSLConnectJob : public ConnectJob {
  public:
   SSLConnectJob(
       const std::string& group_name,
+      RequestPriority priority,
       const scoped_refptr<SSLSocketParams>& params,
       const base::TimeDelta& timeout_duration,
       TransportClientSocketPool* transport_pool,

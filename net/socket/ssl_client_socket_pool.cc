@@ -98,6 +98,7 @@ SSLSocketParams::GetHttpProxyConnectionParams() const {
 static const int kSSLHandshakeTimeoutInSeconds = 30;
 
 SSLConnectJob::SSLConnectJob(const std::string& group_name,
+                             RequestPriority priority,
                              const scoped_refptr<SSLSocketParams>& params,
                              const base::TimeDelta& timeout_duration,
                              TransportClientSocketPool* transport_pool,
@@ -110,6 +111,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                              NetLog* net_log)
     : ConnectJob(group_name,
                  timeout_duration,
+                 priority,
                  delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       params_(params),
@@ -223,7 +225,7 @@ int SSLConnectJob::DoTransportConnect() {
       params_->GetDirectConnectionParams();
   return transport_socket_handle_->Init(group_name(),
                                         direct_params,
-                                        direct_params->priority(),
+                                        priority(),
                                         callback_,
                                         transport_pool_,
                                         net_log());
@@ -244,7 +246,7 @@ int SSLConnectJob::DoSOCKSConnect() {
       params_->GetSocksProxyConnectionParams();
   return transport_socket_handle_->Init(group_name(),
                                         socks_proxy_params,
-                                        socks_proxy_params->priority(),
+                                        priority(),
                                         callback_,
                                         socks_pool_,
                                         net_log());
@@ -266,7 +268,7 @@ int SSLConnectJob::DoTunnelConnect() {
       params_->GetHttpProxyConnectionParams();
   return transport_socket_handle_->Init(group_name(),
                                         http_proxy_params,
-                                        http_proxy_params->priority(),
+                                        priority(),
                                         callback_,
                                         http_proxy_pool_,
                                         net_log());
@@ -558,10 +560,10 @@ SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return scoped_ptr<ConnectJob>(
-      new SSLConnectJob(group_name, request.params(), ConnectionTimeout(),
-                        transport_pool_, socks_pool_, http_proxy_pool_,
-                        client_socket_factory_, host_resolver_,
-                        context_, delegate, net_log_));
+      new SSLConnectJob(group_name, request.priority(), request.params(),
+                        ConnectionTimeout(), transport_pool_, socks_pool_,
+                        http_proxy_pool_, client_socket_factory_,
+                        host_resolver_, context_, delegate, net_log_));
 }
 
 base::TimeDelta

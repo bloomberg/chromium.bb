@@ -74,6 +74,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // A |timeout_duration| of 0 corresponds to no timeout.
   ConnectJob(const std::string& group_name,
              base::TimeDelta timeout_duration,
+             RequestPriority priority,
              Delegate* delegate,
              const BoundNetLog& net_log);
   virtual ~ConnectJob();
@@ -109,6 +110,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const BoundNetLog& net_log() const { return net_log_; }
 
  protected:
+  RequestPriority priority() const { return priority_; }
   void SetSocket(scoped_ptr<StreamSocket> socket);
   StreamSocket* socket() { return socket_.get(); }
   void NotifyDelegateOfCompletion(int rv);
@@ -128,6 +130,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   const std::string group_name_;
   const base::TimeDelta timeout_duration_;
+  // TODO(akalin): Support reprioritization.
+  const RequestPriority priority_;
   // Timer to abort jobs that take too long.
   base::OneShotTimer<ConnectJob> timer_;
   Delegate* delegate_;
@@ -179,6 +183,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
    private:
     ClientSocketHandle* const handle_;
     CompletionCallback callback_;
+    // TODO(akalin): Support reprioritization.
     const RequestPriority priority_;
     bool ignore_limits_;
     const Flags flags_;

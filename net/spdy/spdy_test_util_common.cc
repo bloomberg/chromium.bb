@@ -500,7 +500,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(
-          key.host_port_pair(), MEDIUM, false, false,
+          key.host_port_pair(), false, false,
           OnHostResolutionCallback()));
 
   scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);

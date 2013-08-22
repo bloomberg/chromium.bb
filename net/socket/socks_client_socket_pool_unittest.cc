@@ -41,6 +41,25 @@ void TestLoadTimingInfo(const ClientSocketHandle& handle) {
   ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
+
+scoped_refptr<TransportSocketParams> CreateProxyHostParams() {
+  return new TransportSocketParams(
+      HostPortPair("proxy", 80), false, false,
+      OnHostResolutionCallback());
+}
+
+scoped_refptr<SOCKSSocketParams> CreateSOCKSv4Params() {
+  return new SOCKSSocketParams(
+      CreateProxyHostParams(), false /* socks_v5 */,
+      HostPortPair("host", 80));
+}
+
+scoped_refptr<SOCKSSocketParams> CreateSOCKSv5Params() {
+  return new SOCKSSocketParams(
+      CreateProxyHostParams(), true /* socks_v5 */,
+      HostPortPair("host", 80));
+}
+
 class SOCKSClientSocketPoolTest : public testing::Test {
  protected:
   class SOCKS5MockData {
@@ -71,30 +90,24 @@ class SOCKSClientSocketPoolTest : public testing::Test {
   };
 
   SOCKSClientSocketPoolTest()
-      : ignored_transport_socket_params_(new TransportSocketParams(
-          HostPortPair("proxy", 80), MEDIUM, false, false,
-          OnHostResolutionCallback())),
-        transport_histograms_("MockTCP"),
+      : transport_histograms_("MockTCP"),
         transport_socket_pool_(
             kMaxSockets, kMaxSocketsPerGroup,
             &transport_histograms_,
             &transport_client_socket_factory_),
-        ignored_socket_params_(new SOCKSSocketParams(
-            ignored_transport_socket_params_, true, HostPortPair("host", 80),
-            MEDIUM)),
         socks_histograms_("SOCKSUnitTest"),
         pool_(kMaxSockets, kMaxSocketsPerGroup,
               &socks_histograms_,
-              NULL,
+              &host_resolver_,
               &transport_socket_pool_,
               NULL) {
   }
 
   virtual ~SOCKSClientSocketPoolTest() {}
 
-  int StartRequest(const std::string& group_name, RequestPriority priority) {
+  int StartRequestV5(const std::string& group_name, RequestPriority priority) {
     return test_base_.StartRequestUsingPool(
-        &pool_, group_name, priority, ignored_socket_params_);
+        &pool_, group_name, priority, CreateSOCKSv5Params());
   }
 
   int GetOrderOfRequest(size_t index) const {
@@ -103,13 +116,12 @@ class SOCKSClientSocketPoolTest : public testing::Test {
 
   ScopedVector<TestSocketRequest>* requests() { return test_base_.requests(); }
 
-  scoped_refptr<TransportSocketParams> ignored_transport_socket_params_;
   ClientSocketPoolHistograms transport_histograms_;
   MockClientSocketFactory transport_client_socket_factory_;
   MockTransportClientSocketPool transport_socket_pool_;
 
-  scoped_refptr<SOCKSSocketParams> ignored_socket_params_;
   ClientSocketPoolHistograms socks_histograms_;
+  MockHostResolver host_resolver_;
   SOCKSClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
 };
@@ -120,12 +132,51 @@ TEST_F(SOCKSClientSocketPoolTest, Simple) {
   transport_client_socket_factory_.AddSocketDataProvider(data.data_provider());
 
   ClientSocketHandle handle;
-  int rv = handle.Init("a", ignored_socket_params_, LOW, CompletionCallback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
+}
+
+// Make sure that SOCKSConnectJob passes on its priority to its
+// socket request on Init.
+TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
+  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+    RequestPriority priority = static_cast<RequestPriority>(i);
+    SOCKS5MockData data(SYNCHRONOUS);
+    data.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+    transport_client_socket_factory_.AddSocketDataProvider(
+        data.data_provider());
+
+    ClientSocketHandle handle;
+    EXPECT_EQ(OK,
+              handle.Init("a", CreateSOCKSv5Params(), priority,
+                          CompletionCallback(), &pool_, BoundNetLog()));
+    EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
+    handle.socket()->Disconnect();
+  }
+}
+
+// Make sure that SOCKSConnectJob passes on its priority to its
+// HostResolver request (for non-SOCKS5) on Init.
+TEST_F(SOCKSClientSocketPoolTest, SetResolvePriorityOnInit) {
+  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+    RequestPriority priority = static_cast<RequestPriority>(i);
+    SOCKS5MockData data(SYNCHRONOUS);
+    data.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+    transport_client_socket_factory_.AddSocketDataProvider(
+        data.data_provider());
+
+    ClientSocketHandle handle;
+    EXPECT_EQ(ERR_IO_PENDING,
+              handle.Init("a", CreateSOCKSv4Params(), priority,
+                          CompletionCallback(), &pool_, BoundNetLog()));
+    EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
+    EXPECT_EQ(priority, host_resolver_.last_request_priority());
+    EXPECT_TRUE(handle.socket() == NULL);
+  }
 }
 
 TEST_F(SOCKSClientSocketPoolTest, Async) {
@@ -134,7 +185,7 @@ TEST_F(SOCKSClientSocketPoolTest, Async) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", ignored_socket_params_, LOW, callback.callback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
@@ -153,7 +204,7 @@ TEST_F(SOCKSClientSocketPoolTest, TransportConnectError) {
   transport_client_socket_factory_.AddSocketDataProvider(&socket_data);
 
   ClientSocketHandle handle;
-  int rv = handle.Init("a", ignored_socket_params_, LOW, CompletionCallback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
@@ -167,7 +218,7 @@ TEST_F(SOCKSClientSocketPoolTest, AsyncTransportConnectError) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  int rv = handle.Init("a", ignored_socket_params_, LOW, callback.callback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
@@ -189,7 +240,7 @@ TEST_F(SOCKSClientSocketPoolTest, SOCKSConnectError) {
 
   ClientSocketHandle handle;
   EXPECT_EQ(0, transport_socket_pool_.release_count());
-  int rv = handle.Init("a", ignored_socket_params_, LOW, CompletionCallback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, CompletionCallback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(ERR_SOCKS_CONNECTION_FAILED, rv);
   EXPECT_FALSE(handle.is_initialized());
@@ -209,7 +260,7 @@ TEST_F(SOCKSClientSocketPoolTest, AsyncSOCKSConnectError) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   EXPECT_EQ(0, transport_socket_pool_.release_count());
-  int rv = handle.Init("a", ignored_socket_params_, LOW, callback.callback(),
+  int rv = handle.Init("a", CreateSOCKSv5Params(), LOW, callback.callback(),
                        &pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
@@ -230,10 +281,10 @@ TEST_F(SOCKSClientSocketPoolTest, CancelDuringTransportConnect) {
   transport_client_socket_factory_.AddSocketDataProvider(data2.data_provider());
 
   EXPECT_EQ(0, transport_socket_pool_.cancel_count());
-  int rv = StartRequest("a", LOW);
+  int rv = StartRequestV5("a", LOW);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  rv = StartRequest("a", LOW);
+  rv = StartRequestV5("a", LOW);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   pool_.CancelRequest("a", (*requests())[0]->handle());
@@ -265,10 +316,10 @@ TEST_F(SOCKSClientSocketPoolTest, CancelDuringSOCKSConnect) {
 
   EXPECT_EQ(0, transport_socket_pool_.cancel_count());
   EXPECT_EQ(0, transport_socket_pool_.release_count());
-  int rv = StartRequest("a", LOW);
+  int rv = StartRequestV5("a", LOW);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  rv = StartRequest("a", LOW);
+  rv = StartRequestV5("a", LOW);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   pool_.CancelRequest("a", (*requests())[0]->handle());

@@ -72,7 +72,6 @@ DeterministicSocketDataTest::DeterministicSocketDataTest()
       connect_data_(SYNCHRONOUS, OK),
       endpoint_("www.google.com", 443),
       tcp_params_(new TransportSocketParams(endpoint_,
-                                            LOWEST,
                                             false,
                                             false,
                                             OnHostResolutionCallback())),

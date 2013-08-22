@@ -70,7 +70,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
     return spdy_session_pool_;
   }
   const HostResolver::RequestInfo& destination() const;
-  RequestPriority priority() const;
   bool tunnel() const { return tunnel_; }
   bool ignore_limits() const { return ignore_limits_; }
 
@@ -97,6 +96,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 class HttpProxyConnectJob : public ConnectJob {
  public:
   HttpProxyConnectJob(const std::string& group_name,
+                      RequestPriority priority,
                       const scoped_refptr<HttpProxySocketParams>& params,
                       const base::TimeDelta& timeout_duration,
                       TransportClientSocketPool* transport_pool,

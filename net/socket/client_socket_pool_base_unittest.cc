@@ -261,7 +261,7 @@ class TestConnectJob : public ConnectJob {
                  ConnectJob::Delegate* delegate,
                  MockClientSocketFactory* client_socket_factory,
                  NetLog* net_log)
-      : ConnectJob(group_name, timeout_duration, delegate,
+      : ConnectJob(group_name, timeout_duration, request.priority(), delegate,
                    BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
         job_type_(job_type),
         client_socket_factory_(client_socket_factory),

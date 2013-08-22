@@ -2759,7 +2759,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
+      new TransportSocketParams(host_port2, false, false,
                                 OnHostResolutionCallback()));
   scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -2838,7 +2838,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
   scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, DEFAULT_PRIORITY, false, false,
+      new TransportSocketParams(host_port3, false, false,
                                 OnHostResolutionCallback()));
   scoped_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -2918,7 +2918,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
+      new TransportSocketParams(host_port2, false, false,
                                 OnHostResolutionCallback()));
   scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
   EXPECT_EQ(ERR_IO_PENDING,

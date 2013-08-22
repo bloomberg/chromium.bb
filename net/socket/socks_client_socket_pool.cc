@@ -21,11 +21,9 @@ namespace net {
 SOCKSSocketParams::SOCKSSocketParams(
     const scoped_refptr<TransportSocketParams>& proxy_server,
     bool socks_v5,
-    const HostPortPair& host_port_pair,
-    RequestPriority priority)
+    const HostPortPair& host_port_pair)
     : transport_params_(proxy_server),
       destination_(host_port_pair),
-      priority_(priority),
       socks_v5_(socks_v5) {
   if (transport_params_.get())
     ignore_limits_ = transport_params_->ignore_limits();
@@ -41,13 +39,14 @@ static const int kSOCKSConnectJobTimeoutInSeconds = 30;
 
 SOCKSConnectJob::SOCKSConnectJob(
     const std::string& group_name,
+    RequestPriority priority,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
     const base::TimeDelta& timeout_duration,
     TransportClientSocketPool* transport_pool,
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, delegate,
+    : ConnectJob(group_name, timeout_duration, priority, delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       socks_params_(socks_params),
       transport_pool_(transport_pool),
@@ -119,7 +118,7 @@ int SOCKSConnectJob::DoTransportConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(group_name(),
                                         socks_params_->transport_params(),
-                                        socks_params_->priority(),
+                                        priority(),
                                         callback_,
                                         transport_pool_,
                                         net_log());
@@ -147,7 +146,7 @@ int SOCKSConnectJob::DoSOCKSConnect() {
   } else {
     socket_.reset(new SOCKSClientSocket(transport_socket_handle_.Pass(),
                                         socks_params_->destination(),
-                                        socks_params_->priority(),
+                                        priority(),
                                         resolver_));
   }
   return socket_->Connect(
@@ -175,6 +174,7 @@ SOCKSClientSocketPool::SOCKSConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return scoped_ptr<ConnectJob>(new SOCKSConnectJob(group_name,
+                                                    request.priority(),
                                                     request.params(),
                                                     ConnectionTimeout(),
                                                     transport_pool_,

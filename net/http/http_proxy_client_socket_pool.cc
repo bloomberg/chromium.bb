@@ -64,14 +64,6 @@ const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
   }
 }
 
-RequestPriority HttpProxySocketParams::priority() const {
-  if (transport_params_.get() == NULL) {
-    return ssl_params_->GetDirectConnectionParams()->priority();
-  } else {
-    return transport_params_->priority();
-  }
-}
-
 HttpProxySocketParams::~HttpProxySocketParams() {}
 
 // HttpProxyConnectJobs will time out after this many seconds.  Note this is on
@@ -85,6 +77,7 @@ static const int kHttpProxyConnectJobTimeoutInSeconds = 30;
 
 HttpProxyConnectJob::HttpProxyConnectJob(
     const std::string& group_name,
+    RequestPriority priority,
     const scoped_refptr<HttpProxySocketParams>& params,
     const base::TimeDelta& timeout_duration,
     TransportClientSocketPool* transport_pool,
@@ -92,7 +85,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, delegate,
+    : ConnectJob(group_name, timeout_duration, priority, delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       weak_ptr_factory_(this),
       params_(params),
@@ -189,7 +182,7 @@ int HttpProxyConnectJob::DoTransportConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(group_name(),
                                         params_->transport_params(),
-                                        params_->transport_params()->priority(),
+                                        priority(),
                                         callback_,
                                         transport_pool_,
                                         net_log());
@@ -222,11 +215,9 @@ int HttpProxyConnectJob::DoSSLConnect() {
   }
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  const scoped_refptr<SSLSocketParams>& ssl_params = params_->ssl_params();
-  RequestPriority priority =
-      ssl_params->GetDirectConnectionParams()->priority();
   return transport_socket_handle_->Init(
-      group_name(), ssl_params, priority, callback_, ssl_pool_, net_log());
+      group_name(), params_->ssl_params(), priority(), callback_,
+      ssl_pool_, net_log());
 }
 
 int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
@@ -335,7 +326,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   return spdy_stream_request_.StartRequest(SPDY_BIDIRECTIONAL_STREAM,
                                            spdy_session,
                                            params_->request_url(),
-                                           params_->priority(),
+                                           priority(),
                                            spdy_session->net_log(),
                                            callback_);
 }
@@ -400,6 +391,7 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return scoped_ptr<ConnectJob>(new HttpProxyConnectJob(group_name,
+                                                        request.priority(),
                                                         request.params(),
                                                         ConnectionTimeout(),
                                                         transport_pool_,

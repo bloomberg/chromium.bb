@@ -1732,6 +1732,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
     : TransportClientSocketPool(max_sockets, max_sockets_per_group, histograms,
                                 NULL, NULL, NULL),
       client_socket_factory_(socket_factory),
+      last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),
       cancel_count_(0) {
 }
@@ -1742,6 +1743,7 @@ int MockTransportClientSocketPool::RequestSocket(
     const std::string& group_name, const void* socket_params,
     RequestPriority priority, ClientSocketHandle* handle,
     const CompletionCallback& callback, const BoundNetLog& net_log) {
+  last_request_priority_ = priority;
   scoped_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), net_log.net_log(), net::NetLog::Source());

@@ -34,13 +34,11 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
-      RequestPriority priority,
       bool disable_resolver_cache,
       bool ignore_limits,
       const OnHostResolutionCallback& host_resolution_callback);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
-  RequestPriority priority() const { return priority_; }
   bool ignore_limits() const { return ignore_limits_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
@@ -51,7 +49,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   HostResolver::RequestInfo destination_;
-  RequestPriority priority_;
   bool ignore_limits_;
   const OnHostResolutionCallback host_resolution_callback_;
 
@@ -69,6 +66,7 @@ class NET_EXPORT_PRIVATE TransportSocketParams
 class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
  public:
   TransportConnectJob(const std::string& group_name,
+                      RequestPriority priority,
                       const scoped_refptr<TransportSocketParams>& params,
                       base::TimeDelta timeout_duration,
                       ClientSocketFactory* client_socket_factory,

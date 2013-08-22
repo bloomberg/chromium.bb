@@ -1085,6 +1085,9 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
 
   virtual ~MockTransportClientSocketPool();
 
+  RequestPriority last_request_priority() const {
+    return last_request_priority_;
+  }
   int release_count() const { return release_count_; }
   int cancel_count() const { return cancel_count_; }
 
@@ -1105,6 +1108,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
  private:
   ClientSocketFactory* client_socket_factory_;
   ScopedVector<MockConnectJob> job_list_;
+  RequestPriority last_request_priority_;
   int release_count_;
   int cancel_count_;
 
