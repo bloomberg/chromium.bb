@@ -691,7 +691,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     if (subtreeContainsDisallowedElement(newChild.get()))
         removeDisallowedElementsFromSubtree(newChild.get());
 
-    userAgentShadowRoot()->appendChild(newChild.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    userAgentShadowRoot()->appendChild(newChild.release());
 }
 
 void SVGUseElement::expandUseElementsInShadowTree(Node* element)
@@ -724,7 +724,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         if (target && !isDisallowedElement(target)) {
             RefPtr<Element> newChild = target->cloneElementWithChildren();
             ASSERT(newChild->isSVGElement());
-            cloneParent->appendChild(newChild.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            cloneParent->appendChild(newChild.release());
         }
 
         // We don't walk the target tree element-by-element, and clone each element,
@@ -739,7 +739,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
 
         // Replace <use> with referenced content.
         ASSERT(use->parentNode());
-        use->parentNode()->replaceChild(cloneParent.release(), use, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        use->parentNode()->replaceChild(cloneParent.release(), use);
 
         // Expand the siblings because the *element* is replaced and we will
         // lose the sibling chain when we are back from recursion.
@@ -769,7 +769,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // Only clone symbol children, and add them to the new <svg> element
         for (Node* child = element->firstChild(); child; child = child->nextSibling()) {
             RefPtr<Node> newChild = child->cloneNode(true);
-            svgElement->appendChild(newChild.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            svgElement->appendChild(newChild.release());
         }
 
         // We don't walk the target tree element-by-element, and clone each element,
@@ -783,7 +783,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         RefPtr<Node> replacingElement(svgElement.get());
 
         // Replace <symbol> with <svg>.
-        element->parentNode()->replaceChild(svgElement.release(), element, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        element->parentNode()->replaceChild(svgElement.release(), element);
 
         // Expand the siblings because the *element* is replaced and we will
         // lose the sibling chain when we are back from recursion.
