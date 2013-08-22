@@ -165,12 +165,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     device_local_account_policy_.Build();
   }
 
-  void InstallDeviceLocalAccountPolicy() {
-    BuildDeviceLocalAccountPolicy();
-    session_manager_client()->set_device_local_account_policy(
-        kAccountId1, device_local_account_policy_.GetBlob());
-  }
-
   void UploadDeviceLocalAccountPolicy() {
     BuildDeviceLocalAccountPolicy();
     ASSERT_TRUE(session_manager_client()->device_local_account_policy(
@@ -178,6 +172,12 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     test_server_.UpdatePolicy(
         dm_protocol::kChromePublicAccountPolicyType, kAccountId1,
         device_local_account_policy_.payload().SerializeAsString());
+  }
+
+  void UploadAndInstallDeviceLocalAccountPolicy() {
+    UploadDeviceLocalAccountPolicy();
+    session_manager_client()->set_device_local_account_policy(
+        kAccountId1, device_local_account_policy_.GetBlob());
   }
 
   void AddPublicSessionToDevicePolicy(const std::string& username) {
@@ -236,7 +236,7 @@ static bool DisplayNameMatches(const std::string& account_id,
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
-  InstallDeviceLocalAccountPolicy();
+  UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   content::WindowedNotificationObserver(
@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       device_local_account_policy_.payload().mutable_restoreonstartupurls();
   for (size_t i = 0; i < arraysize(kStartupURLs); ++i)
     startup_urls_proto->mutable_value()->add_entries(kStartupURLs[i]);
-  InstallDeviceLocalAccountPolicy();
+  UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   // This observes the display name becoming available as this indicates
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
             std::string("/") +
                 (GetParam() ? kExistentTermsOfServicePath
                             : kNonexistentTermsOfServicePath)).spec());
-  InstallDeviceLocalAccountPolicy();
+  UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   // Wait for the device-local account policy to be fully loaded.
