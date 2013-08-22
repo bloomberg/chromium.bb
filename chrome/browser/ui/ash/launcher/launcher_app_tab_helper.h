@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 class Profile;
 

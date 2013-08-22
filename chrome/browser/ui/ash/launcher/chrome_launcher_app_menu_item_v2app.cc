@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 ChromeLauncherAppMenuItemV2App::ChromeLauncherAppMenuItemV2App(
     const string16 title,

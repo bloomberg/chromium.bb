@@ -1359,7 +1359,7 @@
         'browser/ui/android/tab_model/tab_model_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
-        'browser/ui/ash/launcher/chrome_launcher_controller_per_app_unittest.cc',
+        'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
         'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
         'browser/ui/ash/screenshot_taker_unittest.cc',
         'browser/ui/ash/window_positioner_unittest.cc',
