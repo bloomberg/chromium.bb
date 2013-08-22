@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -63,6 +64,12 @@ class MediaResourceGetter {
         ConnectivityManager mConnectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (mConnectivityManager != null) {
+            if (context.checkCallingOrSelfPermission(
+                    android.Manifest.permission.ACCESS_NETWORK_STATE) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                return new MediaMetadata(0, 0, 0, false);
+            }
+
             NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
             if (info == null) {
                 return new MediaMetadata(durationInMilliseconds, width, height, success);
