@@ -74,6 +74,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
   // ImageTransportFactory overrides:
   virtual void OnLostResources() OVERRIDE {
     DeleteTexture();
+    host_context_ = NULL;
   }
 
  protected:
@@ -90,9 +91,8 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
     }
   }
 
-  // A raw pointer. This |ImageTransportClientTexture| will be destroyed
-  // before the |host_context_| via
-  // |ImageTransportFactoryObserver::OnLostContext()| handlers.
+  // The OnLostResources() callback will happen before this context
+  // pointer is destroyed.
   WebKit::WebGraphicsContext3D* host_context_;
   unsigned texture_id_;
 
@@ -387,8 +387,11 @@ void GpuProcessTransportFactory::RemoveObserver(
 
 scoped_refptr<cc::ContextProvider>
 GpuProcessTransportFactory::OffscreenContextProviderForMainThread() {
-  if (!shared_contexts_main_thread_.get() ||
-      shared_contexts_main_thread_->DestroyedOnMainThread()) {
+  // Don't check for DestroyedOnMainThread() here. We hear about context
+  // loss for this context through the lost context callback. If the context
+  // is lost, we want to leave this ContextProvider available until the lost
+  // context notification is sent to the ImageTransportFactoryObserver clients.
+  if (!shared_contexts_main_thread_.get()) {
     shared_contexts_main_thread_ = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
     if (shared_contexts_main_thread_) {
@@ -406,8 +409,10 @@ GpuProcessTransportFactory::OffscreenContextProviderForMainThread() {
 
 scoped_refptr<cc::ContextProvider>
 GpuProcessTransportFactory::OffscreenContextProviderForCompositorThread() {
-  if (!shared_contexts_compositor_thread_.get() ||
-      shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
+  // The lifetime of this context is tied to the main thread context so that
+  // they are always in the same share group. So do not check for
+  // DestroyedOnMainThread().
+  if (!shared_contexts_compositor_thread_.get()) {
     shared_contexts_compositor_thread_ = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
   }
@@ -493,18 +498,29 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback() {
 
 void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   LOG(ERROR) << "Lost UI shared context.";
+
   // Keep old resources around while we call the observers, but ensure that
   // new resources are created if needed.
+  // Kill shared contexts for both threads in tandem so they are always in
+  // the same share group.
 
-  scoped_refptr<ContextProviderCommandBuffer> old_contexts_main_thread =
+  scoped_refptr<cc::ContextProvider> lost_shared_contexts_main_thread =
       shared_contexts_main_thread_;
+  scoped_refptr<cc::ContextProvider> lost_shared_contexts_compositor_thread =
+      shared_contexts_compositor_thread_;
   shared_contexts_main_thread_ = NULL;
+  shared_contexts_compositor_thread_ = NULL;
 
-  scoped_ptr<GLHelper> old_helper(gl_helper_.release());
+  scoped_ptr<GLHelper> lost_gl_helper = gl_helper_.Pass();
 
   FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
                     observer_list_,
                     OnLostResources());
+
+  // Kill things that use the shared context before killing the shared context.
+  lost_gl_helper.reset();
+  lost_shared_contexts_main_thread = NULL;
+  lost_shared_contexts_compositor_thread = NULL;
 }
 
 }  // namespace content
