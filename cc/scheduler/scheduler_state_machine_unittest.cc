@@ -449,12 +449,12 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginFrame) {
 
       // Case 1: needs_commit=false.
       EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-      EXPECT_EQ(expected_action, state.NextAction());
+      EXPECT_EQ(expected_action, state.NextAction()) << *state.AsValue();
 
       // Case 2: needs_commit=true.
       state.SetNeedsCommit();
       EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-      EXPECT_EQ(expected_action, state.NextAction());
+      EXPECT_EQ(expected_action, state.NextAction()) << *state.AsValue();
     }
   }
 }
@@ -529,6 +529,9 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw(true);
   state.SetVisible(true);
   state.SetCanDraw(false);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT,
+            state.NextAction());
+  state.UpdateState(state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
             state.NextAction());
 }
@@ -888,7 +891,8 @@ TEST(SchedulerStateMachineTest,
   state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.SetCanDraw(false);
-  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT,
+            state.NextAction());
   state.SetCanDraw(true);
   state.DidLeaveBeginFrame();
 }
@@ -931,7 +935,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
             state.CommitState());
 
-  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Expect to be told to begin context recreation, independent of
@@ -984,7 +989,8 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
             state.CommitState());
 
-  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Expect to be told to begin context recreation, independent of
@@ -1096,6 +1102,9 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
 
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
             state.CommitState());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT,
+            state.NextAction());
+  state.UpdateState(state.NextAction());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
@@ -1298,26 +1307,29 @@ TEST(SchedulerStateMachineTest, ImmediateFinishCommitWhileCantDraw) {
 TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.DidCreateAndInitializeOutputSurface();
 
   state.SetCanDraw(true);
   state.SetVisible(true);
-  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(false);
   state.SetVisible(true);
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
   state.SetVisible(false);
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(false);
   state.SetVisible(false);
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
   state.SetVisible(true);
-  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
 TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
@@ -1328,14 +1340,14 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   state.DidCreateAndInitializeOutputSurface();
   state.SetCanDraw(true);
   state.SetVisible(true);
-  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetMainThreadNeedsLayerTextures();
   EXPECT_EQ(
       SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
       state.NextAction());
   state.UpdateState(state.NextAction());
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
@@ -1344,17 +1356,17 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
             state.NextAction());
 
   state.UpdateState(state.NextAction());
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.FinishCommit();
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
 
   state.UpdateState(state.NextAction());
-  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
 TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
@@ -1371,7 +1383,7 @@ TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
       SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
       state.NextAction());
   state.UpdateState(state.NextAction());
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
@@ -1379,14 +1391,14 @@ TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
             state.NextAction());
   state.UpdateState(state.NextAction());
-  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   state.BeginFrameAbortedByMainThread(true);
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
-  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
 }  // namespace
