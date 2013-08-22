@@ -57,6 +57,8 @@ class GL_EXPORT SurfaceTextureBridge
     return j_surface_texture_;
   }
 
+  static bool RegisterSurfaceTextureBridge(JNIEnv* env);
+
  private:
   friend class base::RefCountedThreadSafe<SurfaceTextureBridge>;
   ~SurfaceTextureBridge();
