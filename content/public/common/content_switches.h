@@ -15,6 +15,7 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
+CONTENT_EXPORT extern const char kAllowFiltersOverIPC[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowWebUICompositing[];
@@ -283,8 +284,6 @@ CONTENT_EXPORT extern const char kTestCompositor[];
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
-
-CONTENT_EXPORT extern const char kAllowFiltersOverIPC[];
 
 }  // namespace switches
 

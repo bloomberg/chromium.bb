@@ -10,6 +10,9 @@ namespace switches {
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
+// Allows filters (SkImageFilter objects) to be sent between processes over IPC
+const char kAllowFiltersOverIPC[]           = "allow-filters-over-ipc";
+
 // Enables the sandboxed processes to run without a job object assigned to them.
 // This flag is required to allow Chrome to run in RemoteApps or Citrix. This
 // flag can reduce the security of the sandboxed processes and allow them to do
@@ -936,8 +939,5 @@ extern const char kTestCompositor[]         = "test-compositor";
 #endif
 
 // Don't dump stuff here, follow the same order as the header.
-
-// Allows filters (SkImageFilter objects) to be sent between processes over IPC
-const char kAllowFiltersOverIPC[] = "allow-filters-over-ipc";
 
 }  // namespace switches
