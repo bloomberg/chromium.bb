@@ -52,6 +52,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebKitInitialized() OVERRIDE;
+  virtual void OnRenderProcessShutdown() OVERRIDE;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetExtensionActivityLogEnabled(bool extension_activity_log_enabled);
@@ -78,6 +79,11 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;
   RendererContentSettingRules content_setting_rules_;
+
+  bool webkit_initialized_;
+  size_t pending_cache_min_dead_capacity_;
+  size_t pending_cache_max_dead_capacity_;
+  size_t pending_cache_capacity_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };

@@ -65,7 +65,8 @@ using content::RenderThread;
 
 namespace {
 
-static const int kCacheStatsDelayMS = 2000;
+const int kCacheStatsDelayMS = 2000;
+const size_t kUnitializedCacheCapacity = UINT_MAX;
 
 class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
  public:
@@ -258,7 +259,11 @@ bool ChromeRenderProcessObserver::extension_activity_log_enabled_ = false;
 ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     chrome::ChromeContentRendererClient* client)
     : client_(client),
-      clear_cache_pending_(false) {
+      clear_cache_pending_(false),
+      webkit_initialized_(false),
+      pending_cache_min_dead_capacity_(0),
+      pending_cache_max_dead_capacity_(0),
+      pending_cache_capacity_(kUnitializedCacheCapacity) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
@@ -338,6 +343,13 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
 }
 
 void ChromeRenderProcessObserver::WebKitInitialized() {
+  webkit_initialized_ = true;
+  if (pending_cache_capacity_ != kUnitializedCacheCapacity) {
+    WebCache::setCapacities(pending_cache_min_dead_capacity_,
+                            pending_cache_max_dead_capacity_,
+                            pending_cache_capacity_);
+  }
+
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
   // should not be accessible, and should also be treated as empty documents
@@ -350,6 +362,10 @@ void ChromeRenderProcessObserver::WebKitInitialized() {
   WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
+}
+
+void ChromeRenderProcessObserver::OnRenderProcessShutdown() {
+  webkit_initialized_ = false;
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
@@ -370,12 +386,19 @@ void ChromeRenderProcessObserver::OnSetContentSettingRules(
 void ChromeRenderProcessObserver::OnSetCacheCapacities(size_t min_dead_capacity,
                                                        size_t max_dead_capacity,
                                                        size_t capacity) {
+  if (!webkit_initialized_) {
+    pending_cache_min_dead_capacity_ = min_dead_capacity;
+    pending_cache_max_dead_capacity_ = max_dead_capacity;
+    pending_cache_capacity_ = capacity;
+    return;
+  }
+
   WebCache::setCapacities(
       min_dead_capacity, max_dead_capacity, capacity);
 }
 
 void ChromeRenderProcessObserver::OnClearCache(bool on_navigation) {
-  if (on_navigation) {
+  if (on_navigation || !webkit_initialized_) {
     clear_cache_pending_ = true;
   } else {
     WebCache::clear();
@@ -384,7 +407,8 @@ void ChromeRenderProcessObserver::OnClearCache(bool on_navigation) {
 
 void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
   WebCache::ResourceTypeStats stats;
-  WebCache::getResourceTypeStats(&stats);
+  if (webkit_initialized_)
+    WebCache::getResourceTypeStats(&stats);
   RenderThread::Get()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
 
@@ -404,7 +428,8 @@ void ChromeRenderProcessObserver::OnGetV8HeapStats() {
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {
-  RenderThread::Get()->EnsureWebKitInitialized();
+  if (!webkit_initialized_)
+    return;
 
   // Clear the object cache (as much as possible; some live objects cannot be
   // freed).
@@ -431,7 +456,7 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
 }
 
 void ChromeRenderProcessObserver::ExecutePendingClearCache() {
-  if (clear_cache_pending_) {
+  if (clear_cache_pending_ && webkit_initialized_) {
     clear_cache_pending_ = false;
     WebCache::clear();
   }
