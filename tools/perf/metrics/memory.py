@@ -45,7 +45,6 @@ class MemoryMetric(Metric):
     # customizing, so that we get the same generic histograms produced for all
     # pages.
     options.AppendExtraBrowserArg('--disable-histogram-customizer')
-    options.AppendExtraBrowserArg('--memory-metrics')
 
     # Old commandline flags used for reference builds.
     options.AppendExtraBrowserArg('--dom-automation')

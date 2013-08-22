@@ -18,6 +18,9 @@ class Memory(page_measurement.PageMeasurement):
 
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
+    # Since this is a memory benchmark, we want to sample memory histograms at
+    # a high frequency.
+    options.AppendExtraBrowserArg('--memory-metrics')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'stress_memory')
