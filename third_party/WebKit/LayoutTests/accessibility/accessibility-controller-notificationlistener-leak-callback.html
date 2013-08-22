@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script id='targetJS' type='text/html'>
+        accessibilityController.addNotificationListener(function() {});
+    </script>
+
+    <script src="../fast/js/resources/js-test-pre.js"></script>
+    <script src="../fast/js/resources/leak-check.js"></script>
+    <script>
+        var target = '<script>'+grabScriptText('targetJS')+'<'+'/script>';
+        var tolerance = {'numberOfLiveDocuments': 0};
+
+        doLeakTest(htmlToUrl(target), tolerance);
+    </script>
+    <script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

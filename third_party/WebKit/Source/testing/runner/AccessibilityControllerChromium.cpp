@@ -69,6 +69,7 @@ void AccessibilityController::reset()
     m_rootElement = WebAccessibilityObject();
     m_focusedElement = WebAccessibilityObject();
     m_elements.clear();
+    m_notificationCallbacks.clear();
 
     m_logAccessibilityEvents = false;
 }
