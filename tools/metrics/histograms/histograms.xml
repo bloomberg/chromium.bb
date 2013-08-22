@@ -11766,6 +11766,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ProfileReset.SendFeedback" enum="Boolean">
+  <summary>
+    Signifies if the user selected &quot;Send feedback&quot; checkbox in the
+    Reset Profile dialog.
+  </summary>
+</histogram>
+
 <histogram name="Protector.DefaultSearchProvider" enum="ProtectorError">
   <obsolete>
     Deprecated 8/2013. No longer tracked.

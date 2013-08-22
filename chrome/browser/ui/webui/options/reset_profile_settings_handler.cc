@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -152,6 +153,7 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
                  AsWeakPtr()));
   content::RecordAction(content::UserMetricsAction("ResetProfile"));
+  UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
 }
 
 }  // namespace options
