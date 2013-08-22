@@ -844,20 +844,20 @@ void RenderWidgetHostImpl::DonePaintingToBackingStore() {
   Send(new ViewMsg_UpdateRect_ACK(GetRoutingID()));
 }
 
-void RenderWidgetHostImpl::ScheduleComposite() {
+bool RenderWidgetHostImpl::ScheduleComposite() {
   if (is_hidden_ || !is_accelerated_compositing_active_ ||
-      current_size_.IsEmpty()) {
-      return;
+      current_size_.IsEmpty() || repaint_ack_pending_ ||
+      resize_ack_pending_ || view_being_painted_) {
+    return false;
   }
 
   // Send out a request to the renderer to paint the view if required.
-  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
-    repaint_start_time_ = TimeTicks::Now();
-    repaint_ack_pending_ = true;
-    TRACE_EVENT_ASYNC_BEGIN0(
-        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-    Send(new ViewMsg_Repaint(routing_id_, current_size_));
-  }
+  repaint_start_time_ = TimeTicks::Now();
+  repaint_ack_pending_ = true;
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
+  Send(new ViewMsg_Repaint(routing_id_, current_size_));
+  return true;
 }
 
 void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {

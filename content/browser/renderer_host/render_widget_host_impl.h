@@ -268,9 +268,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void DonePaintingToBackingStore();
 
   // GPU accelerated version of GetBackingStore function. This will
-  // trigger a re-composite to the view. If a resize is pending, it will
-  // block briefly waiting for an ack from the renderer.
-  void ScheduleComposite();
+  // trigger a re-composite to the view. It may fail if a resize is pending, or
+  // if a composite has already been requested and not acked yet.
+  bool ScheduleComposite();
 
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
