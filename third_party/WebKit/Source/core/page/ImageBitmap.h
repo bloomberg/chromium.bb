@@ -8,7 +8,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -57,7 +56,6 @@ private:
     // the image source changes.
     RefPtr<HTMLImageElement> m_imageElement;
     RefPtr<Image> m_bitmap;
-    OwnPtr<ImageBuffer> m_buffer;
 
     IntRect m_bitmapRect; // The rect where the underlying Image should be placed in reference to the ImageBitmap.
     IntRect m_cropRect;

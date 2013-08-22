@@ -36,7 +36,9 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -186,6 +188,22 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     ASSERT_NE(imageBitmap->bitmapImage().get(), newImageResource->image());
     ASSERT_NE(imageBitmap->bitmapImage()->nativeImageForCurrentFrame()->bitmap().pixelRef()->pixels(),
         newImageResource->image()->nativeImageForCurrentFrame()->bitmap().pixelRef()->pixels());
+}
+
+// Verifies that ImageBitmaps constructed from ImageBitmaps hold onto their own Image.
+TEST_F(ImageBitmapTest, ImageResourceLifetime)
+{
+    RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(Document::create().get());
+    canvasElement->setHeight(40);
+    canvasElement->setWidth(40);
+    RefPtr<ImageBitmap> imageBitmapDerived;
+    {
+        RefPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
+        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
+    }
+    CanvasRenderingContext* context = canvasElement->getContext("2d");
+    TrackExceptionState es;
+    static_cast<CanvasRenderingContext2D*>(context)->drawImage(imageBitmapDerived.get(), 0, 0, es);
 }
 
 } // namespace

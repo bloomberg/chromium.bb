@@ -1309,6 +1309,9 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
         return;
 
     RefPtr<Image> imageForRendering = bitmap->bitmapImage();
+    if (!imageForRendering)
+        return;
+
     drawImageInternal(imageForRendering.get(), actualSrcRect, actualDstRect, state().m_globalComposite, state().m_globalBlend);
 }
 

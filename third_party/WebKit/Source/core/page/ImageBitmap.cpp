@@ -12,6 +12,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "wtf/RefPtr.h"
 
 using namespace std;
@@ -28,8 +29,12 @@ static inline IntRect normalizeRect(const IntRect& rect)
 
 static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
 {
+    IntRect intersectRect = intersection(IntRect(IntPoint(), image->size()), cropRect);
+    if (!intersectRect.width() || !intersectRect.height())
+        return 0;
+
     SkBitmap cropped;
-    image->nativeImageForCurrentFrame()->bitmap().extractSubset(&cropped, cropRect);
+    image->nativeImageForCurrentFrame()->bitmap().extractSubset(&cropped, intersectRect);
     return BitmapImage::create(NativeImageSkia::create(cropped));
 }
 
@@ -59,12 +64,12 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     IntRect srcRect = intersection(cropRect, videoRect);
     IntRect dstRect(IntPoint(), srcRect.size());
 
-    m_buffer = ImageBuffer::create(videoRect.size());
-    GraphicsContext* c = m_buffer->context();
+    OwnPtr<ImageBuffer> buf = ImageBuffer::create(videoRect.size(), 1, UnacceleratedNonPlatformBuffer);
+    GraphicsContext* c = buf->context();
     c->clip(dstRect);
     c->translate(-srcRect.x(), -srcRect.y());
     video->paintCurrentFrameInContext(c, videoRect);
-    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    m_bitmap = buf->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
 
     ScriptWrappable::init(this);
@@ -75,18 +80,13 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     , m_imageElement(0)
     , m_bitmapOffset(IntPoint())
 {
-    IntSize canvasSize = canvas->size();
-    IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvasSize));
-    IntRect dstRect(IntPoint(), srcRect.size());
-
     CanvasRenderingContext* sourceContext = canvas->renderingContext();
     if (sourceContext && sourceContext->is3d())
         sourceContext->paintRenderingResultsToCanvas();
 
-    m_buffer = ImageBuffer::create(canvasSize);
-    m_buffer->context()->drawImageBuffer(canvas->buffer(), dstRect, srcRect);
-    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvas->size()));
     m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
+    m_bitmap = cropImage(canvas->buffer()->copyImage(CopyBackingStore).get(), cropRect);
 
     ScriptWrappable::init(this);
 }
@@ -98,11 +98,11 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
-    m_buffer = ImageBuffer::create(data->size());
+    OwnPtr<ImageBuffer> buf = ImageBuffer::create(data->size(), 1, UnacceleratedNonPlatformBuffer);
     if (srcRect.width() > 0 && srcRect.height() > 0)
-        m_buffer->putByteArray(Unmultiplied, data->data(), data->size(), srcRect, IntPoint(min(0, -cropRect.x()), min(0, -cropRect.y())));
+        buf->putByteArray(Premultiplied, data->data(), data->size(), srcRect, IntPoint(min(0, -cropRect.x()), min(0, -cropRect.y())));
 
-    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    m_bitmap = buf->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())),  srcRect.size());
 
     ScriptWrappable::init(this);
