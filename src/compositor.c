@@ -3256,6 +3256,7 @@ usage(int error_code)
 		"  -B, --backend=MODULE\tBackend module, one of drm-backend.so,\n"
 		"\t\t\t\tfbdev-backend.so, x11-backend.so or\n"
 		"\t\t\t\twayland-backend.so\n"
+		"  --shell=MODULE\tShell module, defaults to desktop-shell.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
@@ -3343,6 +3344,7 @@ int main(int argc, char *argv[])
 				 struct weston_config *config);
 	int i, config_fd;
 	char *backend = NULL;
+	char *shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
 	int32_t idle_time = 300;
@@ -3354,6 +3356,7 @@ int main(int argc, char *argv[])
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
+		{ WESTON_OPTION_STRING, "shell", 0, &shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
@@ -3412,8 +3415,7 @@ int main(int argc, char *argv[])
 	close(config_fd);
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
-	weston_config_section_get_string(section, "modules",
-					 &modules, "desktop-shell.so");
+	weston_config_section_get_string(section, "modules", &modules, "");
 
 	backend_init = load_module(backend, "backend_init");
 	if (!backend_init)
@@ -3431,6 +3433,12 @@ int main(int argc, char *argv[])
 	ec->idle_time = idle_time;
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
+
+	if (!shell)
+		weston_config_section_get_string(section, "shell", &shell,
+						 "desktop-shell.so");
+	if (load_modules(ec, shell, &argc, argv) < 0)
+		goto out;
 
 	if (load_modules(ec, modules, &argc, argv) < 0)
 		goto out;
