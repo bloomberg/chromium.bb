@@ -900,7 +900,7 @@ bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
 
 // static
 bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
-  return (IsWebURL(url) ||
+  return (url.SchemeIsHTTPOrHTTPS() ||
           url.SchemeIs(extensions::kExtensionScheme) ||
           url.SchemeIs("data"));
 }
@@ -1471,7 +1471,7 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
 
 void PrerenderManager::RecordLikelyLoginOnURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!IsWebURL(url))
+  if (!url.SchemeIsHTTPOrHTTPS())
     return;
   if (logged_in_predictor_table_.get()) {
     BrowserThread::PostTask(

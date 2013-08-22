@@ -29,8 +29,7 @@ void DialDeviceData::set_device_description_url(const GURL& url) {
 
 // static
 bool DialDeviceData::IsDeviceDescriptionUrl(const GURL& url) {
-  return url.is_valid() && !url.is_empty() &&
-      (url.SchemeIs("http") || url.SchemeIs("https"));
+  return url.is_valid() && !url.is_empty() && url.SchemeIsHTTPOrHTTPS();
 }
 
 bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {

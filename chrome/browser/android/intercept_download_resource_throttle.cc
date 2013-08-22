@@ -42,7 +42,7 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
     return;
 
   GURL url = request_->url_chain().back();
-  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
+  if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(

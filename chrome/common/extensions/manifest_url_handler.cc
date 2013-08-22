@@ -142,8 +142,7 @@ bool HomepageURLHandler::Parse(Extension* extension, string16* error) {
   }
   manifest_url->url_ = GURL(homepage_url_str);
   if (!manifest_url->url_.is_valid() ||
-      (!manifest_url->url_.SchemeIs("http") &&
-       !manifest_url->url_.SchemeIs("https"))) {
+      !manifest_url->url_.SchemeIsHTTPOrHTTPS()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidHomepageURL, homepage_url_str);
     return false;
@@ -206,7 +205,7 @@ bool OptionsPageHandler::Parse(Extension* extension, string16* error) {
     // hosted apps require an absolute URL.
     GURL options_url(options_str);
     if (!options_url.is_valid() ||
-        !(options_url.SchemeIs("http") || options_url.SchemeIs("https"))) {
+        !options_url.SchemeIsHTTPOrHTTPS()) {
       *error = ASCIIToUTF16(errors::kInvalidOptionsPageInHostedApp);
       return false;
     }

@@ -211,7 +211,7 @@ void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
   }
 
   // Require HTTP responses to have a success status code.
-  if (request->url().SchemeIs("http") || request->url().SchemeIs("https")) {
+  if (request->url().SchemeIsHTTPOrHTTPS()) {
     // NOTE about status codes: We are like Firefox 3 in this respect.
     // {IE 7, Safari 3, Opera 9.5} do not care about the status code.
     if (request->GetResponseCode() != 200) {

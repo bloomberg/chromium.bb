@@ -804,8 +804,7 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
         UMASnifferHistogramGet("mime_sniffer.ShouldSniffMimeType2", 3);
   }
   bool sniffable_scheme = url.is_empty() ||
-                          url.SchemeIs("http") ||
-                          url.SchemeIs("https") ||
+                          url.SchemeIsHTTPOrHTTPS() ||
                           url.SchemeIs("ftp") ||
 #if defined(OS_ANDROID)
                           url.SchemeIs("content") ||

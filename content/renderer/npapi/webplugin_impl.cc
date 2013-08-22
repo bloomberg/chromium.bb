@@ -716,7 +716,7 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
 
   if (strcmp(method, "GET") != 0) {
     // We're only going to route HTTP/HTTPS requests
-    if (!(complete_url.SchemeIs("http") || complete_url.SchemeIs("https")))
+    if (!complete_url.SchemeIsHTTPOrHTTPS())
       return INVALID_URL;
   }
 

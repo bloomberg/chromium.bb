@@ -181,7 +181,7 @@ bool SandboxFileSystemBackendDelegate::IsAccessValid(
 bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
-  if (url.SchemeIs("http") || url.SchemeIs("https"))
+  if (url.SchemeIsHTTPOrHTTPS())
     return true;
   if (url.SchemeIsFileSystem())
     return url.inner_url() && IsAllowedScheme(*url.inner_url());

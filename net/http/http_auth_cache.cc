@@ -43,8 +43,7 @@ bool IsEnclosingPath(const std::string& container, const std::string& path) {
 void CheckOriginIsValid(const GURL& origin) {
   DCHECK(origin.is_valid());
   // Note that the scheme may be FTP when we're using a HTTP proxy.
-  DCHECK(origin.SchemeIs("http") || origin.SchemeIs("https") ||
-         origin.SchemeIs("ftp"));
+  DCHECK(origin.SchemeIsHTTPOrHTTPS() || origin.SchemeIs("ftp"));
   DCHECK(origin.GetOrigin() == origin);
 }
 

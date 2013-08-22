@@ -132,7 +132,7 @@ void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
   // need to set the values that the OS can't infer.
 
   if (![quarantine_properties valueForKey:(NSString*)kLSQuarantineTypeKey]) {
-    CFStringRef type = (source.SchemeIs("http") || source.SchemeIs("https"))
+    CFStringRef type = source.SchemeIsHTTPOrHTTPS()
                        ? kLSQuarantineTypeWebDownload
                        : kLSQuarantineTypeOtherDownload;
     [quarantine_properties setValue:(NSString*)type

@@ -42,7 +42,7 @@ void PredictorTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (!IsUserLinkNavigationRequest(params.transition) ||
-      !(params.url.SchemeIs("http") || params.url.SchemeIs("https")))
+      !(params.url.SchemeIsHTTPOrHTTPS()))
     return;
 
   Profile* profile = Profile::FromBrowserContext(

@@ -249,7 +249,7 @@ class HistogramWatcher
   // from the network thread.
   void NotifyDataReceived(const URLRequest& request, int bytes_read) {
     if (IsLocalhost(request.url().host()) ||
-        !(request.url().SchemeIs("http") || request.url().SchemeIs("https"))) {
+        !request.url().SchemeIsHTTPOrHTTPS()) {
       return;
     }
 

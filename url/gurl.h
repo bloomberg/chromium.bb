@@ -203,6 +203,9 @@ class URL_EXPORT GURL {
   // object constructions are done.
   bool SchemeIs(const char* lower_ascii_scheme) const;
 
+  // Returns true if the scheme is "http" or "https".
+  bool SchemeIsHTTPOrHTTPS() const;
+
   // We often need to know if this is a file URL. File URLs are "standard", but
   // are often treated separately by some programs.
   bool SchemeIsFile() const {

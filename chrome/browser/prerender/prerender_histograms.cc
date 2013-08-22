@@ -250,7 +250,7 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     bool was_prerender,
     bool was_complete_prerender, const GURL& url) {
-  if (!IsWebURL(url))
+  if (!url.SchemeIsHTTPOrHTTPS())
     return;
   bool within_window = WithinWindow();
   bool is_google_url = IsGoogleDomain(url);
@@ -303,7 +303,7 @@ void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
     const GURL& url) const {
   // If the URL to be prerendered is not a http[s] URL, or is a Google URL,
   // do not record.
-  if (!IsWebURL(url) || IsGoogleDomain(url))
+  if (!url.SchemeIsHTTPOrHTTPS() || IsGoogleDomain(url))
     return;
   RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
 }

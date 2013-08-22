@@ -34,10 +34,6 @@ bool IsGoogleDomain(const GURL& url);
 // Indicates whether the URL provided could be a Google search result page.
 bool IsGoogleSearchResultURL(const GURL& url);
 
-// Returns true iff the URL provided is Web URL, using the scheme http
-// or https.
-bool IsWebURL(const GURL& url);
-
 // The prerender contents of some experiments should never be swapped in
 // by pretending to never match on the URL.  This function will return true
 // iff this is the case for the experiment_id specified.

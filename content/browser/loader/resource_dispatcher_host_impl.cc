@@ -1191,7 +1191,7 @@ void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType::Type resource_type) {
-  if (!url.is_valid() || !(url.SchemeIs("http") || url.SchemeIs("https")))
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return;
 
   filter_->GetURLRequestContext(resource_type)->http_transaction_factory()->

@@ -186,7 +186,7 @@ bool IsGoogleHostname(const std::string& host,
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission) {
-  return url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")) &&
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
       (url.port().empty() || (port_permission == ALLOW_NON_STANDARD_PORTS)) &&
       google_util::IsGoogleHostname(url.host(), subdomain_permission);
 }

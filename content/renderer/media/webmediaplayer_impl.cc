@@ -296,7 +296,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
           &WebMediaPlayerImpl::DataSourceInitialized,
           AsWeakPtr(), gurl));
 
-  is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+  is_local_source_ = !gurl.SchemeIsHTTPOrHTTPS();
 }
 
 void WebMediaPlayerImpl::play() {

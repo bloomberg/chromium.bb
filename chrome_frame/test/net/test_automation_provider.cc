@@ -77,7 +77,7 @@ net::URLRequestJob* TestAutomationProvider::Factory(
   if (CFTestsDisabled())
     return NULL;
 
-  if (request->url().SchemeIs("http") || request->url().SchemeIs("https")) {
+  if (request->url().SchemeIsHTTPOrHTTPS()) {
     // Only look at requests that don't have any user data.
     // ResourceDispatcherHost uses the user data for requests that it manages.
     // We don't want to mess with those.

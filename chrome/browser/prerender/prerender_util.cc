@@ -79,10 +79,6 @@ bool IsGoogleSearchResultURL(const GURL& url) {
           StartsWithASCII(url.path(), std::string("/webhp"), true));
 }
 
-bool IsWebURL(const GURL& url) {
-  return url.SchemeIs("http") || url.SchemeIs("https");
-}
-
 bool IsNoSwapInExperiment(uint8 experiment_id) {
   // Currently, experiments 5 and 6 fall in this category.
   return experiment_id == 5 || experiment_id == 6;
@@ -100,7 +96,7 @@ void URLRequestResponseStarted(net::URLRequest* request) {
       content::ResourceRequestInfo::ForRequest(request);
   // Gather histogram information about the X-Mod-Pagespeed header.
   if (info->GetResourceType() == ResourceType::MAIN_FRAME &&
-      IsWebURL(request->url())) {
+      request->url().SchemeIsHTTPOrHTTPS()) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(kModPagespeedHistogram, 0);
     if (request->response_headers() &&
         request->response_headers()->HasHeader(kModPagespeedHeader)) {

@@ -367,6 +367,10 @@ bool GURL::SchemeIs(const char* lower_ascii_scheme) const {
                                         lower_ascii_scheme);
 }
 
+bool GURL::SchemeIsHTTPOrHTTPS() const {
+  return SchemeIs("http") || SchemeIs("https");
+}
+
 int GURL::IntPort() const {
   if (parsed_.port.is_nonempty())
     return url_parse::ParsePort(spec_.data(), parsed_.port);
