@@ -14,6 +14,7 @@
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
           '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',

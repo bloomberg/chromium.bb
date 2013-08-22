@@ -553,6 +553,7 @@
           # TODO(mmoss) Any convenient way to get all the relevant build
           # files? (e.g. all locales, resources, etc.)
           '<(PRODUCT_DIR)/chrome',
+          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/chrome_sandbox',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',

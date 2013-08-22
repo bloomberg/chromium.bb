@@ -118,6 +118,7 @@ stage_install_common() {
   rm "${DEBUGFILE}" "${STRIPPEDFILE}"
 
   # resources
+  install -m 644 "${BUILDDIR}/${PROGNAME}.pak" "${STAGEDIR}/${INSTALLDIR}/"
   install -m 644 "${BUILDDIR}/resources.pak" "${STAGEDIR}/${INSTALLDIR}/"
   # TODO(mmoss): This has broken a couple times on adding new .pak files. Maybe
   # we should flag all installer files in FILES.cfg and get them from there, so
