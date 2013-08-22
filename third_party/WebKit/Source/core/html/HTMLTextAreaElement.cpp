@@ -428,7 +428,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     value.replace("\r\n", "\n");
     value.replace('\r', '\n');
 
-    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION);
 
     if (!m_isDirty)
         setNonDirtyValue(value);
