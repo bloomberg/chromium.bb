@@ -240,14 +240,9 @@ static enum HandleExceptionResult HandleException(mach_port_t thread_port,
     return kHandleExceptionHandled_DontSetState;
   }
 
-  /*
-   * Ignore all but bad accesses for now.
-   * TODO(bradnelson): eventually consider these too:
-   *     EXC_BAD_INSTRUCTION
-   *     EXC_ARITHMETIC
-   *     EXC_BREAKPOINT
-   */
-  if (exception != EXC_BAD_ACCESS) {
+  if (exception != EXC_BAD_ACCESS &&
+      exception != EXC_BAD_INSTRUCTION &&
+      exception != EXC_ARITHMETIC) {
     return kHandleExceptionUnhandled;
   }
 

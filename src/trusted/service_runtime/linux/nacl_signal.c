@@ -340,7 +340,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
     }
   }
 
-  if (is_untrusted && sig == SIGSEGV) {
+  if (is_untrusted && (sig == SIGSEGV || sig == SIGILL || sig == SIGFPE)) {
     if (DispatchToUntrustedHandler(natp, &sig_ctx)) {
       NaClSignalContextToHandler(uc, &sig_ctx);
       /* Resume untrusted code using the modified register state. */

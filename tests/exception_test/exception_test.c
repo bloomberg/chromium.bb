@@ -299,13 +299,28 @@ void test_exceptions_on_non_main_thread(void) {
   assert(rc == 0);
 }
 
-void test_catching_hlt(void) {
+void test_catching_various_exception_types(void) {
   int rc = NACL_SYSCALL(exception_handler)(simple_exception_handler, NULL);
   assert(rc == 0);
 
 #if defined(__i386__) || defined(__x86_64__)
+  printf("Testing hlt...\n");
   if (!setjmp(g_jmp_buf)) {
     __asm__("hlt");
+    exit(1);
+  }
+  printf("Testing ud2a (an illegal instruction)...\n");
+  if (!setjmp(g_jmp_buf)) {
+    __asm__("ud2a");
+    exit(1);
+  }
+  printf("Testing integer division by zero...\n");
+  if (!setjmp(g_jmp_buf)) {
+    uint32_t result;
+    __asm__ volatile("idivb %1"
+                     : "=a"(result)
+                     : "r"((uint8_t) 0), "a"((uint16_t) 1));
+    exit(1);
   }
 #endif
 
@@ -377,7 +392,7 @@ int TestMain(void) {
   /* pthread_join() is broken under qemu-arm. */
   if (getenv("UNDER_QEMU_ARM") == NULL)
     RUN_TEST(test_exceptions_on_non_main_thread);
-  RUN_TEST(test_catching_hlt);
+  RUN_TEST(test_catching_various_exception_types);
 
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_get_x86_direction_flag);
