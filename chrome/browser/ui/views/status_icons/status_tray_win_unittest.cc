@@ -89,4 +89,18 @@ TEST(StatusTrayWinTest, ClickOnBalloon) {
   EXPECT_TRUE(observer.balloon_clicked());
   icon->RemoveObserver(&observer);
 }
+
+TEST(StatusTrayWinTest, HandleOldIconId) {
+  StatusTrayWin tray;
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+
+  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
+      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip")));
+  UINT message_id = icon->message_id();
+  UINT icon_id = icon->icon_id();
+
+  tray.RemoveStatusIcon(icon);
+  tray.WndProc(NULL, message_id, icon_id, WM_LBUTTONDOWN);
+}
 #endif  // !defined(USE_AURA)

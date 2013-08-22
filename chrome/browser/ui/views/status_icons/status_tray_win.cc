@@ -92,6 +92,12 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
       }
     }
 
+    // It is possible for this procedure to be called with an obsolete icon
+    // id.  In that case we should just return early before handling any
+    // actions.
+    if (!win_icon)
+      return TRUE;
+
     switch (lparam) {
       case TB_INDETERMINATE:
         win_icon->HandleBalloonClickEvent();
