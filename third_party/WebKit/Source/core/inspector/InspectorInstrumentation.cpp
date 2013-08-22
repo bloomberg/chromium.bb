@@ -261,9 +261,7 @@ const char PageId[] = "pageId";
 InstrumentingAgents* instrumentationForPage(Page* page)
 {
     ASSERT(isMainThread());
-    if (InspectorController* controller = page->inspectorController())
-        return controller->m_instrumentingAgents.get();
-    return 0;
+    return page->inspectorController().m_instrumentingAgents.get();
 }
 
 InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)

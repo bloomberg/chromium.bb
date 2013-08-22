@@ -1487,7 +1487,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
         return;
 
     if (isLoadingMainFrame())
-        m_frame->page()->inspectorController()->resume();
+        m_frame->page()->inspectorController().resume();
     m_frame->navigationScheduler()->cancel();
 
     m_provisionalDocumentLoader = m_policyDocumentLoader.release();
@@ -1757,7 +1757,7 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
     m_client->dispatchDidClearWindowObjectInWorld(world);
 
     if (Page* page = m_frame->page())
-        page->inspectorController()->didClearWindowObjectInWorld(m_frame, world);
+        page->inspectorController().didClearWindowObjectInWorld(m_frame, world);
 
     InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, world);
 }

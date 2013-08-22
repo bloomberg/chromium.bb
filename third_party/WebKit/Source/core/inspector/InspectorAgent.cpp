@@ -130,7 +130,7 @@ void InspectorAgent::disable(ErrorString*)
 
 void InspectorAgent::reset(ErrorString*)
 {
-    m_inspectedPage->inspectorController()->reconnectFrontend();
+    m_inspectedPage->inspectorController().reconnectFrontend();
 }
 
 void InspectorAgent::domContentLoadedEventFired(Frame* frame)

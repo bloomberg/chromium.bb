@@ -3381,9 +3381,9 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
     if (!m_page)
         return;
 
-    if (point.x == -1 || point.y == -1)
-        m_page->inspectorController()->inspect(0);
-    else {
+    if (point.x == -1 || point.y == -1) {
+        m_page->inspectorController().inspect(0);
+    } else {
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnorePointerEventsNone;
         HitTestRequest request(hitType);
 
@@ -3392,7 +3392,7 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
         Node* node = result.innerNode();
         if (!node && m_page->mainFrame()->document())
             node = m_page->mainFrame()->document()->documentElement();
-        m_page->inspectorController()->inspect(node);
+        m_page->inspectorController().inspect(node);
     }
 }
 

@@ -47,8 +47,8 @@ namespace WebCore {
 class InspectorBackendMessageQueue : public RefCounted<InspectorBackendMessageQueue> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit InspectorBackendMessageQueue(InspectorController* inspectorController)
-        : m_inspectorController(inspectorController)
+    explicit InspectorBackendMessageQueue(InspectorController& inspectorController)
+        : m_inspectorController(&inspectorController)
     {
     }
 
@@ -96,9 +96,8 @@ private:
     Deque<String> m_messages;
 };
 
-InspectorFrontendClientLocal::InspectorFrontendClientLocal(InspectorController* inspectorController, Page* frontendPage)
-    : m_inspectorController(inspectorController)
-    , m_frontendPage(frontendPage)
+InspectorFrontendClientLocal::InspectorFrontendClientLocal(InspectorController& inspectorController, Page* frontendPage)
+    : m_frontendPage(frontendPage)
 {
     m_frontendPage->settings().setAllowFileAccessFromFileURLs(true);
     m_messageQueue = adoptRef(new InspectorBackendMessageQueue(inspectorController));
@@ -110,7 +109,6 @@ InspectorFrontendClientLocal::~InspectorFrontendClientLocal()
     if (m_frontendHost)
         m_frontendHost->disconnectClient();
     m_frontendPage = 0;
-    m_inspectorController = 0;
 }
 
 void InspectorFrontendClientLocal::windowObjectCleared()

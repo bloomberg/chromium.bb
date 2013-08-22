@@ -146,7 +146,7 @@ public:
     DragController& dragController() const { return *m_dragController; }
     FocusController& focusController() const { return *m_focusController; }
     ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
-    InspectorController* inspectorController() const { return m_inspectorController.get(); }
+    InspectorController& inspectorController() const { return *m_inspectorController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }

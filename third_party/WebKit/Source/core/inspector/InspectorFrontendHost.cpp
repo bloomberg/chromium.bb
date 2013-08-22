@@ -187,8 +187,7 @@ void InspectorFrontendHost::moveWindowBy(float x, float y) const
 
 void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
 {
-    ASSERT(m_frontendPage->inspectorController());
-    m_frontendPage->inspectorController()->setInjectedScriptForOrigin(origin, script);
+    m_frontendPage->inspectorController().setInjectedScriptForOrigin(origin, script);
 }
 
 String InspectorFrontendHost::localizedStringsURL()

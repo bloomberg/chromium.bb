@@ -642,7 +642,7 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
 InspectorController* WebDevToolsAgentImpl::inspectorController()
 {
     if (Page* page = m_webViewImpl->page())
-        return page->inspectorController();
+        return &page->inspectorController();
     return 0;
 }
 

@@ -825,13 +825,13 @@ PassRefPtr<ClientRect> Internals::boundingBox(Element* element, ExceptionState& 
 
 PassRefPtr<ClientRectList> Internals::inspectorHighlightRects(Document* document, ExceptionState& es)
 {
-    if (!document || !document->page() || !document->page()->inspectorController()) {
+    if (!document || !document->page()) {
         es.throwDOMException(InvalidAccessError);
         return ClientRectList::create();
     }
 
     Highlight highlight;
-    document->page()->inspectorController()->getHighlight(&highlight);
+    document->page()->inspectorController().getHighlight(&highlight);
     return ClientRectList::create(highlight.quads);
 }
 
@@ -1506,14 +1506,12 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
 
 void Internals::emitInspectorDidBeginFrame()
 {
-    InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
-    inspectorController->didBeginFrame();
+    contextDocument()->page()->inspectorController().didBeginFrame();
 }
 
 void Internals::emitInspectorDidCancelFrame()
 {
-    InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
-    inspectorController->didCancelFrame();
+    contextDocument()->page()->inspectorController().didCancelFrame();
 }
 
 bool Internals::hasSpellingMarker(Document* document, int from, int length, ExceptionState&)
@@ -1590,11 +1588,11 @@ PassRefPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
 
     OwnPtr<InspectorFrontendClientLocal> frontendClient = adoptPtr(new InspectorFrontendClientLocal(page->inspectorController(), frontendPage));
 
-    frontendPage->inspectorController()->setInspectorFrontendClient(frontendClient.release());
+    frontendPage->inspectorController().setInspectorFrontendClient(frontendClient.release());
 
     m_frontendChannel = adoptPtr(new InspectorFrontendChannelDummy(frontendPage));
 
-    page->inspectorController()->connectFrontend(m_frontendChannel.get());
+    page->inspectorController().connectFrontend(m_frontendChannel.get());
 
     return m_frontendWindow;
 }
@@ -1605,7 +1603,7 @@ void Internals::closeDummyInspectorFrontend()
     ASSERT(page);
     ASSERT(m_frontendWindow);
 
-    page->inspectorController()->disconnectFrontend();
+    page->inspectorController().disconnectFrontend();
 
     m_frontendChannel.release();
 
@@ -1626,11 +1624,11 @@ Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadB
 void Internals::setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionState& es)
 {
     Page* page = contextDocument()->frame()->page();
-    if (!page || !page->inspectorController()) {
+    if (!page) {
         es.throwDOMException(InvalidAccessError);
         return;
     }
-    page->inspectorController()->setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
+    page->inspectorController().setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
 }
 
 bool Internals::hasGrammarMarker(Document* document, int from, int length, ExceptionState&)
