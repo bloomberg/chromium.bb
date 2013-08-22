@@ -125,6 +125,7 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
       ;;
     "mips")
       DEFINES+=" target_arch=mipsel"
+      DEFINES+=" mips_arch_variant=mips32r1"
       ;;
     *)
       echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2
