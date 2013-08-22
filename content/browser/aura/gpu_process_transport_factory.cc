@@ -230,7 +230,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   }
   if (!context_provider.get()) {
     if (ui::Compositor::WasInitializedWithThread()) {
-      LOG(FATAL) << "Failed to create UI context, but can't use software "
+      LOG(FATAL) << "Failed to create UI context, but can't use software"
                  " compositing with browser threaded compositing. Aborting.";
     }
 
