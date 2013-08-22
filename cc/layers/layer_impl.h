@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_LAYER_IMPL_H_
 #define CC_LAYERS_LAYER_IMPL_H_
 
-#include <set>
 #include <string>
 
 #include "base/logging.h"
@@ -83,38 +82,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void set_parent(LayerImpl* parent) { parent_ = parent; }
   // Warning: This does not preserve tree structure invariants.
   void ClearChildList();
-
-  bool HasAncestor(const LayerImpl* ancestor) const;
-
-  void SetScrollParent(LayerImpl* parent);
-
-  LayerImpl* scroll_parent() { return scroll_parent_; }
-  const LayerImpl* scroll_parent() const { return scroll_parent_; }
-
-  void SetScrollChildren(std::set<LayerImpl*>* children);
-  void RemoveScrollChild(LayerImpl* child);
-
-  std::set<LayerImpl*>* scroll_children() { return scroll_children_.get(); }
-  const std::set<LayerImpl*>* scroll_children() const {
-    return scroll_children_.get();
-  }
-
-  void SetClipParent(LayerImpl* ancestor);
-
-  LayerImpl* clip_parent() {
-    return clip_parent_;
-  }
-  const LayerImpl* clip_parent() const {
-    return clip_parent_;
-  }
-
-  void SetClipChildren(std::set<LayerImpl*>* children);
-  void RemoveClipChild(LayerImpl* child);
-
-  std::set<LayerImpl*>* clip_children() { return clip_children_.get(); }
-  const std::set<LayerImpl*>* clip_children() const {
-    return clip_children_.get();
-  }
 
   void PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests);
   void TakeCopyRequestsAndTransformToTarget(
@@ -509,18 +476,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   // Properties internal to LayerImpl
   LayerImpl* parent_;
   OwnedLayerImplList children_;
-
-  LayerImpl* scroll_parent_;
-
-  // Storing a pointer to a set rather than a set since this will be rarely
-  // used. If this pointer turns out to be too heavy, we could have this (and
-  // the scroll parent above) be stored in a LayerImpl -> scroll_info
-  // map somewhere.
-  scoped_ptr<std::set<LayerImpl*> > scroll_children_;
-
-  LayerImpl* clip_parent_;
-  scoped_ptr<std::set<LayerImpl*> > clip_children_;
-
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one
   int mask_layer_id_;

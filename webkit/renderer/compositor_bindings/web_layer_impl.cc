@@ -379,20 +379,6 @@ std::string WebLayerImpl::DebugName() {
   return name;
 }
 
-void WebLayerImpl::setScrollParent(WebKit::WebLayer* parent) {
-  cc::Layer* scroll_parent = NULL;
-  if (parent)
-    scroll_parent = static_cast<WebLayerImpl*>(parent)->layer();
-  layer_->SetScrollParent(scroll_parent);
-}
-
-void WebLayerImpl::setClipParent(WebKit::WebLayer* parent) {
-  cc::Layer* clip_parent = NULL;
-  if (parent)
-    clip_parent = static_cast<WebLayerImpl*>(parent)->layer();
-  layer_->SetClipParent(clip_parent);
-}
-
 Layer* WebLayerImpl::layer() const { return layer_.get(); }
 
 }  // namespace webkit
