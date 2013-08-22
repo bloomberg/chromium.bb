@@ -25,7 +25,7 @@ bool RenderViewHostDelegate::OnMessageReceived(RenderViewHost* render_view_host,
 
 bool RenderViewHostDelegate::AddMessageToConsole(
     int32 level, const string16& message, int32 line_no,
-    const string16& source_id) {
+    const string16& source_id, const string16& stack_trace) {
   return false;
 }
 

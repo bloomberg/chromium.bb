@@ -243,6 +243,15 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
+
+  // Returns true if we should report a detailed message (including a stack
+  // trace) for console [logs|errors|exceptions]. |source| is the WebKit-
+  // reported source for the error; this can point to a page or a script,
+  // and can be external (e.g., "http://www.google.com"), extension-related
+  // (e.g., "chrome-extension://<extension_id>/background.js"), or internal
+  // (e.g., "event_bindings" or "schemaUtils").
+  virtual bool ShouldReportDetailedMessageForSource(
+      const base::string16& source) const;
 };
 
 }  // namespace content

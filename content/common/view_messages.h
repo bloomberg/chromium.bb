@@ -2014,11 +2014,12 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
 // WebKit and JavaScript error messages to log to the console
 // or debugger UI.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
+IPC_MESSAGE_ROUTED5(ViewHostMsg_AddMessageToConsole,
                     int32, /* log level */
                     string16, /* msg */
                     int32, /* line number */
-                    string16 /* source id */)
+                    string16, /* source id */
+                    string16 /* stack trace */ )
 
 // Sent by the renderer process to indicate that a plugin instance has crashed.
 // Note: |plugin_pid| should not be trusted. The corresponding process has

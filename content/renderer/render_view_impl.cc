@@ -2390,9 +2390,21 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl(session_storage_namespace_id_);
 }
 
+bool RenderViewImpl::shouldReportDetailedMessageForSource(
+    const WebString& source) {
+  return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
+      source);
+}
+
 void RenderViewImpl::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line) {
+  didAddMessageToConsole(message, source_name, source_line, WebString());
+}
+
+void RenderViewImpl::didAddMessageToConsole(
+    const WebConsoleMessage& message, const WebString& source_name,
+    unsigned source_line, const WebString& stack_trace) {
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {
     case WebConsoleMessage::LevelDebug:
@@ -2415,7 +2427,8 @@ void RenderViewImpl::didAddMessageToConsole(
                                            static_cast<int32>(log_severity),
                                            message.text,
                                            static_cast<int32>(source_line),
-                                           source_name));
+                                           source_name,
+                                           stack_trace));
 }
 
 void RenderViewImpl::printPage(WebFrame* frame) {

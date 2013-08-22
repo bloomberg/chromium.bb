@@ -1298,5 +1298,9 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
   return false;
 }
 
+bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
+    const base::string16& source) const {
+  return GURL(source).SchemeIs(extensions::kExtensionScheme);
+}
 
 }  // namespace chrome

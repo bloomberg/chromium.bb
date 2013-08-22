@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/input/top_controls_state.h"
@@ -446,10 +447,18 @@ class CONTENT_EXPORT RenderViewImpl
       const WebKit::WebPopupMenuInfo& popup_menu_info,
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
+  virtual bool shouldReportDetailedMessageForSource(
+      const WebKit::WebString& source);
+  // TODO(rdevlin.cronin): Remove this version once
+  // https://codereview.chromium.org/18822004/ lands.
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,
       unsigned source_line);
+  virtual void didAddMessageToConsole(
+      const WebKit::WebConsoleMessage& message,
+      const WebKit::WebString& source_name,
+      unsigned source_line, const WebKit::WebString& stack_trace);
   virtual void printPage(WebKit::WebFrame* frame);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual bool enumerateChosenDirectory(

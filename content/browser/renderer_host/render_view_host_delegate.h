@@ -274,7 +274,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual bool AddMessageToConsole(int32 level,
                                    const string16& message,
                                    int32 line_no,
-                                   const string16& source_id);
+                                   const string16& source_id,
+                                   const string16& stack_trace);
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.

@@ -182,4 +182,9 @@ bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
   return false;
 }
 
+bool ContentRendererClient::ShouldReportDetailedMessageForSource(
+    const base::string16& source) const {
+  return false;
+}
+
 }  // namespace content
