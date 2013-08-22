@@ -663,8 +663,8 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     webView->setEditableSelectionOffsets(31, 31);
     webView->setCompositionFromExistingText(30, 34, underlines);
     WebVector<WebCompositionUnderline> underlineResults = static_cast<WebViewImpl*>(webView)->compositionUnderlines();
-    EXPECT_EQ(30u, underlineResults[0].startOffset);
-    EXPECT_EQ(34u, underlineResults[0].endOffset);
+    EXPECT_EQ(2u, underlineResults[0].startOffset);
+    EXPECT_EQ(6u, underlineResults[0].endOffset);
     info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", std::string(info.value.utf8().data()));
     EXPECT_EQ(31, info.selectionStart);

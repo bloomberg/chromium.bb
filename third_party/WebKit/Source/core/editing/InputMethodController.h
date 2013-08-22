@@ -37,6 +37,20 @@ class Frame;
 class Range;
 class Text;
 
+// FIXME: We should move PlainTextOffsets to own file for using InputMethodController
+// and TextIterator and unify PlainTextRange defined in AccessibilityObject.h.
+class PlainTextOffsets {
+public:
+    PlainTextOffsets();
+    PlainTextOffsets(int start, int length);
+    size_t end() const { return m_end; }
+    size_t start() const { return m_start; }
+    bool isNull() const { return m_start == notFound; }
+private:
+    size_t m_start;
+    size_t m_end;
+};
+
 class InputMethodController {
 public:
     static PassOwnPtr<InputMethodController> create(Frame*);
@@ -67,10 +81,25 @@ public:
     void clear();
 
 private:
+    class SelectionOffsetsScope {
+        WTF_MAKE_NONCOPYABLE(SelectionOffsetsScope);
+    public:
+        SelectionOffsetsScope(InputMethodController*);
+        ~SelectionOffsetsScope();
+    private:
+        InputMethodController* m_inputMethodController;
+        PlainTextOffsets m_offsets;
+    };
+    friend class SelectionOffsetsScope;
+
     Frame* m_frame;
     RefPtr<Text> m_compositionNode;
+    // FIXME: We should use PlainTextOffsets m_compositionRange instead of
+    // m_compositionStart/m_compositionEnd.
     unsigned m_compositionStart;
     unsigned m_compositionEnd;
+    // startOffset and endOffset of CompositionUnderline are based on
+    // m_compositionNode.
     Vector<CompositionUnderline> m_customCompositionUnderlines;
 
     explicit InputMethodController(Frame*);
@@ -80,6 +109,8 @@ private:
     void selectComposition() const;
     enum FinishCompositionMode { ConfirmComposition, CancelComposition };
     void finishComposition(const String&, FinishCompositionMode);
+    PlainTextOffsets getSelectionOffsets() const;
+    bool setSelectionOffsets(const PlainTextOffsets&);
 };
 
 } // namespace WebCore
