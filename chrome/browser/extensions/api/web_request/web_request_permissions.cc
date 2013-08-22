@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -82,12 +83,21 @@ bool WebRequestPermissions::HideRequest(
     const net::URLRequest* request) {
   // Hide requests from the Chrome WebStore App or signin process.
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info && extension_info_map) {
+  if (info) {
     int process_id = info->GetChildID();
-    if (extension_info_map->IsSigninProcess(process_id) ||
+    int route_id = info->GetRouteID();
+    ExtensionRendererState::WebViewInfo webview_info;
+    // Never hide requests from guest processes.
+    if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
+        process_id, route_id, &webview_info)) {
+      return false;
+    }
+    if (extension_info_map && (
+        extension_info_map->IsSigninProcess(process_id) ||
         extension_info_map->process_map().Contains(
-            extension_misc::kWebStoreAppId, process_id))
+            extension_misc::kWebStoreAppId, process_id))) {
       return true;
+    }
   }
 
   const GURL& url = request->url();

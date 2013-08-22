@@ -68,10 +68,8 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
       com_extension_.get(), base::Time::Now(), false /*incognito_enabled*/);
 }
 
-TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
-  base::MessageLoopForIO message_loop;
+TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   net::TestURLRequestContext context;
-  scoped_refptr<ExtensionInfoMap> extension_info_map(new ExtensionInfoMap);
   const char* sensitive_urls[] = {
       "http://clients2.google.com",
       "http://clients22.google.com",
@@ -88,14 +86,14 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
       "http://www.google.com/"
   };
   const int kSigninProcessId = 99;
-  extension_info_map->SetSigninProcess(kSigninProcessId);
+  extension_info_map_->SetSigninProcess(kSigninProcessId);
 
   // Check that requests are rejected based on the destination
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
     GURL sensitive_url(sensitive_urls[i]);
     net::TestURLRequest request(sensitive_url, NULL, &context, NULL);
     EXPECT_TRUE(
-        WebRequestPermissions::HideRequest(extension_info_map.get(), &request))
+        WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
         << sensitive_urls[i];
   }
   // Check that requests are accepted if they don't touch sensitive urls.
@@ -103,7 +101,7 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
     GURL non_sensitive_url(non_sensitive_urls[i]);
     net::TestURLRequest request(non_sensitive_url, NULL, &context, NULL);
     EXPECT_FALSE(
-        WebRequestPermissions::HideRequest(extension_info_map.get(), &request))
+        WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
         << non_sensitive_urls[i];
   }
 
@@ -113,7 +111,7 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   GURL non_sensitive_url("http://www.google.com/test.js");
   net::TestURLRequest non_sensitive_request(
       non_sensitive_url, NULL, &context, NULL);
-  EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map.get(),
+  EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                   &non_sensitive_request));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
   {
@@ -124,9 +122,9 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
         non_sensitive_url, NULL, &context, NULL);
     ResourceRequestInfo::AllocateForTesting(&sensitive_request,
         ResourceType::SCRIPT, NULL, process_id, frame_id);
-    extension_info_map->RegisterExtensionProcess(extension_misc::kWebStoreAppId,
-        process_id, site_instance_id);
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map.get(),
+    extension_info_map_->RegisterExtensionProcess(
+        extension_misc::kWebStoreAppId, process_id, site_instance_id);
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    &sensitive_request));
   }
   // If the process is the signin process, it becomes protected.
@@ -137,7 +135,7 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
         non_sensitive_url, NULL, &context, NULL);
     ResourceRequestInfo::AllocateForTesting(&sensitive_request,
         ResourceType::SCRIPT, NULL, process_id, frame_id);
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map.get(),
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    &sensitive_request));
   }
 }

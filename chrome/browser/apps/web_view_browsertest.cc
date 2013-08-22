@@ -730,6 +730,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
+  TestHelper("testWebRequestAPIGoogleProperty",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
   TestHelper("testLoadStartLoadRedirect",
              "DoneShimTest.PASSED",

@@ -695,6 +695,23 @@ function testWebRequestAPI() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the WebRequest API onBeforeRequest event fires on
+// clients*.google.com URLs.
+function testWebRequestAPIGoogleProperty() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  var firstLoad = function() {
+    webview.removeEventListener('loadstop', firstLoad);
+    webview.onBeforeRequest.addListener(function(e) {
+      embedder.test.succeed();
+      return {cancel: true};
+    }, { urls: ['<all_urls>']}, ['blocking']) ;
+    webview.src = 'http://clients6.google.com';
+  };
+  webview.addEventListener('loadstop', firstLoad);
+  document.body.appendChild(webview);
+}
+
 // This test verifies that getProcessId is defined and returns a non-zero
 // value corresponding to the processId of the guest process.
 function testGetProcessId() {
@@ -853,6 +870,7 @@ embedder.test.testList = {
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
   'testWebRequestAPI': testWebRequestAPI,
+  'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
   'testGetProcessId': testGetProcessId,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
