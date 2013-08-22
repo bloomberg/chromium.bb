@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
   TestAcceptThenDenyWhichShouldBeSticky
 #endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       TestAcceptThenDenyWhichShouldBeSticky) {
+                       MAYBE_TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   DenyingCameraDoesNotCauseStickyDenyForMics
 #endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       DenyingCameraDoesNotCauseStickyDenyForMics) {
+                       MAYBE_DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If camera blocking also blocked mics, the second call here would hang.
