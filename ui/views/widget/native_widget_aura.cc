@@ -95,6 +95,13 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 #endif
 }
 
+// static
+void NativeWidgetAura::RegisterNativeWidgetForWindow(
+      internal::NativeWidgetPrivate* native_widget,
+      aura::Window* window) {
+  window->set_user_data(native_widget);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -105,7 +112,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   ownership_ = params.ownership;
 
-  window_->set_user_data(this);
+  RegisterNativeWidgetForWindow(this, window_);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   if (params.type == Widget::InitParams::TYPE_BUBBLE)
@@ -1023,12 +1030,14 @@ NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
+  // Cast must match type supplied to RegisterNativeWidgetForWindow().
   return reinterpret_cast<NativeWidgetPrivate*>(native_view->user_data());
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
+  // Cast must match type supplied to RegisterNativeWidgetForWindow().
   return reinterpret_cast<NativeWidgetPrivate*>(native_window->user_data());
 }
 

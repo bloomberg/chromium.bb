@@ -37,6 +37,7 @@
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
@@ -231,7 +232,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
-  window_->set_user_data(this);
+  NativeWidgetAura::RegisterNativeWidgetForWindow(this, window_);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
