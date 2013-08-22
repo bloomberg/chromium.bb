@@ -185,6 +185,10 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
     return picture_buffer_.id();
   }
 
+  gfx::Size size() const {
+    return picture_buffer_.size();
+  }
+
  private:
   explicit DXVAPictureBuffer(const media::PictureBuffer& buffer);
 
@@ -289,8 +293,7 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
 
   D3DSURFACE_DESC texture_desc;
   decoding_texture_->GetLevelDesc(0, &texture_desc);
-  // TODO(ananta)
-  // We need to support mid stream resize.
+
   if (texture_desc.Width != surface_desc.Width ||
       texture_desc.Height != surface_desc.Height) {
     NOTREACHED() << "Decode surface of different dimension than texture";
@@ -564,6 +567,9 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
 
   RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
       "Invalid state: " << state_, ILLEGAL_STATE,);
+
+  if (output_picture_buffers_.empty())
+    return;
 
   OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
   RETURN_AND_NOTIFY_ON_FAILURE(it != output_picture_buffers_.end(),
@@ -876,10 +882,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
 
   // We only read the surface description, which contains its width/height when
   // we need the picture buffers from the client. Once we have those, then they
-  // are reused. This won't work if the frame sizes change mid stream.
-  // There is a TODO comment in the
-  // DXVAVideoDecodeAccelerator::RequestPictureBuffers function which talks
-  // about supporting this.
+  // are reused.
   D3DSURFACE_DESC surface_desc;
   hr = surface->GetDesc(&surface_desc);
   RETURN_ON_HR_FAILURE(hr, "Failed to get surface description", false);
@@ -918,6 +921,19 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get D3D surface from output sample",
           PLATFORM_FAILURE,);
+
+      D3DSURFACE_DESC surface_desc;
+      hr = surface->GetDesc(&surface_desc);
+      RETURN_AND_NOTIFY_ON_HR_FAILURE(
+          hr, "Failed to get surface description", PLATFORM_FAILURE,);
+
+      if (surface_desc.Width !=
+              static_cast<uint32>(index->second->size().width()) ||
+          surface_desc.Height !=
+              static_cast<uint32>(index->second->size().height())) {
+        HandleResolutionChanged(surface_desc.Width, surface_desc.Height);
+        return;
+      }
 
       RETURN_AND_NOTIFY_ON_FAILURE(
           index->second->CopyOutputSampleDataToPictureBuffer(
@@ -988,8 +1004,6 @@ void DXVAVideoDecodeAccelerator::NotifyResetDone() {
 
 void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
   // This task could execute after the decoder has been torn down.
-  // TODO(ananta)
-  // We need to support mid stream resize.
   if (state_ != kUninitialized && client_) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
@@ -1130,6 +1144,31 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &DXVAVideoDecodeAccelerator::NotifyInputBufferRead,
       base::AsWeakPtr(this), input_buffer_id));
+}
+
+void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
+                                                         int height) {
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &DXVAVideoDecodeAccelerator::DismissStaleBuffers,
+      base::AsWeakPtr(this), output_picture_buffers_));
+
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &DXVAVideoDecodeAccelerator::RequestPictureBuffers,
+      base::AsWeakPtr(this), width, height));
+
+  output_picture_buffers_.clear();
+}
+
+void DXVAVideoDecodeAccelerator::DismissStaleBuffers(
+    const OutputBuffers& picture_buffers) {
+  OutputBuffers::const_iterator index;
+
+  for (index = picture_buffers.begin();
+       index != picture_buffers.end();
+       ++index) {
+    DVLOG(1) << "Dismissing picture id: " << index->second->id();
+    client_->DismissPictureBuffer(index->second->id());
+  }
 }
 
 }  // namespace content

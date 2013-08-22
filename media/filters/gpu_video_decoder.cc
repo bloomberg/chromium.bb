@@ -140,7 +140,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       BindToCurrentLoop(orig_status_cb));
 
   bool previously_initialized = config_.IsValidConfig();
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
   if (previously_initialized) {
     // TODO(xhwang): Make GpuVideoDecoder reinitializable.
     // See http://crbug.com/233608
@@ -250,6 +250,11 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     if (state_ == kNormal) {
       state_ = kDrainingDecoder;
       vda_->Flush();
+      // If we have ready frames, go ahead and process them to ensure that the
+      // Flush operation does not block in the VDA due to lack of picture
+      // buffers.
+      if (!ready_video_frames_.empty())
+        EnqueueFrameAndTriggerFrameDelivery(NULL);
     }
     return;
   }
