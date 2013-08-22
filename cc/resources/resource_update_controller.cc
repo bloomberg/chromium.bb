@@ -16,9 +16,6 @@ namespace {
 const size_t kPartialTextureUpdatesMax = 12;
 
 // Measured in seconds.
-const double kTextureUpdateTickRate = 0.004;
-
-// Measured in seconds.
 const double kUploaderBusyTickRate = 0.001;
 
 // Number of blocking update intervals to allow.
@@ -36,7 +33,8 @@ size_t ResourceUpdateController::MaxFullUpdatesPerTick(
     ResourceProvider* resource_provider) {
   double textures_per_second = resource_provider->EstimatedUploadsPerSecond();
   size_t textures_per_tick =
-      floor(kTextureUpdateTickRate * textures_per_second);
+      floor(resource_provider->TextureUpdateTickRate().InSecondsF() *
+            textures_per_second);
   return textures_per_tick ? textures_per_tick : 1;
 }
 
@@ -119,7 +117,7 @@ base::TimeTicks ResourceUpdateController::Now() const {
 }
 
 base::TimeDelta ResourceUpdateController::UpdateMoreTexturesTime() const {
-  return base::TimeDelta::FromMilliseconds(kTextureUpdateTickRate * 1000);
+  return resource_provider_->TextureUpdateTickRate();
 }
 
 size_t ResourceUpdateController::UpdateMoreTexturesSize() const {

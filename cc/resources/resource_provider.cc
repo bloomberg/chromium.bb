@@ -30,6 +30,10 @@ namespace cc {
 
 namespace {
 
+// Measured in seconds.
+const double kSoftwareUploadTickRate = 0.000250;
+const double kTextureUploadTickRate = 0.004;
+
 GLenum TextureToStorageFormat(GLenum texture_format) {
   GLenum storage_format = GL_RGBA8_OES;
   switch (texture_format) {
@@ -459,6 +463,15 @@ void ResourceProvider::ReleaseCachedData() {
     return;
 
   texture_uploader_->ReleaseCachedQueries();
+}
+
+base::TimeDelta ResourceProvider::TextureUpdateTickRate() {
+  // Software resource uploads happen on impl thread, so don't bother batching
+  // them up and trying to wait for them to complete.
+  double rate =
+      texture_uploader_ ? kTextureUploadTickRate : kSoftwareUploadTickRate;
+  return base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond *
+                                           rate);
 }
 
 void ResourceProvider::Flush() {

@@ -118,6 +118,7 @@ class CC_EXPORT ResourceProvider {
   double EstimatedUploadsPerSecond();
   void FlushUploads();
   void ReleaseCachedData();
+  base::TimeDelta TextureUpdateTickRate();
 
   // Flush all context operations, kicking uploads and ensuring ordering with
   // respect to other contexts.
