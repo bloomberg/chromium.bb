@@ -1262,13 +1262,8 @@
           'include_dirs': [
             '..',
           ],
-          'conditions': [
-            # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
-            ['OS!="win" or target_arch=="ia32"', {
-              'sources': [
-                'base/simd/filter_yuv_mmx.cc',
-              ],
-            }],
+          'sources': [
+            'base/simd/filter_yuv_mmx.cc',
           ],
         },
         {
