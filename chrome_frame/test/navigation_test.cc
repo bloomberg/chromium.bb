@@ -655,7 +655,8 @@ TEST_F(NavigationTest, DISABLED_DownloadInNewWindow) {
   LaunchIEAndNavigate(kDownloadFromNewWin);
 }
 
-TEST_P(FullTabNavigationTest, FormPostBackForward) {
+// Flaky on ie6, http://crbug.com/255098.
+TEST_P(FullTabNavigationTest, DISABLED_FormPostBackForward) {
   bool in_cf = GetParam().invokes_cf();
   // Navigate to the form-get.html page:
   // - First set focus to chrome renderer window
