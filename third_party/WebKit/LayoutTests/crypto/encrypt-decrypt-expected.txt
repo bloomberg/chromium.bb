@@ -9,6 +9,7 @@ PASS crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, keys.aesCbc, data) threw ex
 PASS crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array[0]}, keys.aesCbc, data) threw exception TypeError: undefined is not a function.
 PASS crypto.subtle.encrypt(aesCbc, keys.hmacSha1, data) threw exception NotSupportedError: key.algorithm does not match that of operation.
 PASS crypto.subtle.encrypt(aesCbc, keys.aesCbcJustDecrypt, data) threw exception NotSupportedError: key.usages does not permit this operation.
+PASS crypto.subtle.encrypt({name: 'bogus'}, null, data) threw exception TypeError: Invalid key argument.
 PASS successfullyParsed is true
 
 TEST COMPLETE

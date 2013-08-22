@@ -25,10 +25,11 @@ PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
 rejected with null
-PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Type error.
-PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Type error.
-PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Type error.
-PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Type error.
+PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Invalid keyFormat argument.
+PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Invalid keyUsages argument.
+PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN']) threw exception TypeError: Invalid keyFormat argument.
+PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Invalid keyData argument.
+PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Invalid keyData argument.
 PASS crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary.
 PASS crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages) threw exception NotSupportedError: Algorithm: SHA-1: Unsupported operation.
 PASS successfullyParsed is true

@@ -125,31 +125,29 @@ ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Algo
         return ScriptObject();
     }
 
+    bool requiresKey = operationType != Digest;
+
+    // Seems like the generated bindings should take care of these however it
+    // currently doesn't. See also http://crbugh.com/264520
+    if (requiresKey && !key) {
+        es.throwTypeError("Invalid key argument");
+        return ScriptObject();
+    }
+    if (operationType == Verify && !signature) {
+        es.throwTypeError("Invalid signature argument");
+        return ScriptObject();
+    }
+    if (!dataBuffer) {
+        es.throwTypeError("Invalid dataBuffer argument");
+        return ScriptObject();
+    }
+
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, es))
         return ScriptObject();
 
-    // All operations other than Digest require a valid Key.
-    if (operationType != Digest) {
-        if (!key) {
-            es.throwTypeError();
-            return ScriptObject();
-        }
-
-        if (!key->canBeUsedForAlgorithm(algorithm, operationType, es))
-            return ScriptObject();
-    }
-
-    // Only Verify takes a signature.
-    if (operationType == Verify && !signature) {
-        es.throwTypeError();
+    if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, es))
         return ScriptObject();
-    }
-
-    if (!dataBuffer) {
-        es.throwTypeError();
-        return ScriptObject();
-    }
 
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
     size_t dataSize = dataBuffer->byteLength();
@@ -221,10 +219,8 @@ ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extr
     }
 
     WebKit::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
-        es.throwTypeError();
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptObject();
-    }
 
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
@@ -243,22 +239,18 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
         return ScriptObject();
     }
 
+    WebKit::WebCryptoKeyFormat format;
+    if (!Key::parseFormat(rawFormat, format, es))
+        return ScriptObject();
+
     if (!keyData) {
-        es.throwTypeError();
+        es.throwTypeError("Invalid keyData argument");
         return ScriptObject();
     }
 
     WebKit::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
-        es.throwTypeError();
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptObject();
-    }
-
-    WebKit::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format)) {
-        es.throwTypeError();
-        return ScriptObject();
-    }
 
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))

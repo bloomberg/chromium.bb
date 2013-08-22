@@ -114,6 +114,10 @@ Promise.fulfill(null).then(function() {
     // Invalid key usage.
     shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
 
+    // If both the format and key usage are bogus, should complain about the
+    // format first.
+    shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN'])");
+
     // Undefined key usage.
     // FIXME: http://crbug.com/262383
     //shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, undefined)");

@@ -42,6 +42,7 @@
 namespace WebCore {
 
 class Algorithm;
+class ExceptionState;
 
 class Key : public ScriptWrappable, public RefCounted<Key> {
 public:
@@ -58,11 +59,8 @@ public:
 
     bool canBeUsedForAlgorithm(const WebKit::WebCryptoAlgorithm&, AlgorithmOperation, ExceptionState&) const;
 
-    static bool parseFormat(const String&, WebKit::WebCryptoKeyFormat&);
-
-    // Parses KeyUsage strings to a WebCryptoKeyUsageMask. If any element is
-    // unrecognized, returns false.
-    static bool parseUsageMask(const Vector<String>&, WebKit::WebCryptoKeyUsageMask&);
+    static bool parseFormat(const String&, WebKit::WebCryptoKeyFormat&, ExceptionState&);
+    static bool parseUsageMask(const Vector<String>&, WebKit::WebCryptoKeyUsageMask&, ExceptionState&);
 
 protected:
     explicit Key(const WebKit::WebCryptoKey&);

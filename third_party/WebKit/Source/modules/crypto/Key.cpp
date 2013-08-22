@@ -202,7 +202,7 @@ bool Key::canBeUsedForAlgorithm(const WebKit::WebCryptoAlgorithm& algorithm, Alg
     return true;
 }
 
-bool Key::parseFormat(const String& formatString, WebKit::WebCryptoKeyFormat& format)
+bool Key::parseFormat(const String& formatString, WebKit::WebCryptoKeyFormat& format, ExceptionState& es)
 {
     // There are few enough values that testing serially is fast enough.
     if (formatString == "raw") {
@@ -222,16 +222,19 @@ bool Key::parseFormat(const String& formatString, WebKit::WebCryptoKeyFormat& fo
         return true;
     }
 
+    es.throwTypeError("Invalid keyFormat argument");
     return false;
 }
 
-bool Key::parseUsageMask(const Vector<String>& usages, WebKit::WebCryptoKeyUsageMask& mask)
+bool Key::parseUsageMask(const Vector<String>& usages, WebKit::WebCryptoKeyUsageMask& mask, ExceptionState& es)
 {
     mask = 0;
     for (size_t i = 0; i < usages.size(); ++i) {
         WebKit::WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
-        if (!usage)
+        if (!usage) {
+            es.throwTypeError("Invalid keyUsages argument");
             return false;
+        }
         mask |= usage;
     }
     return true;

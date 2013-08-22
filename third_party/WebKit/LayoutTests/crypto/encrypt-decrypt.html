@@ -33,6 +33,10 @@ importTestKeys().then(function(importedKeys) {
 
     // Key doesn't support encrypt.
     shouldThrow("crypto.subtle.encrypt(aesCbc, keys.aesCbcJustDecrypt, data)");
+
+    // If no key was specified AND the algorithm was bogus, should complain
+    // about the missing key first.
+    shouldThrow("crypto.subtle.encrypt({name: 'bogus'}, null, data)");
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>
