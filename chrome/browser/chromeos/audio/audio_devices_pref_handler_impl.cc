@@ -45,7 +45,6 @@ double AudioDevicesPrefHandlerImpl::GetVolumeGainValue(
 
 void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
     const AudioDevice& device, double value) {
-  value = std::min(std::max(value, 0.0), 100.0);
   device_volume_settings_->SetDouble(GetDeviceIdString(device), value);
 
   SaveDevicesVolumePref();

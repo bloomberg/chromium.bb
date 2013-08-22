@@ -199,10 +199,10 @@ void CrasAudioHandler::SetOutputVolumePercent(int volume_percent) {
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnOutputVolumeChanged());
 }
 
+// TODO: Rename the 'Percent' to something more meaningful.
 void CrasAudioHandler::SetInputGainPercent(int gain_percent) {
-  gain_percent = min(max(gain_percent, 0), 100);
-  if (gain_percent <= kMuteThresholdPercent)
-    gain_percent = 0;
+  // NOTE: We do not sanitize input gain values since the range is completely
+  // dependent on the device.
   input_gain_ = gain_percent;
 
   if (const AudioDevice* device = GetDeviceFromId(active_input_node_id_))
@@ -268,12 +268,14 @@ void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64 device_id,
     return;
   }
 
-  value = min(max(value, 0), 100);
-  if (value <= kMuteThresholdPercent)
-    value = 0;
-
-  if (const AudioDevice* device = GetDeviceFromId(device_id))
+  if (const AudioDevice* device = GetDeviceFromId(device_id)) {
+    if (!device->is_input) {
+      value = min(max(value, 0), 100);
+      if (value <= kMuteThresholdPercent)
+        value = 0;
+    }
     audio_pref_handler_->SetVolumeGainValue(*device, value);
+  }
 }
 
 void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
@@ -379,7 +381,8 @@ void CrasAudioHandler::SetupAudioInputState() {
   input_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
   input_gain_ = audio_pref_handler_->GetVolumeGainValue(*device);
   SetInputMuteInternal(input_mute_on_);
-  SetInputNodeGain(active_input_node_id_, input_gain_);
+  // TODO(rkc,jennyz): Set input gain once we decide on how to store
+  // the gain values since the range and step are both device specific.
 }
 
 void CrasAudioHandler::SetupAudioOutputState() {
@@ -391,6 +394,7 @@ void CrasAudioHandler::SetupAudioOutputState() {
   }
   output_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
   output_volume_ = audio_pref_handler_->GetVolumeGainValue(*device);
+
   SetOutputMuteInternal(output_mute_on_);
   SetOutputNodeVolume(active_output_node_id_, output_volume_);
 }
