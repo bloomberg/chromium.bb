@@ -64,17 +64,13 @@ class QuicReliableServerStreamTest : public ::testing::Test {
     QuicSpdyDecompressor decompressor;
     TestDecompressorVisitor visitor;
 
-    // First the priority, then header id, then the compressed data.
-    EXPECT_EQ(3, headers[0]);
+    // First the header id, then the compressed data.
+    EXPECT_EQ(1, headers[0]);
     EXPECT_EQ(0, headers[1]);
     EXPECT_EQ(0, headers[2]);
     EXPECT_EQ(0, headers[3]);
-    EXPECT_EQ(1, headers[4]);
-    EXPECT_EQ(0, headers[5]);
-    EXPECT_EQ(0, headers[6]);
-    EXPECT_EQ(0, headers[7]);
-    EXPECT_EQ(static_cast<size_t>(headers.length() - 8),
-              decompressor.DecompressData(headers.substr(8), &visitor));
+    EXPECT_EQ(static_cast<size_t>(headers.length() - 4),
+              decompressor.DecompressData(headers.substr(4), &visitor));
 
     EXPECT_EQ(headers_string_, visitor.data());
 

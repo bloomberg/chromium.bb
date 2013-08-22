@@ -918,8 +918,14 @@ bool QuicConnection::ProcessValidatedPacket() {
 bool QuicConnection::WriteQueuedPackets() {
   DCHECK(!write_blocked_);
 
+  size_t num_queued_packets = queued_packets_.size() + 1;
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (!write_blocked_ && packet_iterator != queued_packets_.end()) {
+    // Ensure that from one iteration of this loop to the next we
+    // succeeded in sending a packet so we don't infinitely loop.
+    // TODO(rch): clean up and close the connection if we really hit this.
+    DCHECK_LT(queued_packets_.size(), num_queued_packets);
+    num_queued_packets = queued_packets_.size();
     if (WritePacket(packet_iterator->encryption_level,
                     packet_iterator->sequence_number,
                     packet_iterator->packet,
@@ -1176,12 +1182,6 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(level, sequence_number, *packet));
-  if (encrypted.get() == NULL) {
-    LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
-                << sequence_number;
-    CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
-    return false;
-  }
   DLOG(INFO) << ENDPOINT << "Sending packet number " << sequence_number
              << " : " << (packet->is_fec_packet() ? "FEC " :
                  (retransmittable == HAS_RETRANSMITTABLE_DATA

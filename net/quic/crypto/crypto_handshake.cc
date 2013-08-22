@@ -758,10 +758,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
         0 /* sequence number */,
         StringPiece() /* associated data */,
         cetv_plaintext.AsStringPiece()));
-    if (!cetv_ciphertext.get()) {
-      *error_details = "Packet encryption failed";
-      return QUIC_ENCRYPTION_FAILURE;
-    }
 
     out->SetStringPiece(kCETV, cetv_ciphertext->AsStringPiece());
     out->MarkDirty();

@@ -425,20 +425,6 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
         << " wire_sequence_number: " << wire_sequence_number;
   }
 
-  char LastCharOfVersion() {
-    switch (GetParam()) {
-      case QUIC_VERSION_7:
-        return '7';
-      case QUIC_VERSION_8:
-        return '8';
-      case QUIC_VERSION_9:
-        return '9';
-      default:
-        CHECK(0) << "Invalid version";
-        return 0;
-    }
-  }
-
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   QuicVersion version_;
@@ -814,7 +800,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1072,7 +1058,7 @@ TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1434,7 +1420,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -2219,7 +2205,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     'Q', '2', '.', '0',
   };
 
@@ -2543,7 +2529,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8'),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -2586,7 +2572,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', '0', (GetParam() == QUIC_VERSION_7 ? '7' : '8')
   };
 
   QuicVersionVector versions;

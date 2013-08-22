@@ -185,7 +185,6 @@ TEST_F(QuicSessionTest, DecompressionError) {
   ReliableQuicStream* stream = session_.GetIncomingReliableStream(3);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_DECOMPRESSION_FAILURE));
   const char data[] =
-      "\1\0\0\0"   // priority
       "\1\0\0\0"   // headers id
       "\0\0\0\4"   // length
       "abcd";      // invalid compressed data

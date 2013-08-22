@@ -21,7 +21,7 @@ const size_t kAESNonceSize = 12;
 
 }  // namespace
 
-Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {}
+Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() : last_seq_num_(0) {}
 
 Aes128Gcm12Encrypter::~Aes128Gcm12Encrypter() {}
 
@@ -118,8 +118,12 @@ QuicData* Aes128Gcm12Encrypter::EncryptPacket(
   size_t ciphertext_size = GetCiphertextSize(plaintext.length());
   scoped_ptr<char[]> ciphertext(new char[ciphertext_size]);
 
-  // TODO(ianswett): Introduce a check to ensure that we don't encrypt with the
-  // same sequence number twice.
+  if (last_seq_num_ != 0 && sequence_number <= last_seq_num_) {
+    DLOG(FATAL) << "Sequence numbers regressed";
+    return NULL;
+  }
+  last_seq_num_ = sequence_number;
+
   uint8 nonce[kNoncePrefixSize + sizeof(sequence_number)];
   COMPILE_ASSERT(sizeof(nonce) == kAESNonceSize, bad_sequence_number_size);
   memcpy(nonce, nonce_prefix_, kNoncePrefixSize);

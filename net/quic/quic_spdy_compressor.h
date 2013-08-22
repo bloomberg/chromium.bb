@@ -24,20 +24,9 @@ class NET_EXPORT_PRIVATE QuicSpdyCompressor {
   QuicSpdyCompressor();
   ~QuicSpdyCompressor();
 
-  // TODO(alyssar, rjshade) remove this and clean up CompressHeadersInternal
-  // as part of b/10386999.
   std::string CompressHeaders(const SpdyHeaderBlock& headers);
 
-  // Returns a string comprised of
-  // [priority, header_sequence_id, compressed_headers]
-  std::string CompressHeadersWithPriority(QuicPriority priority,
-                                          const SpdyHeaderBlock& headers);
-
  private:
-  std::string CompressHeadersInternal(QuicPriority priority,
-                                      const SpdyHeaderBlock& headers,
-                                      bool write_priority);
-
   SpdyFramer spdy_framer_;
   QuicHeaderId header_sequence_id_;
 

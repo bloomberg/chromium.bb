@@ -237,21 +237,18 @@ TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
 TEST_F(ReliableQuicStreamTest, ProcessHeaders) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame(kStreamId, false, 0, compressed_headers);
 
   stream_->OnStreamFrame(frame);
   EXPECT_EQ(SpdyUtils::SerializeUncompressedHeaders(headers_), stream_->data());
-  EXPECT_EQ(0u, stream_->priority());
 }
 
 TEST_F(ReliableQuicStreamTest, ProcessHeadersWithInvalidHeaderId) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
-  compressed_headers.replace(4, 1, 1, '\xFF');  // Illegal header id.
+  string compressed_headers = compressor_->CompressHeaders(headers_);
+  compressed_headers.replace(0, 1, 1, '\xFF');  // Illegal header id.
   QuicStreamFrame frame(kStreamId, false, 0, compressed_headers);
 
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_HEADER_ID));
@@ -261,8 +258,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersWithInvalidHeaderId) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBody) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   string body = "this is the body";
   string data = compressed_headers + body;
   QuicStreamFrame frame(kStreamId, false, 0, data);
@@ -275,8 +271,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBody) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyFragments) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(7, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   string body = "this is the body";
   string data = compressed_headers + body;
 
@@ -308,14 +303,12 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyFragments) {
     ASSERT_EQ(SpdyUtils::SerializeUncompressedHeaders(headers_) + body,
               stream_->data()) << "split_point: " << split_point;
   }
-  EXPECT_EQ(7u, stream_->priority());
 }
 
 TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyReadv) {
   Initialize(!kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   string body = "this is the body";
   string data = compressed_headers + body;
   QuicStreamFrame frame(kStreamId, false, 0, data);
@@ -344,8 +337,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyReadv) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   Initialize(!kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   string body = "this is the body";
   string data = compressed_headers + body;
   QuicStreamFrame frame(kStreamId, false, 0, data);
@@ -370,8 +362,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   Initialize(!kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   string body = "this is the body";
   string data = compressed_headers + body;
   QuicStreamFrame frame(kStreamId, false, 0, data);
@@ -400,15 +391,13 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
 TEST_F(ReliableQuicStreamTest, ProcessCorruptHeadersEarly) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers1 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers1 = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers1);
   string decompressed_headers1 =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
 
   headers_["content-type"] = "text/plain";
-  string compressed_headers2 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers2 = compressor_->CompressHeaders(headers_);
   // Corrupt the compressed data.
   compressed_headers2[compressed_headers2.length() - 1] ^= 0xA1;
   QuicStreamFrame frame2(stream2_->id(), false, 0, compressed_headers2);
@@ -440,15 +429,13 @@ TEST_F(ReliableQuicStreamTest, ProcessCorruptHeadersEarly) {
 TEST_F(ReliableQuicStreamTest, ProcessPartialHeadersEarly) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers1 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers1 = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers1);
   string decompressed_headers1 =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
 
   headers_["content-type"] = "text/plain";
-  string compressed_headers2 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers2 = compressor_->CompressHeaders(headers_);
   string partial_compressed_headers =
       compressed_headers2.substr(0, compressed_headers2.length() / 2);
   QuicStreamFrame frame2(stream2_->id(), false, 0, partial_compressed_headers);
@@ -491,15 +478,13 @@ TEST_F(ReliableQuicStreamTest, ProcessPartialHeadersEarly) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersEarly) {
   Initialize(kShouldProcessData);
 
-  string compressed_headers1 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers1 = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers1);
   string decompressed_headers1 =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
 
   headers_["content-type"] = "text/plain";
-  string compressed_headers2 =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers2 = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame2(stream2_->id(), false, 0, compressed_headers2);
   string decompressed_headers2 =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
@@ -527,8 +512,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersEarly) {
 TEST_F(ReliableQuicStreamTest, ProcessHeadersDelay) {
   Initialize(!kShouldProcessData);
 
-  string compressed_headers =
-      compressor_->CompressHeadersWithPriority(0, headers_);
+  string compressed_headers = compressor_->CompressHeaders(headers_);
   QuicStreamFrame frame1(stream_->id(), false, 0, compressed_headers);
   string decompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
