@@ -69,6 +69,8 @@ private:
     RefPtr<HTMLAreaElement> m_areaElement;
     RefPtr<HTMLMapElement> m_mapElement;
 
+    virtual void detachFromParent() OVERRIDE;
+
     virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
     virtual bool isImageMapLink() const OVERRIDE { return true; }
 };

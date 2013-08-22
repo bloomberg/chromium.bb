@@ -46,12 +46,13 @@ public:
 protected:
     AccessibilityObject* m_parent;
 
+    // Must be called when the parent object clears its children.
+    virtual void detachFromParent() OVERRIDE { m_parent = 0; }
+
 private:
     virtual bool isMockObject() const OVERRIDE { return true; }
 
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
-    // Must be called when the parent object clears its children.
-    virtual void detachFromParent() OVERRIDE { m_parent = 0; }
 };
 
 inline AccessibilityMockObject* toAccessibilityMockObject(AccessibilityObject* object)

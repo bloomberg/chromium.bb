@@ -46,6 +46,13 @@ AccessibilityImageMapLink::~AccessibilityImageMapLink()
 {
 }
 
+void AccessibilityImageMapLink::detachFromParent()
+{
+    AccessibilityMockObject::detachFromParent();
+    m_areaElement = 0;
+    m_mapElement = 0;
+}
+
 PassRefPtr<AccessibilityImageMapLink> AccessibilityImageMapLink::create()
 {
     return adoptRef(new AccessibilityImageMapLink());
