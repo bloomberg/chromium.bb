@@ -61,7 +61,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
  public:
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     TranslateLanguageList::DisableUpdate();
     CocoaProfileTest::SetUp();
     web_contents_.reset(

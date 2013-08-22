@@ -242,7 +242,7 @@ void TranslateLanguageList::GetSupportedLanguages(
 
   // Update language lists if they are not updated after Chrome was launched
   // for later requests.
-  if (language_list_fetcher_.get())
+  if (!update_is_disabled && language_list_fetcher_.get())
     RequestLanguageList();
 }
 
