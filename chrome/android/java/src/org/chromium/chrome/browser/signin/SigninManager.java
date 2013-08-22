@@ -52,6 +52,8 @@ public class SigninManager {
     private ProgressDialog mSignOutProgressDialog;
     private Runnable mSignOutCallback;
 
+    private AlertDialog mPolicyConfirmationDialog;
+
     /**
      * The Observer of startSignIn() will be notified when sign-in completes.
      */
@@ -161,6 +163,7 @@ public class SigninManager {
                         Log.d(TAG, "Accepted policy management, proceeding with sign-in");
                         // This will call back to onPolicyFetchedBeforeSignIn.
                         nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
+                        mPolicyConfirmationDialog = null;
                     }
                 });
         builder.setNegativeButton(
@@ -170,9 +173,22 @@ public class SigninManager {
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d(TAG, "Cancelled sign-in");
                         cancelSignIn();
+                        mPolicyConfirmationDialog = null;
                     }
                 });
-        builder.create().show();
+        builder.setOnDismissListener(
+                new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        if (mPolicyConfirmationDialog != null) {
+                            Log.d(TAG, "Policy dialog dismissed, cancelling sign-in.");
+                            cancelSignIn();
+                            mPolicyConfirmationDialog = null;
+                        }
+                    }
+                });
+        mPolicyConfirmationDialog = builder.create();
+        mPolicyConfirmationDialog.show();
     }
 
     @CalledByNative
