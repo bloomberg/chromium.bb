@@ -57,8 +57,11 @@ void* AsVoid(const BookmarkNode* node) {
 }
 
 // Creates the widget hierarchy for a bookmark button.
-void PackButton(GdkPixbuf* pixbuf, const string16& title, bool ellipsize,
-                GtkThemeService* provider, GtkWidget* button) {
+void PackButton(GdkPixbuf* pixbuf,
+                const string16& title,
+                bool ellipsize,
+                GtkThemeService* provider,
+                GtkWidget* button) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
   if (former_child)
     gtk_container_remove(GTK_CONTAINER(button), former_child);
@@ -84,7 +87,7 @@ void PackButton(GdkPixbuf* pixbuf, const string16& title, bool ellipsize,
     }
 
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-    bookmark_utils::SetButtonTextColors(label, provider);
+    SetButtonTextColors(label, provider);
   }
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -157,19 +160,17 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   return TRUE;
 }
 
-void OnDragIconDestroy(GtkWidget* drag_icon,
-                       DragRepresentationData* data) {
+void OnDragIconDestroy(GtkWidget* drag_icon, DragRepresentationData* data) {
   g_object_unref(drag_icon);
   delete data;
 }
 
 }  // namespace
 
-namespace bookmark_utils {
-
 const char kBookmarkNode[] = "bookmark-node";
 
-GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
+GdkPixbuf* GetPixbufForNode(const BookmarkNode* node,
+                            BookmarkModel* model,
                             bool native) {
   GdkPixbuf* pixbuf;
 
@@ -239,10 +240,12 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
   return widget;
 }
 
-void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeService* provider) {
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(
-      node, model, provider->UsingNativeTheme());
+void ConfigureButtonForNode(const BookmarkNode* node,
+                            BookmarkModel* model,
+                            GtkWidget* button,
+                            GtkThemeService* provider) {
+  GdkPixbuf* pixbuf =
+      GetPixbufForNode(node, model, provider->UsingNativeTheme());
   PackButton(pixbuf, node->GetTitle(), node != model->other_node(), provider,
              button);
   g_object_unref(pixbuf);
@@ -251,8 +254,7 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
   if (!tooltip.empty())
     gtk_widget_set_tooltip_markup(button, tooltip.c_str());
 
-  g_object_set_data(G_OBJECT(button), bookmark_utils::kBookmarkNode,
-                    AsVoid(node));
+  g_object_set_data(G_OBJECT(button), kBookmarkNode, AsVoid(node));
 }
 
 void ConfigureAppsShortcutButton(GtkWidget* button, GtkThemeService* provider) {
@@ -288,7 +290,7 @@ std::string BuildMenuLabelFor(const BookmarkNode* node) {
 
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
   return reinterpret_cast<const BookmarkNode*>(
-      g_object_get_data(G_OBJECT(widget), bookmark_utils::kBookmarkNode));
+      g_object_get_data(G_OBJECT(widget), kBookmarkNode));
 }
 
 void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider) {
@@ -439,7 +441,9 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
 }
 
 bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
-    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+                                   BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int idx) {
   GURL url;
   string16 title;
   if (!ui::ExtractNamedURL(selection_data, &url, &title))
@@ -450,7 +454,9 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
 }
 
 bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
-    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+                                   BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int idx) {
   std::vector<GURL> urls;
   ui::ExtractURIList(selection_data, &urls);
   for (size_t i = 0; i < urls.size(); ++i) {
@@ -461,7 +467,9 @@ bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
 }
 
 bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
-    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+                                      BookmarkModel* model,
+                                      const BookmarkNode* parent,
+                                      int idx) {
   GURL url;
   string16 title;
   if (!ui::ExtractNetscapeURL(selection_data, &url, &title))
@@ -483,5 +491,3 @@ string16 GetNameForURL(const GURL& url) {
     return l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
   }
 }
-
-}  // namespace bookmark_utils

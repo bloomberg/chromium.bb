@@ -1423,8 +1423,8 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
   gfx::Image favicon = GetFavicon();
   if (favicon.IsEmpty())
     return;
-  drag_icon_ = bookmark_utils::GetDragRepresentation(favicon.ToGdkPixbuf(),
-      GetTitle(), theme_service_);
+  drag_icon_ =
+      GetDragRepresentation(favicon.ToGdkPixbuf(), GetTitle(), theme_service_);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 
   WebContents* tab = GetWebContents();

@@ -167,21 +167,19 @@ void DownloadItemDrag::BeginDrag(const DownloadItem* item, gfx::Image* icon) {
 
 BookmarkDrag::BookmarkDrag(Profile* profile,
                            const std::vector<const BookmarkNode*>& nodes)
-    : CustomDrag(NULL,
-                 bookmark_utils::GetCodeMask(false),
-                 kBookmarkDragAction),
+    : CustomDrag(NULL, GetCodeMask(false), kBookmarkDragAction),
       profile_(profile),
-      nodes_(nodes) {
-}
+      nodes_(nodes) {}
 
 BookmarkDrag::~BookmarkDrag() {
 }
 
-void BookmarkDrag::OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
+void BookmarkDrag::OnDragDataGet(GtkWidget* widget,
+                                 GdkDragContext* context,
                                  GtkSelectionData* selection_data,
-                                 guint target_type, guint time) {
-  bookmark_utils::WriteBookmarksToSelection(nodes_, selection_data,
-                                            target_type, profile_);
+                                 guint target_type,
+                                 guint time) {
+  WriteBookmarksToSelection(nodes_, selection_data, target_type, profile_);
 }
 
 // static

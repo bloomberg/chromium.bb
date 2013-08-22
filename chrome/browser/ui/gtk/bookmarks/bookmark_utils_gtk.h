@@ -22,13 +22,12 @@ typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkSelectionData GtkSelectionData;
 typedef struct _GtkWidget GtkWidget;
 
-namespace bookmark_utils {
-
 extern const char kBookmarkNode[];
 
 // Get the image that is used to represent the node. This function adds a ref
 // to the returned pixbuf, so it requires a matching call to g_object_unref().
-GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
+GdkPixbuf* GetPixbufForNode(const BookmarkNode* node,
+                            BookmarkModel* model,
                             bool native);
 
 // Returns a GtkWindow with a visual hierarchy for passing to
@@ -42,8 +41,10 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
 
 // Helper function that sets visual properties of GtkButton |button| to the
 // contents of |node|.
-void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeService* provider);
+void ConfigureButtonForNode(const BookmarkNode* node,
+                            BookmarkModel* model,
+                            GtkWidget* button,
+                            GtkThemeService* provider);
 
 // Helper function to set the visual properties for the apps page shortcut
 // |button|.
@@ -91,31 +92,26 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
 
 // Unpickle a new bookmark of the CHROME_NAMED_URL drag type, and put it in
 // the appropriate location in the model.
-bool CreateNewBookmarkFromNamedUrl(
-    GtkSelectionData* selection_data,
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int idx);
+bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
+                                   BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int idx);
 
 // Add the URIs in |selection_data| into the model at the given position. They
 // will be added whether or not the URL is valid.
-bool CreateNewBookmarksFromURIList(
-    GtkSelectionData* selection_data,
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int idx);
+bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
+                                   BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int idx);
 
 // Add the "url\ntitle" combination into the model at the given position.
-bool CreateNewBookmarkFromNetscapeURL(
-    GtkSelectionData* selection_data,
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int idx);
+bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
+                                      BookmarkModel* model,
+                                      const BookmarkNode* parent,
+                                      int idx);
 
 // Returns a name for the given URL. Used for drags into bookmark areas when
 // the source doesn't specify a title.
 string16 GetNameForURL(const GURL& url);
-
-}  // namespace bookmark_utils
 
 #endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_UTILS_GTK_H_

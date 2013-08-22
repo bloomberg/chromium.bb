@@ -25,16 +25,20 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // pixbuf-expander-open. Unfortunately there is no GTK_STOCK_OPEN_DIRECTORY
   // (and indeed, Nautilus does not render an expanded directory any
   // differently).
-  gtk_tree_store_set(store, iter,
-      bookmark_utils::FOLDER_ICON,
-      GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
-      bookmark_utils::FOLDER_NAME,
-      UTF16ToUTF8(node->GetTitle()).c_str(),
-      bookmark_utils::ITEM_ID, node->id(),
-      // We don't want to use node->is_folder() because that would let the
-      // user edit "Bookmarks Bar" and "Other Bookmarks".
-      bookmark_utils::IS_EDITABLE, node->type() == BookmarkNode::FOLDER,
-      -1);
+  gtk_tree_store_set(store,
+                     iter,
+                     FOLDER_ICON,
+                     GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
+                     FOLDER_NAME,
+                     UTF16ToUTF8(node->GetTitle()).c_str(),
+                     ITEM_ID,
+                     node->id(),
+                     // We don't want to use node->is_folder() because that
+                     // would let the
+                     // user edit "Bookmarks Bar" and "Other Bookmarks".
+                     IS_EDITABLE,
+                     node->type() == BookmarkNode::FOLDER,
+                     -1);
 }
 
 // Helper function for CommitTreeStoreDifferencesBetween() which recursively
@@ -56,11 +60,9 @@ void RecursiveResolve(BookmarkModel* bb_model,
   if (gtk_tree_model_iter_children(GTK_TREE_MODEL(tree_store), &child_iter,
                                    parent_iter)) {
     do {
-      int64 id = bookmark_utils::GetIdFromTreeIter(GTK_TREE_MODEL(tree_store),
-                                                   &child_iter);
+      int64 id = GetIdFromTreeIter(GTK_TREE_MODEL(tree_store), &child_iter);
       string16 title =
-          bookmark_utils::GetTitleFromTreeIter(GTK_TREE_MODEL(tree_store),
-                                               &child_iter);
+          GetTitleFromTreeIter(GTK_TREE_MODEL(tree_store), &child_iter);
       const BookmarkNode* child_bb_node = NULL;
       if (id == 0) {
         child_bb_node = bb_model->AddFolder(
@@ -71,8 +73,7 @@ void RecursiveResolve(BookmarkModel* bb_model,
         GValue value  = { 0 };
         g_value_init(&value, G_TYPE_INT64);
         g_value_set_int64(&value, child_bb_node->id());
-        gtk_tree_store_set_value(tree_store, &child_iter,
-                                 bookmark_utils::ITEM_ID, &value);
+        gtk_tree_store_set_value(tree_store, &child_iter, ITEM_ID, &value);
       } else {
         // Existing node, reset the title (BookmarkModel ignores changes if the
         // title is the same).
@@ -100,15 +101,12 @@ void OnFolderNameEdited(GtkCellRendererText* render,
   gboolean rv = gtk_tree_model_get_iter(GTK_TREE_MODEL(tree_store),
                                         &folder_iter, tree_path);
   DCHECK(rv);
-  gtk_tree_store_set(tree_store, &folder_iter,
-                     bookmark_utils::FOLDER_NAME, new_folder_name,
-                     -1);
+  gtk_tree_store_set(
+      tree_store, &folder_iter, FOLDER_NAME, new_folder_name, -1);
   gtk_tree_path_free(tree_path);
 }
 
 }  // namespace
-
-namespace bookmark_utils {
 
 GtkTreeStore* MakeFolderTreeStore() {
   return gtk_tree_store_new(FOLDER_STORE_NUM_COLUMNS, GDK_TYPE_PIXBUF,
@@ -243,5 +241,3 @@ string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
 
   return ret_val;
 }
-
-}  // namespace bookmark_utils

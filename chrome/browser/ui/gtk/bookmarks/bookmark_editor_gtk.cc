@@ -63,7 +63,7 @@ gboolean ExpandNodes(GtkTreeModel* model,
                      GtkTreeIter* iter,
                      gpointer pointer_data) {
   ExpandNodesData* data = reinterpret_cast<ExpandNodesData*>(pointer_data);
-  int64 node_id = bookmark_utils::GetIdFromTreeIter(model, iter);
+  int64 node_id = GetIdFromTreeIter(model, iter);
   if (data->ids->find(node_id) != data->ids->end())
     gtk_tree_view_expand_to_path(GTK_TREE_VIEW(data->tree_view), path);
   return FALSE;  // Indicates we want to continue iterating.
@@ -87,8 +87,7 @@ void SaveExpandedNodes(GtkTreeView* tree_view,
   GtkTreeIter iter;
   gtk_tree_model_get_iter(gtk_tree_view_get_model(tree_view), &iter, path);
   const BookmarkNode* node = data->bookmark_model->GetNodeByID(
-      bookmark_utils::GetIdFromTreeIter(gtk_tree_view_get_model(tree_view),
-                                        &iter));
+      GetIdFromTreeIter(gtk_tree_view_get_model(tree_view), &iter));
   if (node)
     data->nodes.insert(node);
 }
@@ -213,7 +212,7 @@ class BookmarkEditorGtk::ContextMenuController
   }
 
   const BookmarkNode* GetNodeAt(GtkTreeModel* model, GtkTreeIter* iter) const {
-    int64 id = bookmark_utils::GetIdFromTreeIter(model, iter);
+    int64 id = GetIdFromTreeIter(model, iter);
     return (id > 0) ? editor_->bb_model_->GetNodeByID(id) : NULL;
   }
 
@@ -392,10 +391,9 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
       selected_id = details_.existing_node->parent()->id();
     else if (parent_)
       selected_id = parent_->id();
-    tree_store_ = bookmark_utils::MakeFolderTreeStore();
-    bookmark_utils::AddToTreeStore(bb_model_, selected_id, tree_store_,
-                                   &selected_iter);
-    tree_view_ = bookmark_utils::MakeTreeViewForStore(tree_store_);
+    tree_store_ = MakeFolderTreeStore();
+    AddToTreeStore(bb_model_, selected_id, tree_store_, &selected_iter);
+    tree_view_ = MakeTreeViewForStore(tree_store_);
     gtk_widget_set_size_request(tree_view_, kTreeWidth, kTreeHeight);
     tree_selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_view_));
     g_signal_connect(tree_view_, "button-press-event",
@@ -555,8 +553,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   }
 
   // Create the new folders and update the titles.
-  const BookmarkNode* new_parent =
-      bookmark_utils::CommitTreeStoreDifferencesBetween(
+  const BookmarkNode* new_parent = CommitTreeStoreDifferencesBetween(
       bb_model_, tree_store_, selected_parent);
 
   SaveExpandedNodesData data;
@@ -583,13 +580,13 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
 void BookmarkEditorGtk::AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_append(tree_store_, child, parent);
   gtk_tree_store_set(
-      tree_store_, child,
-      bookmark_utils::FOLDER_ICON,
-      GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
-      bookmark_utils::FOLDER_NAME,
+      tree_store_,
+      child,
+      FOLDER_ICON, GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
+      FOLDER_NAME,
           l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
-      bookmark_utils::ITEM_ID, static_cast<int64>(0),
-      bookmark_utils::IS_EDITABLE, TRUE,
+      ITEM_ID, static_cast<int64>(0),
+      IS_EDITABLE, TRUE,
       -1);
 }
 

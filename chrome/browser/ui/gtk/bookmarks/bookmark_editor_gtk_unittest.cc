@@ -21,7 +21,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using bookmark_utils::GetTitleFromTreeIter;
 using content::BrowserThread;
 
 // Base class for bookmark editor tests. This class is a copy from
@@ -254,12 +253,10 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
   // Create two nodes: "F21" as a child of "F2" and "F211" as a child of "F21".
   GtkTreeIter f21_iter;
   editor.AddNewFolder(&f2_iter, &f21_iter);
-  gtk_tree_store_set(editor.tree_store_, &f21_iter,
-                     bookmark_utils::FOLDER_NAME, "F21", -1);
+  gtk_tree_store_set(editor.tree_store_, &f21_iter, FOLDER_NAME, "F21", -1);
   GtkTreeIter f211_iter;
   editor.AddNewFolder(&f21_iter, &f211_iter);
-  gtk_tree_store_set(editor.tree_store_, &f211_iter,
-                     bookmark_utils::FOLDER_NAME, "F211", -1);
+  gtk_tree_store_set(editor.tree_store_, &f211_iter, FOLDER_NAME, "F211", -1);
 
   ASSERT_EQ(1, gtk_tree_model_iter_n_children(store, &f2_iter));
 

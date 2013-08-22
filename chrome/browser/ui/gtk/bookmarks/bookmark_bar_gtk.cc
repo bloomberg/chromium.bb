@@ -219,8 +219,7 @@ void BookmarkBarGtk::Init() {
   gtk_container_add(GTK_CONTAINER(paint_box_), bookmark_hbox_);
 
   apps_shortcut_button_ = theme_service_->BuildChromeButton();
-  bookmark_utils::ConfigureAppsShortcutButton(apps_shortcut_button_,
-                                              theme_service_);
+  ConfigureAppsShortcutButton(apps_shortcut_button_, theme_service_);
   g_signal_connect(apps_shortcut_button_, "clicked",
                    G_CALLBACK(OnAppsButtonClickedThunk), this);
   // Accept middle mouse clicking.
@@ -574,8 +573,8 @@ void BookmarkBarGtk::ResetButtons() {
       menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
   }
 
-  bookmark_utils::ConfigureButtonForNode(model_->other_node(),
-      model_, other_bookmarks_button_, theme_service_);
+  ConfigureButtonForNode(
+      model_->other_node(), model_, other_bookmarks_button_, theme_service_);
 
   SetInstructionState();
   SetChevronState();
@@ -977,7 +976,7 @@ void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
   GtkToolItem* item = gtk_toolbar_get_nth_item(
       GTK_TOOLBAR(bookmark_toolbar_.get()), index);
   GtkWidget* button = gtk_bin_get_child(GTK_BIN(item));
-  bookmark_utils::ConfigureButtonForNode(node, model, button, theme_service_);
+  ConfigureButtonForNode(node, model, button, theme_service_);
   SetChevronState();
 }
 
@@ -1027,12 +1026,12 @@ void BookmarkBarGtk::Observe(int type,
 
 GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
   GtkWidget* button = theme_service_->BuildChromeButton();
-  bookmark_utils::ConfigureButtonForNode(node, model_, button, theme_service_);
+  ConfigureButtonForNode(node, model_, button, theme_service_);
 
   // The tool item is also a source for dragging
   gtk_drag_source_set(button, GDK_BUTTON1_MASK, NULL, 0,
       static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY));
-  int target_mask = bookmark_utils::GetCodeMask(node->is_folder());
+  int target_mask = GetCodeMask(node->is_folder());
   ui::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(button, "drag-begin",
                    G_CALLBACK(&OnButtonDragBeginThunk), this);
@@ -1205,8 +1204,7 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   dragged_node_ = node;
   DCHECK(dragged_node_);
 
-  drag_icon_ = bookmark_utils::GetDragRepresentationForNode(
-      node, model_, theme_service_);
+  drag_icon_ = GetDragRepresentationForNode(node, model_, theme_service_);
 
   // We have to jump through some hoops to get the drag icon to line up because
   // it is a different size than the button.
@@ -1254,9 +1252,9 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget,
                                      GtkSelectionData* selection_data,
                                      guint target_type,
                                      guint time) {
-  const BookmarkNode* node = bookmark_utils::BookmarkNodeForWidget(widget);
-  bookmark_utils::WriteBookmarkToSelection(node, selection_data, target_type,
-                                           browser_->profile());
+  const BookmarkNode* node = BookmarkNodeForWidget(widget);
+  WriteBookmarkToSelection(
+      node, selection_data, target_type, browser_->profile());
 }
 
 void BookmarkBarGtk::OnAppsButtonClicked(GtkWidget* sender) {
@@ -1356,19 +1354,19 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
     }
 
     case ui::CHROME_NAMED_URL: {
-      dnd_success = bookmark_utils::CreateNewBookmarkFromNamedUrl(
+      dnd_success = CreateNewBookmarkFromNamedUrl(
           selection_data, model_, dest_node, index);
       break;
     }
 
     case ui::TEXT_URI_LIST: {
-      dnd_success = bookmark_utils::CreateNewBookmarksFromURIList(
+      dnd_success = CreateNewBookmarksFromURIList(
           selection_data, model_, dest_node, index);
       break;
     }
 
     case ui::NETSCAPE_URL: {
-      dnd_success = bookmark_utils::CreateNewBookmarkFromNetscapeURL(
+      dnd_success = CreateNewBookmarkFromNetscapeURL(
           selection_data, model_, dest_node, index);
       break;
     }
@@ -1383,7 +1381,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       // so that it doesn't look like we can drag onto the bookmark bar.
       if (!url.is_valid())
         break;
-      string16 title = bookmark_utils::GetNameForURL(url);
+      string16 title = GetNameForURL(url);
       model_->AddURL(dest_node, index, title, url);
       dnd_success = TRUE;
       break;
