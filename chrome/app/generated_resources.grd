@@ -13748,6 +13748,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       New camera and microphone settings will take effect after reloading the page.
     </message>
 
+    <message name="IDS_SAVE_PASSWORD" desc="The status text that is used as tooltip text for the save password icon and as status text of the save password bubble when a password can be saved.">
+      Would you like to save this password?
+    </message>
+
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
       The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and relaunch <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.

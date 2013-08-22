@@ -403,11 +403,13 @@ void ContentSettingBubbleContents::Init() {
   manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
   manage_link_->set_listener(this);
   layout->AddView(manage_link_);
-
-  close_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_DONE));
-  close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  layout->AddView(close_button_);
+  if (content_setting_bubble_model_->content_type() !=
+      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+    close_button_ =
+        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
+    close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    layout->AddView(close_button_);
+  }
 }
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,

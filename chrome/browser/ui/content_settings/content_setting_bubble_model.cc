@@ -572,6 +572,44 @@ void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   }
 }
 
+// The model for the save password bubble.
+class SavePasswordBubbleModel : public ContentSettingBubbleModel {
+ public:
+  SavePasswordBubbleModel(WebContents* web_contents, Profile* profile);
+  virtual ~SavePasswordBubbleModel() {}
+
+ private:
+  // Sets the title of the bubble.
+  void SetTitle();
+
+  TabSpecificContentSettings::PasswordSavingState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePasswordBubbleModel);
+};
+
+SavePasswordBubbleModel::SavePasswordBubbleModel(WebContents* web_contents,
+                                                 Profile* profile)
+    : ContentSettingBubbleModel(web_contents, profile,
+                                CONTENT_SETTINGS_TYPE_SAVE_PASSWORD),
+      state_(TabSpecificContentSettings::NO_PASSWORD_TO_BE_SAVED) {
+  DCHECK(profile);
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  state_ = content_settings->GetPasswordSavingState();
+
+  SetTitle();
+}
+
+void SavePasswordBubbleModel::SetTitle() {
+  int title_id = 0;
+  // If the save password icon was accessed, the icon is displayed and the
+  // bubble is instantiated
+  if (state_ == TabSpecificContentSettings::PASSWORD_TO_BE_SAVED)
+    title_id = IDS_SAVE_PASSWORD;
+
+  set_title(l10n_util::GetStringUTF8(title_id));
+}
+
 // The model of the content settings bubble for media settings.
 class ContentSettingMediaStreamBubbleModel
     : public ContentSettingTitleAndLinkModel {
@@ -1238,6 +1276,9 @@ ContentSettingBubbleModel*
         WebContents* web_contents,
         Profile* profile,
         ContentSettingsType content_type) {
+  if (content_type == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+    return new SavePasswordBubbleModel(web_contents, profile);
+  }
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     return new ContentSettingCookiesBubbleModel(delegate, web_contents, profile,
                                                 content_type);
