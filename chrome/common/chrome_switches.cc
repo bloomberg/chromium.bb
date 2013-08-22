@@ -304,6 +304,9 @@ const char kDisableBookmarkAutocompleteProvider[] =
 const char kDisableClientSidePhishingDetection[] =
     "disable-client-side-phishing-detection";
 
+// Disables pushing cloud policy to Chrome using an invalidation service.
+const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
+
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
 // Disables establishing certificate revocation information by downloading a
@@ -536,9 +539,6 @@ const char kEnableBatchedShutdown[]         = "enable-batched-shutdown";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
-
-// Enables pushing cloud policy to Chrome using an invalidation service.
-const char kEnableCloudPolicyPush[]         = "enable-cloud-policy-push";
 
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.

@@ -43,8 +43,8 @@ UserCloudPolicyInvalidatorFactory::~UserCloudPolicyInvalidatorFactory() {}
 BrowserContextKeyedService*
     UserCloudPolicyInvalidatorFactory::BuildServiceInstanceFor(
         content::BrowserContext* context) const {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPolicyPush)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCloudPolicyPush)) {
     return NULL;
   }
 
