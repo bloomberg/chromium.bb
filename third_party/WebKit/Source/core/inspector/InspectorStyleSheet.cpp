@@ -479,7 +479,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
     if (rule->type() == CSSRule::MEDIA_RULE)
         return static_cast<CSSMediaRule*>(rule)->cssRules();
 
-    if (rule->type() == CSSRule::WEBKIT_KEYFRAMES_RULE)
+    if (rule->type() == CSSRule::KEYFRAMES_RULE)
         return static_cast<CSSKeyframesRule*>(rule)->cssRules();
 
     if (rule->type() == CSSRule::HOST_RULE)

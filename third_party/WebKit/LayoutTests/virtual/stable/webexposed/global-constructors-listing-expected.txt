@@ -28,6 +28,8 @@ CSSCharsetRule
 CSSFontFaceRule
 CSSHostRule
 CSSImportRule
+CSSKeyframeRule
+CSSKeyframesRule
 CSSMediaRule
 CSSPageRule
 CSSPrimitiveValue
@@ -432,8 +434,6 @@ WebGLUniformLocation
 WebKitAnimationEvent
 WebKitCSSFilterRule
 WebKitCSSFilterValue
-WebKitCSSKeyframeRule
-WebKitCSSKeyframesRule
 WebKitCSSMatrix
 WebKitCSSMixFunctionValue
 WebKitCSSTransformValue

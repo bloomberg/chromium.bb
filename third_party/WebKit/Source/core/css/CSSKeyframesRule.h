@@ -37,7 +37,7 @@ class CSSRuleList;
 class StyleKeyframe;
 class CSSKeyframeRule;
 
-class StyleRuleKeyframes : public StyleRuleBase {
+class StyleRuleKeyframes FINAL : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleKeyframes> create() { return adoptRef(new StyleRuleKeyframes()); }
 
@@ -68,13 +68,13 @@ private:
     bool m_isPrefixed;
 };
 
-class CSSKeyframesRule : public CSSRule {
+class CSSKeyframesRule FINAL : public CSSRule {
 public:
     static PassRefPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSKeyframesRule(rule, sheet)); }
 
     virtual ~CSSKeyframesRule();
 
-    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_KEYFRAMES_RULE; }
+    virtual CSSRule::Type type() const OVERRIDE { return KEYFRAMES_RULE; }
     virtual String cssText() const OVERRIDE;
     virtual void reattach(StyleRuleBase*) OVERRIDE;
 

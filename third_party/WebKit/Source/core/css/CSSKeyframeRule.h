@@ -36,7 +36,7 @@ class StylePropertySet;
 class StyleRuleCSSStyleDeclaration;
 class CSSKeyframesRule;
 
-class StyleKeyframe : public RefCounted<StyleKeyframe> {
+class StyleKeyframe FINAL : public RefCounted<StyleKeyframe> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<StyleKeyframe> create()
@@ -70,11 +70,11 @@ private:
     String m_key;
 };
 
-class CSSKeyframeRule : public CSSRule {
+class CSSKeyframeRule FINAL : public CSSRule {
 public:
     virtual ~CSSKeyframeRule();
 
-    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_KEYFRAME_RULE; }
+    virtual CSSRule::Type type() const OVERRIDE { return KEYFRAME_RULE; }
     virtual String cssText() const OVERRIDE { return m_keyframe->cssText(); }
     virtual void reattach(StyleRuleBase*) OVERRIDE;
 

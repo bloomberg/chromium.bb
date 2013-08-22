@@ -1,12 +1,14 @@
-This tests the WebKitCSSKeyframeRule and WebKitCSSKeyframesRule interfaces.
+This tests the CSSKeyframeRule and CSSKeyframesRule interfaces.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS WebKitCSSKeyframeRule exists on Window object
-PASS WebKitCSSKeyframesRule exists on Window object
+PASS CSSKeyframeRule exists on Window object
+PASS CSSKeyframesRule exists on Window object
 PASS WEBKIT_KEYFRAME_RULE exists on Window.CSSRule object
 PASS WEBKIT_KEYFRAMES_RULE exists on Window.CSSRule object
+PASS KEYFRAME_RULE exists on Window.CSSRule object
+PASS KEYFRAMES_RULE exists on Window.CSSRule object
 
 PASS keyframes1.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
 PASS keyframes1.name is 'test1'

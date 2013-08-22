@@ -47,8 +47,10 @@ public:
         // 7 was VARIABLES_RULE; we now match other browsers with 7 as
         // KEYFRAMES_RULE:
         // <https://bugs.webkit.org/show_bug.cgi?id=71293>.
-        WEBKIT_KEYFRAMES_RULE,
-        WEBKIT_KEYFRAME_RULE,
+        KEYFRAMES_RULE,
+        WEBKIT_KEYFRAMES_RULE = KEYFRAMES_RULE,
+        KEYFRAME_RULE,
+        WEBKIT_KEYFRAME_RULE = KEYFRAME_RULE,
         SUPPORTS_RULE = 12,
         VIEWPORT_RULE = 15,
         WEBKIT_REGION_RULE = 16,
