@@ -54,6 +54,7 @@ LIGHTTPD_DEFAULT_PORT = 9000
 LIGHTTPD_RANDOM_PORT_FIRST = 8001
 LIGHTTPD_RANDOM_PORT_LAST = 8999
 TEST_SYNC_SERVER_PORT = 9031
+TEST_SEARCH_BY_IMAGE_SERVER_PORT = 9041
 
 # The net test server is started from port 10201.
 # TODO(pliard): http://crbug.com/239014. Remove this dirty workaround once

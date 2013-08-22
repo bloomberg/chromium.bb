@@ -21,6 +21,7 @@ import hashlib
 import logging
 import minica
 import os
+import json
 import random
 import re
 import select
@@ -282,7 +283,8 @@ class TestPageHandler(testserver_base.BasePageHandler):
     post_handlers = [
       self.EchoTitleHandler,
       self.EchoHandler,
-      self.PostOnlyFileHandler] + get_handlers
+      self.PostOnlyFileHandler,
+      self.EchoMultipartPostHandler] + get_handlers
     put_handlers = [
       self.EchoTitleHandler,
       self.EchoHandler] + get_handlers
@@ -660,6 +662,37 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.write('<h1>Request Headers:</h1><pre>%s</pre>' % self.headers)
 
     self.wfile.write('</body></html>')
+    return True
+
+  def EchoMultipartPostHandler(self):
+    """This handler echoes received multipart post data as json format."""
+
+    if not (self._ShouldHandleRequest("/echomultipartpost") or
+            self._ShouldHandleRequest("/searchbyimage")):
+      return False
+
+    content_type, parameters = cgi.parse_header(
+        self.headers.getheader('content-type'))
+    if content_type == 'multipart/form-data':
+      post_multipart = cgi.parse_multipart(self.rfile, parameters)
+    elif content_type == 'application/x-www-form-urlencoded':
+      raise Exception('POST by application/x-www-form-urlencoded is '
+                      'not implemented.')
+    else:
+      post_multipart = {}
+
+    # Since the data can be binary, we encode them by base64.
+    post_multipart_base64_encoded = {}
+    for field, values in post_multipart.items():
+      post_multipart_base64_encoded[field] = [base64.b64encode(value)
+                                              for value in values]
+
+    result = {'POST_multipart' : post_multipart_base64_encoded}
+
+    self.send_response(200)
+    self.send_header("Content-type", "text/plain")
+    self.end_headers()
+    self.wfile.write(json.dumps(result, indent=2, sort_keys=False))
     return True
 
   def DownloadHandler(self):
