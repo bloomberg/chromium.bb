@@ -80,7 +80,7 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const
 void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& es)
 {
     deleteCaption();
-    insertBefore(newCaption, firstChild(), es, DeprecatedAttachNow);
+    insertBefore(newCaption, firstChild(), es);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
@@ -101,7 +101,7 @@ void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
 
-    insertBefore(newHead, child, es, DeprecatedAttachNow);
+    insertBefore(newHead, child, es);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
@@ -122,7 +122,7 @@ void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
 
-    insertBefore(newFoot, child, es, DeprecatedAttachNow);
+    insertBefore(newFoot, child, es);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
@@ -158,7 +158,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
     RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
 
-    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    insertBefore(body, referenceElement);
     return body.release();
 }
 
