@@ -160,7 +160,6 @@ protected:
     virtual void unmuteConsole() = 0;
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-    virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL) = 0;
 
     virtual void enable();
     virtual void disable();

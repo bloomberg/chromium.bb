@@ -58,7 +58,6 @@ private:
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
     virtual void muteConsole();
     virtual void unmuteConsole();
-    virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL);
 
     WorkerScriptDebugServer* m_scriptDebugServer;
     WorkerGlobalScope* m_inspectedWorkerGlobalScope;

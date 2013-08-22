@@ -77,7 +77,7 @@ public:
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
-    void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0, unsigned long requestIdentifier = 0);
+    void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0);
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0) = 0;
 
     PublicURLManager& publicURLManager();

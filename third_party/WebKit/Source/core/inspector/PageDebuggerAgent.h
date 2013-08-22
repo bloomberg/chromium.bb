@@ -66,7 +66,6 @@ private:
     virtual PageScriptDebugServer& scriptDebugServer();
     virtual void muteConsole();
     virtual void unmuteConsole();
-    virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL);
 
     // InspectorOverlayHost::Listener implementation.
     virtual void overlayResumed();

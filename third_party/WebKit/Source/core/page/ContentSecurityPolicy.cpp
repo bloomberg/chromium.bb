@@ -851,7 +851,9 @@ private:
     void setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>&);
 
     SourceListDirective* operativeDirective(SourceListDirective*) const;
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL = KURL(), const String& contextURL = String(), const WTF::OrdinalNumber& contextLine = WTF::OrdinalNumber::beforeFirst(), ScriptState* = 0) const;
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const;
+    void reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const;
+    void reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState*) const;
 
     bool checkEval(SourceListDirective*) const;
     bool checkInline(SourceListDirective*) const;
@@ -861,7 +863,7 @@ private:
 
     void setEvalDisabledErrorMessage(const String& errorMessage) { m_evalDisabledErrorMessage = errorMessage; }
 
-    bool checkEvalAndReportViolation(SourceListDirective*, const String& consoleMessage, const String& contextURL = String(), const WTF::OrdinalNumber& contextLine = WTF::OrdinalNumber::beforeFirst(), ScriptState* = 0) const;
+    bool checkEvalAndReportViolation(SourceListDirective*, const String& consoleMessage, ScriptState*) const;
     bool checkInlineAndReportViolation(SourceListDirective*, const String& consoleMessage, const String& contextURL, const WTF::OrdinalNumber& contextLine, bool isScript) const;
 
     bool checkSourceAndReportViolation(SourceListDirective*, const KURL&, const String& effectiveDirective) const;
@@ -922,10 +924,22 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
     return directives.release();
 }
 
-void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state) const
+void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header, contextURL, contextLine, state);
+    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header, String(), WTF::OrdinalNumber::beforeFirst(), 0);
+}
+
+void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
+{
+    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header, contextURL, contextLine, 0);
+}
+
+void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState* state) const
+{
+    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header, String(), WTF::OrdinalNumber::beforeFirst(), state);
 }
 
 bool CSPDirectiveList::checkEval(SourceListDirective* directive) const
@@ -962,7 +976,7 @@ SourceListDirective* CSPDirectiveList::operativeDirective(SourceListDirective* d
     return directive ? directive : m_defaultSrc.get();
 }
 
-bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directive, const String& consoleMessage, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state) const
+bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directive, const String& consoleMessage, ScriptState* state) const
 {
     if (checkEval(directive))
         return true;
@@ -971,7 +985,7 @@ bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directiv
     if (directive == m_defaultSrc)
         suffix = " Note that 'script-src' was not explicitly set, so 'default-src' is used as a fallback.";
 
-    reportViolation(directive->text(), scriptSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine, state);
+    reportViolationWithState(directive->text(), scriptSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), state);
     if (!m_reportOnly) {
         m_policy->reportBlockedScriptExecutionToInspector(directive->text());
         return false;
@@ -1001,7 +1015,7 @@ bool CSPDirectiveList::checkInlineAndReportViolation(SourceListDirective* direct
     if (directive == m_defaultSrc)
         suffix = " Note that '" + String(isScript ? "script" : "style") + "-src' was not explicitly set, so 'default-src' is used as a fallback.";
 
-    reportViolation(directive->text(), isScript ? scriptSrc : styleSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine);
+    reportViolationWithLocation(directive->text(), isScript ? scriptSrc : styleSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine);
 
     if (!m_reportOnly) {
         if (isScript)
@@ -1087,7 +1101,7 @@ bool CSPDirectiveList::allowEval(ScriptState* state, ContentSecurityPolicy::Repo
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "));
 
     return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkEvalAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, String(), WTF::OrdinalNumber::beforeFirst(), state) :
+        checkEvalAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, state) :
         checkEval(operativeDirective(m_scriptSrc.get()));
 }
 
@@ -1727,7 +1741,8 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 
 void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state)
 {
-    logToConsole(consoleMessage, contextURL, contextLine, state);
+    // FIXME: Split reportViolation to use either location or state, streamline signatures on ScriptExecutionContext.
+    m_scriptExecutionContext->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage, contextURL, contextLine.oneBasedInt(), state);
 
     // FIXME: Support sending reports from worker.
     if (!m_scriptExecutionContext->isDocument())
@@ -1875,9 +1890,9 @@ void ContentSecurityPolicy::reportMissingReportURI(const String& policy) const
     logToConsole("The Content Security Policy '" + policy + "' was delivered in report-only mode, but does not specify a 'report-uri'; the policy will have no effect. Please either add a 'report-uri' directive, or deliver the policy via the 'Content-Security-Policy' header.");
 }
 
-void ContentSecurityPolicy::logToConsole(const String& message, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state) const
+void ContentSecurityPolicy::logToConsole(const String& message) const
 {
-    m_scriptExecutionContext->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt(), state);
+    m_scriptExecutionContext->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
 }
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String& directiveText) const

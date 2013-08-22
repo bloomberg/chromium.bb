@@ -111,11 +111,6 @@ void PageDebuggerAgent::overlaySteppedOver()
     stepOver(&error);
 }
 
-void PageDebuggerAgent::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL)
-{
-    m_pageAgent->page()->console().addMessage(source, level, message, sourceURL, 0);
-}
-
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {

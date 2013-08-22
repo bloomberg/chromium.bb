@@ -128,7 +128,7 @@ public:
     void reportInvalidReflectedXSS(const String&) const;
     void reportMissingReportURI(const String&) const;
     void reportUnsupportedDirective(const String&) const;
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL = String(), const WTF::OrdinalNumber& contextLine = WTF::OrdinalNumber::beforeFirst(), ScriptState* = 0);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState*);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
@@ -145,7 +145,7 @@ public:
 private:
     explicit ContentSecurityPolicy(ScriptExecutionContext*);
 
-    void logToConsole(const String& message, const String& contextURL = String(), const WTF::OrdinalNumber& contextLine = WTF::OrdinalNumber::beforeFirst(), ScriptState* = 0) const;
+    void logToConsole(const String& message) const;
     void addPolicyFromHeaderValue(const String&, HeaderType);
 
     bool shouldSendViolationReport(const String&) const;
