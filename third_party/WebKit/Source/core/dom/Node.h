@@ -432,6 +432,10 @@ public:
     // This is called only when the node is focused.
     virtual bool shouldHaveFocusAppearance() const;
 
+    // Whether the node is inert. This can't be in Element because text nodes
+    // must be recognized as inert to prevent text selection.
+    bool isInert() const;
+
     enum UserSelectAllTreatment {
         UserSelectAllDoesNotAffectEditability,
         UserSelectAllIsAlwaysNonEditable

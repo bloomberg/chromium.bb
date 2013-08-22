@@ -1657,15 +1657,15 @@ void RenderObject::showRenderTreeAndMark(const RenderObject* markedObject1, cons
 
 #endif // NDEBUG
 
-static bool shouldUseSelectionColor(const RenderStyle& style)
+bool RenderObject::isSelectable() const
 {
-    return style.userSelect() != SELECT_NONE || style.userModify() != READ_ONLY;
+    return !isInert() && !(style()->userSelect() == SELECT_NONE && style()->userModify() == READ_ONLY);
 }
 
 Color RenderObject::selectionBackgroundColor() const
 {
     Color backgroundColor= Color::transparent;
-    if (shouldUseSelectionColor(*style())) {
+    if (isSelectable()) {
         RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
         if (pseudoStyle) {
             StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), CSSPropertyBackgroundColor);
@@ -1685,8 +1685,7 @@ Color RenderObject::selectionColor(int colorProperty) const
 {
     // If the element is unselectable, or we are only painting the selection,
     // don't override the foreground color with the selection foreground color.
-    if (!shouldUseSelectionColor(*style())
-        || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
+    if (!isSelectable() || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
         return Color::transparent;
 
     Color color;
@@ -3084,10 +3083,7 @@ bool RenderObject::isInert() const
     const RenderObject* renderer = this;
     while (!renderer->node())
         renderer = renderer->parent();
-    const Node* parentNode = renderer->node();
-    while (parentNode && !parentNode->isElementNode())
-        parentNode = parentNode->parentNode();
-    return parentNode && toElement(parentNode)->isInert();
+    return renderer->node()->isInert();
 }
 
 void RenderObject::imageChanged(ImageResource* image, const IntRect* rect)

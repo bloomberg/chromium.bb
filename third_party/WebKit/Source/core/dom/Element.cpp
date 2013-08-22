@@ -1206,14 +1206,6 @@ RenderObject* Element::createRenderer(RenderStyle* style)
     return RenderObject::createObject(this, style);
 }
 
-bool Element::isInert() const
-{
-    const Element* dialog = document()->activeModalDialog();
-    if (dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this))
-        return true;
-    return document()->ownerElement() && document()->ownerElement()->isInert();
-}
-
 Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertionPoint)
 {
     // need to do superclass processing first so inDocument() is true

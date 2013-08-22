@@ -864,6 +864,14 @@ bool Node::shouldHaveFocusAppearance() const
     return true;
 }
 
+bool Node::isInert() const
+{
+    const Element* dialog = document()->activeModalDialog();
+    if (dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this))
+        return true;
+    return document()->ownerElement() && document()->ownerElement()->isInert();
+}
+
 unsigned Node::nodeIndex() const
 {
     Node *_tempNode = previousSibling();

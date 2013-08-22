@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+Here is a text node you can't select.
+<dialog>I'm selectable.</dialog>
+<script>
+description('Test that inert nodes cannot be selected. The test passes if the only text you can select is inside the dialog.');
+
+dialog = document.querySelector('dialog');
+dialog.showModal();
+document.execCommand('SelectAll');
+shouldBeEqualToString('window.getSelection().toString()', "I'm selectable.");
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
