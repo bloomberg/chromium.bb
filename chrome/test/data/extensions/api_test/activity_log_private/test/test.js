@@ -39,17 +39,6 @@ testCases.push({
     'app.getInstallState'
   ]
 });
-// NOTE(kalman): disabled, see http://crbug.com/272526.
-//testCases.push({
-//  func: function triggerBlockedCall() {
-//    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-//                               'blocked_call', function response() { });
-//   },
-//   // Blocked api calls only log the api module name and not the
-//   // function, so this is intentionally 'bookmarks' rather than
-//   // 'bookmarks.getTree'.
-//   expected_activity: ['bookmarks']
-//});
 testCases.push({
   func: function triggerObjectMethods() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',

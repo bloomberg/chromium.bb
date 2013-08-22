@@ -120,7 +120,7 @@ void ActivityLogPolicy::Util::StripArguments(
     scoped_refptr<Action> action) {
   if (action->action_type() != Action::ACTION_API_CALL &&
       action->action_type() != Action::ACTION_API_EVENT &&
-      action->action_type() != Action::ACTION_API_BLOCKED)
+      action->action_type() != Action::UNUSED_ACTION_API_BLOCKED)
     return;
 
   if (api_whitelist.find(action->api_name()) == api_whitelist.end())

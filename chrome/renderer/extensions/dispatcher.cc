@@ -1506,9 +1506,6 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
 
   Feature::Availability availability = context->GetAvailability(function_name);
   if (!availability.is_available()) {
-    APIActivityLogger::LogBlockedCall(context->extension()->id(),
-                                      function_name,
-                                      availability.result());
     v8::ThrowException(v8::Exception::Error(
         v8::String::New(availability.message().c_str())));
   }

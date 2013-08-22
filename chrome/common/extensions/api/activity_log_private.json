@@ -13,7 +13,7 @@
         "description": "This corresponds to a row from the ActivityLog database. Fields will be blank if they were specified precisely in a lookup filter.",
         "properties": {
           "extensionId": {"type": "string", "optional": true},
-          "activityType": {"type": "string", "enum": ["api_call", "api_event", "api_blocked", "content_script", "dom_access", "dom_event", "web_request"]},
+          "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request"]},
           "time": {"type": "number", "optional": true},
           "apiCall": {"type": "string", "optional": true},
           "args": {"type": "string", "optional": true},

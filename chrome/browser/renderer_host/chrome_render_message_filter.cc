@@ -131,8 +131,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
                         OnAddDOMActionToExtensionActivityLog);
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddBlockedCallToActivityLog,
-                        OnAddBlockedCallToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddEventToActivityLog,
                         OnAddEventToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -543,15 +541,6 @@ void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
     action->mutable_other()->SetString(activity_log_constants::kActionExtra,
                                        params.extra);
   }
-  AddActionToExtensionActivityLog(profile_, action);
-}
-
-void ChromeRenderMessageFilter::OnAddBlockedCallToExtensionActivityLog(
-    const std::string& extension_id,
-    const std::string& function_name) {
-  scoped_refptr<extensions::Action> action = new extensions::Action(
-      extension_id, base::Time::Now(), extensions::Action::ACTION_API_BLOCKED,
-      function_name);
   AddActionToExtensionActivityLog(profile_, action);
 }
 

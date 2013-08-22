@@ -621,11 +621,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddAPIActionToActivityLog,
                      std::string /* extension_id */,
                      ExtensionHostMsg_APIActionOrEvent_Params)
 
-// Sent by the renderer to log a blocked API action to the activity log.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddBlockedCallToActivityLog,
-                    std::string /* extension_id */,
-                    std::string /* api call function name */)
-
 // Sent by the renderer to log an event to the extension activity log.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddEventToActivityLog,
                     std::string /* extension_id */,

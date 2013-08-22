@@ -140,9 +140,6 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
     case ACTION_API_EVENT:
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_EVENT;
       break;
-    case ACTION_API_BLOCKED:
-      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_BLOCKED;
-      break;
     case ACTION_CONTENT_SCRIPT:
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_CONTENT_SCRIPT;
       break;
@@ -154,6 +151,11 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
       break;
     case ACTION_WEB_REQUEST:
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_WEB_REQUEST;
+      break;
+    case UNUSED_ACTION_API_BLOCKED:
+      // Here for legacy reasons. It shouldn't be reached, but some people
+      // might have old db entries. Treat it like an API call if that happens.
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_CALL;
       break;
   }
 
@@ -188,7 +190,8 @@ std::string Action::PrintForDebug() const {
     case ACTION_CONTENT_SCRIPT:
       result += "content_script";
       break;
-    case ACTION_API_BLOCKED:
+    case UNUSED_ACTION_API_BLOCKED:
+      // This is deprecated.
       result += "api_blocked";
       break;
     case ACTION_DOM_EVENT:

@@ -29,7 +29,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   enum ActionType {
     ACTION_API_CALL = 0,
     ACTION_API_EVENT = 1,
-    ACTION_API_BLOCKED = 2,
+    UNUSED_ACTION_API_BLOCKED = 2,  // Not in use, but reserved for future.
     ACTION_CONTENT_SCRIPT = 3,
     ACTION_DOM_ACCESS = 4,
     ACTION_DOM_EVENT = 5,

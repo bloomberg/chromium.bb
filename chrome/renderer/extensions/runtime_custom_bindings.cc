@@ -73,12 +73,8 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
               GetExtensionForRenderView(),
               context()->context_type(),
               context()->GetURL());
-  if (!availability.is_available()) {
-    APIActivityLogger::LogBlockedCall(context()->extension()->id(),
-                                      "nativeMessaging",
-                                      availability.result());
+  if (!availability.is_available())
     return;
-  }
 
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.

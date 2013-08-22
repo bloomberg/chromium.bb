@@ -24,18 +24,6 @@ using api::activity_log_private::ExtensionActivity;
 
 typedef testing::Test ActivityLogApiUnitTest;
 
-TEST_F(ActivityLogApiUnitTest, ConvertBlockedAction) {
-  scoped_refptr<Action> action(new Action(kExtensionId,
-                                          base::Time::Now(),
-                                          Action::ACTION_API_BLOCKED,
-                                          kApiCall));
-  scoped_ptr<ExtensionActivity> result = action->ConvertToExtensionActivity();
-  ASSERT_EQ(ExtensionActivity::ACTIVITY_TYPE_API_BLOCKED,
-            result->activity_type);
-  ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
-  ASSERT_EQ(kApiCall, *(result->api_call.get()));
-}
-
 TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));

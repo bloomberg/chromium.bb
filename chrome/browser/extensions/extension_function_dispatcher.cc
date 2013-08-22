@@ -72,34 +72,6 @@ void LogSuccess(const std::string& extension_id,
   }
 }
 
-void LogFailure(const std::string& extension_id,
-                const std::string& api_name,
-                scoped_ptr<base::ListValue> args,
-                Profile* profile) {
-  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
-  // running on the wrong thread, re-dispatch from the main thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&LogFailure,
-                                       extension_id,
-                                       api_name,
-                                       base::Passed(&args),
-                                       profile));
-  } else {
-    extensions::ActivityLog* activity_log =
-        extensions::ActivityLog::GetInstance(profile);
-    scoped_refptr<extensions::Action> action =
-        new extensions::Action(extension_id,
-                               base::Time::Now(),
-                               extensions::Action::ACTION_API_BLOCKED,
-                               api_name);
-    action->set_args(args.Pass());
-    activity_log->LogAction(action);
-  }
-}
-
-
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
 // this because ExtensionAPI has mutable data. It should be possible to remove
 // this once all the extension APIs are updated to the feature system.
@@ -276,13 +248,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               profile, callback));
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
-  if (!function.get()) {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               profile_cast);
+  if (!function.get())
     return;
-  }
 
   IOThreadExtensionFunction* function_io =
       function->AsIOThreadExtensionFunction();
@@ -295,13 +262,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
-  if (!CheckPermissions(function.get(), extension, params, callback)) {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               profile_cast);
+  if (!CheckPermissions(function.get(), extension, params, callback))
     return;
-  }
 
   ExtensionsQuotaService* quota = extension_info_map->GetQuotaService();
   std::string violation_error = quota->Assess(extension->id(),
@@ -372,13 +334,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
                               profile(), callback));
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
-  if (!function.get()) {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               profile());
+  if (!function.get())
     return;
-  }
 
   UIThreadExtensionFunction* function_ui =
       function->AsUIThreadExtensionFunction();
@@ -391,13 +348,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   function_ui->set_profile(profile_);
   function->set_include_incognito(service->CanCrossIncognito(extension));
 
-  if (!CheckPermissions(function.get(), extension, params, callback)) {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               profile());
+  if (!CheckPermissions(function.get(), extension, params, callback))
     return;
-  }
 
   ExtensionsQuotaService* quota = service->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
