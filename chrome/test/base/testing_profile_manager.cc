@@ -16,10 +16,10 @@
 
 namespace testing {
 
-class ProfileManager : public ::ProfileManager {
+class ProfileManager : public ::ProfileManagerWithoutInit {
  public:
   explicit ProfileManager(const base::FilePath& user_data_dir)
-      : ::ProfileManager(user_data_dir) {}
+      : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
   virtual Profile* CreateProfileHelper(
@@ -57,11 +57,10 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   profile_path = profile_path.AppendASCII(profile_name);
 
   // Create the profile and register it.
-  TestingProfile* profile = new TestingProfile(
-      profile_path,
-      NULL,
-      scoped_refptr<ExtensionSpecialStoragePolicy>(),
-      prefs.Pass());
+  TestingProfile::Builder builder;
+  builder.SetPath(profile_path);
+  builder.SetPrefService(prefs.Pass());
+  TestingProfile* profile = builder.Build().release();
   profile_manager_->AddProfile(profile);  // Takes ownership.
 
   // Update the user metadata.

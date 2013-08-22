@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
@@ -39,11 +38,13 @@ enterprise_management::DeviceRegisterRequest::Type GetRegistrationType() {
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
-    DeviceManagementService* device_management_service)
+    DeviceManagementService* device_management_service,
+    AndroidProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   device_management_service),
-      weak_factory_(this) {}
+      weak_factory_(this),
+      oauth2_token_service_(token_service) {}
 
 UserPolicySigninService::~UserPolicySigninService() {}
 
@@ -68,7 +69,7 @@ void UserPolicySigninService::RegisterPolicyClient(
       force_load_policy,
       GetRegistrationType()));
   registration_helper_->StartRegistration(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      oauth2_token_service_,
       username,
       base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
                  base::Unretained(this),
@@ -137,9 +138,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // If the user signed-out while this task was waiting then Shutdown() would
   // have been called, which would have invalidated this task. Since we're here
   // then the user must still be signed-in.
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
-  const std::string& username = signin_manager->GetAuthenticatedUsername();
+  const std::string& username = GetSigninManager()->GetAuthenticatedUsername();
   DCHECK(!username.empty());
   DCHECK(!GetManager()->IsClientRegistered());
   DCHECK(GetManager()->core()->client());
@@ -155,7 +154,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       force_load_policy,
       GetRegistrationType()));
   registration_helper_->StartRegistration(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      oauth2_token_service_,
       username,
       base::Bind(&UserPolicySigninService::OnRegistrationDone,
                  base::Unretained(this)));

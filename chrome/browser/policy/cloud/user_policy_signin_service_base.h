@@ -20,6 +20,7 @@
 
 class PrefService;
 class Profile;
+class SigninManager;
 
 namespace policy {
 
@@ -116,6 +117,10 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   virtual void InitializeUserCloudPolicyManager(
       scoped_ptr<CloudPolicyClient> client);
 
+  // Prepares for the UserCloudPolicyManager to be shutdown due to
+  // user signout or profile destruction.
+  virtual void PrepareForUserCloudPolicyManagerShutdown();
+
   // Shuts down the UserCloudPolicyManager (for example, after the user signs
   // out) and deletes any cached policy.
   virtual void ShutdownUserCloudPolicyManager();
@@ -125,6 +130,7 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
 
   Profile* profile() { return profile_; }
   content::NotificationRegistrar* registrar() { return &registrar_; }
+  SigninManager* GetSigninManager();
 
  private:
   // Weak pointer to the profile this service is associated with.

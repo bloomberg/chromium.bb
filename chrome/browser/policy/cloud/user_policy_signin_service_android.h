@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 
+class AndroidProfileOAuth2TokenService;
 class Profile;
 
 namespace policy {
@@ -25,7 +26,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // Creates a UserPolicySigninService associated with the passed |profile|.
   UserPolicySigninService(Profile* profile,
                           PrefService* local_state,
-                          DeviceManagementService* device_management_service);
+                          DeviceManagementService* device_management_service,
+                          AndroidProfileOAuth2TokenService* token_service);
   virtual ~UserPolicySigninService();
 
   // Registers a CloudPolicyClient for fetching policy for |username|.
@@ -56,6 +58,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
   base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
+
+  // Weak pointer to the token service used to authenticate the
+  // CloudPolicyClient during registration.
+  AndroidProfileOAuth2TokenService* oauth2_token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

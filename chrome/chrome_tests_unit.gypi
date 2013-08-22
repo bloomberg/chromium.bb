@@ -163,6 +163,8 @@
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',
         'browser/sessions/session_service_test_helper.h',
+        'browser/signin/fake_profile_oauth2_token_service.cc',
+        'browser/signin/fake_profile_oauth2_token_service.h',
         'browser/signin/fake_signin_manager.cc',
         'browser/signin/fake_signin_manager.h',
         'browser/ssl/ssl_client_auth_requestor_mock.cc',

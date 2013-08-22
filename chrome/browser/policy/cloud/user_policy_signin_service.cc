@@ -14,10 +14,9 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -28,35 +27,41 @@ namespace policy {
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
-    DeviceManagementService* device_management_service)
+    DeviceManagementService* device_management_service,
+    ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
-                                  device_management_service) {
+                                  device_management_service),
+      oauth2_token_service_(token_service) {
   if (profile->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
     return;
+
+  // ProfileOAuth2TokenService should not yet have loaded its tokens since this
+  // happens in the background after PKS initialization - so this service
+  // should always be created before the oauth token is available.
+  DCHECK(!oauth2_token_service_->RefreshTokenIsAvailable());
 
   // Listen for an OAuth token to become available so we can register a client
   // if for some reason the client is not already registered (for example, if
   // the policy load failed during initial signin).
-  registrar()->Add(this,
-                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(
-                       TokenServiceFactory::GetForProfile(profile)));
-
-  // TokenService should not yet have loaded its tokens since this happens in
-  // the background after PKS initialization - so this service should always be
-  // created before the oauth token is available.
-  DCHECK(!TokenServiceFactory::GetForProfile(profile)->HasOAuthLoginToken());
+  oauth2_token_service_->AddObserver(this);
 }
 
-UserPolicySigninService::~UserPolicySigninService() {}
+UserPolicySigninService::~UserPolicySigninService() {
+}
 
-void UserPolicySigninService::Shutdown() {
+void UserPolicySigninService::PrepareForUserCloudPolicyManagerShutdown() {
   // Stop any pending registration helper activity. We do this here instead of
   // in the destructor because we want to shutdown the registration helper
   // before UserCloudPolicyManager shuts down the CloudPolicyClient.
   registration_helper_.reset();
+
+  UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown();
+}
+
+void UserPolicySigninService::Shutdown() {
   UserPolicySigninServiceBase::Shutdown();
+  oauth2_token_service_->RemoveObserver(this);
 }
 
 void UserPolicySigninService::RegisterPolicyClient(
@@ -98,44 +103,21 @@ void UserPolicySigninService::CallPolicyRegistrationCallback(
   callback.Run(client.Pass());
 }
 
-void UserPolicySigninService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-
-  if (profile()->IsManaged()) {
-    registrar()->RemoveAll();
-    return;
-  }
-
-  // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
-  // skip initialization.
-  if (!GetManager() || !SigninManagerFactory::GetForProfile(profile())) {
+void UserPolicySigninService::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  // If using a TestingProfile with no UserCloudPolicyManager, skip
+  // initialization.
+  if (!GetManager()) {
     DVLOG(1) << "Skipping initialization for tests due to missing components.";
     return;
   }
 
-  switch (type) {
-    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      const TokenService::TokenAvailableDetails& token_details =
-          *(content::Details<const TokenService::TokenAvailableDetails>(
-              details).ptr());
-      if (token_details.service() ==
-              GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-        SigninManager* signin_manager =
-            SigninManagerFactory::GetForProfile(profile());
-        std::string username = signin_manager->GetAuthenticatedUsername();
-        // Should not have GAIA tokens if the user isn't signed in.
-        DCHECK(!username.empty());
-        // TokenService now has a refresh token (implying that the user is
-        // signed in) so initialize the UserCloudPolicyManager.
-        InitializeForSignedInUser(username);
-      }
-      break;
-    }
-    default:
-      UserPolicySigninServiceBase::Observe(type, source, details);
-  }
+  std::string username = GetSigninManager()->GetAuthenticatedUsername();
+  // Should not have OAuth tokens if the user isn't signed in.
+  DCHECK(!username.empty());
+  // ProfileOAuth2TokenService now has a refresh token so initialize the
+  // UserCloudPolicyManager.
+  InitializeForSignedInUser(username);
 }
 
 void UserPolicySigninService::InitializeUserCloudPolicyManager(
@@ -146,10 +128,9 @@ void UserPolicySigninService::InitializeUserCloudPolicyManager(
 
 void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
   UserCloudPolicyManager* manager = GetManager();
-  if (manager) {
-    // Allow the user to signout again.
-    SigninManagerFactory::GetForProfile(profile())->ProhibitSignout(false);
-  }
+  // Allow the user to signout again.
+  if (manager)
+    GetSigninManager()->ProhibitSignout(false);
   UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
@@ -164,22 +145,19 @@ void UserPolicySigninService::OnInitializationCompleted(
   DVLOG_IF(1, manager->IsClientRegistered())
       << "Client already registered - not fetching DMToken";
   if (!manager->IsClientRegistered()) {
-    std::string token = TokenServiceFactory::GetForProfile(profile())->
-        GetOAuth2LoginRefreshToken();
-    if (token.empty()) {
-      // No token yet - this class listens for NOTIFICATION_TOKEN_AVAILABLE
+    if (!oauth2_token_service_->RefreshTokenIsAvailable()) {
+      // No token yet - this class listens for OnRefreshTokenAvailable()
       // and will re-attempt registration once the token is available.
       DLOG(WARNING) << "No OAuth Refresh Token - delaying policy download";
       return;
     }
-    RegisterCloudPolicyService(token);
+    RegisterCloudPolicyService();
   }
   // If client is registered now, prohibit signout.
   ProhibitSignoutIfNeeded();
 }
 
-void UserPolicySigninService::RegisterCloudPolicyService(
-    const std::string& login_token) {
+void UserPolicySigninService::RegisterCloudPolicyService() {
   DCHECK(!GetManager()->IsClientRegistered());
   DVLOG(1) << "Fetching new DM Token";
   // Do nothing if already starting the registration process.
@@ -193,8 +171,9 @@ void UserPolicySigninService::RegisterCloudPolicyService(
       GetManager()->core()->client(),
       ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
-  registration_helper_->StartRegistrationWithLoginToken(
-      login_token,
+  registration_helper_->StartRegistration(
+      oauth2_token_service_,
+      GetSigninManager()->GetAuthenticatedUsername(),
       base::Bind(&UserPolicySigninService::OnRegistrationComplete,
                  base::Unretained(this)));
 }
@@ -207,9 +186,7 @@ void UserPolicySigninService::OnRegistrationComplete() {
 void UserPolicySigninService::ProhibitSignoutIfNeeded() {
   if (GetManager()->IsClientRegistered()) {
     DVLOG(1) << "User is registered for policy - prohibiting signout";
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(profile());
-    signin_manager->ProhibitSignout(true);
+    GetSigninManager()->ProhibitSignout(true);
   }
 }
 

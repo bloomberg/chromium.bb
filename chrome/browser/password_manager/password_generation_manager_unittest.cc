@@ -68,8 +68,8 @@ class IncognitoPasswordGenerationManagerTest :
   virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
     // Create an incognito profile.
     TestingProfile::Builder builder;
+    builder.SetIncognito();
     scoped_ptr<TestingProfile> profile = builder.Build();
-    profile->set_incognito(true);
     return profile.release();
   }
 };

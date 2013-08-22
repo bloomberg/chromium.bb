@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
 class AndroidProfileOAuth2TokenService;
+class OAuth2TokenService;
 
 namespace net {
 class URLRequestContextGetter;
@@ -40,15 +41,23 @@ class CloudPolicyClientRegistrationHelper : public UserInfoFetcher::Delegate,
       enterprise_management::DeviceRegisterRequest::Type registration_type);
   virtual ~CloudPolicyClientRegistrationHelper();
 
-#if defined(OS_ANDROID)
   // Starts the client registration process. This version uses the
-  // AndroidProfileOAuth2TokenService to mint the new token for the userinfo
+  // supplied OAuth2TokenService to mint the new token for the userinfo
   // and DM services, using the |username| account.
   // |callback| is invoked when the registration is complete.
-  void StartRegistration(AndroidProfileOAuth2TokenService* token_service,
-                         const std::string& username,
-                         const base::Closure& callback);
+  void StartRegistration(
+#if defined(OS_ANDROID)
+      // TODO(atwilson): Remove this when the Android StartRequestForUsername()
+      // API is folded into the base OAuth2TokenService class (when that class
+      // is made multi-account aware).
+      AndroidProfileOAuth2TokenService* token_service,
 #else
+      OAuth2TokenService* token_service,
+#endif
+      const std::string& username,
+      const base::Closure& callback);
+
+#if !defined(OS_ANDROID)
   // Starts the client registration process. The |login_refresh_token| is used
   // to mint a new token for the userinfo and DM services.
   // |callback| is invoked when the registration is complete.
@@ -57,10 +66,9 @@ class CloudPolicyClientRegistrationHelper : public UserInfoFetcher::Delegate,
 #endif
 
  private:
-#if defined(OS_ANDROID)
-  class TokenHelperAndroid;
-#else
-  class TokenHelper;
+  class TokenServiceHelper;
+#if !defined(OS_ANDROID)
+  class LoginTokenHelper;
 #endif
 
   void OnTokenFetched(const std::string& oauth_access_token);
@@ -79,13 +87,17 @@ class CloudPolicyClientRegistrationHelper : public UserInfoFetcher::Delegate,
   // Invoked when the registration request has been completed.
   void RequestCompleted();
 
-  // Internal helper used to fetch the access token. There is an OS_ANDROID
-  // implementation which uses the AccountManager and a known account name,
-  // and a desktop implementation which uses an OAuth2AccessTokenFetcher.
-#if defined(OS_ANDROID)
-  scoped_ptr<TokenHelperAndroid> token_helper_;
-#else
-  scoped_ptr<TokenHelper> token_helper_;
+  // Internal helper class that uses OAuth2TokenService to fetch an OAuth
+  // access token. On desktop, this is only used after the user has signed in -
+  // desktop platforms use LoginTokenHelper for policy fetches performed before
+  // signin is complete.
+  scoped_ptr<TokenServiceHelper> token_service_helper_;
+
+#if !defined(OS_ANDROID)
+  // Special desktop-only helper to fetch an OAuth access token prior to
+  // the completion of signin. Not used on Android since all token fetching
+  // is done via OAuth2TokenService.
+  scoped_ptr<LoginTokenHelper> login_token_helper_;
 #endif
 
   // Helper class for fetching information from GAIA about the currently

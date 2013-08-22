@@ -68,7 +68,6 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
   // to enforce a uniquenes check here because some tests create one context and
   // multiple services of the same type attached to that context (serially, not
   // parallel) and we don't want to register multiple times on the same context.
-  DCHECK(!context->IsOffTheRecord());
 
   std::set<content::BrowserContext*>::iterator it =
       registered_preferences_.find(context);

@@ -64,11 +64,15 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
-
-    ProfileOAuth2TokenServiceFactory::GetInstance()->
-        SetTestingFactoryAndUse(profile(), Build);
     UpdateCredentialsOnService();
     fetcher_.reset(new UbertokenFetcher(profile(), &consumer_));
+  }
+
+  virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              Build);
+    return builder.Build().Pass();
   }
 
   virtual void TearDown() OVERRIDE {

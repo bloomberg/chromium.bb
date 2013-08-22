@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 namespace content {
 class MockResourceContext;
@@ -59,6 +60,10 @@ class TestingProfile : public Profile {
   // Default constructor that cannot be used with multi-profiles.
   TestingProfile();
 
+  typedef std::vector<std::pair<
+      BrowserContextKeyedServiceFactory*,
+      BrowserContextKeyedServiceFactory::FactoryFunction> > TestingFactories;
+
   // Helper class for building an instance of TestingProfile (allows injecting
   // mocks for various services prior to profile initialization).
   // TODO(atwilson): Remove non-default constructors and various setters in
@@ -68,12 +73,18 @@ class TestingProfile : public Profile {
     Builder();
     ~Builder();
 
-    // Sets a Delegate to be called back when the Profile is fully initialized.
-    // This causes the final initialization to be performed via a task so the
-    // caller must run a MessageLoop. Caller maintains ownership of the Delegate
+    // Sets a Delegate to be called back during profile init. This causes the
+    // final initialization to be performed via a task so the caller must run
+    // a MessageLoop. Caller maintains ownership of the Delegate
     // and must manage its lifetime so it continues to exist until profile
     // initialization is complete.
     void SetDelegate(Delegate* delegate);
+
+    // Adds a testing factory to the TestingProfile. These testing factories
+    // are applied before the ProfileKeyedServices are created.
+    void AddTestingFactory(
+        BrowserContextKeyedServiceFactory* service_factory,
+        BrowserContextKeyedServiceFactory::FactoryFunction callback);
 
     // Sets the ExtensionSpecialStoragePolicy to be returned by
     // GetExtensionSpecialStoragePolicy().
@@ -85,6 +96,9 @@ class TestingProfile : public Profile {
 
     // Sets the PrefService to be used by this profile.
     void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
+
+    // Makes the Profile being built an incognito profile.
+    void SetIncognito();
 
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
@@ -98,6 +112,8 @@ class TestingProfile : public Profile {
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
     base::FilePath path_;
     Delegate* delegate_;
+    bool incognito_;
+    TestingFactories testing_factories_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -120,7 +136,9 @@ class TestingProfile : public Profile {
   TestingProfile(const base::FilePath& path,
                  Delegate* delegate,
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-                 scoped_ptr<PrefServiceSyncable> prefs);
+                 scoped_ptr<PrefServiceSyncable> prefs,
+                 bool incognito,
+                 const TestingFactories& factories);
 
   virtual ~TestingProfile();
 
@@ -186,9 +204,26 @@ class TestingProfile : public Profile {
 
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
   virtual std::string GetProfileName() OVERRIDE;
-  void set_incognito(bool incognito) { incognito_ = incognito; }
+
+  // DEPRECATED, because it's fragile to change a profile from non-incognito
+  // to incognito after the ProfileKeyedServices have been created (some
+  // ProfileKeyedServices either should not exist in incognito mode, or will
+  // crash when they try to get references to other services they depend on,
+  // but do not exist in incognito mode).
+  // TODO(atwilson): Remove this API (http://crbug.com/277296).
+  //
+  // Changes a profile's to/from incognito mode temporarily - profile will be
+  // returned to non-incognito before destruction to allow services to
+  // properly shutdown. This is only supported for legacy tests - new tests
+  // should create a true incognito profile using Builder::SetIncognito() or
+  // by using the TestingProfile constructor that allows setting the incognito
+  // flag.
+  void ForceIncognito(bool force_incognito) {
+    force_incognito_ = force_incognito;
+  }
+
   // Assumes ownership.
-  virtual void SetOffTheRecordProfile(Profile* profile);
+  virtual void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
   virtual void SetOriginalProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
@@ -306,6 +341,7 @@ class TestingProfile : public Profile {
   std::wstring id_;
 
   bool incognito_;
+  bool force_incognito_;
   scoped_ptr<Profile> incognito_profile_;
   Profile* original_profile_;
 

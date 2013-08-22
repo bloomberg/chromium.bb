@@ -64,7 +64,8 @@ void TokenServiceTestHarness::SetUp() {
   oauth_token_ = "oauth";
   oauth_secret_ = "secret";
 
-  profile_.reset(new TestingProfile());
+  profile_ = CreateProfile().Pass();
+
   profile_->CreateWebDataService();
 
   // Force the loading of the WebDataService.
@@ -79,6 +80,10 @@ void TokenServiceTestHarness::SetUp() {
                              content::Source<TokenService>(service_));
 
   service()->Initialize("test", profile_.get());
+}
+
+scoped_ptr<TestingProfile> TokenServiceTestHarness::CreateProfile() {
+  return make_scoped_ptr(new TestingProfile());
 }
 
 void TokenServiceTestHarness::TearDown() {

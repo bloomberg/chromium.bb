@@ -54,6 +54,9 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   // Pull the robot account ID from device policy.
   virtual std::string GetRobotAccountId();
 
+  // Implementation of OAuth2TokenService.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+
  private:
   class ValidatingConsumer;
   friend class ValidatingConsumer;
@@ -65,9 +68,6 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   explicit DeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
                                     PrefService* local_state);
   virtual ~DeviceOAuth2TokenService();
-
-  // Implementation of OAuth2TokenService.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
   void OnValidationComplete(bool token_is_valid);
 

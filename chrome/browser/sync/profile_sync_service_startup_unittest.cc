@@ -68,6 +68,11 @@ class FakeTokenService : public TokenService {
         content::Source<TokenService>(this),
         content::NotificationService::NoDetails());
   }
+
+  static BrowserContextKeyedService* BuildFakeTokenService(
+      content::BrowserContext* profile) {
+    return new FakeTokenService();
+  }
 };
 
 class ProfileSyncServiceStartupTest : public testing::Test {
@@ -76,28 +81,35 @@ class ProfileSyncServiceStartupTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        profile_(new TestingProfile),
         sync_(NULL) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
   }
 
   virtual void SetUp() {
+    profile_ = CreateProfile();
+  }
+
+  virtual scoped_ptr<TestingProfile> CreateProfile() {
+    TestingProfile::Builder builder;
 #if defined(OS_CHROMEOS)
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeSigninManagerBase::Build);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
 #else
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeSigninManager::Build);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManager::Build);
 #endif
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              BuildService);
+    builder.AddTestingFactory(TokenServiceFactory::GetInstance(),
+                              FakeTokenService::BuildFakeTokenService);
+    return builder.Build();
   }
 
   virtual void TearDown() {
     sync_->RemoveObserver(&observer_);
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), NULL);
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), NULL);
     profile_.reset();
 
     // Pump messages posted by the sync core thread (which may end up
@@ -118,11 +130,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void CreateSyncService() {
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_ = static_cast<TestProfileSyncService*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), BuildService));
+        ProfileSyncServiceFactory::GetForProfile(profile_.get()));
     sync_->AddObserver(&observer_);
     sync_->set_synchronous_sync_configuration();
   }
@@ -146,8 +155,6 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  public:
   virtual void SetUp() {
     ProfileSyncServiceStartupTest::SetUp();
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildCrosService));
@@ -172,11 +179,6 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         true);
   }
 };
-
-BrowserContextKeyedService* BuildFakeTokenService(
-    content::BrowserContext* profile) {
-  return new FakeTokenService();
-}
 
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
@@ -235,8 +237,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   SigninManagerFactory::GetForProfile(
       profile_.get())->Initialize(profile_.get(), NULL);
   TokenService* token_service = static_cast<TokenService*>(
-      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), BuildFakeTokenService));
+      TokenServiceFactory::GetForProfile(profile_.get()));
   CreateSyncService();
 
   // Should not actually start, rather just clean things up and wait
@@ -327,8 +328,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenService* token_service = static_cast<TokenService*>(
-      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), BuildFakeTokenService));
+      TokenServiceFactory::GetForProfile(profile_.get()));
 
   sync_->Initialize();
   // Sync should not start because there are no tokens yet.

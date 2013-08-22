@@ -91,11 +91,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
         UTF8ToUTF16("testing_profile"), 0, std::string());
     signin_profile_ = profile_manager_->CreateTestingProfile(kSigninProfile);
-    signin_profile_->set_incognito(true);
+    signin_profile_->ForceIncognito(true);
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.
-    profile_->SetOffTheRecordProfile(signin_profile_);
+    profile_->SetOffTheRecordProfile(scoped_ptr<Profile>(signin_profile_));
     signin_profile_->SetOriginalProfile(profile_);
     ASSERT_EQ(signin_profile_, chromeos::ProfileHelper::GetSigninProfile());
 

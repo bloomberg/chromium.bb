@@ -54,13 +54,9 @@ namespace {
 // observers is the same.
 Profile* g_created_profile;
 
-}  // namespace
-
-namespace testing {
-
-class ProfileManager : public ::ProfileManagerWithoutInit {
+class UnittestProfileManager : public ::ProfileManagerWithoutInit {
  public:
-  explicit ProfileManager(const base::FilePath& user_data_dir)
+  explicit UnittestProfileManager(const base::FilePath& user_data_dir)
       : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
@@ -84,7 +80,7 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
   }
 };
 
-}  // namespace testing
+}  // namespace
 
 class ProfileManagerTest : public testing::Test {
  protected:
@@ -102,7 +98,7 @@ class ProfileManagerTest : public testing::Test {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new testing::ProfileManager(temp_dir_.path()));
+        new UnittestProfileManager(temp_dir_.path()));
 
 #if defined(OS_CHROMEOS)
   CommandLine* cl = CommandLine::ForCurrentProcess();
@@ -417,11 +413,12 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
 
   // Attach an incognito Profile to the TestingProfile.
   ASSERT_FALSE(profile->GetOffTheRecordProfile());
-  TestingProfile* incognito_profile = new TestingProfile();
-  incognito_profile->set_incognito(true);
+  TestingProfile::Builder builder;
+  builder.SetIncognito();
+  scoped_ptr<TestingProfile> incognito_profile = builder.Build();
   EXPECT_TRUE(incognito_profile->IsOffTheRecord());
   TestingProfile* testing_profile = static_cast<TestingProfile*>(profile);
-  testing_profile->SetOffTheRecordProfile(incognito_profile);
+  testing_profile->SetOffTheRecordProfile(incognito_profile.PassAs<Profile>());
   ASSERT_TRUE(profile->GetOffTheRecordProfile());
 
   IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::DISABLED);
@@ -569,10 +566,10 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
 
   // incognito profiles should not be managed by the profile manager but by the
   // original profile.
-  TestingProfile* profile2 = new TestingProfile();
-  ASSERT_TRUE(profile2);
-  profile2->set_incognito(true);
-  profile1->SetOffTheRecordProfile(profile2);
+  TestingProfile::Builder builder;
+  builder.SetIncognito();
+  scoped_ptr<TestingProfile> profile2 = builder.Build();
+  profile1->SetOffTheRecordProfile(profile2.PassAs<Profile>());
 
   std::vector<Profile*> last_opened_profiles =
       profile_manager->GetLastOpenedProfiles();
@@ -588,7 +585,8 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   EXPECT_EQ(profile1, last_opened_profiles[0]);
 
   // And for profile2.
-  Browser::CreateParams profile2_params(profile2, chrome::GetActiveDesktop());
+  Browser::CreateParams profile2_params(profile1->GetOffTheRecordProfile(),
+                                        chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2a(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
 

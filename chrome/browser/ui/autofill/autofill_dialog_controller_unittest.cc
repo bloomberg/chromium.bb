@@ -2139,7 +2139,7 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(1);
   EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
 
-  profile()->set_incognito(true);
+  profile()->ForceIncognito(true);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
 }
 

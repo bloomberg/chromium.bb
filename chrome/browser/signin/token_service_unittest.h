@@ -63,6 +63,7 @@ class TokenServiceTestHarness : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  virtual scoped_ptr<TestingProfile> CreateProfile();
   void UpdateCredentialsOnService();
   TestingProfile* profile() const { return profile_.get(); }
   TokenService* service() const { return service_; }

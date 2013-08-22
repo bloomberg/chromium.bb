@@ -59,11 +59,12 @@ class ProfileSyncServiceTestHarness {
    }
 
   void SetUp() {
-    profile.reset(new TestingProfile());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    profile = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile.get(), FakeOAuth2TokenService::BuildTokenService);
   }
 
   void TearDown() {

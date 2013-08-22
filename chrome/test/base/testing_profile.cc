@@ -167,6 +167,7 @@ TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      force_incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       browser_context_dependency_manager_(
@@ -184,6 +185,7 @@ TestingProfile::TestingProfile(const base::FilePath& path)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      force_incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
@@ -200,6 +202,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      force_incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
@@ -221,11 +224,14 @@ TestingProfile::TestingProfile(
     const base::FilePath& path,
     Delegate* delegate,
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-    scoped_ptr<PrefServiceSyncable> prefs)
+    scoped_ptr<PrefServiceSyncable> prefs,
+    bool incognito,
+    const TestingFactories& factories)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
       testing_prefs_(NULL),
-      incognito_(false),
+      incognito_(incognito),
+      force_incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
@@ -239,6 +245,12 @@ TestingProfile::TestingProfile(
   if (profile_path_.empty()) {
     CreateTempProfileDir();
     profile_path_ = temp_dir_.path();
+  }
+
+  // Set any testing factories prior to initializing the services.
+  for (TestingFactories::const_iterator it = factories.begin();
+       it != factories.end(); ++it) {
+    it->first->SetTestingFactory(this, it->second);
   }
 
   Init();
@@ -309,7 +321,11 @@ void TestingProfile::Init() {
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
 
-  browser_context_dependency_manager_->CreateBrowserContextServices(this, true);
+  // If there is no separate original profile specified for this profile, then
+  // force preferences to be registered - this allows tests to create a
+  // standalone incognito profile while still having prefs registered.
+  browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
+      this, !original_profile_);
 
 #if defined(ENABLE_NOTIFICATIONS)
   // Install profile keyed service factory hooks for dummy/test services
@@ -330,6 +346,9 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
+  // Revert to non-incognito mode before shutdown.
+  force_incognito_ = false;
+
   // Any objects holding live URLFetchers should be deleted before teardown.
   TemplateURLFetcherFactory::ShutdownForProfile(this);
 
@@ -524,18 +543,22 @@ std::string TestingProfile::GetProfileName() {
 }
 
 bool TestingProfile::IsOffTheRecord() const {
-  return incognito_;
+  return force_incognito_ || incognito_;
 }
 
-void TestingProfile::SetOffTheRecordProfile(Profile* profile) {
-  incognito_profile_.reset(profile);
+void TestingProfile::SetOffTheRecordProfile(scoped_ptr<Profile> profile) {
+  DCHECK(!IsOffTheRecord());
+  incognito_profile_ = profile.Pass();
 }
 
 void TestingProfile::SetOriginalProfile(Profile* profile) {
+  DCHECK(IsOffTheRecord());
   original_profile_ = profile;
 }
 
 Profile* TestingProfile::GetOffTheRecordProfile() {
+  if (IsOffTheRecord())
+    return this;
   return incognito_profile_.get();
 }
 
@@ -794,7 +817,8 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
 
 TestingProfile::Builder::Builder()
     : build_called_(false),
-      delegate_(NULL) {
+      delegate_(NULL),
+      incognito_(false) {
 }
 
 TestingProfile::Builder::~Builder() {
@@ -818,6 +842,16 @@ void TestingProfile::Builder::SetPrefService(
   pref_service_ = prefs.Pass();
 }
 
+void TestingProfile::Builder::SetIncognito() {
+  incognito_ = true;
+}
+
+void TestingProfile::Builder::AddTestingFactory(
+    BrowserContextKeyedServiceFactory* service_factory,
+    BrowserContextKeyedServiceFactory::FactoryFunction callback) {
+  testing_factories_.push_back(std::make_pair(service_factory, callback));
+}
+
 scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
@@ -825,5 +859,7 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       path_,
       delegate_,
       extension_policy_,
-      pref_service_.Pass()));
+      pref_service_.Pass(),
+      incognito_,
+      testing_factories_));
 }

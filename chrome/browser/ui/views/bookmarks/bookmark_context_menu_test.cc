@@ -260,9 +260,12 @@ TEST_F(BookmarkContextMenuTest, MultipleFoldersWithURLs) {
 TEST_F(BookmarkContextMenuTest, DisableIncognito) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(model_->bookmark_bar_node()->GetChild(0));
+  TestingProfile::Builder builder;
+  builder.SetIncognito();
+  scoped_ptr<TestingProfile> incognito_ = builder.Build().Pass();
+  incognito_->SetOriginalProfile(profile_.get());
   BookmarkContextMenu controller(
-      NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes, false);
-  profile_->set_incognito(true);
+      NULL, NULL, incognito_.get(), NULL, nodes[0]->parent(), nodes, false);
   EXPECT_FALSE(controller.IsCommandEnabled(IDC_BOOKMARK_BAR_OPEN_INCOGNITO));
   EXPECT_FALSE(
       controller.IsCommandEnabled(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO));

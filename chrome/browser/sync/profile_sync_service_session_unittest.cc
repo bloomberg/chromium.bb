@@ -212,13 +212,15 @@ class ProfileSyncServiceSessionTest
 
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
-    TestingProfile* profile = new TestingProfile();
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
     // Don't want the profile to create a real ProfileSyncService.
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile,
-                                                                NULL);
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(), NULL);
+    scoped_ptr<TestingProfile> profile(builder.Build());
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
-    return profile;
+    return profile.release();
   }
 
   virtual void SetUp() {
@@ -271,8 +273,6 @@ class ProfileSyncServiceSessionTest
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile());
     signin->SetAuthenticatedUsername("test_user");
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), FakeOAuth2TokenService::BuildTokenService);
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
     sync_service_.reset(new FakeProfileSyncService(

@@ -293,16 +293,17 @@ TEST_F(BrowserCommandControllerTest,
 
   // Set up a profile with an off the record profile.
   TestingProfile::Builder builder;
-  TestingProfile* profile2 = builder.Build().release();
-  profile2->set_incognito(true);
+  builder.SetIncognito();
+  scoped_ptr<TestingProfile> profile2(builder.Build());
   TestingProfile::Builder builder2;
   TestingProfile* profile1 = builder2.Build().release();
   profile2->SetOriginalProfile(profile1);
   EXPECT_EQ(profile2->GetOriginalProfile(), profile1);
-  profile1->SetOffTheRecordProfile(profile2);
+  profile1->SetOffTheRecordProfile(profile2.PassAs<Profile>());
 
   // Create a new browser based on the off the record profile.
-  Browser::CreateParams profile_params(profile2, chrome::GetActiveDesktop());
+  Browser::CreateParams profile_params(profile1->GetOffTheRecordProfile(),
+                                       chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile_params));
 

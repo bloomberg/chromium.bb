@@ -220,10 +220,6 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
 }
 
-net::URLRequestContextGetter* DeviceOAuth2TokenService::GetRequestContext() {
-  return url_request_context_getter_.get();
-}
-
 scoped_ptr<OAuth2TokenService::Request> DeviceOAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
@@ -281,6 +277,10 @@ std::string DeviceOAuth2TokenService::GetRobotAccountId() {
   if (connector)
     return connector->GetDeviceCloudPolicyManager()->GetRobotAccountId();
   return std::string();
+}
+
+net::URLRequestContextGetter* DeviceOAuth2TokenService::GetRequestContext() {
+  return url_request_context_getter_.get();
 }
 
 }  // namespace chromeos

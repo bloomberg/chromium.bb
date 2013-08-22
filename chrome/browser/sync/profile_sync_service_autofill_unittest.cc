@@ -377,7 +377,7 @@ class AbstractAutofillFactory {
  public:
   virtual DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
-      ProfileMock* profile,
+      TestingProfile* profile,
       ProfileSyncService* service) = 0;
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
@@ -390,7 +390,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
  public:
   virtual browser_sync::DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
-      ProfileMock* profile,
+      TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
     return new AutofillDataTypeController(factory, profile, service);
   }
@@ -412,7 +412,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
  public:
   virtual browser_sync::DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
-      ProfileMock* profile,
+      TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
     return new AutofillProfileDataTypeController(factory, profile, service);
   }
@@ -503,7 +503,10 @@ class ProfileSyncServiceAutofillTest
 
   virtual void SetUp() OVERRIDE {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.reset(new ProfileMock());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    profile_ = builder.Build().Pass();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     MockWebDataServiceWrapper* wrapper =
         static_cast<MockWebDataServiceWrapper*>(
@@ -524,8 +527,6 @@ class ProfileSyncServiceAutofillTest
     token_service_ = static_cast<TokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildTokenService));
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 
@@ -757,7 +758,7 @@ class ProfileSyncServiceAutofillTest
   friend class AddAutofillHelper<AutofillProfile>;
   friend class FakeServerUpdater;
 
-  scoped_ptr<ProfileMock> profile_;
+  scoped_ptr<TestingProfile> profile_;
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataServiceFake> web_data_service_;

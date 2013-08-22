@@ -99,7 +99,9 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void MakeProfileIncognito() {
-    profile_->set_incognito(true);
+    // Switch to an incognito profile.
+    profile_->ForceIncognito(true);
+    DCHECK(profile_->IsOffTheRecord());
   }
 
   base::MessageLoopForUI message_loop_;

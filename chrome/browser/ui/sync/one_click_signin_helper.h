@@ -130,7 +130,7 @@ class OneClickSigninHelper
  private:
   friend class content::WebContentsUserData<OneClickSigninHelper>;
   friend class OneClickSigninHelperTest;
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIncognitoTest,
                            ShowInfoBarUIThreadIncognito);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
                            SigninFromWebstoreWithConfigSyncfirst);

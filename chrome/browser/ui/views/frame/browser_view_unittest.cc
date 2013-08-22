@@ -324,9 +324,9 @@ class BrowserViewIncognitoSwitcherTest : public BrowserViewTest {
     // visible.
     // This profile instance is owned by the TestingProfile instance within the
     // BrowserWithTestWindowTest class.
-    TestingProfile* incognito_profile = new TestingProfile();
-    incognito_profile->set_incognito(true);
-    GetProfile()->SetOffTheRecordProfile(incognito_profile);
+    TestingProfile::Builder builder;
+    builder.SetIncognito();
+    GetProfile()->SetOffTheRecordProfile(builder.Build());
 
     browser_view_ = new TestBrowserView();
     browser_view_->SetWindowSwitcherButton(

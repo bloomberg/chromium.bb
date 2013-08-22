@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -49,7 +50,7 @@ class GoogleServiceAuthError;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService {
+class OAuth2TokenService : public base::NonThreadSafe {
  public:
   // Class representing a request that fetches an OAuth2 access token.
   class Request {
@@ -113,13 +114,15 @@ class OAuth2TokenService {
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted.
+  // TODO(atwilson): Make this non-virtual when we change
+  // ProfileOAuth2TokenServiceRequestTest to use FakeProfileOAuth2TokenService.
   virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
                                            Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
-  virtual scoped_ptr<Request> StartRequestForClient(
+  scoped_ptr<Request> StartRequestForClient(
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes,
@@ -128,7 +131,7 @@ class OAuth2TokenService {
   // This method does the same as |StartRequest| except it uses the request
   // context given by |getter| instead of using the one returned by
   // |GetRequestContext| implemented by derived classes.
-  virtual scoped_ptr<Request> StartRequestWithContext(
+  scoped_ptr<Request> StartRequestWithContext(
       net::URLRequestContextGetter* getter,
       const ScopeSet& scopes,
       Consumer* consumer);
@@ -190,8 +193,9 @@ class OAuth2TokenService {
 
   // Posts a task to fire the Consumer callback with the cached token.  Must
   // Must only be called if HasCacheEntry() returns true.
-  scoped_ptr<Request> StartCacheLookupRequest(const ScopeSet& scopes,
-                                              Consumer* consumer);
+  void StartCacheLookupRequest(RequestImpl* request,
+                               const ScopeSet& scopes,
+                               Consumer* consumer);
 
   // Clears the internal token cache.
   void ClearCache();
@@ -208,11 +212,19 @@ class OAuth2TokenService {
   void FireRefreshTokensLoaded();
   void FireRefreshTokensCleared();
 
- private:
   // Derived classes must provide a request context used for fetching access
   // tokens with the |StartRequest| method.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
+  // Fetches an OAuth token for the specified client/scopes. Virtual so it can
+  // be overridden for tests and for platform-specific behavior on Android.
+  virtual void FetchOAuth2Token(RequestImpl* request,
+                                net::URLRequestContextGetter* getter,
+                                const std::string& client_id,
+                                const std::string& client_secret,
+                                const ScopeSet& scopes);
+
+ private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
   // OAuth2 refresh token.
   class Fetcher;

@@ -33,82 +33,50 @@ struct DomainMatchCase {
   const bool matches;
 };
 
-// A test profile that supports linking with another profile for incognito
-// support.
-class OtrTestingProfile : public TestingProfile {
- public:
-  OtrTestingProfile() : linked_profile_(NULL) {}
-  virtual Profile* GetOriginalProfile() OVERRIDE {
-    if (IsOffTheRecord())
-      return linked_profile_;
-    else
-      return this;
-  }
-
-  virtual Profile* GetOffTheRecordProfile() OVERRIDE {
-    if (IsOffTheRecord())
-      return this;
-    else
-      return linked_profile_;
-  }
-
-  virtual bool HasOffTheRecordProfile() OVERRIDE {
-    return (!IsOffTheRecord() && linked_profile_);
-  }
-
-  static void LinkProfiles(OtrTestingProfile* profile1,
-                           OtrTestingProfile* profile2) {
-    profile1->set_linked_profile(profile2);
-    profile2->set_linked_profile(profile1);
-  }
-
-  void set_linked_profile(OtrTestingProfile* profile) {
-    linked_profile_ = profile;
-  }
-
- private:
-  OtrTestingProfile* linked_profile_;
-};
-
 }  // namespace
 
 class ExtensionCookiesTest : public testing::Test {
 };
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
-  OtrTestingProfile profile, otrProfile;
-  otrProfile.set_incognito(true);
-  OtrTestingProfile::LinkProfiles(&profile, &otrProfile);
+  TestingProfile::Builder profile_builder;
+  TestingProfile::Builder otr_profile_builder;
+  otr_profile_builder.SetIncognito();
+  scoped_ptr<TestingProfile> profile = profile_builder.Build();
+  scoped_ptr<TestingProfile> otr_profile = otr_profile_builder.Build();
+  otr_profile->SetOriginalProfile(profile.get());
+  profile->SetOffTheRecordProfile(otr_profile.PassAs<Profile>());
 
   EXPECT_EQ(std::string("0"),
-            cookies_helpers::GetStoreIdFromProfile(&profile));
-  EXPECT_EQ(&profile,
+            cookies_helpers::GetStoreIdFromProfile(profile.get()));
+  EXPECT_EQ(profile.get(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", &profile, true));
-  EXPECT_EQ(&profile,
+                "0", profile.get(), true));
+  EXPECT_EQ(profile.get(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", &profile, false));
-  EXPECT_EQ(&otrProfile,
+                "0", profile.get(), false));
+  EXPECT_EQ(profile->GetOffTheRecordProfile(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "1", &profile, true));
+                "1", profile.get(), true));
   EXPECT_EQ(NULL,
             cookies_helpers::ChooseProfileFromStoreId(
-                "1", &profile, false));
+                "1", profile.get(), false));
 
   EXPECT_EQ(std::string("1"),
-            cookies_helpers::GetStoreIdFromProfile(&otrProfile));
+            cookies_helpers::GetStoreIdFromProfile(
+                profile->GetOffTheRecordProfile()));
   EXPECT_EQ(NULL,
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", &otrProfile, true));
+                "0", profile->GetOffTheRecordProfile(), true));
   EXPECT_EQ(NULL,
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", &otrProfile, false));
-  EXPECT_EQ(&otrProfile,
+                "0", profile->GetOffTheRecordProfile(), false));
+  EXPECT_EQ(profile->GetOffTheRecordProfile(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "1", &otrProfile, true));
-  EXPECT_EQ(&otrProfile,
+                "1", profile->GetOffTheRecordProfile(), true));
+  EXPECT_EQ(profile->GetOffTheRecordProfile(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "1", &otrProfile, false));
+                "1", profile->GetOffTheRecordProfile(), false));
 }
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {

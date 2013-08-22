@@ -1146,12 +1146,12 @@ TEST_F(TranslateManagerBrowserTest, AlwaysTranslateLanguagePref) {
   // case either.
   TestingProfile* test_profile =
       static_cast<TestingProfile*>(web_contents()->GetBrowserContext());
-  test_profile->set_incognito(true);
+  test_profile->ForceIncognito(true);
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
   EXPECT_TRUE(CloseTranslateInfoBar());
-  test_profile->set_incognito(false);  // Get back to non incognito.
+  test_profile->ForceIncognito(false);  // Get back to non incognito.
 
   // Now revert the always translate pref and make sure we go back to expected
   // behavior, which is show a "before translate" infobar.
@@ -1291,7 +1291,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(test_profile))->
       CreateExtensionProcessManager();
-  test_profile->set_incognito(true);
+  test_profile->ForceIncognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
         " incognito mode=" << test_profile->IsOffTheRecord());
@@ -1308,7 +1308,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
       EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateShortcut());
     }
     if (i == 3)
-      test_profile->set_incognito(false);
+      test_profile->ForceIncognito(false);
   }
   // Simulate the user pressing "Always translate French".
   infobar->AlwaysTranslatePageLanguage();
@@ -1324,7 +1324,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
 
   // Now test that declining the translation causes a "never translate" button
   // to be shown (in non incognito mode only).
-  test_profile->set_incognito(true);
+  test_profile->ForceIncognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
         " incognito mode=" << test_profile->IsOffTheRecord());
@@ -1340,7 +1340,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
       EXPECT_TRUE(infobar->ShouldShowNeverTranslateShortcut());
     }
     if (i == 3)
-      test_profile->set_incognito(false);
+      test_profile->ForceIncognito(false);
   }
   // Simulate the user pressing "Never translate French".
   infobar->NeverTranslatePageLanguage();

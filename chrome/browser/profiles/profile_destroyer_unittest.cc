@@ -11,7 +11,14 @@
 
 class TestingOffTheRecordDestructionProfile : public TestingProfile {
  public:
-  TestingOffTheRecordDestructionProfile() : destroyed_otr_profile_(false) {
+  TestingOffTheRecordDestructionProfile()
+      : TestingProfile(base::FilePath(),
+                       NULL,
+                       scoped_refptr<ExtensionSpecialStoragePolicy>()
+                       scoped_ptr<PrefServiceSyncable>(),
+                       true,
+                       TestingFactories()),
+        destroyed_otr_profile_(false) {
     set_incognito(true);
   }
   virtual void DestroyOffTheRecordProfile() OVERRIDE {

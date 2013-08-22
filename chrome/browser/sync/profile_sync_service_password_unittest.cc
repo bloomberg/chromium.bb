@@ -32,7 +32,6 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/password_form.h"
 #include "content/public/test/mock_notification_observer.h"
@@ -154,7 +153,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.reset(new ProfileMock());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     password_store_ = static_cast<MockPasswordStore*>(
@@ -192,8 +194,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               profile_.get(), BuildTokenService));
-      ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-          profile_.get(), FakeOAuth2TokenService::BuildTokenService);
 
       PasswordTestProfileSyncService* sync =
           static_cast<PasswordTestProfileSyncService*>(
@@ -314,7 +314,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   content::MockNotificationObserver observer_;
-  scoped_ptr<ProfileMock> profile_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockPasswordStore> password_store_;
   content::NotificationRegistrar registrar_;
 };

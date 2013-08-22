@@ -58,9 +58,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // SigninGlobalError::AuthStatusProvider implementation.
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
-  // OAuth2TokenService implementation.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-
   // Takes injected TokenService for testing.
   bool ShouldCacheForRefreshToken(TokenService *token_service,
                                   const std::string& refresh_token);
@@ -93,6 +90,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // OAuth2TokenService overrides.
   virtual std::string GetRefreshToken() OVERRIDE;
+
+  // OAuth2TokenService implementation.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
   // Updates the internal cache of the result from the most-recently-completed
   // auth request (used for reporting errors to the user).

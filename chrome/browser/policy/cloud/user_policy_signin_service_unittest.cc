@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -41,11 +42,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #endif
 
 namespace em = enterprise_management;
@@ -72,10 +71,6 @@ const char kHostedDomainResponse[] =
     "  \"hd\": \"test.com\""
     "}";
 
-const char kCombinedScopes[] =
-    "https://www.googleapis.com/auth/chromeosdevicemanagement "
-    "https://www.googleapis.com/auth/userinfo.email";
-
 class SigninManagerFake : public FakeSigninManager {
  public:
   explicit SigninManagerFake(Profile* profile)
@@ -95,26 +90,32 @@ class SigninManagerFake : public FakeSigninManager {
 };
 
 #if defined(OS_ANDROID)
-
-class FakeProfileOAuth2TokenService : public AndroidProfileOAuth2TokenService {
+// TODO(atwilson): Remove this when ProfileOAuth2TokenService supports
+// usernames.
+class FakeAndroidProfileOAuth2TokenService
+    : public AndroidProfileOAuth2TokenService {
  public:
-  explicit FakeProfileOAuth2TokenService(Profile* profile) {
+  explicit FakeAndroidProfileOAuth2TokenService(Profile* profile) {
     Initialize(profile);
   }
 
   static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new FakeProfileOAuth2TokenService(static_cast<Profile*>(profile));
+    return new FakeAndroidProfileOAuth2TokenService(
+        static_cast<Profile*>(profile));
   }
 
   // AndroidProfileOAuth2TokenService overrides:
-  virtual void FetchOAuth2Token(
+  virtual void FetchOAuth2TokenWithUsername(
+      RequestImpl* request,
       const std::string& username,
-      const std::string& scope,
-      const FetchOAuth2TokenCallback& callback) OVERRIDE {
+      const OAuth2TokenService::ScopeSet& scope) OVERRIDE {
     ASSERT_TRUE(!HasPendingRequest());
     ASSERT_EQ(kTestUser, username);
-    ASSERT_EQ(kCombinedScopes, scope);
-    pending_callback_ = callback;
+    ASSERT_EQ(2U, scope.size());
+    EXPECT_EQ(1U, scope.count(GaiaConstants::kDeviceManagementServiceOAuth));
+    EXPECT_EQ(1U, scope.count(
+        "https://www.googleapis.com/auth/userinfo.email"));
+    pending_request_ = request->AsWeakPtr();
   }
 
   void IssueToken(const std::string& token) {
@@ -122,17 +123,21 @@ class FakeProfileOAuth2TokenService : public AndroidProfileOAuth2TokenService {
     GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
     if (token.empty())
       error = GoogleServiceAuthError::FromServiceError("fail");
-    pending_callback_.Run(
-        error, token, base::Time::Now() + base::TimeDelta::FromDays(1));
-    pending_callback_.Reset();
+    if (pending_request_) {
+      pending_request_->InformConsumer(
+          error,
+          token,
+          base::Time::Now() + base::TimeDelta::FromDays(1));
+    }
+    pending_request_.reset();
   }
 
   bool HasPendingRequest() const {
-    return !pending_callback_.is_null();
+    return pending_request_;
   }
 
  private:
-  FetchOAuth2TokenCallback pending_callback_;
+  base::WeakPtr<RequestImpl> pending_request_;
 };
 
 #endif
@@ -180,26 +185,25 @@ class UserPolicySigninServiceTest : public testing::Test {
     chrome::RegisterUserProfilePrefs(prefs->registry());
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              SigninManagerFake::Build);
+#if defined(OS_ANDROID)
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeAndroidProfileOAuth2TokenService::Build);
+#else
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeProfileOAuth2TokenService::Build);
+#endif
+
     profile_ = builder.Build().Pass();
+    signin_manager_ = static_cast<SigninManagerFake*>(
+        SigninManagerFactory::GetForProfile(profile_.get()));
 
     mock_store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
     manager_.reset(new UserCloudPolicyManager(
         profile_.get(), scoped_ptr<UserCloudPolicyStore>(mock_store_)));
-    signin_manager_ = static_cast<SigninManagerFake*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), SigninManagerFake::Build));
 
-#if defined(OS_ANDROID)
-    ProfileOAuth2TokenServiceFactory* factory =
-        ProfileOAuth2TokenServiceFactory::GetInstance();
-    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
-        factory->SetTestingFactoryAndUse(profile_.get(),
-                                         FakeProfileOAuth2TokenService::Build));
-#endif
-
-    // Make sure the UserPolicySigninService is created.
-    UserPolicySigninServiceFactory::GetForProfile(profile_.get());
     Mock::VerifyAndClearExpectations(mock_store_);
     url_factory_.set_remove_fetcher_on_delete(true);
   }
@@ -217,9 +221,26 @@ class UserPolicySigninServiceTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
+#if defined(OS_ANDROID)
+  FakeAndroidProfileOAuth2TokenService* GetTokenService() {
+    ProfileOAuth2TokenService* service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+    return static_cast<FakeAndroidProfileOAuth2TokenService*>(service);
+  }
+#else
+  FakeProfileOAuth2TokenService* GetTokenService() {
+    ProfileOAuth2TokenService* service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+    return static_cast<FakeProfileOAuth2TokenService*>(service);
+  }
+#endif
+
   bool IsRequestActive() {
 #if defined(OS_ANDROID)
-    if (token_service_->HasPendingRequest())
+    if (GetTokenService()->HasPendingRequest())
+      return true;
+#else
+    if (!GetTokenService()->GetPendingRequests().empty())
       return true;
 #endif
     return url_factory_.GetFetcherByID(0);
@@ -227,8 +248,8 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void MakeOAuthTokenFetchSucceed() {
 #if defined(OS_ANDROID)
-    ASSERT_TRUE(token_service_->HasPendingRequest());
-    token_service_->IssueToken("fake_token");
+    ASSERT_TRUE(GetTokenService()->HasPendingRequest());
+    GetTokenService()->IssueToken("fake_token");
 #else
     ASSERT_TRUE(IsRequestActive());
     net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
@@ -340,9 +361,6 @@ class UserPolicySigninServiceTest : public testing::Test {
   net::TestURLFetcherFactory url_factory_;
 
   SigninManagerFake* signin_manager_;
-#if defined(OS_ANDROID)
-  FakeProfileOAuth2TokenService* token_service_;  // Not owned.
-#endif
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.
@@ -400,11 +418,43 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // Client registration should be in progress since we now have an oauth token.
   ASSERT_TRUE(IsRequestActive());
+}
+
+TEST_F(UserPolicySigninServiceTest, InitWhileSignedInOAuthError) {
+  // Set the user as signed in.
+  SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
+      kTestUser);
+
+  // Let the SigninService know that the profile has been created.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED,
+      content::Source<Profile>(profile_.get()),
+      content::NotificationService::NoDetails());
+
+  // UserCloudPolicyManager should be initialized.
+  ASSERT_TRUE(manager_->core()->service());
+
+  // Complete initialization of the store.
+  mock_store_->NotifyStoreLoaded();
+
+  // No oauth access token yet, so client registration should be deferred.
+  ASSERT_FALSE(IsRequestActive());
+
+  // Make oauth token available.
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+
+  // Client registration should be in progress since we now have an oauth token.
+  ASSERT_TRUE(IsRequestActive());
+
+  // Now fail the access token fetch.
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  GetTokenService()->IssueErrorForAllPendingRequests(error);
+  ASSERT_FALSE(IsRequestActive());
 }
 
 TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
@@ -427,8 +477,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   ASSERT_TRUE(manager_->core()->service());
@@ -457,8 +506,7 @@ TEST_F(UserPolicySigninServiceTest, SignInWithNonEnterpriseUser) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should not be initialized and there should be no
   // DMToken request active.
@@ -483,8 +531,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
       kTestUser);
 
   // Make oauth token available.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   ASSERT_TRUE(manager_->core()->service());
@@ -517,8 +564,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
       kTestUser);
 
   // Make oauth token available.
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   ASSERT_TRUE(manager_->core()->service());
@@ -578,8 +624,8 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
 
   // Cause the access token fetch to fail - callback should be invoked.
 #if defined(OS_ANDROID)
-  ASSERT_TRUE(token_service_->HasPendingRequest());
-  token_service_->IssueToken("");
+  ASSERT_TRUE(GetTokenService()->HasPendingRequest());
+  GetTokenService()->IssueToken("");
 #else
   net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));

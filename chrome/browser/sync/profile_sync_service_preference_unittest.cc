@@ -123,7 +123,10 @@ class ProfileSyncServicePreferenceTest
 
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.reset(new TestingProfile());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     prefs_ = profile_->GetTestingPrefService();
@@ -156,8 +159,6 @@ class ProfileSyncServicePreferenceTest
     SigninManagerBase* signin =
          SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_service_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));

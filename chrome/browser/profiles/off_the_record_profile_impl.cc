@@ -99,7 +99,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 
 void OffTheRecordProfileImpl::Init() {
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
-      this, false);
+      this);
 
   DCHECK_NE(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(profile_->GetPrefs()));
@@ -496,4 +496,3 @@ PrefProxyConfigTracker* OffTheRecordProfileImpl::CreateProxyConfigTracker() {
   return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
       GetPrefs(), g_browser_process->local_state());
 }
-

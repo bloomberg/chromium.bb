@@ -36,24 +36,22 @@ std::string CombineScopes(const OAuth2TokenService::ScopeSet& scopes) {
   return scope;
 }
 
+// Callback from FetchOAuth2TokenWithUsername().
+// Arguments:
+// - the error, or NONE if the token fetch was successful.
+// - the OAuth2 access token.
+// - the expiry time of the token (may be null, indicating that the expiry
+//   time is unknown.
+typedef base::Callback<void(
+    const GoogleServiceAuthError&, const std::string&, const base::Time&)>
+        FetchOAuth2TokenCallback;
+
 }  // namespace
 
 AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService() {
 }
 
 AndroidProfileOAuth2TokenService::~AndroidProfileOAuth2TokenService() {
-}
-
-scoped_ptr<OAuth2TokenService::Request>
-    AndroidProfileOAuth2TokenService::StartRequest(
-        const OAuth2TokenService::ScopeSet& scopes,
-        OAuth2TokenService::Consumer* consumer) {
-  const std::string& sync_username =
-      SigninManagerFactory::GetForProfile(profile())->
-          GetAuthenticatedUsername();
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(!sync_username.empty());
-  return StartRequestForUsername(sync_username, scopes, consumer);
 }
 
 scoped_ptr<OAuth2TokenService::Request>
@@ -64,10 +62,7 @@ scoped_ptr<OAuth2TokenService::Request>
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
-  FetchOAuth2Token(
-      username,
-      CombineScopes(scopes),
-      base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr()));
+  FetchOAuth2TokenWithUsername(request.get(), username, scopes);
   return request.PassAs<Request>();
 }
 
@@ -91,20 +86,36 @@ void AndroidProfileOAuth2TokenService::InvalidateToken(
 }
 
 void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
+    RequestImpl* request,
+    net::URLRequestContextGetter* getter,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const OAuth2TokenService::ScopeSet& scopes) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::string username = SigninManagerFactory::GetForProfile(profile())->
+      GetAuthenticatedUsername();
+  DCHECK(!username.empty());
+  // Just ignore client_id, getter, etc since we don't use them on Android.
+  FetchOAuth2TokenWithUsername(request, username, scopes);
+}
+
+void AndroidProfileOAuth2TokenService::FetchOAuth2TokenWithUsername(
+    RequestImpl* request,
     const std::string& username,
-    const std::string& scope,
-    const FetchOAuth2TokenCallback& callback) {
+    const OAuth2TokenService::ScopeSet& scopes) {
   JNIEnv* env = AttachCurrentThread();
+  std::string scope = CombineScopes(scopes);
   ScopedJavaLocalRef<jstring> j_username =
       ConvertUTF8ToJavaString(env, username);
   ScopedJavaLocalRef<jstring> j_scope =
       ConvertUTF8ToJavaString(env, scope);
 
-  // Allocate a copy of the callback on the heap, because the callback
+  // Allocate a copy of the request WeakPtr on the heap, because the object
   // needs to be passed through JNI as an int.
   // It will be passed back to OAuth2TokenFetched(), where it will be freed.
   scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
-      new FetchOAuth2TokenCallback(callback));
+      new FetchOAuth2TokenCallback(base::Bind(&RequestImpl::InformConsumer,
+                                              request->AsWeakPtr())));
 
   // Call into Java to get a new token.
   Java_AndroidProfileOAuth2TokenServiceHelper_getOAuth2AuthToken(
@@ -121,11 +132,8 @@ void OAuth2TokenFetched(JNIEnv* env, jclass clazz,
     jboolean result,
     jint nativeCallback) {
   std::string token = ConvertJavaStringToUTF8(env, authToken);
-  scoped_ptr<AndroidProfileOAuth2TokenService::FetchOAuth2TokenCallback>
-      heap_callback(
-          reinterpret_cast<
-              AndroidProfileOAuth2TokenService::FetchOAuth2TokenCallback*>(
-                  nativeCallback));
+  scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
+      reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
   GoogleServiceAuthError err(result ?
                              GoogleServiceAuthError::NONE :
                              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);

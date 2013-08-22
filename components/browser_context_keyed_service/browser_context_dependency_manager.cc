@@ -40,9 +40,22 @@ void BrowserContextDependencyManager::AddEdge(
 }
 
 void BrowserContextDependencyManager::CreateBrowserContextServices(
-    content::BrowserContext* context, bool is_testing_context) {
+    content::BrowserContext* context) {
+  DoCreateBrowserContextServices(context, false, false);
+}
+
+void BrowserContextDependencyManager::CreateBrowserContextServicesForTest(
+    content::BrowserContext* context,
+    bool force_register_prefs) {
+  DoCreateBrowserContextServices(context, true, force_register_prefs);
+}
+
+void BrowserContextDependencyManager::DoCreateBrowserContextServices(
+    content::BrowserContext* context,
+    bool is_testing_context,
+    bool force_register_prefs) {
   TRACE_EVENT0("browser",
-    "BrowserContextDependencyManager::CreateBrowserContextServices")
+    "BrowserContextDependencyManager::DoCreateBrowserContextServices")
 #ifndef NDEBUG
   // Unmark |context| as dead. This exists because of unit tests, which will
   // often have similar stack structures. 0xWhatever might be created, go out
@@ -64,9 +77,12 @@ void BrowserContextDependencyManager::CreateBrowserContextServices(
     BrowserContextKeyedBaseFactory* factory =
         static_cast<BrowserContextKeyedBaseFactory*>(construction_order[i]);
 
-    if (!context->IsOffTheRecord()) {
+    if (!context->IsOffTheRecord() || force_register_prefs) {
       // We only register preferences on normal contexts because the incognito
-      // context shares the pref service with the normal one.
+      // context shares the pref service with the normal one. Always register
+      // for standalone testing contexts (testing contexts that don't have an
+      // "original" profile set) as otherwise the preferences won't be
+      // registered.
       factory->RegisterUserPrefsOnBrowserContext(context);
     }
 

@@ -72,7 +72,7 @@ void UserPolicySigninServiceBase::Observe(
     const content::NotificationDetails& details) {
   // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
   // skip initialization.
-  if (!GetManager() || !SigninManagerFactory::GetForProfile(profile_)) {
+  if (!GetManager() || !GetSigninManager()) {
     DVLOG(1) << "Skipping initialization for tests due to missing components.";
     return;
   }
@@ -133,6 +133,10 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
 }
 
 void UserPolicySigninServiceBase::Shutdown() {
+  PrepareForUserCloudPolicyManagerShutdown();
+}
+
+void UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown() {
   UserCloudPolicyManager* manager = GetManager();
   if (manager && manager->core()->client())
     manager->core()->client()->RemoveObserver(this);
@@ -181,9 +185,7 @@ bool UserPolicySigninServiceBase::ShouldLoadPolicyForUser(
 }
 
 void UserPolicySigninServiceBase::InitializeOnProfileReady() {
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  std::string username = signin_manager->GetAuthenticatedUsername();
+  std::string username = GetSigninManager()->GetAuthenticatedUsername();
   if (username.empty())
     ShutdownUserCloudPolicyManager();
   else
@@ -230,7 +232,7 @@ void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
 }
 
 void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
-  Shutdown();
+  PrepareForUserCloudPolicyManagerShutdown();
   UserCloudPolicyManager* manager = GetManager();
   if (manager)
     manager->DisconnectAndRemovePolicy();
@@ -238,6 +240,10 @@ void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
 
 UserCloudPolicyManager* UserPolicySigninServiceBase::GetManager() {
   return UserCloudPolicyManagerFactory::GetForProfile(profile_);
+}
+
+SigninManager* UserPolicySigninServiceBase::GetSigninManager() {
+  return SigninManagerFactory::GetForProfile(profile_);
 }
 
 }  // namespace policy

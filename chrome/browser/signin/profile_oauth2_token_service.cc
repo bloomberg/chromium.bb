@@ -68,8 +68,6 @@ ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
 }
 
 void ProfileOAuth2TokenService::Initialize(Profile* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
   DCHECK(profile);
   DCHECK(!profile_);
   profile_ = profile;
@@ -93,6 +91,7 @@ void ProfileOAuth2TokenService::Initialize(Profile* profile) {
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
+  DCHECK(profile_) << "Shutdown() called without matching call to Initialize()";
   CancelAllRequests();
   signin_global_error_->RemoveProvider(this);
   GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
@@ -106,6 +105,10 @@ std::string ProfileOAuth2TokenService::GetRefreshToken() {
     return std::string();
   }
   return token_service->GetOAuth2LoginRefreshToken();
+}
+
+net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {
+  return profile_->GetRequestContext();
 }
 
 void ProfileOAuth2TokenService::UpdateAuthError(
@@ -162,10 +165,6 @@ void ProfileOAuth2TokenService::Observe(
 
 GoogleServiceAuthError ProfileOAuth2TokenService::GetAuthStatus() const {
   return last_auth_error_;
-}
-
-net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {
-  return profile_->GetRequestContext();
 }
 
 void ProfileOAuth2TokenService::RegisterCacheEntry(

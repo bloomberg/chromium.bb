@@ -111,10 +111,13 @@ class EventRouterForwarderTest : public testing::Test {
   }
 
   TestingProfile* CreateIncognitoProfile(TestingProfile* base) {
-    TestingProfile* incognito = new TestingProfile;  // Owned by |base|.
-    incognito->set_incognito(true);
-    base->SetOffTheRecordProfile(incognito);
-    return incognito;
+    TestingProfile::Builder builder;
+    builder.SetIncognito();
+    scoped_ptr<TestingProfile> incognito = builder.Build();
+    TestingProfile* incognito_ptr = incognito.get();
+    // Incognito profile now owned by |base|
+    base->SetOffTheRecordProfile(incognito.PassAs<Profile>());
+    return incognito_ptr;
   }
 
   base::MessageLoopForUI message_loop_;

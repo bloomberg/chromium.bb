@@ -86,10 +86,10 @@ class MenuManagerTest : public testing::Test {
   }
 
  protected:
-  TestingProfile profile_;
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  TestingProfile profile_;
 
   MenuManager manager_;
   ExtensionList extensions_;

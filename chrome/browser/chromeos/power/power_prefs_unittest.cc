@@ -152,17 +152,19 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   scoped_ptr<TestingPrefServiceSyncable> login_profile_prefs(
       new TestingPrefServiceSyncable);
   chrome::RegisterLoginProfilePrefs(login_profile_prefs->registry());
-  scoped_ptr<TestingProfile> login_profile_owner(new TestingProfile(
-      profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile),
-      NULL,
-      scoped_refptr<ExtensionSpecialStoragePolicy>(),
-      scoped_ptr<PrefServiceSyncable>(login_profile_prefs.release())));
+  TestingProfile::Builder builder;
+  builder.SetPath(
+      profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile));
+  builder.SetPrefService(login_profile_prefs.PassAs<PrefServiceSyncable>());
+  builder.SetIncognito();
+  scoped_ptr<TestingProfile> login_profile_owner(builder.Build());
+
   TestingProfile* login_profile = login_profile_owner.get();
   TestingProfile* login_profile_parent = profile_manager_.CreateTestingProfile(
       chrome::kInitialProfile);
-  login_profile_parent->SetOffTheRecordProfile(login_profile_owner.release());
+  login_profile_parent->SetOffTheRecordProfile(
+      login_profile_owner.PassAs<Profile>());
   login_profile->SetOriginalProfile(login_profile_parent);
-  login_profile->set_incognito(true);
 
   // Inform power_prefs_ that the login screen is being shown.
   power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,

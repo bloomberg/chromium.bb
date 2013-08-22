@@ -755,7 +755,7 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
-      this, false);
+      this);
 
   DCHECK(!net_pref_observer_);
   {

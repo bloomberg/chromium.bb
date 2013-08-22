@@ -46,7 +46,13 @@ class BookmarkContextMenuControllerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile());
+    Reset(false);
+  }
+  void Reset(bool incognito) {
+    TestingProfile::Builder builder;
+    if (incognito)
+      builder.SetIncognito();
+    profile_ = builder.Build();
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
@@ -237,11 +243,12 @@ TEST_F(BookmarkContextMenuControllerTest, MultipleFoldersWithURLs) {
 
 // Tests the enabled state of open incognito.
 TEST_F(BookmarkContextMenuControllerTest, DisableIncognito) {
+  // Create a new incognito profile.
+  Reset(true);
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(model_->bookmark_bar_node()->GetChild(0));
   BookmarkContextMenuController controller(
       NULL, NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes);
-  profile_->set_incognito(true);
   EXPECT_FALSE(controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_INCOGNITO));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO));

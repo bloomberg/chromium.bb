@@ -315,7 +315,6 @@ OAuth2TokenService::OAuth2TokenService() {
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Release all the pending fetchers.
   STLDeleteContainerPairSecondPointers(
       pending_fetchers_.begin(), pending_fetchers_.end());
@@ -330,7 +329,6 @@ void OAuth2TokenService::RemoveObserver(Observer* observer) {
 }
 
 bool OAuth2TokenService::RefreshTokenIsAvailable() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return !GetRefreshToken().empty();
 }
 
@@ -383,20 +381,34 @@ OAuth2TokenService::StartRequestForClientWithContext(
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
 
-  std::string refresh_token = GetRefreshToken();
-  if (refresh_token.empty()) {
+  if (!RefreshTokenIsAvailable()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &RequestImpl::InformConsumer,
         request->AsWeakPtr(),
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::USER_NOT_SIGNED_UP),
+        GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP),
         std::string(),
         base::Time()));
     return request.PassAs<Request>();
   }
 
-  if (HasCacheEntry(scopes))
-    return StartCacheLookupRequest(scopes, consumer);
+  if (HasCacheEntry(scopes)) {
+    StartCacheLookupRequest(request.get(), scopes, consumer);
+  } else {
+    FetchOAuth2Token(request.get(),
+                     getter,
+                     client_id,
+                     client_secret,
+                     scopes);
+  }
+  return request.PassAs<Request>();
+}
+
+void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
+                                          net::URLRequestContextGetter* getter,
+                                          const std::string& client_id,
+                                          const std::string& client_secret,
+                                          const ScopeSet& scopes) {
+  std::string refresh_token = GetRefreshToken();
 
   // If there is already a pending fetcher for |scopes| and |refresh_token|,
   // simply register this |request| for those results rather than starting
@@ -406,7 +418,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
       pending_fetchers_.find(fetch_parameters);
   if (iter != pending_fetchers_.end()) {
     iter->second->AddWaitingRequest(request->AsWeakPtr());
-    return request.PassAs<Request>();
+    return;
   }
 
   pending_fetchers_[fetch_parameters] =
@@ -417,23 +429,20 @@ OAuth2TokenService::StartRequestForClientWithContext(
                               refresh_token,
                               scopes,
                               request->AsWeakPtr());
-  return request.PassAs<Request>();
 }
 
-scoped_ptr<OAuth2TokenService::Request>
-    OAuth2TokenService::StartCacheLookupRequest(
-        const OAuth2TokenService::ScopeSet& scopes,
-        OAuth2TokenService::Consumer* consumer) {
+void OAuth2TokenService::StartCacheLookupRequest(
+    RequestImpl* request,
+    const OAuth2TokenService::ScopeSet& scopes,
+    OAuth2TokenService::Consumer* consumer) {
   CHECK(HasCacheEntry(scopes));
   const CacheEntry* cache_entry = GetCacheEntry(scopes);
-  scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &RequestImpl::InformConsumer,
       request->AsWeakPtr(),
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       cache_entry->access_token,
       cache_entry->expiration_date));
-  return request.PassAs<Request>();
 }
 
 void OAuth2TokenService::InvalidateToken(const ScopeSet& scopes,

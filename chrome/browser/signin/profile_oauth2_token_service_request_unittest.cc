@@ -181,9 +181,11 @@ class ProfileOAuth2TokenServiceRequestTest : public testing::Test {
 void ProfileOAuth2TokenServiceRequestTest::SetUp() {
   ui_thread_.reset(new content::TestBrowserThread(content::BrowserThread::UI,
                                                   &ui_loop_));
-  profile_.reset(new TestingProfile());
-  ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-      profile_.get(), &CreateOAuth2TokenService);
+  TestingProfile::Builder builder;
+  builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                            &CreateOAuth2TokenService);
+  profile_ = builder.Build();
+
   oauth2_service_ = (MockProfileOAuth2TokenService*)
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
 }
