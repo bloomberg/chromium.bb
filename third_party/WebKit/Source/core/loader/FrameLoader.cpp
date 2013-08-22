@@ -1358,7 +1358,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
     m_documentLoader->setTriggeringAction(action);
 
     const ResourceRequest& request = action.resourceRequest();
-    if (!m_documentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckStandard))
+    if (!m_documentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckFragment))
         return;
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.

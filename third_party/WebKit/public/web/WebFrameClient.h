@@ -37,6 +37,7 @@
 #include "../platform/WebURLError.h"
 #include "../platform/WebURLRequest.h"
 #include "WebDOMMessageEvent.h"
+#include "WebDataSource.h"
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
 #include "WebNavigationType.h"
@@ -137,7 +138,7 @@ public:
     // The client may choose to alter the navigation policy.  Otherwise,
     // defaultPolicy should just be returned.
     virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebFrame*, const WebURLRequest&, WebNavigationType,
+        WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
 

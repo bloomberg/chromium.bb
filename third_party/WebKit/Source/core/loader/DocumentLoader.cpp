@@ -400,7 +400,8 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
 
     NavigationPolicy policy = NavigationPolicyCurrentTab;
     m_triggeringAction.specifiesNavigationPolicy(&policy);
-    policy = frameLoader()->client()->decidePolicyForNavigation(request, m_triggeringAction.type(), policy, policyCheckLoadType == PolicyCheckRedirect);
+    if (policyCheckLoadType != PolicyCheckFragment)
+        policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
     if (policy == NavigationPolicyCurrentTab)
         return true;
     if (policy == NavigationPolicyIgnore)
@@ -470,7 +471,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     appendRedirect(newRequest.url());
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-    if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckRedirect))
+    if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckStandard))
         stopLoadingForPolicyChange();
 }
 

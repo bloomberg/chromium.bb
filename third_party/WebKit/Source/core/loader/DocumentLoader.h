@@ -126,7 +126,7 @@ namespace WebCore {
 
         enum PolicyCheckLoadType {
             PolicyCheckStandard,
-            PolicyCheckRedirect
+            PolicyCheckFragment
         };
         bool shouldContinueForNavigationPolicy(const ResourceRequest&, PolicyCheckLoadType);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }

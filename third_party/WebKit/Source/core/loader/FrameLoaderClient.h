@@ -114,7 +114,7 @@ class FetchRequest;
 
         virtual void dispatchDidLayout(LayoutMilestones) { }
 
-        virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool isRedirect) = 0;
+        virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
 
         virtual void dispatchWillRequestResource(FetchRequest*) { }
 

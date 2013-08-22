@@ -451,22 +451,13 @@ void FrameLoaderClientImpl::dispatchDidLayout(LayoutMilestones milestones)
         m_webFrame->client()->didFirstVisuallyNonEmptyLayout(m_webFrame);
 }
 
-NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, NavigationType type, NavigationPolicy policy, bool /*isRedirect*/)
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy)
 {
-
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
-
-    // FIXME: We need to pull isRedirect off of provisionalDataSourceImpl() for compat reasons,
-    // but it seems wrong, since the request that triggered this policy check might not be the
-    // provisional data source.
-    WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
-    if (!ds)
-        return policy;
-
-    WrappedResourceRequest webRequest(request);
-    WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(
-        m_webFrame, webRequest, WebDataSourceImpl::toWebNavigationType(type), static_cast<WebNavigationPolicy>(policy), ds->isRedirect());
+    WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(loader);
+    WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(m_webFrame, ds->extraData(), WrappedResourceRequest(request),
+        ds->navigationType(), static_cast<WebNavigationPolicy>(policy), ds->isRedirect());
     return static_cast<NavigationPolicy>(webPolicy);
 }
 
