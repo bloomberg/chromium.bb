@@ -45,7 +45,6 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/base_layout_manager.h"
-#include "ash/wm/capture_controller.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/event_client_impl.h"
@@ -303,7 +302,6 @@ Shell::~Shell() {
   tooltip_controller_.reset();
   event_client_.reset();
   window_cycle_controller_.reset();
-  capture_controller_.reset();
   nested_dispatcher_controller_.reset();
   user_action_client_.reset();
   visibility_controller_.reset();
@@ -547,8 +545,6 @@ void Shell::Init() {
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());
-
-  capture_controller_.reset(new internal::CaptureController);
 
   // The keyboard system must be initialized before the RootWindowController is
   // created.
@@ -922,7 +918,6 @@ void Shell::InitRootWindowController(
   DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
-  DCHECK(capture_controller_.get());
   DCHECK(window_cycle_controller_.get());
 
   aura::client::SetFocusClient(root_window, focus_client_.get());
@@ -935,7 +930,6 @@ void Shell::InitRootWindowController(
   }
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
-  aura::client::SetCaptureClient(root_window, capture_controller_.get());
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_controller_.get());
   aura::client::SetCursorClient(root_window, &cursor_manager_);

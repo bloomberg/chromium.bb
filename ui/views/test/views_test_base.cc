@@ -12,6 +12,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/views/corewm/capture_controller.h"
 #endif
 
 namespace views {
@@ -52,7 +53,8 @@ void ViewsTestBase::TearDown() {
   ui::ShutdownInputMethodForTesting();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
-#endif
+  CHECK(!corewm::ScopedCaptureClient::IsActive());
+#endif  // USE_AURA
 }
 
 void ViewsTestBase::RunPendingMessages() {

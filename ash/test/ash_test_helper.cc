@@ -16,6 +16,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/corewm/capture_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -103,6 +104,8 @@ void AshTestHelper::TearDown() {
 
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
+
+  CHECK(!views::corewm::ScopedCaptureClient::IsActive());
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {

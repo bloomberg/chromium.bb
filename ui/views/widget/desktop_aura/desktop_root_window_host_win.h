@@ -20,7 +20,6 @@ class ScreenPositionClient;
 
 namespace views {
 class DesktopActivationClient;
-class DesktopCaptureClient;
 class DesktopCursorClient;
 class DesktopDispatcherClient;
 class DesktopDragDropClientWin;
@@ -212,7 +211,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   aura::RootWindow* root_window_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
-  scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   // Depends on focus_manager_.

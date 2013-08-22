@@ -23,6 +23,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/input_method_event_filter.h"
@@ -216,6 +217,11 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter(
       new corewm::InputMethodEventFilter(root->GetAcceleratedWidget()));
   input_method_event_filter_->SetInputMethodPropertyInRootWindow(root);
   root_window_event_filter_->AddHandler(input_method_event_filter_.get());
+}
+
+void DesktopNativeWidgetAura::CreateCaptureClient(aura::RootWindow* root) {
+  DCHECK(!capture_client_.get());
+  capture_client_.reset(new corewm::ScopedCaptureClient(root));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

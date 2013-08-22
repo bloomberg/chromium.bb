@@ -84,6 +84,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
+  Window* mouse_moved_handler() { return mouse_moved_handler_; }
 
   // Initializes the root window.
   void Init();
@@ -277,10 +278,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
   bool QueryMouseLocationForTest(gfx::Point* point) const;
-
-  // Clears internal mouse state (such as mouse ups should be sent to the same
-  // window that ate mouse downs).
-  void ClearMouseHandlers();
 
   void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
   gfx::Transform GetRootTransform() const;

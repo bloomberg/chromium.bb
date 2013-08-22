@@ -58,6 +58,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -221,11 +222,15 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetStackingClient(root_window, stacking_controller_.get());
+  capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
 }
 
 RootWindowController::~RootWindowController() {
   Shutdown();
   root_window_.reset();
+  // The CaptureClient needs to be around for as long as the RootWindow is
+  // valid.
+  capture_client_.reset();
 }
 
 // static

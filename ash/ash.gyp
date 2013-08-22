@@ -384,8 +384,6 @@
         'wm/base_layout_manager.h',
         'wm/boot_splash_screen_chromeos.cc',
         'wm/boot_splash_screen_chromeos.h',
-        'wm/capture_controller.cc',
-        'wm/capture_controller.h',
         'wm/coordinate_conversion.cc',
         'wm/coordinate_conversion.h',
         'wm/custom_frame_view_ash.cc',

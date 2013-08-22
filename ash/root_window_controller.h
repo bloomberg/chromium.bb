@@ -33,6 +33,7 @@ class Widget;
 namespace corewm {
 class InputMethodEventFilter;
 class RootWindowEventFilter;
+class ScopedCaptureClient;
 }
 }
 
@@ -281,6 +282,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   scoped_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
   scoped_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
+  scoped_ptr<views::corewm::ScopedCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

@@ -33,7 +33,6 @@
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
-#include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -891,8 +890,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
 
-  capture_client_.reset(new views::DesktopCaptureClient(root_window_));
-  aura::client::SetCaptureClient(root_window_, capture_client_.get());
+  desktop_native_widget_aura_->CreateCaptureClient(root_window_);
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
@@ -1328,8 +1326,8 @@ DesktopRootWindowHost* DesktopRootWindowHost::Create(
     DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds) {
   return new DesktopRootWindowHostX11(native_widget_delegate,
-                                        desktop_native_widget_aura,
-                                        initial_bounds);
+                                      desktop_native_widget_aura,
+                                      initial_bounds);
 }
 
 // static

@@ -689,12 +689,6 @@ bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
   return host_->QueryMouseLocation(point);
 }
 
-void RootWindow::ClearMouseHandlers() {
-  mouse_pressed_handler_ = NULL;
-  mouse_moved_handler_ = NULL;
-  mouse_event_dispatch_target_ = NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
@@ -964,7 +958,9 @@ void RootWindow::OnHostLostWindowCapture() {
 }
 
 void RootWindow::OnHostLostMouseGrab() {
-  ClearMouseHandlers();
+  mouse_pressed_handler_ = NULL;
+  mouse_moved_handler_ = NULL;
+  mouse_event_dispatch_target_ = NULL;
 }
 
 void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
