@@ -786,6 +786,9 @@ static String externalRepresentation(RenderBox* renderer, RenderAsTextBehavior b
 
 String externalRepresentation(Frame* frame, RenderAsTextBehavior behavior)
 {
+    if (!(behavior & RenderAsTextDontUpdateLayout))
+        frame->document()->updateLayout();
+
     RenderObject* renderer = frame->contentRenderer();
     if (!renderer || !renderer->isBox())
         return String();
@@ -793,21 +796,20 @@ String externalRepresentation(Frame* frame, RenderAsTextBehavior behavior)
     PrintContext printContext(frame);
     if (behavior & RenderAsTextPrintingMode)
         printContext.begin(toRenderBox(renderer)->width());
-    if (!(behavior & RenderAsTextDontUpdateLayout))
-        frame->document()->updateLayout();
 
     return externalRepresentation(toRenderBox(renderer), behavior);
 }
 
 String externalRepresentation(Element* element, RenderAsTextBehavior behavior)
 {
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox())
-        return String();
     // Doesn't support printing mode.
     ASSERT(!(behavior & RenderAsTextPrintingMode));
     if (!(behavior & RenderAsTextDontUpdateLayout) && element->document())
         element->document()->updateLayout();
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox())
+        return String();
 
     return externalRepresentation(toRenderBox(renderer), behavior | RenderAsTextShowAllLayers);
 }
