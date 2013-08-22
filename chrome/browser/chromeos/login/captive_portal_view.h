@@ -25,6 +25,8 @@ class CaptivePortalView : public SimpleWebViewDialog {
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
 
   // Overridden from content::WebContentsDelegate:
   virtual void NavigationStateChanged(const content::WebContents* source,
@@ -41,6 +43,6 @@ class CaptivePortalView : public SimpleWebViewDialog {
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalView);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CAPTIVE_PORTAL_VIEW_H_

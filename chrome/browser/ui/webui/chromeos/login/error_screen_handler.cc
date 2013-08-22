@@ -9,6 +9,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -74,9 +76,13 @@ void ErrorScreenHandler::Hide() {
 
 void ErrorScreenHandler::FixCaptivePortal() {
   if (!captive_portal_window_proxy_.get()) {
+    content::WebContents* web_contents =
+        LoginDisplayHostImpl::default_host()->GetWebUILoginView()->
+            GetWebContents();
     captive_portal_window_proxy_.reset(
         new CaptivePortalWindowProxy(network_state_informer_.get(),
-                                     GetNativeWindow()));
+                                     GetNativeWindow(),
+                                     web_contents));
   }
   captive_portal_window_proxy_->ShowIfRedirected();
 }

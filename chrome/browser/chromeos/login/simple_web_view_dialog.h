@@ -7,12 +7,9 @@
 
 #include <string>
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/command_updater_delegate.h"
-#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/controls/button/image_button.h"
@@ -44,9 +41,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
                             public ToolbarModelDelegate,
                             public CommandUpdaterDelegate,
                             public content::PageNavigator,
-                            public content::WebContentsDelegate,
-                            public ChromeWebModalDialogManagerDelegate,
-                            public web_modal::WebContentsModalDialogHost {
+                            public content::WebContentsDelegate {
  public:
   explicit SimpleWebViewDialog(Profile* profile);
   virtual ~SimpleWebViewDialog();
@@ -102,18 +97,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
       int id,
       WindowOpenDisposition) OVERRIDE;
 
-  // Implements ChromeWebModalDialogManagerDelegate:
-  virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() OVERRIDE;
-
-  // Implements web_modal::WebContentsModalDialogHost:
-  virtual gfx::NativeView GetHostView() const OVERRIDE;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
-  virtual void AddObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
-
  private:
   void LoadImages();
   void UpdateButtons();
@@ -134,8 +117,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
   scoped_ptr<views::WebView> web_view_container_;
 
   scoped_ptr<StubBubbleModelDelegate> bubble_model_delegate_;
-
-  ObserverList<web_modal::WebContentsModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleWebViewDialog);
 };

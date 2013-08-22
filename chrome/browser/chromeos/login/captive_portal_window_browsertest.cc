@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 
@@ -76,8 +77,11 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
     CHECK(LoginDisplayHostImpl::default_host());
     gfx::NativeWindow native_window =
         LoginDisplayHostImpl::default_host()->GetNativeWindow();
+    content::WebContents* web_contents =
+        LoginDisplayHostImpl::default_host()->GetWebUILoginView()->
+            GetWebContents();
     captive_portal_window_proxy_.reset(
-        new CaptivePortalWindowProxy(&delegate_, native_window));
+        new CaptivePortalWindowProxy(&delegate_, native_window, web_contents));
   }
 
  private:
