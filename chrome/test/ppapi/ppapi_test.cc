@@ -328,9 +328,8 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
   EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
   EXPECT_TRUE(base::PathExists(plugin_lib));
 
-  // Enable running NaCl outside of the store.
+  // Enable running (non-portable) NaCl outside of the Chrome web store.
   command_line->AppendSwitch(switches::kEnableNaCl);
-  command_line->AppendSwitch(switches::kEnablePnacl);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
@@ -365,9 +364,8 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
   EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
   EXPECT_TRUE(base::PathExists(plugin_lib));
 
-  // Enable running NaCl outside of the store.
+  // Enable running (non-portable) NaCl outside of the Chrome web store.
   command_line->AppendSwitch(switches::kEnableNaCl);
-  command_line->AppendSwitch(switches::kEnablePnacl);
 }
 
 // Append the correct mode and testcase string

@@ -34,7 +34,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SuccessfulLoadUMA, {
                                 LOAD_OK, 1);
 
   // Make sure we have other important histograms.
-  if (!IsPnacl()) {
+  if (!IsAPnaclTest()) {
     histograms.ExpectTotalCount("NaCl.Perf.StartupTime.LoadModule", 1);
     histograms.ExpectTotalCount("NaCl.Perf.StartupTime.Total", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);

@@ -1208,23 +1208,16 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
     if (pnacl_options.translate()) {
-      if (this->nacl_interface()->IsPnaclEnabled()) {
-        // Check whether PNaCl has been crashing "frequently".  If so, report
-        // a load error.
-        pp::CompletionCallback translate_callback =
-            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
-        // Will always call the callback on success or failure.
-        pnacl_coordinator_.reset(
-            PnaclCoordinator::BitcodeToNative(this,
-                                              program_url,
-                                              pnacl_options,
-                                              translate_callback));
-        return;
-      } else {
-        error_info.SetReport(ERROR_PNACL_NOT_ENABLED,
-                             "PNaCl has not been enabled (e.g., by setting "
-                             "the --enable-pnacl flag).");
-      }
+      CHECK(nacl_interface()->IsPnaclEnabled());
+      pp::CompletionCallback translate_callback =
+          callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+      // Will always call the callback on success or failure.
+      pnacl_coordinator_.reset(
+          PnaclCoordinator::BitcodeToNative(this,
+                                            program_url,
+                                            pnacl_options,
+                                            translate_callback));
+      return;
     } else {
       // Try the fast path first. This will only block if the file is installed.
       if (OpenURLFast(program_url, &nexe_downloader_)) {

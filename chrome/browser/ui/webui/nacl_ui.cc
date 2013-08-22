@@ -249,9 +249,9 @@ void NaClDomHandler::AddPnaclInfo(ListValue* list) {
   string16 pnacl_enabled_string = ASCIIToUTF16("Enabled");
   if (!isPluginEnabled(0)) {
     pnacl_enabled_string = ASCIIToUTF16("Disabled in profile prefs");
-  } else if (!CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnablePnacl)) {
-    pnacl_enabled_string = ASCIIToUTF16("Not enabled by flag '--enable-pnacl'");
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kDisablePnacl)) {
+    pnacl_enabled_string = ASCIIToUTF16("Disabled by flag '--disable-pnacl'");
   }
   AddPair(list,
           ASCIIToUTF16("Portable Native Client (PNaCl)"),

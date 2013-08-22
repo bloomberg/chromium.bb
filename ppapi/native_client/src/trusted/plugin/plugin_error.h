@@ -93,8 +93,8 @@ enum PluginErrorCode {
   ERROR_PNACL_LLC_INTERNAL = 65,
   ERROR_PNACL_LD_INTERNAL = 66,
   ERROR_PNACL_CREATE_TEMP = 67,
-  // Remove this next code when pnacl is no longer behind a flag (when we
-  // remove the --enable-pnacl flag).
+  // This entry is no longer used, but should not be removed, because UMA
+  // numbers need to be kept consistent.
   ERROR_PNACL_NOT_ENABLED = 68,
   ERROR_MANIFEST_NOACCESS_URL = 69,
   ERROR_NEXE_NOACCESS_URL = 70,

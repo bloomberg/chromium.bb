@@ -337,29 +337,19 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "
             "pulling down and translating.\n");
-    if (plugin_->nacl_interface()->IsPnaclEnabled()) {
-      pp::CompletionCallback translate_callback =
-          WeakRefNewCallback(
-              anchor_,
-              this,
-              &PluginReverseInterface::BitcodeTranslate_MainThreadContinuation,
-              open_cont);
-      // Will always call the callback on success or failure.
-      pnacl_coordinator_.reset(
-          PnaclCoordinator::BitcodeToNative(plugin_,
-                                            mapped_url,
-                                            pnacl_options,
-                                            translate_callback));
-    } else {
-      nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done...
-      p->file_info->desc = -1;  // but failed.
-      p->error_info->SetReport(ERROR_PNACL_NOT_ENABLED,
-                               "ServiceRuntime: GetPnaclFd failed -- pnacl not "
-                               "enabled with --enable-pnacl.");
-      NaClXCondVarBroadcast(&cv_);
-      return;
-    }
+    CHECK(plugin_->nacl_interface()->IsPnaclEnabled());
+    pp::CompletionCallback translate_callback =
+        WeakRefNewCallback(
+            anchor_,
+            this,
+            &PluginReverseInterface::BitcodeTranslate_MainThreadContinuation,
+            open_cont);
+    // Will always call the callback on success or failure.
+    pnacl_coordinator_.reset(
+        PnaclCoordinator::BitcodeToNative(plugin_,
+                                          mapped_url,
+                                          pnacl_options,
+                                          translate_callback));
   }
   // p is deleted automatically
 }

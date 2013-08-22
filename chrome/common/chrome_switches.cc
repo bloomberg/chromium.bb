@@ -655,8 +655,8 @@ const char kEnablePanels[]                  = "enable-panels";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Enables the usage of Portable Native Client.
-const char kEnablePnacl[]                   = "enable-pnacl";
+// Disables the usage of Portable Native Client.
+const char kDisablePnacl[]                  = "disable-pnacl";
 
 // Disables crash throttling for Portable Native Client.
 const char kDisablePnaclCrashThrottling[]   = "disable-pnacl-crash-throttling";
