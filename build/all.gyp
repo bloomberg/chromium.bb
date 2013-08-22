@@ -474,8 +474,8 @@
 
             # We refer to content_shell directly rather than all_webkit
             # because we don't want the _unittests binaries.
-            '../content/content.gyp:content_browsertests',  
-            '../content/content.gyp:content_shell',  
+            '../content/content.gyp:content_browsertests',
+            '../content/content.gyp:content_shell',
 
             '../net/net.gyp:dns_fuzz_stub',
          ],
@@ -623,6 +623,7 @@
           'dependencies': [
             '../cc/cc_tests.gyp:cc_unittests',
             '../chrome/chrome.gyp:browser_tests',
+            '../chrome/chrome.gyp:gcapi_test',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:interactive_ui_tests',
             '../chrome/chrome.gyp:mini_installer_test',
@@ -754,6 +755,7 @@
               'type': 'none',
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
+                '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:policy_templates',
                 '../courgette/courgette.gyp:courgette64',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
