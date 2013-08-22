@@ -273,6 +273,28 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
     targetFrame->navigationScheduler()->scheduleFormSubmission(submission);
 }
 
+void FrameLoader::stopLoading()
+{
+    m_isComplete = true; // to avoid calling completed() in finishedParsing()
+
+    if (m_frame->document() && m_frame->document()->parsing()) {
+        finishedParsing();
+        m_frame->document()->setParsing(false);
+    }
+
+    if (Document* doc = m_frame->document()) {
+        // FIXME: HTML5 doesn't tell us to set the state to complete when aborting, but we do anyway to match legacy behavior.
+        // http://www.w3.org/Bugs/Public/show_bug.cgi?id=10537
+        doc->setReadyState(Document::Complete);
+
+        // FIXME: Should the DatabaseManager watch for something like ActiveDOMObject::stop() rather than being special-cased here?
+        DatabaseManager::manager().stopDatabases(doc, 0);
+    }
+
+    // FIXME: This will cancel redirection timer, which really needs to be restarted when restoring the frame from b/f cache.
+    m_frame->navigationScheduler()->cancel();
+}
+
 bool FrameLoader::closeURL()
 {
     history()->saveDocumentState();
@@ -280,6 +302,7 @@ bool FrameLoader::closeURL()
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
         m_frame->document()->dispatchUnloadEvents();
+    stopLoading();
 
     m_frame->editor()->clearUndoRedoOperations();
     return true;
@@ -877,23 +900,6 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
     // before we call stopLoading.
     if (clearProvisionalItemPolicy == ShouldClearProvisionalItem)
         history()->setProvisionalItem(0);
-
-    m_isComplete = true;
-
-    if (Document* document = m_frame->document()) {
-        if (document->parsing()) {
-            finishedParsing();
-            document->setParsing(false);
-        }
-
-        // FIXME: HTML5 doesn't tell us to set the state to complete when aborting, but we do anyway to match legacy behavior.
-        // http://www.w3.org/Bugs/Public/show_bug.cgi?id=10537
-        document->setReadyState(Document::Complete);
-
-        // FIXME: Should the DatabaseManager watch for something like ActiveDOMObject::stop() rather than being special-cased here?
-        DatabaseManager::manager().stopDatabases(document, 0);
-    }
-    m_frame->navigationScheduler()->cancel();
 
     for (RefPtr<Frame> child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->loader()->stopAllLoaders(clearProvisionalItemPolicy);
