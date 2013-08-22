@@ -119,6 +119,9 @@ class CommandDispatcher(object):
     It automatically tries to guess the intended command by handling typos or
     incomplete names.
     """
+    # Implicitly replace foo-bar to foo_bar since foo-bar is not a valid python
+    # symbol but it's faster to type.
+    name = name.replace('-', '_')
     commands = self.enumerate_commands()
     if name in commands:
       return commands[name]
