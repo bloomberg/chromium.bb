@@ -277,7 +277,7 @@ void CSSFontFaceSource::FontLoadHistograms::loadStarted()
         HistogramSupport::histogramEnumeration("WebFont.UsageType", NotStyledButUsed, UsageTypeMax);
     } else {
         int duration = static_cast<int>(currentTimeMS() - m_styledTime);
-        HistogramSupport::histogramCustomCounts("WebFont.LayoutLatency", duration, 0, 10000, 50);
+        HistogramSupport::histogramCustomCounts("WebFont.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
         HistogramSupport::histogramEnumeration("WebFont.UsageType", StyledAndUsed, UsageTypeMax);
     }
     m_styledTime = -1;
