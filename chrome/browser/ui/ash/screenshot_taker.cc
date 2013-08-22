@@ -77,7 +77,7 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
     if (!success_)
       return;
 #if defined(OS_CHROMEOS)
-    file_manager::util::ShowFileInFolder(screenshot_path_);
+    file_manager::util::ShowItemInFolder(screenshot_path_);
 #else
     // TODO(sschmitz): perhaps add similar action for Windows.
 #endif

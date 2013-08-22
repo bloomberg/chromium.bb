@@ -435,8 +435,8 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
   return url;
 }
 
-// Used to implement ViewItem().
-void ContinueViewItem(Profile* profile,
+// Used to implement OpenItem().
+void ContinueOpenItem(Profile* profile,
                       const base::FilePath& file_path,
                       base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -570,7 +570,7 @@ void OpenActionChoiceDialog(const base::FilePath& file_path,
   chrome::OpenApplication(params);
 }
 
-void ViewItem(const base::FilePath& file_path) {
+void OpenItem(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
@@ -587,10 +587,10 @@ void ViewItem(const base::FilePath& file_path) {
           profile, kFileManagerAppId);
 
   CheckIfDirectoryExists(file_system_context, url,
-                         base::Bind(&ContinueViewItem, profile, file_path));
+                         base::Bind(&ContinueOpenItem, profile, file_path));
 }
 
-void ShowFileInFolder(const base::FilePath& file_path) {
+void ShowItemInFolder(const base::FilePath& file_path) {
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileWithInternalActionId(file_path, "select");
 }

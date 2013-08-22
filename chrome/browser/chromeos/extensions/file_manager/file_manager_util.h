@@ -41,10 +41,11 @@ void OpenActionChoiceDialog(const base::FilePath& file_path,
 // file will be opened using a file handler, a file browser handler, or the
 // browser (open in a tab). The default handler has precedence over other
 // handlers, if defined for the type of the target file.
-void ViewItem(const base::FilePath& file_path);
+void OpenItem(const base::FilePath& file_path);
 
-// Opens file browser on the folder containing the file, with the file selected.
-void ShowFileInFolder(const base::FilePath& file_path);
+// Opens the file manager for the folder containing the item specified by
+// |file_path|, with the item selected.
+void ShowItemInFolder(const base::FilePath& file_path);
 
 // Opens the file specified by |file_path| with the browser. This function takes
 // care of the following intricacies:

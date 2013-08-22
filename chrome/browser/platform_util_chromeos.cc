@@ -39,12 +39,12 @@ namespace platform_util {
 
 void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_manager::util::ShowFileInFolder(full_path);
+  file_manager::util::ShowItemInFolder(full_path);
 }
 
 void OpenItem(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_manager::util::ViewItem(full_path);
+  file_manager::util::OpenItem(full_path);
 }
 
 void OpenExternal(const GURL& url) {
