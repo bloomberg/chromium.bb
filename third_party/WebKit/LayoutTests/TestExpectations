@@ -329,6 +329,7 @@ crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animati
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode-hardware.html [ Timeout ]
+crbug.com/258896 [ Linux ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-transform.html [ Timeout Failure ]
 
 # This test is slow due to Mesa slowness.
@@ -1243,7 +1244,6 @@ crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background-siz
 crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_border_box.htm [ NeedsRebaseline ]
 crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_content_box.htm [ NeedsRebaseline ]
 
-crbug.com/277005 [ Linux ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
 crbug.com/277088 [ Mac ] compositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ Failure ]
