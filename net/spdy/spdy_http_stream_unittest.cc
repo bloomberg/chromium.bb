@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "crypto/signature_creator.h"
@@ -783,11 +783,9 @@ TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {
   if (GetParam() < kProtoSPDY3)
     return;
 
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
-      new base::SequencedWorkerPool(1, "SpdyHttpStreamSpdy3Test");
   scoped_ptr<ServerBoundCertService> server_bound_cert_service(
       new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
-                                 sequenced_worker_pool));
+                                 base::MessageLoopProxy::current()));
   std::string cert;
   std::string proof;
   GetECServerBoundCertAndProof("www.gmail.com",
@@ -795,19 +793,15 @@ TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {
                                &cert, &proof);
 
   TestSendCredentials(server_bound_cert_service.get(), cert, proof);
-
-  sequenced_worker_pool->Shutdown();
 }
 
 TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
   if (GetParam() < kProtoSPDY3)
     return;
 
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
-      new base::SequencedWorkerPool(1, "SpdyHttpStreamSpdy3Test");
   scoped_ptr<ServerBoundCertService> server_bound_cert_service(
       new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
-                                 sequenced_worker_pool));
+                                 base::MessageLoopProxy::current()));
   std::string cert;
   std::string proof;
   GetECServerBoundCertAndProof("proxy.google.com",
@@ -887,7 +881,6 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
   ASSERT_TRUE(response.headers.get() != NULL);
   ASSERT_EQ(200, response.headers->response_code());
   deterministic_data_->RunFor(1);
-  sequenced_worker_pool->Shutdown();
 }
 
 #endif  // !defined(USE_OPENSSL)

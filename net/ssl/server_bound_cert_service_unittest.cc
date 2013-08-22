@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -28,23 +28,37 @@ void FailTest(int /* result */) {
   FAIL();
 }
 
+// Simple task runner that refuses to actually post any tasks. This simulates
+// a TaskRunner that has been shutdown, by returning false for any attempt to
+// add new tasks.
+class FailingTaskRunner : public base::TaskRunner {
+ public:
+  FailingTaskRunner() {}
+
+  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
+                               const base::Closure& task,
+                               base::TimeDelta delay) OVERRIDE {
+    return false;
+  }
+
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+
+ protected:
+  virtual ~FailingTaskRunner() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailingTaskRunner);
+};
+
 class ServerBoundCertServiceTest : public testing::Test {
  public:
   ServerBoundCertServiceTest()
-      : sequenced_worker_pool_(new base::SequencedWorkerPool(
-            3, "ServerBoundCertServiceTest")),
-        service_(new ServerBoundCertService(
+      : service_(new ServerBoundCertService(
             new DefaultServerBoundCertStore(NULL),
-            sequenced_worker_pool_)) {
-  }
-
-  virtual ~ServerBoundCertServiceTest() {
-    if (sequenced_worker_pool_.get())
-      sequenced_worker_pool_->Shutdown();
+            base::MessageLoopProxy::current())) {
   }
 
  protected:
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   scoped_ptr<ServerBoundCertService> service_;
 };
 
@@ -375,8 +389,6 @@ TEST_F(ServerBoundCertServiceTest, CancelRequest) {
   request_handle.Cancel();
   EXPECT_FALSE(request_handle.is_active());
 
-  // Wait for generation to finish.
-  sequenced_worker_pool_->FlushForTesting();
   // Wait for reply from ServerBoundCertServiceWorker to be posted back to the
   // ServerBoundCertService.
   base::MessageLoop::current()->RunUntilIdle();
@@ -403,8 +415,6 @@ TEST_F(ServerBoundCertServiceTest, CancelRequestByHandleDestruction) {
     EXPECT_TRUE(request_handle.is_active());
   }
 
-  // Wait for generation to finish.
-  sequenced_worker_pool_->FlushForTesting();
   // Wait for reply from ServerBoundCertServiceWorker to be posted back to the
   // ServerBoundCertService.
   base::MessageLoop::current()->RunUntilIdle();
@@ -432,10 +442,8 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
   request_handle.Cancel();
   service_.reset();
 
-  // Wait for generation to finish.
-  sequenced_worker_pool_->FlushForTesting();
   // ServerBoundCertServiceWorker should not post anything back to the
-  // non-existant ServerBoundCertService, but run the loop just to be sure it
+  // non-existent ServerBoundCertService, but run the loop just to be sure it
   // doesn't.
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -446,12 +454,9 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
 // requests gracefully fails.
 // This is a regression test for http://crbug.com/236387
 TEST_F(ServerBoundCertServiceTest, RequestAfterPoolShutdown) {
-  // Shutdown the pool immediately.
-  sequenced_worker_pool_->Shutdown();
-  sequenced_worker_pool_ = NULL;
-
-  // Ensure any shutdown code is processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  scoped_refptr<FailingTaskRunner> task_runner(new FailingTaskRunner);
+  service_.reset(new ServerBoundCertService(
+      new DefaultServerBoundCertStore(NULL), task_runner));
 
   // Make a request that will force synchronous completion.
   std::string host("encrypted.google.com");
@@ -584,8 +589,8 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateNoCertsInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  service_ = scoped_ptr<ServerBoundCertService>(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+  service_ = scoped_ptr<ServerBoundCertService>(new ServerBoundCertService(
+      mock_store, base::MessageLoopProxy::current()));
 
   std::string host("encrypted.google.com");
 
@@ -615,8 +620,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateNoCertsInStore) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  service_ = scoped_ptr<ServerBoundCertService>(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+  service_ = scoped_ptr<ServerBoundCertService>(new ServerBoundCertService(
+      mock_store, base::MessageLoopProxy::current()));
 
   std::string host("encrypted.google.com");
 
@@ -646,8 +651,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  service_ = scoped_ptr<ServerBoundCertService>(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+  service_ = scoped_ptr<ServerBoundCertService>(new ServerBoundCertService(
+      mock_store, base::MessageLoopProxy::current()));
 
   std::string host("encrypted.google.com");
 
@@ -682,8 +687,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  service_ = scoped_ptr<ServerBoundCertService>(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+  service_ = scoped_ptr<ServerBoundCertService>(new ServerBoundCertService(
+      mock_store, base::MessageLoopProxy::current()));
 
   std::string host("encrypted.google.com");
 
@@ -717,8 +722,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  service_ = scoped_ptr<ServerBoundCertService>(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+  service_ = scoped_ptr<ServerBoundCertService>(new ServerBoundCertService(
+      mock_store, base::MessageLoopProxy::current()));
 
   std::string host("encrypted.google.com");
 

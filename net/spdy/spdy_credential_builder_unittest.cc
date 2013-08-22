@@ -4,7 +4,7 @@
 
 #include "net/spdy/spdy_credential_builder.h"
 
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/cert/asn1_util.h"
@@ -23,11 +23,9 @@ const static char kSecretPrefix[] =
 
 void CreateCertAndKey(std::string* cert, std::string* key) {
   // TODO(rch): Share this code with ServerBoundCertServiceTest.
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
-      new base::SequencedWorkerPool(1, "CreateCertAndKey");
   scoped_ptr<ServerBoundCertService> server_bound_cert_service(
       new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
-                                 sequenced_worker_pool));
+                                 base::MessageLoopProxy::current()));
 
   TestCompletionCallback callback;
   ServerBoundCertService::RequestHandle request_handle;
@@ -35,8 +33,6 @@ void CreateCertAndKey(std::string* cert, std::string* key) {
       "www.google.com", key, cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  sequenced_worker_pool->Shutdown();
 }
 
 }  // namespace
