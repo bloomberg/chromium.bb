@@ -350,12 +350,19 @@ message VariationsParameterProto {
 message AttestationSettingsProto {
   // Attestation involves proving that a cryptographic key is protected by a
   // legitimate Chrome OS TPM and reporting the operating mode of the platform.
-  // This setting enables attestation features at a device level.  If this is
-  // enabled a machine key will be generated and certified by the Chrome OS
-  // CA.  If this setting is disabled, the device will not communicate with the
-  // Chrome OS CA under any circumstances.  Even users with attestation settings
+  // This setting enables enterprise attestation features at a device level.  If
+  // this is enabled a machine key will be generated and certified by the Chrome
+  // OS CA.  If this setting is disabled, even users with attestation settings
   // enabled will not be able to use those features on the device.
   optional bool attestation_enabled = 1;
+
+  // Chrome OS devices can use remote attestation (Verified Access) to get a
+  // certificate issued by the Chrome OS CA that asserts the device is eligible
+  // to play protected content.  This process involves sending hardware
+  // endorsement information to the Chrome OS CA which uniquely identifies the
+  // device.  This setting allows this feature to be disabled for the device
+  // regardless of any user-specific settings.
+  optional bool content_protection_enabled = 2;
 }
 
 message AccessibilitySettingsProto {

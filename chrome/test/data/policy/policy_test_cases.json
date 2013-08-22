@@ -2058,6 +2058,9 @@
   "AttestationEnabledForDevice": {
   },
 
+  "AttestationForContentProtectionEnabled": {
+  },
+
   "SupervisedUsersEnabled": {
   },
 

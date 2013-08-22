@@ -640,6 +640,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                         policy.attestation_settings().attestation_enabled()),
                     NULL);
     }
+    if (policy.attestation_settings().has_content_protection_enabled()) {
+      policies->Set(
+          key::kAttestationForContentProtectionEnabled,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          Value::CreateBooleanValue(
+              policy.attestation_settings().content_protection_enabled()),
+          NULL);
+    }
   }
 
   if (policy.has_login_screen_power_management()) {

@@ -73,6 +73,8 @@ extern const char kKioskDisableBailoutShortcut[];
 extern const char kVariationsRestrictParameter[];
 
 extern const char kDeviceAttestationEnabled[];
+extern const char kAttestationForContentProtectionEnabled[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

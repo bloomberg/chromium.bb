@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 238
+#   For your editing convenience: highest ID currently used: 239
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -5312,6 +5312,24 @@
           'desc': '''This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
+        },
+        {
+          'name': 'AttestationForContentProtectionEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:31-'],
+          'features': {
+            'dynamic_refresh': True,
+          },
+          'device_only': True,
+          'example_value': True,
+          'id': 239,
+          'caption': '''Enable the use of remote attestation for content protection for the device.''',
+          'desc': '''Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts the device is eligible to play protected content.  This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
+
+          If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
+
+          If this setting is true, or if it is not set, remote attestation may be used for content protection.''',
         },
       ],
     },

@@ -56,6 +56,7 @@ const char* kKnownSettings[] = {
   kAllowRedeemChromeOsRegistrationOffers,
   kAllowedConnectionTypesForUpdate,
   kAppPack,
+  kAttestationForContentProtectionEnabled,
   kDeviceAttestationEnabled,
   kDeviceOwner,
   kIdleLogoutTimeout,
@@ -383,6 +384,15 @@ void DeviceSettingsProvider::SetInPolicy() {
     bool use_24hour_clock_value;
     if (value->GetAsBoolean(&use_24hour_clock_value)) {
       use_24hour_clock_proto->set_use_24hour_clock(use_24hour_clock_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (prop == kAttestationForContentProtectionEnabled) {
+    em::AttestationSettingsProto* attestation_settings =
+        device_settings_.mutable_attestation_settings();
+    bool setting_enabled;
+    if (value->GetAsBoolean(&setting_enabled)) {
+      attestation_settings->set_content_protection_enabled(setting_enabled);
     } else {
       NOTREACHED();
     }
@@ -741,6 +751,12 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
   new_values_cache->SetBoolean(
       kDeviceAttestationEnabled,
       policy.attestation_settings().attestation_enabled());
+
+  new_values_cache->SetBoolean(
+      kAttestationForContentProtectionEnabled,
+      !(policy.has_attestation_settings() &&
+        policy.attestation_settings().has_content_protection_enabled() &&
+        policy.attestation_settings().content_protection_enabled()));
 }
 
 void DeviceSettingsProvider::UpdateValuesCache(
