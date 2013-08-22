@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 
 #include "ash/wm/window_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "ui/base/events/event_constants.h"
 
 ChromeLauncherAppMenuItemTab::ChromeLauncherAppMenuItemTab(
     const string16 title,

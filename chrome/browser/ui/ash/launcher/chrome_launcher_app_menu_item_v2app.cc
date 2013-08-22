@@ -10,7 +10,7 @@ ChromeLauncherAppMenuItemV2App::ChromeLauncherAppMenuItemV2App(
     const string16 title,
     const gfx::Image* icon,
     const std::string& app_id,
-    ChromeLauncherControllerPerApp* launcher_controller,
+    ChromeLauncherController* launcher_controller,
     int app_index,
     bool has_leading_separator)
     : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),

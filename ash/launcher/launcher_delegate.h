@@ -46,7 +46,7 @@ class ASH_EXPORT LauncherDelegate {
   // and has an instance of |views::View| as the event target
   // but not |aura::Window|. If the |event| is of type KeyEvent, it is assumed
   // that this was triggered by keyboard action (Alt+<number>) and special
-  // handling might happen (PerApp launcher).
+  // handling might happen.
   virtual void ItemSelected(const LauncherItem& item,
                             const ui::Event& event) = 0;
 
@@ -91,9 +91,6 @@ class ASH_EXPORT LauncherDelegate {
   // Callback used to inform the delegate that a specific launcher no longer
   // exists.
   virtual void OnLauncherDestroyed(Launcher* launcher) = 0;
-
-  // True if the running launcher is the per application launcher.
-  virtual bool IsPerAppLauncher() = 0;
 
   // Get the launcher ID from an application ID.
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;

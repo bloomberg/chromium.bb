@@ -126,10 +126,6 @@ void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {
 void TestLauncherDelegate::OnLauncherDestroyed(Launcher* launcher) {
 }
 
-bool TestLauncherDelegate::IsPerAppLauncher() {
-  return true;
-}
-
 LauncherID TestLauncherDelegate::GetLauncherIDForAppID(
     const std::string& app_id) {
   return 0;

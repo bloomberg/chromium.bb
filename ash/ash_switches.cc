@@ -66,9 +66,6 @@ const char kAshDisableDisplayChangeLimiter[] =
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 
-// Disable the per application grouping version of the launcher.
-const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
-
 // Disable immersive fullscreen mode, regardless of default setting.
 const char kAshDisableImmersiveFullscreen[] =
     "ash-disable-immersive-fullscreen";

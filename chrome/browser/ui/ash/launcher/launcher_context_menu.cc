@@ -21,7 +21,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/ash_strings.h"

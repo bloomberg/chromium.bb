@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_PER_APP_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_PER_APP_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 
 #include <list>
 #include <map>
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/display/display_controller.h"
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -22,25 +23,24 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;
 class Browser;
-class BrowserLauncherItemControllerTest;
 class BrowserShortcutLauncherItemController;
 class ExtensionEnableFlow;
+class GURL;
 class LauncherItemController;
 class Profile;
+class ShellWindowLauncherController;
 class TabContents;
 
 namespace ash {
@@ -52,6 +52,7 @@ class Window;
 }
 
 namespace content {
+class NotificationRegistrar;
 class WebContents;
 }
 
@@ -59,208 +60,211 @@ namespace ui {
 class BaseWindow;
 }
 
-// ChromeLauncherControllerPerApp manages the launcher items needed for content
-// content windows. Launcher items have a type, an optional app id, and a
-// controller. This incarnation groups running tabs/windows in application
-// specific lists.
-// * Tabbed browsers and browser app windows have BrowserLauncherItemController,
-//   owned by the BrowserView instance.
+// A list of the elements which makes up a simple menu description.
+typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
+
+// ChromeLauncherController manages the launcher items needed for content
+// windows. Launcher items have a type, an optional app id, and a controller.
+// This incarnation groups running tabs/windows in application specific lists.
+// * Browser app windows have BrowserLauncherItemController, owned by the
+//   BrowserView instance.
 // * App shell windows have ShellWindowLauncherItemController, owned by
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
-class ChromeLauncherControllerPerApp
-    : public ash::LauncherModelObserver,
-      public ash::ShellObserver,
-      public ash::DisplayController::Observer,
-      public ChromeLauncherController,
-      public content::NotificationObserver,
-      public PrefServiceSyncableObserver,
-      public AppSyncUIStateObserver,
-      public ExtensionEnableFlowDelegate,
-      public chrome::BrowserListObserver,
-      public ash::ShelfLayoutManagerObserver {
+class ChromeLauncherController : public ash::LauncherDelegate,
+                                 public ash::LauncherModelObserver,
+                                 public ash::ShellObserver,
+                                 public ash::DisplayController::Observer,
+                                 public content::NotificationObserver,
+                                 public extensions::AppIconLoader::Delegate,
+                                 public PrefServiceSyncableObserver,
+                                 public AppSyncUIStateObserver,
+                                 public ExtensionEnableFlowDelegate,
+                                 public chrome::BrowserListObserver,
+                                 public ash::ShelfLayoutManagerObserver {
  public:
-  ChromeLauncherControllerPerApp(Profile* profile, ash::LauncherModel* model);
-  virtual ~ChromeLauncherControllerPerApp();
+  // Indicates if a launcher item is incognito or not.
+  enum IncognitoState {
+    STATE_INCOGNITO,
+    STATE_NOT_INCOGNITO,
+  };
 
-  // ChromeLauncherController overrides:
+  // Used to update the state of non plaform apps, as web contents change.
+  enum AppState {
+    APP_STATE_ACTIVE,
+    APP_STATE_WINDOW_ACTIVE,
+    APP_STATE_INACTIVE,
+    APP_STATE_REMOVED
+  };
 
-  // Initializes this ChromeLauncherControllerPerApp.
-  virtual void Init() OVERRIDE;
+  // Mockable interface to get app ids from tabs.
+  class AppTabHelper {
+   public:
+    virtual ~AppTabHelper() {}
 
-  // Returns the new per application interface of the given launcher. If it is
-  // a per browser (old) controller, it will return NULL;
-  // TODO(skuhne): Remove when we rip out the old launcher.
-  virtual ChromeLauncherControllerPerApp* GetPerAppInterface() OVERRIDE;
+    // Returns the app id of the specified tab, or an empty string if there is
+    // no app.
+    virtual std::string GetAppID(content::WebContents* tab) = 0;
 
-  // Creates a new tabbed item on the launcher for |controller|.
-  virtual ash::LauncherID CreateTabbedLauncherItem(
-      LauncherItemController* controller,
-      IncognitoState is_incognito,
-      ash::LauncherItemStatus status) OVERRIDE;
+    // Returns true if |id| is valid. Used during restore to ignore no longer
+    // valid extensions.
+    virtual bool IsValidID(const std::string& id) = 0;
+  };
+
+  ChromeLauncherController(Profile* profile, ash::LauncherModel* model);
+  virtual ~ChromeLauncherController();
+
+  // Initializes this ChromeLauncherController.
+  void Init();
+
+  // Creates an instance.
+  static ChromeLauncherController* CreateInstance(Profile* profile,
+                                                  ash::LauncherModel* model);
+
+  // Returns the single ChromeLauncherController instance.
+  static ChromeLauncherController* instance() { return instance_; }
 
   // Creates a new app item on the launcher for |controller|.
-  virtual ash::LauncherID CreateAppLauncherItem(
-      LauncherItemController* controller,
-      const std::string& app_id,
-      ash::LauncherItemStatus status) OVERRIDE;
+  ash::LauncherID CreateAppLauncherItem(LauncherItemController* controller,
+                                        const std::string& app_id,
+                                        ash::LauncherItemStatus status);
 
   // Updates the running status of an item. It will also update the status of
   // browsers launcher item if needed.
-  virtual void SetItemStatus(ash::LauncherID id,
-                             ash::LauncherItemStatus status) OVERRIDE;
+  void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
 
   // Updates the controller associated with id (which should be a shortcut).
   // |controller| remains owned by caller.
-  virtual void SetItemController(ash::LauncherID id,
-                                 LauncherItemController* controller) OVERRIDE;
+  void SetItemController(ash::LauncherID id,
+                         LauncherItemController* controller);
 
   // Closes or unpins the launcher item.
-  virtual void CloseLauncherItem(ash::LauncherID id) OVERRIDE;
+  void CloseLauncherItem(ash::LauncherID id);
 
   // Pins the specified id. Currently only supports platform apps.
-  virtual void Pin(ash::LauncherID id) OVERRIDE;
+  void Pin(ash::LauncherID id);
 
   // Unpins the specified id, closing if not running.
-  virtual void Unpin(ash::LauncherID id) OVERRIDE;
+  void Unpin(ash::LauncherID id);
 
   // Returns true if the item identified by |id| is pinned.
-  virtual bool IsPinned(ash::LauncherID id) OVERRIDE;
+  bool IsPinned(ash::LauncherID id);
 
   // Pins/unpins the specified id.
-  virtual void TogglePinned(ash::LauncherID id) OVERRIDE;
+  void TogglePinned(ash::LauncherID id);
 
   // Returns true if the specified item can be pinned or unpinned. Only apps can
   // be pinned.
-  virtual bool IsPinnable(ash::LauncherID id) const OVERRIDE;
+  bool IsPinnable(ash::LauncherID id) const;
 
   // If there is no launcher item in the launcher for application |app_id|, one
   // gets created. The (existing or created) launcher items get then locked
   // against a users un-pinning removal.
-  virtual void LockV1AppWithID(const std::string& app_id) OVERRIDE;
+  void LockV1AppWithID(const std::string& app_id);
 
   // A previously locked launcher item of type |app_id| gets unlocked. If the
   // lock count reaches 0 and the item is not pinned it will go away.
-  virtual void UnlockV1AppWithID(const std::string& app_id) OVERRIDE;
+  void UnlockV1AppWithID(const std::string& app_id);
 
   // Requests that the launcher item controller specified by |id| open a new
   // instance of the app.  |event_flags| holds the flags of the event which
   // triggered this command.
-  virtual void Launch(ash::LauncherID id, int event_flags) OVERRIDE;
+  void Launch(ash::LauncherID id, int event_flags);
 
   // Closes the specified item.
-  virtual void Close(ash::LauncherID id) OVERRIDE;
+  void Close(ash::LauncherID id);
 
   // Returns true if the specified item is open.
-  virtual bool IsOpen(ash::LauncherID id) OVERRIDE;
+  bool IsOpen(ash::LauncherID id);
 
   // Returns true if the specified item is for a platform app.
-  virtual bool IsPlatformApp(ash::LauncherID id) OVERRIDE;
+  bool IsPlatformApp(ash::LauncherID id);
 
   // Opens a new instance of the application identified by |app_id|.
   // Used by the app-list, and by pinned-app launcher items.
-  virtual void LaunchApp(const std::string& app_id, int event_flags) OVERRIDE;
+  void LaunchApp(const std::string& app_id, int event_flags);
 
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.
   // Used by the app-list, and by pinned-app launcher items.
-  virtual void ActivateApp(const std::string& app_id, int event_flags) OVERRIDE;
+  void ActivateApp(const std::string& app_id, int event_flags);
 
   // Returns the launch type of app for the specified id.
-  virtual extensions::ExtensionPrefs::LaunchType GetLaunchType(
-      ash::LauncherID id) OVERRIDE;
+  extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Returns the id of the app for the specified tab.
-  virtual std::string GetAppID(content::WebContents* tab) OVERRIDE;
+  std::string GetAppID(content::WebContents* tab);
 
-  // Returns the |LauncherModel|'s ID or 0 if the AppId was not found.
-  virtual ash::LauncherID GetLauncherIDForAppID(
-      const std::string& app_id) OVERRIDE;
-  virtual std::string GetAppIDForLauncherID(ash::LauncherID id) OVERRIDE;
+  std::string GetAppIDForLauncherID(ash::LauncherID id);
 
   // Set the image for a specific launcher item (e.g. when set by the app).
-  virtual void SetLauncherItemImage(ash::LauncherID launcher_id,
-                                    const gfx::ImageSkia& image) OVERRIDE;
-
-  // Returns true if a pinned launcher item with given |app_id| could be found.
-  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
+  void SetLauncherItemImage(ash::LauncherID launcher_id,
+                            const gfx::ImageSkia& image);
 
   // Find out if the given application |id| is a windowed app item and not a
   // pinned item in the launcher.
   bool IsWindowedAppInLauncher(const std::string& app_id);
 
-  // Pins an app with |app_id| to launcher. If there is a running instance in
-  // launcher, the running instance is pinned. If there is no running instance,
-  // a new launcher item is created and pinned.
-  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
-
   // Updates the launche type of the app for the specified id to |launch_type|.
-  virtual void SetLaunchType(
-      ash::LauncherID id,
-      extensions::ExtensionPrefs::LaunchType launch_type) OVERRIDE;
-
-  // Unpins any app items whose id is |app_id|.
-  virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
+  void SetLaunchType(ash::LauncherID id,
+                     extensions::ExtensionPrefs::LaunchType launch_type);
 
   // Returns true if the user is currently logged in as a guest.
-  virtual bool IsLoggedInAsGuest() OVERRIDE;
+  // Makes virtual for unittest in LauncherContextMenuTest.
+  virtual bool IsLoggedInAsGuest();
 
   // Invoked when user clicks on button in the launcher and there is no last
   // used window (or CTRL is held with the click).
-  virtual void CreateNewWindow() OVERRIDE;
+  void CreateNewWindow();
 
   // Invoked when the user clicks on button in the launcher to create a new
   // incognito window.
-  virtual void CreateNewIncognitoWindow() OVERRIDE;
+  void CreateNewIncognitoWindow();
 
   // Checks whether the user is allowed to pin apps. Pinning may be disallowed
   // by policy in case there is a pre-defined set of pinned apps.
-  virtual bool CanPin() const OVERRIDE;
+  bool CanPin() const;
 
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
   // id of the app.
-  virtual void PersistPinnedState() OVERRIDE;
+  void PersistPinnedState();
 
-  virtual ash::LauncherModel* model() OVERRIDE;
+  ash::LauncherModel* model();
 
-  virtual Profile* profile() OVERRIDE;
+  Profile* profile();
 
   // Gets the shelf auto-hide behavior on |root_window|.
-  virtual ash::ShelfAutoHideBehavior GetShelfAutoHideBehavior(
-      aura::RootWindow* root_window) const OVERRIDE;
+  ash::ShelfAutoHideBehavior GetShelfAutoHideBehavior(
+      aura::RootWindow* root_window) const;
 
   // Returns |true| if the user is allowed to modify the shelf auto-hide
   // behavior on |root_window|.
-  virtual bool CanUserModifyShelfAutoHideBehavior(
-      aura::RootWindow* root_window) const OVERRIDE;
+  bool CanUserModifyShelfAutoHideBehavior(aura::RootWindow* root_window) const;
 
   // Toggles the shelf auto-hide behavior on |root_window|. Does nothing if the
   // user is not allowed to modify the auto-hide behavior.
-  virtual void ToggleShelfAutoHideBehavior(
-      aura::RootWindow* root_window) OVERRIDE;
+  void ToggleShelfAutoHideBehavior(aura::RootWindow* root_window);
 
   // The tab no longer represents its previously identified application.
-  virtual void RemoveTabFromRunningApp(content::WebContents* tab,
-                                       const std::string& app_id) OVERRIDE;
+  void RemoveTabFromRunningApp(content::WebContents* tab,
+                               const std::string& app_id);
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
-  virtual void UpdateAppState(content::WebContents* contents,
-                              AppState app_state) OVERRIDE;
+  void UpdateAppState(content::WebContents* contents, AppState app_state);
 
   // Limits application refocusing to urls that match |url| for |id|.
-  virtual void SetRefocusURLPatternForTest(ash::LauncherID id,
-                                           const GURL& url) OVERRIDE;
+  void SetRefocusURLPatternForTest(ash::LauncherID id, const GURL& url);
 
   // Returns the extension identified by |app_id|.
-  virtual const extensions::Extension* GetExtensionForAppID(
-      const std::string& app_id) const OVERRIDE;
+  const extensions::Extension* GetExtensionForAppID(
+      const std::string& app_id) const;
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
-  virtual void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
-                                                bool allow_minimize) OVERRIDE;
+  void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
+                                        bool allow_minimize);
 
   // ash::LauncherDelegate overrides:
   virtual void ItemSelected(const ash::LauncherItem& item,
@@ -276,6 +280,11 @@ class ChromeLauncherControllerPerApp
   virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE;
   virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
+  virtual ash::LauncherID GetLauncherIDForAppID(
+      const std::string& app_id) OVERRIDE;
+  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
+  virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -358,42 +367,37 @@ class ChromeLauncherControllerPerApp
   LauncherItemController* GetBrowserShortcutLauncherItemController();
 
  protected:
-  // ChromeLauncherController overrides:
-
   // Creates a new app shortcut item and controller on the launcher at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
-  virtual ash::LauncherID CreateAppShortcutLauncherItem(
-      const std::string& app_id,
-      int index) OVERRIDE;
+  ash::LauncherID CreateAppShortcutLauncherItem(const std::string& app_id,
+                                                int index);
 
   // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
   // These are intended for testing.
-  virtual void SetAppTabHelperForTest(AppTabHelper* helper) OVERRIDE;
-  virtual void SetAppIconLoaderForTest(
-      extensions::AppIconLoader* loader) OVERRIDE;
-  virtual const std::string& GetAppIdFromLauncherIdForTest(
-      ash::LauncherID id) OVERRIDE;
+  void SetAppTabHelperForTest(AppTabHelper* helper);
+  void SetAppIconLoaderForTest(extensions::AppIconLoader* loader);
+  const std::string& GetAppIdFromLauncherIdForTest(ash::LauncherID id);
 
  private:
-  friend class ChromeLauncherControllerPerAppTest;
-  friend class LauncherPerAppAppBrowserTest;
-  friend class LauncherPlatformPerAppAppBrowserTest;
-
-  // Creates a new app shortcut item and controller on the launcher at |index|.
-   // Use kInsertItemAtEnd to add a shortcut as the last item.
-   virtual ash::LauncherID CreateAppShortcutLauncherItemWithType(
-       const std::string& app_id,
-       int index,
-       ash::LauncherItemType launcher_item_type);
-
-  // Updates the activation state of the Broswer item.
-  void UpdateBrowserItemStatus();
+  friend class ChromeLauncherControllerTest;
+  friend class LauncherAppBrowserTest;
+  friend class LauncherPlatformAppBrowserTest;
 
   typedef std::map<ash::LauncherID, LauncherItemController*>
           IDToItemControllerMap;
   typedef std::list<content::WebContents*> WebContentsList;
   typedef std::map<std::string, WebContentsList> AppIDToWebContentsListMap;
   typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
+
+  // Creates a new app shortcut item and controller on the launcher at |index|.
+  // Use kInsertItemAtEnd to add a shortcut as the last item.
+  ash::LauncherID CreateAppShortcutLauncherItemWithType(
+      const std::string& app_id,
+      int index,
+      ash::LauncherItemType launcher_item_type);
+
+  // Updates the activation state of the Broswer item.
+  void UpdateBrowserItemStatus();
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
@@ -462,6 +466,8 @@ class ChromeLauncherControllerPerApp
   void MoveItemWithoutPinnedStateChangeNotification(int source_index,
                                                     int target_index);
 
+  static ChromeLauncherController* instance_;
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
@@ -502,7 +508,7 @@ class ChromeLauncherControllerPerApp
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerApp);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_PER_APP_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_

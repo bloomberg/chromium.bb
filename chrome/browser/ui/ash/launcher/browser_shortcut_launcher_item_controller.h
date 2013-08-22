@@ -16,15 +16,14 @@ class Image;
 }
 
 class Browser;
-class ChromeLauncherControllerPerApp;
+class ChromeLauncherController;
 class Profile;
 
 // Item controller for an browser shortcut.
 class BrowserShortcutLauncherItemController : public LauncherItemController {
  public:
-  BrowserShortcutLauncherItemController(
-      ChromeLauncherControllerPerApp* controller,
-      Profile* profile);
+  BrowserShortcutLauncherItemController(ChromeLauncherController* controller,
+                                        Profile* profile);
 
   virtual ~BrowserShortcutLauncherItemController();
 
@@ -58,8 +57,6 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
 
   // Activate a browser - or advance to the next one on the list.
   void ActivateOrAdvanceToNextBrowser();
-
-  ChromeLauncherControllerPerApp* app_controller_;
 
   Profile* profile_;
 

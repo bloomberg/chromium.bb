@@ -9,7 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 #include "ui/aura/client/activation_client.h"
 
