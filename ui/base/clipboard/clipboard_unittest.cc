@@ -318,8 +318,6 @@ TEST_F(ClipboardTest, URLTest) {
 #endif
 }
 
-// TODO(erg): Reenable this everywhere once linux_aura learns what bitmaps are.
-#if !(defined(USE_AURA) && !defined(OS_CHROMEOS))
 TEST_F(ClipboardTest, SharedBitmapTest) {
   unsigned int fake_bitmap[] = {
     0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
@@ -362,14 +360,11 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                             Clipboard::BUFFER_STANDARD));
 }
-#endif
 
-// The following test somehow fails on GTK. The image when read back from the
-// clipboard has the alpha channel set to 0xFF for some reason. The other
-// channels stay intact. So I am turning this on only for aura.
-//
-// TODO(erg): This also crashes in linux_aura. Investigate once bitmap writing
-// is implemented.
+// The following test somehow fails on GTK and linux_aura. The image when read
+// back from the clipboard has the alpha channel set to 0xFF for some
+// reason. The other channels stay intact. So I am turning this on only for
+// aura.
 #if (defined(USE_AURA) && !(defined(OS_WIN) || !defined(OS_CHROMEOS))) || \
     defined(OS_ANDROID)
 TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {

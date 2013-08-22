@@ -767,13 +767,32 @@ bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
   SkAutoLockPixels lock_input(input);
   if (input.empty())
     return false;
-  DCHECK(input.bytesPerPixel() == bbp);
-  DCHECK(static_cast<int>(input.rowBytes()) >= input.width() * bbp);
+  DCHECK_EQ(input.bytesPerPixel(), bbp);
+  DCHECK_GE(static_cast<int>(input.rowBytes()), input.width() * bbp);
 
   return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
                 FORMAT_SkBitmap, Size(input.width(), input.height()),
                 static_cast<int>(input.rowBytes()), discard_transparency,
                 std::vector<Comment>(), output);
+}
+
+// static
+bool PNGCodec::FastEncodeBGRASkBitmap(const SkBitmap& input,
+                                      bool discard_transparency,
+                                      std::vector<unsigned char>* output) {
+  static const int bbp = 4;
+
+  SkAutoLockPixels lock_input(input);
+  if (input.empty())
+    return false;
+  DCHECK_EQ(input.bytesPerPixel(), bbp);
+  DCHECK_GE(static_cast<int>(input.rowBytes()), input.width() * bbp);
+
+  return EncodeWithCompressionLevel(
+      reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
+      FORMAT_SkBitmap, Size(input.width(), input.height()),
+      static_cast<int>(input.rowBytes()), discard_transparency,
+      std::vector<Comment>(), Z_BEST_SPEED, output);
 }
 
 PNGCodec::Comment::Comment(const std::string& k, const std::string& t)

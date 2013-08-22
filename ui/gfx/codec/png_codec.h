@@ -97,6 +97,13 @@ class UI_EXPORT PNGCodec {
                                  bool discard_transparency,
                                  std::vector<unsigned char>* output);
 
+  // Call PNGCodec::Encode on the supplied SkBitmap |input|. The difference
+  // between this and the previous method is that this restricts compression to
+  // zlib q1, which is just rle encoding.
+  static bool FastEncodeBGRASkBitmap(const SkBitmap& input,
+                                     bool discard_transparency,
+                                     std::vector<unsigned char>* output);
+
   // Decodes the PNG data contained in input of length input_size. The
   // decoded data will be placed in *output with the dimensions in *w and *h
   // on success (returns true). This data will be written in the 'format'
