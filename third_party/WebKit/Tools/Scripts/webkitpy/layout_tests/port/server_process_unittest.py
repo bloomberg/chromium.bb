@@ -37,7 +37,6 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.common.system.outputcapture import OutputCapture
 
 
-
 class TrivialMockPort(object):
     def __init__(self):
         self.host = MockSystemHost()
@@ -147,3 +146,24 @@ class TestServerProcess(unittest.TestCase):
         self.assertTrue(server_process.has_crashed())
         self.assertIsNone(server_process._proc)
         self.assertEqual(server_process.broken_pipes, [server_process.stdin])
+
+
+class TestQuoteData(unittest.TestCase):
+    def test_plain(self):
+        qd = server_process.quote_data
+        self.assertEqual(qd("foo"), ["foo"])
+
+    def test_trailing_spaces(self):
+        qd = server_process.quote_data
+        self.assertEqual(qd("foo  "),
+                         ["foo\x20\x20"])
+
+    def test_newlines(self):
+        qd = server_process.quote_data
+        self.assertEqual(qd("foo \nbar\n"),
+                         ["foo\x20\\n", "bar\\n"])
+
+    def test_binary_data(self):
+        qd = server_process.quote_data
+        self.assertEqual(qd("\x00\x01ab"),
+                         ["\\x00\\x01ab"])

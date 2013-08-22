@@ -30,6 +30,7 @@
 
 import errno
 import logging
+import re
 import signal
 import sys
 import time
@@ -57,6 +58,19 @@ from webkitpy.common.system.executive import ScriptError
 
 _log = logging.getLogger(__name__)
 
+
+_trailing_spaces_re = re.compile('(.*[^ ])?( +)$')
+
+
+def quote_data(data):
+    txt = repr(data).replace('\\n', '\\n\n')[1:-1]
+    lines = []
+    for l in txt.splitlines():
+        m = _trailing_spaces_re.match(l)
+        if m:
+            l = m.group(1) + m.group(2).replace(' ', '\x20')
+        lines.append(l)
+    return lines
 
 class ServerProcess(object):
     """This class provides a wrapper around a subprocess that
@@ -121,7 +135,7 @@ class ServerProcess(object):
             env_str = ''
             if self._env:
                 env_str += '\n'.join("%s=%s" % (k, v) for k, v in self._env.items()) + '\n'
-            _log.info('CMD: """\n%s%s\n"""', env_str, _quote_cmd(self._cmd))
+            _log.info('CMD: \n%s%s\n', env_str, _quote_cmd(self._cmd))
         self._proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
             stdout=self._host.executive.PIPE,
             stderr=self._host.executive.PIPE,
@@ -162,8 +176,7 @@ class ServerProcess(object):
         if not self._proc:
             self._start()
         try:
-            if self._logging:
-                _log.info(' IN: """%s"""', bytes)
+            self._log_data(' IN', bytes)
             self._proc.stdin.write(bytes)
         except IOError, e:
             self.stop(0.0)
@@ -224,6 +237,11 @@ class ServerProcess(object):
         _log.info('')
         _log.info(message)
 
+    def _log_data(self, prefix, data):
+        if self._logging and data and len(data):
+            for line in quote_data(data):
+                _log.info('%s: %s', prefix, line)
+
     def _handle_timeout(self):
         self.timed_out = True
         self._port.sample_process(self._name, self._proc.pid)
@@ -267,16 +285,14 @@ class ServerProcess(object):
                 data = self._proc.stdout.read()
                 if not data and not stopping and (self._treat_no_data_as_crash or self._proc.poll()):
                     self._crashed = True
-                if self._logging and len(data):
-                    _log.info('OUT: """%s"""', data)
+                self._log_data('OUT', data)
                 self._output += data
 
             if err_fd in read_fds:
                 data = self._proc.stderr.read()
                 if not data and not stopping and (self._treat_no_data_as_crash or self._proc.poll()):
                     self._crashed = True
-                if self._logging and len(data):
-                    _log.info('ERR: """%s"""', data)
+                self._log_data('ERR', data)
                 self._error += data
         except IOError, e:
             # We can ignore the IOErrors because we will detect if the subporcess crashed
@@ -292,7 +308,9 @@ class ServerProcess(object):
         err_fh = msvcrt.get_osfhandle(self._proc.stderr.fileno())
         while (self._proc.poll() is None) and (now < deadline):
             output = self._non_blocking_read_win32(out_fh)
+            self._log_data('OUT', output)
             error = self._non_blocking_read_win32(err_fh)
+            self._log_data('ERR', error)
             if output or error:
                 if output:
                     self._output += output
@@ -352,7 +370,7 @@ class ServerProcess(object):
         now = time.time()
         if self._proc.stdin:
             if self._logging:
-                _log.info(' IN: """^D"""')
+                _log.info(' IN: ^D')
             self._proc.stdin.close()
             self._proc.stdin = None
         killed = False

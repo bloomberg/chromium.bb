@@ -794,6 +794,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('text.html passed' in logging_stream.getvalue())
         self.assertTrue('image.html passed' in logging_stream.getvalue())
 
+    def disabled_test_driver_logging(self):
+        # FIXME: Figure out how to either use a mock-test port to
+        # get output or mack mock ports work again.
+        host = Host()
+        _, err, _ = logging_run(['--platform', 'mock-win', '--driver-logging', 'fast/harness/results.html'],
+                                tests_included=True, host=host)
+        self.assertTrue('OUT:' in err.getvalue())
 
 class EndToEndTest(unittest.TestCase):
     def test_reftest_with_two_notrefs(self):
