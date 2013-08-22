@@ -2319,16 +2319,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *                               changed.
    */
   FileManager.prototype.onDirectoryAction = function(entry) {
-    var mountError = this.volumeManager_.getMountError(
-        PathUtil.getRootPath(entry.fullPath));
-    if (mountError == VolumeManager.Error.UNKNOWN_FILESYSTEM) {
-      return this.butterBar_.show(ButterBar.Mode.ERROR,
-                                  str('UNKNOWN_FILESYSTEM_WARNING'));
-    } else if (mountError == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
-      return this.butterBar_.show(ButterBar.Mode.ERROR,
-                                  str('UNSUPPORTED_FILESYSTEM_WARNING'));
-    }
-
     return this.directoryModel_.changeDirectory(entry.fullPath);
   };
 
