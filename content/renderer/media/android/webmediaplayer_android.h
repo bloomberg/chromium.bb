@@ -77,7 +77,6 @@ class WebMediaPlayerAndroid
       RendererMediaPlayerManager* manager,
       WebMediaPlayerProxyAndroid* proxy,
       StreamTextureFactory* factory,
-      const scoped_refptr<base::MessageLoopProxy>& media_loop,
       media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
@@ -303,9 +302,6 @@ class WebMediaPlayerAndroid
 
   // Message loop for main renderer thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
-
-  // Message loop for media thread.
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
 
   // URL of the media file to be fetched.
   GURL url_;

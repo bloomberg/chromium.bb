@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_keys.h"
@@ -25,7 +25,6 @@ class DecoderBuffer;
 class DecryptingDemuxerStream;
 class DemuxerStream;
 class MediaLog;
-struct MediaPlayerHostMsg_DemuxerReady_Params;
 struct MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
 }
 
@@ -52,7 +51,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
                       int player_id,
-                      const scoped_refptr<base::MessageLoopProxy>& media_loop,
                       media::MediaLog* media_log);
 
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
@@ -93,13 +91,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void Destroy();
 
  private:
-  typedef base::Callback<void(
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params)>
-          ReadFromDemuxerAckCB;
-  typedef base::Callback<void(
-      scoped_ptr<media::MediaPlayerHostMsg_DemuxerReady_Params> params)>
-          DemuxerReadyCB;
-
   // This is private to enforce use of the Destroyer.
   virtual ~MediaSourceDelegate();
 
@@ -149,52 +140,26 @@ class MediaSourceDelegate : public media::DemuxerHost {
                                               const std::string& language);
   void NotifyDemuxerReady();
   bool CanNotifyDemuxerReady();
-  void SendDemuxerReady(
-      scoped_ptr<media::MediaPlayerHostMsg_DemuxerReady_Params> params);
 
-  void StopDemuxer();
-  void InitializeDemuxer();
-  void SeekInternal(base::TimeDelta time, unsigned seek_request_id);
-  void OnReadFromDemuxerInternal(media::DemuxerStream::Type type);
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
   void ReadFromDemuxerStream(
       media::DemuxerStream::Type type,
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params,
+      media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params,
       size_t index);
   void OnBufferReady(
       media::DemuxerStream::Type type,
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params,
+      media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params,
       size_t index,
       media::DemuxerStream::Status status,
       const scoped_refptr<media::DecoderBuffer>& buffer);
-
-  void SendReadFromDemuxerAck(
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params);
 
   // Helper function for calculating duration.
   int GetDurationMs();
 
   bool HasEncryptedStream();
 
-  void SetSeeking(bool seeking);
-  bool IsSeeking() const;
-
-  // Weak pointer must be dereferenced and invalidated on the same thread.
-  base::WeakPtrFactory<MediaSourceDelegate> main_weak_this_;
-  base::WeakPtrFactory<MediaSourceDelegate> media_weak_this_;
-
-  // Message loop for main renderer thread.
-  const scoped_refptr<base::MessageLoopProxy> main_loop_;
-  // Message loop for the media thread.
-  // When there is high load in the render thread, the reading from |demuxer_|
-  // and its read-callback loops run very slowly.  To improve the response time
-  // of the readings, we run tasks related to |demuxer_| in the media thread.
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
-
-  ReadFromDemuxerAckCB send_read_from_demuxer_ack_cb_;
-  base::Closure send_seek_request_ack_cb_;
-  DemuxerReadyCB send_demuxer_ready_cb_;
+  base::WeakPtrFactory<MediaSourceDelegate> weak_this_;
 
   WebMediaPlayerProxyAndroid* proxy_;
   int player_id_;
@@ -231,10 +196,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
 
-  // Lock used to serialize access for |seeking_|.
-  mutable base::Lock seeking_lock_;
-  bool seeking_;
+  media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params audio_params_;
+  media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params video_params_;
 
+  bool seeking_;
   base::TimeDelta last_seek_time_;
   unsigned last_seek_request_id_;
 
