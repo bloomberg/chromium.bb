@@ -941,6 +941,99 @@ TEST_F(WidgetOwnershipTest,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Test to verify using various Widget methods doesn't crash when the underlying
+// NativeView is destroyed.
+//
+class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
+ public:
+  WidgetWithDestroyedNativeViewTest() {}
+  virtual ~WidgetWithDestroyedNativeViewTest() {}
+
+  void InvokeWidgetMethods(Widget* widget) {
+    widget->GetNativeView();
+    widget->GetNativeWindow();
+    ui::Accelerator accelerator;
+    widget->GetAccelerator(0, &accelerator);
+    widget->GetTopLevelWidget();
+    widget->GetWindowBoundsInScreen();
+    widget->GetClientAreaBoundsInScreen();
+    widget->SetBounds(gfx::Rect(0, 0, 100, 80));
+    widget->SetSize(gfx::Size(10, 11));
+    widget->SetBoundsConstrained(gfx::Rect(0, 0, 120, 140));
+    widget->SetVisibilityChangedAnimationsEnabled(false);
+    widget->StackAtTop();
+    widget->IsClosed();
+    widget->Close();
+    widget->Show();
+    widget->Hide();
+    widget->Activate();
+    widget->Deactivate();
+    widget->IsActive();
+    widget->DisableInactiveRendering();
+    widget->SetAlwaysOnTop(true);
+    widget->Maximize();
+    widget->Minimize();
+    widget->Restore();
+    widget->IsMaximized();
+    widget->IsFullscreen();
+    widget->SetOpacity(0);
+    widget->SetUseDragFrame(true);
+    widget->FlashFrame(true);
+    widget->IsVisible();
+    widget->GetThemeProvider();
+    widget->GetNativeTheme();
+    widget->GetFocusManager();
+    widget->GetInputMethod();
+    widget->SchedulePaintInRect(gfx::Rect(0, 0, 1, 2));
+    widget->IsMouseEventsEnabled();
+    widget->SetNativeWindowProperty("xx", widget);
+    widget->GetNativeWindowProperty("xx");
+    widget->GetFocusTraversable();
+    widget->GetLayer();
+    widget->ReorderNativeViews();
+    widget->SetCapture(widget->GetRootView());
+    widget->ReleaseCapture();
+    widget->HasCapture();
+    widget->TooltipTextChanged(widget->GetRootView());
+    widget->GetWorkAreaBoundsInScreen();
+    // These three crash with NativeWidgetWin, so I'm assuming we don't need
+    // them to work for the other NativeWidget impls.
+    // widget->CenterWindow(gfx::Size(50, 60));
+    // widget->GetRestoredBounds();
+    // widget->ShowInactive();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WidgetWithDestroyedNativeViewTest);
+};
+
+TEST_F(WidgetWithDestroyedNativeViewTest, Test) {
+  {
+    Widget widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget.Init(params);
+    widget.Show();
+
+    widget.native_widget_private()->CloseNow();
+    InvokeWidgetMethods(&widget);
+  }
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  {
+    Widget widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.native_widget = new DesktopNativeWidgetAura(&widget);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget.Init(params);
+    widget.Show();
+
+    widget.native_widget_private()->CloseNow();
+    InvokeWidgetMethods(&widget);
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Widget observer tests.
 //
 

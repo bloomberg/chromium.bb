@@ -224,7 +224,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Ownership passed to RootWindow on Init.
   DesktopRootWindowHost* desktop_root_window_host_;
+
+  // The content of |root_window_|. WARNING: this may be NULL if deleted out
+  // from under us.
   aura::Window* window_;
+
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   scoped_ptr<aura::client::StackingClient> stacking_client_;

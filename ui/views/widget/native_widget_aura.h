@@ -189,6 +189,9 @@ class VIEWS_EXPORT NativeWidgetAura
 
   internal::NativeWidgetDelegate* delegate_;
 
+  // WARNING: set to NULL when destroyed. As the Widget is not necessarily
+  // destroyed along with |window_| all usage of |window_| should first verify
+  // non-NULL.
   aura::Window* window_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
