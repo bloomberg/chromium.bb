@@ -1177,7 +1177,6 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
       return !!CanCopy();
     case IDC_COPY_URL:
       return !!CanCopy() &&
-          !model()->user_input_in_progress() &&
           toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
     case IDC_PASTE:
       return !!CanPaste();

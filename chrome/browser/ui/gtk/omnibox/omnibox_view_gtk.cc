@@ -1261,8 +1261,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
                      G_CALLBACK(HandleCopyURLClipboardThunk), this);
     gtk_widget_set_sensitive(
         copy_url_menuitem,
-        toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false) &&
-            !model()->user_input_in_progress());
+        toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false));
     gtk_widget_show(copy_url_menuitem);
   }
 

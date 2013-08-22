@@ -778,10 +778,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO)
     return model()->CanPasteAndGo(GetClipboardText());
-  if (command_id == IDC_COPY_URL) {
-    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false) &&
-      !model()->user_input_in_progress();
-  }
+  if (command_id == IDC_COPY_URL)
+    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
   return command_updater()->IsCommandEnabled(command_id);
 }
 
