@@ -23,11 +23,14 @@ class PrefRegistrySyncable;
 namespace bookmark_utils {
 
 // Clones bookmark node, adding newly created nodes to |parent| starting at
-// |index_to_add_at|.
+// |index_to_add_at|. If |reset_node_times| is true cloned bookmarks and
+// folders will receive new creation times and folder modification times
+// instead of using the values stored in |elements|.
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
-                       int index_to_add_at);
+                       int index_to_add_at,
+                       bool reset_node_times);
 
 // Copies nodes onto the clipboard. If |remove_nodes| is true the nodes are
 // removed after copied to the clipboard. The nodes are copied in such a way

@@ -64,6 +64,8 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
+  EXPECT_TRUE(drag_data.elements[0].date_added.is_null());
+  EXPECT_TRUE(drag_data.elements[0].date_folder_modified.is_null());
   EXPECT_EQ(0, drag_data.elements[0].children.size());
 }
 
@@ -84,6 +86,9 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
+  EXPECT_EQ(node->date_added(), drag_data.elements[0].date_added);
+  EXPECT_EQ(node->date_folder_modified(),
+            drag_data.elements[0].date_folder_modified);
   ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
@@ -96,6 +101,8 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_TRUE(read_data.elements[0].is_url);
   EXPECT_EQ(url, read_data.elements[0].url);
   EXPECT_EQ(title, read_data.elements[0].title);
+  EXPECT_TRUE(read_data.elements[0].date_added.is_null());
+  EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
   EXPECT_TRUE(read_data.GetFirstNode(&profile) == node);
 
   // Make sure asking for the node with a different profile returns NULL.
@@ -129,6 +136,9 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
   EXPECT_FALSE(drag_data.elements[0].is_url);
+  EXPECT_EQ(g12->date_added(), drag_data.elements[0].date_added);
+  EXPECT_EQ(g12->date_folder_modified(),
+            drag_data.elements[0].date_folder_modified);
 
   ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
@@ -141,6 +151,8 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   ASSERT_EQ(1, read_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
   EXPECT_FALSE(read_data.elements[0].is_url);
+  EXPECT_TRUE(read_data.elements[0].date_added.is_null());
+  EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
 
   // We should get back the same node when asking for the same profile.
   const BookmarkNode* r_g12 = read_data.GetFirstNode(&profile);
@@ -185,6 +197,8 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   EXPECT_TRUE(read_child.is_url);
   EXPECT_EQ(title, read_child.title);
   EXPECT_EQ(url, read_child.url);
+  EXPECT_TRUE(read_data.elements[0].date_added.is_null());
+  EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
   EXPECT_TRUE(read_child.is_url);
 
   // And make sure we get the node back.
@@ -224,6 +238,8 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(2, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());
+  EXPECT_TRUE(read_data.elements[0].date_added.is_null());
+  EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
 
   const BookmarkNodeData::Element& read_folder = read_data.elements[0];
   EXPECT_FALSE(read_folder.is_url);

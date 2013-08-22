@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -53,6 +54,12 @@ struct BookmarkNodeData {
 
     // Title of the entry, used for both urls and folders.
     string16 title;
+
+    // Date of when this node was created.
+    base::Time date_added;
+
+    // Date of the last modification. Only used for folders.
+    base::Time date_folder_modified;
 
     // Children, only used for non-URL nodes.
     std::vector<Element> children;

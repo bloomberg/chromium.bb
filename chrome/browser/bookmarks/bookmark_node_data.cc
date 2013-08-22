@@ -26,6 +26,8 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
       url(node->url()),
       title(node->GetTitle()),
+      date_added(node->date_added()),
+      date_folder_modified(node->date_folder_modified()),
       id_(node->id()) {
   for (int i = 0; i < node->child_count(); ++i)
     children.push_back(Element(node->GetChild(i)));
@@ -58,6 +60,8 @@ bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
     return false;
   }
   url = GURL(url_spec);
+  date_added = base::Time();
+  date_folder_modified = base::Time();
   children.clear();
   if (!is_url) {
     uint64 children_count;

@@ -404,7 +404,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
   std::vector<BookmarkNodeData::Element> elements(drag_data.elements);
   // CloneBookmarkNode will use BookmarkModel methods to do the job, so we
   // don't need to send notifications here.
-  bookmark_utils::CloneBookmarkNode(this, elements, new_parent, index);
+  bookmark_utils::CloneBookmarkNode(this, elements, new_parent, index, true);
 
   if (store_.get())
     store_->ScheduleSave();

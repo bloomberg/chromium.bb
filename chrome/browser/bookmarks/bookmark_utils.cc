@@ -33,15 +33,27 @@ namespace {
 void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNodeData::Element& element,
                            const BookmarkNode* parent,
-                           int index_to_add_at) {
+                           int index_to_add_at,
+                           bool reset_node_times) {
   if (element.is_url) {
-    model->AddURL(parent, index_to_add_at, element.title, element.url);
+    if (reset_node_times) {
+      model->AddURL(parent, index_to_add_at, element.title, element.url);
+    } else {
+      DCHECK(!element.date_added.is_null());
+      model->AddURLWithCreationTime(parent, index_to_add_at, element.title,
+                                    element.url, element.date_added);
+    }
   } else {
     const BookmarkNode* new_folder = model->AddFolder(parent,
                                                       index_to_add_at,
                                                       element.title);
+    if (!reset_node_times) {
+      DCHECK(!element.date_folder_modified.is_null());
+      model->SetDateFolderModified(new_folder, element.date_folder_modified);
+    }
     for (int i = 0; i < static_cast<int>(element.children.size()); ++i)
-      CloneBookmarkNodeImpl(model, element.children[i], new_folder, i);
+      CloneBookmarkNodeImpl(model, element.children[i], new_folder, i,
+                            reset_node_times);
   }
 }
 
@@ -83,13 +95,16 @@ namespace bookmark_utils {
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
-                       int index_to_add_at) {
+                       int index_to_add_at,
+                       bool reset_node_times) {
   if (!parent->is_folder() || !model) {
     NOTREACHED();
     return;
   }
-  for (size_t i = 0; i < elements.size(); ++i)
-    CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i);
+  for (size_t i = 0; i < elements.size(); ++i) {
+    CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i,
+                          reset_node_times);
+  }
 }
 
 
@@ -122,7 +137,7 @@ void PasteFromClipboard(BookmarkModel* model,
 
   if (index == -1)
     index = parent->child_count();
-  CloneBookmarkNode(model, bookmark_data.elements, parent, index);
+  CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }
 
 bool CanPasteFromClipboard(const BookmarkNode* node) {

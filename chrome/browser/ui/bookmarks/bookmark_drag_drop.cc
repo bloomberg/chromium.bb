@@ -31,7 +31,8 @@ int DropBookmarks(Profile* profile,
     return ui::DragDropTypes::DRAG_NONE;
   }
   // Dropping a folder from different profile. Always accept.
-  bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node, index);
+  bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node,
+                                    index, true);
   return ui::DragDropTypes::DRAG_COPY;
 }
 
