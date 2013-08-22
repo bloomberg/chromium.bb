@@ -126,7 +126,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kProcesses, "processes", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       PermissionMessage::kTabs },
-    { APIPermission::kSessions, "sessions" },
+    { APIPermission::kSessionRestore, "sessionRestore" },
     { APIPermission::kStorage, "storage" },
     { APIPermission::kSyncFileSystem, "syncFileSystem",
       APIPermissionInfo::kFlagNone,

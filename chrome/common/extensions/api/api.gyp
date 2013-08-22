@@ -87,7 +87,7 @@
           'rtc_private.idl',
           'runtime.json',
           'serial.idl',
-          'sessions.json',
+          'session_restore.json',
           'signedin_devices.idl',
           'socket.idl',
           'sockets_udp.idl',
