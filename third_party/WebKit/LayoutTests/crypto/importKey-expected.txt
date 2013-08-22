@@ -29,8 +29,8 @@ PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, key
 PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Type error.
 PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Type error.
 PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Type error.
-PASS crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary.
+PASS crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages) threw exception NotSupportedError: Algorithm: SHA-1: Unsupported operation.
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -6,20 +6,20 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data) threw exception TypeError: Type error.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data) threw exception TypeError: Type error.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data) threw exception TypeError: Type error.
-PASS crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: SHA-1: Unsupported operation.
 PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data) threw exception NotSupportedError: key.algorithm does not match that of operation (HMAC's hash differs).
-PASS crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5'}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: 3}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: null}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'foo'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'AES-CBC'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary.
+PASS crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Algorithm: Not an object.
+PASS crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Algorithm: Not an object.
+PASS crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Algorithm: name: Missing or not a string.
+PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: Unrecognized algorithm name.
+PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: AES-CBC: Unsupported operation.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5'}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Missing or not a dictionary.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: 3}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Not an object.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: null}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Not an object.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {}}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: name: Missing or not a string.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'foo'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Unrecognized algorithm name.
+PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'AES-CBC'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: AES-CBC: Unsupported operation.
 PASS signResult.byteLength is 17
 PASS verifyResult is true
 PASS verifyResult is false

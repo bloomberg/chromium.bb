@@ -39,8 +39,10 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
@@ -160,157 +162,314 @@ AlgorithmRegistry::AlgorithmRegistry()
     }
 }
 
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAesCbcParams(const Dictionary& raw)
-{
-    RefPtr<ArrayBufferView> iv;
-    if (!raw.get("iv", iv) || !iv)
-        return nullptr;
-
-    if (iv->byteLength() != 16)
-        return nullptr;
-
-    return adoptPtr(new WebKit::WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
-}
-
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAesKeyGenParams(const Dictionary& raw)
-{
-    int32_t length;
-    if (!raw.get("length", length))
-        return nullptr;
-    if (length < 0 || length > 0xFFFF)
-        return nullptr;
-    return adoptPtr(new WebKit::WebCryptoAesKeyGenParams(length));
-}
-
-bool parseHash(const Dictionary& raw, WebKit::WebCryptoAlgorithm& hash)
-{
-    Dictionary rawHash;
-    if (!raw.get("hash", rawHash))
-        return false;
-
-    TrackExceptionState es;
-    return normalizeAlgorithm(rawHash, Digest, hash, es);
-}
-
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseHmacParams(const Dictionary& raw)
-{
-    WebKit::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash))
-        return nullptr;
-    return adoptPtr(new WebKit::WebCryptoHmacParams(hash));
-}
-
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseHmacKeyParams(const Dictionary& raw)
-{
-    WebKit::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash))
-        return nullptr;
-
-    // FIXME: Should fail if length was specified but of the wrong type.
-    bool hasLength = false;
-    int32_t length = 0;
-    if (raw.get("length", length)) {
-        hasLength = true;
-        if (length < 0)
-            return nullptr;
+// ExceptionContext holds a stack of string literals which describe what was
+// happening at the time the exception was thrown. This is helpful because
+// parsing of the algorithm dictionary can be recursive and it is difficult to
+// tell what went wrong from the exception type alone (TypeError).
+class ExceptionContext {
+public:
+    void add(const char* message)
+    {
+        m_messages.append(message);
     }
 
-    return adoptPtr(new WebKit::WebCryptoHmacKeyParams(hash, hasLength, length));
+    // Join all of the string literals into a single String.
+    String toString() const
+    {
+        if (m_messages.isEmpty())
+            return String();
+
+        StringBuilder result;
+        const char* Separator = ": ";
+
+        size_t length = (m_messages.size() - 1) * strlen(Separator);
+        for (size_t i = 0; i < m_messages.size(); ++i)
+            length += strlen(m_messages[i]);
+        result.reserveCapacity(length);
+
+        for (size_t i = 0; i < m_messages.size(); ++i) {
+            if (i)
+                result.append(Separator, strlen(Separator));
+            result.append(m_messages[i], strlen(m_messages[i]));
+        }
+
+        return result.toString();
+    }
+
+    String toString(const char* message) const
+    {
+        ExceptionContext stack(*this);
+        stack.add(message);
+        return stack.toString();
+    }
+
+    String toString(const char* message1, const char* message2) const
+    {
+        ExceptionContext stack(*this);
+        stack.add(message1);
+        stack.add(message2);
+        return stack.toString();
+    }
+
+private:
+    // This inline size is large enough to avoid having to grow the Vector in
+    // the majority of cases (up to 1 nested algorithm identifier).
+    Vector<const char*, 10> m_messages;
+};
+
+bool getArrayBufferView(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ExceptionContext& context, ExceptionState& es)
+{
+    if (!raw.get(propertyName, buffer) || !buffer) {
+        es.throwTypeError(context.toString(propertyName, "Missing or not a ArrayBufferView"));
+        return false;
+    }
+    return true;
 }
 
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseRsaSsaParams(const Dictionary& raw)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ExceptionContext& context, ExceptionState& es)
+{
+    if (!raw.get(propertyName, array) || !array) {
+        es.throwTypeError(context.toString(propertyName, "Missing or not a Uint8Array"));
+        return false;
+    }
+    return true;
+}
+
+bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
+{
+    double number;
+    if (!raw.get(propertyName, number)) {
+        es.throwTypeError(context.toString(propertyName, "Missing or not a number"));
+        return false;
+    }
+
+    // Convert to an integer according to WebIDL's [EnforceRange].
+    if (std::isinf(number) || std::isnan(number)) {
+        es.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
+        return false;
+    }
+
+    number = trunc(number);
+
+    if (number < minValue || number > maxValue) {
+        es.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
+        return false;
+    }
+
+    value = number;
+    return true;
+}
+
+bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasValue, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
+{
+    double number;
+    if (!raw.get(propertyName, number)) {
+        // FIXME: If the property exists but is NOT a number, should fail.
+        hasValue = false;
+        return true;
+    }
+
+    hasValue = true;
+    return getInteger(raw, propertyName, value, minValue, maxValue, context, es);
+}
+
+bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ExceptionContext& context, ExceptionState& es)
+{
+    double number;
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, es))
+        return false;
+    value = number;
+    return true;
+}
+
+bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ExceptionContext& context, ExceptionState& es)
+{
+    double number;
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, es))
+        return false;
+    value = number;
+    return true;
+}
+
+bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ExceptionContext& context, ExceptionState& es)
+{
+    double number;
+    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, es))
+        return false;
+    if (hasValue)
+        value = number;
+    return true;
+}
+
+bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+{
+    RefPtr<ArrayBufferView> iv;
+    if (!getArrayBufferView(raw, "iv", iv, context, es))
+        return false;
+
+    if (iv->byteLength() != 16) {
+        es.throwTypeError(context.toString("iv", "Must be 16 bytes"));
+        return false;
+    }
+
+    params = adoptPtr(new WebKit::WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
+    return true;
+}
+
+bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+{
+    uint16_t length;
+    if (!getUint16(raw, "length", length, context, es))
+        return false;
+
+    params = adoptPtr(new WebKit::WebCryptoAesKeyGenParams(length));
+    return true;
+}
+
+bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionContext, ExceptionState&);
+
+bool parseHash(const Dictionary& raw, WebKit::WebCryptoAlgorithm& hash, ExceptionContext context, ExceptionState& es)
+{
+    Dictionary rawHash;
+    if (!raw.get("hash", rawHash)) {
+        es.throwTypeError(context.toString("hash", "Missing or not a dictionary"));
+        return false;
+    }
+
+    context.add("hash");
+    return normalizeAlgorithm(rawHash, Digest, hash, context, es);
+}
+
+bool parseHmacParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash))
-        return nullptr;
-    return adoptPtr(new WebKit::WebCryptoRsaSsaParams(hash));
+    if (!parseHash(raw, hash, context, es))
+        return false;
+
+    params = adoptPtr(new WebKit::WebCryptoHmacParams(hash));
+    return true;
 }
 
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseRsaKeyGenParams(const Dictionary& raw)
+bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
-    // FIXME: This is losing precision; modulusLength is supposed to be a uint32
-    int32_t modulusLength;
-    if (!raw.get("modulusLength", modulusLength))
-        return nullptr;
-    if (modulusLength < 0)
-        return nullptr;
+    WebKit::WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash, context, es))
+        return false;
+
+    bool hasLength;
+    uint32_t length;
+    if (!getOptionalUint32(raw, "length", hasLength, length, context, es))
+        return false;
+
+    params = adoptPtr(new WebKit::WebCryptoHmacKeyParams(hash, hasLength, length));
+    return true;
+}
+
+bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+{
+    WebKit::WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash, context, es))
+        return false;
+
+    params = adoptPtr(new WebKit::WebCryptoRsaSsaParams(hash));
+    return true;
+}
+
+bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+{
+    uint32_t modulusLength;
+    if (!getUint32(raw, "modulusLength", modulusLength, context, es))
+        return false;
 
     RefPtr<Uint8Array> publicExponent;
-    if (!raw.get("publicExponent", publicExponent) || !publicExponent)
-        return nullptr;
-    return adoptPtr(new WebKit::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    if (!getUint8Array(raw, "publicExponent", publicExponent, context, es))
+        return false;
+
+    params = adoptPtr(new WebKit::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    return true;
 }
 
-PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictionary& raw, WebKit::WebCryptoAlgorithmParamsType type)
+bool parseAlgorithmParams(const Dictionary& raw, WebKit::WebCryptoAlgorithmParamsType type, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& es)
 {
     switch (type) {
     case WebKit::WebCryptoAlgorithmParamsTypeNone:
-        return nullptr;
+        return true;
     case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
-        return parseAesCbcParams(raw);
+        context.add("AesCbcParams");
+        return parseAesCbcParams(raw, params, context, es);
     case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        return parseAesKeyGenParams(raw);
+        context.add("AesKeyGenParams");
+        return parseAesKeyGenParams(raw, params, context, es);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
-        return parseHmacParams(raw);
+        context.add("HmacParams");
+        return parseHmacParams(raw, params, context, es);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
-        return parseHmacKeyParams(raw);
+        context.add("HmacKeyParams");
+        return parseHmacKeyParams(raw, params, context, es);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
-        return parseRsaSsaParams(raw);
+        context.add("RsaSSaParams");
+        return parseRsaSsaParams(raw, params, context, es);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
-        return parseRsaKeyGenParams(raw);
+        context.add("RsaKeyGenParams");
+        return parseRsaKeyGenParams(raw, params, context, es);
     }
     ASSERT_NOT_REACHED();
-    return nullptr;
+    return false;
 }
 
-const AlgorithmInfo* algorithmInfo(const Dictionary& raw, ExceptionState& es)
+const AlgorithmInfo* algorithmInfo(const Dictionary& raw, const ExceptionContext& context, ExceptionState& es)
 {
-    String algorithmName;
-    if (!raw.get("name", algorithmName)) {
-        es.throwDOMException(NotSupportedError);
+    if (!raw.isObject()) {
+        es.throwTypeError(context.toString("Not an object"));
         return 0;
     }
 
-    if (!algorithmName.containsOnlyASCII()) {
-        es.throwDOMException(SyntaxError);
+    String algorithmName;
+    if (!raw.get("name", algorithmName)) {
+        es.throwTypeError(context.toString("name", "Missing or not a string"));
         return 0;
     }
 
     const AlgorithmInfo* info = AlgorithmRegistry::lookupAlgorithmByName(algorithmName);
     if (!info) {
-        es.throwDOMException(NotSupportedError);
+        es.throwDOMException(NotSupportedError, context.toString("Unrecognized algorithm name"));
         return 0;
     }
 
     return info;
 }
 
-} // namespace
-
-// FIXME: Throw the correct exception types!
 // This implementation corresponds with:
 // http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionContext context, ExceptionState& es)
 {
-    const AlgorithmInfo* info = algorithmInfo(raw, es);
+    context.add("Algorithm");
+
+    const AlgorithmInfo* info = algorithmInfo(raw, context, es);
     if (!info)
         return false;
 
+    context.add(info->algorithmName);
+
     if (info->paramsForOperation[op] == UnsupportedOp) {
-        es.throwDOMException(NotSupportedError);
+        es.throwDOMException(NotSupportedError, context.toString("Unsupported operation"));
         return false;
     }
 
     WebKit::WebCryptoAlgorithmParamsType paramsType = static_cast<WebKit::WebCryptoAlgorithmParamsType>(info->paramsForOperation[op]);
-    OwnPtr<WebKit::WebCryptoAlgorithmParams> params = parseAlgorithmParams(raw, paramsType);
-
-    if (!params && paramsType != WebKit::WebCryptoAlgorithmParamsTypeNone) {
-        es.throwDOMException(NotSupportedError);
+    OwnPtr<WebKit::WebCryptoAlgorithmParams> params;
+    if (!parseAlgorithmParams(raw, paramsType, params, context, es))
         return false;
-    }
 
     algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, info->algorithmName, params.release());
     return true;
+}
+
+} // namespace
+
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+{
+    return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(), es);
 }
 
 } // namespace WebCore
