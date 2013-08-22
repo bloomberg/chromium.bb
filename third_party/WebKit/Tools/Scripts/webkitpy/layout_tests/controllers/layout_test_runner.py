@@ -252,7 +252,13 @@ class Worker(object):
         start = time.time()
         self._caller.post('started_test', test_input, test_timeout_sec)
 
-        result = self._run_test_with_timeout(test_input, test_timeout_sec, stop_when_done)
+        if self._driver and self._driver.has_crashed():
+            self._kill_driver()
+        if not self._driver:
+            self._driver = self._port.create_driver(self._worker_number)
+        result = single_test_runner.run_single_test(self._port, self._options, self._results_directory,
+            self._name, self._driver, test_input, stop_when_done)
+
         result.shard_name = shard_name
         result.worker_name = self._name
         result.total_run_time = time.time() - start
@@ -275,13 +281,9 @@ class Worker(object):
         #
         # Note that we need to convert the test timeout from a
         # string value in milliseconds to a float for Python.
-        driver_timeout_sec = 3.0 * float(test_input.timeout) / 1000.0
-        if not self._options.run_singly:
-            return driver_timeout_sec
 
-        thread_padding_sec = 1.0
-        thread_timeout_sec = driver_timeout_sec + thread_padding_sec
-        return thread_timeout_sec
+        # FIXME: Can we just return the test_input.timeout now?
+        driver_timeout_sec = 3.0 * float(test_input.timeout) / 1000.0
 
     def _kill_driver(self):
         # Be careful about how and when we kill the driver; if driver.stop()
@@ -292,10 +294,6 @@ class Worker(object):
             _log.debug("%s killing driver" % self._name)
             driver.stop()
 
-    def _run_test_with_timeout(self, test_input, timeout, stop_when_done):
-        if self._options.run_singly:
-            return self._run_test_in_another_thread(test_input, timeout, stop_when_done)
-        return self._run_test_in_this_thread(test_input, stop_when_done)
 
     def _clean_up_after_test(self, test_input, result):
         test_name = test_input.test_name
@@ -315,72 +313,6 @@ class Worker(object):
             _log.debug("%s %s skipped" % (self._name, test_name))
         else:
             _log.debug("%s %s passed" % (self._name, test_name))
-
-    def _run_test_in_another_thread(self, test_input, thread_timeout_sec, stop_when_done):
-        """Run a test in a separate thread, enforcing a hard time limit.
-
-        Since we can only detect the termination of a thread, not any internal
-        state or progress, we can only run per-test timeouts when running test
-        files singly.
-
-        Args:
-          test_input: Object containing the test filename and timeout
-          thread_timeout_sec: time to wait before killing the driver process.
-        Returns:
-          A TestResult
-        """
-        worker = self
-
-        driver = self._port.create_driver(self._worker_number)
-
-        class SingleTestThread(threading.Thread):
-            def __init__(self):
-                threading.Thread.__init__(self)
-                self.result = None
-
-            def run(self):
-                self.result = worker._run_single_test(driver, test_input, stop_when_done)
-
-        thread = SingleTestThread()
-        thread.start()
-        thread.join(thread_timeout_sec)
-        result = thread.result
-        failures = []
-        if thread.isAlive():
-            # If join() returned with the thread still running, the
-            # driver is completely hung and there's nothing
-            # more we can do with it.  We have to kill all the
-            # drivers to free it up. If we're running more than
-            # one driver thread, we'll end up killing the other
-            # drivers too, introducing spurious crashes. We accept
-            # that tradeoff in order to avoid losing the rest of this
-            # thread's results.
-            _log.error('Test thread hung: killing all drivers')
-            failures = [test_failures.FailureTimeout()]
-
-        driver.stop()
-
-        if not result:
-            result = test_results.TestResult(test_input.test_name, failures=failures, test_run_time=0)
-        return result
-
-    def _run_test_in_this_thread(self, test_input, stop_when_done):
-        """Run a single test file using a shared driver process.
-
-        Args:
-          test_input: Object containing the test filename, uri and timeout
-
-        Returns: a TestResult object.
-        """
-        if self._driver and self._driver.has_crashed():
-            self._kill_driver()
-        if not self._driver:
-            self._driver = self._port.create_driver(self._worker_number)
-        return self._run_single_test(self._driver, test_input, stop_when_done)
-
-    def _run_single_test(self, driver, test_input, stop_when_done):
-        return single_test_runner.run_single_test(self._port, self._options, self._results_directory,
-            self._name, driver, test_input, stop_when_done)
 
 
 class TestShard(object):

@@ -47,7 +47,6 @@ class TestInstance(object):
         self.crash = False
         self.web_process_crash = False
         self.exception = False
-        self.hang = False
         self.keyboard = False
         self.error = ''
         self.timeout = False
@@ -101,8 +100,8 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests.
 #
-TOTAL_TESTS = 107
-TOTAL_SKIPS = 27
+TOTAL_TESTS = 105
+TOTAL_SKIPS = 25
 
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 23
@@ -112,7 +111,6 @@ def unit_test_list():
     tests.add('failures/expected/crash.html', crash=True)
     tests.add('failures/expected/exception.html', exception=True)
     tests.add('failures/expected/timeout.html', timeout=True)
-    tests.add('failures/expected/hang.html', hang=True)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
     tests.add('failures/expected/needsmanualrebaseline.html', actual_text='needsmanualrebaseline text')
@@ -290,7 +288,6 @@ Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]
 Bug(test) failures/expected/reftest.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
-Bug(test) failures/expected/hang.html [ WontFix ]
 Bug(test) failures/expected/keyboard.html [ WontFix ]
 Bug(test) failures/expected/exception.html [ WontFix ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
@@ -571,8 +568,6 @@ class TestDriver(Driver):
             raise KeyboardInterrupt
         if test.exception:
             raise ValueError('exception from ' + test_name)
-        if test.hang:
-            time.sleep((float(driver_input.timeout) * 4) / 1000.0 + 1.0)  # The 1.0 comes from thread_padding_sec in layout_test_runnery.
 
         audio = None
         actual_text = test.actual_text

@@ -220,7 +220,7 @@ def parse_args(args):
             help=("Run a the tests in batches (n), after every n tests, "
                   "the driver is relaunched."), type="int", default=None),
         optparse.make_option("--run-singly", action="store_true",
-            default=False, help="run a separate driver for each test (implies --verbose)"),
+            default=False, help="DEPRECATED, same as --batch-size=1 --verbose"),
         optparse.make_option("--child-processes",
             help="Number of drivers to run in parallel."),
         # FIXME: Display default number of child processes that will run.
@@ -331,6 +331,7 @@ def _set_up_derived_options(port, options):
         options.pixel_test_directories = list(varified_dirs)
 
     if options.run_singly:
+        options.batch_size = 1
         options.verbose = True
 
 

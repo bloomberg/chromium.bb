@@ -288,13 +288,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(host.user.opened_urls), 1)
 
-    def test_hung_thread(self):
-        details, err, _ = logging_run(['--run-singly', '--time-out-ms=50', 'failures/expected/hang.html'], tests_included=True)
-        # Note that hang.html is marked as WontFix and all WontFix tests are
-        # expected to Pass, so that actually running them generates an "unexpected" error.
-        self.assertEqual(details.exit_code, 1)
-        self.assertNotEmpty(err)
-
     def test_keyboard_interrupt(self):
         # Note that this also tests running a test marked as SKIP if
         # you specify it explicitly.
@@ -441,10 +434,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             self.assertFalse('passes/image.html' in batch)
             has_passes_text = has_passes_text or ('passes/text.html' in batch)
         self.assertTrue(has_passes_text)
-
-    def test_run_singly_actually_runs_tests(self):
-        details, _, _ = logging_run(['--run-singly'], tests_included=True)
-        self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES - 1)  # failures/expected/hang.html actually passes w/ --run-singly.
 
     def test_single_file(self):
         tests_run = get_tests_run(['passes/text.html'])

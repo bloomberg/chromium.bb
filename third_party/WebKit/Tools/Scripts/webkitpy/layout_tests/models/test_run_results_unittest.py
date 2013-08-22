@@ -47,7 +47,7 @@ def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
 
 
 def run_results(port, extra_skipped_tests=[]):
-    tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/hang.html',
+    tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/keyboard.html',
              'failures/expected/audio.html', 'passes/skipped/skip.html']
     expectations = test_expectations.TestExpectations(port, tests)
     if extra_skipped_tests:
@@ -79,8 +79,8 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         initial_results.add(get_result('failures/expected/timeout.html', test_expectations.CRASH, run_time=0.05), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.TIMEOUT), expected, test_is_slow)
 
-        # we only list hang.html here, since normally this is WontFix
-        initial_results.add(get_result('failures/expected/hang.html', test_expectations.SKIP), expected, test_is_slow)
+        # we only list keyboard.html here, since normally this is WontFix
+        initial_results.add(get_result('failures/expected/keyboard.html', test_expectations.SKIP), expected, test_is_slow)
 
     if flaky:
         retry_results = run_results(port, extra_skipped_tests)
@@ -152,7 +152,7 @@ class SummarizedResultsTest(unittest.TestCase):
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['tests']['failures']['expected']['hang.html']['expected'], 'WONTFIX')
+        self.assertEquals(summary['tests']['failures']['expected']['keyboard.html']['expected'], 'WONTFIX')
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
 
     def test_summarized_results_expected_pass(self):
