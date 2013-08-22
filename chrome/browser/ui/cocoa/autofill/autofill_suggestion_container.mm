@@ -140,7 +140,9 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   lineFrame.size = [self preferredSizeForFirstLine];
   lineFrame.origin.x = NSMinX(bounds);
   lineFrame.origin.y = preferredContainerSize.height - NSHeight(lineFrame);
-  DCHECK_LE(NSWidth(lineFrame), NSWidth(bounds));
+
+  // Ensure text does not exceed the view width.
+  lineFrame.size.width = std::min(NSWidth(lineFrame), NSWidth(bounds));
 
   // Layout the controls - two lines on two rows, left-aligned. The optional
   // textfield is on the first line, right-aligned. The icon is also on the
