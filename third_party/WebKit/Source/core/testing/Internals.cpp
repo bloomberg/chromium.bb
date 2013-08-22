@@ -1121,6 +1121,9 @@ PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rang
         return 0;
     }
 
+    // TextIterator depends on Layout information, make sure layout it up to date.
+    scope->document()->updateLayoutIgnorePendingStylesheets();
+
     return TextIterator::rangeFromLocationAndLength(scope, rangeLocation, rangeLength);
 }
 
@@ -1130,6 +1133,9 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range, Except
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
+
+    // TextIterator depends on Layout information, make sure layout it up to date.
+    scope->document()->updateLayoutIgnorePendingStylesheets();
 
     size_t location = 0;
     size_t unusedLength = 0;
@@ -1143,6 +1149,9 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range, Exceptio
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
+
+    // TextIterator depends on Layout information, make sure layout it up to date.
+    scope->document()->updateLayoutIgnorePendingStylesheets();
 
     size_t unusedLocation = 0;
     size_t length = 0;
