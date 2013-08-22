@@ -18,6 +18,9 @@ CHROME_PACKAGE = 'com.google.android.apps.chrome'
 CHROME_ACTIVITY = 'com.google.android.apps.chrome.Main'
 CHROME_DEVTOOLS_SOCKET = 'chrome_devtools_remote'
 
+CHROME_STABLE_PACKAGE = 'com.android.chrome'
+CHROME_BETA_PACKAGE = 'com.chrome.beta'
+
 CHROME_TESTS_PACKAGE = 'com.google.android.apps.chrome.tests'
 
 LEGACY_BROWSER_PACKAGE = 'com.google.android.browser'

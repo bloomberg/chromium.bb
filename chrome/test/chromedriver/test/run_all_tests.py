@@ -65,7 +65,7 @@ def RunPythonTests(chromedriver, ref_chromedriver,
                    chrome_version_name=None, android_package=None):
   version_info = ''
   if chrome_version_name:
-    version_info = '(v%s)' % chrome_version_name
+    version_info = '(%s)' % chrome_version_name
   util.MarkBuildStepStart('python_tests%s' % version_info)
   code = util.RunCommand(
       _GenerateTestCommand('run_py_tests.py',
@@ -83,7 +83,7 @@ def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
                  chrome_version_name=None, android_package=None):
   version_info = ''
   if chrome_version_name:
-    version_info = '(v%s)' % chrome_version_name
+    version_info = '(%s)' % chrome_version_name
   util.MarkBuildStepStart('java_tests%s' % version_info)
   code = util.RunCommand(
       _GenerateTestCommand('run_java_tests.py',
@@ -113,8 +113,9 @@ def DownloadChrome(version_name, revision, download_site):
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
-      '', '--android-package',
-      help='Application package name, if running tests on Android.')
+      '', '--android-packages',
+      help='Comma separated list of application package names, '
+           'if running tests on Android.')
   # Option 'chrome-version' is for desktop only.
   parser.add_option(
       '', '--chrome-version',
@@ -130,7 +131,7 @@ def main():
   server_name = 'chromedriver2_server' + exe_postfix
 
   required_build_outputs = [server_name]
-  if not options.android_package:
+  if not options.android_packages:
     required_build_outputs += [cpp_tests_name]
   build_dir = chrome_paths.GetBuildDir(required_build_outputs)
   print 'Using build outputs from', build_dir
@@ -153,15 +154,20 @@ def main():
     # For Windows bots: add ant, java(jre) and the like to system path.
     _AddToolsToSystemPathForWindows()
 
-  if options.android_package:
+  if options.android_packages:
     os.environ['PATH'] += os.pathsep + os.path.join(
         _THIS_DIR, os.pardir, 'chrome')
-    code1 = RunPythonTests(chromedriver,
-                           ref_chromedriver,
-                           android_package=options.android_package)
-    code2 = RunJavaTests(chromedriver,
-                         android_package=options.android_package)
-    return code1 or code2
+    code = 0
+    for package in options.android_packages.split(','):
+      code1 = RunPythonTests(chromedriver,
+                             ref_chromedriver,
+                             chrome_version_name=package,
+                             android_package=package)
+      code2 = RunJavaTests(chromedriver,
+                           chrome_version_name=package,
+                           android_package=package)
+      code = code or code1 or code2
+    return code
   else:
     latest_snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
     versions = [
@@ -184,10 +190,10 @@ def main():
                              ref_chromedriver,
                              chrome=chrome_path,
                              chrome_version=version[0],
-                             chrome_version_name=version_name)
+                             chrome_version_name='v%s' % version_name)
       code2 = RunJavaTests(chromedriver, chrome=chrome_path,
                            chrome_version=version[0],
-                           chrome_version_name=version_name)
+                           chrome_version_name='v%s' % version_name)
       code = code or code1 or code2
     cpp_tests = os.path.join(build_dir, cpp_tests_name)
     return RunCppTests(cpp_tests) or code

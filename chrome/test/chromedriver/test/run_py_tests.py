@@ -110,6 +110,15 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'PerfTest.testColdExecuteScript',
     ]
 )
+_ANDROID_NEGATIVE_FILTER['com.android.chrome'] = (
+    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + [
+        # Touch support was added to devtools in Chrome v30.
+        'ChromeDriverTest.testTouchDownUpElement',
+        'ChromeDriverTest.testTouchMovedElement',
+    ]
+)
+_ANDROID_NEGATIVE_FILTER['com.chrome.beta'] = (
+    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'])
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
     _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + [
         # ChromiumTestShell doesn't support multiple tabs.

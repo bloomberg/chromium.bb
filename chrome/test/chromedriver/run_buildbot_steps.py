@@ -178,18 +178,19 @@ def WaitForLatestSnapshot(revision):
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
-      '', '--android-package',
-      help='Application package name, if running tests on Android.')
+      '', '--android-packages',
+      help='Comma separated list of application package names, '
+           'if running tests on Android.')
   parser.add_option(
       '-r', '--revision', type='string', default=None,
       help='Chromium revision')
   options, _ = parser.parse_args()
 
-  if not options.android_package:
+  if not options.android_packages:
     KillChromes()
   CleanTmpDir()
 
-  if options.android_package:
+  if options.android_packages:
     Download()
   else:
     if not options.revision:
@@ -204,12 +205,12 @@ def main():
       sys.executable,
       os.path.join(_THIS_DIR, 'test', 'run_all_tests.py'),
   ]
-  if options.android_package:
-    cmd.append('--android-package=' + options.android_package)
+  if options.android_packages:
+    cmd.append('--android-packages=' + options.android_packages)
 
   passed = (util.RunCommand(cmd) == 0)
 
-  if not options.android_package and passed:
+  if not options.android_packages and passed:
     MaybeRelease(options.revision)
 
 
