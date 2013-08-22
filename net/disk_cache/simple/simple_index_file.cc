@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/hash.h"
 #include "base/logging.h"
@@ -21,16 +22,10 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
-namespace disk_cache {
+
 namespace {
 
-const int kEntryFilesHashLength = 16;
-const int kEntryFilesSuffixLength = 2;
-
 const uint64 kMaxEntiresInIndex = 100000000;
-
-const char kIndexFileName[] = "the-real-index";
-const char kTempIndexFileName[] = "temp-index";
 
 uint32 CalculatePickleCRC(const Pickle& pickle) {
   return crc32(crc32(0, Z_NULL, 0),
@@ -72,54 +67,9 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
   }
 }
 
-// Called for each cache directory traversal iteration.
-void ProcessEntryFile(SimpleIndex::EntrySet* entries,
-                      const base::FilePath& file_path) {
-  static const size_t kEntryFilesLength =
-      kEntryFilesHashLength + kEntryFilesSuffixLength;
-  // Converting to std::string is OK since we never use UTF8 wide chars in our
-  // file names.
-  const base::FilePath::StringType base_name = file_path.BaseName().value();
-  const std::string file_name(base_name.begin(), base_name.end());
-  if (file_name.size() != kEntryFilesLength)
-    return;
-  const base::StringPiece hash_string(
-      file_name.begin(), file_name.begin() + kEntryFilesHashLength);
-  uint64 hash_key = 0;
-  if (!simple_util::GetEntryHashKeyFromHexString(hash_string, &hash_key)) {
-    LOG(WARNING) << "Invalid entry hash key filename while restoring index from"
-                 << " disk: " << file_name;
-    return;
-  }
-
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(file_path, &file_info)) {
-    LOG(ERROR) << "Could not get file info for " << file_path.value();
-    return;
-  }
-  base::Time last_used_time;
-#if defined(OS_POSIX)
-  // For POSIX systems, a last access time is available. However, it's not
-  // guaranteed to be more accurate than mtime. It is no worse though.
-  last_used_time = file_info.last_accessed;
-#endif
-  if (last_used_time.is_null())
-    last_used_time = file_info.last_modified;
-
-  int64 file_size = file_info.size;
-  SimpleIndex::EntrySet::iterator it = entries->find(hash_key);
-  if (it == entries->end()) {
-    SimpleIndex::InsertInEntrySet(
-        hash_key,
-        EntryMetadata(last_used_time, file_size),
-        entries);
-  } else {
-    // Summing up the total size of the entry through all the *_[0-2] files
-    it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
-  }
-}
-
 }  // namespace
+
+namespace disk_cache {
 
 SimpleIndexLoadResult::SimpleIndexLoadResult() : did_load(false),
                                                  flush_required(false) {
@@ -133,6 +83,11 @@ void SimpleIndexLoadResult::Reset() {
   flush_required = false;
   entries.clear();
 }
+
+// static
+const char SimpleIndexFile::kIndexFileName[] = "the-real-index";
+// static
+const char SimpleIndexFile::kTempIndexFileName[] = "temp-index";
 
 SimpleIndexFile::IndexMetadata::IndexMetadata() :
     magic_number_(kSimpleIndexMagicNumber),
@@ -395,6 +350,7 @@ void SimpleIndexFile::SyncRestoreFromDisk(
     const base::FilePath& index_file_path,
     SimpleIndexLoadResult* out_result) {
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
+
   base::DeleteFile(index_file_path, /* recursive = */ false);
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;
@@ -403,13 +359,53 @@ void SimpleIndexFile::SyncRestoreFromDisk(
   COMPILE_ASSERT(kSimpleEntryFileCount == 3,
                  file_pattern_must_match_file_count);
 
-  const bool did_succeed = TraverseCacheDirectory(
-      cache_directory, base::Bind(&ProcessEntryFile, entries));
-  if (!did_succeed) {
-    LOG(ERROR) << "Could not reconstruct index from disk";
-    return;
+  const int kFileSuffixLength = sizeof("_0") - 1;
+  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
+  base::FileEnumerator enumerator(cache_directory,
+                                  false /* recursive */,
+                                  base::FileEnumerator::FILES,
+                                  file_pattern);
+  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
+       file_path = enumerator.Next()) {
+    const base::FilePath::StringType base_name = file_path.BaseName().value();
+    // Converting to std::string is OK since we never use UTF8 wide chars in our
+    // file names.
+    const std::string hash_key_string(base_name.begin(),
+                                      base_name.end() - kFileSuffixLength);
+    uint64 hash_key = 0;
+    if (!simple_util::GetEntryHashKeyFromHexString(
+            hash_key_string, &hash_key)) {
+      LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
+                   << "Simple Index from disk: " << base_name;
+      // TODO(felipeg): Should we delete the invalid file here ?
+      continue;
+    }
+
+    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+    base::Time last_used_time;
+#if defined(OS_POSIX)
+    // For POSIX systems, a last access time is available. However, it's not
+    // guaranteed to be more accurate than mtime. It is no worse though.
+    last_used_time = base::Time::FromTimeT(info.stat().st_atime);
+#endif
+    if (last_used_time.is_null())
+      last_used_time = info.GetLastModifiedTime();
+
+    int64 file_size = info.GetSize();
+    SimpleIndex::EntrySet::iterator it = entries->find(hash_key);
+    if (it == entries->end()) {
+      SimpleIndex::InsertInEntrySet(
+          hash_key,
+          EntryMetadata(last_used_time, file_size),
+          entries);
+    } else {
+      // Summing up the total size of the entry through all the *_[0-2] files
+      it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
+    }
   }
+
   out_result->did_load = true;
+
   // When we restore from disk we write the merged index file to disk right
   // away, this might save us from having to restore again next time.
   out_result->flush_required = true;
