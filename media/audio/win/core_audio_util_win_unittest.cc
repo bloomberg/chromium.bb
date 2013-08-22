@@ -140,6 +140,33 @@ TEST_F(CoreAudioUtilWinTest, GetDefaultDeviceName) {
   }
 }
 
+TEST_F(CoreAudioUtilWinTest, GetAudioControllerID) {
+  if (!CanRunAudioTest())
+    return;
+
+  ScopedComPtr<IMMDeviceEnumerator> enumerator(
+      CoreAudioUtil::CreateDeviceEnumerator());
+  ASSERT_TRUE(enumerator);
+
+  // Enumerate all active input and output devices and fetch the ID of
+  // the associated device.
+  EDataFlow flows[] = { eRender , eCapture };
+  for (int i = 0; i < arraysize(flows); ++i) {
+    ScopedComPtr<IMMDeviceCollection> collection;
+    ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(flows[i],
+        DEVICE_STATE_ACTIVE, collection.Receive())));
+    UINT count = 0;
+    collection->GetCount(&count);
+    for (UINT j = 0; j < count; ++j) {
+      ScopedComPtr<IMMDevice> device;
+      collection->Item(j, device.Receive());
+      std::string controller_id(CoreAudioUtil::GetAudioControllerID(
+          device, enumerator));
+      EXPECT_FALSE(controller_id.empty());
+    }
+  }
+}
+
 TEST_F(CoreAudioUtilWinTest, GetFriendlyName) {
   if (!CanRunAudioTest())
     return;

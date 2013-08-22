@@ -4,8 +4,9 @@
 
 #include "media/audio/win/core_audio_util_win.h"
 
-#include <Audioclient.h>
-#include <Functiondiscoverykeys_devpkey.h>
+#include <audioclient.h>
+#include <devicetopology.h>
+#include <functiondiscoverykeys_devpkey.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -315,6 +316,53 @@ HRESULT CoreAudioUtil::GetDeviceName(IMMDevice* device, AudioDeviceName* name) {
   DVLOG(2) << "friendly name: " << device_name.device_name;
   DVLOG(2) << "unique id    : " << device_name.unique_id;
   return hr;
+}
+
+std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
+    IMMDeviceEnumerator* enumerator) {
+  DCHECK(IsSupported());
+
+  // Fetching the controller device id could be as simple as fetching the value
+  // of the "{B3F8FA53-0004-438E-9003-51A46E139BFC},2" property in the property
+  // store of the |device|, but that key isn't defined in any header and
+  // according to MS should not be relied upon.
+  // So, instead, we go deeper, look at the device topology and fetch the
+  // PKEY_Device_InstanceId of the associated physical audio device.
+  ScopedComPtr<IDeviceTopology> topology;
+  ScopedComPtr<IConnector> connector;
+  ScopedCoMem<WCHAR> filter_id;
+  if (FAILED(device->Activate(__uuidof(IDeviceTopology), CLSCTX_ALL, NULL,
+             topology.ReceiveVoid()) ||
+      // For our purposes checking the first connected device should be enough
+      // and if there are cases where there are more than one device connected
+      // we're not sure how to handle that anyway. So we pass 0.
+      FAILED(topology->GetConnector(0, connector.Receive())) ||
+      FAILED(connector->GetDeviceIdConnectedTo(&filter_id)))) {
+    DLOG(ERROR) << "Failed to get the device identifier of the audio device";
+    return std::string();
+  }
+
+  // Now look at the properties of the connected device node and fetch the
+  // instance id (PKEY_Device_InstanceId) of the device node that uniquely
+  // identifies the controller.
+  ScopedComPtr<IMMDevice> device_node;
+  ScopedComPtr<IPropertyStore> properties;
+  base::win::ScopedPropVariant instance_id;
+  if (FAILED(enumerator->GetDevice(filter_id, device_node.Receive())) ||
+      FAILED(device_node->OpenPropertyStore(STGM_READ, properties.Receive())) ||
+      FAILED(properties->GetValue(PKEY_Device_InstanceId,
+                                  instance_id.Receive())) ||
+      instance_id.get().vt != VT_LPWSTR) {
+    DLOG(ERROR) << "Failed to get instance id of the audio device node";
+    return std::string();
+  }
+
+  std::string controller_id;
+  WideToUTF8(instance_id.get().pwszVal,
+             wcslen(instance_id.get().pwszVal),
+             &controller_id);
+
+  return controller_id;
 }
 
 std::string CoreAudioUtil::GetFriendlyName(const std::string& device_id) {

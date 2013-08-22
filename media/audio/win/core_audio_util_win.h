@@ -68,6 +68,18 @@ class MEDIA_EXPORT CoreAudioUtil {
   //          "Microphone (Realtek High Definition Audio)".
   static HRESULT GetDeviceName(IMMDevice* device, AudioDeviceName* name);
 
+  // Returns the device ID/path of the controller (a.k.a. physical device that
+  // |device| is connected to.  This ID will be the same for all devices from
+  // the same controller so it is useful for doing things like determining
+  // whether a set of output and input devices belong to the same controller.
+  // The device enumerator is required as well as the device itself since
+  // looking at the device topology is required and we need to open up
+  // associated devices to determine the controller id.
+  // If the ID could not be determined for some reason, an empty string is
+  // returned.
+  static std::string GetAudioControllerID(IMMDevice* device,
+      IMMDeviceEnumerator* enumerator);
+
   // Gets the user-friendly name of the endpoint device which is represented
   // by a unique id in |device_id|.
   static std::string GetFriendlyName(const std::string& device_id);
