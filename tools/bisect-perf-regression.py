@@ -180,6 +180,15 @@ def CalculateStandardDeviation(v):
   return std_dev
 
 
+def CalculateStandardError(v):
+  if len(v) <= 1:
+    return 0.0
+
+  std_dev = CalculateStandardDeviation(v)
+
+  return std_dev / math.sqrt(len(v))
+
+
 def IsStringFloat(string_to_check):
   """Checks whether or not the given string can be converted to a floating
   point number.
@@ -1058,7 +1067,7 @@ class BisectPerformanceMetrics(object):
     """
 
     if self.opts.debug_ignore_perf_test:
-      return ({'mean': 0.0, 'std_dev': 0.0}, 0)
+      return ({'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': [0.0]}, 0)
 
     if IsWindows():
       command_to_run = command_to_run.replace('/', r'\\')
@@ -1111,15 +1120,18 @@ class BisectPerformanceMetrics(object):
     if metric_values:
       truncated_mean = CalculateTruncatedMean(metric_values,
           self.opts.truncate_percent)
+      standard_err = CalculateStandardError(metric_values)
       standard_dev = CalculateStandardDeviation(metric_values)
 
       values = {
         'mean': truncated_mean,
+        'std_err': standard_err,
         'std_dev': standard_dev,
+        'values': metric_values,
       }
 
       print 'Results of performance test: %12f %12f' % (
-          truncated_mean, standard_dev)
+          truncated_mean, standard_err)
       print
       return (values, 0)
     else:
@@ -1778,12 +1790,12 @@ class BisectPerformanceMetrics(object):
       # already know the results.
       bad_revision_data = revision_data[revision_list[0]]
       bad_revision_data['external'] = bad_results[2]
-      bad_revision_data['passed'] = 0
+      bad_revision_data['passed'] = False
       bad_revision_data['value'] = known_bad_value
 
       good_revision_data = revision_data[revision_list[max_revision]]
       good_revision_data['external'] = good_results[2]
-      good_revision_data['passed'] = 1
+      good_revision_data['passed'] = True
       good_revision_data['value'] = known_good_value
 
       next_revision_depot = target_depot
@@ -1899,7 +1911,7 @@ class BisectPerformanceMetrics(object):
           if run_results[1] == BUILD_RESULT_SKIPPED:
             next_revision_data['passed'] = 'Skipped'
           elif run_results[1] == BUILD_RESULT_FAIL:
-            next_revision_data['passed'] = 'Failed'
+            next_revision_data['passed'] = 'Build Failed'
 
           print run_results[0]
 
@@ -1936,23 +1948,18 @@ class BisectPerformanceMetrics(object):
       build_status = current_data['passed']
 
       if type(build_status) is bool:
-        build_status = int(build_status)
+        if build_status:
+          build_status = 'Passed'
+        else:
+          build_status = 'Failed'
 
       print '  %8s  %40s  %s' % (current_data['depot'],
                                  current_id, build_status)
     print
 
-    print
-    print 'Tested commits:'
-    for current_id, current_data in revision_data_sorted:
-      if current_data['value']:
-        print '  %8s  %40s  %12f %12f' % (
-            current_data['depot'], current_id,
-            current_data['value']['mean'], current_data['value']['std_dev'])
-    print
-
     # Find range where it possibly broke.
     first_working_revision = None
+    first_working_revision_index = -1
     last_broken_revision = None
     last_broken_revision_index = -1
 
@@ -1961,12 +1968,78 @@ class BisectPerformanceMetrics(object):
       if v['passed'] == 1:
         if not first_working_revision:
           first_working_revision = k
+          first_working_revision_index = i
 
       if not v['passed']:
         last_broken_revision = k
         last_broken_revision_index = i
 
+    print
+    print 'Tested commits:'
+    print '  %8s  %40s  %12s %14s %13s' % ('Depot'.center(8, ' '),
+        'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
+        'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
+    state = 0
+    for current_id, current_data in revision_data_sorted:
+      if current_data['value']:
+        if (current_id == last_broken_revision or
+            current_id == first_working_revision):
+          print
+          state += 1
+
+        state_str = 'Bad'
+        if state == 1:
+          state_str = 'Suspected CL'
+        elif state == 2:
+          state_str = 'Good'
+        state_str = state_str.center(13, ' ')
+
+        std_error = ('+-%.02f' %
+            current_data['value']['std_err']).center(14, ' ')
+        mean = ('+-%.02f' %
+            current_data['value']['mean']).center(12, ' ')
+        print '  %8s  %40s  %12s %14s %13s' % (
+            current_data['depot'], current_id, mean, std_error, state_str)
+
     if last_broken_revision != None and first_working_revision != None:
+      # Give a "confidence" in the bisect. At the moment we use how distinct the
+      # values are before and after the last broken revision, and how noisy the
+      # overall graph is.
+      bounds_broken = [revision_data[last_broken_revision]['value']['mean'],
+          revision_data[last_broken_revision]['value']['mean']]
+      broken_mean = []
+      for i in xrange(0, last_broken_revision_index + 1):
+        if revision_data_sorted[i][1]['value']:
+          bounds_broken[0] = min(bounds_broken[0],
+              revision_data_sorted[i][1]['value']['mean'])
+          bounds_broken[1] = max(bounds_broken[1],
+              revision_data_sorted[i][1]['value']['mean'])
+          broken_mean.extend(revision_data_sorted[i][1]['value']['values'])
+
+      bounds_working = [revision_data[first_working_revision]['value']['mean'],
+          revision_data[first_working_revision]['value']['mean']]
+      working_mean = []
+      for i in xrange(first_working_revision_index, len(revision_data_sorted)):
+        if revision_data_sorted[i][1]['value']:
+          bounds_working[0] = min(bounds_working[0],
+              revision_data_sorted[i][1]['value']['mean'])
+          bounds_working[1] = max(bounds_working[1],
+              revision_data_sorted[i][1]['value']['mean'])
+          working_mean.extend(revision_data_sorted[i][1]['value']['values'])
+
+      dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
+          math.fabs(bounds_broken[0] - bounds_working[1]))
+      len_working_group = CalculateStandardError(working_mean)
+      len_broken_group = CalculateStandardError(broken_mean)
+
+      confidence = (dist_between_groups / (
+          max(0.0001, (len_broken_group + len_working_group ))))
+      confidence = min(1.0, max(confidence, 0.0)) * 100.0
+
+      print
+      print 'Confidence in Bisection Results: %d%%' % int(confidence)
+      print
+
       print 'Results: Regression may have occurred in range:'
       print '  -> First Bad Revision: [%40s] [%s]' %\
             (last_broken_revision,
@@ -2048,19 +2121,13 @@ class BisectPerformanceMetrics(object):
       os.chdir(cwd)
 
       # Give a warning if the values were very close together
-      good_std_dev = revision_data[first_working_revision]['value']['std_dev']
+      good_std_dev = revision_data[first_working_revision]['value']['std_err']
       good_mean = revision_data[first_working_revision]['value']['mean']
       bad_mean = revision_data[last_broken_revision]['value']['mean']
 
       # A standard deviation of 0 could indicate either insufficient runs
       # or a test that consistently returns the same value.
-      if good_std_dev > 0:
-        deviations = math.fabs(bad_mean - good_mean) / good_std_dev
-
-        if deviations < 1.5:
-          self.warnings.append('Regression was less than 1.5 standard '
-            'deviations from "good" value. Results may not be accurate.')
-      elif self.opts.repeat_test_count == 1:
+      if self.opts.repeat_test_count == 1:
         self.warnings.append('Tests were only set to run once. This '
             'may be insufficient to get meaningful results.')
 
