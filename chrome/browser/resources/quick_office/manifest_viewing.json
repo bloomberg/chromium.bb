@@ -78,7 +78,7 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "3.0.3.1063",
+  "version": "3.0.5.2",
   "web_accessible_resources": [
     "views/qowt.html"
   ]
