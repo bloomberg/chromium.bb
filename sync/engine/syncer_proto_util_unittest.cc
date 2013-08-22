@@ -227,6 +227,20 @@ TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
   EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
 }
 
+TEST_F(SyncerProtoUtilTest, VerifyDisabledByAdmin) {
+  // No error code
+  sync_pb::ClientToServerResponse response;
+  EXPECT_FALSE(SyncerProtoUtil::IsSyncDisabledByAdmin(response));
+
+  // Has error code, but not disabled
+  response.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
+  EXPECT_FALSE(SyncerProtoUtil::IsSyncDisabledByAdmin(response));
+
+  // Has error code, and is disabled by admin
+  response.set_error_code(sync_pb::SyncEnums::DISABLED_BY_ADMIN);
+  EXPECT_TRUE(SyncerProtoUtil::IsSyncDisabledByAdmin(response));
+}
+
 TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
   EXPECT_TRUE(directory()->store_birthday().empty());
   ClientToServerMessage msg;

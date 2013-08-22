@@ -199,6 +199,7 @@ SyncProtocolError ConvertErrorPBToLocalType(
   return sync_protocol_error;
 }
 
+// static
 bool SyncerProtoUtil::VerifyResponseBirthday(
     const ClientToServerResponse& response,
     syncable::Directory* dir) {
@@ -228,6 +229,13 @@ bool SyncerProtoUtil::VerifyResponseBirthday(
   }
 
   return true;
+}
+
+// static
+bool SyncerProtoUtil::IsSyncDisabledByAdmin(
+    const sync_pb::ClientToServerResponse& response) {
+  return (response.has_error_code() &&
+          response.error_code() == sync_pb::SyncEnums::DISABLED_BY_ADMIN);
 }
 
 // static
@@ -380,11 +388,14 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
   SyncProtocolError sync_protocol_error;
 
-  // Birthday mismatch overrides any error that is sent by the server.
-  if (!VerifyResponseBirthday(*response, dir)) {
+  // The DISABLED_BY_ADMIN error overrides other errors sent by the server.
+  if (IsSyncDisabledByAdmin(*response)) {
+    sync_protocol_error.error_type = DISABLED_BY_ADMIN;
+    sync_protocol_error.action = STOP_SYNC_FOR_DISABLED_ACCOUNT;
+  } else if (!VerifyResponseBirthday(*response, dir)) {
+    // If sync isn't disabled, first check for a birthday mismatch error.
     sync_protocol_error.error_type = NOT_MY_BIRTHDAY;
-     sync_protocol_error.action =
-         DISABLE_SYNC_ON_CLIENT;
+    sync_protocol_error.action = DISABLE_SYNC_ON_CLIENT;
   } else if (response->has_error()) {
     // This is a new server. Just get the error from the protocol.
     sync_protocol_error = ConvertErrorPBToLocalType(response->error());
