@@ -66,11 +66,6 @@ html[dir='rtl'] #search-field {
   background-position: right 16px center;
 }
 
-/* Hide the search field if it is empty (!valid) and there are no results. */
-body:not(.has-results) #search-field:not(:valid) {
-  display: none;
-}
-
 .no-results-message {
   margin-bottom: 1em;
   padding-left: 16px;
