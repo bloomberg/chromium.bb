@@ -344,9 +344,61 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     return extraWidth;
 }
 
-static void determineDirectionality(TextDirection& dir, InlineIterator iter)
+static RenderObject* firstRenderObjectForDirectionalityDetermination(RenderObject* root, RenderObject* current = 0)
 {
+    RenderObject* next = current;
+    while (current) {
+        if (isIsolated(current->style()->unicodeBidi())
+            && (current->isRenderInline() || current->isRenderBlock())) {
+            if (current != root)
+                current = 0;
+            else
+                current = next;
+            break;
+        }
+        current = current->parent();
+    }
+
+    if (!current)
+        current = root->firstChild();
+
+    while (current) {
+        next = 0;
+        if (isIteratorTarget(current) && !(current->isText() && toRenderText(current)->isAllCollapsibleWhitespace()))
+            break;
+
+        if (!isIteratorTarget(current) && !isIsolated(current->style()->unicodeBidi()))
+            next = current->firstChild();
+
+        if (!next) {
+            while (current && current != root) {
+                next = current->nextSibling();
+                if (next)
+                    break;
+                current = current->parent();
+            }
+        }
+
+        if (!next)
+            break;
+
+        current = next;
+    }
+
+    return current;
+}
+
+static void determinePlaintextDirectionality(TextDirection& dir, RenderObject* root, RenderObject* current = 0, unsigned pos = 0)
+{
+    InlineIterator iter(root, firstRenderObjectForDirectionalityDetermination(root, current), pos);
+    InlineBidiResolver observer;
+    observer.setPositionIgnoringNestedIsolates(iter);
+    observer.setStatus(BidiStatus(root->style()->direction(), isOverride(root->style()->unicodeBidi())));
     while (!iter.atEnd()) {
+        if (observer.inIsolate()) {
+            iter.increment(&observer);
+            continue;
+        }
         if (iter.atParagraphSeparator())
             return;
         if (UChar current = iter.current()) {
@@ -360,7 +412,7 @@ static void determineDirectionality(TextDirection& dir, InlineIterator iter)
                 return;
             }
         }
-        iter.increment();
+        iter.increment(&observer);
     }
 }
 
@@ -1276,9 +1328,9 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
 
         InlineBidiResolver isolatedResolver;
         EUnicodeBidi unicodeBidi = isolatedInline->style()->unicodeBidi();
-        TextDirection direction;
+        TextDirection direction = isolatedInline->style()->direction();
         if (unicodeBidi == Plaintext)
-            determineDirectionality(direction, InlineIterator(isolatedInline, isolatedRun->object(), 0));
+            determinePlaintextDirectionality(direction, isolatedInline, startObj);
         else {
             ASSERT(unicodeBidi == Isolate || unicodeBidi == IsolateOverride);
             direction = isolatedInline->style()->direction();
@@ -1805,7 +1857,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
 
             if (isNewUBAParagraph && styleToUse->unicodeBidi() == Plaintext && !resolver.context()->parent()) {
                 TextDirection direction = styleToUse->direction();
-                determineDirectionality(direction, resolver.position());
+                determinePlaintextDirectionality(direction, resolver.position().root(), resolver.position().object(), resolver.position().offset());
                 resolver.setStatus(BidiStatus(direction, isOverride(styleToUse->unicodeBidi())));
             }
             // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
@@ -2292,7 +2344,7 @@ RootInlineBox* RenderBlock::determineStartPosition(LineLayoutState& layoutState,
     } else {
         TextDirection direction = style()->direction();
         if (style()->unicodeBidi() == Plaintext)
-            determineDirectionality(direction, InlineIterator(this, bidiFirstSkippingEmptyInlines(this), 0));
+            determinePlaintextDirectionality(direction, this);
         resolver.setStatus(BidiStatus(direction, isOverride(style()->unicodeBidi())));
         InlineIterator iter = InlineIterator(this, bidiFirstSkippingEmptyInlines(this, &resolver), 0);
         resolver.setPosition(iter, numberOfIsolateAncestors(iter));
