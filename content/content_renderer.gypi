@@ -386,6 +386,8 @@
     'renderer/pepper/renderer_ppapi_host_impl.cc',
     'renderer/pepper/renderer_ppapi_host_impl.h',
     'renderer/pepper/renderer_restrict_dispatch_group.h',
+    'renderer/pepper/resource_converter.cc',
+    'renderer/pepper/resource_converter.h',
     'renderer/pepper/resource_creation_impl.cc',
     'renderer/pepper/resource_creation_impl.h',
     'renderer/pepper/url_request_info_util.cc',

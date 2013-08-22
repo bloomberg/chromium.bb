@@ -92,7 +92,7 @@ class MessageChannel {
   // |result_iteartor| is an iterator into |converted_var_queue_| where the
   // result should be stored.
   void NPVariantToPPVarComplete(
-      const std::list<VarConversionResult>::reverse_iterator& result_iterator,
+      const std::list<VarConversionResult>::iterator& result_iterator,
       const ppapi::ScopedPPVar& result,
       bool success);
 

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "ppapi/c/pp_var.h"
 #include "v8/include/v8.h"
 #include "content/common/content_export.h"
@@ -24,6 +25,16 @@ namespace V8VarConverter {
 bool CONTENT_EXPORT ToV8Value(const PP_Var& var,
                               v8::Handle<v8::Context> context,
                               v8::Handle<v8::Value>* result);
+
+// A version of FromV8Value that accepts the message loop to run the callback
+// from for the purposes of testing. The default is to use the current message
+// loop. See the description of FromV8Value below.
+void CONTENT_EXPORT FromV8Value(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context,
+    const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy);
+
 // Converts the given v8::Value to a PP_Var. Every PP_Var in the reference graph
 // in the result will have a refcount equal to the number of references to it in
 // the graph. The root of the result will have one additional reference. The

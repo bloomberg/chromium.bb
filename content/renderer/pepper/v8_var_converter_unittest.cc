@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
@@ -134,7 +135,12 @@ bool Equals(const PP_Var& var,
 class V8VarConverterTest : public testing::Test {
  public:
   V8VarConverterTest()
-      : isolate_(v8::Isolate::GetCurrent()) {}
+      : isolate_(v8::Isolate::GetCurrent()),
+        conversion_success_(false),
+        conversion_event_(true, false),
+        callback_thread_("callback_thread") {
+    callback_thread_.Start();
+  }
   virtual ~V8VarConverterTest() {}
 
   // testing::Test implementation.
@@ -155,7 +161,10 @@ class V8VarConverterTest : public testing::Test {
                        v8::Handle<v8::Context> context,
                        PP_Var* result) {
     V8VarConverter::FromV8Value(val, context, base::Bind(
-        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)));
+        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)),
+        callback_thread_.message_loop_proxy());
+    conversion_event_.Wait();
+    conversion_event_.Reset();
     if (conversion_success_)
       *result = conversion_result_;
     return conversion_success_;
@@ -167,6 +176,7 @@ class V8VarConverterTest : public testing::Test {
       ScopedPPVar var = scoped_var;
       conversion_result_ = var.Release();
     }
+    conversion_event_.Signal();
   }
 
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
@@ -199,12 +209,13 @@ class V8VarConverterTest : public testing::Test {
   // Context for the JavaScript in the test.
   v8::Persistent<v8::Context> context_;
 
-  PP_Var conversion_result_;
-  bool conversion_success_;
-
-
  private:
   TestGlobals globals_;
+
+  PP_Var conversion_result_;
+  bool conversion_success_;
+  base::WaitableEvent conversion_event_;
+  base::Thread callback_thread_;
 };
 
 }  // namespace

@@ -313,8 +313,8 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
 
 void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
   converted_var_queue_.push_back(VarConversionResult());
-  std::list<VarConversionResult>::reverse_iterator result_iterator =
-      converted_var_queue_.rbegin();
+  std::list<VarConversionResult>::iterator result_iterator =
+      --converted_var_queue_.end();
   switch (variant->type) {
     case NPVariantType_Void:
       NPVariantToPPVarComplete(result_iterator,
@@ -443,7 +443,7 @@ void MessageChannel::QueueJavaScriptMessages() {
 }
 
 void MessageChannel::NPVariantToPPVarComplete(
-    const std::list<VarConversionResult>::reverse_iterator& result_iterator,
+    const std::list<VarConversionResult>::iterator& result_iterator,
     const ppapi::ScopedPPVar& result,
     bool success) {
   *result_iterator = VarConversionResult(result, success);
