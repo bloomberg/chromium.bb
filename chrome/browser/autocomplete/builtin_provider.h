@@ -31,6 +31,7 @@ class BuiltinProvider : public AutocompleteProvider {
   static const int kRelevance;
 
   void AddMatch(const string16& match_string,
+                const string16& inline_completion,
                 const ACMatchClassifications& styles);
 
   Builtins builtins_;

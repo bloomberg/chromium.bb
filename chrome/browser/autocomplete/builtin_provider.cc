@@ -82,9 +82,9 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     if (highlight)
       styles.push_back(ACMatchClassification(offset, kUrl));
     // Include some common builtin chrome URLs as the user types the scheme.
-    AddMatch(ASCIIToUTF16(chrome::kChromeUIChromeURLsURL), styles);
-    AddMatch(ASCIIToUTF16(chrome::kChromeUISettingsURL), styles);
-    AddMatch(ASCIIToUTF16(chrome::kChromeUIVersionURL), styles);
+    AddMatch(ASCIIToUTF16(chrome::kChromeUIChromeURLsURL), string16(), styles);
+    AddMatch(ASCIIToUTF16(chrome::kChromeUISettingsURL), string16(), styles);
+    AddMatch(ASCIIToUTF16(chrome::kChromeUIVersionURL), string16(), styles);
   } else {
     // Match input about: or chrome: URL input against builtin chrome URLs.
     GURL url = URLFixerUpper::FixupURL(UTF16ToUTF8(text), std::string());
@@ -102,7 +102,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
           string16 match_string = kChrome + *i;
           if (match_string.length() > match_length)
             styles.push_back(ACMatchClassification(match_length, kUrl));
-          AddMatch(match_string, styles);
+          AddMatch(match_string, match_string.substr(match_length), styles);
         }
       }
     }
@@ -110,15 +110,24 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
 
   for (size_t i = 0; i < matches_.size(); ++i)
     matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
+  if (!input.prevent_inline_autocomplete() && (matches_.size() == 1)) {
+    // If there's only one possible completion of the user's input and
+    // allowing completions is okay, give the match a high enough score to
+    // allow it to beat url-what-you-typed and be inlined.
+    matches_[0].relevance = 1250;
+    matches_[0].allowed_to_be_default_match = true;
+  }
 }
 
 BuiltinProvider::~BuiltinProvider() {}
 
 void BuiltinProvider::AddMatch(const string16& match_string,
+                               const string16& inline_completion,
                                const ACMatchClassifications& styles) {
   AutocompleteMatch match(this, kRelevance, false,
                           AutocompleteMatchType::NAVSUGGEST);
   match.fill_into_edit = match_string;
+  match.inline_autocompletion = inline_completion;
   match.destination_url = GURL(match_string);
   match.contents = match_string;
   match.contents_class = styles;
