@@ -15,7 +15,6 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
-#include "ui/gfx/font.h"
 
 class GURL;
 
@@ -23,13 +22,18 @@ namespace base {
 class FilePath;
 }
 
+namespace gfx {
+class Font;
+class FontList;
+}  // namespace gfx
+
 namespace ui {
 
 UI_EXPORT extern const char kEllipsis[];
 UI_EXPORT extern const char16 kEllipsisUTF16[];
 
 // Elides a well-formed email address (e.g. username@domain.com) to fit into
-// |available_pixel_width| using the specified |font|.
+// |available_pixel_width| using the specified |font_list|.
 // This function guarantees that the string returned will contain at least one
 // character, other than the ellipses, on either side of the '@'. If it is
 // impossible to achieve these requirements: only an ellipsis will be returned.
@@ -38,6 +42,10 @@ UI_EXPORT extern const char16 kEllipsisUTF16[];
 // equally with the elided username (should the username be short enough that it
 // doesn't need half the available width: the elided domain will occupy that
 // extra width).
+UI_EXPORT string16 ElideEmail(const string16& email,
+                              const gfx::FontList& font_list,
+                              int available_pixel_width);
+// Obsolete version.  Use the above version which takes gfx::FontList.
 UI_EXPORT string16 ElideEmail(const string16& email,
                               const gfx::Font& font,
                               int available_pixel_width);
@@ -57,6 +65,11 @@ UI_EXPORT string16 ElideEmail(const string16& email,
 // is displayed properly in an RTL context. Please refer to
 // http://crbug.com/6487 for more information.
 UI_EXPORT string16 ElideUrl(const GURL& url,
+                            const gfx::FontList& font_list,
+                            int available_pixel_width,
+                            const std::string& languages);
+// Obsolete version.  Use the above version which takes gfx::FontList.
+UI_EXPORT string16 ElideUrl(const GURL& url,
                             const gfx::Font& font,
                             int available_pixel_width,
                             const std::string& languages);
@@ -73,6 +86,11 @@ enum ElideBehavior {
 // Elides |text| to fit in |available_pixel_width| according to the specified
 // |elide_behavior|.
 UI_EXPORT string16 ElideText(const string16& text,
+                             const gfx::FontList& font_list,
+                             int available_pixel_width,
+                             ElideBehavior elide_behavior);
+// Obsolete version.  Use the above version which takes gfx::FontList.
+UI_EXPORT string16 ElideText(const string16& text,
                              const gfx::Font& font,
                              int available_pixel_width,
                              ElideBehavior elide_behavior);
@@ -83,6 +101,10 @@ UI_EXPORT string16 ElideText(const string16& text,
 // filename is forced to have LTR directionality, which means that in RTL UI
 // the elided filename is wrapped with LRE (Left-To-Right Embedding) mark and
 // PDF (Pop Directional Formatting) mark.
+UI_EXPORT string16 ElideFilename(const base::FilePath& filename,
+                                 const gfx::FontList& font_list,
+                                 int available_pixel_width);
+// Obsolete version.  Use the above version which takes gfx::FontList.
 UI_EXPORT string16 ElideFilename(const base::FilePath& filename,
                                  const gfx::Font& font,
                                  int available_pixel_width);
@@ -181,12 +203,19 @@ enum ReformattingResultFlags {
 
 // Reformats |text| into output vector |lines| so that the resulting text fits
 // into an |available_pixel_width| by |available_pixel_height| rectangle with
-// the specified |font|. Input newlines are respected, but lines that are too
-// long are broken into pieces. For words that are too wide to fit on a single
-// line, the wrapping behavior can be specified with the |wrap_behavior| param.
-// Returns a combination of |ReformattingResultFlags| that indicate whether the
-// given rectangle had insufficient space to accommodate |texŧ|, leading to
-// elision or truncation (and not just reformatting).
+// the specified |font_list|. Input newlines are respected, but lines that are
+// too long are broken into pieces. For words that are too wide to fit on a
+// single line, the wrapping behavior can be specified with the |wrap_behavior|
+// param. Returns a combination of |ReformattingResultFlags| that indicate
+// whether the given rectangle had insufficient space to accommodate |texŧ|,
+// leading to elision or truncation (and not just reformatting).
+UI_EXPORT int ElideRectangleText(const string16& text,
+                                 const gfx::FontList& font_list,
+                                 int available_pixel_width,
+                                 int available_pixel_height,
+                                 WordWrapBehavior wrap_behavior,
+                                 std::vector<string16>* lines);
+// Obsolete version.  Use the above version which takes gfx::FontList.
 UI_EXPORT int ElideRectangleText(const string16& text,
                                  const gfx::Font& font,
                                  int available_pixel_width,

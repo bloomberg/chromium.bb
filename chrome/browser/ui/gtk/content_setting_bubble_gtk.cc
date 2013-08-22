@@ -32,6 +32,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
 
 using content::PluginService;

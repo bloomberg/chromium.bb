@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/range/range.h"
 #include "ui/base/text/text_elider.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -57,9 +56,9 @@ bool AdjustStringDirection(int flags, base::string16* text) {
 // Checks each pixel immediately adjacent to the given pixel in the bitmap. If
 // any of them are not the halo color, returns true. This defines the halo of
 // pixels that will appear around the text. Note that we have to check each
-// pixel against both the halo color and transparent since |DrawStringWithHalo|
-// will modify the bitmap as it goes, and cleared pixels shouldn't count as
-// changed.
+// pixel against both the halo color and transparent since
+// |DrawStringRectWithHalo| will modify the bitmap as it goes, and cleared
+// pixels shouldn't count as changed.
 bool PixelShouldGetHalo(const SkBitmap& bitmap,
                         int x, int y,
                         SkColor halo_color) {
@@ -98,13 +97,13 @@ ui::Range StripAcceleratorChars(int flags, base::string16* text) {
 
 // Elides |text| and adjusts |range| appropriately. If eliding causes |range|
 // to no longer point to the same character in |text|, |range| is made invalid.
-void ElideTextAndAdjustRange(const Font& font,
+void ElideTextAndAdjustRange(const FontList& font_list,
                              int width,
                              base::string16* text,
                              ui::Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
-  *text = ui::ElideText(*text, font, width, ui::ELIDE_AT_END);
+  *text = ui::ElideText(*text, font_list, width, ui::ELIDE_AT_END);
   if (!range->IsValid())
     return;
   if (range->start() >= text->length() ||
@@ -116,16 +115,16 @@ void ElideTextAndAdjustRange(const Font& font,
 // Updates |render_text| from the specified parameters.
 void UpdateRenderText(const Rect& rect,
                       const base::string16& text,
-                      const Font& font,
+                      const FontList& font_list,
                       int flags,
                       SkColor color,
                       RenderText* render_text) {
-  render_text->SetFont(font);
+  render_text->SetFontList(font_list);
   render_text->SetText(text);
   render_text->SetCursorEnabled(false);
 
   Rect display_rect = rect;
-  display_rect.set_height(font.GetHeight());
+  display_rect.set_height(font_list.GetHeight());
   render_text->SetDisplayRect(display_rect);
 
   // Set the text alignment explicitly based on the directionality of the UI,
@@ -147,9 +146,10 @@ void UpdateRenderText(const Rect& rect,
     render_text->set_background_is_transparent(true);
 
   render_text->SetColor(color);
-  render_text->SetStyle(BOLD, (font.GetStyle() & Font::BOLD) != 0);
-  render_text->SetStyle(ITALIC, (font.GetStyle() & Font::ITALIC) != 0);
-  render_text->SetStyle(UNDERLINE, (font.GetStyle() & Font::UNDERLINE) != 0);
+  const int font_style = font_list.GetFontStyle();
+  render_text->SetStyle(BOLD, (font_style & Font::BOLD) != 0);
+  render_text->SetStyle(ITALIC, (font_style & Font::ITALIC) != 0);
+  render_text->SetStyle(UNDERLINE, (font_style & Font::UNDERLINE) != 0);
 }
 
 // Returns updated |flags| to match platform-specific expected behavior.
@@ -168,7 +168,7 @@ int AdjustPlatformSpecificFlags(const base::string16& text, int flags) {
 
 // static
 void Canvas::SizeStringInt(const base::string16& text,
-                           const Font& font,
+                           const FontList& font_list,
                            int* width, int* height,
                            int line_height,
                            int flags) {
@@ -191,17 +191,19 @@ void Canvas::SizeStringInt(const base::string16& text,
 
     Rect rect(*width, INT_MAX);
     std::vector<base::string16> strings;
-    ui::ElideRectangleText(adjusted_text, font, rect.width(), rect.height(),
+    ui::ElideRectangleText(adjusted_text, font_list,
+                           rect.width(), rect.height(),
                            wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-    UpdateRenderText(rect, base::string16(), font, flags, 0, render_text.get());
+    UpdateRenderText(rect, base::string16(), font_list, flags, 0,
+                     render_text.get());
 
     int h = 0;
     int w = 0;
     for (size_t i = 0; i < strings.size(); ++i) {
       StripAcceleratorChars(flags, &strings[i]);
       render_text->SetText(strings[i]);
-      const Size string_size = render_text->GetStringSize();
+      const Size& string_size = render_text->GetStringSize();
       w = std::max(w, string_size.width());
       h += (i > 0 && line_height > 0) ? line_height : string_size.height();
     }
@@ -212,27 +214,28 @@ void Canvas::SizeStringInt(const base::string16& text,
     // will inexplicably fail with result E_INVALIDARG. Guard against this.
     const size_t kMaxRenderTextLength = 5000;
     if (adjusted_text.length() >= kMaxRenderTextLength) {
-      *width = adjusted_text.length() * font.GetAverageCharacterWidth();
-      *height = font.GetHeight();
+      *width = font_list.GetExpectedTextWidth(adjusted_text.length());
+      *height = font_list.GetHeight();
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
       Rect rect(*width, *height);
       StripAcceleratorChars(flags, &adjusted_text);
-      UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
-      const Size string_size = render_text->GetStringSize();
+      UpdateRenderText(rect, adjusted_text, font_list, flags, 0,
+                       render_text.get());
+      const Size& string_size = render_text->GetStringSize();
       *width = string_size.width();
       *height = string_size.height();
     }
   }
 }
 
-void Canvas::DrawStringWithShadows(const base::string16& text,
-                                   const Font& font,
-                                   SkColor color,
-                                   const Rect& text_bounds,
-                                   int line_height,
-                                   int flags,
-                                   const ShadowValues& shadows) {
+void Canvas::DrawStringRectWithShadows(const base::string16& text,
+                                       const FontList& font_list,
+                                       SkColor color,
+                                       const Rect& text_bounds,
+                                       int line_height,
+                                       int flags,
+                                       const ShadowValues& shadows) {
   if (!IntersectsClipRect(text_bounds))
     return;
 
@@ -263,14 +266,15 @@ void Canvas::DrawStringWithShadows(const base::string16& text,
 
     std::vector<base::string16> strings;
     ui::ElideRectangleText(adjusted_text,
-                           font,
+                           font_list,
                            text_bounds.width(), text_bounds.height(),
                            wrap_behavior,
                            &strings);
 
     for (size_t i = 0; i < strings.size(); i++) {
       ui::Range range = StripAcceleratorChars(flags, &strings[i]);
-      UpdateRenderText(rect, strings[i], font, flags, color, render_text.get());
+      UpdateRenderText(rect, strings[i], font_list, flags, color,
+                       render_text.get());
       int line_padding = 0;
       if (line_height > 0)
         line_padding = line_height - render_text->GetStringSize().height();
@@ -311,13 +315,13 @@ void Canvas::DrawStringWithShadows(const base::string16& text,
 #endif
 
     if (elide_text) {
-      ElideTextAndAdjustRange(font,
+      ElideTextAndAdjustRange(font_list,
                               text_bounds.width(),
                               &adjusted_text,
                               &range);
     }
 
-    UpdateRenderText(rect, adjusted_text, font, flags, color,
+    UpdateRenderText(rect, adjusted_text, font_list, flags, color,
                      render_text.get());
 
     const int text_height = render_text->GetStringSize().height();
@@ -333,19 +337,19 @@ void Canvas::DrawStringWithShadows(const base::string16& text,
   canvas_->restore();
 }
 
-void Canvas::DrawStringWithHalo(const base::string16& text,
-                                const Font& font,
-                                SkColor text_color,
-                                SkColor halo_color_in,
-                                int x, int y, int w, int h,
-                                int flags) {
+void Canvas::DrawStringRectWithHalo(const base::string16& text,
+                                    const FontList& font_list,
+                                    SkColor text_color,
+                                    SkColor halo_color_in,
+                                    const Rect& display_rect,
+                                    int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
   // (since the resulting image can have 1-bit transparency only).
   SkColor halo_color = SkColorSetA(halo_color_in, 0xFF);
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
-  Size size(w + 2, h + 2);
+  Size size(display_rect.width() + 2, display_rect.height() + 2);
   Canvas text_canvas(size, scale_factor(), true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
@@ -353,7 +357,9 @@ void Canvas::DrawStringWithHalo(const base::string16& text,
 
   // Draw the text into the temporary buffer. This will have correct
   // ClearType since the background color is the same as the halo color.
-  text_canvas.DrawStringInt(text, font, text_color, 1, 1, w, h, flags);
+  text_canvas.DrawStringRectWithFlags(
+      text, font_list, text_color,
+      Rect(1, 1, display_rect.width(), display_rect.height()), flags);
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(
@@ -376,22 +382,21 @@ void Canvas::DrawStringWithHalo(const base::string16& text,
   // Draw the halo bitmap with blur.
   ImageSkia text_image = ImageSkia(ImageSkiaRep(text_bitmap,
       text_canvas.scale_factor()));
-  DrawImageInt(text_image, x - 1, y - 1);
+  DrawImageInt(text_image, display_rect.x() - 1, display_rect.y() - 1);
 }
 
-void Canvas::DrawFadeTruncatingString(
-      const base::string16& text,
-      TruncateFadeMode truncate_mode,
-      size_t desired_characters_to_truncate_from_head,
-      const Font& font,
-      SkColor color,
-      const Rect& display_rect) {
+void Canvas::DrawFadeTruncatingStringRect(
+    const base::string16& text,
+    TruncateFadeMode truncate_mode,
+    size_t desired_characters_to_truncate_from_head,
+    const FontList& font_list,
+    SkColor color,
+    const Rect& display_rect) {
   int flags = NO_ELLIPSIS;
 
   // If the whole string fits in the destination then just draw it directly.
-  if (GetStringWidth(text, font) <= display_rect.width()) {
-    DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
-                  display_rect.width(), display_rect.height(), flags);
+  if (GetStringWidth(text, font_list) <= display_rect.width()) {
+    DrawStringRectWithFlags(text, font_list, color, display_rect, flags);
     return;
   }
 
@@ -437,7 +442,8 @@ void Canvas::DrawFadeTruncatingString(
     flags |= TEXT_ALIGN_LEFT;
 
   Rect rect = display_rect;
-  UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
+  UpdateRenderText(rect, clipped_text, font_list, flags, color,
+                   render_text.get());
 
   const int line_height = render_text->GetStringSize().height();
   // Center the text vertically.
@@ -449,6 +455,18 @@ void Canvas::DrawFadeTruncatingString(
   ClipRect(display_rect);
   render_text->Draw(this);
   canvas_->restore();
+}
+
+void Canvas::DrawFadeTruncatingString(
+    const base::string16& text,
+    TruncateFadeMode truncate_mode,
+    size_t desired_characters_to_truncate_from_head,
+    const Font& font,
+    SkColor color,
+    const Rect& display_rect) {
+  DrawFadeTruncatingStringRect(text, truncate_mode,
+                               desired_characters_to_truncate_from_head,
+                               FontList(font), color, display_rect);
 }
 
 }  // namespace gfx

@@ -20,6 +20,7 @@
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 
 namespace {

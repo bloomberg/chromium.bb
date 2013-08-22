@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 
 @interface MenuController (Private)

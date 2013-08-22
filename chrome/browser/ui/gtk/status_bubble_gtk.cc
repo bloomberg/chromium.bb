@@ -21,6 +21,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 
 namespace {
 

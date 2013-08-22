@@ -17,6 +17,7 @@
 #include "printing/print_settings.h"
 #include "printing/units.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "url/gurl.h"
 
 using base::DictionaryValue;

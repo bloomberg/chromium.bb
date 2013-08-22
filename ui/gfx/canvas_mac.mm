@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
 #include "ui/gfx/canvas.h"
+
+#import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 
 // Note: This is a temporary Skia-based implementation of the ui/gfx text
@@ -36,7 +36,7 @@ namespace gfx {
 
 // static
 void Canvas::SizeStringInt(const base::string16& text,
-                           const gfx::Font& font,
+                           const FontList& font_list,
                            int* width,
                            int* height,
                            int line_height,
@@ -44,27 +44,28 @@ void Canvas::SizeStringInt(const base::string16& text,
   DLOG_IF(WARNING, line_height != 0) << "Line heights not implemented.";
   DLOG_IF(WARNING, flags & Canvas::MULTI_LINE) << "Multi-line not implemented.";
 
-  NSFont* native_font = font.GetNativeFont();
+  NSFont* native_font = font_list.GetPrimaryFont().GetNativeFont();
   NSString* ns_string = base::SysUTF16ToNSString(text);
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:native_font
                                   forKey:NSFontAttributeName];
   NSSize string_size = [ns_string sizeWithAttributes:attributes];
   *width = string_size.width;
-  *height = font.GetHeight();
+  *height = font_list.GetHeight();
 }
 
-void Canvas::DrawStringWithShadows(const base::string16& text,
-                                   const gfx::Font& font,
-                                   SkColor color,
-                                   const gfx::Rect& text_bounds,
-                                   int line_height,
-                                   int flags,
-                                   const ShadowValues& shadows) {
+void Canvas::DrawStringRectWithShadows(const base::string16& text,
+                                       const FontList& font_list,
+                                       SkColor color,
+                                       const Rect& text_bounds,
+                                       int line_height,
+                                       int flags,
+                                       const ShadowValues& shadows) {
   DLOG_IF(WARNING, line_height != 0) << "Line heights not implemented.";
   DLOG_IF(WARNING, flags & Canvas::MULTI_LINE) << "Multi-line not implemented.";
   DLOG_IF(WARNING, !shadows.empty()) << "Text shadows not implemented.";
 
+  const Font& font = font_list.GetPrimaryFont();
   skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
       SkTypeface::CreateFromName(
           font.GetFontName().c_str(), FontTypefaceStyle(font)));
@@ -78,12 +79,12 @@ void Canvas::DrawStringWithShadows(const base::string16& text,
                     paint);
 }
 
-void Canvas::DrawStringWithHalo(const base::string16& text,
-                                const gfx::Font& font,
-                                SkColor text_color,
-                                SkColor halo_color,
-                                int x, int y, int w, int h,
-                                int flags) {
+void Canvas::DrawStringRectWithHalo(const base::string16& text,
+                                    const FontList& font_list,
+                                    SkColor text_color,
+                                    SkColor halo_color,
+                                    const Rect& display_rect,
+                                    int flags) {
 }
 
 }  // namespace gfx
