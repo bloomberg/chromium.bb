@@ -55,18 +55,9 @@ PageConsole::PageConsole(Page* page)
 
 PageConsole::~PageConsole() { }
 
-void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier, Document* document)
+void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
 {
-    String url;
-    if (document)
-        url = document->url().string();
-    unsigned line = 0;
-    if (document && document->parsing() && !document->isInDocumentWrite() && document->scriptableDocumentParser()) {
-        ScriptableDocumentParser* parser = document->scriptableDocumentParser();
-        if (!parser->isWaitingForScripts() && !parser->isExecutingScript())
-            line = parser->lineNumber().oneBasedInt();
-    }
-    addMessage(source, level, message, url, line, 0, 0, 0, requestIdentifier);
+    addMessage(source, level, message, String(), 0, 0, 0, 0, 0);
 }
 
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)

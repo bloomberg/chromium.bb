@@ -2515,7 +2515,7 @@ EventTarget* Document::errorEventTarget()
 
 void Document::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
-    addMessage(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack);
+    internalAddMessage(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
 }
 
 void Document::setURL(const KURL& url)
@@ -2843,7 +2843,7 @@ void Document::processHttpEquivXFrameOptions(const String& content)
         // intent, we must navigate away from the possibly partially-rendered document to a location that
         // doesn't inherit the parent's SecurityOrigin.
         frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), SecurityOrigin::urlWithUniqueSecurityOrigin(), String());
-        addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
+        addConsoleMessageWithRequestIdentifier(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
     }
 }
 
@@ -4545,18 +4545,34 @@ void Document::parseDNSPrefetchControlHeader(const String& dnsPrefetchControl)
     m_haveExplicitlyDisabledDNSPrefetch = true;
 }
 
-void Document::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
+void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* state)
 {
-    if (!isContextThread()) {
-        postTask(AddConsoleMessageTask::create(source, level, message));
-        return;
-    }
-
-    if (Page* page = this->page())
-        page->console().addMessage(source, level, message, requestIdentifier, this);
+    internalAddMessage(source, level, message, sourceURL, lineNumber, 0, state);
 }
 
-void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
+void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state)
+{
+    if (!isContextThread()) {
+        postTask(AddConsoleMessageTask::create(source, level, message));
+        return;
+    }
+    Page* page = this->page();
+    if (!page)
+        return;
+
+    String messageURL = sourceURL;
+    if (!state && sourceURL.isNull() && !lineNumber) {
+        messageURL = url().string();
+        if (parsing() && !isInDocumentWrite() && scriptableDocumentParser()) {
+            ScriptableDocumentParser* parser = scriptableDocumentParser();
+            if (!parser->isWaitingForScripts() && !parser->isExecutingScript())
+                lineNumber = parser->lineNumber().oneBasedInt();
+        }
+    }
+    page->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
+}
+
+void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
 {
     if (!isContextThread()) {
         postTask(AddConsoleMessageTask::create(source, level, message));
@@ -4564,7 +4580,7 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
     }
 
     if (Page* page = this->page())
-        page->console().addMessage(source, level, message, sourceURL, lineNumber, 0, callStack, state, requestIdentifier);
+        page->console().addMessage(source, level, message, String(), 0, 0, 0, 0, requestIdentifier);
 }
 
 struct PerformTaskContext {

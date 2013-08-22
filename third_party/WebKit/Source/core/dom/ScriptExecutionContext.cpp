@@ -223,9 +223,14 @@ void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassR
     m_pendingExceptions.clear();
 }
 
-void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* state)
+void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
 {
-    addMessage(source, level, message, sourceURL, lineNumber, 0, state, 0);
+    addMessage(source, level, message, sourceURL, lineNumber, 0);
+}
+
+void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
+{
+    addMessage(source, level, message, String(), 0, state);
 }
 
 bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)

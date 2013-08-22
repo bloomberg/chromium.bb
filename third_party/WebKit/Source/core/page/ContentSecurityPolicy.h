@@ -128,7 +128,7 @@ public:
     void reportInvalidReflectedXSS(const String&) const;
     void reportMissingReportURI(const String&) const;
     void reportUnsupportedDirective(const String&) const;
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState*);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
@@ -141,6 +141,8 @@ public:
     bool experimentalFeaturesEnabled() const;
 
     static bool shouldBypassMainWorld(ScriptExecutionContext*);
+
+    ScriptExecutionContext* scriptExecutionContext() { return m_scriptExecutionContext; }
 
 private:
     explicit ContentSecurityPolicy(ScriptExecutionContext*);
