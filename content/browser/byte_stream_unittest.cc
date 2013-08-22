@@ -5,6 +5,7 @@
 #include "content/browser/byte_stream.h"
 
 #include <deque>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -116,7 +117,10 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
   EXPECT_FALSE(Write(byte_stream_input.get(), 1024));
   // Flush
   byte_stream_input->Close(0);
+  EXPECT_EQ(4 * 1024U + 1U, byte_stream_input->GetTotalBufferedBytes());
   message_loop_.RunUntilIdle();
+  // Data already sent to reader is also counted in.
+  EXPECT_EQ(4 * 1024U + 1U, byte_stream_input->GetTotalBufferedBytes());
 
   // Pull the IO buffers out; do we get the same buffers and do they
   // have the same contents?
@@ -144,6 +148,10 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
 
   EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
+
+  message_loop_.RunUntilIdle();
+  // Reader now knows that all data is read out.
+  EXPECT_EQ(1024U, byte_stream_input->GetTotalBufferedBytes());
 }
 
 // Confirm that Flush() method makes the writer to send written contents to
@@ -576,6 +584,29 @@ TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+}
+
+TEST_F(ByteStreamTest, ByteStream_WriteOverflow) {
+  scoped_ptr<ByteStreamWriter> byte_stream_input;
+  scoped_ptr<ByteStreamReader> byte_stream_output;
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      std::numeric_limits<size_t>::max(),
+      &byte_stream_input, &byte_stream_output);
+
+  EXPECT_TRUE(Write(byte_stream_input.get(), 1));
+  // 1 + size_t max -> Overflow.
+  scoped_refptr<net::IOBuffer> empty_io_buffer;
+  EXPECT_FALSE(byte_stream_input->Write(empty_io_buffer,
+                                        std::numeric_limits<size_t>::max()));
+  message_loop_.RunUntilIdle();
+
+  // The first write is below PostToPeer threshold. We shouldn't get anything
+  // from the output.
+  scoped_refptr<net::IOBuffer> output_io_buffer;
+  size_t output_length;
+  EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
 }
 

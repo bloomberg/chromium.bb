@@ -8,7 +8,15 @@
 
 namespace content {
 
-StreamRegistry::StreamRegistry() {
+namespace {
+// The maximum size of memory each StreamRegistry instance is allowed to use
+// for its Stream instances.
+const size_t kDefaultMaxMemoryUsage = 1024 * 1024 * 1024U;  // 1GiB
+}
+
+StreamRegistry::StreamRegistry()
+    : total_memory_usage_(0),
+      max_memory_usage_(kDefaultMaxMemoryUsage) {
 }
 
 StreamRegistry::~StreamRegistry() {
@@ -42,7 +50,38 @@ bool StreamRegistry::CloneStream(const GURL& url, const GURL& src_url) {
 
 void StreamRegistry::UnregisterStream(const GURL& url) {
   DCHECK(CalledOnValidThread());
+
+  StreamMap::iterator iter = streams_.find(url);
+  if (iter == streams_.end())
+    return;
+
+  size_t buffered_bytes = iter->second->last_total_buffered_bytes();
+  DCHECK_LE(buffered_bytes, total_memory_usage_);
+  total_memory_usage_ -= buffered_bytes;
   streams_.erase(url);
+}
+
+bool StreamRegistry::UpdateMemoryUsage(const GURL& url,
+                                       size_t current_size,
+                                       size_t increase) {
+  DCHECK(CalledOnValidThread());
+
+  StreamMap::iterator iter = streams_.find(url);
+  // A Stream must be registered with its parent registry to get memory.
+  if (iter == streams_.end())
+    return false;
+
+  size_t last_size = iter->second->last_total_buffered_bytes();
+  DCHECK_LE(last_size, total_memory_usage_);
+  size_t usage_of_others = total_memory_usage_ - last_size;
+  DCHECK_LE(current_size, last_size);
+  size_t current_total_memory_usage = usage_of_others + current_size;
+
+  if (increase > max_memory_usage_ - current_total_memory_usage)
+    return false;
+
+  total_memory_usage_ = current_total_memory_usage + increase;
+  return true;
 }
 
 }  // namespace content

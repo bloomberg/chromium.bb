@@ -61,6 +61,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   virtual void Flush() OVERRIDE;
   virtual void Close(int status) OVERRIDE;
   virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
+  virtual size_t GetTotalBufferedBytes() const OVERRIDE;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
   static void UpdateWindow(scoped_refptr<LifetimeFlag> lifetime_flag,
@@ -209,6 +210,18 @@ bool ByteStreamWriterImpl::Write(
     scoped_refptr<net::IOBuffer> buffer, size_t byte_count) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
+  // Check overflow.
+  //
+  // TODO(tyoshino): Discuss with content/browser/download developer and if
+  // they're fine with, set smaller limit and make it configurable.
+  size_t space_limit = std::numeric_limits<size_t>::max() -
+      GetTotalBufferedBytes();
+  if (byte_count > space_limit) {
+    // TODO(tyoshino): Tell the user that Write() failed.
+    // Ignore input.
+    return false;
+  }
+
   input_contents_.push_back(std::make_pair(buffer, byte_count));
   input_contents_size_ += byte_count;
 
@@ -216,7 +229,7 @@ bool ByteStreamWriterImpl::Write(
   if (input_contents_size_ > total_buffer_size_ / kFractionBufferBeforeSending)
     PostToPeer(false, 0);
 
-  return (input_contents_size_ + output_size_used_ <= total_buffer_size_);
+  return GetTotalBufferedBytes() <= total_buffer_size_;
 }
 
 void ByteStreamWriterImpl::Flush() {
@@ -236,6 +249,13 @@ void ByteStreamWriterImpl::RegisterCallback(
   space_available_callback_ = source_callback;
 }
 
+size_t ByteStreamWriterImpl::GetTotalBufferedBytes() const {
+  DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
+  // This sum doesn't overflow since Write() fails if this sum is going to
+  // overflow.
+  return input_contents_size_ + output_size_used_;
+}
+
 // static
 void ByteStreamWriterImpl::UpdateWindow(
     scoped_refptr<LifetimeFlag> lifetime_flag, ByteStreamWriterImpl* target,
@@ -248,15 +268,16 @@ void ByteStreamWriterImpl::UpdateWindow(
 
 void ByteStreamWriterImpl::UpdateWindowInternal(size_t bytes_consumed) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
+
+  bool was_above_limit = GetTotalBufferedBytes() > total_buffer_size_;
+
   DCHECK_GE(output_size_used_, bytes_consumed);
   output_size_used_ -= bytes_consumed;
 
   // Callback if we were above the limit and we're now <= to it.
-  size_t total_known_size_used =
-      input_contents_size_ + output_size_used_;
+  bool no_longer_above_limit = GetTotalBufferedBytes() <= total_buffer_size_;
 
-  if (total_known_size_used <= total_buffer_size_ &&
-      (total_known_size_used + bytes_consumed > total_buffer_size_) &&
+  if (no_longer_above_limit && was_above_limit &&
       !space_available_callback_.is_null())
     space_available_callback_.Run();
 }

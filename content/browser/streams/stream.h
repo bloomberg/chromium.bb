@@ -81,6 +81,11 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   const GURL& url() const { return url_; }
 
+  // For StreamRegistry to remember the last memory usage reported to it.
+  size_t last_total_buffered_bytes() const {
+    return last_total_buffered_bytes_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<Stream>;
 
@@ -89,6 +94,8 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   void OnSpaceAvailable();
   void OnDataAvailable();
 
+  void Abort();
+
   size_t data_bytes_read_;
   bool can_add_data_;
 
@@ -96,6 +103,10 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   scoped_refptr<net::IOBuffer> data_;
   size_t data_length_;
+
+  // Last value returned by writer_->TotalBufferedBytes() in AddData(). Stored
+  // in order to check memory usage.
+  size_t last_total_buffered_bytes_;
 
   scoped_ptr<ByteStreamWriter> writer_;
   scoped_ptr<ByteStreamReader> reader_;

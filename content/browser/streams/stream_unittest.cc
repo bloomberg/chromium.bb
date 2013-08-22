@@ -250,4 +250,59 @@ TEST_F(StreamTest, UnregisterStream) {
   ASSERT_FALSE(stream2.get());
 }
 
+TEST_F(StreamTest, MemoryExceedMemoryUsageLimit) {
+  TestStreamWriter writer1;
+  TestStreamWriter writer2;
+
+  GURL url1("blob://stream");
+  scoped_refptr<Stream> stream1(
+      new Stream(registry_.get(), &writer1, url1));
+
+  GURL url2("blob://stream2");
+  scoped_refptr<Stream> stream2(
+      new Stream(registry_.get(), &writer2, url2));
+
+  const int kMaxMemoryUsage = 1500000;
+  registry_->set_max_memory_usage_for_testing(kMaxMemoryUsage);
+
+  const int kBufferSize = 1000000;
+  scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
+  writer1.Write(stream1.get(), buffer, kBufferSize);
+  // Make transfer happen.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  writer2.Write(stream2.get(), buffer, kBufferSize);
+
+  // Written data (1000000 * 2) exceeded limit (1500000). |stream2| should be
+  // unregistered with |registry_|.
+  EXPECT_EQ(NULL, registry_->GetStream(url2).get());
+
+  writer1.Write(stream1.get(), buffer, kMaxMemoryUsage - kBufferSize);
+  // Should be accepted since stream2 is unregistered and the new data is not
+  // so big to exceed the limit.
+  EXPECT_FALSE(registry_->GetStream(url1).get() == NULL);
+}
+
+TEST_F(StreamTest, UnderMemoryUsageLimit) {
+  TestStreamWriter writer;
+  TestStreamReader reader;
+
+  GURL url("blob://stream");
+  scoped_refptr<Stream> stream(new Stream(registry_.get(), &writer, url));
+  EXPECT_TRUE(stream->SetReadObserver(&reader));
+
+  registry_->set_max_memory_usage_for_testing(1500000);
+
+  const int kBufferSize = 1000000;
+  scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
+  writer.Write(stream.get(), buffer, kBufferSize);
+
+  // Run loop to make |reader| consume the data.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  writer.Write(stream.get(), buffer, kBufferSize);
+
+  EXPECT_EQ(stream.get(), registry_->GetStream(url).get());
+}
+
 }  // namespace content

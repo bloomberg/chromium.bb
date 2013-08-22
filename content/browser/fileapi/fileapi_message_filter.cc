@@ -632,10 +632,10 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToStream(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<Stream> stream(GetStreamForURL(url));
-  if (!stream.get()) {
-    NOTREACHED();
+  // Stream instances may be deleted on error. Just abort if there's no Stream
+  // instance for |url| in the registry.
+  if (!stream.get())
     return;
-  }
 
   // Data for stream is delivered as TYPE_BYTES item.
   if (item.type() != BlobData::Item::TYPE_BYTES) {
@@ -663,10 +663,8 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToStream(
   }
 
   scoped_refptr<Stream> stream(GetStreamForURL(url));
-  if (!stream.get()) {
-    NOTREACHED();
+  if (!stream.get())
     return;
-  }
 
   stream->AddData(static_cast<char*>(shared_memory.memory()), buffer_size);
 }
@@ -676,17 +674,15 @@ void FileAPIMessageFilter::OnFinishBuildingStream(const GURL& url) {
   scoped_refptr<Stream> stream(GetStreamForURL(url));
   if (stream.get())
     stream->Finalize();
-  else
-    NOTREACHED();
 }
 
 void FileAPIMessageFilter::OnCloneStream(
     const GURL& url, const GURL& src_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!GetStreamForURL(src_url)) {
-    NOTREACHED();
+  // Abort if there's no Stream instance for |src_url| (source Stream which
+  // we're going to make |url| point to) in the registry.
+  if (!GetStreamForURL(src_url))
     return;
-  }
 
   stream_context_->registry()->CloneStream(url, src_url);
   stream_urls_.insert(url.spec());
@@ -695,10 +691,8 @@ void FileAPIMessageFilter::OnCloneStream(
 void FileAPIMessageFilter::OnRemoveStream(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!GetStreamForURL(url).get()) {
-    NOTREACHED();
+  if (!GetStreamForURL(url).get())
     return;
-  }
 
   stream_context_->registry()->UnregisterStream(url);
   stream_urls_.erase(url.spec());

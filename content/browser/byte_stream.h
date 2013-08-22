@@ -153,6 +153,10 @@ class CONTENT_EXPORT ByteStreamWriter {
   // or after callbacks may be called).
   // The callback will not be called after ByteStreamWriter destruction.
   virtual void RegisterCallback(const base::Closure& source_callback) = 0;
+
+  // Returns the number of bytes sent to the reader but not yet reported by
+  // the reader as read.
+  virtual size_t GetTotalBufferedBytes() const = 0;
 };
 
 class CONTENT_EXPORT ByteStreamReader {

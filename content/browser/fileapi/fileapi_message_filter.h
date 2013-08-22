@@ -196,7 +196,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                              int permissions,
                              base::PlatformFileError* error);
 
-  // Retrieves the Stream object for |url| from |stream_context_|.
+  // Retrieves the Stream object for |url| from |stream_context_|. Returns unset
+  // scoped_refptr when there's no Stream instance for the given |url|
+  // registered with stream_context_->registry().
   scoped_refptr<Stream> GetStreamForURL(const GURL& url);
 
   fileapi::FileSystemOperationRunner* operation_runner() {
