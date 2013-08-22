@@ -74,10 +74,13 @@ class GetFileForSavingOperation {
                                   const base::FilePath& cache_path,
                                   scoped_ptr<ResourceEntry> entry,
                                   bool success);
+  // Called when the cache file for |resource_id| is written.
+  void OnWriteEvent(const std::string& resource_id);
 
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
   scoped_ptr<internal::FileWriteWatcher> file_write_watcher_;
+  OperationObserver* observer_;
   internal::FileCache* cache_;
 
   // Note: This should remain the last member so it'll be destroyed and

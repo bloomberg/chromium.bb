@@ -10,7 +10,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +18,7 @@ namespace internal {
 
 namespace {
 
-class TestObserver : public file_system::OperationObserver {
+class TestObserver {
  public:
   // After all the resource_ids in |expected_upload| are notified for the
   // need of uploading, runs |quit_closure|. Also checks that each id is
@@ -30,13 +29,9 @@ class TestObserver : public file_system::OperationObserver {
         quit_closure_(quit_closure) {
   }
 
-  virtual void OnDirectoryChangedByOperation(
-      const base::FilePath& path) OVERRIDE {}
-
-  virtual void OnCacheFileUploadNeededByOperation(
-      const std::string& resource_id) OVERRIDE {
-    EXPECT_EQ(1U, expected_upload_.count(resource_id)) << resource_id;
-    expected_upload_.erase(resource_id);
+  void OnWrite(const std::string& id) {
+    EXPECT_EQ(1U, expected_upload_.count(id)) << id;
+    expected_upload_.erase(id);
     if (expected_upload_.empty())
       quit_closure_.Run();
   }
@@ -93,7 +88,7 @@ TEST_F(FileWriteWatcherTest, WatchThreeFiles) {
   TestObserver observer(expected, loop.QuitClosure());
 
   // Set up the watcher.
-  FileWriteWatcher watcher(&observer);
+  FileWriteWatcher watcher;
   watcher.DisableDelayForTesting();
 
   // Start watching and running.
@@ -101,12 +96,18 @@ TEST_F(FileWriteWatcherTest, WatchThreeFiles) {
   base::FilePath path2 = GetTempPath("bar.png");
   base::FilePath path3 = GetTempPath("buz.doc");
   base::FilePath path4 = GetTempPath("mya.mp3");
-  watcher.StartWatch(path1, "1",
-                     base::Bind(&WriteSomethingAfterStartWatch, path1));
-  watcher.StartWatch(path2, "2",
-                     base::Bind(&WriteSomethingAfterStartWatch, path2));
-  watcher.StartWatch(path3, "3",
-                     base::Bind(&WriteSomethingAfterStartWatch, path3));
+  watcher.StartWatch(
+      path1,
+      base::Bind(&WriteSomethingAfterStartWatch, path1),
+      base::Bind(&TestObserver::OnWrite, base::Unretained(&observer), "1"));
+  watcher.StartWatch(
+      path2,
+      base::Bind(&WriteSomethingAfterStartWatch, path2),
+      base::Bind(&TestObserver::OnWrite, base::Unretained(&observer), "2"));
+  watcher.StartWatch(
+      path3,
+      base::Bind(&WriteSomethingAfterStartWatch, path3),
+      base::Bind(&TestObserver::OnWrite, base::Unretained(&observer), "3"));
 
   // Unwatched write. It shouldn't be notified.
   WriteSomethingAfterStartWatch(path4, true);

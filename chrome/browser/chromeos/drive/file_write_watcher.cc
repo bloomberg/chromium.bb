@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
 
 #include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path_watcher.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,12 +36,12 @@ class FileWriteWatcher::FileWriteWatcherImpl {
   // destruct the instance.
   void Destroy();
 
-  // Forwards the call to StartWatchOnFileThread(). |callback| is called back
-  // on the caller (UI) thread when the watch has started.
-  // |on_write_event_callback| is called when a write has happened to the path.
+  // Forwards the call to StartWatchOnFileThread(). |on_start_callback| is
+  // called back on the caller (UI) thread when the watch has started.
+  // |on_write_callback| is called when a write has happened to the path.
   void StartWatch(const base::FilePath& path,
-                  const StartWatchCallback& callback,
-                  const base::Closure& on_write_event_callback);
+                  const StartWatchCallback& on_start_callback,
+                  const base::Closure& on_write_callback);
 
   void set_delay(base::TimeDelta delay) { delay_ = delay; }
 
@@ -51,20 +51,20 @@ class FileWriteWatcher::FileWriteWatcherImpl {
   void DestroyOnFileThread();
 
   void StartWatchOnFileThread(const base::FilePath& path,
-                              const StartWatchCallback& callback,
-                              const base::Closure& on_write_event_callback);
+                              const StartWatchCallback& on_start_callback,
+                              const base::Closure& on_write_callback);
 
   void OnWriteEvent(const base::FilePath& path, bool error);
 
   void InvokeCallback(const base::FilePath& path);
 
   struct PathWatchInfo {
-    base::Closure on_write_event_callback;
+    std::vector<base::Closure> on_write_callbacks;
     base::FilePathWatcher watcher;
     base::Timer timer;
 
-    explicit PathWatchInfo(const base::Closure& callback)
-        : on_write_event_callback(callback),
+    explicit PathWatchInfo(const base::Closure& on_write_callback)
+        : on_write_callbacks(1, on_write_callback),
           timer(false /* retain_closure_on_reset */, false /* is_repeating */) {
     }
   };
@@ -96,8 +96,8 @@ void FileWriteWatcher::FileWriteWatcherImpl::Destroy() {
 
 void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
     const base::FilePath& path,
-    const StartWatchCallback& callback,
-    const base::Closure& on_write_event_callback) {
+    const StartWatchCallback& on_start_callback,
+    const base::Closure& on_write_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Forwarding the call to FILE thread and relaying the |callback|.
@@ -106,8 +106,8 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
       base::Bind(&FileWriteWatcherImpl::StartWatchOnFileThread,
                  base::Unretained(this),
                  path,
-                 google_apis::CreateRelayCallback(callback),
-                 google_apis::CreateRelayCallback(on_write_event_callback)));
+                 google_apis::CreateRelayCallback(on_start_callback),
+                 google_apis::CreateRelayCallback(on_write_callback)));
 }
 
 FileWriteWatcher::FileWriteWatcherImpl::~FileWriteWatcherImpl() {
@@ -124,28 +124,29 @@ void FileWriteWatcher::FileWriteWatcherImpl::DestroyOnFileThread() {
 
 void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnFileThread(
     const base::FilePath& path,
-    const StartWatchCallback& callback,
-    const base::Closure& on_write_event_callback) {
+    const StartWatchCallback& on_start_callback,
+    const base::Closure& on_write_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   util::Log(logging::LOG_INFO, "Started watching modification to %s.",
             path.AsUTF8Unsafe().c_str());
 
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   if (it != watchers_.end()) {
-    // Do nothing if we are already watching the path.
-    callback.Run(true);
+    // We are already watching the path.
+    on_start_callback.Run(true);
+    it->second->on_write_callbacks.push_back(on_write_callback);
     return;
   }
 
   // Start watching |path|.
-  scoped_ptr<PathWatchInfo> info(new PathWatchInfo(on_write_event_callback));
+  scoped_ptr<PathWatchInfo> info(new PathWatchInfo(on_write_callback));
   bool ok = info->watcher.Watch(
       path,
       false,  // recursive
       base::Bind(&FileWriteWatcherImpl::OnWriteEvent,
                  weak_ptr_factory_.GetWeakPtr()));
   watchers_[path] = info.release();
-  callback.Run(ok);
+  on_start_callback.Run(ok);
 }
 
 void FileWriteWatcher::FileWriteWatcherImpl::OnWriteEvent(
@@ -181,17 +182,17 @@ void FileWriteWatcher::FileWriteWatcherImpl::InvokeCallback(
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   DCHECK(it != watchers_.end());
 
-  base::Closure callback = it->second->on_write_event_callback;
+  std::vector<base::Closure> callbacks;
+  callbacks.swap(it->second->on_write_callbacks);
   delete it->second;
   watchers_.erase(it);
 
-  callback.Run();
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run();
 }
 
-FileWriteWatcher::FileWriteWatcher(file_system::OperationObserver* observer)
-    : watcher_impl_(new FileWriteWatcherImpl),
-      operation_observer_(observer),
-      weak_ptr_factory_(this) {
+FileWriteWatcher::FileWriteWatcher()
+    : watcher_impl_(new FileWriteWatcherImpl) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -200,25 +201,14 @@ FileWriteWatcher::~FileWriteWatcher() {
 }
 
 void FileWriteWatcher::StartWatch(const base::FilePath& file_path,
-                                  const std::string& resource_id,
-                                  const StartWatchCallback& callback) {
+                                  const StartWatchCallback& on_start_callback,
+                                  const base::Closure& on_write_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  watcher_impl_->StartWatch(file_path,
-                            callback,
-                            base::Bind(&FileWriteWatcher::OnWriteEvent,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       resource_id));
+  watcher_impl_->StartWatch(file_path, on_start_callback, on_write_callback);
 }
 
 void FileWriteWatcher::DisableDelayForTesting() {
   watcher_impl_->set_delay(base::TimeDelta());
-}
-
-void FileWriteWatcher::OnWriteEvent(const std::string& resource_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  operation_observer_->OnCacheFileUploadNeededByOperation(resource_id);
 }
 
 }  // namespace internal

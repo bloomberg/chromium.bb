@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 
 namespace base {
@@ -15,10 +14,6 @@ class FilePath;
 }  // namespace base
 
 namespace drive {
-
-namespace file_system {
-class OperationObserver;
-}  // namespace file_system
 
 namespace internal {
 
@@ -30,14 +25,13 @@ typedef base::Callback<void(bool)> StartWatchCallback;
 // without any special handling about Drive.
 class FileWriteWatcher {
  public:
-  explicit FileWriteWatcher(file_system::OperationObserver* observer);
+  FileWriteWatcher();
   ~FileWriteWatcher();
 
   // Starts watching the modification to |path|. When it successfully started
-  // watching, it runs |callback| by passing true as the argument. Or if it
-  // failed, the callback is run with false.
-  // When modification is detected, it is notified to the |observer| passed to
-  // the constructor by calling OnCacheFileUploadNeededByOperation(resource_id).
+  // watching, it runs |on_start_callback| by passing true as the argument.
+  // Or if it failed, the callback is run with false.
+  // Detected modification is notified by calling |on_write_callback|.
   //
   // Currently, the modification is watched in "one-shot" manner. That is, once
   // a modification is notified, the watch is deactivated for freeing system
@@ -48,24 +42,17 @@ class FileWriteWatcher {
   // TODO(kinaba): investigate the possibility to continuously watch the whole
   // cache directory. http://crbug.com/269424
   void StartWatch(const base::FilePath& path,
-                  const std::string& resource_id,
-                  const StartWatchCallback& callback);
+                  const StartWatchCallback& on_start_callback,
+                  const base::Closure& on_write_callback);
 
   // For testing purpose, stops inserting delay between the write detection and
-  // notification to the observer.
+  // notification to the |on_write_callback|.
   void DisableDelayForTesting();
 
  private:
-  // Invoked when a modification is observed.
-  void OnWriteEvent(const std::string& resource_id);
-
   class FileWriteWatcherImpl;
   scoped_ptr<FileWriteWatcherImpl, util::DestroyHelper> watcher_impl_;
-  file_system::OperationObserver* operation_observer_;
 
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileWriteWatcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileWriteWatcher);
 };
 

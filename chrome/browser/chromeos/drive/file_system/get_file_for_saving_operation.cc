@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -33,7 +34,8 @@ GetFileForSavingOperation::GetFileForSavingOperation(
                                                 metadata,
                                                 cache,
                                                 temporary_file_directory)),
-      file_write_watcher_(new internal::FileWriteWatcher(observer)),
+      file_write_watcher_(new internal::FileWriteWatcher),
+      observer_(observer),
       cache_(cache),
       weak_ptr_factory_(this) {
 }
@@ -118,12 +120,14 @@ void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
   const std::string& resource_id = entry->resource_id();
   file_write_watcher_->StartWatch(
       cache_path,
-      resource_id,
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterWatch,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  cache_path,
-                 base::Passed(&entry)));
+                 base::Passed(&entry)),
+      base::Bind(&GetFileForSavingOperation::OnWriteEvent,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_id));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterWatch(
@@ -141,6 +145,10 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
   }
 
   callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
+}
+
+void GetFileForSavingOperation::OnWriteEvent(const std::string& resource_id) {
+  observer_->OnCacheFileUploadNeededByOperation(resource_id);
 }
 
 }  // namespace file_system
