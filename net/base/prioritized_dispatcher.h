@@ -78,10 +78,6 @@ class NET_EXPORT_PRIVATE PrioritizedDispatcher {
   // it is queued in the dispatcher.
   Handle Add(Job* job, Priority priority);
 
-  // Just like Add, except that it adds Job at the font of queue of jobs with
-  // priorities of |priority|.
-  Handle AddAtHead(Job* job, Priority priority);
-
   // Removes the job with |handle| from the queue. Invalidates |handle|.
   // Note: a Handle is valid iff the job is in the queue, i.e. has not Started.
   void Cancel(const Handle& handle);
@@ -98,20 +94,11 @@ class NET_EXPORT_PRIVATE PrioritizedDispatcher {
   // Notifies the dispatcher that a running job has finished. Could start a job.
   void OnJobFinished();
 
-  // Tells the dispatcher not to start new jobs when old jobs complete or are
-  // cancelled.  Can't be undone.  Can be used to avoid starting new jobs during
-  // cleanup.
-  void Disable();
-
  private:
   // Attempts to dispatch the job with |handle| at priority |priority| (might be
   // different than |handle.priority()|. Returns true if successful. If so
   // the |handle| becomes invalid.
   bool MaybeDispatchJob(const Handle& handle, Priority priority);
-
-  // Updates |max_running_jobs_| to match |limits|.  Does not start any new
-  // new jobs, even if the new limits would allow queued jobs to start.
-  void SetLimits(const Limits& limits);
 
   // Queue for jobs that need to wait for a spare slot.
   PriorityQueue<Job*> queue_;

@@ -28,10 +28,10 @@ scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
 
   const uint16 kTypeA = net::dns_protocol::kTypeA;
   MockDnsClientRuleList rules;
-  rules.push_back(MockDnsClientRule(DnsProbeRunner::kKnownGoodHostname, kTypeA,
-                                    result, false));
+  rules.push_back(
+      MockDnsClientRule(DnsProbeRunner::kKnownGoodHostname, kTypeA, result));
 
-  return scoped_ptr<DnsClient>(new net::MockDnsClient(config, rules));
+  return CreateMockDnsClient(config, rules).Pass();
 }
 
 }  // namespace chrome_browser_net

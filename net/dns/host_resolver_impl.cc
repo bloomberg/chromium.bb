@@ -970,98 +970,54 @@ class HostResolverImpl::LoopbackProbeJob {
 // TODO(szym): This could be moved to separate source file as well.
 class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
  public:
-  class Delegate {
-   public:
-    virtual void OnDnsTaskComplete(base::TimeTicks start_time,
-                                   int net_error,
-                                   const AddressList& addr_list,
-                                   base::TimeDelta ttl) = 0;
-
-    // Called when the first of two jobs succeeds.  If the first completed
-    // transaction fails, this is not called.  Also not called when the DnsTask
-    // only needs to run one transaction.
-    virtual void OnFirstDnsTransactionComplete() = 0;
-
-   protected:
-    Delegate() {}
-    virtual ~Delegate() {}
-  };
+  typedef base::Callback<void(int net_error,
+                              const AddressList& addr_list,
+                              base::TimeDelta ttl)> Callback;
 
   DnsTask(DnsClient* client,
           const Key& key,
-          Delegate* delegate,
+          const Callback& callback,
           const BoundNetLog& job_net_log)
       : client_(client),
-        key_(key),
-        delegate_(delegate),
-        net_log_(job_net_log),
-        num_completed_transactions_(0),
-        task_start_time_(base::TimeTicks::Now()) {
+        family_(key.address_family),
+        callback_(callback),
+        net_log_(job_net_log) {
     DCHECK(client);
-    DCHECK(delegate_);
-  }
+    DCHECK(!callback.is_null());
 
-  bool needs_two_transactions() const {
-    return key_.address_family == ADDRESS_FAMILY_UNSPECIFIED;
-  }
-
-  bool needs_another_transaction() const {
-    return needs_two_transactions() && !transaction_aaaa_;
-  }
-
-  void StartFirstTransaction() {
-    DCHECK_EQ(0u, num_completed_transactions_);
-    net_log_.BeginEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_DNS_TASK);
-    if (key_.address_family == ADDRESS_FAMILY_IPV6) {
-      StartAAAA();
-    } else {
-      StartA();
-    }
-  }
-
-  void StartSecondTransaction() {
-    DCHECK(needs_two_transactions());
-    StartAAAA();
-  }
-
- private:
-  void StartA() {
-    DCHECK(!transaction_a_);
-    DCHECK_NE(ADDRESS_FAMILY_IPV6, key_.address_family);
-    transaction_a_ = CreateTransaction(ADDRESS_FAMILY_IPV4);
-    transaction_a_->Start();
-  }
-
-  void StartAAAA() {
-    DCHECK(!transaction_aaaa_);
-    DCHECK_NE(ADDRESS_FAMILY_IPV4, key_.address_family);
-    transaction_aaaa_ = CreateTransaction(ADDRESS_FAMILY_IPV6);
-    transaction_aaaa_->Start();
-  }
-
-  scoped_ptr<DnsTransaction> CreateTransaction(AddressFamily family) {
-    DCHECK_NE(ADDRESS_FAMILY_UNSPECIFIED, family);
-    return client_->GetTransactionFactory()->CreateTransaction(
-        key_.hostname,
-        family == ADDRESS_FAMILY_IPV6 ? dns_protocol::kTypeAAAA :
-                                        dns_protocol::kTypeA,
+    // If unspecified, do IPv4 first, because suffix search will be faster.
+    uint16 qtype = (family_ == ADDRESS_FAMILY_IPV6) ?
+                   dns_protocol::kTypeAAAA :
+                   dns_protocol::kTypeA;
+    transaction_ = client_->GetTransactionFactory()->CreateTransaction(
+        key.hostname,
+        qtype,
         base::Bind(&DnsTask::OnTransactionComplete, base::Unretained(this),
-                   base::TimeTicks::Now()),
+                   true /* first_query */, base::TimeTicks::Now()),
         net_log_);
   }
 
-  void OnTransactionComplete(const base::TimeTicks& start_time,
+  void Start() {
+    net_log_.BeginEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_DNS_TASK);
+    transaction_->Start();
+  }
+
+ private:
+  void OnTransactionComplete(bool first_query,
+                             const base::TimeTicks& start_time,
                              DnsTransaction* transaction,
                              int net_error,
                              const DnsResponse* response) {
     DCHECK(transaction);
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
+    // Run |callback_| last since the owning Job will then delete this DnsTask.
     if (net_error != OK) {
       DNS_HISTOGRAM("AsyncDNS.TransactionFailure", duration);
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK);
       return;
     }
 
+    CHECK(response);
     DNS_HISTOGRAM("AsyncDNS.TransactionSuccess", duration);
     switch (transaction->GetType()) {
       case dns_protocol::kTypeA:
@@ -1071,7 +1027,6 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         DNS_HISTOGRAM("AsyncDNS.TransactionSuccess_AAAA", duration);
         break;
     }
-
     AddressList addr_list;
     base::TimeDelta ttl;
     DnsResponse::Result result = response->ParseToAddressList(&addr_list, &ttl);
@@ -1084,47 +1039,58 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    ++num_completed_transactions_;
-    if (num_completed_transactions_ == 1) {
-      ttl_ = ttl;
+    bool needs_sort = false;
+    if (first_query) {
+      DCHECK(client_->GetConfig()) <<
+          "Transaction should have been aborted when config changed!";
+      if (family_ == ADDRESS_FAMILY_IPV6) {
+        needs_sort = (addr_list.size() > 1);
+      } else if (family_ == ADDRESS_FAMILY_UNSPECIFIED) {
+        first_addr_list_ = addr_list;
+        first_ttl_ = ttl;
+        // Use fully-qualified domain name to avoid search.
+        transaction_ = client_->GetTransactionFactory()->CreateTransaction(
+            response->GetDottedName() + ".",
+            dns_protocol::kTypeAAAA,
+            base::Bind(&DnsTask::OnTransactionComplete, base::Unretained(this),
+                       false /* first_query */, base::TimeTicks::Now()),
+            net_log_);
+        transaction_->Start();
+        return;
+      }
     } else {
-      ttl_ = std::min(ttl_, ttl);
+      DCHECK_EQ(ADDRESS_FAMILY_UNSPECIFIED, family_);
+      bool has_ipv6_addresses = !addr_list.empty();
+      if (!first_addr_list_.empty()) {
+        ttl = std::min(ttl, first_ttl_);
+        // Place IPv4 addresses after IPv6.
+        addr_list.insert(addr_list.end(), first_addr_list_.begin(),
+                                          first_addr_list_.end());
+      }
+      needs_sort = (has_ipv6_addresses && addr_list.size() > 1);
     }
 
-    if (transaction->GetType() == dns_protocol::kTypeA) {
-      DCHECK_EQ(transaction_a_.get(), transaction);
-      // Place IPv4 addresses after IPv6.
-      addr_list_.insert(addr_list_.end(), addr_list.begin(), addr_list.end());
-    } else {
-      DCHECK_EQ(transaction_aaaa_.get(), transaction);
-      // Place IPv6 addresses before IPv4.
-      addr_list_.insert(addr_list_.begin(), addr_list.begin(), addr_list.end());
-    }
-
-    if (needs_two_transactions() && num_completed_transactions_ == 1) {
-      // No need to repeat the suffix search.
-      key_.hostname = transaction->GetHostname();
-      delegate_->OnFirstDnsTransactionComplete();
+    if (addr_list.empty()) {
+      // TODO(szym): Don't fallback to ProcTask in this case.
+      OnFailure(ERR_NAME_NOT_RESOLVED, DnsResponse::DNS_PARSE_OK);
       return;
     }
 
-    // If there are multiple addresses, and at least one is IPv6, need to sort
-    // them.  Note that IPv6 addresses are always put before IPv4 ones, so it's
-    // sufficient to just check the family of the first address.
-    if (addr_list_.size() > 1 &&
-        addr_list_[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
-      // Sort addresses if needed.  Sort could complete synchronously.
+    if (needs_sort) {
+      // Sort could complete synchronously.
       client_->GetAddressSorter()->Sort(
-          addr_list_,
+          addr_list,
           base::Bind(&DnsTask::OnSortComplete,
                      AsWeakPtr(),
-                     base::TimeTicks::Now()));
+                     base::TimeTicks::Now(),
+                     ttl));
     } else {
-      OnSuccess(addr_list_);
+      OnSuccess(addr_list, ttl);
     }
   }
 
   void OnSortComplete(base::TimeTicks start_time,
+                      base::TimeDelta ttl,
                       bool success,
                       const AddressList& addr_list) {
     if (!success) {
@@ -1144,7 +1110,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    OnSuccess(addr_list);
+    OnSuccess(addr_list, ttl);
   }
 
   void OnFailure(int net_error, DnsResponse::Result result) {
@@ -1152,34 +1118,26 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     net_log_.EndEvent(
         NetLog::TYPE_HOST_RESOLVER_IMPL_DNS_TASK,
         base::Bind(&NetLogDnsTaskFailedCallback, net_error, result));
-    delegate_->OnDnsTaskComplete(task_start_time_, net_error, AddressList(),
-                                 base::TimeDelta());
+    callback_.Run(net_error, AddressList(), base::TimeDelta());
   }
 
-  void OnSuccess(const AddressList& addr_list) {
+  void OnSuccess(const AddressList& addr_list, base::TimeDelta ttl) {
     net_log_.EndEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_DNS_TASK,
                       addr_list.CreateNetLogCallback());
-    delegate_->OnDnsTaskComplete(task_start_time_, OK, addr_list, ttl_);
+    callback_.Run(OK, addr_list, ttl);
   }
 
   DnsClient* client_;
-  Key key_;
-
+  AddressFamily family_;
   // The listener to the results of this DnsTask.
-  Delegate* delegate_;
+  Callback callback_;
   const BoundNetLog net_log_;
 
-  scoped_ptr<DnsTransaction> transaction_a_;
-  scoped_ptr<DnsTransaction> transaction_aaaa_;
+  scoped_ptr<DnsTransaction> transaction_;
 
-  unsigned num_completed_transactions_;
-
-  // These are updated as each transaction completes.
-  base::TimeDelta ttl_;
-  // IPv6 addresses must appear first in the list.
-  AddressList addr_list_;
-
-  base::TimeTicks task_start_time_;
+  // Results from the first transaction. Used only if |family_| is unspecified.
+  AddressList first_addr_list_;
+  base::TimeDelta first_ttl_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTask);
 };
@@ -1187,8 +1145,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 //-----------------------------------------------------------------------------
 
 // Aggregates all Requests for the same Key. Dispatched via PriorityDispatch.
-class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
-                              public HostResolverImpl::DnsTask::Delegate {
+class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
  public:
   // Creates new job for |key| where |request_net_log| is bound to the
   // request that spawned it.
@@ -1201,7 +1158,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         priority_tracker_(priority),
         had_non_speculative_request_(false),
         had_dns_config_(false),
-        num_occupied_job_slots_(0),
         dns_task_error_(OK),
         creation_time_(base::TimeTicks::Now()),
         priority_change_time_(creation_time_),
@@ -1225,7 +1181,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         proc_task_ = NULL;
       }
       // Clean up now for nice NetLog.
-      KillDnsTask();
+      dns_task_.reset(NULL);
       net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB,
                                         ERR_ABORTED);
     } else if (is_queued()) {
@@ -1248,23 +1204,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     }
   }
 
-  // Add this job to the dispatcher.  If "at_head" is true, adds at the front
-  // of the queue.
-  void Schedule(bool at_head) {
-    DCHECK(!is_queued());
-    PrioritizedDispatcher::Handle handle;
-    if (!at_head) {
-      handle = resolver_->dispatcher_.Add(this, priority());
-    } else {
-      handle = resolver_->dispatcher_.AddAtHead(this, priority());
-    }
-    // The dispatcher could have started |this| in the above call to Add, which
-    // could have called Schedule again. In that case |handle| will be null,
-    // but |handle_| may have been set by the other nested call to Schedule.
-    if (!handle.is_null()) {
-      DCHECK(handle_.is_null());
-      handle_ = handle;
-    }
+  // Add this job to the dispatcher.
+  void Schedule() {
+    handle_ = resolver_->dispatcher_.Add(this, priority());
   }
 
   void AddRequest(scoped_ptr<Request> req) {
@@ -1332,7 +1274,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // If DnsTask present, abort it and fall back to ProcTask.
   void AbortDnsTask() {
     if (dns_task_) {
-      KillDnsTask();
+      dns_task_.reset();
       dns_task_error_ = OK;
       StartProcTask();
     }
@@ -1381,29 +1323,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
  private:
-  void KillDnsTask() {
-    if (dns_task_) {
-      ReduceToOneJobSlot();
-      dns_task_.reset();
-    }
-  }
-
-  // Reduce the number of job slots occupied and queued in the dispatcher
-  // to one. If the second Job slot is queued in the dispatcher, cancels the
-  // queued job. Otherwise, the second Job has been started by the
-  // PrioritizedDispatcher, so signals it is complete.
-  void ReduceToOneJobSlot() {
-    DCHECK_GE(num_occupied_job_slots_, 1u);
-    if (is_queued()) {
-      resolver_->dispatcher_.Cancel(handle_);
-      handle_.Reset();
-    } else if (num_occupied_job_slots_ > 1) {
-      resolver_->dispatcher_.OnJobFinished();
-      --num_occupied_job_slots_;
-    }
-    DCHECK_EQ(1u, num_occupied_job_slots_);
-  }
-
   void UpdatePriority() {
     if (is_queued()) {
       if (priority() != static_cast<RequestPriority>(handle_.priority()))
@@ -1420,17 +1339,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   // PriorityDispatch::Job:
   virtual void Start() OVERRIDE {
-    DCHECK_LE(num_occupied_job_slots_, 1u);
-
-    handle_.Reset();
-    ++num_occupied_job_slots_;
-
-    if (num_occupied_job_slots_ == 2) {
-      StartSecondDnsTransaction();
-      return;
-    }
-
     DCHECK(!is_running());
+    handle_.Reset();
 
     net_log_.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB_STARTED);
 
@@ -1534,18 +1444,14 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   void StartDnsTask() {
     DCHECK(resolver_->HaveDnsConfig());
-    dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), key_, this,
-                                net_log_));
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    dns_task_.reset(new DnsTask(
+        resolver_->dns_client_.get(),
+        key_,
+        base::Bind(&Job::OnDnsTaskComplete, base::Unretained(this), start_time),
+        net_log_));
 
-    dns_task_->StartFirstTransaction();
-    // Schedule a second transaction, if needed.
-    if (dns_task_->needs_two_transactions())
-      Schedule(true);
-  }
-
-  void StartSecondDnsTransaction() {
-    DCHECK(dns_task_->needs_two_transactions());
-    dns_task_->StartSecondTransaction();
+    dns_task_->Start();
   }
 
   // Called if DnsTask fails. It is posted from StartDnsTask, so Job may be
@@ -1567,7 +1473,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     // TODO(szym): Some net errors indicate lack of connectivity. Starting
     // ProcTask in that case is a waste of time.
     if (resolver_->fallback_to_proctask_) {
-      KillDnsTask();
+      dns_task_.reset();
       StartProcTask();
     } else {
       UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
@@ -1575,13 +1481,11 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     }
   }
 
-
-  // HostResolverImpl::DnsTask::Delegate implementation:
-
-  virtual void OnDnsTaskComplete(base::TimeTicks start_time,
-                                 int net_error,
-                                 const AddressList& addr_list,
-                                 base::TimeDelta ttl) OVERRIDE {
+  // Called by DnsTask when it completes.
+  void OnDnsTaskComplete(base::TimeTicks start_time,
+                         int net_error,
+                         const AddressList& addr_list,
+                         base::TimeDelta ttl) {
     DCHECK(is_dns_running());
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
@@ -1616,19 +1520,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         bounded_ttl);
   }
 
-  virtual void OnFirstDnsTransactionComplete() OVERRIDE {
-    DCHECK(dns_task_->needs_two_transactions());
-    DCHECK_EQ(dns_task_->needs_another_transaction(), is_queued());
-    // No longer need to occupy two dispatcher slots.
-    ReduceToOneJobSlot();
-
-    // We already have a job slot at the dispatcher, so if the second
-    // transaction hasn't started, reuse it now instead of waiting in the queue
-    // for the second slot.
-    if (dns_task_->needs_another_transaction())
-      dns_task_->StartSecondTransaction();
-  }
-
   // Performs Job's last rites. Completes all Requests. Deletes this.
   void CompleteRequests(const HostCache::Entry& entry,
                         base::TimeDelta ttl) {
@@ -1643,12 +1534,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     resolver_->RemoveJob(this);
 
     if (is_running()) {
+      DCHECK(!is_queued());
       if (is_proc_running()) {
-        DCHECK(!is_queued());
         proc_task_->Cancel();
         proc_task_ = NULL;
       }
-      KillDnsTask();
+      dns_task_.reset();
 
       // Signal dispatcher that a slot has opened.
       resolver_->dispatcher_.OnJobFinished();
@@ -1742,9 +1633,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // Distinguishes measurements taken while DnsClient was fully configured.
   bool had_dns_config_;
 
-  // Number of slots occupied by this Job in resolver's PrioritizedDispatcher.
-  unsigned num_occupied_job_slots_;
-
   // Result of DnsTask.
   int dns_task_error_;
 
@@ -1832,10 +1720,7 @@ HostResolverImpl::HostResolverImpl(
 }
 
 HostResolverImpl::~HostResolverImpl() {
-  // Prevent the dispatcher from starting new jobs.
-  dispatcher_.Disable();
-  // It's now safe for Jobs to call KillDsnTask on destruction, because
-  // OnJobComplete will not start any new jobs.
+  // This will also cancel all outstanding requests.
   STLDeleteValues(&jobs_);
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -1888,7 +1773,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   if (jobit == jobs_.end()) {
     job =
         new Job(weak_ptr_factory_.GetWeakPtr(), key, priority, request_net_log);
-    job->Schedule(false);
+    job->Schedule();
 
     // Check for queue overflow.
     if (dispatcher_.num_queued_jobs() > max_queued_jobs_) {
@@ -2184,6 +2069,9 @@ void HostResolverImpl::AbortAllInProgressJobs() {
       ++it;
     }
   }
+
+  // Check if no dispatcher slots leaked out.
+  DCHECK_EQ(dispatcher_.num_running_jobs(), jobs_to_abort.size());
 
   // Life check to bail once |this| is deleted.
   base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();

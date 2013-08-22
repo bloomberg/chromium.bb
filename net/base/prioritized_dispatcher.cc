@@ -18,7 +18,17 @@ PrioritizedDispatcher::PrioritizedDispatcher(const Limits& limits)
     : queue_(limits.reserved_slots.size()),
       max_running_jobs_(limits.reserved_slots.size()),
       num_running_jobs_(0) {
-  SetLimits(limits);
+  size_t total = 0;
+  for (size_t i = 0; i < limits.reserved_slots.size(); ++i) {
+    total += limits.reserved_slots[i];
+    max_running_jobs_[i] = total;
+  }
+  // Unreserved slots are available for all priorities.
+  DCHECK_LE(total, limits.total_jobs) << "sum(reserved_slots) <= total_jobs";
+  size_t spare = limits.total_jobs - total;
+  for (size_t i = limits.reserved_slots.size(); i > 0; --i) {
+    max_running_jobs_[i - 1] += spare;
+  }
 }
 
 PrioritizedDispatcher::~PrioritizedDispatcher() {}
@@ -33,18 +43,6 @@ PrioritizedDispatcher::Handle PrioritizedDispatcher::Add(
     return Handle();
   }
   return queue_.Insert(job, priority);
-}
-
-PrioritizedDispatcher::Handle PrioritizedDispatcher::AddAtHead(
-    Job* job, Priority priority) {
-  DCHECK(job);
-  DCHECK_LT(priority, num_priorities());
-  if (num_running_jobs_ < max_running_jobs_[priority]) {
-    ++num_running_jobs_;
-    job->Start();
-    return Handle();
-  }
-  return queue_.InsertAtFront(job, priority);
 }
 
 void PrioritizedDispatcher::Cancel(const Handle& handle) {
@@ -88,11 +86,6 @@ void PrioritizedDispatcher::OnJobFinished() {
   MaybeDispatchJob(handle, handle.priority());
 }
 
-void PrioritizedDispatcher::Disable() {
-  // Set limits to allow no new jobs to start.
-  SetLimits(Limits(queue_.num_priorities(), 0));
-}
-
 bool PrioritizedDispatcher::MaybeDispatchJob(const Handle& handle,
                                              Priority job_priority) {
   DCHECK_LT(job_priority, num_priorities());
@@ -103,21 +96,6 @@ bool PrioritizedDispatcher::MaybeDispatchJob(const Handle& handle,
   ++num_running_jobs_;
   job->Start();
   return true;
-}
-
-void PrioritizedDispatcher::SetLimits(const Limits& limits) {
-  DCHECK_EQ(queue_.num_priorities(), limits.reserved_slots.size());
-  size_t total = 0;
-  for (size_t i = 0; i < limits.reserved_slots.size(); ++i) {
-    total += limits.reserved_slots[i];
-    max_running_jobs_[i] = total;
-  }
-  // Unreserved slots are available for all priorities.
-  DCHECK_LE(total, limits.total_jobs) << "sum(reserved_slots) <= total_jobs";
-  size_t spare = limits.total_jobs - total;
-  for (size_t i = limits.reserved_slots.size(); i > 0; --i) {
-    max_running_jobs_[i - 1] += spare;
-  }
 }
 
 }  // namespace net
