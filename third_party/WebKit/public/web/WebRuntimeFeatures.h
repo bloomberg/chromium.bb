@@ -146,6 +146,8 @@ public:
 
     WEBKIT_EXPORT static void enableOverlayScrollbars(bool);
 
+    WEBKIT_EXPORT static void enableInputModeAttribute(bool);
+
 private:
     WebRuntimeFeatures();
 };

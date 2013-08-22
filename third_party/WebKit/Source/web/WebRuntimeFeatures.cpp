@@ -404,4 +404,9 @@ void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableInputModeAttribute(bool enable)
+{
+    RuntimeEnabledFeatures::setInputModeAttributeEnabled(enable);
+}
+
 } // namespace WebKit
