@@ -45,7 +45,7 @@
 
 namespace WebCore {
 
-ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, ScriptController* controller, PageConsole* console)
+ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, ScriptController* controller, PageConsole& console)
     : m_isPreprocessing(false)
 {
     v8::TryCatch tryCatch;
@@ -56,13 +56,13 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     controller->executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
 
     if (scriptResults.size() != 1) {
-        console->addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
+        console.addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
         return;
     }
 
     ScriptValue preprocessorFunction = scriptResults[0];
     if (!preprocessorFunction.isFunction()) {
-        console->addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
+        console.addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
         return;
     }
 

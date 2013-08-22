@@ -11184,7 +11184,7 @@ void CSSParser::logError(const String& message, const CSSParserLocation& locatio
 {
     unsigned lineNumberInStyleSheet;
     unsigned columnNumber = 0;
-    PageConsole* console = m_styleSheet->singleOwnerDocument()->page()->console();
+    PageConsole& console = m_styleSheet->singleOwnerDocument()->page()->console();
     if (InspectorInstrumentation::hasFrontends()) {
         ensureLineEndings();
         TextPosition tokenPosition = TextPosition::fromOffsetAndLineEndings(location.offset, *m_lineEndings);
@@ -11193,7 +11193,7 @@ void CSSParser::logError(const String& message, const CSSParserLocation& locatio
     } else {
         lineNumberInStyleSheet = location.lineNumber;
     }
-    console->addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
+    console.addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 
 StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes, bool isPrefixed)

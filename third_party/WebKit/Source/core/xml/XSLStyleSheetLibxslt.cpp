@@ -131,7 +131,7 @@ bool XSLStyleSheet::parseString(const String& source)
     PageConsole* console = 0;
     Frame* frame = ownerDocument()->frame();
     if (frame && frame->page())
-        console = frame->page()->console();
+        console = &frame->page()->console();
 
     XMLDocumentParserScope scope(fetcher(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
     XMLParserInput input(source);

@@ -596,7 +596,7 @@ PageConsole* DOMWindow::pageConsole() const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
-    return m_frame->page() ? m_frame->page()->console() : 0;
+    return m_frame->page() ? &m_frame->page()->console() : 0;
 }
 
 ApplicationCache* DOMWindow::applicationCache() const

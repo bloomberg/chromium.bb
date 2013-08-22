@@ -232,7 +232,7 @@ public:
     bool isPainting() const { return m_isPainting; }
 #endif
 
-    PageConsole* console() { return m_console.get(); }
+    PageConsole& console() { return *m_console; }
 
     double timerAlignmentInterval() const;
 

@@ -602,7 +602,7 @@ void UseCounter::countDeprecation(Document* document, Feature feature)
 
     if (page->useCounter().recordMeasurement(feature)) {
         ASSERT(!page->useCounter().deprecationMessage(feature).isEmpty());
-        page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter().deprecationMessage(feature));
+        page->console().addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter().deprecationMessage(feature));
     }
 }
 

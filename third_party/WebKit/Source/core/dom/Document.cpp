@@ -4553,7 +4553,7 @@ void Document::addConsoleMessage(MessageSource source, MessageLevel level, const
     }
 
     if (Page* page = this->page())
-        page->console()->addMessage(source, level, message, requestIdentifier, this);
+        page->console().addMessage(source, level, message, requestIdentifier, this);
 }
 
 void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
@@ -4564,7 +4564,7 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
     }
 
     if (Page* page = this->page())
-        page->console()->addMessage(source, level, message, sourceURL, lineNumber, 0, callStack, state, requestIdentifier);
+        page->console().addMessage(source, level, message, sourceURL, lineNumber, 0, callStack, state, requestIdentifier);
 }
 
 struct PerformTaskContext {
