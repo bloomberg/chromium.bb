@@ -2443,16 +2443,10 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   DCHECK(!data_path.empty());
 
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  base::FilePath chrome_pak = data_path.AppendASCII("chrome.pak");
-  base::PlatformFile f =
-      base::CreatePlatformFile(chrome_pak, flags, NULL, NULL);
-  DCHECK(f != base::kInvalidPlatformFileValue);
-  mappings->push_back(FileDescriptorInfo(kAndroidChromePakDescriptor,
-                                         FileDescriptor(f, true)));
-
   base::FilePath chrome_resources_pak =
       data_path.AppendASCII("chrome_100_percent.pak");
-  f = base::CreatePlatformFile(chrome_resources_pak, flags, NULL, NULL);
+  base::PlatformFile f =
+      base::CreatePlatformFile(chrome_resources_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
   mappings->push_back(FileDescriptorInfo(kAndroidChrome100PercentPakDescriptor,
                                          FileDescriptor(f, true)));

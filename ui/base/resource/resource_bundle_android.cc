@@ -19,8 +19,6 @@ namespace ui {
 void ResourceBundle::LoadCommonResources() {
   base::FilePath path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &path);
-  AddDataPackFromPath(path.AppendASCII("chrome.pak"),
-                      SCALE_FACTOR_NONE);
   AddDataPackFromPath(path.AppendASCII("chrome_100_percent.pak"),
                       SCALE_FACTOR_100P);
 }

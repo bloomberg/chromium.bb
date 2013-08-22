@@ -20,7 +20,6 @@ import java.util.ArrayList;
 public class ChromiumTestShellApplication extends Application {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
-        "chrome.pak",
         "en-US.pak",
         "resources.pak",
         "chrome_100_percent.pak",
