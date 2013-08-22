@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'include_tests%': 0,
+    'include_tests%': 1,
   },
   'targets': [
     {
@@ -35,4 +35,27 @@
       ],
     },
   ],  # targets,
+  'conditions': [
+    ['include_tests==1', {
+      'targets': [
+        {
+          'target_name': 'cast_unittest',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'cast_sender',
+            'cast_receiver',
+            '../../base/base.gyp:run_all_unittests',
+            '<(DEPTH)/testing/gmock.gyp:gmock',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '../..',
+          ],
+          'sources': [
+            'congestion_control/congestion_control_unittest.cc',
+          ], # source
+        },
+      ],  # targets
+    }], # include_tests
+  ],
 }

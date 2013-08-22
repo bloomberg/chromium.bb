@@ -5,6 +5,7 @@
 {
   'includes': [
 #    'audio_sender/audio_sender.gypi',
+    'congestion_control/congestion_control.gypi',
 #    'video_sender/video_sender.gypi',
   ],
   'targets': [
@@ -19,6 +20,7 @@
       'dependencies': [
 #        '<(DEPTH)/media/cast/pacing/paced_sender.gyp:*',
 #        'audio_sender',
+        'congestion_control',
 #        'video_sender',
       ], # dependencies
     },
