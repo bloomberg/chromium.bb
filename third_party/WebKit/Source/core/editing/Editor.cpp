@@ -1016,6 +1016,13 @@ bool Editor::isContinuousSpellCheckingEnabled() const
 void Editor::toggleContinuousSpellChecking()
 {
     client().toggleContinuousSpellChecking();
+    if (isContinuousSpellCheckingEnabled())
+        return;
+    for (Frame* frame = m_frame->page()->mainFrame(); frame && frame->document(); frame = frame->tree()->traverseNext()) {
+        for (Node* node = frame->document()->rootNode(); node; node = NodeTraversal::next(node)) {
+            node->setAlreadySpellChecked(false);
+        }
+    }
 }
 
 bool Editor::isGrammarCheckingEnabled()
@@ -1058,8 +1065,35 @@ void Editor::redo()
     client().redo();
 }
 
-void Editor::didBeginEditing()
+void Editor::elementDidBeginEditing(Element* element)
 {
+    if (isContinuousSpellCheckingEnabled() && unifiedTextCheckerEnabled()) {
+        bool isTextField = false;
+        HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
+        if (!isHTMLTextFormControlElement(element))
+            enclosingHTMLTextFormControlElement = enclosingTextFormControl(firstPositionInNode(element));
+        element = enclosingHTMLTextFormControlElement ? enclosingHTMLTextFormControlElement : element;
+        Element* parent = element;
+        if (isHTMLTextFormControlElement(element)) {
+            HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
+            parent = textControl;
+            element = textControl->innerTextElement();
+            isTextField = textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isTextField();
+        }
+
+        if (isTextField || !parent->isAlreadySpellChecked()) {
+            // We always recheck textfields because markers are removed from them on blur.
+            VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
+            markMisspellingsAndBadGrammar(selection);
+            if (!isTextField)
+                parent->setAlreadySpellChecked(true);
+        }
+    }
+}
+
+void Editor::didBeginEditing(Element* rootEditableElement)
+{
+    elementDidBeginEditing(rootEditableElement);
     client().didBeginEditing();
 }
 
@@ -1866,14 +1900,9 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     m_frame->selection()->setTypingStyle(typingStyle);
 }
 
-
-void Editor::textFieldDidBeginEditing(Element* e)
+void Editor::textAreaOrTextFieldDidBeginEditing(Element* e)
 {
-    if (isContinuousSpellCheckingEnabled()) {
-        Element* element = toHTMLTextFormControlElement(e)->innerTextElement();
-        VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
-        markMisspellingsAndBadGrammar(selection);
-    }
+    elementDidBeginEditing(e);
 }
 
 void Editor::textFieldDidEndEditing(Element* e)

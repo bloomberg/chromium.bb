@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../editing.js"></script>
+<script src="resources/util.js"></script>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body onload="test();">
+<pre id="console"></pre>
+<div id="container">
+  <div id="test_editable" contentEditable>zz zz zz. </div>
+  <textarea id="test_textarea">zz zz zz.</textarea>
+  <input type="text" id="test_textfield" value="zz zz zz."></input>
+</div>
+<script>
+description("Spell checking should be triggered on focus of an editable. " +
+"To test manually type focus above editable and textarea. Misspellings in them " +
+"should be marked on focus.");
+
+var testEditable = document.getElementById('test_editable');
+var testTextArea = document.getElementById('test_textarea');
+var testTextField = document.getElementById('test_textfield');
+
+function test()
+{
+    if (!window.internals)
+    {
+        log("Automatic testing impossible. Test manually.");
+        return;
+    }
+
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+    internals.setContinuousSpellCheckingEnabled(true);
+
+    function waitForMarkersToAppear(nretry)
+    {
+        if (nretry > 0
+            && !internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")
+            && !internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")
+            && !internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")) {
+            window.setTimeout(function() { waitForMarkersToAppear(nretry - 1); }, 5);
+        } else {
+            shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
+            shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
+            shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+    }
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
+    testEditable.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
+    testTextArea.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
+    testTextField.focus();
+    waitForMarkersToAppear(10);
+}
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

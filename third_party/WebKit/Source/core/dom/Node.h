@@ -712,6 +712,9 @@ public:
 
     PassRefPtr<NodeList> getDestinationInsertionPoints();
 
+    void setAlreadySpellChecked(bool flag) { setFlag(flag, AlreadySpellCheckedFlag); }
+    bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }
+
 private:
     enum NodeFlags {
         IsTextFlag = 1,
@@ -753,6 +756,7 @@ private:
         CustomElementWaitingForUpgradeOrIsUpgraded = 1 << 28,
 
         ChildNeedsDistributionRecalc = 1 << 29,
+        AlreadySpellCheckedFlag = 1 << 30,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };

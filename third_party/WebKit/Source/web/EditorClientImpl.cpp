@@ -151,13 +151,10 @@ void EditorClientImpl::toggleContinuousSpellChecking()
     } else {
         m_spellCheckThisFieldStatus = SpellCheckForcedOn;
         if (Frame* frame = m_webView->focusedWebCoreFrame()) {
-            if (unifiedTextCheckerEnabled(frame)) {
-                VisibleSelection frameSelection = frame->selection()->selection();
-                // If a selection is in an editable element spell check its content.
-                if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
-                    VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(rootEditableElement);
-                    frame->editor()->markMisspellingsAndBadGrammar(selection);
-                }
+            VisibleSelection frameSelection = frame->selection()->selection();
+            // If a selection is in an editable element spell check its content.
+            if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
+                frame->editor()->elementDidBeginEditing(rootEditableElement);
             }
         }
     }

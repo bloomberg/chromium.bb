@@ -363,7 +363,7 @@ void HTMLInputElement::beginEditing()
         return;
 
     if (Frame* frame = document()->frame())
-        frame->editor()->textFieldDidBeginEditing(this);
+        frame->editor()->textAreaOrTextFieldDidBeginEditing(this);
 }
 
 void HTMLInputElement::endEditing()

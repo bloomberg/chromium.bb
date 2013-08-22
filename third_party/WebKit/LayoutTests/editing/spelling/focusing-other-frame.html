@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="resources/util.js"></script>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 </head>
 <body>
+<pre id="console"></pre>
 <iframe id="frame1" src="data:text/html,<body contenteditable></body>"></iframe>
 <iframe id="frame2" src="data:text/html,<body contenteditable></body>"></iframe>
 
@@ -30,7 +32,7 @@ if (window.internals) {
     testEditable2.focus();
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '1');
 } else {
-    alert("Automatic testing impossible. Test manually. See steps in the description.");
+    log("Automatic testing impossible. Test manually. See steps in the description.");
 }
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>

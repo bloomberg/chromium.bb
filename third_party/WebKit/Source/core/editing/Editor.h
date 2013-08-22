@@ -214,7 +214,7 @@ public:
     bool canRedo();
     void redo();
 
-    void didBeginEditing();
+    void didBeginEditing(Element*);
     void didEndEditing();
 
     void setBaseWritingDirection(WritingDirection);
@@ -281,7 +281,7 @@ public:
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
-    void textFieldDidBeginEditing(Element*);
+    void textAreaOrTextFieldDidBeginEditing(Element*);
     void textFieldDidEndEditing(Element*);
     void textDidChangeInTextField(Element*);
     bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*);
@@ -308,6 +308,8 @@ public:
         Editor* m_editor;
     };
     friend class RevealSelectionScope;
+
+    void elementDidBeginEditing(Element*);
 
 private:
     RefPtr<CompositeEditCommand> m_lastEditCommand;

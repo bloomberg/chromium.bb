@@ -3362,7 +3362,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         m_focusedElement->setFocus(true);
 
         if (m_focusedElement->isRootEditableElement())
-            frame()->editor()->didBeginEditing();
+            frame()->editor()->didBeginEditing(m_focusedElement.get());
 
         // eww, I suck. set the qt focus correctly
         // ### find a better place in the code for this

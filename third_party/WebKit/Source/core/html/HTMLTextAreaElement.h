@@ -83,6 +83,7 @@ private:
     virtual bool isRequiredFormControl() const { return isRequired(); }
 
     virtual void defaultEventHandler(Event*);
+    virtual void handleFocusEvent(Element* oldFocusedNode, FocusDirection) OVERRIDE;
 
     virtual void subtreeHasChanged();
 
