@@ -1191,9 +1191,8 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match != NULL);
 
-  if (!user_input_in_progress_ &&
-      controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
-          false)) {
+  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      false)) {
     // Any time the user hits enter on the unchanged omnibox, we should reload.
     // When we're not extracting search terms, AcceptInput() will take care of
     // this (see code referring to PAGE_TRANSITION_RELOAD there), but when we're

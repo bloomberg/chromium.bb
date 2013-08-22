@@ -245,7 +245,7 @@ Profile* ToolbarModelImpl::GetProfile() const {
 }
 
 string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
-  if (!ignore_editing && input_in_progress())
+  if (input_in_progress() && !ignore_editing)
     return string16();
 
   const WebContents* web_contents = delegate_->GetActiveWebContents();
