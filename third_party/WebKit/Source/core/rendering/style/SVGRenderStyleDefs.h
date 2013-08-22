@@ -92,6 +92,17 @@ namespace WebCore {
         MT_ALPHA
     };
 
+    enum EPaintOrderType {
+        PT_NONE    = 0,
+        PT_FILL    = 1,
+        PT_STROKE  = 2,
+        PT_MARKERS = 3
+    };
+
+    const int kPaintOrderBitwidth = 2;
+    typedef unsigned EPaintOrder;
+    const unsigned PO_NORMAL = PT_FILL | PT_STROKE << 2 | PT_MARKERS << 4;
+
     class CSSValue;
     class CSSValueList;
     class SVGPaint;

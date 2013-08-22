@@ -408,6 +408,7 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
         mapAttributeToCSSProperty(propertyNameToIdMap, mask_typeAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, opacityAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, overflowAttr);
+        mapAttributeToCSSProperty(propertyNameToIdMap, paint_orderAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, pointer_eventsAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, shape_renderingAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, stop_colorAttr);
@@ -671,6 +672,7 @@ static inline AttributeToPropertyTypeMap& cssPropertyToTypeMap()
     s_cssPropertyMap.set(mask_typeAttr, AnimatedString);
     s_cssPropertyMap.set(opacityAttr, AnimatedNumber);
     s_cssPropertyMap.set(overflowAttr, AnimatedString);
+    s_cssPropertyMap.set(paint_orderAttr, AnimatedString);
     s_cssPropertyMap.set(pointer_eventsAttr, AnimatedString);
     s_cssPropertyMap.set(shape_renderingAttr, AnimatedString);
     s_cssPropertyMap.set(stop_colorAttr, AnimatedColor);

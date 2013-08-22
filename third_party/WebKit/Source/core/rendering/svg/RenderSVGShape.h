@@ -109,7 +109,6 @@ private:
 
     void fillShape(RenderStyle*, GraphicsContext*);
     void strokeShape(RenderStyle*, GraphicsContext*);
-    void fillAndStrokeShape(GraphicsContext*);
     void drawMarkers(PaintInfo&);
 
 private:

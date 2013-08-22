@@ -221,4 +221,11 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
     return StyleDifferenceEqual;
 }
 
+EPaintOrderType SVGRenderStyle::paintOrderType(unsigned index) const
+{
+    ASSERT(index < ((1 << kPaintOrderBitwidth)-1));
+    unsigned pt = (paintOrder() >> (kPaintOrderBitwidth*index)) & ((1u << kPaintOrderBitwidth) - 1);
+    return (EPaintOrderType)pt;
+}
+
 }

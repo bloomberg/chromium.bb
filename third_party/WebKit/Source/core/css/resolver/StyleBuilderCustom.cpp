@@ -1112,6 +1112,38 @@ static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const StyleColor& fgC
     return color;
 }
 
+static EPaintOrder paintOrderFlattened(CSSValue* cssPaintOrder)
+{
+    if (cssPaintOrder->isValueList()) {
+        int paintOrder = 0;
+        CSSValueListInspector iter(cssPaintOrder);
+        for (size_t i = 0; i < iter.length(); i++) {
+            CSSPrimitiveValue* value = static_cast<CSSPrimitiveValue*>(iter.item(i));
+
+            EPaintOrderType paintOrderType = PT_NONE;
+            switch (value->getValueID()) {
+            case CSSValueFill:
+                paintOrderType = PT_FILL;
+                break;
+            case CSSValueStroke:
+                paintOrderType = PT_STROKE;
+                break;
+            case CSSValueMarkers:
+                paintOrderType = PT_MARKERS;
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+                break;
+            }
+
+            paintOrder |= (paintOrderType << kPaintOrderBitwidth*i);
+        }
+        return (EPaintOrder)paintOrder;
+    }
+
+    return PO_NORMAL;
+}
+
 static bool numberToFloat(const CSSPrimitiveValue* primitiveValue, float& out)
 {
     if (!primitiveValue)
@@ -2334,6 +2366,12 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         EGlyphOrientation orientation;
         if (degreeToGlyphOrientation(primitiveValue, orientation))
             state.style()->accessSVGStyle()->setGlyphOrientationHorizontal(orientation);
+        break;
+    }
+    case CSSPropertyPaintOrder: {
+        HANDLE_SVG_INHERIT_AND_INITIAL(paintOrder, PaintOrder)
+        if (value->isValueList())
+            state.style()->accessSVGStyle()->setPaintOrder(paintOrderFlattened(value));
         break;
     }
     case CSSPropertyGlyphOrientationVertical:

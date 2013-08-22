@@ -273,3 +273,9 @@ dynamic
 // CSS_PROP_VECTOR_EFFECT
 // none
 non-scaling-stroke
+
+// CSS_PROP_PAINT_ORDER
+// normal
+// fill
+// stroke
+// markers

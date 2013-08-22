@@ -243,26 +243,6 @@ void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
     }
 }
 
-void RenderSVGShape::fillAndStrokeShape(GraphicsContext* context)
-{
-    RenderStyle* style = this->style();
-
-    fillShape(style, context);
-
-    if (!style->svgStyle()->hasVisibleStroke())
-        return;
-
-    GraphicsContextStateSaver stateSaver(*context, false);
-
-    if (hasNonScalingStroke()) {
-        AffineTransform nonScalingTransform = nonScalingStrokeTransform();
-        if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
-            return;
-    }
-
-    strokeShape(style, context);
-}
-
 void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
@@ -287,9 +267,34 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
                 if (svgStyle->shapeRendering() == SR_CRISPEDGES)
                     childPaintInfo.context->setShouldAntialias(false);
 
-                fillAndStrokeShape(childPaintInfo.context);
-                if (!m_markerPositions.isEmpty())
-                    drawMarkers(childPaintInfo);
+                for (int i = 0; i < 3; i++) {
+                    switch (svgStyle->paintOrderType(i)) {
+                    case PT_FILL:
+                        fillShape(this->style(), childPaintInfo.context);
+                        break;
+                    case PT_STROKE:
+                        if (svgStyle->hasVisibleStroke()) {
+                            GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
+                            AffineTransform nonScalingTransform;
+
+                            if (hasNonScalingStroke()) {
+                                AffineTransform nonScalingTransform = nonScalingStrokeTransform();
+                                if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
+                                    return;
+                            }
+
+                            strokeShape(this->style(), childPaintInfo.context);
+                        }
+                        break;
+                    case PT_MARKERS:
+                        if (!m_markerPositions.isEmpty())
+                            drawMarkers(childPaintInfo);
+                        break;
+                    default:
+                        ASSERT_NOT_REACHED();
+                        break;
+                    }
+                }
             }
         }
 

@@ -471,6 +471,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyPageBreakAfter:
     case CSSPropertyPageBreakBefore:
     case CSSPropertyPageBreakInside:
+    case CSSPropertyPaintOrder:
     case CSSPropertyPosition:
     case CSSPropertyRight:
     case CSSPropertySize:

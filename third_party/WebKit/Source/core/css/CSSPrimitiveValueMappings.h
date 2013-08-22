@@ -4727,6 +4727,45 @@ template<> inline CSSPrimitiveValue::operator EVectorEffect() const
     return VE_NONE;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPaintOrderType e)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (e) {
+    case PT_FILL:
+        m_value.valueID = CSSValueFill;
+        break;
+    case PT_STROKE:
+        m_value.valueID = CSSValueStroke;
+        break;
+    case PT_MARKERS:
+        m_value.valueID = CSSValueMarkers;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        m_value.valueID = CSSValueFill;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator EPaintOrderType() const
+{
+    ASSERT(isValueID());
+    switch (m_value.valueID) {
+    case CSSValueFill:
+        return PT_FILL;
+    case CSSValueStroke:
+        return PT_STROKE;
+    case CSSValueMarkers:
+        return PT_MARKERS;
+    default:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return PT_NONE;
+}
+
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EMaskType e)
     : CSSValue(PrimitiveClass)
 {

@@ -379,7 +379,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
     CSSPropertyGlyphOrientationVertical,
-    CSSPropertyVectorEffect
+    CSSPropertyVectorEffect,
+    CSSPropertyPaintOrder
 };
 
 static const Vector<CSSPropertyID>& computableProperties()
@@ -2909,6 +2910,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyKerning:
         case CSSPropertyTextAnchor:
         case CSSPropertyVectorEffect:
+        case CSSPropertyPaintOrder:
         case CSSPropertyWritingMode:
             return getSVGPropertyCSSValue(propertyID, DoNotUpdateLayout);
     }

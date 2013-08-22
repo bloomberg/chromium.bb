@@ -987,6 +987,12 @@ span
 progressive
 interlace
 
+// CSS_PROP_PAINT_ORDER
+// normal
+// fill
+// stroke
+markers
+
 //
 // CSS3 viewport-length keywords
 //

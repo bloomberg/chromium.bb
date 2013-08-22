@@ -59,6 +59,27 @@ static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(const Vector<SVGLength
     return list.release();
 }
 
+static PassRefPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder paintorder)
+{
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    do {
+        EPaintOrderType paintOrderType = (EPaintOrderType)(paintorder & ((1 << kPaintOrderBitwidth) - 1));
+        switch (paintOrderType) {
+        case PT_FILL:
+        case PT_STROKE:
+        case PT_MARKERS:
+            list->append(CSSPrimitiveValue::create(paintOrderType));
+            break;
+        case PT_NONE:
+        default:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+    } while (paintorder >>= kPaintOrderBitwidth);
+
+    return list.release();
+}
+
 PassRefPtr<SVGPaint> CSSComputedStyleDeclaration::adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint> newPaint, RenderStyle* style) const
 {
     RefPtr<SVGPaint> paint = newPaint;
@@ -192,6 +213,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSProp
 
             return 0;
         }
+        case CSSPropertyPaintOrder:
+            return paintOrderToCSSValueList(svgStyle->paintOrder());
         case CSSPropertyVectorEffect:
             return CSSPrimitiveValue::create(svgStyle->vectorEffect());
         case CSSPropertyMaskType:

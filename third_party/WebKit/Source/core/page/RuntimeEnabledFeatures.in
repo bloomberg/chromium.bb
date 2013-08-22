@@ -84,6 +84,7 @@ SpeechInput status=stable
 SpeechSynthesis status=experimental
 Stream status=experimental
 StyleScoped status=experimental
+SVGPaintOrder status=experimental
 Touch status=stable
 UserSelectAll status=experimental
 Vibration status=experimental
