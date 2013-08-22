@@ -22,17 +22,6 @@ using base::Time;
 using base::TimeDelta;
 using base::win::RegKey;
 
-namespace {
-
-const wchar_t kExperimentLabels[] = L"experiment_labels";
-
-const wchar_t* kExperimentAppGuids[] = {
-    L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}",
-    L"{8A69D345-D564-463C-AFF1-A69D9E530F96}",
-};
-
-}
-
 class GCAPIReactivationTest : public ::testing::Test {
  protected:
   void SetUp() {
@@ -79,21 +68,15 @@ class GCAPIReactivationTest : public ::testing::Test {
   }
 
   bool HasExperimentLabels(HKEY hive) {
-    int label_count = 0;
-    for (int i = 0; i < arraysize(kExperimentAppGuids); ++i) {
-      string16 client_state_path(google_update::kRegPathClientState);
-      client_state_path += L"\\";
-      client_state_path += kExperimentAppGuids[i];
+    string16 client_state_path(google_update::kRegPathClientState);
+    client_state_path.push_back(L'\\');
+    client_state_path.append(google_update::kChromeUpgradeCode);
 
-      RegKey client_state_key(hive,
-                              client_state_path.c_str(),
-                              KEY_QUERY_VALUE);
-      if (client_state_key.Valid() &&
-          client_state_key.HasValue(kExperimentLabels)) {
-        label_count++;
-      }
-    }
-    return label_count == arraysize(kExperimentAppGuids);
+    RegKey client_state_key(hive,
+                            client_state_path.c_str(),
+                            KEY_QUERY_VALUE);
+    return client_state_key.Valid() &&
+        client_state_key.HasValue(google_update::kExperimentLabels);
   }
 
   std::wstring GetReactivationString(HKEY hive) {
