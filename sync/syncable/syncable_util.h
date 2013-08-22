@@ -48,8 +48,8 @@ SYNC_EXPORT_PRIVATE std::string GenerateSyncableHash(
 // than one place, so we define the algorithm here to make sure the
 // implementation is consistent.
 SYNC_EXPORT_PRIVATE std::string GenerateSyncableBookmarkHash(
-    const std::string originator_cache_guid,
-    const std::string originator_client_item_id);
+    const std::string& originator_cache_guid,
+    const std::string& originator_client_item_id);
 
 }  // namespace syncable
 }  // namespace syncer

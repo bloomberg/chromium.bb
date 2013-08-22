@@ -106,8 +106,8 @@ std::string GenerateSyncableHash(
 }
 
 std::string GenerateSyncableBookmarkHash(
-    const std::string originator_cache_guid,
-    const std::string originator_client_item_id) {
+    const std::string& originator_cache_guid,
+    const std::string& originator_client_item_id) {
   return syncable::GenerateSyncableHash(
       BOOKMARKS, originator_cache_guid + originator_client_item_id);
 }
