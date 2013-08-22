@@ -52,6 +52,8 @@ const uint64 kCompositingReasonLayerForScrollingContainer =
 const uint64 kCompositingReasonLayerForForeground = GG_UINT64_C(1) << 29;
 const uint64 kCompositingReasonLayerForBackground = GG_UINT64_C(1) << 30;
 const uint64 kCompositingReasonLayerForMask = GG_UINT64_C(1) << 31;
+const uint64 kCompositingReasonOverflowScrollingParent = GG_UINT64_C(1) << 32;
+const uint64 kCompositingReasonOutOfFlowClipping = GG_UINT64_C(1) << 33;
 
 typedef uint64 CompositingReasons;
 
