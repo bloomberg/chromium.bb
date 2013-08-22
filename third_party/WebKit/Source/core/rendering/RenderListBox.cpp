@@ -82,7 +82,7 @@ const int baselineAdjustment = 7;
 RenderListBox::RenderListBox(Element* element)
     : RenderBlock(element)
     , m_optionsChanged(true)
-    , m_scrollToRevealSelectionAfterLayout(false)
+    , m_scrollToRevealSelectionAfterLayout(true)
     , m_inAutoscroll(false)
     , m_optionsWidth(0)
     , m_indexOffset(0)
