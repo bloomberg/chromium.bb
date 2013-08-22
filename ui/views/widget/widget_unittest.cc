@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -2219,6 +2222,38 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
   widget->Close();
+}
+
+// Test the result of Widget::GetAllChildWidgets().
+TEST_F(WidgetTest, GetAllChildWidgets) {
+  // Create the following widget hierarchy:
+  //
+  // toplevel
+  // +-- w1
+  //     +-- w11
+  // +-- w2
+  //     +-- w21
+  //     +-- w22
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* w1 = CreateChildPlatformWidget(toplevel->GetNativeView());
+  Widget* w11 = CreateChildPlatformWidget(w1->GetNativeView());
+  Widget* w2 = CreateChildPlatformWidget(toplevel->GetNativeView());
+  Widget* w21 = CreateChildPlatformWidget(w2->GetNativeView());
+  Widget* w22 = CreateChildPlatformWidget(w2->GetNativeView());
+
+  std::set<Widget*> expected;
+  expected.insert(toplevel);
+  expected.insert(w1);
+  expected.insert(w11);
+  expected.insert(w2);
+  expected.insert(w21);
+  expected.insert(w22);
+
+  std::set<Widget*> widgets;
+  Widget::GetAllChildWidgets(toplevel->GetNativeView(), &widgets);
+
+  EXPECT_EQ(expected.size(), widgets.size());
+  EXPECT_TRUE(std::equal(expected.begin(), expected.end(), widgets.begin()));
 }
 
 }  // namespace test

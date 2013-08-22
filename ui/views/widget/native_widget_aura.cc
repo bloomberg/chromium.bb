@@ -1069,10 +1069,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   const aura::Window::Windows& child_windows = native_view->children();
   for (aura::Window::Windows::const_iterator i = child_windows.begin();
        i != child_windows.end(); ++i) {
-    NativeWidgetAura* native_widget =
-        static_cast<NativeWidgetAura*>(GetNativeWidgetForNativeView(*i));
-    if (native_widget)
-      children->insert(native_widget->GetWidget());
+    GetAllChildWidgets((*i), children);
   }
 }
 

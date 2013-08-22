@@ -1601,31 +1601,6 @@ class TestChangeNativeViewHierarchy {
     view_test_->RunPendingMessages();
   }
 
-  void CheckEnumeratingNativeWidgets() {
-    if (!host_->GetTopLevelWidget())
-      return;
-    Widget::Widgets widgets;
-    Widget::GetAllChildWidgets(host_->GetNativeView(), &widgets);
-    EXPECT_EQ(TestNativeViewHierarchy::kTotalViews + 1, widgets.size());
-    // Unfortunately there is no guarantee the sequence of views here so always
-    // go through all of them.
-    for (Widget::Widgets::iterator i = widgets.begin();
-         i != widgets.end(); ++i) {
-      View* root_view = (*i)->GetRootView();
-      if (host_->GetRootView() == root_view)
-        continue;
-      size_t j;
-      for (j = 0; j < TestNativeViewHierarchy::kTotalViews; ++j)
-        if (root_views_[j] == root_view)
-          break;
-      // EXPECT_LT/GT/GE() fails to compile with class-defined constants
-      // with gcc, with error
-      // "error: undefined reference to 'TestNativeViewHierarchy::kTotalViews'"
-      // so I forced to use EXPECT_TRUE() instead.
-      EXPECT_TRUE(TestNativeViewHierarchy::kTotalViews > j);
-    }
-  }
-
   void CheckChangingHierarhy() {
     size_t i;
     for (i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
@@ -1655,14 +1630,6 @@ class TestChangeNativeViewHierarchy {
   TestNativeViewHierarchy* test_views_[TestNativeViewHierarchy::kTotalViews];
   ViewTest* view_test_;
 };
-
-TEST_F(ViewTest, ChangeNativeViewHierarchyFindRoots) {
-  // TODO(georgey): Fix the test for Linux
-#if defined(OS_WIN)
-  TestChangeNativeViewHierarchy test(this);
-  test.CheckEnumeratingNativeWidgets();
-#endif
-}
 
 TEST_F(ViewTest, ChangeNativeViewHierarchyChangeHierarchy) {
   // TODO(georgey): Fix the test for Linux
