@@ -89,7 +89,7 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *             "foo/bar.txt" will attempt to read from the URL
  *             "http://example.com/path/foo/bar.txt".
  *     data: A string of parameters:
- *       "allow_cross_origin_request": If "true", then reads from this
+ *       "allow_cross_origin_requests": If "true", then reads from this
  *           filesystem will follow the CORS standard for cross-origin requests.
  *           See http://www.w3.org/TR/access-control.
  *       "allow_credentials": If "true", credentials are sent with cross-origin
