@@ -30,7 +30,10 @@ class MountNodeHtml5Fs : public MountNode {
                       size_t count,
                       int* out_bytes);
 
+  virtual int GetType();
   virtual Error GetSize(size_t *out_size);
+  virtual bool IsaDir();
+  virtual bool IsaFile();
 
  protected:
   MountNodeHtml5Fs(Mount* mount, PP_Resource fileref);
@@ -42,11 +45,6 @@ class MountNodeHtml5Fs : public MountNode {
  private:
   PP_Resource fileref_resource_;
   PP_Resource fileio_resource_;  // 0 if the file is a directory.
-
-  // Returns true if this node is a directory.
-  bool IsDirectory() const {
-    return !fileio_resource_;
-  }
 
   friend class MountHtml5Fs;
 };

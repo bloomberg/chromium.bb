@@ -336,6 +336,14 @@ TEST_F(MountHtml5FsTest, GetStat) {
   EXPECT_EQ(creation_time, statbuf.st_ctime);
   EXPECT_EQ(modified_time, statbuf.st_mtime);
 
+  // Test Get* and Isa* methods.
+  size_t size;
+  EXPECT_EQ(0, node->GetSize(&size));
+  EXPECT_EQ(strlen(contents), size);
+  EXPECT_FALSE(node->IsaDir());
+  EXPECT_TRUE(node->IsaFile());
+  EXPECT_FALSE(node->IsaTTY());
+
   // GetStat on a directory...
   EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
@@ -344,6 +352,13 @@ TEST_F(MountHtml5FsTest, GetStat) {
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
   EXPECT_EQ(modified_time, statbuf.st_mtime);
+
+  // Test Get* and Isa* methods.
+  EXPECT_EQ(0, node->GetSize(&size));
+  EXPECT_EQ(0, size);
+  EXPECT_TRUE(node->IsaDir());
+  EXPECT_FALSE(node->IsaFile());
+  EXPECT_FALSE(node->IsaTTY());
 }
 
 TEST_F(MountHtml5FsTest, FTruncate) {
