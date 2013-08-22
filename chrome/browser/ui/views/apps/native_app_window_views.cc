@@ -524,7 +524,8 @@ bool NativeAppWindowViews::CanResize() const {
 }
 
 bool NativeAppWindowViews::CanMaximize() const {
-  return resizable_ && maximum_size_.IsEmpty();
+  return resizable_ && maximum_size_.IsEmpty() &&
+      !shell_window_->window_type_is_panel();
 }
 
 string16 NativeAppWindowViews::GetWindowTitle() const {
