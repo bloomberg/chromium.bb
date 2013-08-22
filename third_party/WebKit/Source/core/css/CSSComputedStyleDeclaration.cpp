@@ -2129,6 +2129,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (style->minWidth().isAuto())
                 return zoomAdjustedPixelValue(0, style.get());
             return zoomAdjustedPixelValueForLength(style->minWidth(), style.get());
+        case CSSPropertyObjectFit:
+            return cssValuePool().createValue(style->objectFit());
         case CSSPropertyOpacity:
             return cssValuePool().createValue(style->opacity(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyOrphans:

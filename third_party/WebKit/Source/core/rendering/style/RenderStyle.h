@@ -820,6 +820,8 @@ public:
 
     TextOrientation textOrientation() const { return static_cast<TextOrientation>(rareInheritedData->m_textOrientation); }
 
+    ObjectFit objectFit() const { return static_cast<ObjectFit>(rareNonInheritedData->m_objectFit); }
+
     // Return true if any transform related property (currently transform, transformStyle3D or perspective)
     // indicates that we are transforming
     bool hasTransformRelatedProperty() const { return hasTransform() || preserves3D() || hasPerspective(); }
@@ -1255,6 +1257,8 @@ public:
     void setTextEmphasisPosition(TextEmphasisPosition position) { SET_VAR(rareInheritedData, textEmphasisPosition, position); }
     bool setTextOrientation(TextOrientation);
 
+    void setObjectFit(ObjectFit f) { SET_VAR(rareNonInheritedData, m_objectFit, f); }
+
     void setRubyPosition(RubyPosition position) { SET_VAR(rareInheritedData, m_rubyPosition, position); }
 
     void setFilter(const FilterOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_filter, m_operations, ops); }
@@ -1460,6 +1464,7 @@ public:
     static WritingMode initialWritingMode() { return TopToBottomWritingMode; }
     static TextCombine initialTextCombine() { return TextCombineNone; }
     static TextOrientation initialTextOrientation() { return TextOrientationVerticalRight; }
+    static ObjectFit initialObjectFit() { return ObjectFitFill; }
     static EDisplay initialDisplay() { return INLINE; }
     static EEmptyCell initialEmptyCells() { return SHOW; }
     static EFloat initialFloating() { return NoFloat; }

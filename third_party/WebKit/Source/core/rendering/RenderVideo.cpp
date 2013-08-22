@@ -140,35 +140,11 @@ void RenderVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 
 IntRect RenderVideo::videoBox() const
 {
-    if (m_cachedImageSize.isEmpty() && videoElement()->shouldDisplayPosterImage())
-        return IntRect();
-
-    LayoutSize elementSize;
+    const LayoutSize* overriddenIntrinsicSize = 0;
     if (videoElement()->shouldDisplayPosterImage())
-        elementSize = m_cachedImageSize;
-    else
-        elementSize = intrinsicSize();
+        overriddenIntrinsicSize = &m_cachedImageSize;
 
-    IntRect contentRect = pixelSnappedIntRect(contentBoxRect());
-    if (elementSize.isEmpty() || contentRect.isEmpty())
-        return IntRect();
-
-    LayoutRect renderBox = contentRect;
-    LayoutUnit ratio = renderBox.width() * elementSize.height() - renderBox.height() * elementSize.width();
-    if (ratio > 0) {
-        LayoutUnit newWidth = renderBox.height() * elementSize.width() / elementSize.height();
-        // Just fill the whole area if the difference is one pixel or less (in both sides)
-        if (renderBox.width() - newWidth > 2)
-            renderBox.setWidth(newWidth);
-        renderBox.move((contentRect.width() - renderBox.width()) / 2, 0);
-    } else if (ratio < 0) {
-        LayoutUnit newHeight = renderBox.width() * elementSize.height() / elementSize.width();
-        if (renderBox.height() - newHeight > 2)
-            renderBox.setHeight(newHeight);
-        renderBox.move(0, (contentRect.height() - renderBox.height()) / 2);
-    }
-
-    return pixelSnappedIntRect(renderBox);
+    return pixelSnappedIntRect(replacedContentRect(overriddenIntrinsicSize));
 }
 
 bool RenderVideo::shouldDisplayVideo() const
@@ -202,12 +178,24 @@ void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (page && paintInfo.phase == PaintPhaseForeground)
         page->addRelevantRepaintedObject(this, rect);
 
+    LayoutRect contentRect = contentBoxRect();
+    contentRect.moveBy(paintOffset);
+    GraphicsContext* context = paintInfo.context;
+    bool clip = !contentRect.contains(rect);
+    if (clip) {
+        context->save();
+        context->clip(contentRect);
+    }
+
     if (displayingPoster)
-        paintIntoRect(paintInfo.context, rect);
+        paintIntoRect(context, rect);
     else if (document()->view() && document()->view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
-        mediaPlayer->paintCurrentFrameInContext(paintInfo.context, pixelSnappedIntRect(rect));
+        mediaPlayer->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
     else
-        mediaPlayer->paint(paintInfo.context, pixelSnappedIntRect(rect));
+        mediaPlayer->paint(context, pixelSnappedIntRect(rect));
+
+    if (clip)
+        context->restore();
 }
 
 void RenderVideo::layout()

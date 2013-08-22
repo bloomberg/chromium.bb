@@ -65,8 +65,12 @@ public:
     bool imageHasRelativeWidth() const;
     bool imageHasRelativeHeight() const;
 
+    enum SizeType {
+        NormalSize, // Report the size of the image associated with a certain renderer
+        IntrinsicSize // Report the intrinsic size, i.e. ignore whatever has been set extrinsically.
+    };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
-    LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier); // returns the size of the complete image.
+    LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
     virtual void didAddClient(ResourceClient*);

@@ -613,6 +613,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         || rareInheritedData->userSelect != other->rareInheritedData->userSelect
         || rareNonInheritedData->userDrag != other->rareNonInheritedData->userDrag
         || rareNonInheritedData->m_borderFit != other->rareNonInheritedData->m_borderFit
+        || rareNonInheritedData->m_objectFit != other->rareNonInheritedData->m_objectFit
         || rareInheritedData->m_imageRendering != other->rareInheritedData->m_imageRendering)
         return StyleDifferenceRepaint;
 

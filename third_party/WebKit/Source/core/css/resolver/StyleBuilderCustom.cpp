@@ -1914,6 +1914,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyMinHeight:
     case CSSPropertyMixBlendMode:
     case CSSPropertyMinWidth:
+    case CSSPropertyObjectFit:
     case CSSPropertyOpacity:
     case CSSPropertyOrphans:
     case CSSPropertyOutlineColor:

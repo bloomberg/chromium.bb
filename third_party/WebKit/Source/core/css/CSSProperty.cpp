@@ -451,6 +451,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
     case CSSPropertyMixBlendMode:
+    case CSSPropertyObjectFit:
     case CSSPropertyOpacity:
     case CSSPropertyOutline:
     case CSSPropertyOutlineColor:

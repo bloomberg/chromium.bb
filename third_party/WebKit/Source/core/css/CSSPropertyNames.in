@@ -161,6 +161,7 @@ outline-color
 outline-offset
 outline-style
 outline-width
+object-fit
 overflow
 overflow-wrap
 overflow-x

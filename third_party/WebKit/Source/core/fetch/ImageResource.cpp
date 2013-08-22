@@ -225,7 +225,7 @@ bool ImageResource::imageHasRelativeHeight() const
     return false;
 }
 
-LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, float multiplier)
+LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, float multiplier, SizeType sizeType)
 {
     ASSERT(!isPurgeable());
 
@@ -236,7 +236,7 @@ LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, flo
 
     if (m_image->isBitmapImage() && (renderer && renderer->shouldRespectImageOrientation() == RespectImageOrientation))
         imageSize = static_cast<BitmapImage*>(m_image.get())->sizeRespectingOrientation();
-    else if (m_image->isSVGImage())
+    else if (m_image->isSVGImage() && sizeType == NormalSize)
         imageSize = m_svgImageCache->imageSizeForRenderer(renderer);
     else
         imageSize = m_image->size();

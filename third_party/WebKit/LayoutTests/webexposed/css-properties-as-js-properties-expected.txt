@@ -152,6 +152,7 @@ minHeight
 minWidth
 minZoom
 mixBlendMode
+objectFit
 opacity
 order
 orientation

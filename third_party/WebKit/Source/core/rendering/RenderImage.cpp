@@ -196,9 +196,18 @@ bool RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize, bool im
     return true;
 }
 
+void RenderImage::updateInnerContentRect()
+{
+    // Propagate container size to image resource.
+    LayoutRect paintRect = replacedContentRect();
+    IntSize containerSize(paintRect.width(), paintRect.height());
+    if (!containerSize.isEmpty())
+        m_imageResource->setContainerSizeForRenderer(containerSize);
+}
+
 void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* rect)
 {
-    bool intrinsicSizeChanged = updateIntrinsicSizeIfNeeded(m_imageResource->imageSize(style()->effectiveZoom()), imageSizeChanged);
+    bool intrinsicSizeChanged = updateIntrinsicSizeIfNeeded(m_imageResource->intrinsicSize(style()->effectiveZoom()), imageSizeChanged);
 
     // In the case of generated image content using :before/:after/content, we might not be
     // in the render tree yet. In that case, we just need to update our intrinsic size.
@@ -235,6 +244,17 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
             shouldRepaint = false;
             if (!selfNeedsLayout())
                 setNeedsLayout();
+        }
+
+        if (everHadLayout() && !selfNeedsLayout()) {
+            // The inner content rectangle is calculated during layout, but may need an update now
+            // (unless the box has already been scheduled for layout). In order to calculate it, we
+            // may need values from the containing block, though, so make sure that we're not too
+            // early. It may be that layout hasn't even taken place once yet.
+
+            // FIXME: we should not have to trigger another call to setContainerSizeForRenderer()
+            // from here, since it's already being done during layout (crbug.com/275755).
+            updateInnerContentRect();
         }
     }
 
@@ -363,19 +383,30 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             return;
         }
 
-        LayoutSize contentSize(cWidth, cHeight);
-        LayoutPoint contentLocation = paintOffset;
-        contentLocation.move(leftBorder + leftPad, topBorder + topPad);
-        paintIntoRect(context, LayoutRect(contentLocation, contentSize));
+        LayoutRect contentRect = contentBoxRect();
+        contentRect.moveBy(paintOffset);
+        LayoutRect paintRect = replacedContentRect();
+        paintRect.moveBy(paintOffset);
+        bool clip = !contentRect.contains(paintRect);
+        if (clip) {
+            context->save();
+            context->clip(contentRect);
+        }
+
+        paintIntoRect(context, paintRect);
 
         if (cachedImage() && page && paintInfo.phase == PaintPhaseForeground) {
             // For now, count images as unpainted if they are still progressively loading. We may want
             // to refine this in the future to account for the portion of the image that has painted.
+            LayoutRect visibleRect = intersection(paintRect, contentRect);
             if (cachedImage()->isLoading())
-                page->addRelevantUnpaintedObject(this, LayoutRect(contentLocation, contentSize));
+                page->addRelevantUnpaintedObject(this, visibleRect);
             else
-                page->addRelevantRepaintedObject(this, LayoutRect(contentLocation, contentSize));
+                page->addRelevantRepaintedObject(this, visibleRect);
         }
+
+        if (clip)
+            context->restore();
     }
 }
 
@@ -485,6 +516,10 @@ bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     // Background shows in padding area.
     if ((backgroundClip == BorderFillBox || backgroundClip == PaddingFillBox) && style()->hasPadding())
         return false;
+    // Object-fit may leave parts of the content box empty.
+    ObjectFit objectFit = style()->objectFit();
+    if (objectFit != ObjectFitFill && objectFit != ObjectFitCover)
+        return false;
     // Check for image with alpha.
     return m_imageResource->cachedImage() && m_imageResource->cachedImage()->currentFrameKnownToBeOpaque(this);
 }
@@ -546,11 +581,7 @@ void RenderImage::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     RenderReplaced::layout();
-
-    // Propagate container size to image resource.
-    IntSize containerSize(contentWidth(), contentHeight());
-    if (!containerSize.isEmpty())
-        m_imageResource->setContainerSizeForRenderer(containerSize);
+    updateInnerContentRect();
 }
 
 void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const

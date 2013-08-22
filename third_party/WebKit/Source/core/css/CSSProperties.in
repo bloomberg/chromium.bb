@@ -80,6 +80,7 @@ max-width type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSi
 min-height type_name=Length, initial=initialMinSize, converter=convertLengthSizing
 min-width type_name=Length, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
+object-fit type_name=ObjectFit
 opacity type_name=float
 order type_name=int
 orphans type_name=short, custom_all

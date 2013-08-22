@@ -64,6 +64,7 @@ Media status=stable
 MediaSource status=experimental
 MediaStream status=stable
 Notifications status=stable
+ObjectFitPosition status=experimental
 PagePopup status=stable
 ParseSVGAsHTML
 PathOpsSVGClipping

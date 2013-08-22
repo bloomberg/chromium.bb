@@ -179,6 +179,8 @@ public:
 
     unsigned m_touchAction : 1; // TouchAction
 
+    unsigned m_objectFit : 3; // ObjectFit
+
 private:
     StyleRareNonInheritedData();
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);

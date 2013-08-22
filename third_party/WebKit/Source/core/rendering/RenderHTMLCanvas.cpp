@@ -55,18 +55,32 @@ bool RenderHTMLCanvas::requiresLayer() const
 
 void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutRect rect = contentBoxRect();
-    rect.moveBy(paintOffset);
+    GraphicsContext* context = paintInfo.context;
+
+    LayoutRect contentRect = contentBoxRect();
+    contentRect.moveBy(paintOffset);
+    LayoutRect paintRect = replacedContentRect();
+    paintRect.moveBy(paintOffset);
+
+    bool clip = !contentRect.contains(paintRect);
+    if (clip) {
+        // Not allowed to overflow the content box.
+        paintInfo.context->save();
+        paintInfo.context->clip(pixelSnappedIntRect(contentRect));
+    }
 
     if (Frame* frame = this->frame()) {
         if (Page* page = frame->page()) {
             if (paintInfo.phase == PaintPhaseForeground)
-                page->addRelevantRepaintedObject(this, rect);
+                page->addRelevantRepaintedObject(this, intersection(paintRect, contentRect));
         }
     }
 
     bool useLowQualityScale = style()->imageRendering() == ImageRenderingOptimizeContrast;
-    toHTMLCanvasElement(node())->paint(paintInfo.context, rect, useLowQualityScale);
+    toHTMLCanvasElement(node())->paint(context, paintRect, useLowQualityScale);
+
+    if (clip)
+        context->restore();
 }
 
 void RenderHTMLCanvas::canvasSizeChanged()

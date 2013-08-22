@@ -143,6 +143,10 @@ map {
     display: inline
 }
 
+video {
+    object-fit: contain;
+}
+
 /* heading elements */
 
 h1 {

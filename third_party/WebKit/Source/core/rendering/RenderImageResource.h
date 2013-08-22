@@ -64,6 +64,7 @@ public:
     virtual bool imageHasRelativeHeight() const { return m_cachedImage ? m_cachedImage->imageHasRelativeHeight() : false; }
 
     virtual LayoutSize imageSize(float multiplier) const { return m_cachedImage ? m_cachedImage->imageSizeForRenderer(m_renderer, multiplier) : LayoutSize(); }
+    virtual LayoutSize intrinsicSize(float multiplier) const { return m_cachedImage ? m_cachedImage->imageSizeForRenderer(m_renderer, multiplier, ImageResource::IntrinsicSize) : LayoutSize(); }
 
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
