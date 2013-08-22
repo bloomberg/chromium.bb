@@ -545,12 +545,13 @@ FileCopyManager.EventRouter.prototype.sendDeleteEvent = function(
  * Tasks may be added while the queue is being serviced.  Though a
  * cancel operation cancels everything in the queue.
  *
+ * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  */
-FileCopyManager.Task = function(targetDirEntry) {
+FileCopyManager.Task = function(sourceEntries, targetDirEntry) {
+  this.sourceEntries = sourceEntries;
   this.targetDirEntry = targetDirEntry;
-  this.originalEntries = null;
 
   // TODO(hidehiko): When we support recursive copy, we should be able to
   // rely on originalEntries. Then remove this.
@@ -596,36 +597,35 @@ FileCopyManager.Task = function(targetDirEntry) {
 };
 
 /**
- * @param {Array.<Entry>} entries Entries.
  * @param {function()} callback When entries resolved.
  */
-FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
-  this.originalEntries = entries;
-
+FileCopyManager.Task.prototype.initialize = function(callback) {
   // When moving directories, FileEntry.moveTo() is used if both source
   // and target are on Drive. There is no need to recurse into directories.
-  util.recurseAndResolveEntries(entries, !this.move, function(result) {
-    if (this.move) {
-      // This may be moving from search results, where it fails if we move
-      // parent entries earlier than child entries. We should process the
-      // deepest entry first. Since move of each entry is done by a single
-      // moveTo() call, we don't need to care about the recursive traversal
-      // order.
-      this.entries = result.dirEntries.concat(result.fileEntries).sort(
-          function(entry1, entry2) {
-            return entry2.fullPath.length - entry1.fullPath.length;
-          });
-    } else {
-      // Copying tasks are recursively processed. So, directories must be
-      // processed earlier than their child files. Since
-      // util.recurseAndResolveEntries is already listing entries in the
-      // recursive traversal order, we just keep the ordering.
-      this.entries = result.dirEntries.concat(result.fileEntries);
-    }
+  util.recurseAndResolveEntries(
+      this.sourceEntries, !this.move,
+      function(result) {
+        if (this.move) {
+          // This may be moving from search results, where it fails if we
+          // move parent entries earlier than child entries. We should
+          // process the deepest entry first. Since move of each entry is
+          // done by a single moveTo() call, we don't need to care about the
+          // recursive traversal order.
+          this.entries = result.dirEntries.concat(result.fileEntries).sort(
+              function(entry1, entry2) {
+                return entry2.fullPath.length - entry1.fullPath.length;
+              });
+        } else {
+          // Copying tasks are recursively processed. So, directories must be
+          // processed earlier than their child files. Since
+          // util.recurseAndResolveEntries is already listing entries in the
+          // recursive traversal order, we just keep the ordering.
+          this.entries = result.dirEntries.concat(result.fileEntries);
+        }
 
-    this.totalBytes = result.fileBytes;
-    callback();
-  }.bind(this));
+        this.totalBytes = result.fileBytes;
+        callback();
+      }.bind(this));
 };
 
 /**
@@ -694,12 +694,13 @@ FileCopyManager.Task.prototype.run = function(
 /**
  * Task to copy entries.
  *
+ * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  * @extends {FileCopyManager.Task}
  */
-FileCopyManager.CopyTask = function(targetDirEntry) {
-  FileCopyManager.Task.call(this, targetDirEntry);
+FileCopyManager.CopyTask = function(sourceEntries, targetDirEntry) {
+  FileCopyManager.Task.call(this, sourceEntries, targetDirEntry);
 };
 
 /**
@@ -732,7 +733,7 @@ FileCopyManager.CopyTask.prototype.run = function(
   // TODO(hidehiko): Delete after copy is the implementation of Move.
   // Migrate the part into MoveTask.run().
   var deleteOriginals = function() {
-    var count = this.originalEntries.length;
+    var count = this.sourceEntries.length;
 
     var onEntryDeleted = function(entry) {
       entryChangedCallback(util.EntryChangedKind.DELETED, entry);
@@ -746,15 +747,15 @@ FileCopyManager.CopyTask.prototype.run = function(
           util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     };
 
-    for (var i = 0; i < this.originalEntries.length; i++) {
-      var entry = this.originalEntries[i];
+    for (var i = 0; i < this.sourceEntries.length; i++) {
+      var entry = this.sourceEntries[i];
       util.removeFileOrDirectory(
           entry, onEntryDeleted.bind(null, entry), onFilesystemError);
     }
   }.bind(this);
 
   AsyncUtil.forEach(
-      this.originalEntries,
+      this.sourceEntries,
       function(callback, entry, index) {
         if (this.cancelRequested_) {
           errorCallback(new FileCopyManager.Error(
@@ -852,12 +853,13 @@ FileCopyManager.CopyTask.processEntry_ = function(
 /**
  * Task to move entries.
  *
+ * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  * @extends {FileCopyManager.Task}
  */
-FileCopyManager.MoveTask = function(targetDirEntry) {
-  FileCopyManager.Task.call(this, targetDirEntry);
+FileCopyManager.MoveTask = function(sourceEntries, targetDirEntry) {
+  FileCopyManager.Task.call(this, sourceEntries, targetDirEntry);
   // TODO(hidehiko): We should handle dispatching copy/move/zip more nicely.
   this.move = true;
 };
@@ -947,14 +949,16 @@ FileCopyManager.MoveTask.processEntry_ = function(
 /**
  * Task to create a zip archive.
  *
+ * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {DirectoryEntry} zipBaseDirEntry Base directory dealt as a root
  *     in ZIP archive.
  * @constructor
  * @extends {FileCopyManager.Task}
  */
-FileCopyManager.ZipTask = function(targetDirEntry, zipBaseDirEntry) {
-  FileCopyManager.Task.call(this, targetDirEntry);
+FileCopyManager.ZipTask = function(
+    sourceEntries, targetDirEntry, zipBaseDirEntry) {
+  FileCopyManager.Task.call(this, sourceEntries, targetDirEntry);
   this.zipBaseDirEntry = zipBaseDirEntry;
   this.zip = true;
 };
@@ -979,8 +983,8 @@ FileCopyManager.ZipTask.prototype.run = function(
     entryChangedCallback, progressCallback, successCallback, errorCallback) {
   // TODO(hidehiko): we should localize the name.
   var destName = 'Archive';
-  if (this.originalEntries.length == 1) {
-    var entryPath = this.originalEntries[0].fullPath;
+  if (this.sourceEntries.length == 1) {
+    var entryPath = this.sourceEntries[0].fullPath;
     var i = entryPath.lastIndexOf('/');
     var basename = (i < 0) ? entryPath : entryPath.substr(i + 1);
     i = basename.lastIndexOf('.');
@@ -990,6 +994,10 @@ FileCopyManager.ZipTask.prototype.run = function(
   fileOperationUtil.deduplicatePath(
       this.targetDirEntry, destName + '.zip',
       function(destPath) {
+        // TODO: per-entry zip progress update with accurate byte count.
+        // For now just set completedBytes to same value as totalBytes so
+        // that the progress bar is full.
+        this.completedBytes = this.totalBytes;
         progressCallback();
 
         fileOperationUtil.zipSelection(
@@ -1292,16 +1300,16 @@ FileCopyManager.prototype.queueCopy_ = function(
   var task;
   if (isMove) {
     if (this.isMovable(entries[0], targetDirEntry)) {
-      task = new FileCopyManager.MoveTask(targetDirEntry);
+      task = new FileCopyManager.MoveTask(entries, targetDirEntry);
     } else {
-      task = new FileCopyManager.CopyTask(targetDirEntry);
+      task = new FileCopyManager.CopyTask(entries, targetDirEntry);
       task.deleteAfterCopy = true;
     }
   } else {
-    task = new FileCopyManager.CopyTask(targetDirEntry);
+    task = new FileCopyManager.CopyTask(entries, targetDirEntry);
   }
 
-  task.setEntries(entries, function() {
+  task.initialize(function() {
     this.copyTasks_.push(task);
     this.maybeScheduleCloseBackgroundPage_();
     if (this.copyTasks_.length == 1) {
@@ -1501,13 +1509,10 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
  */
 FileCopyManager.prototype.zipSelection = function(dirEntry, selectionEntries) {
   var self = this;
-  var zipTask = new FileCopyManager.ZipTask(dirEntry, dirEntry);
+  var zipTask = new FileCopyManager.ZipTask(
+      selectionEntries, dirEntry, dirEntry);
   zipTask.zip = true;
-  zipTask.setEntries(selectionEntries, function() {
-    // TODO: per-entry zip progress update with accurate byte count.
-    // For now just set completedBytes to same value as totalBytes so that the
-    // progress bar is full.
-    zipTask.completedBytes = zipTask.totalBytes;
+  zipTask.initialize(function() {
     self.copyTasks_.push(zipTask);
     if (self.copyTasks_.length == 1) {
       // Assume self.cancelRequested_ == false.
