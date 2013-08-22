@@ -6,11 +6,14 @@
 
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_methods.h"
 
 namespace chromeos {
 namespace input_method {
+
+const char kLanguageDelimiter[] = ",";
 
 InputMethodWhitelist::InputMethodWhitelist() {
   for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
@@ -35,7 +38,8 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
     layouts.push_back(kInputMethods[i].xkb_layout_id);
 
     std::vector<std::string> languages;
-    languages.push_back(kInputMethods[i].language_code);
+    Tokenize(kInputMethods[i].language_code, kLanguageDelimiter, &languages);
+    DCHECK(!languages.empty());
 
     input_methods->push_back(InputMethodDescriptor(
         kInputMethods[i].input_method_id,

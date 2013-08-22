@@ -103,14 +103,6 @@ class InputMethodUtil {
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
 
-  // Returns extra language code list associated with |input_method_id|. If
-  // there is no associated langauge code, this function returns empty list.
-  std::vector<std::string> GetExtraLanguageCodesFromId(
-      const std::string& input_method_id) const;
-
-  // Returns all extra language code list.
-  std::vector<std::string> GetExtraLanguageCodeList() const;
-
   // Sets the list of component extension IMEs.
   void SetComponentExtensions(const InputMethodDescriptors& imes);
 

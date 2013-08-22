@@ -35,7 +35,6 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
     descriptors.push_back(GetDesc("xkb:fr::fra", "fr", "fr"));
     descriptors.push_back(GetDesc("xkb:be::fra", "be", "fr"));
     descriptors.push_back(GetDesc("xkb:is::ice", "is", "is"));
-    descriptors.push_back(GetDesc("mozc", "us", "ja"));
     return descriptors;
   }
 
@@ -62,7 +61,7 @@ TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
   scoped_ptr<ListValue> list(
       chromeos::options::CrosLanguageOptionsHandler::GetInputMethodList(
           descriptors));
-  ASSERT_EQ(5U, list->GetSize());
+  ASSERT_EQ(4U, list->GetSize());
 
   DictionaryValue* entry = NULL;
   DictionaryValue *language_code_set = NULL;
@@ -81,8 +80,6 @@ TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
   // (i.e. makes the test fragile).
   // EXPECT_EQ("English (USA) keyboard layout", display_name);
   ASSERT_TRUE(language_code_set->HasKey("en-US"));
-  ASSERT_TRUE(language_code_set->HasKey("id"));  // From kExtraLanguages.
-  ASSERT_TRUE(language_code_set->HasKey("fil"));  // From kExtraLanguages.
 
   ASSERT_TRUE(list->GetDictionary(1, &entry));
   ASSERT_TRUE(entry->GetString("id", &input_method_id));
@@ -110,15 +107,6 @@ TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
   // Commented out. See above.
   // EXPECT_EQ("Japanese input method (for US keyboard)", display_name);
   ASSERT_TRUE(language_code_set->HasKey("is"));
-
-  ASSERT_TRUE(list->GetDictionary(4, &entry));
-  ASSERT_TRUE(entry->GetString("id", &input_method_id));
-  ASSERT_TRUE(entry->GetString("displayName", &display_name));
-  ASSERT_TRUE(entry->GetDictionary("languageCodeSet", &language_code_set));
-  EXPECT_EQ("mozc", input_method_id);
-  // Commented out. See above.
-  // EXPECT_EQ("Japanese input method (for US keyboard)", display_name);
-  ASSERT_TRUE(language_code_set->HasKey("ja"));
 }
 
 TEST_F(CrosLanguageOptionsHandlerTest, GetUILanguageList) {

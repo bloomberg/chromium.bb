@@ -165,13 +165,6 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i) {
       languages->SetBoolean(descriptor.language_codes().at(i), true);
     }
-    // Check extra languages to see if there are languages associated with
-    // this input method. If these are present, add these.
-    const std::vector<std::string> extra_language_codes =
-        manager->GetInputMethodUtil()->GetExtraLanguageCodesFromId(
-            descriptor.id());
-    for (size_t j = 0; j < extra_language_codes.size(); ++j)
-      languages->SetBoolean(extra_language_codes[j], true);
     dictionary->Set("languageCodeSet", languages);
 
     input_method_list->Append(dictionary);
@@ -195,12 +188,6 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     for (size_t i = 0; i < languages.size(); ++i)
       language_codes.insert(languages[i]);
   }
-  // Collect the language codes from extra languages.
-  const std::vector<std::string> extra_language_codes =
-      input_method::InputMethodManager::Get()->GetInputMethodUtil()
-          ->GetExtraLanguageCodeList();
-  for (size_t i = 0; i < extra_language_codes.size(); ++i)
-    language_codes.insert(extra_language_codes[i]);
 
   // Map of display name -> {language code, native_display_name}.
   // In theory, we should be able to create a map that is sorted by
