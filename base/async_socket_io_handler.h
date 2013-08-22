@@ -1,14 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_ASYNC_SOCKET_IO_HANDLER_H_
-#define MEDIA_AUDIO_ASYNC_SOCKET_IO_HANDLER_H_
+#ifndef BASE_ASYNC_SOCKET_IO_HANDLER_H_
+#define BASE_ASYNC_SOCKET_IO_HANDLER_H_
 
 #include "base/message_loop/message_loop.h"
 #include "base/sync_socket.h"
 #include "base/threading/non_thread_safe.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
@@ -52,7 +51,7 @@ typedef base::MessageLoopForIO::Watcher MessageLoopIOHandler;
 //   char buffer_[kBufferSize];
 // };
 //
-class MEDIA_EXPORT AsyncSocketIoHandler
+class BASE_EXPORT AsyncSocketIoHandler
     : public NON_EXPORTED_BASE(base::NonThreadSafe),
       public NON_EXPORTED_BASE(MessageLoopIOHandler) {
  public:
@@ -110,4 +109,4 @@ class MEDIA_EXPORT AsyncSocketIoHandler
 
 }  // namespace media.
 
-#endif  // MEDIA_AUDIO_ASYNC_SOCKET_IO_HANDLER_H_
+#endif  // BASE_ASYNC_SOCKET_IO_HANDLER_H_

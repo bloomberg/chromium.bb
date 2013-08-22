@@ -60,9 +60,6 @@
         'audio/android/opensles_input.h',
         'audio/android/opensles_output.cc',
         'audio/android/opensles_output.h',
-        'audio/async_socket_io_handler.h',
-        'audio/async_socket_io_handler_posix.cc',
-        'audio/async_socket_io_handler_win.cc',
         'audio/audio_buffers_state.cc',
         'audio/audio_buffers_state.h',
         'audio/audio_device_name.cc',
@@ -910,7 +907,6 @@
         '../ui/ui.gyp:ui',
       ],
       'sources': [
-        'audio/async_socket_io_handler_unittest.cc',
         'audio/audio_input_controller_unittest.cc',
         'audio/audio_input_device_unittest.cc',
         'audio/audio_input_unittest.cc',
