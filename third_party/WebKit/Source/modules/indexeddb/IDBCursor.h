@@ -44,6 +44,7 @@ class IDBCallbacks;
 class IDBCursorBackendInterface;
 class IDBRequest;
 class ScriptExecutionContext;
+class SharedBuffer;
 
 class IDBCursor : public ScriptWrappable, public RefCounted<IDBCursor> {
 public:
@@ -62,7 +63,7 @@ public:
     const String& direction() const { return directionToString(m_direction); }
     ScriptValue key(ScriptExecutionContext*);
     ScriptValue primaryKey(ScriptExecutionContext*);
-    const ScriptValue& value() const { return m_value; }
+    ScriptValue value(ScriptExecutionContext*);
     IDBAny* source() const { return m_source.get(); }
 
     PassRefPtr<IDBRequest> update(ScriptState*, ScriptValue&, ExceptionState&);
@@ -72,11 +73,12 @@ public:
 
     bool isKeyDirty() const { return m_keyDirty; }
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }
+    bool isValueDirty() const { return m_valueDirty; }
 
     void continueFunction(PassRefPtr<IDBKey>, ExceptionState&);
     void postSuccessHandlerCallback();
     void close();
-    void setValueReady(DOMRequestState*, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, ScriptValue&);
+    void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     PassRefPtr<IDBKey> idbPrimaryKey() { return m_primaryKey; }
 
 protected:
@@ -97,9 +99,10 @@ private:
     bool m_gotValue;
     bool m_keyDirty;
     bool m_primaryKeyDirty;
+    bool m_valueDirty;
     RefPtr<IDBKey> m_key;
     RefPtr<IDBKey> m_primaryKey;
-    ScriptValue m_value;
+    RefPtr<SharedBuffer> m_value;
 };
 
 } // namespace WebCore

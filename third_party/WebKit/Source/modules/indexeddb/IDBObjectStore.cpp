@@ -323,7 +323,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event* event)
+    virtual void handleEvent(ScriptExecutionContext* context, Event* event)
     {
         ASSERT(event->type() == eventNames().successEvent);
         EventTarget* target = event->target();
@@ -340,7 +340,7 @@ private:
             cursor->continueFunction(static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
 
             RefPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
-            ScriptValue value = cursor->value();
+            ScriptValue value = cursor->value(context);
 
             IDBObjectStore::IndexKeys indexKeys;
             generateIndexKeysForValue(request->requestState(), m_indexMetadata, value, &indexKeys);

@@ -46,6 +46,7 @@ namespace WebCore {
 
 class ExceptionState;
 class IDBTransaction;
+class SharedBuffer;
 
 class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTarget, public ActiveDOMObject {
 public:
@@ -131,7 +132,7 @@ private:
     virtual EventTargetData* ensureEventTargetData();
 
     PassRefPtr<IDBCursor> getResultCursor();
-    void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, const ScriptValue&);
+    void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
 
     RefPtr<IDBAny> m_source;
     const IDBDatabaseBackendInterface::TaskType m_taskType;
@@ -146,7 +147,7 @@ private:
     RefPtr<IDBCursor> m_pendingCursor;
     RefPtr<IDBKey> m_cursorKey;
     RefPtr<IDBKey> m_cursorPrimaryKey;
-    ScriptValue m_cursorValue;
+    RefPtr<SharedBuffer> m_cursorValue;
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;
 

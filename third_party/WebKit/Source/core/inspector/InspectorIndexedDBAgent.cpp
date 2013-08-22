@@ -456,7 +456,7 @@ public:
         RefPtr<DataEntry> dataEntry = DataEntry::create()
             .setKey(m_injectedScript.wrapObject(idbCursor->key(context), String()))
             .setPrimaryKey(m_injectedScript.wrapObject(idbCursor->primaryKey(context), String()))
-            .setValue(m_injectedScript.wrapObject(idbCursor->value(), String()));
+            .setValue(m_injectedScript.wrapObject(idbCursor->value(context), String()));
         m_result->addItem(dataEntry);
 
     }

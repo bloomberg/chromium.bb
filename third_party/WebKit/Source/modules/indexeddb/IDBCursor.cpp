@@ -31,6 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
@@ -83,6 +84,7 @@ IDBCursor::IDBCursor(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::C
     , m_gotValue(false)
     , m_keyDirty(true)
     , m_primaryKeyDirty(true)
+    , m_valueDirty(true)
 {
     ASSERT(m_backend);
     ASSERT(m_request);
@@ -294,7 +296,28 @@ ScriptValue IDBCursor::primaryKey(ScriptExecutionContext* context)
     return idbKeyToScriptValue(&requestState, m_primaryKey);
 }
 
-void IDBCursor::setValueReady(DOMRequestState* state, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, ScriptValue& value)
+ScriptValue IDBCursor::value(ScriptExecutionContext* context)
+{
+    ASSERT(!isKeyCursor());
+
+    m_valueDirty = false;
+    DOMRequestState requestState(context);
+    ScriptValue value = deserializeIDBValueBuffer(&requestState, m_value);
+    RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
+    const IDBObjectStoreMetadata metadata = objectStore->metadata();
+    if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
+#ifndef NDEBUG
+        RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(&requestState, value, metadata.keyPath);
+        ASSERT(!expectedKey || expectedKey->isEqual(m_primaryKey.get()));
+#endif
+        bool injected = injectIDBKeyIntoScriptValue(&requestState, m_primaryKey, value, metadata.keyPath);
+        ASSERT_UNUSED(injected, injected);
+    }
+
+    return value;
+}
+
+void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
 {
     m_key = key;
     m_keyDirty = true;
@@ -303,19 +326,9 @@ void IDBCursor::setValueReady(DOMRequestState* state, PassRefPtr<IDBKey> key, Pa
     m_primaryKeyDirty = true;
 
     if (!isKeyCursor()) {
-        RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
-        const IDBObjectStoreMetadata metadata = objectStore->metadata();
-        if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
-#ifndef NDEBUG
-            RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, metadata.keyPath);
-            ASSERT(!expectedKey || expectedKey->isEqual(m_primaryKey.get()));
-#endif
-            bool injected = injectIDBKeyIntoScriptValue(m_request->requestState(), m_primaryKey, value, metadata.keyPath);
-            // FIXME: There is no way to report errors here. Move this into onSuccessWithContinuation so that we can abort the transaction there. See: https://bugs.webkit.org/show_bug.cgi?id=92278
-            ASSERT_UNUSED(injected, injected);
-        }
+        m_value = value;
+        m_valueDirty = true;
     }
-    m_value = value;
 
     m_gotValue = true;
 }

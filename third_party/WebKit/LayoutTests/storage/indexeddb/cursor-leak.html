@@ -32,9 +32,7 @@ function onOpen(evt)
         // V8 wrapper then there will be no leak.
         cursor.key.cursor = cursor;
         cursor.primaryKey.cursor = cursor;
-
-        // FIXME: Make this reference V8-only as well: crbug.com/273211
-        //cursor.value.cursor = cursor;
+        cursor.value.cursor = cursor;
 
         // IDB objects are not exposed, so hang a canary node off the cursor.
         cursor.node = document.createElement('span');
