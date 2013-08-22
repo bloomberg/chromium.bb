@@ -394,10 +394,6 @@ public:
     void scrollToXOffset(int x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(x, scrollYOffset()), clamp); }
     void scrollToYOffset(int y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(scrollXOffset(), y), clamp); }
 
-    int scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
-    int scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }
-    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
-
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
@@ -889,9 +885,6 @@ private:
     typedef unsigned UpdateLayerPositionsAfterScrollFlags;
     void updateLayerPositionsAfterScroll(RenderGeometryMap*, UpdateLayerPositionsAfterScrollFlags = NoFlag);
 
-    friend IntSize RenderBox::scrolledContentOffset() const;
-    IntSize scrolledContentOffset() const { return m_scrollOffset; }
-
     IntSize clampScrollOffset(const IntSize&) const;
 
     void setNextSibling(RenderLayer* next) { m_next = next; }
@@ -1011,6 +1004,12 @@ public:
 
     bool hasOverlayScrollbars() const;
 
+    int scrollXOffset() const;
+    int scrollYOffset() const;
+    friend IntSize RenderBox::scrolledContentOffset() const;
+    IntSize scrolledContentOffset() const;
+    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
+
 private:
     void invalidateScrollbarRect(Scrollbar*, const IntRect&);
     void invalidateScrollCornerRect(const IntRect&);
@@ -1023,10 +1022,8 @@ private:
     IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const;
     int scrollSize(ScrollbarOrientation) const;
     void setScrollOffset(const IntPoint&);
-    IntPoint scrollPosition() const;
     IntPoint minimumScrollPosition() const;
     IntPoint maximumScrollPosition() const;
-    IntRect visibleContentRect(ScrollableArea::VisibleContentRectIncludesScrollbars) const;
     int visibleHeight() const;
     int visibleWidth() const;
     IntSize contentsSize() const;
@@ -1207,9 +1204,6 @@ protected:
 
     // The layer's width/height
     IntSize m_layerSize;
-
-    // This is the (scroll) offset from scrollOrigin().
-    IntSize m_scrollOffset;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

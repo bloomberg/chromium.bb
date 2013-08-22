@@ -200,12 +200,6 @@ RenderLayer::~RenderLayer()
             frameView->removeResizerArea(this);
     }
 
-    if (!m_renderer->documentBeingDestroyed()) {
-        Node* node = m_renderer->node();
-        if (node && node->isElementNode())
-            toElement(node)->setSavedLayerScrollOffset(m_scrollOffset);
-    }
-
     if (!m_renderer->documentBeingDestroyed())
         compositor()->removeOutOfFlowPositionedLayer(this);
 
@@ -2176,9 +2170,9 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
             computeScrollDimensions();
     }
 
-    if (m_scrollOffset == toIntSize(newScrollOffset))
+    if (m_scrollableArea->scrollOffset() == toIntSize(newScrollOffset))
         return;
-    m_scrollOffset = toIntSize(newScrollOffset);
+    m_scrollableArea->setScrollOffset(toIntSize(newScrollOffset));
 
     Frame* frame = renderer()->frame();
     InspectorInstrumentation::willScrollLayer(renderer());
@@ -2526,11 +2520,6 @@ int RenderLayer::scrollSize(ScrollbarOrientation orientation) const
     return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
-IntPoint RenderLayer::scrollPosition() const
-{
-    return IntPoint(m_scrollOffset);
-}
-
 IntPoint RenderLayer::minimumScrollPosition() const
 {
     return -scrollOrigin();
@@ -2543,20 +2532,6 @@ IntPoint RenderLayer::maximumScrollPosition() const
         return -scrollOrigin();
 
     return -scrollOrigin() + enclosingIntRect(m_overflowRect).size() - enclosingIntRect(box->clientBoxRect()).size();
-}
-
-IntRect RenderLayer::visibleContentRect(ScrollableArea::VisibleContentRectIncludesScrollbars scrollbarInclusion) const
-{
-    int verticalScrollbarWidth = 0;
-    int horizontalScrollbarHeight = 0;
-    if (scrollbarInclusion == ScrollableArea::IncludeScrollbars) {
-        verticalScrollbarWidth = (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar()) ? verticalScrollbar()->width() : 0;
-        horizontalScrollbarHeight = (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar()) ? horizontalScrollbar()->height() : 0;
-    }
-
-    return IntRect(IntPoint(scrollXOffset(), scrollYOffset()),
-                   IntSize(max(0, m_layerSize.width() - verticalScrollbarWidth),
-                           max(0, m_layerSize.height() - horizontalScrollbarHeight)));
 }
 
 IntSize RenderLayer::overhangAmount() const
@@ -6394,6 +6369,21 @@ const IntPoint& RenderLayer::scrollOrigin() const
     }
 
     return m_scrollableArea->scrollOrigin();
+}
+
+int RenderLayer::scrollXOffset() const
+{
+    return m_scrollableArea->scrollXOffset();
+}
+
+int RenderLayer::scrollYOffset() const
+{
+    return m_scrollableArea->scrollYOffset();
+}
+
+IntSize RenderLayer::scrolledContentOffset() const
+{
+    return m_scrollableArea->scrollOffset();
 }
 
 bool RenderLayer::hasOverlayScrollbars() const

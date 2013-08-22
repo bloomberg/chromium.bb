@@ -57,13 +57,13 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer* layer)
 {
     ScrollableArea::setConstrainsScrollingToContentEdge(false);
 
-    Node* node = m_layer->renderer()->node();
+    Node* node = renderer()->node();
     if (node && node->isElementNode()) {
         // We save and restore only the scrollOffset as the other scroll values are recalculated.
         Element* element = toElement(node);
-        m_layer->m_scrollOffset = element->savedLayerScrollOffset();
-        if (!m_layer->m_scrollOffset.isZero())
-            scrollAnimator()->setCurrentPosition(FloatPoint(m_layer->m_scrollOffset.width(), m_layer->m_scrollOffset.height()));
+        m_scrollOffset = element->savedLayerScrollOffset();
+        if (!m_scrollOffset.isZero())
+            scrollAnimator()->setCurrentPosition(FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
         element->setSavedLayerScrollOffset(IntSize());
     }
 
@@ -71,16 +71,23 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer* layer)
 
 RenderLayerScrollableArea::~RenderLayerScrollableArea()
 {
-    if (Frame* frame = m_layer->renderer()->frame()) {
+    if (Frame* frame = renderer()->frame()) {
         if (FrameView* frameView = frame->view()) {
             frameView->removeScrollableArea(this);
         }
     }
 
-    if (m_layer->renderer()->frame() && m_layer->renderer()->frame()->page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = m_layer->renderer()->frame()->page()->scrollingCoordinator())
+    if (renderer()->frame() && renderer()->frame()->page()) {
+        if (ScrollingCoordinator* scrollingCoordinator = renderer()->frame()->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyScrollableArea(this);
     }
+
+    if (!renderer()->documentBeingDestroyed()) {
+        Node* node = renderer()->node();
+        if (node && node->isElementNode())
+            toElement(node)->setSavedLayerScrollOffset(m_scrollOffset);
+    }
+
 }
 
 Scrollbar* RenderLayerScrollableArea::horizontalScrollbar() const
@@ -185,7 +192,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& offset)
 
 IntPoint RenderLayerScrollableArea::scrollPosition() const
 {
-    return m_layer->scrollPosition();
+    return IntPoint(m_scrollOffset);
 }
 
 IntPoint RenderLayerScrollableArea::minimumScrollPosition() const
@@ -200,7 +207,15 @@ IntPoint RenderLayerScrollableArea::maximumScrollPosition() const
 
 IntRect RenderLayerScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
-    return m_layer->visibleContentRect(scrollbarInclusion);
+    int verticalScrollbarWidth = 0;
+    int horizontalScrollbarHeight = 0;
+    if (scrollbarInclusion == IncludeScrollbars) {
+        verticalScrollbarWidth = (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar()) ? verticalScrollbar()->width() : 0;
+        horizontalScrollbarHeight = (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar()) ? horizontalScrollbar()->height() : 0;
+    }
+
+    return IntRect(IntPoint(scrollXOffset(), scrollYOffset()),
+        IntSize(max(0, m_layer->size().width() - verticalScrollbarWidth), max(0, m_layer->size().height() - horizontalScrollbarHeight)));
 }
 
 int RenderLayerScrollableArea::visibleHeight() const
@@ -251,6 +266,13 @@ bool RenderLayerScrollableArea::userInputScrollable(ScrollbarOrientation orienta
 int RenderLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
 {
     return m_layer->pageStep(orientation);
+}
+
+RenderLayerModelObject* RenderLayerScrollableArea::renderer() const
+{
+    // Only RenderBoxes can have a scrollable area, however we allocate an
+    // RenderLayerScrollableArea for any renderers (FIXME).
+    return m_layer->renderer();
 }
 
 } // Namespace WebCore

@@ -54,6 +54,7 @@ enum ResizerHitTestType {
 };
 
 class RenderLayer;
+class RenderLayerModelObject;
 
 class RenderLayerScrollableArea FINAL : public ScrollableArea {
     // FIXME: Remove once the bits from RenderLayer have been moved here.
@@ -99,8 +100,20 @@ public:
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
     virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
 
+    int scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
+    int scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }
+
+    IntSize scrollOffset() const { return m_scrollOffset; }
+
 private:
+    void setScrollOffset(const IntSize& scrollOffset) { m_scrollOffset = scrollOffset; }
+
+    RenderLayerModelObject* renderer() const;
+
     RenderLayer* m_layer;
+
+    // This is the (scroll) offset from scrollOrigin().
+    IntSize m_scrollOffset;
 };
 
 } // Namespace WebCore
