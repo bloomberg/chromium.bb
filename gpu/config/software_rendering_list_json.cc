@@ -89,7 +89,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.5",
+  "version": "6.6",
   "entries": [
     {
       "id": 1,
@@ -363,21 +363,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x10de",
       "device_id": ["0x029e"],
-      "features": [
-        "all"
-      ]
-    },
-    {
-      "id": 19,
-      "description": "GPU acceleration is no longer supported in Leopard.",
-      "cr_bugs": [87157, 130495],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "=",
-          "number": "10.5"
-        }
-      },
       "features": [
         "all"
       ]
@@ -980,21 +965,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "version": {
           "op": "=",
           "number": "6.0"
-        }
-      },
-      "features": [
-        "force_compositing_mode"
-      ]
-    },
-    {
-      "id": 66,
-      "description": "Force compositing mode is unstable in MacOSX earlier than 10.8.",
-      "cr_bugs": [174101],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "number": "10.8"
         }
       },
       "features": [
