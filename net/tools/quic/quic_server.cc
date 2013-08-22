@@ -36,6 +36,7 @@ namespace tools {
 
 QuicServer::QuicServer()
     : port_(0),
+      fd_(-1),
       packets_dropped_(0),
       overflow_supported_(false),
       use_recvmmsg_(false),
@@ -47,6 +48,7 @@ QuicServer::QuicServer()
 
 QuicServer::QuicServer(const QuicConfig& config)
     : port_(0),
+      fd_(-1),
       packets_dropped_(0),
       overflow_supported_(false),
       use_recvmmsg_(false),
@@ -154,6 +156,9 @@ void QuicServer::Shutdown() {
   // Before we shut down the epoll server, give all active sessions a chance to
   // notify clients that they're closing.
   dispatcher_->Shutdown();
+
+  close(fd_);
+  fd_ = -1;
 }
 
 void QuicServer::OnEvent(int fd, EpollEvent* event) {

@@ -441,6 +441,39 @@ TEST_P(EndToEndTest, LargePost) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
+TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
+  // Send a request and then disconnect. This prepares the client to attempt
+  // a 0-RTT handshake for the next request.
+  ASSERT_TRUE(Initialize());
+
+  string body;
+  GenerateBody(&body, 20480);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+
+  client_->Disconnect();
+
+  // The 0-RTT handshake should succeed.
+  // TODO(wtc): figure out why this 0-RTT handshake takes 1 RTT.
+  client_->Connect();
+  ASSERT_TRUE(client_->client()->connected());
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+
+  client_->Disconnect();
+
+  // Restart the server so that the 0-RTT handshake will take 1 RTT.
+  StopServer();
+  StartServer();
+
+  client_->Connect();
+  ASSERT_TRUE(client_->client()->connected());
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
 // TODO(ianswett): Enable once b/9295090 is fixed.
 TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
   // FLAGS_fake_packet_loss_percentage = 30;

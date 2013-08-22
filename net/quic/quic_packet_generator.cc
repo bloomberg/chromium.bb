@@ -70,13 +70,17 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   StringPiece data,
                                                   QuicStreamOffset offset,
                                                   bool fin) {
+  IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
+  // The caller should have flushed pending frames before sending handshake
+  // messages.
+  DCHECK(handshake == NOT_HANDSHAKE || !HasPendingFrames());
   SendQueuedFrames();
 
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
   while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
-                             NOT_HANDSHAKE)) {
+                             handshake)) {
     QuicFrame frame;
     size_t bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);

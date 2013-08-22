@@ -794,7 +794,22 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
                                                 StringPiece data,
                                                 QuicStreamOffset offset,
                                                 bool fin) {
-  return packet_generator_.ConsumeData(id, data, offset, fin);
+  // To make reasoning about crypto frames easier, we don't combine them with
+  // any other frames in a single packet.
+  const bool crypto_frame_while_batch_mode =
+      id == kCryptoStreamId && packet_generator_.InBatchMode();
+
+  if (crypto_frame_while_batch_mode) {
+    // Flush pending frames to make room for a crypto frame.
+    packet_generator_.FinishBatchOperations();
+  }
+  QuicConsumedData consumed_data =
+      packet_generator_.ConsumeData(id, data, offset, fin);
+  if (crypto_frame_while_batch_mode) {
+    // Restore batch mode.
+    packet_generator_.StartBatchOperations();
+  }
+  return consumed_data;
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,
@@ -871,12 +886,21 @@ bool QuicConnection::DoWrite() {
   DCHECK(!write_blocked_);
   WriteQueuedPackets();
 
+  // We are postulating if we are not yet forward secure, the visitor may have
+  // handshake messages to send.
+  // TODO(jar): add a new visitor_ method that returns whether it has handshake
+  // messages to send, and call it and pass the return value to each CanWrite
+  // call.
+  const IsHandshake maybe_handshake =
+      encryption_level_ == ENCRYPTION_FORWARD_SECURE ? NOT_HANDSHAKE
+                                                     : IS_HANDSHAKE;
+
   // Sending queued packets may have caused the socket to become write blocked,
   // or the congestion manager to prohibit sending.  If we've sent everything
   // we had queued and we're still not blocked, let the visitor know it can
   // write more.
   if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
-               NOT_HANDSHAKE)) {
+               maybe_handshake)) {
     const bool in_batch_mode = packet_generator_.InBatchMode();
     if (!in_batch_mode) {
       packet_generator_.StartBatchOperations();
@@ -888,6 +912,9 @@ bool QuicConnection::DoWrite() {
 
     // After the visitor writes, it may have caused the socket to become write
     // blocked or the congestion manager to prohibit sending, so check again.
+    // TODO(jar): we need to pass NOT_HANDSHAKE instead of maybe_handshake to
+    // this CanWrite call to avoid getting into an infinite loop calling
+    // DoWrite.
     if (!write_blocked_ && !all_bytes_written &&
         CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                  NOT_HANDSHAKE)) {
@@ -1171,6 +1198,10 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   Retransmission retransmission = IsRetransmission(sequence_number) ?
       IS_RETRANSMISSION : NOT_RETRANSMISSION;
+  // TODO(wtc): use the same logic that is used in the packet generator.
+  // Namely, a packet is a handshake if it contains a stream frame for the
+  // crypto stream.  It should be possible to look at the RetransmittableFrames
+  // in the SerializedPacket to determine this for a packet.
   IsHandshake handshake = level == ENCRYPTION_NONE ? IS_HANDSHAKE
                                                    : NOT_HANDSHAKE;
 

@@ -52,6 +52,11 @@ const QuicPacketEntropyHash kTestEntropyHash = 76;
 
 const int kDefaultRetransmissionTimeMs = 500;
 
+// Used by TestConnection::SendStreamData3.
+const QuicStreamId kStreamId3 = 3;
+// Used by TestConnection::SendStreamData5.
+const QuicStreamId kStreamId5 = 5;
+
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
   explicit TestReceiveAlgorithm(QuicCongestionFeedbackFrame* feedback)
@@ -384,12 +389,21 @@ class TestConnection : public QuicConnection {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
 
-  QuicConsumedData SendStreamData1() {
-    return SendStreamData(1u, "food", 0, !kFin);
+  QuicConsumedData SendStreamData3() {
+    return SendStreamData(kStreamId3, "food", 0, !kFin);
   }
 
-  QuicConsumedData SendStreamData2() {
-    return SendStreamData(2u, "food2", 0, !kFin);
+  QuicConsumedData SendStreamData5() {
+    return SendStreamData(kStreamId5, "food2", 0, !kFin);
+  }
+
+  // The crypto stream has special semantics so that it is not blocked by a
+  // congestion window limitation, and also so that it gets put into a separate
+  // packet (so that it is easier to reason about a crypto frame not being
+  // split needlessly across packet boundaries).  As a result, we have separate
+  // tests for some cases for this stream.
+  QuicConsumedData SendCryptoStreamData() {
+    return SendStreamData(kCryptoStreamId, "chlo", 0, !kFin);
   }
 
   bool is_server() {
@@ -1218,9 +1232,9 @@ TEST_F(QuicConnectionTest, FramePacking) {
   connection_.SendAck();
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData1)),
+                                     &TestConnection::SendStreamData3)),
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData2)),
+                                     &TestConnection::SendStreamData5)),
       Return(true)));
 
   // Unblock the connection.
@@ -1237,8 +1251,70 @@ TEST_F(QuicConnectionTest, FramePacking) {
   EXPECT_EQ(3u, helper_->frame_count());
   EXPECT_TRUE(helper_->ack());
   EXPECT_EQ(2u, helper_->stream_frames()->size());
-  EXPECT_EQ(1u, (*helper_->stream_frames())[0].stream_id);
-  EXPECT_EQ(2u, (*helper_->stream_frames())[1].stream_id);
+  EXPECT_EQ(kStreamId3, (*helper_->stream_frames())[0].stream_id);
+  EXPECT_EQ(kStreamId5, (*helper_->stream_frames())[1].stream_id);
+}
+
+TEST_F(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
+  // Block the connection.
+  connection_.GetSendAlarm()->Set(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
+
+  // Send an ack and two stream frames (one non-crypto, then one crypto) in 2
+  // packets by queueing them.
+  connection_.SendAck();
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendStreamData3)),
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendCryptoStreamData)),
+      Return(true)));
+
+  // Unblock the connection.
+  connection_.GetSendAlarm()->Cancel();
+  EXPECT_CALL(*send_algorithm_,
+              SentPacket(_, _, _, NOT_RETRANSMISSION))
+      .Times(2);
+  connection_.OnCanWrite();
+  EXPECT_EQ(0u, connection_.NumQueuedPackets());
+  EXPECT_FALSE(connection_.HasQueuedData());
+
+  // Parse the last packet and ensure it's the crypto stream frame.
+  EXPECT_EQ(1u, helper_->frame_count());
+  EXPECT_TRUE(helper_->ack());
+  EXPECT_EQ(1u, helper_->stream_frames()->size());
+  EXPECT_EQ(kCryptoStreamId, (*helper_->stream_frames())[0].stream_id);
+}
+
+TEST_F(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
+  // Block the connection.
+  connection_.GetSendAlarm()->Set(
+      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
+
+  // Send an ack and two stream frames (one crypto, then one non-crypto) in 3
+  // packets by queueing them.
+  connection_.SendAck();
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendCryptoStreamData)),
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendStreamData3)),
+      Return(true)));
+
+  // Unblock the connection.
+  connection_.GetSendAlarm()->Cancel();
+  EXPECT_CALL(*send_algorithm_,
+              SentPacket(_, _, _, NOT_RETRANSMISSION))
+      .Times(3);
+  connection_.OnCanWrite();
+  EXPECT_EQ(0u, connection_.NumQueuedPackets());
+  EXPECT_FALSE(connection_.HasQueuedData());
+
+  // Parse the last packet and ensure it's the stream frame from stream 3.
+  EXPECT_EQ(1u, helper_->frame_count());
+  EXPECT_TRUE(helper_->ack());
+  EXPECT_EQ(1u, helper_->stream_frames()->size());
+  EXPECT_EQ(kStreamId3, (*helper_->stream_frames())[0].stream_id);
 }
 
 TEST_F(QuicConnectionTest, FramePackingFEC) {
@@ -1252,9 +1328,9 @@ TEST_F(QuicConnectionTest, FramePackingFEC) {
   connection_.SendAck();
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData1)),
+                                     &TestConnection::SendStreamData3)),
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData2)),
+                                     &TestConnection::SendStreamData5)),
       Return(true)));
 
   // Unblock the connection.
@@ -1274,9 +1350,9 @@ TEST_F(QuicConnectionTest, OnCanWrite) {
   // Visitor's OnCanWill send data, but will return false.
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData1)),
+                                     &TestConnection::SendStreamData3)),
       IgnoreResult(InvokeWithoutArgs(&connection_,
-                                     &TestConnection::SendStreamData2)),
+                                     &TestConnection::SendStreamData5)),
       Return(false)));
 
   EXPECT_CALL(*send_algorithm_,
@@ -1289,8 +1365,8 @@ TEST_F(QuicConnectionTest, OnCanWrite) {
   // two different streams.
   EXPECT_EQ(2u, helper_->frame_count());
   EXPECT_EQ(2u, helper_->stream_frames()->size());
-  EXPECT_EQ(1u, (*helper_->stream_frames())[0].stream_id);
-  EXPECT_EQ(2u, (*helper_->stream_frames())[1].stream_id);
+  EXPECT_EQ(kStreamId3, (*helper_->stream_frames())[0].stream_id);
+  EXPECT_EQ(kStreamId5, (*helper_->stream_frames())[1].stream_id);
 }
 
 TEST_F(QuicConnectionTest, RetransmitOnNack) {
