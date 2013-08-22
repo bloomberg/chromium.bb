@@ -168,6 +168,8 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 }
 
 void SimpleWebViewDialog::Init() {
+  toolbar_model_.reset(new ToolbarModelImpl(this));
+
   set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
   // Back/Forward buttons.
@@ -189,11 +191,9 @@ void SimpleWebViewDialog::Init() {
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
-  toolbar_model_.reset(new ToolbarModelImpl(this));
-
   // Location bar.
   location_bar_ = new LocationBarView(NULL, profile_, command_updater_.get(),
-                                      toolbar_model_.get(), this, true);
+                                      this, true);
 
   // Reload button.
   reload_ = new ReloadButton(location_bar_, command_updater_.get());
@@ -284,6 +284,14 @@ void SimpleWebViewDialog::LoadingStateChanged(WebContents* source) {
 
 WebContents* SimpleWebViewDialog::GetWebContents() const {
   return NULL;
+}
+
+ToolbarModel* SimpleWebViewDialog::GetToolbarModel() {
+  return toolbar_model_.get();
+}
+
+const ToolbarModel* SimpleWebViewDialog::GetToolbarModel() const {
+  return toolbar_model_.get();
 }
 
 InstantController* SimpleWebViewDialog::GetInstant() {

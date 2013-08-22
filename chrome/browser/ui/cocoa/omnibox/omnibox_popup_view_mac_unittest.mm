@@ -332,7 +332,7 @@ TEST_F(OmniboxPopupViewMacTest, UpdatePopupAppearance) {
       [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 100, 20)]);
   [[test_window() contentView] addSubview:field];
 
-  OmniboxViewMac view(NULL, NULL, profile(), NULL, NULL);
+  OmniboxViewMac view(NULL, profile(), NULL, NULL);
   MockOmniboxPopupViewMac popup_view(&view, view.model(), field);
 
   popup_view.UpdatePopupAppearance();

@@ -16,10 +16,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
-ZoomView::ZoomView(ToolbarModel* toolbar_model,
-                   LocationBarView::Delegate* location_bar_delegate)
-    : toolbar_model_(toolbar_model),
-      location_bar_delegate_(location_bar_delegate) {
+ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
+    : location_bar_delegate_(location_bar_delegate) {
   set_accessibility_focusable(true);
   Update(NULL);
   LocationBarView::InitTouchableLocationBarChildView(this);
@@ -30,7 +28,7 @@ ZoomView::~ZoomView() {
 
 void ZoomView::Update(ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
-      toolbar_model_->input_in_progress()) {
+      location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
     SetVisible(false);
     ZoomBubbleView::CloseBubble();
     return;

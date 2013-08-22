@@ -9,10 +9,8 @@
 #include "ui/gfx/image/image.h"
 
 GeneratedCreditCardView::GeneratedCreditCardView(
-    ToolbarModel* toolbar_model,
     LocationBarView::Delegate* delegate)
-    : toolbar_model_(toolbar_model),
-      delegate_(delegate) {
+    : delegate_(delegate) {
   Update();
 }
 
@@ -45,7 +43,7 @@ void GeneratedCreditCardView::OnClick() {
 autofill::GeneratedCreditCardBubbleController* GeneratedCreditCardView::
     GetController() const {
   content::WebContents* wc = delegate_->GetWebContents();
-  if (!wc || toolbar_model_->input_in_progress())
+  if (!wc || delegate_->GetToolbarModel()->input_in_progress())
     return NULL;
 
   return autofill::GeneratedCreditCardBubbleController::FromWebContents(wc);

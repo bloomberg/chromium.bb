@@ -239,6 +239,11 @@ class Browser : public TabStripModelObserver,
   BrowserWindow* window() const { return window_; }
   ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
   const ToolbarModel* toolbar_model() const { return toolbar_model_.get(); }
+#if defined(UNIT_TEST)
+  void swap_toolbar_models(scoped_ptr<ToolbarModel>* toolbar_model) {
+    toolbar_model->swap(toolbar_model_);
+  }
+#endif
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();

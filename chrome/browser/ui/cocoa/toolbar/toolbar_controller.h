@@ -27,7 +27,6 @@ class LocationBarViewMac;
 class Profile;
 @class ReloadButton;
 @class ToolbarButton;
-class ToolbarModel;
 @class WrenchMenuController;
 
 namespace content {
@@ -58,7 +57,6 @@ class NotificationBridge;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
 
  @private
-  ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window
   Profile* profile_;  // weak, one per window
   Browser* browser_;  // weak, one per window
@@ -98,12 +96,11 @@ class NotificationBridge;
 
 // Initialize the toolbar and register for command updates. The profile is
 // needed for initializing the location bar. The browser is needed for
-// initializing the back/forward menus.
-- (id)initWithModel:(ToolbarModel*)model
-           commands:(CommandUpdater*)commands
-            profile:(Profile*)profile
-            browser:(Browser*)browser
-     resizeDelegate:(id<ViewResizer>)resizeDelegate;
+// the toolbar model and back/forward menus.
+- (id)initWithCommands:(CommandUpdater*)commands
+               profile:(Profile*)profile
+               browser:(Browser*)browser
+        resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Get the C++ bridge object representing the location bar for this tab.
 - (LocationBarViewMac*)locationBarBridge;
@@ -168,12 +165,11 @@ class NotificationBridge;
 @interface ToolbarController(ProtectedMethods)
 // Designated initializer which takes a nib name in order to allow subclasses
 // to load a different nib file.
-- (id)initWithModel:(ToolbarModel*)model
-           commands:(CommandUpdater*)commands
-            profile:(Profile*)profile
-            browser:(Browser*)browser
-     resizeDelegate:(id<ViewResizer>)resizeDelegate
-       nibFileNamed:(NSString*)nibName;
+- (id)initWithCommands:(CommandUpdater*)commands
+               profile:(Profile*)profile
+               browser:(Browser*)browser
+        resizeDelegate:(id<ViewResizer>)resizeDelegate
+          nibFileNamed:(NSString*)nibName;
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.

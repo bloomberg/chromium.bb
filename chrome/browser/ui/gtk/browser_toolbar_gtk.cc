@@ -98,7 +98,6 @@ void SetWidgetHeightRequest(GtkWidget* widget, gpointer user_data) {
 BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
     : toolbar_(NULL),
       location_bar_(new LocationBarViewGtk(browser)),
-      model_(browser->toolbar_model()),
       is_wrench_menu_model_valid_(true),
       browser_(browser),
       window_(window),

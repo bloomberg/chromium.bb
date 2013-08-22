@@ -99,14 +99,13 @@ bool IsOmniboxAutoCompletionForImeEnabled() {
 const char OmniboxViewViews::kViewClassName[] = "OmniboxViewViews";
 
 OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
-                                   ToolbarModel* toolbar_model,
                                    Profile* profile,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list,
                                    int font_y_offset)
-    : OmniboxView(profile, controller, toolbar_model, command_updater),
+    : OmniboxView(profile, controller, command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
@@ -203,7 +202,8 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // query is common enough that we do click-to-place-cursor).
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_ &&
-      !toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
+      !controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+          false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);
@@ -366,10 +366,10 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
 
 void OmniboxViewViews::Update(const content::WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
-  bool visibly_changed_permanent_text =
-      model()->UpdatePermanentText(toolbar_model()->GetText(true));
+  bool visibly_changed_permanent_text = model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true));
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model()->GetSecurityLevel(false);
+        controller()->GetToolbarModel()->GetSecurityLevel(false);
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -778,9 +778,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO)
     return model()->CanPasteAndGo(GetClipboardText());
-  if (command_id == IDC_COPY_URL)
-    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
-  return command_updater()->IsCommandEnabled(command_id);
+  if (command_id != IDC_COPY_URL)
+    return command_updater()->IsCommandEnabled(command_id);
+  return controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      false);
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
@@ -899,7 +900,8 @@ string16 OmniboxViewViews::GetSelectedText() const {
 }
 
 void OmniboxViewViews::CopyURL() {
-  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
+  DoCopyURL(controller()->GetToolbarModel()->GetURL(),
+            controller()->GetToolbarModel()->GetText(false));
 }
 
 void OmniboxViewViews::OnPaste() {

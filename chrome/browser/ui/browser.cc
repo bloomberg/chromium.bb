@@ -368,8 +368,7 @@ Browser::Browser(const CreateParams& params)
 
   toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get()));
   search_model_.reset(new SearchModel());
-  search_delegate_.reset(
-      new SearchDelegate(search_model_.get(), toolbar_model_.get()));
+  search_delegate_.reset(new SearchDelegate(search_model_.get()));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));

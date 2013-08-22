@@ -133,11 +133,10 @@ NSColor* OmniboxViewMac::SuggestTextColor() {
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
-                               ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
-    : OmniboxView(profile, controller, toolbar_model, command_updater),
+    : OmniboxView(profile, controller, command_updater),
       popup_view_(new OmniboxPopupViewMac(this, model(), field)),
       field_(field),
       saved_temporary_selection_(NSMakeRange(0, 0)),
@@ -190,8 +189,8 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
   // that the field isn't always updated correctly.  Figure out why
   // this is.  Maybe this method should be refactored into more
   // specific cases.
-  bool user_visible =
-      model()->UpdatePermanentText(toolbar_model()->GetText(true));
+  bool user_visible = model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true));
 
   if (tab_for_state_restoring) {
     RevertAll();
@@ -225,7 +224,7 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
     // TODO(shess): This corresponds to _win and _gtk, except those
     // guard it with a test for whether the security level changed.
     // But AFAICT, that can only change if the text changed, and that
-    // code compares the toolbar_model() security level with the local
+    // code compares the toolbar model security level with the local
     // security level.  Dig in and figure out why this isn't a no-op
     // that should go away.
     EmphasizeURLComponents();
@@ -465,7 +464,7 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model()->GetSecurityLevel(false);
+      controller()->GetToolbarModel()->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
@@ -818,8 +817,8 @@ void OmniboxViewMac::CopyURLToPasteboard(NSPasteboard* pb) {
   DCHECK(CanCopy());
   DCHECK(ShouldEnableCopyURL());
 
-  string16 text = toolbar_model()->GetText(false);
-  GURL url = toolbar_model()->GetURL();
+  string16 text = controller()->GetToolbarModel()->GetText(false);
+  GURL url = controller()->GetToolbarModel()->GetURL();
 
   NSString* nstext = base::SysUTF16ToNSString(text);
   [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -866,7 +865,8 @@ void OmniboxViewMac::OnPaste() {
 // platforms. Some refactor might be necessary to simplify this. Or at least
 // this method could call the OmniboxView version.
 bool OmniboxViewMac::ShouldEnableCopyURL() {
-  return toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
+  return controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      false);
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {

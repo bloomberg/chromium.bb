@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -59,9 +58,6 @@ class OmniboxView {
 
   CommandUpdater* command_updater() { return command_updater_; }
   const CommandUpdater* command_updater() const { return command_updater_; }
-
-  ToolbarModel* toolbar_model() { return toolbar_model_; }
-  const ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().
@@ -251,7 +247,6 @@ class OmniboxView {
  protected:
   OmniboxView(Profile* profile,
               OmniboxEditController* controller,
-              ToolbarModel* toolbar_model,
               CommandUpdater* command_updater);
 
   // Internally invoked whenever the text changes in some way.
@@ -266,6 +261,7 @@ class OmniboxView {
   virtual void EmphasizeURLComponents() = 0;
 
   OmniboxEditController* controller() { return controller_; }
+  const OmniboxEditController* controller() const { return controller_; }
 
  private:
   friend class OmniboxViewMacTest;
@@ -273,7 +269,6 @@ class OmniboxView {
   // |model_| can be NULL in tests.
   scoped_ptr<OmniboxEditModel> model_;
   OmniboxEditController* controller_;
-  ToolbarModel* toolbar_model_;
 
   // The object that handles additional command functionality exposed on the
   // edit, such as invoking the keyword editor.

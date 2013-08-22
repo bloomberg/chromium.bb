@@ -12,7 +12,6 @@ class OmniboxView;
 class OmniboxViewViews;
 class OmniboxViewWin;
 class Profile;
-class ToolbarModel;
 
 namespace gfx {
 class FontList;
@@ -30,7 +29,6 @@ OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view);
 
 // Creates an OmniboxView of the appropriate type; Views or Win.
 OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
-                               ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,

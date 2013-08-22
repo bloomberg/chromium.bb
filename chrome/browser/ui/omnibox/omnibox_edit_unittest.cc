@@ -21,8 +21,8 @@ namespace {
 
 class TestingOmniboxView : public OmniboxView {
  public:
-  explicit TestingOmniboxView(ToolbarModel* model)
-      : OmniboxView(NULL, NULL, model, NULL) {}
+  explicit TestingOmniboxView(OmniboxEditController* controller)
+      : OmniboxView(NULL, controller, NULL) {}
 
   virtual void SaveStateToTab(WebContents* tab) OVERRIDE {}
   virtual void Update(const WebContents* tab_for_state_restoring) OVERRIDE {}
@@ -88,7 +88,8 @@ class TestingOmniboxView : public OmniboxView {
 
 class TestingOmniboxEditController : public OmniboxEditController {
  public:
-  TestingOmniboxEditController() {}
+  explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
+      : toolbar_model_(toolbar_model) {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     content::PageTransition transition,
@@ -104,8 +105,14 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
+  virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }
+  virtual const ToolbarModel* GetToolbarModel() const OVERRIDE {
+    return toolbar_model_;
+  }
 
  private:
+  ToolbarModel* toolbar_model_;
+
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
@@ -173,8 +180,8 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
     { "www.google.com/webhp?", 0, true, "hello world", "hello world", false,
       "", true },
   };
-  TestingOmniboxView view(toolbar_model());
-  TestingOmniboxEditController controller;
+  TestingOmniboxEditController controller(toolbar_model());
+  TestingOmniboxView view(&controller);
   TestingProfile profile;
   // NOTE: The TemplateURLService must be created before the
   // AutocompleteClassifier so that the SearchProvider gets a non-NULL

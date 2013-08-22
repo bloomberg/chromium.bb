@@ -7,8 +7,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
-SearchDelegate::SearchDelegate(SearchModel* browser_search_model,
-                               ToolbarModel* toolbar_model)
+SearchDelegate::SearchDelegate(SearchModel* browser_search_model)
     : browser_model_(browser_search_model),
       tab_model_() {
 }

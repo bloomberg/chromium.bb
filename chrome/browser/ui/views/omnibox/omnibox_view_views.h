@@ -42,7 +42,6 @@ class OmniboxViewViews
   static const char kViewClassName[];
 
   OmniboxViewViews(OmniboxEditController* controller,
-                   ToolbarModel* toolbar_model,
                    Profile* profile,
                    CommandUpdater* command_updater,
                    bool popup_window_mode,

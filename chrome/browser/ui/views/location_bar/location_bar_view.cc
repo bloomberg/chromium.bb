@@ -164,13 +164,11 @@ const char LocationBarView::kViewClassName[] = "LocationBarView";
 LocationBarView::LocationBarView(Browser* browser,
                                  Profile* profile,
                                  CommandUpdater* command_updater,
-                                 ToolbarModel* model,
                                  Delegate* delegate,
                                  bool is_popup_mode)
     : browser_(browser),
       profile_(profile),
       command_updater_(command_updater),
-      model_(model),
       delegate_(delegate),
       disposition_(CURRENT_TAB),
       transition_(content::PageTransitionFromInt(
@@ -280,8 +278,9 @@ void LocationBarView::Init() {
   AddChildView(ev_bubble_view_);
 
   // Initialize the Omnibox view.
-  location_entry_.reset(CreateOmniboxView(this, model_, profile_,
-      command_updater_, is_popup_mode_, this, font_list, font_y_offset));
+  location_entry_.reset(CreateOmniboxView(this, profile_, command_updater_,
+                                          is_popup_mode_, this, font_list,
+                                          font_y_offset));
   SetLocationEntryFocusable(true);
   location_entry_view_ = location_entry_->AddToView(this);
 
@@ -361,10 +360,10 @@ void LocationBarView::Init() {
     AddChildView(content_blocked_view);
   }
 
-  generated_credit_card_view_ = new GeneratedCreditCardView(model_, delegate_);
+  generated_credit_card_view_ = new GeneratedCreditCardView(delegate_);
   AddChildView(generated_credit_card_view_);
 
-  zoom_view_ = new ZoomView(model_, delegate_);
+  zoom_view_ = new ZoomView(delegate_);
   zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
   AddChildView(zoom_view_);
 
@@ -497,7 +496,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   mic_search_view_->SetVisible(
-      !model_->input_in_progress() && browser_ &&
+      !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
   RefreshContentSettingViews();
   generated_credit_card_view_->Update();
@@ -506,10 +505,10 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshPageActionViews();
   RefreshScriptBubble();
   open_pdf_in_reader_view_->Update(
-      model_->input_in_progress() ? NULL : GetWebContents());
+      GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
 
   bool star_enabled = browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
-      star_view_ && !model_->input_in_progress() &&
+      star_view_ && !GetToolbarModel()->input_in_progress() &&
       edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
@@ -558,7 +557,7 @@ void LocationBarView::InvalidatePageActions() {
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
-      model_->input_in_progress() ? NULL : GetWebContents());
+      GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
   Layout();
   SchedulePaint();
 }
@@ -597,7 +596,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(contents, model_->GetURL());
+  page_action_view->UpdateVisibility(contents, GetToolbarModel()->GetURL());
   Layout();
   SchedulePaint();
 }
@@ -739,8 +738,9 @@ void LocationBarView::Layout() {
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
-  } else if (model_->GetSecurityLevel(false) == ToolbarModel::EV_SECURE) {
-    ev_bubble_view_->SetLabel(model_->GetEVCertName());
+  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
+      ToolbarModel::EV_SECURE) {
+    ev_bubble_view_->SetLabel(GetToolbarModel()->GetEVCertName());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, false,
@@ -1111,6 +1111,14 @@ WebContents* LocationBarView::GetWebContents() const {
   return delegate_->GetWebContents();
 }
 
+ToolbarModel* LocationBarView::GetToolbarModel() {
+  return delegate_->GetToolbarModel();
+}
+
+const ToolbarModel* LocationBarView::GetToolbarModel() const {
+  return delegate_->GetToolbarModel();
+}
+
 // static
 int LocationBarView::GetBuiltInHorizontalPaddingForChildViews() {
   return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
@@ -1126,7 +1134,8 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(model_->input_in_progress() ? NULL : GetWebContents());
+    (*i)->Update(GetToolbarModel()->input_in_progress() ?
+        NULL : GetWebContents());
   }
 }
 
@@ -1190,8 +1199,8 @@ void LocationBarView::RefreshPageActionViews() {
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
-      (*i)->UpdateVisibility(model_->input_in_progress() ? NULL : contents,
-                             url);
+      (*i)->UpdateVisibility(
+          GetToolbarModel()->input_in_progress() ? NULL : contents, url);
 
       // Check if the visibility of the action changed and notify if it did.
       ExtensionAction* action = (*i)->image_view()->page_action();
@@ -1263,7 +1272,7 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
 
   const int32 tab_id = SessionID::IdForTab(web_contents);
   const ToolbarModel::SecurityLevel security_level =
-      model_->GetSecurityLevel(false);
+      GetToolbarModel()->GetSecurityLevel(false);
   const SkColor text_color = GetColor(security_level, TEXT);
   const SkColor background_color = GetColor(security_level, BACKGROUND);
 
@@ -1530,7 +1539,7 @@ void LocationBarView::Observe(int type,
 
 void LocationBarView::ModelChanged(const SearchModel::State& old_state,
                                    const SearchModel::State& new_state) {
-  const bool visible = !model_->input_in_progress() &&
+  const bool visible = !GetToolbarModel()->input_in_progress() &&
       new_state.voice_search_supported;
   if (mic_search_view_->visible() != visible) {
     mic_search_view_->SetVisible(visible);

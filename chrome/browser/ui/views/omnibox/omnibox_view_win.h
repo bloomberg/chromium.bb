@@ -59,7 +59,6 @@ class OmniboxViewWin
   DECLARE_WND_SUPERCLASS(L"Chrome_OmniboxView", MSFTEDIT_CLASS);
 
   OmniboxViewWin(OmniboxEditController* controller,
-                 ToolbarModel* toolbar_model,
                  LocationBarView* parent_view,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,

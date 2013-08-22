@@ -28,7 +28,6 @@ OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
 }
 
 OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
-                               ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
@@ -37,14 +36,13 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                int font_y_offset) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (!views::Textfield::IsViewsTextfieldEnabled()) {
-    return new OmniboxViewWin(
-        controller, toolbar_model, location_bar, command_updater,
-        popup_window_mode, font_list, font_y_offset);
+    return new OmniboxViewWin(controller, location_bar, command_updater,
+                              popup_window_mode, font_list, font_y_offset);
   }
 #endif
   OmniboxViewViews* omnibox = new OmniboxViewViews(
-      controller, toolbar_model, profile, command_updater, popup_window_mode,
-      location_bar, font_list, font_y_offset);
+      controller, profile, command_updater, popup_window_mode, location_bar,
+      font_list, font_y_offset);
   omnibox->Init();
   return omnibox;
 }

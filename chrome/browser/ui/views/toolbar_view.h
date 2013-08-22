@@ -94,6 +94,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Overridden from LocationBarView::Delegate:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual ToolbarModel* GetToolbarModel() OVERRIDE;
+  virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual views::Widget* CreateViewsBubble(
       views::BubbleDelegateView* bubble_delegate) OVERRIDE;
@@ -194,9 +196,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void OnShowHomeButtonChanged();
 
   int content_shadow_height() const;
-
-  // The model that contains the security level, text, icon to display...
-  ToolbarModel* model_;
 
   // Controls
   views::ImageButton* back_;

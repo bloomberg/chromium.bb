@@ -82,11 +82,9 @@ const static int kFirstRunBubbleYOffset = 1;
 LocationBarViewMac::LocationBarViewMac(
     AutocompleteTextField* field,
     CommandUpdater* command_updater,
-    ToolbarModel* toolbar_model,
     Profile* profile,
     Browser* browser)
-    : omnibox_view_(new OmniboxViewMac(this, toolbar_model, profile,
-                                       command_updater, field)),
+    : omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
@@ -100,7 +98,6 @@ LocationBarViewMac::LocationBarViewMac(
       mic_search_decoration_(new MicSearchDecoration(command_updater)),
       profile_(profile),
       browser_(browser),
-      toolbar_model_(toolbar_model),
       transition_(content::PageTransitionFromInt(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
@@ -300,7 +297,7 @@ void LocationBarViewMac::OnSelectionBoundsChanged() {
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  toolbar_model_->set_input_in_progress(in_progress);
+  GetToolbarModel()->set_input_in_progress(in_progress);
   Update(NULL);
 }
 
@@ -360,6 +357,14 @@ WebContents* LocationBarViewMac::GetWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+ToolbarModel* LocationBarViewMac::GetToolbarModel() {
+  return browser_->toolbar_model();
+}
+
+const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
+  return browser_->toolbar_model();
+}
+
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
     ExtensionAction* page_action) {
   DCHECK(page_action);
@@ -388,7 +393,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
     return;
 
   decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents, toolbar_model_->GetURL());
+  decoration->UpdateVisibility(contents, GetToolbarModel()->GetURL());
 }
 
 NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
@@ -581,7 +586,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 }
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
-  const bool input_in_progress = toolbar_model_->input_in_progress();
+  const bool input_in_progress = GetToolbarModel()->input_in_progress();
   WebContents* web_contents = input_in_progress ?
       NULL : browser_->tab_strip_model()->GetActiveWebContents();
   bool icons_updated = false;
@@ -626,10 +631,10 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     }
   }
 
-  GURL url = toolbar_model_->GetURL();
+  GURL url = GetToolbarModel()->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->input_in_progress() ? NULL : web_contents, url);
+        GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
   }
 }
 
@@ -682,13 +687,13 @@ void LocationBarViewMac::Layout() {
     selected_keyword_decoration_->SetVisible(true);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
-  } else if (toolbar_model_->GetSecurityLevel(false) ==
+  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
              ToolbarModel::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.
     location_icon_decoration_->SetVisible(false);
     ev_bubble_decoration_->SetVisible(true);
 
-    string16 label(toolbar_model_->GetEVCertName());
+    string16 label(GetToolbarModel()->GetEVCertName());
     ev_bubble_decoration_->SetFullLabel(base::SysUTF16ToNSString(label));
   } else if (!keyword.empty() && is_keyword_hint) {
     keyword_hint_decoration_->SetKeyword(short_name,
@@ -714,7 +719,7 @@ void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
 bool LocationBarViewMac::IsStarEnabled() {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&
-         !toolbar_model_->input_in_progress() &&
+         !GetToolbarModel()->input_in_progress() &&
          edit_bookmarks_enabled_.GetValue();
 }
 
@@ -731,7 +736,7 @@ void LocationBarViewMac::UpdateStarDecorationVisibility() {
 }
 
 bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
-  bool is_visible = !toolbar_model_->input_in_progress() &&
+  bool is_visible = !GetToolbarModel()->input_in_progress() &&
                     browser_->search_model()->voice_search_supported();
   if (mic_search_decoration_->IsVisible() == is_visible)
     return false;

@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 
-class ToolbarModel;
-
 namespace content {
 class WebContents;
 }
@@ -25,8 +23,7 @@ class SearchModel;
 // Browser-level model.
 class SearchDelegate : public SearchModelObserver {
  public:
-  SearchDelegate(SearchModel* browser_search_model,
-                 ToolbarModel* toolbar_model);
+  explicit SearchDelegate(SearchModel* browser_search_model);
   virtual ~SearchDelegate();
 
   // Overrides for SearchModelObserver:

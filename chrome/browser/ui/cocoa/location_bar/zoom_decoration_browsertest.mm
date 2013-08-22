@@ -21,7 +21,6 @@ class ZoomDecorationTest : public InProcessBrowserTest {
  protected:
   ZoomDecorationTest()
       : InProcessBrowserTest(),
-        old_toolbar_model_(NULL),
         should_quit_on_zoom_(false),
         zoom_callback_(base::Bind(&ZoomDecorationTest::OnZoomChanged,
                                   base::Unretained(this))) {
@@ -30,15 +29,11 @@ class ZoomDecorationTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     content::HostZoomMap::GetForBrowserContext(
         browser()->profile())->AddZoomLevelChangedCallback(zoom_callback_);
-
-    old_toolbar_model_ = GetLocationBar()->toolbar_model_;
-    GetLocationBar()->toolbar_model_ = &test_toolbar_model_;
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     content::HostZoomMap::GetForBrowserContext(
         browser()->profile())->RemoveZoomLevelChangedCallback(zoom_callback_);
-    GetLocationBar()->toolbar_model_ = old_toolbar_model_;
   }
 
   LocationBarViewMac* GetLocationBar() const {
@@ -76,10 +71,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
     }
   }
 
-  TestToolbarModel test_toolbar_model_;
-
  private:
-  ToolbarModel* old_toolbar_model_;
   bool should_quit_on_zoom_;
   content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
 
@@ -115,7 +107,9 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   Zoom(content::PAGE_ZOOM_IN);
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
-  test_toolbar_model_.set_input_in_progress(true);
+  scoped_ptr<ToolbarModel> toolbar_model(new TestToolbarModel);
+  toolbar_model->set_input_in_progress(true);
+  browser()->swap_toolbar_models(&toolbar_model);
   GetLocationBar()->ZoomChangedForActiveTab(false);
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }

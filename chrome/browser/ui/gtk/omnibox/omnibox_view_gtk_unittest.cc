@@ -33,6 +33,8 @@ class OmniboxEditControllerMock : public OmniboxEditController {
   MOCK_CONST_METHOD0(GetTitle, string16());
   MOCK_METHOD0(GetInstant, InstantController*());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetToolbarModel, ToolbarModel*());
+  MOCK_CONST_METHOD0(GetToolbarModel, ToolbarModel*());
 
   virtual ~OmniboxEditControllerMock() {}
 };
@@ -47,9 +49,7 @@ class OmniboxViewGtkTest : public PlatformTest {
     profile_.reset(new TestingProfile);
     window_ = gtk_window_new(GTK_WINDOW_POPUP);
     controller_.reset(new OmniboxEditControllerMock);
-    view_.reset(new OmniboxViewGtk(controller_.get(), NULL,
-                                   NULL,
-                                   profile_.get(),
+    view_.reset(new OmniboxViewGtk(controller_.get(), NULL, profile_.get(),
                                    NULL, false, window_));
     view_->Init();
     text_buffer_ = view_->text_buffer_;

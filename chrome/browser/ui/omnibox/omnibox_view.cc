@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "ui/base/clipboard/clipboard.h"
 
 // static
@@ -99,7 +101,7 @@ int OmniboxView::GetIcon() const {
           model_->CurrentTextType() :
               AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   } else {
-    return toolbar_model_->GetIcon();
+    return controller_->GetToolbarModel()->GetIcon();
   }
 }
 
@@ -143,10 +145,8 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
 
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,
-                         ToolbarModel* toolbar_model,
                          CommandUpdater* command_updater)
     : controller_(controller),
-      toolbar_model_(toolbar_model),
       command_updater_(command_updater) {
   // |profile| can be NULL in tests.
   if (profile)

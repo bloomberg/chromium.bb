@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
@@ -357,7 +358,8 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false))
+  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      false))
     return false;
 
   // If current text is not composed of replaced search terms and
@@ -385,7 +387,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // Do not adjust if selection did not start at the beginning of the field, or
   // if the URL was replaced by search terms.
   if ((sel_min != 0) ||
-      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false))
+      controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+          false))
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {
@@ -727,7 +730,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
     RecordPercentageMatchHistogram(
         permanent_text_, current_text,
-        view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false),
+        controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+            false),
         match.transition);
 
     // Track whether the destination URL sends us to a search results page
@@ -1188,7 +1192,8 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   DCHECK(match != NULL);
 
   if (!user_input_in_progress_ &&
-      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
+      controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+          false)) {
     // Any time the user hits enter on the unchanged omnibox, we should reload.
     // When we're not extracting search terms, AcceptInput() will take care of
     // this (see code referring to PAGE_TRANSITION_RELOAD there), but when we're
@@ -1310,7 +1315,8 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
     return AutocompleteInput::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return AutocompleteInput::HOMEPAGE;
-  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(true)) {
+  if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+      true)) {
     return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
   }
   if (delegate_->IsSearchResultsPage()) {

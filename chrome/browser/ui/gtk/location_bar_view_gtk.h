@@ -43,7 +43,6 @@ class ContentSettingBubbleGtk;
 class ExtensionAction;
 class GtkThemeService;
 class OmniboxViewGtk;
-class ToolbarModel;
 
 namespace content {
 class WebContents;
@@ -122,6 +121,8 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual ToolbarModel* GetToolbarModel() OVERRIDE;
+  virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
@@ -482,7 +483,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   GtkWidget* location_entry_alignment_;
 
   CommandUpdater* command_updater_;
-  ToolbarModel* toolbar_model_;
   Browser* browser_;
 
   // When we get an OnAutocompleteAccept notification from the autocomplete

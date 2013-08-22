@@ -61,11 +61,11 @@ class ToolbarControllerTest : public CocoaProfileTest {
     updater->UpdateCommandEnabled(IDC_FORWARD, false);
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     bar_.reset(
-        [[ToolbarController alloc] initWithModel:browser()->toolbar_model()
-                                        commands:browser()->command_controller()->command_updater()
-                                         profile:profile()
-                                         browser:browser()
-                                  resizeDelegate:resizeDelegate_.get()]);
+        [[ToolbarController alloc]
+            initWithCommands:browser()->command_controller()->command_updater()
+                     profile:profile()
+                     browser:browser()
+              resizeDelegate:resizeDelegate_.get()]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];

@@ -460,14 +460,12 @@ const int kTwipsPerInch = 1440;
 HMODULE OmniboxViewWin::loaded_library_module_ = NULL;
 
 OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
-                               ToolbarModel* toolbar_model,
                                LocationBarView* location_bar,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                const gfx::FontList& font_list,
                                int font_y_offset)
-    : OmniboxView(location_bar->profile(), controller, toolbar_model,
-                  command_updater),
+    : OmniboxView(location_bar->profile(), controller, command_updater),
       popup_view_(OmniboxPopupContentsView::Create(
           font_list, this, model(), location_bar)),
       location_bar_(location_bar),
@@ -599,11 +597,11 @@ void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
 }
 
 void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
-  const bool visibly_changed_permanent_text =
-      model()->UpdatePermanentText(toolbar_model()->GetText(true));
+  const bool visibly_changed_permanent_text = model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true));
 
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model()->GetSecurityLevel(false);
+      controller()->GetToolbarModel()->GetSecurityLevel(false);
   const bool changed_security_level = (security_level != security_level_);
 
   // Bail early when no visible state will actually change (prevents an
@@ -1105,7 +1103,8 @@ int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
 }
 
 void OmniboxViewWin::CopyURL() {
-  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
+  DoCopyURL(controller()->GetToolbarModel()->GetURL(),
+            controller()->GetToolbarModel()->GetText(false));
 }
 
 bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1177,7 +1176,8 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
       return !!CanCopy();
     case IDC_COPY_URL:
       return !!CanCopy() &&
-          toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
+          controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+              false);
     case IDC_PASTE:
       return !!CanPaste();
     case IDS_PASTE_AND_GO:
@@ -2801,7 +2801,8 @@ void OmniboxViewWin::SelectAllIfNecessary(MouseButton button,
   // query is common enough that we do click-to-place-cursor).
   if (tracking_click_[button] &&
       !IsDrag(click_point_[button], point) &&
-      !toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
+      !controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+          false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);

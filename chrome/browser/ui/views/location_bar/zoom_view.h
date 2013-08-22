@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
-class ToolbarModel;
 class ZoomController;
 
 // View for the zoom icon in the Omnibox.
@@ -21,8 +20,7 @@ class ZoomView : public views::ImageView {
   // tabs, it cannot be provided in the constructor. Instead, a
   // LocationBarView::Delegate is passed here so that it can be queried for the
   // current WebContents as needed.
-  ZoomView(ToolbarModel* toolbar_model,
-           LocationBarView::Delegate* location_bar_delegate);
+  explicit ZoomView(LocationBarView::Delegate* location_bar_delegate);
   virtual ~ZoomView();
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
@@ -44,9 +42,6 @@ class ZoomView : public views::ImageView {
   // Helper method to show and focus the zoom bubble associated with this
   // widget.
   void ActivateBubble();
-
-  // Toolbar model used to test whether location bar input is in progress.
-  ToolbarModel* toolbar_model_;
 
   // The delegate used to get the currently visible WebContents.
   LocationBarView::Delegate* location_bar_delegate_;

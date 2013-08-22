@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
 
 @class AutocompleteTextField;
@@ -33,7 +32,6 @@ class PageActionDecoration;
 class Profile;
 class SelectedKeywordDecoration;
 class StarDecoration;
-class ToolbarModel;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
@@ -49,7 +47,6 @@ class LocationBarViewMac : public LocationBar,
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
-                     ToolbarModel* toolbar_model,
                      Profile* profile,
                      Browser* browser);
   virtual ~LocationBarViewMac();
@@ -156,6 +153,8 @@ class LocationBarViewMac : public LocationBar,
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual ToolbarModel* GetToolbarModel() OVERRIDE;
+  virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
 
   NSImage* GetKeywordImage(const string16& keyword);
 
@@ -172,7 +171,6 @@ class LocationBarViewMac : public LocationBar,
                             const SearchModel::State& new_state) OVERRIDE;
 
   Browser* browser() const { return browser_; }
-  ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
  private:
   friend ZoomDecorationTest;
@@ -260,8 +258,6 @@ class LocationBarViewMac : public LocationBar,
   Profile* profile_;
 
   Browser* browser_;
-
-  ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
 
   // The transition type to use for the navigation.
   content::PageTransition transition_;

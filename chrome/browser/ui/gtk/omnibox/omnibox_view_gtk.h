@@ -57,7 +57,6 @@ class OmniboxViewGtk : public OmniboxView,
   // In other use case, you should pass browser->profile() object as
   // profile parameter.
   OmniboxViewGtk(OmniboxEditController* controller,
-                 ToolbarModel* toolbar_model,
                  Browser* browser,
                  Profile* profile,
                  CommandUpdater* command_updater,

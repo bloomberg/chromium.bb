@@ -33,7 +33,6 @@ class GtkThemeService;
 class LocationBar;
 class LocationBarViewGtk;
 class ReloadButtonGtk;
-class ToolbarModel;
 
 namespace content {
 class WebContents;
@@ -190,9 +189,6 @@ class BrowserToolbarGtk : public CommandObserver,
 
   // The image shown in GTK+ mode in the wrench button.
   GtkWidget* wrench_menu_image_;
-
-  // The model that contains the security level, text, icon to display...
-  ToolbarModel* model_;
 
   GtkThemeService* theme_service_;
 

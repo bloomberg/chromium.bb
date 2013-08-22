@@ -115,8 +115,7 @@ const int ToolbarView::kVertSpacing = 5;
 // ToolbarView, public:
 
 ToolbarView::ToolbarView(Browser* browser)
-    : model_(browser->toolbar_model()),
-      back_(NULL),
+    : back_(NULL),
       forward_(NULL),
       reload_(NULL),
       home_(NULL),
@@ -187,7 +186,7 @@ void ToolbarView::Init() {
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
   location_bar_ = new LocationBarView(
       browser_, browser_->profile(),
-      browser_->command_controller()->command_updater(), model_, this,
+      browser_->command_controller()->command_updater(), this,
       display_mode_ == DISPLAYMODE_LOCATION);
 
   reload_ = new ReloadButton(location_bar_,
@@ -348,6 +347,14 @@ WebContents* ToolbarView::GetWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+ToolbarModel* ToolbarView::GetToolbarModel() {
+  return browser_->toolbar_model();
+}
+
+const ToolbarModel* ToolbarView::GetToolbarModel() const {
+  return browser_->toolbar_model();
+}
+
 InstantController* ToolbarView::GetInstant() {
   return browser_->instant_controller() ?
       browser_->instant_controller()->instant() : NULL;
@@ -376,9 +383,9 @@ PageActionImageView* ToolbarView::CreatePageActionImageView(
 
 void ToolbarView::OnInputInProgress(bool in_progress) {
   // The edit should make sure we're only notified when something changes.
-  DCHECK_NE(model_->input_in_progress(), in_progress);
+  DCHECK_NE(GetToolbarModel()->input_in_progress(), in_progress);
 
-  model_->set_input_in_progress(in_progress);
+  GetToolbarModel()->set_input_in_progress(in_progress);
   location_bar_->Update(NULL);
 }
 

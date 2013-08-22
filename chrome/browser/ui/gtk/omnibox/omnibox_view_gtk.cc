@@ -176,13 +176,12 @@ void DoWriteToClipboard(const GURL& url, const string16& text) {
 }  // namespace
 
 OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
-                               ToolbarModel* toolbar_model,
                                Browser* browser,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                GtkWidget* location_bar)
-    : OmniboxView(profile, controller, toolbar_model, command_updater),
+    : OmniboxView(profile, controller, command_updater),
       browser_(browser),
       text_view_(NULL),
       tag_table_(NULL),
@@ -453,11 +452,11 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
 
 void OmniboxViewGtk::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
-  bool visibly_changed_permanent_text =
-      model()->UpdatePermanentText(toolbar_model()->GetText(true));
+  bool visibly_changed_permanent_text = model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true));
 
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model()->GetSecurityLevel(false);
+        controller()->GetToolbarModel()->GetSecurityLevel(false);
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -1261,7 +1260,8 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
                      G_CALLBACK(HandleCopyURLClipboardThunk), this);
     gtk_widget_set_sensitive(
         copy_url_menuitem,
-        toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false));
+        controller()->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
+            false));
     gtk_widget_show(copy_url_menuitem);
   }
 
@@ -1564,8 +1564,8 @@ void OmniboxViewGtk::HandleCopyClipboard(GtkWidget* sender) {
 }
 
 void OmniboxViewGtk::HandleCopyURLClipboard(GtkWidget* sender) {
-  DoWriteToClipboard(toolbar_model()->GetURL(),
-                     toolbar_model()->GetText(false));
+  DoWriteToClipboard(controller()->GetToolbarModel()->GetURL(),
+                     controller()->GetToolbarModel()->GetText(false));
 }
 
 void OmniboxViewGtk::HandleCutClipboard(GtkWidget* sender) {

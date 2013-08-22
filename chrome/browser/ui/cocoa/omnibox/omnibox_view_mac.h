@@ -23,7 +23,6 @@ class OmniboxViewMac : public OmniboxView,
                        public AutocompleteTextFieldObserver {
  public:
   OmniboxViewMac(OmniboxEditController* controller,
-                 ToolbarModel* toolbar_model,
                  Profile* profile,
                  CommandUpdater* command_updater,
                  AutocompleteTextField* field);

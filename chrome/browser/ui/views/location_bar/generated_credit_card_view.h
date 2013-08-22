@@ -12,8 +12,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
-class ToolbarModel;
-
 namespace autofill {
 class GeneratedCreditCardBubbleController;
 }
@@ -29,8 +27,7 @@ class GeneratedCreditCardBubbleController;
 ////////////////////////////////////////////////////////////////////////////////
 class GeneratedCreditCardView : public LocationBarDecorationView {
  public:
-  GeneratedCreditCardView(ToolbarModel* toolbar_model,
-                         LocationBarView::Delegate* delegate);
+  explicit GeneratedCreditCardView(LocationBarView::Delegate* delegate);
   virtual ~GeneratedCreditCardView();
 
   void Update();
@@ -45,7 +42,6 @@ class GeneratedCreditCardView : public LocationBarDecorationView {
   // current web contents.
   autofill::GeneratedCreditCardBubbleController* GetController() const;
 
-  ToolbarModel* toolbar_model_;  // weak; outlives us.
   LocationBarView::Delegate* delegate_;  // weak; outlives us.
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedCreditCardView);
