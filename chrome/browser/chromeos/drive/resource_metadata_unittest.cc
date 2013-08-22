@@ -610,26 +610,26 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
             resource_metadata_->RefreshEntry(dir_entry));
 }
 
-TEST_F(ResourceMetadataTest, GetChildDirectories) {
-  std::set<base::FilePath> child_directories;
+TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
+  std::set<base::FilePath> sub_directories;
 
   // file9: not a directory, so no children.
-  resource_metadata_->GetChildDirectories("resource_id:file9",
-                                          &child_directories);
-  EXPECT_TRUE(child_directories.empty());
+  resource_metadata_->GetSubDirectoriesRecursively("resource_id:file9",
+                                                   &sub_directories);
+  EXPECT_TRUE(sub_directories.empty());
 
   // dir2: no child directories.
-  resource_metadata_->GetChildDirectories("resource_id:dir2",
-                                          &child_directories);
-  EXPECT_TRUE(child_directories.empty());
+  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir2",
+                                                   &sub_directories);
+  EXPECT_TRUE(sub_directories.empty());
 
   // dir1: dir3 is the only child
-  resource_metadata_->GetChildDirectories("resource_id:dir1",
-                                          &child_directories);
-  EXPECT_EQ(1u, child_directories.size());
-  EXPECT_EQ(1u, child_directories.count(
+  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir1",
+                                                   &sub_directories);
+  EXPECT_EQ(1u, sub_directories.size());
+  EXPECT_EQ(1u, sub_directories.count(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3")));
-  child_directories.clear();
+  sub_directories.clear();
 
   // Add a few more directories to make sure deeper nesting works.
   // dir2/dir100
@@ -657,14 +657,14 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
       CreateDirectoryEntry("dir107", "resource_id:dir106")));
 
-  resource_metadata_->GetChildDirectories("resource_id:dir2",
-                                          &child_directories);
-  EXPECT_EQ(8u, child_directories.size());
-  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
+  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir2",
+                                                   &sub_directories);
+  EXPECT_EQ(8u, sub_directories.size());
+  EXPECT_EQ(1u, sub_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/dir2/dir101")));
-  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, sub_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/dir2/dir101/dir104")));
-  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, sub_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 

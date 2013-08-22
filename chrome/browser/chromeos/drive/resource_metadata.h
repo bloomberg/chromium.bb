@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
@@ -169,9 +168,9 @@ class ResourceMetadata {
   // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
   FileError RefreshEntry(const ResourceEntry& entry);
 
-  // Recursively get child directories of entry pointed to by |resource_id|.
-  void GetChildDirectories(const std::string& resource_id,
-                           std::set<base::FilePath>* child_directories);
+  // Recursively gets directories under the entry pointed to by |resource_id|.
+  void GetSubDirectoriesRecursively(const std::string& resource_id,
+                                    std::set<base::FilePath>* sub_directories);
 
   // Returns the resource id of the resource named |base_name| directly under
   // the directory with |parent_local_id|.

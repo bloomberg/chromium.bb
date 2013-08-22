@@ -427,9 +427,9 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::GetChildDirectories(
+void ResourceMetadata::GetSubDirectoriesRecursively(
     const std::string& resource_id,
-    std::set<base::FilePath>* child_directories) {
+    std::set<base::FilePath>* sub_directories) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<std::string> children;
@@ -438,8 +438,8 @@ void ResourceMetadata::GetChildDirectories(
     ResourceEntry entry;
     if (storage_->GetEntry(children[i], &entry) &&
         entry.file_info().is_directory()) {
-      child_directories->insert(GetFilePath(entry.resource_id()));
-      GetChildDirectories(entry.resource_id(), child_directories);
+      sub_directories->insert(GetFilePath(entry.resource_id()));
+      GetSubDirectoriesRecursively(entry.resource_id(), sub_directories);
     }
   }
 }

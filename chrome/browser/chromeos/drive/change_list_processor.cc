@@ -372,11 +372,10 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
 
       // Notify all descendants if it is a directory deletion.
       if (entry.deleted()) {
-        std::set<base::FilePath> child_directories;
-        resource_metadata_->GetChildDirectories(entry.resource_id(),
-                                                &child_directories);
-        changed_dirs_.insert(child_directories.begin(),
-                             child_directories.end());
+        std::set<base::FilePath> sub_directories;
+        resource_metadata_->GetSubDirectoriesRecursively(entry.resource_id(),
+                                                         &sub_directories);
+        changed_dirs_.insert(sub_directories.begin(), sub_directories.end());
       }
     }
   }
