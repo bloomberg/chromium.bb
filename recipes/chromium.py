@@ -18,7 +18,7 @@ class Chromium(recipe_util.Recipe):
     solution = { 'name'   :'src',
                  'url'    : url,
                  'deps_file': '.DEPS.git',
-                 'managed'   : True,
+                 'managed'   : False,
                  'custom_deps': {},
                  'safesync_url': '',
     }
