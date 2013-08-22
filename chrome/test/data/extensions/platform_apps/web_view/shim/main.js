@@ -86,41 +86,6 @@ embedder.test.assertFalse = function(condition) {
 
 // Tests begin.
 
-function testSize() {
-  var webview = document.querySelector('webview');
-  // Since we can't currently inspect the page loaded inside the <webview>,
-  // the only way we can check that the shim is working is by changing the
-  // size and seeing if the shim updates the size of the DOM.
-  embedder.test.assertEq(300, webview.offsetWidth);
-  embedder.test.assertEq(200, webview.offsetHeight);
-
-  webview.style.width = '310px';
-  webview.style.height = '210px';
-
-  embedder.test.assertEq(310, webview.offsetWidth);
-  embedder.test.assertEq(210, webview.offsetHeight);
-
-  webview.style.width = '320px';
-  webview.style.height = '220px';
-
-  embedder.test.assertEq(320, webview.offsetWidth);
-  embedder.test.assertEq(220, webview.offsetHeight);
-
-  var dynamicWebViewTag = document.createElement('webview');
-  dynamicWebViewTag.setAttribute('src', 'data:text/html,dynamic browser');
-  dynamicWebViewTag.style.width = '330px';
-  dynamicWebViewTag.style.height = '230px';
-  document.body.appendChild(dynamicWebViewTag);
-
-  // Timeout is necessary to give the mutation observers a chance to fire.
-  setTimeout(function() {
-    embedder.test.assertEq(330, dynamicWebViewTag.offsetWidth);
-    embedder.test.assertEq(230, dynamicWebViewTag.offsetHeight);
-
-    embedder.test.succeed();
-  }, 0);
-}
-
 // This test verifies that if a browser plugin is in autosize mode before
 // navigation then the guest starts auto-sized.
 function testAutosizeBeforeNavigation() {
@@ -866,7 +831,6 @@ function testRemoveWebviewOnExit() {
 }
 
 embedder.test.testList = {
-  'testSize': testSize,
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,

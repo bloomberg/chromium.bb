@@ -15,6 +15,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -42,6 +43,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_utils.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -1290,6 +1292,21 @@ void BrowserPluginGuest::OnNavigateGuest(
   // should never be sent to BrowserPluginGuest (browser process).
   DCHECK(!src.empty());
   if (!src.empty()) {
+    // Do not allow navigating a guest to schemes other than known safe schemes.
+    // This will block the embedder trying to load unwanted schemes, e.g.
+    // chrome://settings.
+    if (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
+            url.scheme()) &&
+        !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
+            url.scheme())) {
+      if (delegate_) {
+        std::string error_type;
+        RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::", &error_type);
+        delegate_->LoadAbort(true /* is_top_level */, url, error_type);
+      }
+      return;
+    }
+
     // As guests do not swap processes on navigation, only navigations to
     // normal web URLs are supported.  No protocol handlers are installed for
     // other schemes (e.g., WebUI or extensions), and no permissions or bindings

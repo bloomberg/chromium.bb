@@ -4,6 +4,8 @@
 
 var embedder = {};
 embedder.test = {};
+embedder.triggerNavUrl =
+    'data:text/html,<html><body>trigger navigation<body></html>';
 
 window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {

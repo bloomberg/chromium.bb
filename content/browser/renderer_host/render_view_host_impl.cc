@@ -769,6 +769,12 @@ void RenderViewHostImpl::DragSourceSystemDragEnded() {
 }
 
 void RenderViewHostImpl::AllowBindings(int bindings_flags) {
+  // Never grant any bindings to browser plugin guests.
+  if (GetProcess()->IsGuest()) {
+    NOTREACHED() << "Never grant bindings to a guest process.";
+    return;
+  }
+
   // Ensure we aren't granting WebUI bindings to a process that has already
   // been used for non-privileged views.
   if (bindings_flags & BINDINGS_POLICY_WEB_UI &&
@@ -781,12 +787,6 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
         static_cast<RenderProcessHostImpl*>(GetProcess());
     if (process->GetActiveViewCount() > 1)
       return;
-  }
-
-  // Never grant any bindings to browser plugin guests.
-  if (GetProcess()->IsGuest()) {
-    NOTREACHED() << "Never grant bindings to a guest process.";
-    return;
   }
 
   if (bindings_flags & BINDINGS_POLICY_WEB_UI) {

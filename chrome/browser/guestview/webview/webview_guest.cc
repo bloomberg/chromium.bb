@@ -183,6 +183,16 @@ bool WebViewGuest::HandleKeyboardEvent(
   return false;
 }
 
+void WebViewGuest::LoadAbort(bool is_top_level,
+                             const GURL& url,
+                             const std::string& error_type) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetBoolean(guestview::kIsTopLevel, is_top_level);
+  args->SetString(guestview::kUrl, url.spec());
+  args->SetString(guestview::kReason, error_type);
+  DispatchEvent(new GuestView::Event(webview::kEventLoadAbort, args.Pass()));
+}
+
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
 // 'unresponsive' events.
 void WebViewGuest::RendererResponsive() {
@@ -346,12 +356,7 @@ void WebViewGuest::DidFailProvisionalLoad(
   // Translate the |error_code| into an error string.
   std::string error_type;
   RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
-
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
-  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
-  args->SetString(guestview::kUrl, validated_url.spec());
-  args->SetString(guestview::kReason, error_type);
-  DispatchEvent(new GuestView::Event(webview::kEventLoadAbort, args.Pass()));
+  LoadAbort(is_main_frame, validated_url, error_type);
 }
 
 void WebViewGuest::DidStartProvisionalLoadForFrame(

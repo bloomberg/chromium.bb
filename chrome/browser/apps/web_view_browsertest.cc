@@ -555,13 +555,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestSize) {
-  TestHelper("testSize",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
-}
-
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation",
              "DoneShimTest.PASSED",
@@ -874,6 +867,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Size) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/size")) << message_;
 }
 
 // This test verifies that prerendering has been disabled inside <webview>.
