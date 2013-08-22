@@ -101,7 +101,7 @@ PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName&
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    root->appendChild(TextControlInnerTextElement::create(document()));
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const

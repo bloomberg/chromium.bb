@@ -90,14 +90,14 @@ void PasswordGeneratorButtonElement::decorate(HTMLInputElement* input)
     ASSERT(decorationRoot);
     ASSERT(existingRoot);
     RefPtr<HTMLDivElement> box = HTMLDivElement::create(input->document());
-    decorationRoot->appendChild(box, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    decorationRoot->appendChild(box);
     box->setInlineStyleProperty(CSSPropertyDisplay, CSSValueFlex);
     box->setInlineStyleProperty(CSSPropertyAlignItems, CSSValueCenter);
     ASSERT(existingRoot->childNodeCount() == 1);
     toHTMLElement(existingRoot->firstChild())->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()));
     setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    box->appendChild(this, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    box->appendChild(this);
 }
 
 inline HTMLInputElement* PasswordGeneratorButtonElement::hostInput()

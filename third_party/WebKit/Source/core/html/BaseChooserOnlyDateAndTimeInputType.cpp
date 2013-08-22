@@ -63,7 +63,7 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
 
     RefPtr<HTMLDivElement> valueContainer = HTMLDivElement::create(element()->document());
     valueContainer->setPart(valueContainerPseudo);
-    element()->userAgentShadowRoot()->appendChild(valueContainer.get(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    element()->userAgentShadowRoot()->appendChild(valueContainer.get());
     updateAppearance();
 }
 

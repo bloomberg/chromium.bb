@@ -755,7 +755,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     // (or just delete the stuff in between)
 
     if ((action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) && leftContents)
-        fragment->appendChild(leftContents, es, DeprecatedAttachNow);
+        fragment->appendChild(leftContents, es);
 
     if (processStart) {
         NodeVector nodes;
@@ -765,7 +765,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     }
 
     if ((action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) && rightContents)
-        fragment->appendChild(rightContents, es, DeprecatedAttachNow);
+        fragment->appendChild(rightContents, es);
 
     return fragment.release();
 }
@@ -796,7 +796,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
             deleteCharacterData(c, startOffset, endOffset, es);
             if (fragment) {
                 result = fragment;
-                result->appendChild(c.release(), es, DeprecatedAttachNow);
+                result->appendChild(c.release(), es);
             } else
                 result = c.release();
         }
@@ -810,7 +810,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
             c->setData(c->data().substring(startOffset, endOffset - startOffset));
             if (fragment) {
                 result = fragment;
-                result->appendChild(c.release(), es, DeprecatedAttachNow);
+                result->appendChild(c.release(), es);
             } else
                 result = c.release();
         }
@@ -882,7 +882,7 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
         RefPtr<Node> ancestor = *it;
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             if (RefPtr<Node> clonedAncestor = ancestor->cloneNode(false)) { // Might have been removed already during mutation event.
-                clonedAncestor->appendChild(clonedContainer, es, DeprecatedAttachNow);
+                clonedAncestor->appendChild(clonedContainer, es);
                 clonedContainer = clonedAncestor;
             }
         }
@@ -905,15 +905,15 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
                 break;
             case EXTRACT_CONTENTS: // will remove child from ancestor
                 if (direction == ProcessContentsForward)
-                    clonedContainer->appendChild(child, es, DeprecatedAttachNow);
+                    clonedContainer->appendChild(child, es);
                 else
-                    clonedContainer->insertBefore(child, clonedContainer->firstChild(), es, DeprecatedAttachNow);
+                    clonedContainer->insertBefore(child, clonedContainer->firstChild(), es);
                 break;
             case CLONE_CONTENTS:
                 if (direction == ProcessContentsForward)
-                    clonedContainer->appendChild(child->cloneNode(true), es, DeprecatedAttachNow);
+                    clonedContainer->appendChild(child->cloneNode(true), es);
                 else
-                    clonedContainer->insertBefore(child->cloneNode(true), clonedContainer->firstChild(), es, DeprecatedAttachNow);
+                    clonedContainer->insertBefore(child->cloneNode(true), clonedContainer->firstChild(), es);
                 break;
             }
         }

@@ -251,26 +251,26 @@ void TextFieldInputType::createShadowSubtree()
 
     m_innerText = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
-        element()->userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION, DeprecatedAttachNow);
+        element()->userAgentShadowRoot()->appendChild(m_innerText);
         return;
     }
 
     ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
     m_container = TextControlInnerContainer::create(document);
     m_container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-    shadowRoot->appendChild(m_container, IGNORE_EXCEPTION, DeprecatedAttachNow);
+    shadowRoot->appendChild(m_container);
 
     m_innerBlock = TextControlInnerElement::create(document);
-    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION, DeprecatedAttachNow);
-    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION, DeprecatedAttachNow);
+    m_innerBlock->appendChild(m_innerText);
+    m_container->appendChild(m_innerBlock);
 
 #if ENABLE(INPUT_SPEECH)
     if (element()->isSpeechEnabled())
-        m_container->appendChild(InputFieldSpeechButtonElement::create(document), IGNORE_EXCEPTION, DeprecatedAttachNow);
+        m_container->appendChild(InputFieldSpeechButtonElement::create(document));
 #endif
 
     if (shouldHaveSpinButton)
-        m_container->appendChild(SpinButtonElement::create(document, *this), IGNORE_EXCEPTION, DeprecatedAttachNow);
+        m_container->appendChild(SpinButtonElement::create(document, *this));
 }
 
 HTMLElement* TextFieldInputType::containerElement() const

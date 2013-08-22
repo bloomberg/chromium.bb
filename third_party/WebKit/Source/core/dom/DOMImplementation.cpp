@@ -224,9 +224,9 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     }
 
     if (doctype)
-        doc->appendChild(doctype, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        doc->appendChild(doctype);
     if (documentElement)
-        doc->appendChild(documentElement.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        doc->appendChild(documentElement.release());
 
     return doc.release();
 }

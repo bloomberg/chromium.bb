@@ -904,7 +904,7 @@ PassRefPtr<Element> createTabSpanElement(Document* document, PassRefPtr<Node> pr
     if (!tabTextNode)
         tabTextNode = document->createEditingTextNode("\t");
 
-    spanElement->appendChild(tabTextNode.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    spanElement->appendChild(tabTextNode.release());
 
     return spanElement.release();
 }

@@ -379,12 +379,12 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
               break;
         }
 
-        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), es, DeprecatedAttachNow);
+        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), es);
         if (es.hadException())
             return 0;
 
         if (c == '\r' || c == '\n') {
-            fragment->appendChild(HTMLBRElement::create(document()), es, DeprecatedAttachNow);
+            fragment->appendChild(HTMLBRElement::create(document()), es);
             if (es.hadException())
                 return 0;
             // Make sure \r\n doesn't result in two line breaks.

@@ -169,10 +169,10 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
                         title = url;
                 }
                 RefPtr<Node> anchorText = document->createTextNode(title);
-                anchor->appendChild(anchorText, IGNORE_EXCEPTION, DeprecatedAttachNow);
+                anchor->appendChild(anchorText);
                 RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
-                fragment->appendChild(anchor, IGNORE_EXCEPTION, DeprecatedAttachNow);
-                return fragment.get();
+                fragment->appendChild(anchor);
+                return fragment.release();
             }
         }
     }

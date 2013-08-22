@@ -99,7 +99,7 @@ void MediaDocumentParser::createDocumentStructure()
     media->appendChild(source.release());
 
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(document());
-    body->appendChild(media.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    body->appendChild(media.release());
 
     rootElement->appendChild(head.release());
     rootElement->appendChild(body.release());

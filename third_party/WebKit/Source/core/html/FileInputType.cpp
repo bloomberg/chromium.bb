@@ -260,7 +260,7 @@ void FileInputType::createShadowSubtree()
     button->setType(InputTypeNames::button());
     button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
     button->setPart(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
-    element()->userAgentShadowRoot()->appendChild(button.release(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+    element()->userAgentShadowRoot()->appendChild(button.release());
 }
 
 void FileInputType::disabledAttributeChanged()

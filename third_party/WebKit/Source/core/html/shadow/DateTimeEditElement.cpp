@@ -407,9 +407,9 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
     if (m_parameters.locale.isRTL() && text.length()) {
         Direction dir = direction(text[0]);
         if (dir == SegmentSeparator || dir == WhiteSpaceNeutral || dir == OtherNeutral)
-            element->appendChild(Text::create(m_editElement.document(), String(&rightToLeftMark, 1)), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            element->appendChild(Text::create(m_editElement.document(), String(&rightToLeftMark, 1)));
     }
-    element->appendChild(Text::create(m_editElement.document(), text), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    element->appendChild(Text::create(m_editElement.document(), text));
     m_editElement.fieldsWrapperElement()->appendChild(element);
 }
 

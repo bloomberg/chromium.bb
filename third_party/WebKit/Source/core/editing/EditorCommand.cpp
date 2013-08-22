@@ -200,7 +200,7 @@ static bool executeInsertNode(Frame* frame, PassRefPtr<Node> content)
 {
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(frame->document());
     TrackExceptionState es;
-    fragment->appendChild(content, es, DeprecatedAttachNow);
+    fragment->appendChild(content, es);
     if (es.hadException())
         return false;
     return executeInsertFragment(frame, fragment.release());

@@ -220,7 +220,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
         if (!parent) {
             RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
             RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-            newBody->appendChild(newRow, es, DeprecatedAttachNow);
+            newBody->appendChild(newRow, es);
             appendChild(newBody.release(), es);
             return newRow.release();
         }

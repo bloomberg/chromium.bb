@@ -729,7 +729,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* docum
     // TD, we need to include the enclosing TABLE tag as well.
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
     if (specialCommonAncestor)
-        fragment->appendChild(specialCommonAncestor, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        fragment->appendChild(specialCommonAncestor);
     else
         fragment->takeAllChildrenFrom(toContainerNode(commonAncestor));
 
@@ -829,11 +829,11 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     string.replace('\r', '\n');
 
     if (shouldPreserveNewline(*context)) {
-        fragment->appendChild(document->createTextNode(string), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        fragment->appendChild(document->createTextNode(string));
         if (string.endsWith('\n')) {
             RefPtr<Element> element = createBreakElement(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
-            fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+            fragment->appendChild(element.release());
         }
         return fragment.release();
     }
@@ -875,7 +875,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
                 element = createDefaultParagraphElement(document);
             fillContainerFromString(element.get(), s);
         }
-        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        fragment->appendChild(element.release());
     }
     return fragment.release();
 }
@@ -890,8 +890,8 @@ PassRefPtr<DocumentFragment> createFragmentFromNodes(Document *document, const V
     size_t size = nodes.size();
     for (size_t i = 0; i < size; ++i) {
         RefPtr<Element> element = createDefaultParagraphElement(document);
-        element->appendChild(nodes[i], ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
-        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        element->appendChild(nodes[i]);
+        fragment->appendChild(element.release());
     }
 
     return fragment.release();
@@ -998,10 +998,10 @@ static inline void removeElementPreservingChildren(PassRefPtr<DocumentFragment> 
     RefPtr<Node> nextChild;
     for (RefPtr<Node> child = element->firstChild(); child; child = nextChild) {
         nextChild = child->nextSibling();
-        element->removeChild(child.get(), ASSERT_NO_EXCEPTION);
-        fragment->insertBefore(child, element, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        element->removeChild(child.get());
+        fragment->insertBefore(child, element);
     }
-    fragment->removeChild(element, ASSERT_NO_EXCEPTION);
+    fragment->removeChild(element);
 }
 
 PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& es)

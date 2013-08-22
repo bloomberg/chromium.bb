@@ -227,15 +227,15 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     ASSERT(!m_value);
 
     RefPtr<MeterInnerElement> inner = MeterInnerElement::create(document());
-    root->appendChild(inner, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    root->appendChild(inner);
 
     RefPtr<MeterBarElement> bar = MeterBarElement::create(document());
     m_value = MeterValueElement::create(document());
     m_value->setWidthPercentage(0);
     m_value->updatePseudo();
-    bar->appendChild(m_value, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    bar->appendChild(m_value);
 
-    inner->appendChild(bar, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    inner->appendChild(bar);
 }
 
 } // namespace

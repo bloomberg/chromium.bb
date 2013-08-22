@@ -73,7 +73,7 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
-    element->appendChild(text.release(), es, DeprecatedAttachNow);
+    element->appendChild(text.release(), es);
     if (es.hadException())
         return 0;
 
