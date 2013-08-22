@@ -120,6 +120,16 @@ function formatTimeLeft(openWhenComplete, ms) {
   return chrome.i18n.getMessage(prefix + 'Seconds', [seconds]);
 }
 
+function ratchetWidth(w) {
+  var current = parseInt(document.body.style.minWidth) || 0;
+  document.body.style.minWidth = Math.max(w, current) + 'px';
+}
+
+function ratchetHeight(h) {
+  var current = parseInt(document.body.style.minHeight) || 0;
+  document.body.style.minHeight = Math.max(h, current) + 'px';
+}
+
 function binarySearch(array, target, cmp) {
   var low = 0, high = array.length - 1, i, comparison;
   while (low <= high) {
@@ -219,9 +229,10 @@ function DownloadItem(data) {
   };
 
   item.more_mousemove = function(evt) {
+    var mouse = {x:evt.x, y:evt.y+document.body.scrollTop};
     if (item.getElement('more') &&
-        (pointInElement(evt, item.div) ||
-         pointInElement(evt, item.getElement('more')))) {
+        (pointInElement(mouse, item.div) ||
+         pointInElement(mouse, item.getElement('more')))) {
       return;
     }
     if (item.getElement('more')) {
@@ -229,7 +240,7 @@ function DownloadItem(data) {
     }
     window.removeEventListener('mousemove', item.more_mousemove);
   };
-  [item.getElement('icon'), item.getElement('more')].concat(
+  [item.div, item.getElement('more')].concat(
       item.getElement('more').children).forEach(function(elem) {
     elem.onmouseover = function() {
       arrayFrom(items_div.children).forEach(function(other) {
@@ -409,6 +420,13 @@ DownloadItem.prototype.render = function() {
         item.startTime);
   }
 
+  ratchetWidth(item.getElement('icon').offsetWidth +
+               item.getElement('file-url').offsetWidth +
+               item.getElement('cancel').offsetWidth +
+               item.getElement('pause').offsetWidth +
+               item.getElement('resume').offsetWidth);
+  ratchetWidth(item.getElement('more').offsetWidth);
+
   this.maybeAccept();
 };
 
@@ -480,6 +498,8 @@ DownloadItem.prototype.maybeAccept = function() {
       DownloadItem.prototype.maybeAccept.accepting_danger) {
     return;
   }
+  ratchetWidth(400);
+  ratchetHeight(200);
   DownloadItem.prototype.maybeAccept.accepting_danger = true;
   chrome.downloads.acceptDanger(this.id, function() {
     DownloadItem.prototype.maybeAccept.accepting_danger = false;
@@ -714,10 +734,10 @@ if (chrome.downloads) {
   });
 
   window.onload = function() {
-    document.body.style.minWidth = (
+    ratchetWidth(
       document.getElementById('q-outer').offsetWidth +
       document.getElementById('clear-all').offsetWidth +
-      document.getElementById('open-folder').offsetWidth) + 'px';
+      document.getElementById('open-folder').offsetWidth);
     setLastOpened();
     loadI18nMessages();
     DownloadManager.loadItems.onWindowLoaded();

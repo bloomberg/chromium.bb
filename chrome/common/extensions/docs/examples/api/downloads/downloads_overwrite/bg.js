@@ -7,5 +7,9 @@
 
 chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
   suggest({filename: item.filename,
-           conflict_action: 'overwrite'});
+           conflict_action: 'overwrite',
+           conflictAction: 'overwrite'});
+  // conflict_action was renamed to conflictAction in
+  // http://src.chromium.org/viewvc/chrome?view=rev&revision=214133
+  // which was first picked up in branch 1580.
 });

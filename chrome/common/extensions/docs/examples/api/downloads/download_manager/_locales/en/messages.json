@@ -1,8 +1,8 @@
 {"extName": {
-   "message": "Modern Download Manager",
+   "message": "Download Manager Button",
    "description": "Extension name"},
  "extDesc": {
-   "message": "Modern Download Manager User Interface for Google Chrome",
+   "message": "Browser Action Download Manager User Interface for Google Chrome",
    "description": "Extension description"},
  "badChromeVersion": {
    "message": "The downloads API is only available on the canary, dev, and beta channels.",

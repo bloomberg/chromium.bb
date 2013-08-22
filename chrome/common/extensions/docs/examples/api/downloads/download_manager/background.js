@@ -21,30 +21,33 @@ function drawLine(ctx, x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-function drawProgressSpinner(ctx, stage) {
+Math.TAU = 2 * Math.PI;  // http://tauday.com/tau-manifesto
+
+function drawProgressArc(ctx, startAngle, endAngle) {
   var center = ctx.canvas.width/2;
-  var radius = center*0.9;
-  const segments = 16;
-  var segArc = 2 * Math.PI / segments;
   ctx.lineWidth = Math.round(ctx.canvas.width*0.1);
+  ctx.beginPath();
+  ctx.moveTo(center, center);
+  ctx.arc(center, center, center * 0.9, startAngle, endAngle, false);
+  ctx.fill();
+  ctx.stroke();
+}
+
+function drawUnknownProgressSpinner(ctx) {
+  var center = ctx.canvas.width/2;
+  const segments = 16;
+  var segArc = Math.TAU / segments;
   for (var seg = 0; seg < segments; ++seg) {
-    var color = ((stage == 'm') ? ((seg % 2) == 0) : (seg <= stage));
     ctx.fillStyle = ctx.strokeStyle = (
-      color ? colors.progressColor : colors.background);
-    ctx.moveTo(center, center);
-    ctx.beginPath();
-    ctx.arc(center, center, radius, (seg-4)*segArc, (seg-3)*segArc, false);
-    ctx.lineTo(center, center);
-    ctx.fill();
-    ctx.stroke();
+      ((seg % 2) == 0) ? colors.progressColor : colors.background);
+    drawProgressArc(ctx, (seg-4)*segArc, (seg-3)*segArc);
   }
-  ctx.strokeStyle = colors.background;
-  radius += ctx.lineWidth-1;
-  drawLine(ctx, center-radius, center, center+radius, center);
-  drawLine(ctx, center, center-radius, center, center+radius);
-  radius *= Math.sin(Math.PI/4);
-  drawLine(ctx, center-radius, center-radius, center+radius, center+radius);
-  drawLine(ctx, center-radius, center+radius, center+radius, center-radius);
+}
+
+function drawProgressSpinner(ctx, stage) {
+  ctx.fillStyle = ctx.strokeStyle = colors.progressColor;
+  var clocktop = -Math.TAU/4;
+  drawProgressArc(ctx, clocktop, clocktop + (stage * Math.TAU));
 }
 
 function drawArrow(ctx) {
@@ -102,7 +105,7 @@ function drawPausedBadge(ctx) {
 function drawCompleteBadge(ctx) {
   var s = ctx.canvas.width/100;
   ctx.beginPath();
-  ctx.arc(s*75, s*75, s*15, 0, 2*Math.PI, false);
+  ctx.arc(s*75, s*75, s*15, 0, Math.TAU, false);
   ctx.fillStyle = colors.complete;
   ctx.fill();
   ctx.strokeStyle = colors.background;
@@ -110,20 +113,25 @@ function drawCompleteBadge(ctx) {
   ctx.stroke();
 }
 
-function drawIcon(side, stage, badge) {
+function drawIcon(side, options) {
   var canvas = document.createElement('canvas');
   canvas.width = canvas.height = side;
   document.body.appendChild(canvas);
   var ctx = canvas.getContext('2d');
-  if (stage != 'n') {
-    drawProgressSpinner(ctx, stage);
+  if (options.anyInProgress) {
+    if (options.anyMissingTotalBytes) {
+      drawUnknownProgressSpinner(ctx);
+    } else {
+      drawProgressSpinner(ctx, (options.totalBytesReceived /
+                                options.totalTotalBytes));
+    }
   }
   drawArrow(ctx);
-  if (badge == 'd') {
+  if (options.anyDangerous) {
     drawDangerBadge(ctx);
-  } else if (badge == 'p') {
+  } else if (options.anyPaused) {
     drawPausedBadge(ctx);
-  } else if (badge == 'c') {
+  } else if (options.anyRecentlyCompleted) {
     drawCompleteBadge(ctx);
   }
   return canvas;
@@ -144,9 +152,9 @@ function maybeOpen(id) {
   }
 }
 
-function setBrowserActionIcon(stage, badge) {
-  var canvas1 = drawIcon(19, stage, badge);
-  var canvas2 = drawIcon(38, stage, badge);
+function setBrowserActionIcon(options) {
+  var canvas1 = drawIcon(19, options);
+  var canvas2 = drawIcon(38, options);
   var imageData = {};
   imageData['' + canvas1.width] = canvas1.getContext('2d').getImageData(
         0, 0, canvas1.width, canvas1.height);
@@ -161,45 +169,41 @@ function pollProgress() {
   pollProgress.tid = -1;
   chrome.downloads.search({}, function(items) {
     var popupLastOpened = parseInt(localStorage.popupLastOpened);
-    var totalTotalBytes = 0;
-    var totalBytesReceived = 0;
-    var anyMissingTotalBytes = false;
-    var anyDangerous = false;
-    var anyPaused = false;
-    var anyRecentlyCompleted = false;
-    var anyInProgress = false;
+    var options = {anyMissingTotalBytes: false,
+                   anyInProgress: false,
+                   anyRecentlyCompleted: false,
+                   anyPaused: false,
+                   anyDangerous: false,
+                   totalBytesReceived: 0,
+                   totalTotalBytes: 0};
     items.forEach(function(item) {
       if (item.state == 'in_progress') {
-        anyInProgress = true;
+        options.anyInProgress = true;
         if (item.totalBytes) {
-          totalTotalBytes += item.totalBytes;
-          totalBytesReceived += item.bytesReceived;
+          options.totalTotalBytes += item.totalBytes;
+          options.totalBytesReceived += item.bytesReceived;
         } else {
-          anyMissingTotalBytes = true;
+          options.anyMissingTotalBytes = true;
         }
         var dangerous = ((item.danger != 'safe') &&
                          (item.danger != 'accepted'));
-        anyDangerous = anyDangerous || dangerous;
-        anyPaused = anyPaused || item.paused;
+        options.anyDangerous = options.anyDangerous || dangerous;
+        options.anyPaused = options.anyPaused || item.paused;
       } else if ((item.state == 'complete') && item.endTime && !item.error) {
-        var ended = (new Date(item.endTime)).getTime();
-        var recentlyCompleted = (ended >= popupLastOpened);
-        anyRecentlyCompleted = anyRecentlyCompleted || recentlyCompleted;
+        options.anyRecentlyCompleted = (
+          options.anyRecentlyCompleted ||
+          ((new Date(item.endTime)).getTime() >= popupLastOpened));
         maybeOpen(item.id);
       }
     });
-    var stage = !anyInProgress ? 'n' : (anyMissingTotalBytes ? 'm' :
-      parseInt((totalBytesReceived / totalTotalBytes) * 15));
-    var badge = anyDangerous ? 'd' : (anyPaused ? 'p' :
-      (anyRecentlyCompleted ? 'c' : ''));
 
-    var targetIcon = stage + ' ' + badge;
+    var targetIcon = JSON.stringify(options);
     if (sessionStorage.currentIcon != targetIcon) {
-      setBrowserActionIcon(stage, badge);
+      setBrowserActionIcon(options);
       sessionStorage.currentIcon = targetIcon;
     }
 
-    if (anyInProgress &&
+    if (options.anyInProgress &&
         (pollProgress.tid < 0)) {
       pollProgress.start();
     }
@@ -249,7 +253,7 @@ chrome.runtime.onMessage.addListener(function(request) {
   }
   if (request == 'icons') {
     [16, 19, 38, 128].forEach(function(s) {
-      var canvas = drawIcon(s, 'n', '');
+      var canvas = drawIcon(s);
       chrome.downloads.download({
         url: canvas.toDataURL('image/png', 1.0),
         filename: 'icon' + s + '.png',
