@@ -1447,12 +1447,8 @@ void SigninScreenHandler::HandleAccountPickerReady() {
   is_account_picker_showing_first_time_ = true;
   MaybePreloadAuthExtension();
 
-  if (ScreenLocker::default_screen_locker()) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOCK_WEBUI_READY,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-  }
+  if (ScreenLocker::default_screen_locker())
+    ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
 
   if (delegate_)
     delegate_->OnSigninScreenReady();
@@ -1460,10 +1456,8 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
 void SigninScreenHandler::HandleWallpaperReady() {
   if (ScreenLocker::default_screen_locker()) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    ScreenLocker::default_screen_locker()->delegate()->
+        OnLockBackgroundDisplayed();
   }
 }
 

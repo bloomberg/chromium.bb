@@ -83,12 +83,6 @@ void WebUIScreenLocker::LockScreen() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOCK_WEBUI_READY,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
-                 content::NotificationService::AllSources());
 }
 
 void WebUIScreenLocker::ScreenLockReady() {
@@ -153,6 +147,19 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   }
 }
 
+void WebUIScreenLocker::OnLockWebUIReady() {
+  VLOG(1) << "WebUI ready; lock window is "
+          << (lock_ready_ ? "too" : "not");
+  webui_ready_ = true;
+  if (lock_ready_)
+    ScreenLockReady();
+}
+
+void WebUIScreenLocker::OnLockBackgroundDisplayed() {
+  UMA_HISTOGRAM_TIMES("LockScreen.BackgroundReady",
+                      base::TimeTicks::Now() - lock_time_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker, content::NotificationObserver implementation:
 
@@ -164,19 +171,6 @@ void WebUIScreenLocker::Observe(
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
       const User& user = *content::Details<User>(details).ptr();
       login_display_->OnUserImageChanged(user);
-      break;
-    }
-    case chrome::NOTIFICATION_LOCK_WEBUI_READY: {
-      VLOG(1) << "WebUI ready; lock window is "
-              << (lock_ready_ ? "too" : "not");
-      webui_ready_ = true;
-      if (lock_ready_)
-        ScreenLockReady();
-      break;
-    }
-    case chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED: {
-      UMA_HISTOGRAM_TIMES("LockScreen.BackgroundReady",
-                          base::TimeTicks::Now() - lock_time_);
       break;
     }
     default:

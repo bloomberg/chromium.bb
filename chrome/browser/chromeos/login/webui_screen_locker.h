@@ -66,6 +66,8 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void AnimateAuthenticationSuccess() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual content::WebUI* GetAssociatedWebUI() OVERRIDE;
+  virtual void OnLockWebUIReady() OVERRIDE;
+  virtual void OnLockBackgroundDisplayed() OVERRIDE;
 
   // LoginDisplay::Delegate: implementation
   virtual void CancelPasswordChangedFlow() OVERRIDE;

@@ -60,6 +60,12 @@ class ScreenLockerDelegate {
   // there isn't one.
   virtual content::WebUI* GetAssociatedWebUI();
 
+  // Called when webui lock screen is ready.
+  virtual void OnLockWebUIReady() = 0;
+
+  // Called when webui lock screen wallpaper is loaded and displayed.
+  virtual void OnLockBackgroundDisplayed() = 0;
+
   // Returns screen locker associated with delegate.
   ScreenLocker* screen_locker() { return screen_locker_; }
 
