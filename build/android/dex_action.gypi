@@ -33,6 +33,7 @@
     'input_paths': [],
     'proguard_enabled%': 'false',
     'proguard_enabled_input_path%': '',
+    'dex_no_locals%': 0,
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -51,6 +52,7 @@
     '--configuration-name=<(CONFIGURATION_NAME)',
     '--proguard-enabled=<(proguard_enabled)',
     '--proguard-enabled-input-path=<(proguard_enabled_input_path)',
+    '--no-locals=<(dex_no_locals)',
 
     # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
     '--ignore=>!(echo \'>(_inputs)\' | md5sum)',

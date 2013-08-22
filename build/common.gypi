@@ -924,6 +924,10 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
+    # Set to 1 to enable java code coverage. Instruments classes during build
+    # to produce .ec files during runtime.
+    'emma_coverage%': 0,
+
     # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
     # This is useful for parallel compilation tools which can't support /Zi.
     # Only used on Windows.

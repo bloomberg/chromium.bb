@@ -3,7 +3,8 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""An Ant wrapper that suppresses useless Ant output
+
+"""An Ant wrapper that suppresses useless Ant output.
 
 Ant build scripts output "BUILD SUCCESSFUL" and build timing at the end of
 every build. In the Android build, this just adds a lot of useless noise to the
@@ -27,4 +28,3 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-

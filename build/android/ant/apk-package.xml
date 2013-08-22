@@ -21,6 +21,11 @@
   <property name="out.absolute.dir" location="${out.dir}" />
 
   <property name="sdk.dir" location="${ANDROID_SDK_ROOT}"/>
+  <property name="emma.device.jar" location="${EMMA_DEVICE_JAR}" />
+
+  <condition property="emma.enabled" value="true" else="false">
+    <equals arg1="${EMMA_INSTRUMENT}" arg2="1"/>
+  </condition>
 
   <!-- jar file from where the tasks are loaded -->
   <path id="android.antlibs">
@@ -54,21 +59,43 @@
   <property name="source.dir" value="${SOURCE_DIR}" />
   <property name="source.absolute.dir" location="${source.dir}" />
 
+  <!-- Macro that enables passing a variable list of external jar files
+       to ApkBuilder. -->
+  <macrodef name="package-helper">
+    <element name="extra-jars" optional="yes" />
+    <sequential>
+      <apkbuilder
+          outfolder="${out.absolute.dir}"
+          resourcefile="${resource.package.file.name}"
+          apkfilepath="${out.packaged.file}"
+          debugpackaging="${build.is.packaging.debug}"
+          debugsigning="${build.is.signing.debug}"
+          verbose="${verbose}"
+          hascode="true"
+          previousBuildType="/"
+          buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
+        <dex path="${intermediate.dex.file}"/>
+        <sourcefolder path="${source.absolute.dir}"/>
+        <nativefolder path="${native.libs.absolute.dir}" />
+        <extra-jars/>
+      </apkbuilder>
+    </sequential>
+  </macrodef>
+
+
   <!-- Packages the application. -->
   <target name="-package">
-    <apkbuilder
-        outfolder="${out.absolute.dir}"
-        resourcefile="${resource.package.file.name}"
-        apkfilepath="${out.packaged.file}"
-        debugpackaging="${build.is.packaging.debug}"
-        debugsigning="${build.is.signing.debug}"
-        verbose="${verbose}"
-        hascode="true"
-        previousBuildType="/"
-        buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
-      <dex path="${intermediate.dex.file}"/>
-      <sourcefolder path="${source.absolute.dir}"/>
-      <nativefolder path="${native.libs.absolute.dir}" />
-    </apkbuilder>
+    <if condition="${emma.enabled}">
+      <then>
+        <package-helper>
+          <extra-jars>
+            <jarfile path="${emma.device.jar}" />
+          </extra-jars>
+        </package-helper>
+      </then>
+      <else>
+        <package-helper />
+      </else>
+    </if>
   </target>
 </project>
