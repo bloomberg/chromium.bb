@@ -3177,6 +3177,16 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         playInternal();
 }
 
+void HTMLMediaElement::mediaPlayerRequestSeek(double time)
+{
+    // The player is the source of this seek request.
+    if (m_mediaController) {
+        m_mediaController->setCurrentTime(time, IGNORE_EXCEPTION);
+        return;
+    }
+    setCurrentTime(time, IGNORE_EXCEPTION);
+}
+
 // MediaPlayerPresentation methods
 void HTMLMediaElement::mediaPlayerRepaint()
 {

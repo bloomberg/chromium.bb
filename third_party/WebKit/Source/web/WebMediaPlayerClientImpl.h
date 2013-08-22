@@ -91,6 +91,7 @@ public:
     virtual void addTextTrack(WebInbandTextTrack*);
     virtual void removeTextTrack(WebInbandTextTrack*);
     virtual void mediaSourceOpened(WebMediaSourceNew*);
+    virtual void requestSeek(double);
 
     // MediaPlayer methods:
     virtual void load(const WTF::String& url) OVERRIDE;

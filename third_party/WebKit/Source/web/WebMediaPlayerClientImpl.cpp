@@ -226,6 +226,11 @@ void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSourceNew* webMediaSour
     m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(webMediaSource))));
 }
 
+void WebMediaPlayerClientImpl::requestSeek(double time)
+{
+    m_client->mediaPlayerRequestSeek(time);
+}
+
 // MediaPlayer -------------------------------------------------
 
 void WebMediaPlayerClientImpl::load(const String& url)
