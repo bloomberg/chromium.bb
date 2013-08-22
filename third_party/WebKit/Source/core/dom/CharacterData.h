@@ -37,10 +37,10 @@ public:
     void setData(const String&);
     unsigned length() const { return m_data.length(); }
     String substringData(unsigned offset, unsigned count, ExceptionState&);
-    void appendData(const String&);
-    void insertData(unsigned offset, const String&, ExceptionState&);
-    void deleteData(unsigned offset, unsigned count, ExceptionState&);
-    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&);
+    void appendData(const String&, AttachBehavior = AttachLazily);
+    void insertData(unsigned offset, const String&, ExceptionState&, AttachBehavior = AttachLazily);
+    void deleteData(unsigned offset, unsigned count, ExceptionState&, AttachBehavior = AttachLazily);
+    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&, AttachBehavior = AttachLazily);
 
     bool containsOnlyWhitespace() const;
 
@@ -74,7 +74,7 @@ private:
     virtual bool isCharacterDataNode() const OVERRIDE FINAL { return true; }
     virtual int maxCharacterOffset() const OVERRIDE FINAL;
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
-    void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength);
+    void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, AttachBehavior = AttachLazily);
 };
 
 } // namespace WebCore

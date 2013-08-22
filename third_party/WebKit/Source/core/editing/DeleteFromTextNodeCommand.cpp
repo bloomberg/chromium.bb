@@ -61,7 +61,7 @@ void DeleteFromTextNodeCommand::doApply()
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextDeleted, m_offset, m_text);
 
-    m_node->deleteData(m_offset, m_count, es);
+    m_node->deleteData(m_offset, m_count, es, DeprecatedAttachNow);
 }
 
 void DeleteFromTextNodeCommand::doUnapply()
@@ -71,7 +71,7 @@ void DeleteFromTextNodeCommand::doUnapply()
     if (!m_node->rendererIsEditable())
         return;
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, DeprecatedAttachNow);
 
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextInserted, m_offset, m_text);

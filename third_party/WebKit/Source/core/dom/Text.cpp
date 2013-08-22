@@ -292,13 +292,16 @@ bool Text::needsWhitespaceRenderer()
     return false;
 }
 
-void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData)
+void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, AttachBehavior attachBehavior)
 {
     if (!attached())
         return;
     RenderText* textRenderer = toRenderText(renderer());
     if (!textRenderer || !textRendererIsNeeded(NodeRenderingContext(this, textRenderer->style()))) {
-        reattach();
+        if (attachBehavior == DeprecatedAttachNow)
+            reattach();
+        else
+            lazyReattach();
         return;
     }
     textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
