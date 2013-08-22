@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
@@ -924,7 +923,7 @@ void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
     MediaGalleryPrefId gallery_id) {
   ExtensionPrefs* prefs = GetExtensionPrefs();
   const DictionaryValue* extensions =
-      prefs->pref_service()->GetDictionary(ExtensionPrefs::kExtensionsPref);
+      prefs->pref_service()->GetDictionary(prefs::kExtensionsPref);
   if (!extensions)
     return;
 

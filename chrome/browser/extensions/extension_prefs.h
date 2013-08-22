@@ -53,14 +53,6 @@ class URLPatternSet;
 class ExtensionPrefs : public ExtensionScopedPrefs,
                        public BrowserContextKeyedService {
  public:
-  // Key name for a preference that keeps track of per-extension settings. This
-  // is a dictionary object read from the Preferences file, keyed off of
-  // extension ids.
-  static const char kExtensionsPref[];
-
-  // Key for what version chrome was last time the extension prefs were loaded.
-  static const char kExtensionsLastChromeVersion[];
-
   typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
 
   // Vector containing identifiers for preferences.

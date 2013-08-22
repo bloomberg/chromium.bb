@@ -1297,6 +1297,14 @@ const char kMessageCenterDisabledSystemComponentIds[] =
 extern const char kMessageCenterEnabledSyncNotifierIds[] =
     "message_center.enabled_sync_notifier_ids";
 
+// Dictionary pref that keeps track of per-extension settings. The keys are
+// extension ids.
+const char kExtensionsPref[] = "extensions.settings";
+
+// String pref for what version chrome was last time the extension prefs were
+// loaded.
+const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

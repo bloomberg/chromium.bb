@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -425,7 +424,7 @@ void PreferenceAPI::LoadExtensionControlledPrefs(
   std::string key = extension_id + "." + scope_string;
 
   const DictionaryValue* source_dict = prefs->pref_service()->
-      GetDictionary(ExtensionPrefs::kExtensionsPref);
+      GetDictionary(prefs::kExtensionsPref);
   const DictionaryValue* preferences = NULL;
   if (!source_dict->GetDictionary(key, &preferences))
     return;

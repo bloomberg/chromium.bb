@@ -30,7 +30,7 @@ InstallTracker::InstallTracker(Profile* profile,
       content::Source<Profile>(profile));
 
   pref_change_registrar_.Init(prefs->pref_service());
-  pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref,
+  pref_change_registrar_.Add(prefs::kExtensionsPref,
                              base::Bind(&InstallTracker::OnAppsReordered,
                                         base::Unretained(this)));
 }

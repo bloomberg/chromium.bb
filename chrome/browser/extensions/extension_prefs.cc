@@ -190,7 +190,7 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
   ScopedExtensionPrefUpdate(PrefService* service,
                             const std::string& extension_id) :
-    DictionaryPrefUpdate(service, ExtensionPrefs::kExtensionsPref),
+    DictionaryPrefUpdate(service, prefs::kExtensionsPref),
     extension_id_(extension_id) {}
 
   virtual ~ScopedExtensionPrefUpdate() {
@@ -250,7 +250,7 @@ ExtensionPrefs::ScopedUpdate<T, type_enum_value>::ScopedUpdate(
     ExtensionPrefs* prefs,
     const std::string& extension_id,
     const std::string& key)
-    : update_(prefs->pref_service(), kExtensionsPref),
+    : update_(prefs->pref_service(), prefs::kExtensionsPref),
       extension_id_(extension_id),
       key_(key) {
   DCHECK(Extension::IdIsValid(extension_id_));
@@ -340,12 +340,6 @@ ExtensionPrefs* ExtensionPrefs::Get(Profile* profile) {
   return ExtensionPrefsFactory::GetInstance()->GetForProfile(profile);
 }
 
-// static
-const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
-// static
-const char ExtensionPrefs::kExtensionsLastChromeVersion[] =
-    "extensions.last_chrome_version";
-
 static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
                                              const base::FilePath& child) {
   if (!parent.IsParent(child))
@@ -360,7 +354,7 @@ static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
 }
 
 void ExtensionPrefs::MakePathsRelative() {
-  const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* dict = prefs_->GetDictionary(prefs::kExtensionsPref);
   if (!dict || dict->empty())
     return;
 
@@ -388,7 +382,7 @@ void ExtensionPrefs::MakePathsRelative() {
     return;
 
   // Fix these paths.
-  DictionaryPrefUpdate update(prefs_, kExtensionsPref);
+  DictionaryPrefUpdate update(prefs_, prefs::kExtensionsPref);
   DictionaryValue* update_dict = update.Get();
   for (std::set<std::string>::iterator i = absolute_keys.begin();
        i != absolute_keys.end(); ++i) {
@@ -407,7 +401,8 @@ void ExtensionPrefs::MakePathsRelative() {
 
 const DictionaryValue* ExtensionPrefs::GetExtensionPref(
     const std::string& extension_id) const {
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   const DictionaryValue* extension_dict = NULL;
   if (!extensions ||
       !extensions->GetDictionary(extension_id, &extension_dict)) {
@@ -433,7 +428,7 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   extension_pref_value_map_->UnregisterExtension(extension_id);
   content_settings_store_->UnregisterExtension(extension_id);
-  DictionaryPrefUpdate update(prefs_, kExtensionsPref);
+  DictionaryPrefUpdate update(prefs_, prefs::kExtensionsPref);
   DictionaryValue* dict = update.Get();
   dict->Remove(extension_id, NULL);
 }
@@ -711,7 +706,8 @@ void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
 std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() {
   std::set<std::string> ids;
 
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   if (!extensions)
     return ids;
 
@@ -1288,7 +1284,8 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
 scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
     const std::string& extension_id) const {
   const DictionaryValue* ext = NULL;
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   if (!extensions ||
       !extensions->GetDictionaryWithoutPathExpansion(extension_id, &ext))
     return scoped_ptr<ExtensionInfo>();
@@ -1312,7 +1309,8 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo>
 ExtensionPrefs::GetInstalledExtensionsInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   for (DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     if (!Extension::IdIsValid(extension_id.key()))
@@ -1331,7 +1329,8 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo>
 ExtensionPrefs::GetUninstalledExtensionsInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   for (DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     const DictionaryValue* ext = NULL;
@@ -1459,7 +1458,8 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
     GetAllDelayedInstallInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  const DictionaryValue* extensions =
+      prefs_->GetDictionary(prefs::kExtensionsPref);
   for (DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     if (!Extension::IdIsValid(extension_id.key()))
@@ -1569,7 +1569,7 @@ ExtensionIdList ExtensionPrefs::GetExtensionsFrom(
 
   const DictionaryValue* extension_prefs = NULL;
   const Value* extension_prefs_value =
-      pref_service->GetUserPrefValue(kExtensionsPref);
+      pref_service->GetUserPrefValue(prefs::kExtensionsPref);
   if (!extension_prefs_value ||
       !extension_prefs_value->GetAsDictionary(&extension_prefs)) {
     return result;  // Empty set
@@ -1713,7 +1713,8 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
-      kExtensionsPref, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kExtensionsPref,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionToolbar,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
@@ -1751,7 +1752,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kExtensionAllowedInstallSites,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      kExtensionsLastChromeVersion,
+      prefs::kExtensionsLastChromeVersion,
       std::string(),  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
