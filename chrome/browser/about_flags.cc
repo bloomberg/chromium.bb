@@ -1596,15 +1596,13 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kGaiaProfileInfo)
   },
-#if defined(OS_WIN)
   {
     "disable-app-launcher",
     IDS_FLAGS_DISABLE_APP_LIST_NAME,
     IDS_FLAGS_DISABLE_APP_LIST_DESCRIPTION,
-    kOsAll,
+    kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kDisableAppList)
   },
-#endif
 #if defined(OS_CHROMEOS)
   {
     "disable-user-image-sync",
