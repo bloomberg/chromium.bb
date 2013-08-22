@@ -228,26 +228,12 @@ void DocumentLoader::stopLoading()
     RefPtr<Frame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
-    // In some rare cases, calling FrameLoader::stopLoading could cause isLoading() to return false.
-    // (This can happen when there's a single XMLHttpRequest currently loading and stopLoading causes it
-    // to stop loading. Because of this, we need to save it so we don't return early.
-    bool loading = isLoading();
-
-    if (m_committed) {
-        // Attempt to stop the frame if the document loader is loading, or if it is done loading but
-        // still  parsing. Failure to do so can cause a world leak.
-        Document* doc = m_frame->document();
-
-        if (loading || doc->parsing())
-            m_frame->loader()->stopLoading();
-    }
-
     // Always cancel multipart loaders
     cancelAll(m_multipartResourceLoaders);
 
     clearArchiveResources();
 
-    if (!loading)
+    if (!isLoading())
         return;
 
     if (isLoadingMainResource()) {
