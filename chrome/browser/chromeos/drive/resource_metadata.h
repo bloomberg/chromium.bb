@@ -122,21 +122,6 @@ class ResourceMetadata {
   // synchronously.
   FileError AddEntry(const ResourceEntry& entry);
 
-  // Moves entry specified by |file_path| to the directory specified by
-  // |directory_path| and calls the callback asynchronously. Removes the entry
-  // from the previous parent. |callback| must not be null.
-  // Must be called on the UI thread.
-  void MoveEntryToDirectoryOnUIThread(const base::FilePath& file_path,
-                                      const base::FilePath& directory_path,
-                                      const FileMoveCallback& callback);
-
-  // Renames entry specified by |file_path| with the new name |new_name| and
-  // calls |callback| asynchronously. |callback| must not be null.
-  // Must be called on the UI thread.
-  void RenameEntryOnUIThread(const base::FilePath& file_path,
-                             const std::string& new_name,
-                             const FileMoveCallback& callback);
-
   // Removes entry with |resource_id| from its parent.
   FileError RemoveEntry(const std::string& resource_id);
 
@@ -209,16 +194,6 @@ class ResourceMetadata {
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
-
-  // Used to implement MoveEntryToDirectoryOnUIThread().
-  FileError MoveEntryToDirectory(const base::FilePath& file_path,
-                                 const base::FilePath& directory_path,
-                                 base::FilePath* out_file_path);
-
-  // Used to implement RenameEntryOnUIThread().
-  FileError RenameEntry(const base::FilePath& file_path,
-                        const std::string& new_name,
-                        base::FilePath* out_file_path);
 
   // Continues with GetResourceEntryPairByPathsOnUIThread after the first
   // entry has been asynchronously fetched. This fetches the second entry

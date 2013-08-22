@@ -276,35 +276,6 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::MoveEntryToDirectoryOnUIThread(
-    const base::FilePath& file_path,
-    const base::FilePath& directory_path,
-    const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  PostFileMoveTask(blocking_task_runner_.get(),
-                   base::Bind(&ResourceMetadata::MoveEntryToDirectory,
-                              base::Unretained(this),
-                              file_path,
-                              directory_path),
-                   callback);
-}
-
-void ResourceMetadata::RenameEntryOnUIThread(const base::FilePath& file_path,
-                                             const std::string& new_name,
-                                             const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  PostFileMoveTask(blocking_task_runner_.get(),
-                   base::Bind(&ResourceMetadata::RenameEntry,
-                              base::Unretained(this),
-                              file_path,
-                              new_name),
-                   callback);
-}
-
 FileError ResourceMetadata::RemoveEntry(const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
@@ -498,67 +469,6 @@ base::FilePath ResourceMetadata::GetFilePath(
     path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
   }
   return path;
-}
-
-FileError ResourceMetadata::MoveEntryToDirectory(
-    const base::FilePath& file_path,
-    const base::FilePath& directory_path,
-    base::FilePath* out_file_path) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!directory_path.empty());
-  DCHECK(!file_path.empty());
-  DCHECK(out_file_path);
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  ResourceEntry entry;
-  FileError error = GetResourceEntryByPath(file_path, &entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-  ResourceEntry destination;
-  error = GetResourceEntryByPath(directory_path, &destination);
-  if (error != FILE_ERROR_OK)
-    return error;
-  if (!destination.file_info().is_directory())
-    return FILE_ERROR_NOT_A_DIRECTORY;
-
-  entry.set_parent_local_id(destination.resource_id());
-
-  error = RefreshEntry(entry);
-  if (error == FILE_ERROR_OK)
-    *out_file_path = GetFilePath(entry.resource_id());
-  return error;
-}
-
-FileError ResourceMetadata::RenameEntry(
-    const base::FilePath& file_path,
-    const std::string& new_title,
-    base::FilePath* out_file_path) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!file_path.empty());
-  DCHECK(!new_title.empty());
-  DCHECK(out_file_path);
-
-  DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_title;
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  ResourceEntry entry;
-  FileError error = GetResourceEntryByPath(file_path, &entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  if (base::FilePath::FromUTF8Unsafe(new_title) == file_path.BaseName())
-    return FILE_ERROR_EXISTS;
-
-  entry.set_title(new_title);
-
-  error = RefreshEntry(entry);
-  if (error == FILE_ERROR_OK)
-    *out_file_path = GetFilePath(entry.resource_id());
-  return error;
 }
 
 bool ResourceMetadata::GetResourceIdByPath(const base::FilePath& file_path,
