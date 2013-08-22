@@ -98,6 +98,22 @@ bool OpenItemViaShellNoZoneCheck(const base::FilePath& full_path) {
                          SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT);
 }
 
+bool PreventWindowFromPinning(HWND hwnd) {
+  // This functionality is only available on Win7+. It also doesn't make sense
+  // to do this for Chrome Metro.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
+      base::win::IsMetroProcess())
+    return false;
+  base::win::ScopedComPtr<IPropertyStore> pps;
+  HRESULT result = SHGetPropertyStoreForWindow(
+      hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
+  if (FAILED(result))
+    return false;
+
+  return base::win::SetBooleanValueForPropertyStore(
+             pps, PKEY_AppUserModel_PreventPinning, true);
+}
+
 void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
   SetAppDetailsForWindow(app_id, string16(), string16(), string16(), hwnd);
 }

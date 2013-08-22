@@ -41,6 +41,11 @@ UI_EXPORT bool OpenAnyViaShell(const string16& full_path,
 // Returns 'true' on successful open, 'false' otherwise.
 bool OpenItemWithExternalApp(const string16& full_path);
 
+// Disables the ability of the specified window to be pinned to the taskbar or
+// the Start menu. This will remove "Pin this program to taskbar" from the
+// taskbar menu of the specified window.
+UI_EXPORT bool PreventWindowFromPinning(HWND hwnd);
+
 // Sets the application id given as the Application Model ID for the window
 // specified.  This method is used to insure that different web applications
 // do not group together on the Win7 task bar.
