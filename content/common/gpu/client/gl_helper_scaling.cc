@@ -543,17 +543,12 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
     vertex_header.append(
         "precision highp float;\n"
         "attribute vec2 a_position;\n"
-        "attribute vec2 a_texcoord;\n");
+        "attribute vec2 a_texcoord;\n"
+        "uniform vec4 src_subrect;\n");
 
     fragment_header.append(
         "precision mediump float;\n"
         "uniform sampler2D s_texture;\n");
-
-    shared_variables.append(
-        "uniform vec4 src_subrect;\n"
-        "uniform vec2 src_pixelsize;\n"
-        "uniform vec2 dst_pixelsize;\n"
-        "uniform vec2 scaling_vector;\n");
 
     vertex_program.append(
         "  gl_Position = vec4(a_position, 0.0, 1.0);\n"
@@ -573,6 +568,9 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         // or exactly 4x.
         shared_variables.append(
             "varying vec4 v_texcoords;\n");  // 2 texcoords packed in one quad
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
@@ -582,7 +580,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         fragment_program.append(
             "  gl_FragColor = (texture2D(s_texture, v_texcoords.xy) +\n"
             "                  texture2D(s_texture, v_texcoords.zw)) / 2.0;\n");
-         break;
+        break;
 
       case SHADER_BILINEAR3:
         // This is kind of like doing 1.5 passes of the BILINEAR shader.
@@ -590,6 +588,9 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords1;\n"  // 2 texcoords packed in one quad
             "varying vec2 v_texcoords2;\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 3.0;\n"
@@ -600,13 +601,16 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "  gl_FragColor = (texture2D(s_texture, v_texcoords1.xy) +\n"
             "                  texture2D(s_texture, v_texcoords1.zw) +\n"
             "                  texture2D(s_texture, v_texcoords2)) / 3.0;\n");
-         break;
+        break;
 
       case SHADER_BILINEAR4:
         // This is equivialent to three passes of the BILINEAR shader above,
         // It can be used to scale an image down 2.0x-4.0x or exactly 8x.
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 8.0;\n"
@@ -620,7 +624,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "      texture2D(s_texture, v_texcoords[0].zw) +\n"
             "      texture2D(s_texture, v_texcoords[1].xy) +\n"
             "      texture2D(s_texture, v_texcoords[1].zw)) / 4.0;\n");
-         break;
+        break;
 
       case SHADER_BILINEAR2X2:
         // This is equivialent to four passes of the BILINEAR shader above.
@@ -629,6 +633,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         // scale an image down by exactly 4x in both dimensions.
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
+        vertex_header.append(
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = src_subrect.zw / 4.0 / dst_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord + vec2(step.x, step.y);\n"
@@ -641,7 +647,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "      texture2D(s_texture, v_texcoords[0].zw) +\n"
             "      texture2D(s_texture, v_texcoords[1].xy) +\n"
             "      texture2D(s_texture, v_texcoords[1].zw)) / 4.0;\n");
-         break;
+        break;
 
       case SHADER_BICUBIC_HALF_1D:
         // This scales down texture by exactly half in one dimension.
@@ -653,6 +659,9 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "const float CenterWeight = 35.0 / 64.0;\n"
             "const float LobeWeight = -3.0 / 64.0;\n"
             "varying vec4 v_texcoords[2];\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 src_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = src_subrect.zw * scaling_vector / src_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord - LobeDist * step;\n"
@@ -683,6 +692,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         vertex_program.append(
             "  v_texcoord = texcoord;\n");
         fragment_header.append(
+            "uniform vec2 src_pixelsize;\n"
+            "uniform vec2 scaling_vector;\n"
             "const float a = -0.5;\n"
             // This function is equivialent to calling the bicubic
             // function with x-1, x, 1-x and 2-x
@@ -718,8 +729,10 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         // because single-component textures are not renderable on all
         // architectures.
         shared_variables.append(
-            "varying vec4 v_texcoords[2];\n"
-            "uniform vec4 color_weights;\n");
+            "varying vec4 v_texcoords[2];\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
@@ -727,6 +740,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
             "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
             "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
+        fragment_header.append(
+            "uniform vec4 color_weights;\n");
         fragment_program.append(
             "  gl_FragColor = color_weights * mat4(\n"
             "    vec4(texture2D(s_texture, v_texcoords[0].xy).rgb, 1.0),\n"
@@ -765,6 +780,9 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         //
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
@@ -806,6 +824,9 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         // interpolation in the sampler takes care of that.
         shared_variables.append(
             "varying vec4 v_texcoords;\n");
+        vertex_header.append(
+            "uniform vec2 scaling_vector;\n"
+            "uniform vec2 dst_pixelsize;\n");
         vertex_program.append(
             "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 2.0;\n"

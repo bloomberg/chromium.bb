@@ -1072,12 +1072,8 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
 
-  // TODO(zmo): change the expectation from FALSE to TRUE once we turn
-  // on DetectUniformsMismatch().
-  EXPECT_FALSE(program->DetectUniformsMismatch());
-  // TODO(zmo): change the link expectation from true to false once we
-  // turn on DetectUniformsMismatch().
-  EXPECT_TRUE(LinkAsExpected(program, true));
+  EXPECT_TRUE(program->DetectUniformsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
 TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {

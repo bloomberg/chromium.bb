@@ -1008,9 +1008,7 @@ bool Program::DetectUniformsMismatch() const {
         // declared by other shader, then the type and precision must match.
         if (map_entry->second == type)
           continue;
-        // TODO(zmo): uncomment the next line once we fix the incorrect
-        // shaders for Aura.
-        // return true;
+        return true;
       }
     }
   }
