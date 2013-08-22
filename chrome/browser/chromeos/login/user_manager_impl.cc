@@ -799,16 +799,15 @@ void UserManagerImpl::OnStateChanged() {
       state != GoogleServiceAuthError::REQUEST_CANCELED) {
     // Invalidate OAuth token to force Gaia sign-in flow. This is needed
     // because sign-out/sign-in solution is suggested to the user.
-    // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
-    // implemented.
-    DVLOG(1) << "Invalidate OAuth token because of a sync error.";
+    // TODO(nkostylev): Remove after crosbug.com/25978 is implemented.
+    LOG(ERROR) << "Invalidate OAuth token because of a sync error: "
+               << observed_sync_service_->GetAuthError().ToString();
     // http://crbug.com/230860
     // TODO(nkostylev): Figure out whether we want to have observers
     // for each logged in user.
     // TODO(nkostyelv): Change observer after active user has changed.
-    SaveUserOAuthStatus(
-        active_user_->email(),
-        User::OAUTH2_TOKEN_STATUS_INVALID);
+    SaveUserOAuthStatus(active_user_->email(),
+                        User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 }
 
