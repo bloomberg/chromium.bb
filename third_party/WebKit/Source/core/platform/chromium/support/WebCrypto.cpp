@@ -43,6 +43,7 @@ void WebCryptoResult::completeWithError()
 
 void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
 {
+    RELEASE_ASSERT(!buffer.isNull());
     m_impl->completeWithBuffer(buffer);
     reset();
 }
@@ -50,6 +51,7 @@ void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
 void WebCryptoResult::completeWithBuffer(const void* bytes, size_t bytesSize)
 {
     WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
+    RELEASE_ASSERT(!buffer.isNull());
     memcpy(buffer.data(), bytes, bytesSize);
     completeWithBuffer(buffer);
 }
