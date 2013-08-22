@@ -399,6 +399,8 @@
         'disk_cache/simple/simple_index.h',
         'disk_cache/simple/simple_index_file.cc',
         'disk_cache/simple/simple_index_file.h',
+        'disk_cache/simple/simple_index_file_posix.cc',
+        'disk_cache/simple/simple_index_file_win.cc',
         'disk_cache/simple/simple_net_log_parameters.cc',
         'disk_cache/simple/simple_net_log_parameters.h',
         'disk_cache/simple/simple_synchronous_entry.cc',

@@ -97,6 +97,9 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
  private:
   friend class WrappedSimpleIndexFile;
 
+  // Used for cache directory traversal.
+  typedef base::Callback<void (const base::FilePath&)> EntryFileCallback;
+
   // When loading the entries from disk, add this many extra hash buckets to
   // prevent reallocation on the IO thread when merging in new live entries.
   static const int kExtraSizeForMerge = 512;
@@ -123,6 +126,15 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   static void Deserialize(const char* data, int data_len,
                           SimpleIndexLoadResult* out_result);
 
+  // Implemented either in simple_index_file_posix.cc or
+  // simple_index_file_win.cc. base::FileEnumerator turned out to be very
+  // expensive in terms of memory usage therefore it's used only on non-POSIX
+  // environments for convenience (for now). Returns whether the traversal
+  // succeeded.
+  static bool TraverseCacheDirectory(
+      const base::FilePath& cache_path,
+      const EntryFileCallback& entry_file_callback);
+
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
   static void SyncRestoreFromDisk(const base::FilePath& cache_directory,
@@ -143,9 +155,6 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   const base::FilePath cache_directory_;
   const base::FilePath index_file_;
   const base::FilePath temp_index_file_;
-
-  static const char kIndexFileName[];
-  static const char kTempIndexFileName[];
 
   DISALLOW_COPY_AND_ASSIGN(SimpleIndexFile);
 };
