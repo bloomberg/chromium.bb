@@ -295,7 +295,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
 
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root_layer = Layer::Create();
-    root_layer->SetBounds(gfx::Size(400,400));
+    root_layer->SetBounds(gfx::Size(400, 400));
     layer_tree_host()->SetRootLayer(root_layer);
 
     scoped_refptr<Layer> content_layer = FakeContentLayer::Create(&client_);
@@ -362,12 +362,12 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
         // scrolling) won't damage the scrollbar. Do this before the other
         // tests, as they can cause commits that will later damage the
         // scrollbar. http://crbug.com/276657
-        scroll_layer->SetPosition(gfx::Point(1,1));
+        scroll_layer->SetPosition(gfx::Point(1, 1));
         scroll_layer->SetScrollOffset(scroll_layer->scroll_offset());
         host_impl->SetNeedsRedraw();
         break;
       case 2:
-        host_impl->ScrollBegin(gfx::Point(1,1), InputHandler::Wheel);
+        host_impl->ScrollBegin(gfx::Point(1, 1), InputHandler::Wheel);
         EXPECT_TRUE(host_impl->ScrollBy(gfx::Point(),
                                         gfx::Vector2dF(10.0, 10.0)));
         break;
@@ -376,7 +376,6 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
         host_impl->SetNeedsRedraw();
         break;
     }
-
   }
 
   virtual void AfterTest() OVERRIDE {
