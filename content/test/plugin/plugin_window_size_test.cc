@@ -17,7 +17,7 @@ NPError PluginWindowSizeTest::SetWindow(NPWindow* pNPWindow) {
     return NPERR_NO_ERROR;
 
   HWND window = reinterpret_cast<HWND>(pNPWindow->window);
-  if (!pNPWindow || !::IsWindow(window)) {
+  if (!::IsWindow(window)) {
     SetError("Invalid arguments passed in");
     return NPERR_INVALID_PARAM;
   }

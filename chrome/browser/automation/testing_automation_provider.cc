@@ -5458,14 +5458,14 @@ void TestingAutomationProvider::IsPageActionVisible(
     return;
   }
   Browser* browser = automation_util::GetBrowserForTab(tab);
+  if (!browser) {
+    reply.SendError("Tab does not belong to an open browser");
+    return;
+  }
   const Extension* extension;
   if (!GetEnabledExtensionFromJSONArgs(
           args, "extension_id", browser->profile(), &extension, &error)) {
     reply.SendError(error);
-    return;
-  }
-  if (!browser) {
-    reply.SendError("Tab does not belong to an open browser");
     return;
   }
   ExtensionAction* page_action =

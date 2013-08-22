@@ -32,7 +32,7 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
     return NPERR_NO_ERROR;
 
   HWND parent = reinterpret_cast<HWND>(pNPWindow->window);
-  if (!pNPWindow || !::IsWindow(parent)) {
+  if (!::IsWindow(parent)) {
     SetError("Invalid arguments passed in");
     return NPERR_INVALID_PARAM;
   }
