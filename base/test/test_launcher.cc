@@ -358,10 +358,6 @@ int LaunchChildGTestProcess(const CommandLine& command_line,
   CommandLine new_command_line(command_line.GetProgram());
   CommandLine::SwitchMap switches = command_line.GetSwitches();
 
-  // Strip out gtest_output flag because otherwise we would overwrite results
-  // of the other tests.
-  switches.erase(kGTestOutputFlag);
-
   // Strip out gtest_repeat flag - this is handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
 

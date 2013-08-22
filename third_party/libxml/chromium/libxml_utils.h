@@ -73,6 +73,9 @@ class XmlReader {
   // returns true and |value| is set to "a".
   bool NodeAttribute(const char* name, std::string* value);
 
+  // Returns true if the node is a closing element (e.g. </foo>).
+  bool IsClosingElement();
+
   // Helper functions not provided by libxml ----------------------------------
 
   // Return the string content within an element.

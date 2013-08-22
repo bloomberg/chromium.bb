@@ -86,7 +86,17 @@ int DoRunTestInternal(const testing::TestCase* test_case,
     }
   }
 
-  CommandLine new_cmd_line(command_line);
+  CommandLine new_cmd_line(command_line.GetProgram());
+  CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Strip out gtest_output flag because otherwise we would overwrite results
+  // of the other tests.
+  switches.erase(base::kGTestOutputFlag);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_cmd_line.AppendSwitchNative(iter->first, iter->second);
+  }
 
   // Always enable disabled tests.  This method is not called with disabled
   // tests unless this flag was specified to the browser test executable.

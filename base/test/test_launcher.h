@@ -30,6 +30,8 @@ extern const char kGTestOutputFlag[];
 
 // Structure containing result of a single test.
 struct TestResult {
+  std::string GetFullName() const { return test_case_name + "." + test_name; }
+
   TestResult();
 
   // Name of the test case (before the dot, e.g. "A" for test "A.B").
