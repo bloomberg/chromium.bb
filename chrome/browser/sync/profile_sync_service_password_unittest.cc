@@ -256,8 +256,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       return true;
     if (pf1.username_value < pf2.username_value)
       return true;
-    if (pf1.username_value < pf2.username_value)
-      return true;
     if (pf1.password_element < pf2.password_element)
       return true;
     if (pf1.password_value < pf2.password_value)
