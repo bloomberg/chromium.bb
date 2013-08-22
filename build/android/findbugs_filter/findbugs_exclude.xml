@@ -21,6 +21,14 @@ In particular, ~ at the start of a string means it's a regex.
   <Match>
     <Class name="~org\.chromium\.content\..*\.NativeLibraries.*?" />
   </Match>
+  <!--
+  Ignore bugs in CleanupReferenceTest.java (redundant null check)
+  TODO(joth): Group all GC related tests and filter them out, since the null
+  check is necessary to make sure the nullification is flushed to memory.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.content\..*\.CleanupReferenceTest.*?" />
+  </Match>
   <!-- Ignore errors in JavaBridge due to reflection. -->
   <Match>
     <Class name="~.*\.JavaBridge.*"/>
