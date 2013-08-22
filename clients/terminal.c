@@ -20,7 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
-#define _XOPEN_SOURCE 700 /* for strnlen, snprintf and wcwidth */
+#include <config.h>
 
 #include <stdbool.h>
 #include <stdint.h>
