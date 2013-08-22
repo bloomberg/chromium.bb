@@ -48,7 +48,6 @@
     },
     'VCLinkerTool': {
       'OutputFile': '<(output_dir)/mini_installer.exe',
-      'MapFileName': '<(output_dir)/mini_installer.map',
       'RandomizedBaseAddress': '1',
       'DataExecutionPrevention': '0',
       'AdditionalLibraryDirectories': [
@@ -56,7 +55,6 @@
       ],
       'DelayLoadDLLs': [],
       'EntryPointSymbol': 'MainEntryPoint',
-      'GenerateMapFile': 'true',
       'IgnoreAllDefaultLibraries': 'true',
       'OptimizeForWindows98': '1',
       'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS

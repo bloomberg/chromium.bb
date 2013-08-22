@@ -61,7 +61,6 @@
             ],
             'DelayLoadDLLs': [],
             'EntryPointSymbol': 'MainEntryPoint',
-            'GenerateMapFile': 'true',
             'IgnoreAllDefaultLibraries': 'true',
             'OptimizeForWindows98': '1',
             'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
