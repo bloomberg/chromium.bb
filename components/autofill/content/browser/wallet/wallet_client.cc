@@ -258,6 +258,7 @@ const char kInstrumentExpYearKey[] = "instrument.credit_card.exp_year";
 const char kInstrumentType[] = "instrument.type";
 const char kInstrumentPhoneNumberKey[] = "instrument_phone_number";
 const char kMerchantDomainKey[] = "merchant_domain";
+const char kNewWalletUser[] = "new_wallet_user";
 const char kPhoneNumberRequired[] = "phone_number_required";
 const char kReasonKey[] = "reason";
 const char kRiskCapabilitiesKey[] = "supported_risk_challenge";
@@ -281,12 +282,14 @@ WalletClient::FullWalletRequest::FullWalletRequest(
     const std::string& address_id,
     const GURL& source_url,
     const std::string& google_transaction_id,
-    const std::vector<RiskCapability> risk_capabilities)
+    const std::vector<RiskCapability> risk_capabilities,
+    bool new_wallet_user)
     : instrument_id(instrument_id),
       address_id(address_id),
       source_url(source_url),
       google_transaction_id(google_transaction_id),
-      risk_capabilities(risk_capabilities) {}
+      risk_capabilities(risk_capabilities),
+      new_wallet_user(new_wallet_user) {}
 
 WalletClient::FullWalletRequest::~FullWalletRequest() {}
 
@@ -368,6 +371,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetBoolean(kUseMinimalAddresses, false);
   request_dict.SetBoolean(kPhoneNumberRequired, true);
+  request_dict.SetBoolean(kNewWalletUser, full_wallet_request.new_wallet_user);
 
   request_dict.SetString(kSelectedInstrumentIdKey,
                          full_wallet_request.instrument_id);

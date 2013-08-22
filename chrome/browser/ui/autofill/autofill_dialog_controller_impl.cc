@@ -3148,7 +3148,8 @@ void AutofillDialogControllerImpl::GetFullWallet() {
       active_address_id_,
       source_url_,
       wallet_items_->google_transaction_id(),
-      capabilities));
+      capabilities,
+      wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)));
 }
 
 void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(

@@ -319,6 +319,23 @@ const char kGetFullWalletValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"new_wallet_user\":false,"
+        "\"phone_number_required\":true,"
+        "\"risk_params\":\"risky business\","
+        "\"selected_address_id\":\"shipping_address_id\","
+        "\"selected_instrument_id\":\"instrument_id\","
+        "\"supported_risk_challenge\":"
+        "["
+        "],"
+        "\"use_minimal_addresses\":false"
+    "}";
+
+const char kGetFullWalletValidRequestNewUser[] =
+    "{"
+        "\"feature\":\"REQUEST_AUTOCOMPLETE\","
+        "\"google_transaction_id\":\"google_transaction_id\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"new_wallet_user\":true,"
         "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
@@ -334,6 +351,7 @@ const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
+        "\"new_wallet_user\":false,"
         "\"phone_number_required\":true,"
         "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
@@ -1037,11 +1055,32 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
       "shipping_address_id",
       GURL(kMerchantUrl),
       "google_transaction_id",
-      std::vector<WalletClient::RiskCapability>());
+      std::vector<WalletClient::RiskCapability>(),
+      false);
   wallet_client_->GetFullWallet(full_wallet_request);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
                                     kGetFullWalletValidRequest,
+                                    kGetFullWalletValidResponse,
+                                    3U);
+  EXPECT_EQ(1U, delegate_.full_wallets_received());
+}
+
+TEST_F(WalletClientTest, GetFullWalletSuccessNewuser) {
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
+  delegate_.ExpectBaselineMetrics();
+
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      "google_transaction_id",
+      std::vector<WalletClient::RiskCapability>(),
+      true);
+  wallet_client_->GetFullWallet(full_wallet_request);
+
+  VerifyAndFinishFormEncodedRequest(net::HTTP_OK,
+                                    kGetFullWalletValidRequestNewUser,
                                     kGetFullWalletValidResponse,
                                     3U);
   EXPECT_EQ(1U, delegate_.full_wallets_received());
@@ -1058,7 +1097,8 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
       "shipping_address_id",
       GURL(kMerchantUrl),
       "google_transaction_id",
-      risk_capabilities);
+      risk_capabilities,
+      false);
   wallet_client_->GetFullWallet(full_wallet_request);
 
   VerifyAndFinishFormEncodedRequest(
@@ -1082,7 +1122,8 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
       "shipping_address_id",
       GURL(kMerchantUrl),
       "google_transaction_id",
-      std::vector<WalletClient::RiskCapability>());
+      std::vector<WalletClient::RiskCapability>(),
+      false);
   wallet_client_->GetFullWallet(full_wallet_request);
 
   VerifyAndFinishFormEncodedRequest(net::HTTP_OK,

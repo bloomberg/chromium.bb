@@ -110,7 +110,8 @@ class WalletClient : public net::URLFetcherDelegate {
                       const std::string& address_id,
                       const GURL& source_url,
                       const std::string& google_transaction_id,
-                      const std::vector<RiskCapability> risk_capabilities);
+                      const std::vector<RiskCapability> risk_capabilities,
+                      bool new_wallet_user);
     ~FullWalletRequest();
 
     // The ID of the backing instrument. Should have been selected by the user
@@ -129,6 +130,9 @@ class WalletClient : public net::URLFetcherDelegate {
 
     // The Risk challenges supported by the user of WalletClient
     std::vector<RiskCapability> risk_capabilities;
+
+    // True if the user does not have Wallet profile.
+    bool new_wallet_user;
 
    private:
     DISALLOW_ASSIGN(FullWalletRequest);
