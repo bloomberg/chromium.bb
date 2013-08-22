@@ -30,7 +30,7 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
   virtual ~StreamTextureManagerAndroid();
 
   // implement gpu::StreamTextureManager:
-  virtual GLuint CreateStreamTexture(uint32 service_id,
+  virtual uint32 CreateStreamTexture(uint32 service_id,
                                      uint32 client_id) OVERRIDE;
   virtual void DestroyStreamTexture(uint32 service_id) OVERRIDE;
   virtual gpu::StreamTexture* LookupStreamTexture(uint32 service_id) OVERRIDE;

@@ -212,9 +212,9 @@
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
+#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_android_impl.h"
-#include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "skia/ext/platform_canvas.h"
@@ -3037,7 +3037,9 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_ptr<StreamTextureFactory> stream_texture_factory;
   if (UsingSynchronousRendererCompositor()) {
-    stream_texture_factory.reset(new StreamTextureFactorySynchronousImpl);
+    SynchronousCompositorFactory* factory =
+        SynchronousCompositorFactory::GetInstance();
+    stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
     stream_texture_factory.reset(new StreamTextureFactoryImpl(
         context_provider->Context3d(), gpu_channel_host, routing_id_));

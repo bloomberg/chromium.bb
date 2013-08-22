@@ -18,8 +18,8 @@ class MockStreamTextureManager : public StreamTextureManager {
   MockStreamTextureManager();
   virtual ~MockStreamTextureManager();
 
-  MOCK_METHOD2(CreateStreamTexture, GLuint(uint32 service_id,
-                                           uint32 client_id));
+  MOCK_METHOD2(CreateStreamTexture,
+               uint32(uint32 service_id, uint32 client_id));
   MOCK_METHOD1(DestroyStreamTexture, void(uint32 service_id));
   MOCK_METHOD1(LookupStreamTexture, StreamTexture*(uint32 service_id));
 

@@ -16,6 +16,12 @@ namespace gfx {
 class Size;
 }
 
+#if defined(OS_ANDROID)
+namespace gfx {
+class SurfaceTextureBridge;
+}
+#endif
+
 namespace gpu {
 
 namespace gles2 {
@@ -73,6 +79,11 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   virtual gles2::GLES2Implementation* GetImplementation() = 0;
+
+#if defined(OS_ANDROID)
+  virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+      uint32 stream_id) = 0;
+#endif
 };
 
 }  // namespace gpu

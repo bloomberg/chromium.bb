@@ -34,6 +34,11 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_share_group.h"
 
+#if defined(OS_ANDROID)
+#include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
+#include "ui/gl/android/surface_texture_bridge.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -379,11 +384,21 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       share_group = new gfx::GLShareGroup;
   }
 
+  StreamTextureManager* stream_texture_manager = NULL;
+#if defined(OS_ANDROID)
+  stream_texture_manager = stream_texture_manager_ =
+      context_group ? context_group->stream_texture_manager_.get()
+                    : new StreamTextureManagerInProcess;
+#endif
+
   bool bind_generates_resource = false;
   decoder_.reset(gles2::GLES2Decoder::Create(
       context_group ? context_group->decoder_->GetContextGroup()
-                    : new gles2::ContextGroup(
-                          NULL, NULL, NULL, NULL, bind_generates_resource)));
+                    : new gles2::ContextGroup(NULL,
+                                              NULL,
+                                              NULL,
+                                              stream_texture_manager,
+                                              bind_generates_resource)));
 
   gpu_scheduler_.reset(
       new GpuScheduler(command_buffer.get(), decoder_.get(), decoder_.get()));
@@ -711,6 +726,14 @@ base::Closure InProcessCommandBuffer::WrapCallback(
                  callback_on_client_thread);
   return wrapped_callback;
 }
+
+#if defined(OS_ANDROID)
+scoped_refptr<gfx::SurfaceTextureBridge>
+InProcessCommandBuffer::GetSurfaceTexture(uint32 stream_id) {
+  DCHECK(stream_texture_manager_);
+  return stream_texture_manager_->GetSurfaceTexture(stream_id);
+}
+#endif
 
 // static
 void InProcessCommandBuffer::EnableVirtualizedContext() {

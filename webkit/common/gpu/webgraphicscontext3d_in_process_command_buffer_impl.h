@@ -468,6 +468,9 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
   virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
 
+  virtual WebGLId createStreamTextureCHROMIUM(WebGLId texture);
+  virtual void destroyStreamTextureCHROMIUM(WebGLId texture);
+
   virtual void texStorage2DEXT(
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);

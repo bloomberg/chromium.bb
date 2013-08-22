@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
 
@@ -22,8 +21,7 @@ class StreamTextureManager {
   }
 
   // Returns an identifier for the object, or NULL if not successful.
-  virtual GLuint CreateStreamTexture(uint32 service_id,
-                                     uint32 client_id) = 0;
+  virtual uint32 CreateStreamTexture(uint32 service_id, uint32 client_id) = 0;
 
   virtual void DestroyStreamTexture(uint32 service_id) = 0;
 

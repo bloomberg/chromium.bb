@@ -30,6 +30,10 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_image.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gl/android/surface_texture_bridge.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -64,6 +68,11 @@ class GLInProcessContextImpl
   virtual void SignalQuery(unsigned query, const base::Closure& callback)
       OVERRIDE;
   virtual gles2::GLES2Implementation* GetImplementation() OVERRIDE;
+
+#if defined(OS_ANDROID)
+  virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+      uint32 stream_id) OVERRIDE;
+#endif
 
  private:
   void Destroy();
@@ -332,6 +341,13 @@ void GLInProcessContextImpl::SignalQuery(
     PollQueryCallbacks();
   }
 }
+
+#if defined(OS_ANDROID)
+scoped_refptr<gfx::SurfaceTextureBridge>
+GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
+  return command_buffer_->GetSurfaceTexture(stream_id);
+}
+#endif
 
 }  // anonymous namespace
 

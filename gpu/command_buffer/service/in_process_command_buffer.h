@@ -31,6 +31,15 @@ class GLSurface;
 class Size;
 }
 
+#if defined(OS_ANDROID)
+namespace gfx {
+class SurfaceTextureBridge;
+}
+namespace gpu {
+class StreamTextureManagerInProcess;
+}
+#endif
+
 namespace gpu {
 
 namespace gles2 {
@@ -116,6 +125,11 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
      virtual void QueueTask(const base::Closure& task) = 0;
   };
 
+#if defined(OS_ANDROID)
+  scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+      uint32 stream_id);
+#endif
+
  private:
   bool InitializeOnGpuThread(bool is_offscreen,
                              gfx::AcceleratedWidget window,
@@ -162,6 +176,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
   scoped_ptr<GpuControl> gpu_control_;
+
+#if defined(OS_ANDROID)
+  scoped_refptr<StreamTextureManagerInProcess> stream_texture_manager_;
+#endif
 
   // Only used with explicit scheduling and the gpu thread is the same as
   // the client thread.

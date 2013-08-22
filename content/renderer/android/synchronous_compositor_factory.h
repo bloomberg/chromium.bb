@@ -20,6 +20,7 @@ class OutputSurface;
 namespace content {
 
 class InputHandlerManagerClient;
+class StreamTextureFactory;
 
 // Decouples creation from usage of the parts needed for the synchonous
 // compositor rendering path. In practice this is only used in single
@@ -44,6 +45,8 @@ class SynchronousCompositorFactory {
       GetOffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() = 0;
+  virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
+      int view_id) = 0;
 
  protected:
   SynchronousCompositorFactory() {}
