@@ -74,16 +74,16 @@ public:
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
-class InputType {
-    WTF_MAKE_NONCOPYABLE(InputType);
+class InputTypeUI {
+    WTF_MAKE_NONCOPYABLE(InputTypeUI);
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*, const AtomicString&);
-    static PassOwnPtr<InputType> createText(HTMLInputElement*);
-    virtual ~InputType();
+    static PassOwnPtr<InputTypeUI> create(HTMLInputElement*, const AtomicString&);
+    static PassOwnPtr<InputTypeUI> createText(HTMLInputElement*);
+    virtual ~InputTypeUI();
 
-    static bool themeSupportsDataListUI(InputType*);
+    static bool themeSupportsDataListUI(InputTypeUI*);
 
     virtual const AtomicString& formControlType() const = 0;
     virtual bool canChangeFromAnotherType() const;
@@ -270,7 +270,7 @@ public:
     // return NaN or Infinity only if defaultValue is NaN or Infinity.
     virtual Decimal parseToNumber(const String&, const Decimal& defaultValue) const;
 
-    // Parses the specified string for this InputType, and returns true if it
+    // Parses the specified string for this InputTypeUI, and returns true if it
     // is successfully parsed. An instance pointed by the DateComponents*
     // parameter will have parsed values and be modified even if the parsing
     // fails. The DateComponents* parameter may be 0.
@@ -295,7 +295,7 @@ public:
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
 protected:
-    InputType(HTMLInputElement* element) : m_element(element) { }
+    InputTypeUI(HTMLInputElement* element) : m_element(element) { }
     HTMLInputElement* element() const { return m_element; }
     Chrome* chrome() const;
     Decimal parseToNumberOrNaN(const String&) const;
@@ -305,7 +305,7 @@ private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
     void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
 
-    // Raw pointer because the HTMLInputElement object owns this InputType object.
+    // Raw pointer because the HTMLInputElement object owns this InputTypeUI object.
     HTMLInputElement* m_element;
 };
 

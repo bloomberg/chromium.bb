@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/html/InputType.h"
+#include "core/html/InputTypeUI.h"
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
@@ -131,38 +131,38 @@ PassOwnPtr<InputType> InputType::createText(HTMLInputElement* element)
     return TextInputType::create(element);
 }
 
-InputType::~InputType()
+InputTypeUI::~InputTypeUI()
 {
 }
 
-bool InputType::themeSupportsDataListUI(InputType* type)
+bool InputTypeUI::themeSupportsDataListUI(InputType* type)
 {
     Document* document = type->element()->document();
     RefPtr<RenderTheme> theme = document->page() ? document->page()->theme() : RenderTheme::defaultTheme();
     return theme->supportsDataListUI(type->formControlType());
 }
 
-bool InputType::isTextField() const
+bool InputTypeUI::isTextField() const
 {
     return false;
 }
 
-bool InputType::isTextType() const
+bool InputTypeUI::isTextType() const
 {
     return false;
 }
 
-bool InputType::isRangeControl() const
+bool InputTypeUI::isRangeControl() const
 {
     return false;
 }
 
-bool InputType::shouldSaveAndRestoreFormControlState() const
+bool InputTypeUI::shouldSaveAndRestoreFormControlState() const
 {
     return true;
 }
 
-FormControlState InputType::saveFormControlState() const
+FormControlState InputTypeUI::saveFormControlState() const
 {
     String currentValue = element()->value();
     if (currentValue == element()->defaultValue())
@@ -170,86 +170,86 @@ FormControlState InputType::saveFormControlState() const
     return FormControlState(currentValue);
 }
 
-void InputType::restoreFormControlState(const FormControlState& state)
+void InputTypeUI::restoreFormControlState(const FormControlState& state)
 {
     element()->setValue(state[0]);
 }
 
-bool InputType::isFormDataAppendable() const
+bool InputTypeUI::isFormDataAppendable() const
 {
     // There is no form data unless there's a name for non-image types.
     return !element()->name().isEmpty();
 }
 
-bool InputType::appendFormData(FormDataList& encoding, bool) const
+bool InputTypeUI::appendFormData(FormDataList& encoding, bool) const
 {
     // Always successful.
     encoding.appendData(element()->name(), element()->value());
     return true;
 }
 
-double InputType::valueAsDate() const
+double InputTypeUI::valueAsDate() const
 {
     return DateComponents::invalidMilliseconds();
 }
 
-void InputType::setValueAsDate(double, ExceptionState& es) const
+void InputTypeUI::setValueAsDate(double, ExceptionState& es) const
 {
     es.throwDOMException(InvalidStateError);
 }
 
-double InputType::valueAsDouble() const
+double InputTypeUI::valueAsDouble() const
 {
     return numeric_limits<double>::quiet_NaN();
 }
 
-void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
+void InputTypeUI::setValueAsDouble(double doubleValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
     setValueAsDecimal(Decimal::fromDouble(doubleValue), eventBehavior, es);
 }
 
-void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& es) const
+void InputTypeUI::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& es) const
 {
     es.throwDOMException(InvalidStateError);
 }
 
-bool InputType::supportsValidation() const
+bool InputTypeUI::supportsValidation() const
 {
     return true;
 }
 
-bool InputType::typeMismatchFor(const String&) const
+bool InputTypeUI::typeMismatchFor(const String&) const
 {
     return false;
 }
 
-bool InputType::typeMismatch() const
+bool InputTypeUI::typeMismatch() const
 {
     return false;
 }
 
-bool InputType::supportsRequired() const
+bool InputTypeUI::supportsRequired() const
 {
     // Almost all validatable types support @required.
     return supportsValidation();
 }
 
-bool InputType::valueMissing(const String&) const
+bool InputTypeUI::valueMissing(const String&) const
 {
     return false;
 }
 
-bool InputType::hasBadInput() const
+bool InputTypeUI::hasBadInput() const
 {
     return false;
 }
 
-bool InputType::patternMismatch(const String&) const
+bool InputTypeUI::patternMismatch(const String&) const
 {
     return false;
 }
 
-bool InputType::rangeUnderflow(const String& value) const
+bool InputTypeUI::rangeUnderflow(const String& value) const
 {
     if (!isSteppable())
         return false;
@@ -261,7 +261,7 @@ bool InputType::rangeUnderflow(const String& value) const
     return numericValue < createStepRange(RejectAny).minimum();
 }
 
-bool InputType::rangeOverflow(const String& value) const
+bool InputTypeUI::rangeOverflow(const String& value) const
 {
     if (!isSteppable())
         return false;
@@ -273,28 +273,28 @@ bool InputType::rangeOverflow(const String& value) const
     return numericValue > createStepRange(RejectAny).maximum();
 }
 
-Decimal InputType::defaultValueForStepUp() const
+Decimal InputTypeUI::defaultValueForStepUp() const
 {
     return 0;
 }
 
-double InputType::minimum() const
+double InputTypeUI::minimum() const
 {
     return createStepRange(RejectAny).minimum().toDouble();
 }
 
-double InputType::maximum() const
+double InputTypeUI::maximum() const
 {
     return createStepRange(RejectAny).maximum().toDouble();
 }
 
-bool InputType::sizeShouldIncludeDecoration(int, int& preferredSize) const
+bool InputTypeUI::sizeShouldIncludeDecoration(int, int& preferredSize) const
 {
     preferredSize = element()->size();
     return false;
 }
 
-bool InputType::isInRange(const String& value) const
+bool InputTypeUI::isInRange(const String& value) const
 {
     if (!isSteppable())
         return false;
@@ -307,7 +307,7 @@ bool InputType::isInRange(const String& value) const
     return numericValue >= stepRange.minimum() && numericValue <= stepRange.maximum();
 }
 
-bool InputType::isOutOfRange(const String& value) const
+bool InputTypeUI::isOutOfRange(const String& value) const
 {
     if (!isSteppable())
         return false;
@@ -320,7 +320,7 @@ bool InputType::isOutOfRange(const String& value) const
     return numericValue < stepRange.minimum() || numericValue > stepRange.maximum();
 }
 
-bool InputType::stepMismatch(const String& value) const
+bool InputTypeUI::stepMismatch(const String& value) const
 {
     if (!isSteppable())
         return false;
@@ -332,23 +332,23 @@ bool InputType::stepMismatch(const String& value) const
     return createStepRange(RejectAny).stepMismatch(numericValue);
 }
 
-String InputType::badInputText() const
+String InputTypeUI::badInputText() const
 {
     ASSERT_NOT_REACHED();
     return validationMessageTypeMismatchText();
 }
 
-String InputType::typeMismatchText() const
+String InputTypeUI::typeMismatchText() const
 {
     return validationMessageTypeMismatchText();
 }
 
-String InputType::valueMissingText() const
+String InputTypeUI::valueMissingText() const
 {
     return validationMessageValueMissingText();
 }
 
-String InputType::validationMessage() const
+String InputTypeUI::validationMessage() const
 {
     const String value = element()->value();
 
@@ -392,72 +392,72 @@ String InputType::validationMessage() const
     return emptyString();
 }
 
-void InputType::handleClickEvent(MouseEvent*)
+void InputTypeUI::handleClickEvent(MouseEvent*)
 {
 }
 
-void InputType::handleMouseDownEvent(MouseEvent*)
+void InputTypeUI::handleMouseDownEvent(MouseEvent*)
 {
 }
 
-void InputType::handleDOMActivateEvent(Event*)
+void InputTypeUI::handleDOMActivateEvent(Event*)
 {
 }
 
-void InputType::handleKeydownEvent(KeyboardEvent*)
+void InputTypeUI::handleKeydownEvent(KeyboardEvent*)
 {
 }
 
-void InputType::handleKeypressEvent(KeyboardEvent*)
+void InputTypeUI::handleKeypressEvent(KeyboardEvent*)
 {
 }
 
-void InputType::handleKeyupEvent(KeyboardEvent*)
+void InputTypeUI::handleKeyupEvent(KeyboardEvent*)
 {
 }
 
-void InputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
+void InputTypeUI::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
 {
 }
 
-void InputType::handleTouchEvent(TouchEvent*)
+void InputTypeUI::handleTouchEvent(TouchEvent*)
 {
 }
 
-void InputType::forwardEvent(Event*)
+void InputTypeUI::forwardEvent(Event*)
 {
 }
 
-bool InputType::shouldSubmitImplicitly(Event* event)
+bool InputTypeUI::shouldSubmitImplicitly(Event* event)
 {
     return event->isKeyboardEvent() && event->type() == eventNames().keypressEvent && toKeyboardEvent(event)->charCode() == '\r';
 }
 
-PassRefPtr<HTMLFormElement> InputType::formForSubmission() const
+PassRefPtr<HTMLFormElement> InputTypeUI::formForSubmission() const
 {
     return element()->form();
 }
 
-RenderObject* InputType::createRenderer(RenderStyle* style) const
+RenderObject* InputTypeUI::createRenderer(RenderStyle* style) const
 {
     return RenderObject::createObject(element(), style);
 }
 
-PassRefPtr<RenderStyle> InputType::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
+PassRefPtr<RenderStyle> InputTypeUI::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
 {
     return originalStyle;
 }
 
-void InputType::blur()
+void InputTypeUI::blur()
 {
     element()->defaultBlur();
 }
 
-void InputType::createShadowSubtree()
+void InputTypeUI::createShadowSubtree()
 {
 }
 
-void InputType::destroyShadowSubtree()
+void InputTypeUI::destroyShadowSubtree()
 {
     ShadowRoot* root = element()->userAgentShadowRoot();
     if (!root)
@@ -475,186 +475,186 @@ void InputType::destroyShadowSubtree()
     }
 }
 
-Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const
+Decimal InputTypeUI::parseToNumber(const String&, const Decimal& defaultValue) const
 {
     ASSERT_NOT_REACHED();
     return defaultValue;
 }
 
-Decimal InputType::parseToNumberOrNaN(const String& string) const
+Decimal InputTypeUI::parseToNumberOrNaN(const String& string) const
 {
     return parseToNumber(string, Decimal::nan());
 }
 
-bool InputType::parseToDateComponents(const String&, DateComponents*) const
+bool InputTypeUI::parseToDateComponents(const String&, DateComponents*) const
 {
     ASSERT_NOT_REACHED();
     return false;
 }
 
-String InputType::serialize(const Decimal&) const
+String InputTypeUI::serialize(const Decimal&) const
 {
     ASSERT_NOT_REACHED();
     return String();
 }
 
-void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
+void InputTypeUI::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
 {
     if (element()->active())
         element()->dispatchSimulatedClick(event);
     event->setDefaultHandled();
 }
 
-Chrome* InputType::chrome() const
+Chrome* InputTypeUI::chrome() const
 {
     if (Page* page = element()->document()->page())
         return &page->chrome();
     return 0;
 }
 
-bool InputType::canSetStringValue() const
+bool InputTypeUI::canSetStringValue() const
 {
     return true;
 }
 
-bool InputType::hasCustomFocusLogic() const
+bool InputTypeUI::hasCustomFocusLogic() const
 {
     return true;
 }
 
-bool InputType::isKeyboardFocusable() const
+bool InputTypeUI::isKeyboardFocusable() const
 {
     return element()->isFocusable();
 }
 
-bool InputType::shouldShowFocusRingOnMouseFocus() const
+bool InputTypeUI::shouldShowFocusRingOnMouseFocus() const
 {
     return false;
 }
 
-bool InputType::shouldUseInputMethod() const
+bool InputTypeUI::shouldUseInputMethod() const
 {
     return false;
 }
 
-void InputType::handleFocusEvent(Element*, FocusDirection)
+void InputTypeUI::handleFocusEvent(Element*, FocusDirection)
 {
 }
 
-void InputType::handleBlurEvent()
+void InputTypeUI::handleBlurEvent()
 {
 }
 
-void InputType::enableSecureTextInput()
+void InputTypeUI::enableSecureTextInput()
 {
 }
 
-void InputType::disableSecureTextInput()
+void InputTypeUI::disableSecureTextInput()
 {
 }
 
-void InputType::accessKeyAction(bool)
+void InputTypeUI::accessKeyAction(bool)
 {
     element()->focus(false);
 }
 
-void InputType::attach()
+void InputTypeUI::attach()
 {
 }
 
-void InputType::detach()
+void InputTypeUI::detach()
 {
 }
 
-void InputType::countUsage()
+void InputTypeUI::countUsage()
 {
 }
 
-void InputType::altAttributeChanged()
+void InputTypeUI::altAttributeChanged()
 {
 }
 
-void InputType::srcAttributeChanged()
+void InputTypeUI::srcAttributeChanged()
 {
 }
 
-bool InputType::shouldRespectAlignAttribute()
+bool InputTypeUI::shouldRespectAlignAttribute()
 {
     return false;
 }
 
-bool InputType::canChangeFromAnotherType() const
+bool InputTypeUI::canChangeFromAnotherType() const
 {
     return true;
 }
 
-void InputType::minOrMaxAttributeChanged()
+void InputTypeUI::minOrMaxAttributeChanged()
 {
 }
 
-void InputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
+void InputTypeUI::sanitizeValueInResponseToMinOrMaxAttributeChange()
 {
 }
 
-void InputType::stepAttributeChanged()
+void InputTypeUI::stepAttributeChanged()
 {
 }
 
-bool InputType::canBeSuccessfulSubmitButton()
+bool InputTypeUI::canBeSuccessfulSubmitButton()
 {
     return false;
 }
 
-HTMLElement* InputType::placeholderElement() const
+HTMLElement* InputTypeUI::placeholderElement() const
 {
     return 0;
 }
 
-bool InputType::rendererIsNeeded()
+bool InputTypeUI::rendererIsNeeded()
 {
     return true;
 }
 
-FileList* InputType::files()
+FileList* InputTypeUI::files()
 {
     return 0;
 }
 
-void InputType::setFiles(PassRefPtr<FileList>)
+void InputTypeUI::setFiles(PassRefPtr<FileList>)
 {
 }
 
-bool InputType::getTypeSpecificValue(String&)
-{
-    return false;
-}
-
-String InputType::fallbackValue() const
-{
-    return String();
-}
-
-String InputType::defaultValue() const
-{
-    return String();
-}
-
-bool InputType::canSetSuggestedValue()
+bool InputTypeUI::getTypeSpecificValue(String&)
 {
     return false;
 }
 
-bool InputType::shouldSendChangeEventAfterCheckedChanged()
+String InputTypeUI::fallbackValue() const
+{
+    return String();
+}
+
+String InputTypeUI::defaultValue() const
+{
+    return String();
+}
+
+bool InputTypeUI::canSetSuggestedValue()
+{
+    return false;
+}
+
+bool InputTypeUI::shouldSendChangeEventAfterCheckedChanged()
 {
     return true;
 }
 
-bool InputType::storesValueSeparateFromAttribute()
+bool InputTypeUI::storesValueSeparateFromAttribute()
 {
     return true;
 }
 
-void InputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
+void InputTypeUI::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     element()->setValueInternal(sanitizedValue, eventBehavior);
     element()->setNeedsStyleRecalc();
@@ -673,279 +673,279 @@ void InputType::setValue(const String& sanitizedValue, bool valueChanged, TextFi
     }
 }
 
-bool InputType::canSetValue(const String&)
+bool InputTypeUI::canSetValue(const String&)
 {
     return true;
 }
 
-PassOwnPtr<ClickHandlingState> InputType::willDispatchClick()
+PassOwnPtr<ClickHandlingState> InputTypeUI::willDispatchClick()
 {
     return nullptr;
 }
 
-void InputType::didDispatchClick(Event*, const ClickHandlingState&)
+void InputTypeUI::didDispatchClick(Event*, const ClickHandlingState&)
 {
 }
 
-String InputType::localizeValue(const String& proposedValue) const
+String InputTypeUI::localizeValue(const String& proposedValue) const
 {
     return proposedValue;
 }
 
-String InputType::visibleValue() const
+String InputTypeUI::visibleValue() const
 {
     return element()->value();
 }
 
-String InputType::sanitizeValue(const String& proposedValue) const
+String InputTypeUI::sanitizeValue(const String& proposedValue) const
 {
     return proposedValue;
 }
 
-bool InputType::receiveDroppedFiles(const DragData*)
+bool InputTypeUI::receiveDroppedFiles(const DragData*)
 {
     ASSERT_NOT_REACHED();
     return false;
 }
 
-String InputType::droppedFileSystemId()
+String InputTypeUI::droppedFileSystemId()
 {
     ASSERT_NOT_REACHED();
     return String();
 }
 
-bool InputType::shouldResetOnDocumentActivation()
+bool InputTypeUI::shouldResetOnDocumentActivation()
 {
     return false;
 }
 
-bool InputType::shouldRespectListAttribute()
+bool InputTypeUI::shouldRespectListAttribute()
 {
     return false;
 }
 
-bool InputType::shouldRespectSpeechAttribute()
+bool InputTypeUI::shouldRespectSpeechAttribute()
 {
     return false;
 }
 
-bool InputType::isTextButton() const
+bool InputTypeUI::isTextButton() const
 {
     return false;
 }
 
-bool InputType::isRadioButton() const
+bool InputTypeUI::isRadioButton() const
 {
     return false;
 }
 
-bool InputType::isSearchField() const
+bool InputTypeUI::isSearchField() const
 {
     return false;
 }
 
-bool InputType::isHiddenType() const
+bool InputTypeUI::isHiddenType() const
 {
     return false;
 }
 
-bool InputType::isPasswordField() const
+bool InputTypeUI::isPasswordField() const
 {
     return false;
 }
 
-bool InputType::isCheckbox() const
+bool InputTypeUI::isCheckbox() const
 {
     return false;
 }
 
-bool InputType::isEmailField() const
+bool InputTypeUI::isEmailField() const
 {
     return false;
 }
 
-bool InputType::isFileUpload() const
+bool InputTypeUI::isFileUpload() const
 {
     return false;
 }
 
-bool InputType::isImageButton() const
+bool InputTypeUI::isImageButton() const
 {
     return false;
 }
 
-bool InputType::supportLabels() const
+bool InputTypeUI::supportLabels() const
 {
     return true;
 }
 
-bool InputType::isNumberField() const
+bool InputTypeUI::isNumberField() const
 {
     return false;
 }
 
-bool InputType::isSubmitButton() const
+bool InputTypeUI::isSubmitButton() const
 {
     return false;
 }
 
-bool InputType::isTelephoneField() const
+bool InputTypeUI::isTelephoneField() const
 {
     return false;
 }
 
-bool InputType::isURLField() const
+bool InputTypeUI::isURLField() const
 {
     return false;
 }
 
-bool InputType::isDateField() const
+bool InputTypeUI::isDateField() const
 {
     return false;
 }
 
-bool InputType::isDateTimeLocalField() const
+bool InputTypeUI::isDateTimeLocalField() const
 {
     return false;
 }
 
-bool InputType::isMonthField() const
+bool InputTypeUI::isMonthField() const
 {
     return false;
 }
 
-bool InputType::isTimeField() const
+bool InputTypeUI::isTimeField() const
 {
     return false;
 }
 
-bool InputType::isWeekField() const
+bool InputTypeUI::isWeekField() const
 {
     return false;
 }
 
-bool InputType::isEnumeratable()
+bool InputTypeUI::isEnumeratable()
 {
     return true;
 }
 
-bool InputType::isCheckable()
+bool InputTypeUI::isCheckable()
 {
     return false;
 }
 
-bool InputType::isSteppable() const
+bool InputTypeUI::isSteppable() const
 {
     return false;
 }
 
-bool InputType::isColorControl() const
+bool InputTypeUI::isColorControl() const
 {
     return false;
 }
 
-bool InputType::shouldRespectHeightAndWidthAttributes()
+bool InputTypeUI::shouldRespectHeightAndWidthAttributes()
 {
     return false;
 }
 
-bool InputType::supportsPlaceholder() const
+bool InputTypeUI::supportsPlaceholder() const
 {
     return false;
 }
 
-bool InputType::supportsReadOnly() const
+bool InputTypeUI::supportsReadOnly() const
 {
     return false;
 }
 
-void InputType::updateInnerTextValue()
+void InputTypeUI::updateInnerTextValue()
 {
 }
 
-void InputType::updatePlaceholderText()
+void InputTypeUI::updatePlaceholderText()
 {
 }
 
-void InputType::attributeChanged()
+void InputTypeUI::attributeChanged()
 {
 }
 
-void InputType::multipleAttributeChanged()
+void InputTypeUI::multipleAttributeChanged()
 {
 }
 
-void InputType::disabledAttributeChanged()
+void InputTypeUI::disabledAttributeChanged()
 {
 }
 
-void InputType::readonlyAttributeChanged()
+void InputTypeUI::readonlyAttributeChanged()
 {
 }
 
-void InputType::requiredAttributeChanged()
+void InputTypeUI::requiredAttributeChanged()
 {
 }
 
-void InputType::valueAttributeChanged()
+void InputTypeUI::valueAttributeChanged()
 {
 }
 
-void InputType::subtreeHasChanged()
+void InputTypeUI::subtreeHasChanged()
 {
     ASSERT_NOT_REACHED();
 }
 
-bool InputType::hasTouchEventHandler() const
+bool InputTypeUI::hasTouchEventHandler() const
 {
     return false;
 }
 
-String InputType::defaultToolTip() const
+String InputTypeUI::defaultToolTip() const
 {
     return String();
 }
 
-void InputType::listAttributeTargetChanged()
+void InputTypeUI::listAttributeTargetChanged()
 {
 }
 
-Decimal InputType::findClosestTickMarkValue(const Decimal&)
+Decimal InputTypeUI::findClosestTickMarkValue(const Decimal&)
 {
     ASSERT_NOT_REACHED();
     return Decimal::nan();
 }
 
-void InputType::updateClearButtonVisibility()
+void InputTypeUI::updateClearButtonVisibility()
 {
 }
 
-bool InputType::supportsIndeterminateAppearance() const
-{
-    return false;
-}
-
-bool InputType::supportsInputModeAttribute() const
+bool InputTypeUI::supportsIndeterminateAppearance() const
 {
     return false;
 }
 
-bool InputType::supportsSelectionAPI() const
+bool InputTypeUI::supportsInputModeAttribute() const
 {
     return false;
 }
 
-unsigned InputType::height() const
+bool InputTypeUI::supportsSelectionAPI() const
+{
+    return false;
+}
+
+unsigned InputTypeUI::height() const
 {
     return 0;
 }
 
-unsigned InputType::width() const
+unsigned InputTypeUI::width() const
 {
     return 0;
 }
 
-void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& es)
+void InputTypeUI::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& es)
 {
     StepRange stepRange(createStepRange(anyStepHandling));
     if (!stepRange.hasStep()) {
@@ -989,20 +989,20 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
         cache->postNotification(element(), AXObjectCache::AXValueChanged, true);
 }
 
-bool InputType::getAllowedValueStep(Decimal* step) const
+bool InputTypeUI::getAllowedValueStep(Decimal* step) const
 {
     StepRange stepRange(createStepRange(RejectAny));
     *step = stepRange.step();
     return stepRange.hasStep();
 }
 
-StepRange InputType::createStepRange(AnyStepHandling) const
+StepRange InputTypeUI::createStepRange(AnyStepHandling) const
 {
     ASSERT_NOT_REACHED();
     return StepRange();
 }
 
-void InputType::stepUp(int n, ExceptionState& es)
+void InputTypeUI::stepUp(int n, ExceptionState& es)
 {
     if (!isSteppable()) {
         es.throwDOMException(InvalidStateError);
@@ -1011,7 +1011,7 @@ void InputType::stepUp(int n, ExceptionState& es)
     applyStep(n, RejectAny, DispatchNoEvent, es);
 }
 
-void InputType::stepUpFromRenderer(int n)
+void InputTypeUI::stepUpFromRenderer(int n)
 {
     // The differences from stepUp()/stepDown():
     //
@@ -1114,7 +1114,7 @@ void InputType::stepUpFromRenderer(int n)
     }
 }
 
-void InputType::observeFeatureIfVisible(UseCounter::Feature feature) const
+void InputTypeUI::observeFeatureIfVisible(UseCounter::Feature feature) const
 {
     if (RenderStyle* style = element()->renderStyle()) {
         if (style->visibility() != HIDDEN)
