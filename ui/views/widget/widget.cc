@@ -948,10 +948,6 @@ bool Widget::SetInitialFocus() {
   return !!v;
 }
 
-View* Widget::GetChildViewParent() {
-  return GetContentsView() ? GetContentsView() : GetRootView();
-}
-
 gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
   return native_widget_->GetWorkAreaBoundsInScreen();
 }

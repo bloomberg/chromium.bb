@@ -156,7 +156,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     InitParams();
     explicit InitParams(Type type);
 
-
     // Will return the first of the following that isn't NULL: the native view,
     // |parent|, |context|.
     gfx::NativeView GetContext() const;
@@ -644,11 +643,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void set_focus_on_creation(bool focus_on_creation) {
     focus_on_creation_ = focus_on_creation;
   }
-
-  // Returns a View* that any child Widgets backed by NativeWidgetViews
-  // are added to.  The default implementation returns the contents view
-  // if it exists and the root view otherwise.
-  virtual View* GetChildViewParent();
 
   // True if the widget is considered top level widget. Top level widget
   // is a widget of TYPE_WINDOW, TYPE_PANEL, TYPE_WINDOW_FRAMELESS, BUBBLE,
