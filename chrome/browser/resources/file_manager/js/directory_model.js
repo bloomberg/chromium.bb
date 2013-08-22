@@ -345,10 +345,16 @@ DirectoryModel.prototype.isSearching = function() {
  * @return {boolean} True if the |path| is read only.
  */
 DirectoryModel.prototype.isPathReadOnly = function(path) {
+  // TODO(hidehiko): Migrate this into VolumeInfo.
   switch (PathUtil.getRootType(path)) {
     case RootType.REMOVABLE:
-      return !!this.volumeManager_.isReadOnly(PathUtil.getRootPath(path)) ||
-             !!this.volumeManager_.getMountError(PathUtil.getRootPath(path));
+      var volumeInfo = this.volumeManager_.getVolumeInfo(
+          PathUtil.getRootPath(path));
+      // Returns true if the volume is actually read only, or if an error
+      // is found during the mounting.
+      // TODO(hidehiko): Remove "error" check here, by removing error'ed volume
+      // info from VolumeManager.
+      return volumeInfo && (volumeInfo.isReadOnly || !!volumeInfo.error);
     case RootType.ARCHIVE:
       return true;
     case RootType.DOWNLOADS:

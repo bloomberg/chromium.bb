@@ -2438,10 +2438,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   // TODO(haruki): Rename this method. "Drive" here does not refer
   // "Google Drive".
   FileManager.prototype.updateUnformattedDriveStatus_ = function() {
-    var volumeInfo = this.volumeManager_.getVolumeInfo_(
+    var volumeInfo = this.volumeManager_.getVolumeInfo(
         PathUtil.getRootPath(this.directoryModel_.getCurrentRootPath()));
 
-    if (volumeInfo.error) {
+    if (volumeInfo && volumeInfo.error) {
       this.dialogDom_.setAttribute('unformatted', '');
 
       var errorNode = this.dialogDom_.querySelector('#format-panel > .error');

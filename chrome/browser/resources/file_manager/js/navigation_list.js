@@ -460,10 +460,10 @@ NavigationList.prototype.removeChild = function(item) {
  */
 NavigationList.prototype.renderRoot_ = function(modelItem) {
   var item = new NavigationListItem();
-  var deviceType =
+  var volumeInfo =
       PathUtil.isRootPath(modelItem.path) &&
-      this.volumeManager_.getDeviceType(modelItem.path);
-  item.setModelItem(modelItem, deviceType);
+      this.volumeManager_.getVolumeInfo(modelItem.path);
+  item.setModelItem(modelItem, volumeInfo && volumeInfo.deviceType);
 
   var handleClick = function() {
     if (item.selected &&

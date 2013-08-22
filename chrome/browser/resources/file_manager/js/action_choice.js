@@ -319,7 +319,8 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
     this.sourceEntry_ = entry;
     this.document_.querySelector('title').textContent = entry.name;
 
-    var deviceType = this.volumeManager_.getDeviceType(entry.fullPath);
+    var volumeInfo = this.volumeManager_.getVolumeInfo(entry.fullPath);
+    var deviceType = volumeInfo && volumeInfo.deviceType;
     if (deviceType != 'sd') deviceType = 'usb';
     this.dom_.querySelector('.device-type').setAttribute('device-type',
         deviceType);

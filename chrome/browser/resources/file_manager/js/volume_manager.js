@@ -5,6 +5,33 @@
 'use strict';
 
 /**
+ * Represents each volume, such as "drive", "download directory", each "USB
+ * flush storage", or "mounted zip archive" etc.
+ *
+ * @param {string} mountPath Where the volume is mounted.
+ * @param {string} error The error if an error is found.
+ * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
+ *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
+ *     Can be null.
+ * @param {boolean} isReadOnly True if the volume is read only.
+ * @constructor
+ */
+function VolumeInfo(mountPath, error, deviceType, isReadOnly) {
+  // TODO(hidehiko): This should include FileSystem instance.
+  this.mountPath_ = mountPath;
+  this.error_ = error;
+  this.deviceType_ = deviceType;
+  this.isReadOnly_ = !!isReadOnly;
+}
+
+VolumeInfo.prototype = {
+  get mountPath() { return this.mountPath_; },
+  get error() { return this.error_; },
+  get deviceType() { return this.deviceType_; },
+  get isReadOnly() { return this.isReadOnly_; },
+};
+
+/**
  * Utilities for volume manager implementation.
  */
 var volumeManagerUtil = {};
@@ -66,12 +93,10 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
       function(metadata) {
         if (chrome.runtime.lastError && !error)
           error = VolumeManager.Error.UNKNOWN;
-        callback({
-          mountPath: mountPath,
-          error: error,
-          deviceType: metadata && metadata.deviceType,
-          readonly: !!metadata && metadata.isReadOnly
-        });
+        callback(new VolumeInfo(
+            mountPath, error,
+            metadata && metadata.deviceType,
+            !!metadata && metadata.isReadOnly));
       });
 };
 
@@ -100,7 +125,8 @@ function VolumeManager(root) {
   this.requests_ = {};
 
   /**
-   * @type {Object.<string, Object>}
+   * TODO(hidehiko): Replace Object with cr.ui.ArrayDataModel.
+   * @type {Object.<string, VolumeInfo>}
    * @private
    */
   this.mountedVolumes_ = {};
@@ -556,39 +582,11 @@ VolumeManager.prototype.unmount = function(mountPath,
 
 /**
  * @param {string} mountPath Volume mounted path.
- * @return {VolumeManager.Error?} Returns mount error code
- *                                or undefined if no error.
+ * @return {VolumeInfo} The data about the volume.
  */
-VolumeManager.prototype.getMountError = function(mountPath) {
-  return this.getVolumeInfo_(mountPath).error;
-};
-
-/**
- * @param {string} mountPath Volume mounted path.
- * @return {string} Device type ('usb'|'sd'|'optical'|'mobile'|'unknown')
- *   (as defined in chromeos/disks/disk_mount_manager.cc).
- */
-VolumeManager.prototype.getDeviceType = function(mountPath) {
-  return this.getVolumeInfo_(mountPath).deviceType;
-};
-
-/**
- * @param {string} mountPath Volume mounted path.
- * @return {boolean} True if volume at |mountedPath| is read only.
- */
-VolumeManager.prototype.isReadOnly = function(mountPath) {
-  return !!this.getVolumeInfo_(mountPath).readonly;
-};
-
-/**
- * Helper method.
- * @param {string} mountPath Volume mounted path.
- * @return {Object} Structure created in |startRequest_|.
- * @private
- */
-VolumeManager.prototype.getVolumeInfo_ = function(mountPath) {
+VolumeManager.prototype.getVolumeInfo = function(mountPath) {
   volumeManagerUtil.validateMountPath(mountPath);
-  return this.mountedVolumes_[mountPath] || {};
+  return this.mountedVolumes_[mountPath];
 };
 
 /**
