@@ -85,7 +85,7 @@ bool RenderPart::requiresAcceleratedCompositing() const
     if (!node() || !node()->isFrameOwnerElement())
         return false;
 
-    HTMLFrameOwnerElement* element = toFrameOwnerElement(node());
+    HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(node());
     if (Document* contentDocument = element->contentDocument()) {
         if (RenderView* view = contentDocument->renderView())
             return view->usesCompositing();

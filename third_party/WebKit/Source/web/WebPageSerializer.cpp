@@ -113,8 +113,7 @@ void retrieveResourcesForElement(Element* element,
     if ((element->hasTagName(HTMLNames::iframeTag) || element->hasTagName(HTMLNames::frameTag)
         || element->hasTagName(HTMLNames::objectTag) || element->hasTagName(HTMLNames::embedTag))
             && element->isFrameOwnerElement()) {
-        Frame* frame = static_cast<HTMLFrameOwnerElement*>(element)->contentFrame();
-        if (frame) {
+        if (Frame* frame = toHTMLFrameOwnerElement(element)->contentFrame()) {
             if (!visitedFrames->contains(frame))
                 framesToVisit->append(frame);
             return;

@@ -349,8 +349,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
     m_idToNode.remove(id);
 
     if (node->isFrameOwnerElement()) {
-        const HTMLFrameOwnerElement* frameOwner = static_cast<const HTMLFrameOwnerElement*>(node);
-        Document* contentDocument = frameOwner->contentDocument();
+        Document* contentDocument = toHTMLFrameOwnerElement(node)->contentDocument();
         if (m_domListener)
             m_domListener->didRemoveDocument(contentDocument);
         if (contentDocument)
@@ -1399,12 +1398,10 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         Element* element = toElement(node);
         value->setAttributes(buildArrayForElementAttributes(element));
         if (node->isFrameOwnerElement()) {
-            HTMLFrameOwnerElement* frameOwner = static_cast<HTMLFrameOwnerElement*>(node);
-            Frame* frame = frameOwner->contentFrame();
-            if (frame)
+            HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
+            if (Frame* frame = frameOwner->contentFrame())
                 value->setFrameId(m_pageAgent->frameId(frame));
-            Document* doc = frameOwner->contentDocument();
-            if (doc)
+            if (Document* doc = frameOwner->contentDocument())
                 value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));
         }
 
