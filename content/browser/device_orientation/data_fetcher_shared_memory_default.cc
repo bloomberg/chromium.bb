@@ -5,39 +5,62 @@
 #include "data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
+#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
-namespace content {
+namespace {
 
-DataFetcherSharedMemory::~DataFetcherSharedMemory() {
-  if (started_)
-    StopFetchingDeviceMotionData();
-}
-
-bool DataFetcherSharedMemory::NeedsPolling() {
-  return false;
-}
-
-bool DataFetcherSharedMemory::FetchDeviceMotionDataIntoBuffer() {
-  NOTREACHED();
-  return false;
-}
-
-bool DataFetcherSharedMemory::StartFetchingDeviceMotionData(
-    DeviceMotionHardwareBuffer* buffer) {
+static bool SetMotionBuffer(content::DeviceMotionHardwareBuffer* buffer,
+    bool enabled) {
   DCHECK(buffer);
-  device_motion_buffer_ = buffer;
-  device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.allAvailableSensorsAreActive = true;
-  device_motion_buffer_->seqlock.WriteEnd();
-  started_ = true;
+  buffer->seqlock.WriteBegin();
+  buffer->data.allAvailableSensorsAreActive = enabled;
+  buffer->seqlock.WriteEnd();
   return true;
 }
 
-void DataFetcherSharedMemory::StopFetchingDeviceMotionData() {
-  device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.allAvailableSensorsAreActive = false;
-  device_motion_buffer_->seqlock.WriteEnd();
-  started_ = false;
+}
+
+namespace content {
+
+DataFetcherSharedMemory::DataFetcherSharedMemory() {
+}
+
+DataFetcherSharedMemory::~DataFetcherSharedMemory() {
+}
+
+bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
+  switch (consumer_type) {
+    case CONSUMER_TYPE_MOTION:
+      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
+          sizeof(DeviceMotionHardwareBuffer)))
+        return SetMotionBuffer(
+            static_cast<DeviceMotionHardwareBuffer*>(buffer), true);
+      break;
+    case CONSUMER_TYPE_ORIENTATION:
+      NOTIMPLEMENTED();
+      break;
+    default:
+      NOTREACHED();
+  }
+  return false;
+}
+
+bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
+  switch (consumer_type) {
+    case CONSUMER_TYPE_MOTION:
+      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
+          sizeof(DeviceMotionHardwareBuffer)))
+        return SetMotionBuffer(
+            static_cast<DeviceMotionHardwareBuffer*>(buffer), false);
+      break;
+    case CONSUMER_TYPE_ORIENTATION:
+      NOTIMPLEMENTED();
+      break;
+    default:
+      NOTREACHED();
+  }
+  return false;
 }
 
 }  // namespace content

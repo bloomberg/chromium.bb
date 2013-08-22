@@ -4,7 +4,7 @@
 
 #include "content/browser/device_orientation/device_motion_message_filter.h"
 
-#include "content/browser/device_orientation/device_motion_service.h"
+#include "content/browser/device_orientation/device_inertial_sensor_service.h"
 #include "content/common/device_orientation/device_motion_messages.h"
 
 namespace content {
@@ -16,7 +16,8 @@ DeviceMotionMessageFilter::DeviceMotionMessageFilter()
 DeviceMotionMessageFilter::~DeviceMotionMessageFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (is_started_)
-    DeviceMotionService::GetInstance()->RemoveConsumer();
+    DeviceInertialSensorService::GetInstance()->RemoveConsumer(
+        CONSUMER_TYPE_MOTION);
 }
 
 bool DeviceMotionMessageFilter::OnMessageReceived(
@@ -40,7 +41,8 @@ void DeviceMotionMessageFilter::OnDeviceMotionStartPolling() {
   if (is_started_)
     return;
   is_started_ = true;
-  DeviceMotionService::GetInstance()->AddConsumer();
+  DeviceInertialSensorService::GetInstance()->AddConsumer(
+      CONSUMER_TYPE_MOTION);
   DidStartDeviceMotionPolling();
 }
 
@@ -49,13 +51,15 @@ void DeviceMotionMessageFilter::OnDeviceMotionStopPolling() {
   if (!is_started_)
     return;
   is_started_ = false;
-  DeviceMotionService::GetInstance()->RemoveConsumer();
+  DeviceInertialSensorService::GetInstance()->RemoveConsumer(
+      CONSUMER_TYPE_MOTION);
 }
 
 void DeviceMotionMessageFilter::DidStartDeviceMotionPolling() {
   Send(new DeviceMotionMsg_DidStartPolling(
-      DeviceMotionService::GetInstance()->GetSharedMemoryHandleForProcess(
-          PeerHandle())));
+      DeviceInertialSensorService::GetInstance()->
+          GetSharedMemoryHandleForProcess(
+              CONSUMER_TYPE_MOTION, PeerHandle())));
 }
 
 }  // namespace content

@@ -4,7 +4,7 @@
 
 #include "content/browser/device_orientation/device_orientation_message_filter.h"
 
-#include "content/browser/device_orientation/device_motion_service.h"
+#include "content/browser/device_orientation/device_inertial_sensor_service.h"
 #include "content/common/device_orientation/device_orientation_messages.h"
 
 namespace content {
@@ -15,10 +15,9 @@ DeviceOrientationMessageFilter::DeviceOrientationMessageFilter()
 
 DeviceOrientationMessageFilter::~DeviceOrientationMessageFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (is_started_) {
-    // TODO(timvolodine): insert a proper call to DeviceSensorService here,
-    // similar to DeviceMotionService::GetInstance()->RemoveConsumer();
-  }
+  if (is_started_)
+    DeviceInertialSensorService::GetInstance()->RemoveConsumer(
+        CONSUMER_TYPE_ORIENTATION);
 }
 
 bool DeviceOrientationMessageFilter::OnMessageReceived(
@@ -43,8 +42,8 @@ void DeviceOrientationMessageFilter::OnDeviceOrientationStartPolling() {
   if (is_started_)
     return;
   is_started_ = true;
-  // TODO(timvolodine): insert a proper call to DeviceSensorService here,
-  // similar to DeviceMotionService::GetInstance()->AddConsumer();
+  DeviceInertialSensorService::GetInstance()->AddConsumer(
+      CONSUMER_TYPE_ORIENTATION);
   DidStartDeviceOrientationPolling();
 }
 
@@ -54,17 +53,16 @@ void DeviceOrientationMessageFilter::OnDeviceOrientationStopPolling() {
   if (!is_started_)
     return;
   is_started_ = false;
-  // TODO(timvolodine): insert a proper call to DeviceSensorService here,
-  // similar to DeviceMotionService::GetInstance()->RemoveConsumer();
+  DeviceInertialSensorService::GetInstance()->RemoveConsumer(
+      CONSUMER_TYPE_ORIENTATION);
 }
 
 void DeviceOrientationMessageFilter::DidStartDeviceOrientationPolling() {
-  NOTIMPLEMENTED();
-  // TODO(timvolodine): insert a proper call to the generalized Service here,
-  // similar to
-  // Send(new DeviceOrientationMsg_DidStartPolling(
-  //     DeviceMotionService::GetInstance()->GetSharedMemoryHandleForProcess(
-  //        PeerHandle())));
+  Send(new DeviceOrientationMsg_DidStartPolling(
+      DeviceInertialSensorService::GetInstance()->
+          GetSharedMemoryHandleForProcess(
+              CONSUMER_TYPE_ORIENTATION,
+              PeerHandle())));
 }
 
 }  // namespace content
