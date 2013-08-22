@@ -51,7 +51,6 @@
           'msvs_cygwin_shell': 0,
           'inputs': [
             '<(PRODUCT_DIR)/<(dll_name).dll',
-            '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
             '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
           ],
           'outputs': [
