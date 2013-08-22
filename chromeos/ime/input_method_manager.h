@@ -145,12 +145,6 @@ class CHROMEOS_EXPORT InputMethodManager {
       const std::string& keyboard_id,
       std::vector<std::string>* input_method_ids) = 0;
 
-  // Updates a configuration of a system input method engine with |value|.
-  // Returns true if the configuration is correctly set.
-  virtual bool SetInputMethodConfig(const std::string& section,
-                                    const std::string& config_name,
-                                    const InputMethodConfigValue& value) = 0;
-
   // Adds an input method extension. This function does not takes ownership of
   // |instance|.
   virtual void AddInputMethodExtension(

@@ -656,113 +656,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     input_method_manager_->SetEnabledExtensionImes(&split_values);
   }
 
-  // Do not check |*pref_name| of the prefs for remembering current/previous
-  // input methods here. We're only interested in initial values of the prefs.
-
-  // TODO(nona): remove all IME preference entries. crbug.com/256102
-  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kChewingBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(
-          language_prefs::kChewingSectionName,
-          language_prefs::kChewingBooleanPrefs[i].ibus_config_name,
-          chewing_boolean_prefs_[i].GetValue());
-    }
-  }
-  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
-    if (!pref_name ||
-        *pref_name ==
-        language_prefs::kChewingMultipleChoicePrefs[i].pref_name) {
-      SetLanguageConfigString(
-          language_prefs::kChewingSectionName,
-          language_prefs::kChewingMultipleChoicePrefs[i].ibus_config_name,
-          chewing_multiple_choice_prefs_[i].GetValue());
-    }
-  }
-  if (!pref_name ||
-      *pref_name == language_prefs::kChewingHsuSelKeyType.pref_name) {
-    SetLanguageConfigInteger(
-        language_prefs::kChewingSectionName,
-        language_prefs::kChewingHsuSelKeyType.ibus_config_name,
-        chewing_hsu_sel_key_type_.GetValue());
-  }
-  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kChewingIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(
-          language_prefs::kChewingSectionName,
-          language_prefs::kChewingIntegerPrefs[i].ibus_config_name,
-          chewing_integer_prefs_[i].GetValue());
-    }
-  }
-  if (!pref_name ||
-      *pref_name == prefs::kLanguageHangulKeyboard) {
-    std::vector<std::string> new_input_method_ids;
-    if (input_method_manager_->MigrateKoreanKeyboard(
-            hangul_keyboard_.GetValue(),
-            &new_input_method_ids)) {
-      preload_engines_.SetValue(JoinString(new_input_method_ids, ','));
-      hangul_keyboard_.SetValue("dummy_value_already_migrated");
-    }
-  }
-  if (!pref_name || *pref_name == prefs::kLanguageHangulHanjaBindingKeys) {
-    SetLanguageConfigString(language_prefs::kHangulSectionName,
-                            language_prefs::kHangulHanjaBindingKeysConfigName,
-                            hangul_hanja_binding_keys_.GetValue());
-  }
-  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kPinyinBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(
-          language_prefs::kPinyinSectionName,
-          language_prefs::kPinyinBooleanPrefs[i].ibus_config_name,
-          pinyin_boolean_prefs_[i].GetValue());
-    }
-  }
-  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kPinyinIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(
-          language_prefs::kPinyinSectionName,
-          language_prefs::kPinyinIntegerPrefs[i].ibus_config_name,
-          pinyin_int_prefs_[i].GetValue());
-    }
-  }
-  if (!pref_name ||
-      *pref_name == language_prefs::kPinyinDoublePinyinSchema.pref_name) {
-    SetLanguageConfigInteger(
-        language_prefs::kPinyinSectionName,
-        language_prefs::kPinyinDoublePinyinSchema.ibus_config_name,
-        pinyin_double_pinyin_schema_.GetValue());
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kMozcBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(
-          language_prefs::kMozcSectionName,
-          language_prefs::kMozcBooleanPrefs[i].ibus_config_name,
-          mozc_boolean_prefs_[i].GetValue());
-    }
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kMozcMultipleChoicePrefs[i].pref_name) {
-      SetLanguageConfigString(
-          language_prefs::kMozcSectionName,
-          language_prefs::kMozcMultipleChoicePrefs[i].ibus_config_name,
-          mozc_multiple_choice_prefs_[i].GetValue());
-    }
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
-    if (!pref_name ||
-        *pref_name == language_prefs::kMozcIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(
-          language_prefs::kMozcSectionName,
-          language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
-          mozc_integer_prefs_[i].GetValue());
-    }
-  }
-
   // Change the download directory to the default value if a Drive directory is
   // selected and Drive is disabled.
   if (!pref_name || *pref_name == prefs::kDisableDrive) {
@@ -793,45 +686,6 @@ void Preferences::ForceNaturalScrollDefault() {
   }
 }
 
-void Preferences::SetLanguageConfigBoolean(const char* section,
-                                           const char* name,
-                                           bool value) {
-  input_method::InputMethodConfigValue config;
-  config.type = input_method::InputMethodConfigValue::kValueTypeBool;
-  config.bool_value = value;
-  input_method_manager_->SetInputMethodConfig(section, name, config);
-}
-
-void Preferences::SetLanguageConfigInteger(const char* section,
-                                           const char* name,
-                                           int value) {
-  input_method::InputMethodConfigValue config;
-  config.type = input_method::InputMethodConfigValue::kValueTypeInt;
-  config.int_value = value;
-  input_method_manager_->SetInputMethodConfig(section, name, config);
-}
-
-void Preferences::SetLanguageConfigString(const char* section,
-                                          const char* name,
-                                          const std::string& value) {
-  input_method::InputMethodConfigValue config;
-  config.type = input_method::InputMethodConfigValue::kValueTypeString;
-  config.string_value = value;
-  input_method_manager_->SetInputMethodConfig(section, name, config);
-}
-
-void Preferences::SetLanguageConfigStringList(
-    const char* section,
-    const char* name,
-    const std::vector<std::string>& values) {
-  input_method::InputMethodConfigValue config;
-  config.type = input_method::InputMethodConfigValue::kValueTypeStringList;
-  for (size_t i = 0; i < values.size(); ++i)
-    config.string_list_value.push_back(values[i]);
-
-  input_method_manager_->SetInputMethodConfig(section, name, config);
-}
-
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
                                                    const char* name,
                                                    const std::string& value) {
@@ -850,10 +704,6 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
     input_method_manager_->EnableInputMethods(split_values);
     return;
   }
-
-  // We should call the cros API even when |value| is empty, to disable default
-  // config.
-  SetLanguageConfigStringList(section, name, split_values);
 }
 
 void Preferences::SetInputMethodList() {

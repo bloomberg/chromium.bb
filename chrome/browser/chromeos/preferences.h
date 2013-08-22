@@ -64,31 +64,6 @@ class Preferences : public PrefServiceSyncableObserver,
   // stored in the preferences.
   void NotifyPrefChanged(const std::string* pref_name);
 
-  // Writes boolean |value| to the input method (IBus) configuration daemon.
-  // |section| (e.g. "general") and |name| (e.g. "use_global_engine") should
-  // not be NULL.
-  void SetLanguageConfigBoolean(const char* section,
-                                const char* name,
-                                bool value);
-
-  // Writes integer |value| to the input method (IBus) configuration daemon.
-  // |section| and |name| should not be NULL.
-  void SetLanguageConfigInteger(const char* section,
-                                const char* name,
-                                int value);
-
-  // Writes string |value| to the input method (IBus) configuration daemon.
-  // |section| and |name| should not be NULL.
-  void SetLanguageConfigString(const char* section,
-                               const char* name,
-                               const std::string& value);
-
-  // Writes a string list to the input method (IBus) configuration daemon.
-  // |section| and |name| should not be NULL.
-  void SetLanguageConfigStringList(const char* section,
-                                   const char* name,
-                                   const std::vector<std::string>& values);
-
   // A variant of SetLanguageConfigStringList. You can pass comma-separated
   // values. Examples of |value|: "", "Control+space,Hiragana"
   void SetLanguageConfigStringListAsCSV(const char* section,

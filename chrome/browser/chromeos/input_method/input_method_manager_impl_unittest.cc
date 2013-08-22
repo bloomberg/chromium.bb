@@ -346,28 +346,6 @@ TEST_F(InputMethodManagerImplTest, TestActiveInputMethods) {
   EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
 }
 
-TEST_F(InputMethodManagerImplTest, TestSetInputMethodConfig) {
-  InputMethodConfigValue config;
-  config.type = InputMethodConfigValue::kValueTypeString;
-  config.string_value = "string";
-  EXPECT_EQ(0, controller_->set_input_method_config_internal_count_);
-  EXPECT_TRUE(manager_->SetInputMethodConfig("section", "name", config));
-  EXPECT_EQ(1, controller_->set_input_method_config_internal_count_);
-  EXPECT_EQ("section",
-            controller_->set_input_method_config_internal_key_.first);
-  EXPECT_EQ("name",
-            controller_->set_input_method_config_internal_key_.second);
-  EXPECT_EQ(config.type,
-            controller_->set_input_method_config_internal_value_.type);
-  EXPECT_EQ(config.string_value,
-            controller_->set_input_method_config_internal_value_.string_value);
-
-  // SetInputMethodConfig should be no-op in STATE_TERMINATING.
-  manager_->SetState(InputMethodManager::STATE_TERMINATING);
-  EXPECT_FALSE(manager_->SetInputMethodConfig("section", "name", config));
-  EXPECT_EQ(1, controller_->set_input_method_config_internal_count_);
-}
-
 TEST_F(InputMethodManagerImplTest, TestEnableTwoLayouts) {
   // For http://crbug.com/19655#c11 - (8), step 6.
   TestObserver observer;

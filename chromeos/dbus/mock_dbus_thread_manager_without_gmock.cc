@@ -21,7 +21,6 @@
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
@@ -75,7 +74,6 @@ void MockDBusThreadManagerWithoutGMock::InitIBusBus(
   // Non-null bus address is used to ensure the connection to ibus-daemon.
   ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
   mock_ibus_client_.reset(new MockIBusClient);
-  mock_ibus_config_client_.reset(new MockIBusConfigClient);
   mock_ibus_input_context_client_.reset(new MockIBusInputContextClient);
   mock_ibus_engine_service_.reset(new MockIBusEngineService);
   mock_ibus_engine_factory_service_.reset(new MockIBusEngineFactoryService);
@@ -215,10 +213,6 @@ UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {
 
 IBusClient* MockDBusThreadManagerWithoutGMock::GetIBusClient() {
   return mock_ibus_client_.get();
-}
-
-IBusConfigClient* MockDBusThreadManagerWithoutGMock::GetIBusConfigClient() {
-  return mock_ibus_config_client_.get();
 }
 
 IBusInputContextClient*

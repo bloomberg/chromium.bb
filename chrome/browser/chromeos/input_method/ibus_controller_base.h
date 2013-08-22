@@ -10,7 +10,6 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
-#include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
@@ -27,17 +26,8 @@ class IBusControllerBase : public IBusController {
   // functions.
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool SetInputMethodConfig(
-      const std::string& section,
-      const std::string& config_name,
-      const InputMethodConfigValue& value) OVERRIDE;
   virtual const InputMethodPropertyList& GetCurrentProperties() const OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
-
-  // Gets the current input method configuration.
-  bool GetInputMethodConfigForTesting(const std::string& section,
-                                      const std::string& config_name,
-                                      InputMethodConfigValue* out_value);
 
   // Notifies all |observers_|.
   void NotifyPropertyChangedForTesting();
@@ -47,19 +37,7 @@ class IBusControllerBase : public IBusController {
       const InputMethodPropertyList& current_property_list);
 
  protected:
-  typedef std::pair<std::string, std::string> ConfigKeyType;
-  typedef std::map<
-    ConfigKeyType, InputMethodConfigValue> InputMethodConfigRequests;
-
-  virtual bool SetInputMethodConfigInternal(
-      const ConfigKeyType& key,
-      const InputMethodConfigValue& value) = 0;
-
   ObserverList<Observer> observers_;
-
-  // Values that have been set via SetInputMethodConfig(). We keep a copy
-  // available to (re)send when the system input method framework (re)starts.
-  InputMethodConfigRequests current_config_values_;
 
   // The value which will be returned by GetCurrentProperties(). Derived classes
   // should update this variable when needed.

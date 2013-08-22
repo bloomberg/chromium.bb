@@ -5,20 +5,19 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
-#include "chromeos/ime/mock_ibus_daemon_controller.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace input_method {
 
 TEST(IBusControllerTest, TestCreate) {
-  chromeos::IBusDaemonController::InitializeForTesting(
-      new chromeos::MockIBusDaemonController());
+  IBusBridge::Initialize();
   {
     scoped_ptr<IBusController> controller(IBusController::Create());
     EXPECT_TRUE(controller.get());
   }
-  chromeos::IBusDaemonController::Shutdown();
+  IBusBridge::Shutdown();
 }
 
 }  // namespace input_method

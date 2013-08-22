@@ -25,16 +25,6 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
   virtual ~MyMockInputMethodManager() {
   }
 
-  virtual bool SetInputMethodConfig(
-      const std::string& section,
-      const std::string& config_name,
-      const input_method::InputMethodConfigValue& value) OVERRIDE {
-    // Assume the preload engines list is "KeyboardC,KeyboardA,KeyboardB".
-    // Switch to the first one, C.
-    ChangeInputMethod("KeyboardC");
-    return true;
-  }
-
   virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE {
     last_input_method_id_ = input_method_id;
     // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.

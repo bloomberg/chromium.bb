@@ -22,16 +22,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
-#include "chromeos/dbus/ibus/ibus_config_client.h"
-#include "chromeos/dbus/ibus/ibus_constants.h"
-#include "chromeos/dbus/ibus/ibus_input_context_client.h"
-#include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_bridge.h"
+#include "chromeos/ime/ime_constants.h"
 #include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_property.h"
 #include "ui/aura/client/aura_constants.h"
@@ -53,10 +48,6 @@ bool FindAndUpdateProperty(
     }
   }
   return false;
-}
-
-void ConfigSetValueErrorCallback() {
-  DVLOG(1) << "IBusConfig: SetValue is failed.";
 }
 
 }  // namespace
@@ -190,21 +181,15 @@ bool FlattenPropertyList(const IBusPropertyList& ibus_prop_list,
 
 }  // namespace
 
-IBusControllerImpl::IBusControllerImpl()
-    : weak_ptr_factory_(this) {
-  IBusDaemonController::GetInstance()->AddObserver(this);
+IBusControllerImpl::IBusControllerImpl() {
+  IBusBridge::Get()->SetPropertyHandler(this);
 }
 
 IBusControllerImpl::~IBusControllerImpl() {
-  IBusDaemonController::GetInstance()->RemoveObserver(this);
+  IBusBridge::Get()->SetPropertyHandler(NULL);
 }
 
 bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
-  if (!IBusConnectionsAreAlive()) {
-    DVLOG(1) << "ActivateInputMethodProperty: IBus connection is not alive";
-    return false;
-  }
-
   // The third parameter of ibus_input_context_property_activate() has to be
   // true when the |key| points to a radio button. false otherwise.
   bool is_radio = true;
@@ -220,66 +205,11 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
     return false;
   }
 
-  IBusInputContextClient* client
-      = DBusThreadManager::Get()->GetIBusInputContextClient();
-  if (client)
-    client->PropertyActivate(key,
+  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+  if (engine)
+    engine->PropertyActivate(key,
                              static_cast<ibus::IBusPropertyState>(is_radio));
   return true;
-}
-
-bool IBusControllerImpl::IBusConnectionsAreAlive() {
-  return DBusThreadManager::Get() &&
-      DBusThreadManager::Get()->GetIBusBus() != NULL;
-}
-
-bool IBusControllerImpl::SetInputMethodConfigInternal(
-    const ConfigKeyType& key,
-    const InputMethodConfigValue& value) {
-  if (value.type != InputMethodConfigValue::kValueTypeString &&
-      value.type != InputMethodConfigValue::kValueTypeInt &&
-      value.type != InputMethodConfigValue::kValueTypeBool &&
-      value.type != InputMethodConfigValue::kValueTypeStringList) {
-    DVLOG(1) << "SendInputMethodConfig: unknown value.type";
-    return false;
-  }
-
-  IBusConfigClient* client = DBusThreadManager::Get()->GetIBusConfigClient();
-  if (!client) {
-    // Should return true if the ibus-memconf is not ready to use, otherwise IME
-    // configuration will not be initialized.
-    return true;
-  }
-
-  switch (value.type) {
-    case InputMethodConfigValue::kValueTypeString:
-      client->SetStringValue(key.first,
-                             key.second,
-                             value.string_value,
-                             base::Bind(&ConfigSetValueErrorCallback));
-      return true;
-    case InputMethodConfigValue::kValueTypeInt:
-      client->SetIntValue(key.first,
-                          key.second,
-                          value.int_value,
-                          base::Bind(&ConfigSetValueErrorCallback));
-      return true;
-    case InputMethodConfigValue::kValueTypeBool:
-      client->SetBoolValue(key.first,
-                           key.second,
-                           value.bool_value,
-                           base::Bind(&ConfigSetValueErrorCallback));
-      return true;
-    case InputMethodConfigValue::kValueTypeStringList:
-      client->SetStringListValue(key.first,
-                                 key.second,
-                                 value.string_list_value,
-                                 base::Bind(&ConfigSetValueErrorCallback));
-      return true;
-    default:
-      NOTREACHED() << "SendInputMethodConfig: unknown value.type";
-      return false;
-  }
 }
 
 void IBusControllerImpl::RegisterProperties(
@@ -305,29 +235,6 @@ void IBusControllerImpl::UpdateProperty(const IBusProperty& ibus_prop) {
     }
     FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
   }
-}
-
-void IBusControllerImpl::OnIBusConfigClientInitialized() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  InputMethodConfigRequests::const_iterator iter =
-      current_config_values_.begin();
-  for (; iter != current_config_values_.end(); ++iter) {
-    SetInputMethodConfigInternal(iter->first, iter->second);
-  }
-}
-
-void IBusControllerImpl::OnConnected() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(this);
-
-  DBusThreadManager::Get()->GetIBusConfigClient()->InitializeAsync(
-      base::Bind(&IBusControllerImpl::OnIBusConfigClientInitialized,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void IBusControllerImpl::OnDisconnected() {
-  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(NULL);
 }
 
 // static

@@ -30,7 +30,6 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
-#include "chromeos/dbus/ibus/ibus_config_client.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
@@ -205,8 +204,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
     ibus_client_.reset(
         IBusClient::Create(client_type, ibus_bus_.get()));
-    ibus_config_client_.reset(
-        IBusConfigClient::Create(client_type, ibus_bus_.get()));
     ibus_input_context_client_.reset(
         IBusInputContextClient::Create(client_type));
     ibus_engine_factory_service_.reset(
@@ -334,10 +331,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return ibus_client_.get();
   }
 
-  virtual IBusConfigClient* GetIBusConfigClient() OVERRIDE {
-    return ibus_config_client_.get();
-  }
-
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE {
     return ibus_input_context_client_.get();
   }
@@ -407,7 +400,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
   scoped_ptr<IBusClient> ibus_client_;
-  scoped_ptr<IBusConfigClient> ibus_config_client_;
   scoped_ptr<IBusInputContextClient> ibus_input_context_client_;
   scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
   std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;

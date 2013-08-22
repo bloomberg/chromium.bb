@@ -10,7 +10,6 @@
 namespace chromeos {
 namespace input_method {
 
-struct InputMethodConfigValue;
 struct InputMethodProperty;
 
 // Mock IBusController implementation.
@@ -26,16 +25,6 @@ class MockIBusController : public IBusControllerBase {
   int activate_input_method_property_count_;
   std::string activate_input_method_property_key_;
   bool activate_input_method_property_return_;
-  int set_input_method_config_internal_count_;
-  ConfigKeyType set_input_method_config_internal_key_;
-  InputMethodConfigValue set_input_method_config_internal_value_;
-  bool set_input_method_config_internal_return_;
-
- protected:
-  // IBusControllerBase overrides:
-  virtual bool SetInputMethodConfigInternal(
-      const ConfigKeyType& key,
-      const InputMethodConfigValue& value) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIBusController);

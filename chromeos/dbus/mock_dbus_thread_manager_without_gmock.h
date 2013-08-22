@@ -35,7 +35,6 @@ class FakeShillManagerClient;
 class FakeSystemClockClient;
 class FakeUpdateEngineClient;
 class MockIBusClient;
-class MockIBusConfigClient;
 class MockIBusEngineFactoryService;
 class MockIBusEngineService;
 class MockIBusInputContextClient;
@@ -86,7 +85,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual SystemClockClient* GetSystemClockClient() OVERRIDE;
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
-  virtual IBusConfigClient* GetIBusConfigClient() OVERRIDE;
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE;
   virtual IBusEngineFactoryService* GetIBusEngineFactoryService() OVERRIDE;
   virtual IBusEngineService* GetIBusEngineService(
@@ -159,10 +157,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return mock_ibus_client_.get();
   }
 
-  MockIBusConfigClient* mock_ibus_config_client() {
-    return mock_ibus_config_client_.get();
-  }
-
   MockIBusInputContextClient* mock_ibus_input_context_client() {
     return mock_ibus_input_context_client_.get();
   }
@@ -207,7 +201,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeUpdateEngineClient> fake_update_engine_client_;
 
   scoped_ptr<MockIBusClient> mock_ibus_client_;
-  scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
   scoped_ptr<MockIBusEngineService> mock_ibus_engine_service_;
   scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;

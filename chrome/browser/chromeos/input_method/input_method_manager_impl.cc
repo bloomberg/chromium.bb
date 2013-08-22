@@ -381,19 +381,6 @@ bool InputMethodManagerImpl::MigrateKoreanKeyboard(
   return false;
 }
 
-bool InputMethodManagerImpl::SetInputMethodConfig(
-    const std::string& section,
-    const std::string& config_name,
-    const InputMethodConfigValue& value) {
-  DCHECK(section != language_prefs::kGeneralSectionName ||
-         config_name != language_prefs::kPreloadEnginesConfigName);
-
-  if (state_ == STATE_TERMINATING)
-    return false;
-
-  return ibus_controller_->SetInputMethodConfig(section, config_name, value);
-}
-
 void InputMethodManagerImpl::ChangeInputMethod(
     const std::string& input_method_id) {
   ChangeInputMethodInternal(input_method_id, false);

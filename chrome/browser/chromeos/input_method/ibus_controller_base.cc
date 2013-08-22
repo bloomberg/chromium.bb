@@ -21,37 +21,9 @@ void IBusControllerBase::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool IBusControllerBase::SetInputMethodConfig(
-    const std::string& section,
-    const std::string& config_name,
-    const InputMethodConfigValue& value) {
-  DCHECK(!section.empty());
-  DCHECK(!config_name.empty());
-
-  const ConfigKeyType key(section, config_name);
-  if (!SetInputMethodConfigInternal(key, value))
-    return false;
-  current_config_values_[key] = value;
-  return true;
-}
-
 const InputMethodPropertyList&
 IBusControllerBase::GetCurrentProperties() const {
   return current_property_list_;
-}
-
-bool IBusControllerBase::GetInputMethodConfigForTesting(
-    const std::string& section,
-    const std::string& config_name,
-    InputMethodConfigValue* out_value) {
-  DCHECK(out_value);
-  const ConfigKeyType key(section, config_name);
-  InputMethodConfigRequests::const_iterator iter =
-      current_config_values_.find(key);
-  if (iter == current_config_values_.end())
-    return false;
-  *out_value = iter->second;
-  return true;
 }
 
 void IBusControllerBase::ClearProperties() {

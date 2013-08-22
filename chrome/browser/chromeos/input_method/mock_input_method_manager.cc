@@ -85,13 +85,6 @@ bool MockInputMethodManager::MigrateKoreanKeyboard(
   return false;
 }
 
-bool MockInputMethodManager::SetInputMethodConfig(
-    const std::string& section,
-    const std::string& config_name,
-    const InputMethodConfigValue& value) {
-  return true;
-}
-
 void MockInputMethodManager::ChangeInputMethod(
     const std::string& input_method_id) {
 }
