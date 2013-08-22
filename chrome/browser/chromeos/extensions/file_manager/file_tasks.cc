@@ -212,13 +212,13 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
 
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
-                     const std::string& file_browser_id,
+                     const std::string& app_id,
                      int32 tab_id,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
   if (!FileBrowserHasAccessPermissionForFiles(profile, source_url,
-                                              file_browser_id, file_urls))
+                                              app_id, file_urls))
     return false;
 
   // drive::FileTaskExecutor is responsible to handle drive tasks.

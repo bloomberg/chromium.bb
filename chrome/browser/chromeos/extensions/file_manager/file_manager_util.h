@@ -21,14 +21,15 @@ namespace util {
 // Get file dialog title string from its type.
 string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 
-// Shows a freshly mounted removable drive.
-// If there is another File Browser instance open this call does nothing.
-// The mount event will cause file_manager.js to show the new drive in
-// the left panel, and that is all we want.
-// If there is no File Browser open, this call opens a new one pointing to
+// Opens the file manager for the freshly mounted removable drive specified
+// by |file_path|.
+// If there is another file manager instance open, this call does nothing.
+// The mount event will cause the file manager to show the new drive in
+// the left panel.
+// If there is no file manager open, this call opens a new one pointing to
 // |file_path|. In this case the tab will automatically close on |file_path|
 // unmount.
-void ViewRemovableDrive(const base::FilePath& file_path);
+void OpenRemovableDrive(const base::FilePath& file_path);
 
 // Opens an action choice dialog for an external drive.
 // One of the actions is opening the File Manager. Passes |advanced_mode|

@@ -201,6 +201,7 @@ typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
 //
 // Parameters:
 // profile    - The profile used for making this function call.
+// app_id     - The ID of the app requesting the file task execution.
 // source_url - The source URL which originates this function call.
 // tab_id     - The ID of the tab which originates this function call.
 //              This can be 0 if no tab is associated.
@@ -211,7 +212,7 @@ typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
 //              false.
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
-                     const std::string& file_browser_id,
+                     const std::string& app_id,
                      int32 tab_id,
                      const TaskDescriptor& task,
                      const std::vector<fileapi::FileSystemURL>& file_urls,

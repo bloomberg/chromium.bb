@@ -191,10 +191,10 @@ void OnCRXDownloadCallback(Browser* browser,
   InstallCRX(browser, file);
 }
 
-// Grants file system access to the file browser.
+// Grants file system access to the file manager.
 bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
-  // File browser always runs in the site for its extension id, so that is the
-  // site for which file access permissions should be granted.
+  // The file manager always runs in the site for its extension id, so that
+  // is the site for which file access permissions should be granted.
   GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
       GetSiteForExtensionId(kFileManagerAppId);
   fileapi::ExternalFileSystemBackend* backend =
@@ -206,11 +206,11 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   return true;
 }
 
-// Opens the file specified by |url| with |task|.
-void OpenFileWithTask(Profile* profile,
-                      const file_tasks::TaskDescriptor& task,
-                      const GURL& url) {
-  // If File Browser has not been open yet then it did not request access
+// Executes the |task| for the file specified by |url|.
+void ExecuteFileTaskForUrl(Profile* profile,
+                           const file_tasks::TaskDescriptor& task,
+                           const GURL& url) {
+  // If the file manager has not been open yet then it did not request access
   // to the file system. Do it now.
   if (!GrantFileSystemAccessToFileBrowser(profile))
     return;
@@ -219,7 +219,7 @@ void OpenFileWithTask(Profile* profile,
       GetFileSystemContextForExtensionId(
           profile, kFileManagerAppId);
 
-  // We are executing the task on behalf of File Browser extension.
+  // We are executing the task on behalf of the file manager.
   const GURL source_url = GetFileManagerMainPageUrl();
   std::vector<FileSystemURL> urls;
   urls.push_back(file_system_context->CrackURL(url));
@@ -234,10 +234,16 @@ void OpenFileWithTask(Profile* profile,
       file_tasks::FileTaskFinishedCallback());
 }
 
-// Opens the file specified with |file_path|. Used to implement internal
-// handlers of special action IDs such as "auto-open", "open", and "select".
-void OpenFileWithInternalActionId(const base::FilePath& file_path,
-                                  const std::string& action_id) {
+// Opens the file manager for the specified |file_path|. Used to implement
+// internal handlers of special action IDs:
+//
+// "open" - Open the file manager for the given folder.
+// "auto-open" - Open the file manager for the given removal drive and close
+//               the file manager when the removal drive is unmounted.
+// "select" - Open the file manager for the given file. The folder containing
+//            the file will be opened with the file selected.
+void OpenFileManagerWithInternalActionId(const base::FilePath& file_path,
+                                         const std::string& action_id) {
   DCHECK(action_id == "auto-open" ||
          action_id == "open" ||
          action_id == "select");
@@ -253,7 +259,7 @@ void OpenFileWithInternalActionId(const base::FilePath& file_path,
   file_tasks::TaskDescriptor task(kFileManagerAppId,
                                   file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                                   action_id);
-  OpenFileWithTask(profile, task, url);
+  ExecuteFileTaskForUrl(profile, task, url);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -318,7 +324,7 @@ bool OpenFileWithFileHandler(Profile* profile,
         file_tasks::TaskDescriptor task(extension->id(),
                                         file_tasks::TASK_TYPE_FILE_HANDLER,
                                         handler->id);
-        OpenFileWithTask(profile, task, url);
+        ExecuteFileTaskForUrl(profile, task, url);
         return true;
 
       } else if (!first_handler) {
@@ -331,7 +337,7 @@ bool OpenFileWithFileHandler(Profile* profile,
     file_tasks::TaskDescriptor task(extension_for_first_handler->id(),
                                     file_tasks::TASK_TYPE_FILE_HANDLER,
                                     first_handler->id);
-    OpenFileWithTask(profile, task, url);
+    ExecuteFileTaskForUrl(profile, task, url);
     return true;
   }
   return false;
@@ -377,7 +383,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
   file_tasks::TaskDescriptor task(extension_id,
                                   file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                                   action_id);
-  OpenFileWithTask(profile, task, url);
+  ExecuteFileTaskForUrl(profile, task, url);
   return true;
 }
 
@@ -443,7 +449,7 @@ void ContinueOpenItem(Profile* profile,
 
   if (error == base::PLATFORM_FILE_OK) {
     // A directory exists at |file_path|. Open it with the file manager.
-    OpenFileWithInternalActionId(file_path, "open");
+    OpenFileManagerWithInternalActionId(file_path, "open");
   } else {
     // |file_path| should be a file. Open it with a handler or the browser.
     if (!OpenFileWithHandlerOrBrowser(profile, file_path))
@@ -519,8 +525,8 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
   return title;
 }
 
-void ViewRemovableDrive(const base::FilePath& file_path) {
-  OpenFileWithInternalActionId(file_path, "auto-open");
+void OpenRemovableDrive(const base::FilePath& file_path) {
+  OpenFileManagerWithInternalActionId(file_path, "auto-open");
 }
 
 void OpenActionChoiceDialog(const base::FilePath& file_path,
@@ -592,7 +598,7 @@ void OpenItem(const base::FilePath& file_path) {
 
 void ShowItemInFolder(const base::FilePath& file_path) {
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileWithInternalActionId(file_path, "select");
+  OpenFileManagerWithInternalActionId(file_path, "select");
 }
 
 bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path) {
