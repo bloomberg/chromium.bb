@@ -574,17 +574,10 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	       configure_notify->x, configure_notify->y,
 	       configure_notify->width, configure_notify->height);
 
-	if (our_resource(wm, configure_notify->window))
-		return;
-
 	window = hash_table_lookup(wm->window_hash, configure_notify->window);
-	/* resize falls here */
-	if (configure_notify->window != window->id)
-		return;
-
 	weston_wm_window_get_child_position(window, &x, &y);
-	window->x = configure_notify->x - x;
-	window->y = configure_notify->y - y;
+	window->x = configure_notify->x;
+	window->y = configure_notify->y;
 }
 
 static void
