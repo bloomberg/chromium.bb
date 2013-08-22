@@ -10,6 +10,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -38,6 +41,8 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   void ReceiveFrame(const uint8* video_frame, int video_frame_length,
                     const VideoCaptureCapability& frame_info);
 
+  void ReceiveError(const std::string& reason);
+
  private:
   void SetErrorState(const std::string& reason);
 
@@ -52,7 +57,15 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
 
   Name device_name_;
   VideoCaptureDevice::EventHandler* observer_;
+
+  // Only read and write state_ from inside this loop.
+  const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
   InternalState state_;
+
+  // Used with Bind and PostTask to ensure that methods aren't called
+  // after the VideoCaptureDeviceMac is destroyed.
+  base::WeakPtrFactory<VideoCaptureDeviceMac> weak_factory_;
+  base::WeakPtr<VideoCaptureDeviceMac> weak_this_;
 
   VideoCaptureDeviceQTKit* capture_device_;
 

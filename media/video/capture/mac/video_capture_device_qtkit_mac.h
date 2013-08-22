@@ -60,6 +60,9 @@ namespace media {
 // Stops video capturing.
 - (void)stopCapture;
 
+// Handle any QTCaptureSessionRuntimeErrorNotifications.
+- (void)handleNotification:(NSNotification *)errorNotification;
+
 @end
 
 #endif  // MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_QTKIT_H_

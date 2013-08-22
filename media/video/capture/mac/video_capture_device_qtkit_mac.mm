@@ -121,6 +121,7 @@
     }
     if ([[captureSession_ outputs] count] > 0) {
       // Only one output is set for |captureSession_|.
+      DCHECK_EQ([[captureSession_ outputs] count], 1u);
       id output = [[captureSession_ outputs] objectAtIndex:0];
       [output setDelegate:nil];
 
@@ -194,6 +195,12 @@
                   << [[error localizedDescription] UTF8String];
       return NO;
     }
+    NSNotificationCenter * notificationCenter =
+        [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(handleNotification:)
+                               name:QTCaptureSessionRuntimeErrorNotification
+                             object:captureSession_];
     [captureSession_ startRunning];
   }
   return YES;
@@ -204,6 +211,8 @@
     [captureSession_ removeInput:captureDeviceInput_];
     [captureSession_ stopRunning];
   }
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 // |captureOutput| is called by the capture device to deliver a new frame.
@@ -267,6 +276,12 @@
     CVPixelBufferUnlockBaseAddress(videoFrame, kLockFlags);
   }
   [lock_ unlock];
+}
+
+- (void)handleNotification:(NSNotification *)errorNotification {
+  NSError * error = (NSError *)[[errorNotification userInfo]
+      objectForKey:QTCaptureSessionErrorKey];
+  frameReceiver_->ReceiveError([[error localizedDescription] UTF8String]);
 }
 
 @end

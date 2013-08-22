@@ -6,6 +6,8 @@
 
 #import <QTKit/QTKit.h>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/video/capture/mac/video_capture_device_qtkit_mac.h"
@@ -94,17 +96,22 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
       observer_(NULL),
+      loop_proxy_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
+      weak_factory_(this),
+      weak_this_(weak_factory_.GetWeakPtr()),
       capture_device_(nil) {
 }
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   [capture_device_ release];
 }
 
 void VideoCaptureDeviceMac::Allocate(
     const VideoCaptureCapability& capture_format,
     EventHandler* observer) {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   if (state_ != kIdle) {
     return;
   }
@@ -153,6 +160,7 @@ void VideoCaptureDeviceMac::Allocate(
 }
 
 void VideoCaptureDeviceMac::Start() {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DCHECK_EQ(state_, kAllocated);
   if (![capture_device_ startCapture]) {
     SetErrorState("Could not start capture device.");
@@ -162,12 +170,14 @@ void VideoCaptureDeviceMac::Start() {
 }
 
 void VideoCaptureDeviceMac::Stop() {
-  DCHECK_EQ(state_, kCapturing);
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(state_ == kCapturing || state_ == kError) << state_;
   [capture_device_ stopCapture];
   state_ = kAllocated;
 }
 
 void VideoCaptureDeviceMac::DeAllocate() {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   if (state_ != kAllocated && state_ != kCapturing) {
     return;
   }
@@ -185,6 +195,7 @@ const VideoCaptureDevice::Name& VideoCaptureDeviceMac::device_name() {
 }
 
 bool VideoCaptureDeviceMac::Init() {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DCHECK_EQ(state_, kNotInitialized);
 
   Names device_names;
@@ -206,11 +217,20 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     const uint8* video_frame,
     int video_frame_length,
     const VideoCaptureCapability& frame_info) {
+  // This method is safe to call from a device capture thread,
+  // i.e. any thread controlled by QTKit.
   observer_->OnIncomingCapturedFrame(
       video_frame, video_frame_length, base::Time::Now(), 0, false, false);
 }
 
+void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {
+  loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureDeviceMac::SetErrorState, weak_this_,
+          reason));
+}
+
 void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
+  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DLOG(ERROR) << reason;
   state_ = kError;
   observer_->OnError();
