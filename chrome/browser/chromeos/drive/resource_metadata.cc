@@ -347,11 +347,12 @@ FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entry);
 
-  std::string resource_id;
-  if (!GetResourceIdByPath(path, &resource_id))
-    return FILE_ERROR_NOT_FOUND;
+  std::string id;
+  FileError error = GetIdByPath(path, &id);
+  if (error != FILE_ERROR_OK)
+    return error;
 
-  return GetResourceEntryById(resource_id, out_entry);
+  return GetResourceEntryById(id, out_entry);
 }
 
 void ResourceMetadata::ReadDirectoryByPathOnUIThread(
@@ -471,26 +472,26 @@ base::FilePath ResourceMetadata::GetFilePath(
   return path;
 }
 
-bool ResourceMetadata::GetResourceIdByPath(const base::FilePath& file_path,
-                                           std::string* out_resource_id) {
+FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
+                                        std::string* out_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // Start from the root.
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
   if (components.empty() || components[0] != util::kDriveGrandRootDirName)
-    return false;
+    return FILE_ERROR_NOT_FOUND;
 
   // Iterate over the remaining components.
-  std::string resource_id = util::kDriveGrandRootSpecialResourceId;
+  std::string id = util::kDriveGrandRootSpecialResourceId;
   for (size_t i = 1; i < components.size(); ++i) {
     const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
-    resource_id = storage_->GetChild(resource_id, component);
-    if (resource_id.empty())
-      return false;
+    id = storage_->GetChild(id, component);
+    if (id.empty())
+      return FILE_ERROR_NOT_FOUND;
   }
-  *out_resource_id = resource_id;
-  return true;
+  *out_id = id;
+  return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(

@@ -184,6 +184,9 @@ class ResourceMetadata {
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const std::string& resource_id);
 
+  // Returns ID of the entry at the given path.
+  FileError GetIdByPath(const base::FilePath& file_path, std::string* out_id);
+
  private:
   // Note: Use Destroy() to delete this object.
   ~ResourceMetadata();
@@ -212,10 +215,6 @@ class ResourceMetadata {
       scoped_ptr<EntryInfoPairResult> result,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
-
-  // Gets resource ID of the entry at the given path.
-  bool GetResourceIdByPath(const base::FilePath& file_path,
-                           std::string* out_resource_id);
 
   // Puts an entry under its parent directory. Removes the child from the old
   // parent if there is. This method will also do name de-duplication to ensure
