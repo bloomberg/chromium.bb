@@ -107,12 +107,18 @@ class MediaResourceGetter {
                 }
                 retriever.setDataSource(url, headersMap);
             }
-            durationInMilliseconds = Integer.parseInt(
-                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-            width = Integer.parseInt(
-                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-            height = Integer.parseInt(
-                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            String value = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            if (value != null) {
+              durationInMilliseconds = Integer.parseInt(value);
+            }
+            value = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            if (value != null) {
+              width = Integer.parseInt(value);
+            }
+            value = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            if (value != null) {
+              height = Integer.parseInt(value);
+            }
             success = true;
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Invalid url: " + e);
