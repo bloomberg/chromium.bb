@@ -84,7 +84,15 @@ class WebglConformance(test_module.Test):
       pages.append({
         'url': 'file:///' + test,
         'script_to_evaluate_on_commit': conformance_harness_script,
-        'wait_for_javascript_expression': 'webglTestHarness._finished'
+        'navigate_steps': [
+          {'action': 'navigate'},
+          {
+            'action': 'wait',
+            'condition': 'javascript',
+            'javascript': 'webglTestHarness._finished',
+            'timeout': 120
+          },
+        ]
       })
 
     return page_set.PageSet.FromDict(page_set_dict, conformance_path)

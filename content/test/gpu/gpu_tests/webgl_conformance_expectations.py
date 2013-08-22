@@ -18,4 +18,4 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Sample Usage:
     # self.Fail("gl-enable-vertex-attrib.html",
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    self.Fail('uniform-samplers-test.html', ['android'], bug=272080)
+    pass
