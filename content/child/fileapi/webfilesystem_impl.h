@@ -7,7 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "webkit/child/worker_task_runner.h"
 
@@ -25,9 +27,12 @@ namespace content {
 
 class WebFileSystemImpl
     : public WebKit::WebFileSystem,
-      public webkit_glue::WorkerTaskRunner::Observer {
+      public webkit_glue::WorkerTaskRunner::Observer,
+      public base::NonThreadSafe {
  public:
-  // Returns thread-specific instance.
+  // Returns thread-specific instance.  If non-null |main_thread_loop|
+  // is given and no thread-specific instance has been created it may
+  // create a new instance.
   static WebFileSystemImpl* ThreadSpecificInstance(
       base::MessageLoopProxy* main_thread_loop);
 
@@ -96,8 +101,15 @@ class WebFileSystemImpl
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks*);
 
+  int RegisterCallbacks(WebKit::WebFileSystemCallbacks* callbacks);
+  WebKit::WebFileSystemCallbacks* GetAndUnregisterCallbacks(
+      int callbacks_id);
+
  private:
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
+  IDMap<WebKit::WebFileSystemCallbacks> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebFileSystemImpl);
 };
 
 }  // namespace content

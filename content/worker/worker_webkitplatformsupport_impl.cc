@@ -86,10 +86,7 @@ WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
 }
 
 WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {
-#ifdef USE_THREADLOCAL_WEBFILESYSTEM
-  // TODO(kinuko): Delete this ifdef after blink side switch's over.
   WebFileSystemImpl::DeleteThreadSpecificInstance();
-#endif
 }
 
 WebClipboard* WorkerWebKitPlatformSupportImpl::clipboard() {
@@ -102,14 +99,7 @@ WebMimeRegistry* WorkerWebKitPlatformSupportImpl::mimeRegistry() {
 }
 
 WebFileSystem* WorkerWebKitPlatformSupportImpl::fileSystem() {
-#ifdef USE_THREADLOCAL_WEBFILESYSTEM
-  // TODO(kinuko): Delete this ifdef after blink side switch's over.
   return WebFileSystemImpl::ThreadSpecificInstance(child_thread_loop_.get());
-#else
-  if (!web_file_system_)
-    web_file_system_.reset(new WebFileSystemImpl(child_thread_loop_.get()));
-  return web_file_system_.get();
-#endif
 }
 
 WebFileUtilities* WorkerWebKitPlatformSupportImpl::fileUtilities() {
