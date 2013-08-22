@@ -72,7 +72,7 @@ class ChromotingJniRuntime {
                               protocol::ErrorCode error);
 
   // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
-  void DisplayAuthenticationPrompt();
+  void DisplayAuthenticationPrompt(bool pairing_supported);
 
   // Saves new pairing credentials to permanent storage. Call on UI thread.
   void CommitPairingCredentials(const std::string& host,

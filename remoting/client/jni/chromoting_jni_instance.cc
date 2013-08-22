@@ -49,15 +49,11 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
       base::Bind(&ChromotingJniInstance::FetchSecret, this);
   client_config_.authentication_tag = host_id_;
 
-  std::string pairing_id_str(pairing_id);
-  std::string pairing_secret_str(pairing_secret);
-  if (!pairing_id_str.empty() && !pairing_secret_str.empty()) {
-    client_config_.client_pairing_id = pairing_id_str;
-    client_config_.client_paired_secret = pairing_secret_str;
-    client_config_.authentication_methods.push_back(
-        protocol::AuthenticationMethod::FromString("spake2_pair"));
-  }
+  client_config_.client_pairing_id = pairing_id;
+  client_config_.client_paired_secret = pairing_secret;
 
+  client_config_.authentication_methods.push_back(
+      protocol::AuthenticationMethod::FromString("spake2_pair"));
   client_config_.authentication_methods.push_back(
       protocol::AuthenticationMethod::FromString("spake2_hmac"));
   client_config_.authentication_methods.push_back(
@@ -294,7 +290,7 @@ void ChromotingJniInstance::FetchSecret(
   }
 
   pin_callback_ = callback;
-  jni_runtime_->DisplayAuthenticationPrompt();
+  jni_runtime_->DisplayAuthenticationPrompt(pairable);
 }
 
 }  // namespace remoting

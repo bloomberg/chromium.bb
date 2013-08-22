@@ -186,7 +186,7 @@ public class JniInterface {
     }
 
     /** Prompts the user to enter a PIN. */
-    private static void displayAuthenticationPrompt() {
+    private static void displayAuthenticationPrompt(boolean pairingSupported) {
         AlertDialog.Builder pinPrompt = new AlertDialog.Builder(sContext);
         pinPrompt.setTitle(sContext.getString(R.string.pin_entry_title));
         pinPrompt.setMessage(sContext.getString(R.string.pin_entry_message));
@@ -195,16 +195,21 @@ public class JniInterface {
         final View pinEntry = sContext.getLayoutInflater().inflate(R.layout.pin_dialog, null);
         pinPrompt.setView(pinEntry);
 
+        final TextView pinTextView = (TextView)pinEntry.findViewById(R.id.pin_dialog_text);
+        final CheckBox pinCheckBox = (CheckBox)pinEntry.findViewById(R.id.pin_dialog_check);
+
+        if (!pairingSupported) {
+            pinCheckBox.setChecked(false);
+            pinCheckBox.setVisibility(View.GONE);
+        }
+
         pinPrompt.setPositiveButton(
                 R.string.pin_entry_connect, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
-                        authenticationResponse(String.valueOf(
-                                ((TextView)
-                                        pinEntry.findViewById(R.id.pin_dialog_text)).getText()),
-                                ((CheckBox)
-                                        pinEntry.findViewById(R.id.pin_dialog_check)).isChecked());
+                        authenticationResponse(String.valueOf(pinTextView.getText()),
+                                               pinCheckBox.isChecked());
                     }
                 });
 
@@ -222,7 +227,7 @@ public class JniInterface {
 
         final AlertDialog pinDialog = pinPrompt.create();
 
-        ((TextView)pinEntry.findViewById(R.id.pin_dialog_text)).setOnEditorActionListener(
+        pinTextView.setOnEditorActionListener(
                 new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

@@ -123,13 +123,14 @@ void ChromotingJniRuntime::ReportConnectionStatus(
     error);
 }
 
-void ChromotingJniRuntime::DisplayAuthenticationPrompt() {
+void ChromotingJniRuntime::DisplayAuthenticationPrompt(bool pairing_supported) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   env->CallStaticVoidMethod(
       class_,
-      env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
+      env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "(Z)V"),
+      pairing_supported);
 }
 
 void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
