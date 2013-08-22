@@ -63,10 +63,9 @@ void WebUIScreenLocker::LockScreen() {
   lock_window->set_observer(this);
   lock_window_ = lock_window->GetWidget();
   lock_window_->AddObserver(this);
-  WebUILoginView::Init(lock_window_);
+  WebUILoginView::Init();
   lock_window_->SetContentsView(this);
   lock_window_->Show();
-  OnWindowCreated();
   LoadURL(GURL(kLoginURL));
   lock_window->Grab();
 

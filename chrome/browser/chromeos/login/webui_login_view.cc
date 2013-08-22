@@ -94,26 +94,6 @@ class SnifferObserver : public content::RenderViewHostObserver {
   content::WebUI* webui_;
 };
 
-// A View class which places its first child at the right most position.
-class RightAlignedView : public views::View {
- public:
-  virtual void Layout() OVERRIDE;
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-};
-
-void RightAlignedView::Layout() {
-  if (has_children()) {
-    views::View* child = child_at(0);
-    gfx::Size preferred_size = child->GetPreferredSize();
-    child->SetBounds(width() - preferred_size.width(),
-                     0, preferred_size.width(), preferred_size.height());
-  }
-}
-
-void RightAlignedView::ChildPreferredSizeChanged(View* child) {
-  Layout();
-}
-
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
  public:
@@ -145,8 +125,6 @@ const char WebUILoginView::kViewClassName[] =
 
 WebUILoginView::WebUILoginView()
     : webui_login_(NULL),
-      login_window_(NULL),
-      host_window_frozen_(false),
       is_hidden_(false),
       login_prompt_visible_handled_(false),
       should_emit_login_prompt_visible_(true),
@@ -204,9 +182,7 @@ WebUILoginView::~WebUILoginView() {
   }
 }
 
-void WebUILoginView::Init(views::Widget* login_window) {
-  login_window_ = login_window;
-
+void WebUILoginView::Init() {
   Profile* signin_profile = ProfileHelper::GetSigninProfile();
   auth_extension_.reset(new ScopedGaiaAuthExtension(signin_profile));
   webui_login_ = new views::WebView(signin_profile);
@@ -286,12 +262,6 @@ bool WebUILoginView::AcceleratorPressed(
 
 gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
   return GetWidget()->GetNativeWindow();
-}
-
-void WebUILoginView::OnWindowCreated() {
-}
-
-void WebUILoginView::UpdateWindowType() {
 }
 
 void WebUILoginView::LoadURL(const GURL & url) {

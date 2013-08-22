@@ -791,7 +791,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   }
   login_view_ = new WebUILoginView();
 
-  login_view_->Init(login_window_);
+  login_view_->Init();
 
   views::corewm::SetWindowVisibilityAnimationDuration(
       login_window_->GetNativeView(),
@@ -801,7 +801,6 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
       views::corewm::ANIMATE_HIDE);
 
   login_window_->SetContentsView(login_view_);
-  login_view_->UpdateWindowType();
 
   // If WebUI is initialized in hidden state, show it only if we're no
   // longer waiting for wallpaper animation/user images loading. Otherwise,
@@ -815,7 +814,6 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
     login_view_->set_is_hidden(true);
   }
   login_window_->GetNativeView()->SetName("WebUILoginView");
-  login_view_->OnWindowCreated();
 }
 
 void LoginDisplayHostImpl::ResetLoginWindowAndView() {
