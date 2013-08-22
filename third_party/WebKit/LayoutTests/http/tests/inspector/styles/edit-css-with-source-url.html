@@ -1,0 +1,108 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../elements-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script>
+function loadStylesheet(line0, line1, line2)
+{
+    var styleText = "#inspected {\n    color: red;\n}\n";
+    var styleElement = document.createElement("style");
+    styleElement.type = "text/css";
+    var sourceURL = "http://localhost:8000/inspector/styles/foo.css";
+    var stylesheetContent = styleText + "\n/*# sourceURL=" + sourceURL + " */";
+    styleElement.textContent = stylesheetContent;
+    document.head.appendChild(styleElement);
+}
+
+function test()
+{
+    var manager;
+    var cssModel;
+    function createObjects()
+    {
+        InspectorTest.testFileSystemMapping = new WebInspector.FileSystemMapping();
+        InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
+        WebInspector.workspace._fileSystemMapping = InspectorTest.testFileSystemMapping;
+        manager = InspectorTest.createIsolatedFileSystemManager(WebInspector.workspace, InspectorTest.testFileSystemMapping);
+    }
+
+    InspectorTest.runTestSuite([
+        function testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile(next)
+        {
+            var styleText = "#inspected {\n    color: red;\n}\n";
+
+            function loadStylesheet(callback)
+            {
+                InspectorTest.addResult("Loading stylesheet with sourceURL:");
+                InspectorTest.evaluateInPage("loadStylesheet()", callback);
+            }
+
+            function dumpUISourceCodeContents()
+            {
+                InspectorTest.addResult("Dumping uiSourceCode content:");
+                InspectorTest.addResult(uiSourceCode.workingCopy());
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
+            var files = {"/foo.css": styleText};
+            createObjects();
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding file system mapping.");
+            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/styles/", "/");
+            manager.addFiles(fileSystemPath, files);
+            var uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
+            InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                dumpUISourceCodeContents();
+                loadStylesheet(stylesheetLoaded);
+            }
+  
+            function stylesheetLoaded()
+            {
+                InspectorTest.addResult("Stylesheet loaded.");
+                WebInspector.showPanel("elements");
+                InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
+            }
+
+            function nodeSelected()
+            {
+                InspectorTest.addResult("Dumping matched rules:");
+                InspectorTest.dumpSelectedElementStyles(true);
+                InspectorTest.addResult("Editing styles from elements panel:");
+                treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+                treeElement.startEditing();
+                treeElement.nameElement.textContent = "color";
+                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+                // Commit editing.
+                treeElement.valueElement.textContent = "green";
+                treeElement.valueElement.firstChild.select();
+                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+                uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
+            }
+
+            function stylesEdited()
+            {
+                InspectorTest.addResult("Styles edited.");
+                InspectorTest.addResult("Dumping matched rules:");
+                InspectorTest.dumpSelectedElementStyles(true);
+                dumpUISourceCodeContents();
+                InspectorTest.addResult("All done.");
+                next();
+            }
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<div id="inspected"></div>
+<p>Tests file system project mappings.</p>
+</body>
+</html>
