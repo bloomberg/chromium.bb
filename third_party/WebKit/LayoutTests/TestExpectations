@@ -321,6 +321,7 @@ crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-missing-from-to-keyframes.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-multiple-keyframes.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-transform.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state-suspend.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/state-at-end-event.html [ Failure ]
@@ -328,9 +329,7 @@ crbug.com/258896 virtual/web-animations-css/animations/suspend-resume-animation.
 crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animation.html [ ImageOnlyFailure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
-crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode-hardware.html [ Timeout ]
 crbug.com/258896 [ Linux ] virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout ]
-crbug.com/258896 virtual/web-animations-css/animations/fill-mode-transform.html [ Timeout Failure ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]

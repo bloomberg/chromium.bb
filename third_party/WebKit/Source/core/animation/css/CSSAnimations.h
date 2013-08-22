@@ -80,14 +80,14 @@ public:
 private:
     typedef HashMap<StringImpl*, RefPtr<Player> > AnimationMap;
     AnimationMap m_animations;
-    class EventDelegate FINAL : public TimedItemEventDelegate {
+    class EventDelegate FINAL : public TimedItem::EventDelegate {
     public:
         EventDelegate(Element* target, const AtomicString& name)
             : m_target(target)
             , m_name(name)
         {
         }
-        virtual void onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration) OVERRIDE;
+        virtual void onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase currentPhase, double previousIteration, double currentIteration) OVERRIDE;
     private:
         void maybeDispatch(Document::ListenerType, AtomicString& eventName, double elapsedTime);
         Element* m_target;

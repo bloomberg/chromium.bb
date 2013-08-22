@@ -34,13 +34,14 @@
 
 namespace WebCore {
 
-TimedItem::TimedItem(const Timing& timing, PassOwnPtr<TimedItemEventDelegate> eventDelegate)
+TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
     : m_parent(0)
     , m_player(0)
     , m_startTime(0)
     , m_specified(timing)
     , m_calculated()
     , m_eventDelegate(eventDelegate)
+    , m_isFirstSample(true)
 {
     timing.assertValid();
 }
@@ -57,10 +58,10 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         ? repeatedDuration / abs(m_specified.playbackRate)
         : std::numeric_limits<double>::infinity();
 
-    const TimedItem::Phase phase = calculatePhase(activeDuration, localTime, m_specified);
+    const Phase currentPhase = calculatePhase(activeDuration, localTime, m_specified);
     // FIXME: parentPhase depends on groups being implemented.
     const TimedItem::Phase parentPhase = TimedItem::PhaseActive;
-    const double activeTime = calculateActiveTime(activeDuration, localTime, parentPhase, phase, m_specified);
+    const double activeTime = calculateActiveTime(activeDuration, localTime, parentPhase, currentPhase, m_specified);
 
     double currentIteration = nullValue();
     double timeFraction = nullValue();
@@ -77,8 +78,8 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         const double repeatedDuration = iterationDuration * m_specified.iterationCount;
         const double activeDuration = m_specified.playbackRate ? repeatedDuration / abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
         const double newLocalTime = localTime < m_specified.startDelay ? m_specified.startDelay - 1 : activeDuration + m_specified.startDelay;
-        const TimedItem::Phase phase = calculatePhase(activeDuration, newLocalTime, m_specified);
-        const double activeTime = calculateActiveTime(activeDuration, newLocalTime, parentPhase, phase, m_specified);
+        const TimedItem::Phase localPhase = calculatePhase(activeDuration, newLocalTime, m_specified);
+        const double activeTime = calculateActiveTime(activeDuration, newLocalTime, parentPhase, localPhase, m_specified);
         const double startOffset = m_specified.iterationStart * iterationDuration;
         const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_specified);
         const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, m_specified);
@@ -87,34 +88,26 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified);
     }
 
-    const double lastIteration = m_calculated.currentIteration;
+    const double previousIteration = m_calculated.currentIteration;
     m_calculated.currentIteration = currentIteration;
     m_calculated.activeDuration = activeDuration;
     m_calculated.timeFraction = timeFraction;
 
+    const Phase previousPhase = m_calculated.phase;
     const bool wasInEffect = m_calculated.isInEffect;
-    const bool wasInPlay = m_calculated.isInPlay;
+    m_calculated.phase = currentPhase;
     m_calculated.isInEffect = !isNull(activeTime);
-    m_calculated.isInPlay = phase == PhaseActive && (!m_parent || m_parent->isInPlay());
-    m_calculated.isCurrent = phase == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
+    m_calculated.isInPlay = phase() == PhaseActive && (!m_parent || m_parent->isInPlay());
+    m_calculated.isCurrent = phase() == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
 
-    // This logic is specific to CSS events and assumes that all animations
-    // start after the DocumentTimeline has started.
-    if (m_eventDelegate && (isInPlay() != wasInPlay || (isInPlay() && lastIteration != currentIteration)))
-        m_eventDelegate->onEventCondition(wasInPlay, isInPlay(), lastIteration, currentIteration);
+    // This logic is specific to CSS animation events and assumes that all
+    // animations start after the DocumentTimeline has started.
+    if (m_eventDelegate && (m_isFirstSample || previousPhase != phase() || (phase() == PhaseActive && previousIteration != currentIteration)))
+        m_eventDelegate->onEventCondition(m_isFirstSample, previousPhase, phase(), previousIteration, currentIteration);
+    m_isFirstSample = false;
 
     // FIXME: This probably shouldn't be recursive.
     updateChildrenAndEffects(wasInEffect);
-}
-
-TimedItem::CalculatedTiming::CalculatedTiming()
-    : activeDuration(nullValue())
-    , currentIteration(nullValue())
-    , timeFraction(nullValue())
-    , isCurrent(false)
-    , isInEffect(false)
-    , isInPlay(false)
-{
 }
 
 } // namespace WebCore

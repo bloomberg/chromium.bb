@@ -37,12 +37,12 @@
 
 namespace WebCore {
 
-PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<TimedItemEventDelegate> eventDelegate)
+PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
 {
     return adoptRef(new Animation(target, effect, timing, eventDelegate));
 }
 
-Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<TimedItemEventDelegate> eventDelegate)
+Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
     : TimedItem(timing, eventDelegate)
     , m_target(target)
     , m_effect(effect)

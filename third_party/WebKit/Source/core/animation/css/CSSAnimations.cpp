@@ -42,6 +42,26 @@
 #include "core/platform/animation/TimingFunction.h"
 #include "wtf/HashSet.h"
 
+namespace {
+
+using namespace WebCore;
+
+bool isEarlierPhase(TimedItem::Phase target, TimedItem::Phase reference)
+{
+    ASSERT(target != TimedItem::PhaseNone);
+    ASSERT(reference != TimedItem::PhaseNone);
+    return target < reference;
+}
+
+bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
+{
+    ASSERT(target != TimedItem::PhaseNone);
+    ASSERT(reference != TimedItem::PhaseNone);
+    return target > reference;
+}
+
+} // namespace
+
 namespace WebCore {
 
 void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timing)
@@ -215,7 +235,7 @@ void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listener
         m_target->document()->timeline()->addEventToDispatch(m_target, AnimationEvent::create(eventName, m_name, elapsedTime));
 }
 
-void CSSAnimations::EventDelegate::onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration)
+void CSSAnimations::EventDelegate::onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase currentPhase, double previousIteration, double currentIteration)
 {
     // Events for a single document are queued and dispatched as a group at
     // the end of DocumentTimeline::serviceAnimations.
@@ -223,18 +243,16 @@ void CSSAnimations::EventDelegate::onEventCondition(bool wasInPlay, bool isInPla
     // trigger a timer to dispatch when control is released.
     // FIXME: Receive TimedItem as param in order to produce correct elapsed time value.
     double elapsedTime = 0;
-    if (!wasInPlay && isInPlay) {
-        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, elapsedTime);
-        return;
-    }
-    if (wasInPlay && isInPlay && currentIteration != previousIteration) {
+    if (!isFirstSample && previousPhase == TimedItem::PhaseActive && currentPhase == TimedItem::PhaseActive && previousIteration != currentIteration) {
+        ASSERT(!isNull(previousIteration));
+        ASSERT(!isNull(currentIteration));
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, eventNames().webkitAnimationIterationEvent, elapsedTime);
         return;
     }
-    if (wasInPlay && !isInPlay) {
+    if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore))
+        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, elapsedTime);
+    if ((isFirstSample || isEarlierPhase(previousPhase, TimedItem::PhaseAfter)) && currentPhase == TimedItem::PhaseAfter)
         maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().webkitAnimationEndEvent, elapsedTime);
-        return;
-    }
 }
 
 } // namespace WebCore

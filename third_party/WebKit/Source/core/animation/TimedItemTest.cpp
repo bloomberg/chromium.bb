@@ -37,30 +37,28 @@ using namespace WebCore;
 
 namespace {
 
-class TestTimedItemEventDelegate : public TimedItemEventDelegate {
+class TestTimedItemEventDelegate : public TimedItem::EventDelegate {
 public:
-    void onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration) OVERRIDE
+    void onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase phase, double previousIteration, double currentIteration) OVERRIDE
     {
         m_eventTriggered = true;
-        m_playStateChanged = wasInPlay != isInPlay;
-        m_iterationChanged = isInPlay && previousIteration != currentIteration;
-        if (isInPlay)
-            ASSERT(!isNull(currentIteration));
+        m_phaseChanged = previousPhase != phase;
+        m_iterationChanged = previousIteration != currentIteration;
 
     }
     void reset()
     {
         m_eventTriggered = false;
-        m_playStateChanged = false;
+        m_phaseChanged = false;
         m_iterationChanged = false;
     }
     bool eventTriggered() { return m_eventTriggered; }
-    bool playStateChanged() { return m_playStateChanged; }
+    bool phaseChanged() { return m_phaseChanged; }
     bool iterationChanged() { return m_iterationChanged; }
 
 private:
     bool m_eventTriggered;
-    bool m_playStateChanged;
+    bool m_phaseChanged;
     bool m_iterationChanged;
 };
 
@@ -77,11 +75,8 @@ public:
         TimedItem::updateInheritedTime(time);
     }
 
-    void updateChildrenAndEffects(bool wasActiveOrInEffect) const FINAL OVERRIDE {
-    }
-
+    void updateChildrenAndEffects(bool wasActiveOrInEffect) const FINAL OVERRIDE { }
     void willDetach() { }
-
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
 
 private:
@@ -101,16 +96,11 @@ TEST(TimedItem, Sanity)
     timing.iterationDuration = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    ASSERT_FALSE(timedItem->isCurrent());
-    ASSERT_FALSE(timedItem->isInEffect());
-    ASSERT_FALSE(timedItem->isInPlay());
-    ASSERT_TRUE(isNull(timedItem->currentIteration()));
     ASSERT_EQ(0, timedItem->startTime());
-    ASSERT_TRUE(isNull(timedItem->activeDuration()));
-    ASSERT_TRUE(isNull(timedItem->timeFraction()));
 
     timedItem->updateInheritedTime(0);
 
+    ASSERT_EQ(TimedItem::PhaseActive, timedItem->phase());
     ASSERT_TRUE(timedItem->isInPlay());
     ASSERT_TRUE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -121,6 +111,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(1);
 
+    ASSERT_EQ(TimedItem::PhaseActive, timedItem->phase());
     ASSERT_TRUE(timedItem->isInPlay());
     ASSERT_TRUE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -131,6 +122,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(2);
 
+    ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -141,6 +133,7 @@ TEST(TimedItem, Sanity)
 
     timedItem->updateInheritedTime(3);
 
+    ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -332,16 +325,11 @@ TEST(TimedItem, ZeroDurationSanity)
     Timing timing;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    ASSERT_FALSE(timedItem->isInPlay());
-    ASSERT_FALSE(timedItem->isCurrent());
-    ASSERT_FALSE(timedItem->isInEffect());
-    ASSERT_TRUE(isNull(timedItem->currentIteration()));
     ASSERT_EQ(0, timedItem->startTime());
-    ASSERT_TRUE(isNull(timedItem->activeDuration()));
-    ASSERT_TRUE(isNull(timedItem->timeFraction()));
 
     timedItem->updateInheritedTime(0);
 
+    ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -352,6 +340,7 @@ TEST(TimedItem, ZeroDurationSanity)
 
     timedItem->updateInheritedTime(1);
 
+    ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     ASSERT_FALSE(timedItem->isInPlay());
     ASSERT_FALSE(timedItem->isCurrent());
     ASSERT_TRUE(timedItem->isInEffect());
@@ -546,32 +535,42 @@ TEST(TimedItem, Events)
     timing.hasIterationDuration = true;
     timing.iterationDuration = 1;
     timing.iterationCount = 2;
+    timing.startDelay = 1;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
-    timedItem->updateInheritedTime(0.3);
+    // First sample
+    timedItem->updateInheritedTime(0.0);
     ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
-    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
-    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
 
-    timedItem->updateInheritedTime(0.6);
+    // Before start
+    timedItem->updateInheritedTime(0.5);
     ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
 
+    // First iteration
     timedItem->updateInheritedTime(1.5);
     ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_TRUE(timedItem->eventDelegate()->phaseChanged());
     EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
-    EXPECT_FALSE(timedItem->eventDelegate()->playStateChanged());
 
+    timedItem->updateInheritedTime(1.6);
+    ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
+
+    // Second iteration
     timedItem->updateInheritedTime(2.5);
     ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
-    EXPECT_FALSE(timedItem->eventDelegate()->iterationChanged());
-    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
+    EXPECT_FALSE(timedItem->eventDelegate()->phaseChanged());
+    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
 
-    timedItem->updateInheritedTime(3);
+    timedItem->updateInheritedTime(2.6);
     ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
 
-    timedItem->updateInheritedTime(1.5);
+    // After end
+    timedItem->updateInheritedTime(3.5);
     ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_TRUE(timedItem->eventDelegate()->phaseChanged());
     EXPECT_FALSE(timedItem->eventDelegate()->iterationChanged());
-    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
+
+    timedItem->updateInheritedTime(3.6);
+    ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
 }
 }
