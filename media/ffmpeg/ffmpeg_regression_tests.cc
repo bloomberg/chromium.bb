@@ -152,6 +152,11 @@ FFMPEG_TEST_CASE(Cr234630b, "security/234630b.mov", PIPELINE_ERROR_DECODE,
 FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-1.72,-0.83,0.84,1.70,1.23,-0.53,");
+// Test for out-of-bounds access with slightly corrupt file (detection logic
+// thinks it's a MONO file, but actually contains STEREO audio).
+FFMPEG_TEST_CASE(Cr275590, "security/275590.m4a",
+                 DECODER_ERROR_NOT_SUPPORTED, DEMUXER_ERROR_COULD_NOT_OPEN,
+                 kNullVideoHash, kNullAudioHash);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0, "security/aac.10419.mp4", DEMUXER_ERROR_COULD_NOT_OPEN,
