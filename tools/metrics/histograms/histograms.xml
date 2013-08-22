@@ -15402,6 +15402,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.LayoutLatency" units="milliseconds">
+  <obsolete>
+    Renamed to WebFont.StyleRecalcToDownloadLatency for clarity.
+  </obsolete>
+  <summary>
+    The time from when the webfont was referenced by a calculated style for the
+    first time to the start of the font download.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.LoadTime.0.Under10KB" units="milliseconds">
   <obsolete>
     Deprecated as of 8/2013, replaced by WebFont.DownloadTime.0.Under10KB.
@@ -15466,6 +15476,25 @@ other types of suffix sets.
   <summary>
     Whether a locallly installed font is actually used when @font-face had local
     sources.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.StyleRecalcToDownloadLatency" units="milliseconds">
+  <summary>
+    The time from when the webfont was referenced by a calculated style for the
+    first time to the start of the font download.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.UsageType" enum="WebFontUsageType">
+  <summary>
+    For each webfont, this records (a) if the font was 'styled', i.e. referenced
+    by a calculated style for a RenderText before the font data was used, and
+    (b) if the font was actually used or not, i.e. the renderer requested the
+    font data or not. (A Font can be used without being styled, for example when
+    drawn by a Canvas 2D Context.) This is recorded upon a download request of a
+    webfont, or destruction of a CSSFontFaceSource object. Recorded at most once
+    for each url() source of @font-face CSS rule.
   </summary>
 </histogram>
 
@@ -22886,6 +22915,12 @@ other types of suffix sets.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WebFontUsageType" type="int">
+  <int value="0" label="Styled, and used"/>
+  <int value="1" label="Styled, but not used"/>
+  <int value="2" label="Not styled, but used"/>
 </enum>
 
 <enum name="WebHistoryStatus" type="int">
