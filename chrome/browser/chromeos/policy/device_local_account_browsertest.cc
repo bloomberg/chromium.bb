@@ -7,12 +7,18 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -22,6 +28,7 @@
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -38,6 +45,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -46,10 +55,17 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 
@@ -61,6 +77,7 @@ namespace policy {
 
 namespace {
 
+const char kDomain[] = "example.com";
 const char kAccountId1[] = "dla1@example.com";
 const char kAccountId2[] = "dla2@example.com";
 const char kDisplayName[] = "display name";
@@ -68,6 +85,8 @@ const char* kStartupURLs[] = {
   "chrome://policy",
   "chrome://about",
 };
+const char kExistentTermsOfServicePath[] = "chromeos/enterprise/tos.txt";
+const char kNonexistentTermsOfServicePath[] = "chromeos/enterprise/tos404.txt";
 
 }  // namespace
 
@@ -302,9 +321,19 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 
-  chromeos::LoginDisplayHost* host =
-      chromeos::LoginDisplayHostImpl::default_host();
+  // Wait for the login UI to be ready.
+  chromeos::LoginDisplayHostImpl* host =
+      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host());
   ASSERT_TRUE(host);
+  chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+  ASSERT_TRUE(oobe_ui);
+  base::RunLoop run_loop;
+  const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
+  if (!oobe_ui_ready)
+    run_loop.Run();
+
+  // Start login into the device-local account.
   host->StartSignInScreen();
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
@@ -332,11 +361,18 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {
-  // Specify Terms of Service. The URL does not really matter as the test does
-  // not wait for the terms to load.
+class TermsOfServiceTest : public DeviceLocalAccountTest,
+                           public testing::WithParamInterface<bool> {
+};
+
+IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
+  // Specify Terms of Service URL.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
-      "http://localhost/tos");
+      embedded_test_server()->GetURL(
+            std::string("/") +
+                (GetParam() ? kExistentTermsOfServicePath
+                            : kNonexistentTermsOfServicePath)).spec());
   InstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -345,10 +381,20 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 
-  // Start login into the device-local account.
-  chromeos::LoginDisplayHost* host =
-      chromeos::LoginDisplayHostImpl::default_host();
+  // Wait for the login UI to be ready.
+  chromeos::LoginDisplayHostImpl* host =
+      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host());
   ASSERT_TRUE(host);
+  chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+  ASSERT_TRUE(oobe_ui);
+  base::RunLoop oobe_ui_wait_run_loop;
+  const bool oobe_ui_ready =
+      oobe_ui->IsJSReady(oobe_ui_wait_run_loop.QuitClosure());
+  if (!oobe_ui_ready)
+    oobe_ui_wait_run_loop.Run();
+
+  // Start login into the device-local account.
   host->StartSignInScreen();
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
@@ -357,15 +403,15 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {
 
   // Set up an observer that will quit the message loop when login has succeeded
   // and the first wizard screen, if any, is being shown.
-  base::RunLoop run_loop;
+  base::RunLoop login_wait_run_loop;
   chromeos::MockConsumer login_status_consumer;
   EXPECT_CALL(login_status_consumer, OnLoginSuccess(_, false, false))
       .Times(1)
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
 
   // Spin the loop until the observer fires. Then, unregister the observer.
   controller->set_login_status_consumer(&login_status_consumer);
-  run_loop.Run();
+  login_wait_run_loop.Run();
   controller->set_login_status_consumer(NULL);
 
   // Verify that the Terms of Service screen is being shown.
@@ -375,6 +421,104 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {
   ASSERT_TRUE(wizard_controller->current_screen());
   EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
             wizard_controller->current_screen()->GetName());
+
+  // Wait for the Terms of Service to finish downloading, then get the status of
+  // the screen's UI elements.
+  chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
+  ASSERT_TRUE(web_ui_login_view);
+  content::WebUI* web_ui = web_ui_login_view->GetWebUI();
+  ASSERT_TRUE(web_ui);
+  content::WebContents* contents = web_ui->GetWebContents();
+  ASSERT_TRUE(contents);
+  std::string json;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents,
+      "var screen = document.getElementById('terms-of-service');"
+      "function SendReplyIfDownloadDone() {"
+      "  if (screen.classList.contains('tos-loading'))"
+      "    return false;"
+      "  var status = {};"
+      "  status.heading = document.getElementById('tos-heading').textContent;"
+      "  status.subheading ="
+      "      document.getElementById('tos-subheading').textContent;"
+      "  status.contentHeading ="
+      "      document.getElementById('tos-content-heading').textContent;"
+      "  status.content ="
+      "      document.getElementById('tos-content-main').textContent;"
+      "  status.error = screen.classList.contains('error');"
+      "  status.acceptEnabled ="
+      "      !document.getElementById('tos-accept-button').disabled;"
+      "  domAutomationController.send(JSON.stringify(status));"
+      "  observer.disconnect();"
+      "  return true;"
+      "}"
+      "var observer = new MutationObserver(SendReplyIfDownloadDone);"
+      "if (!SendReplyIfDownloadDone()) {"
+      "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
+      "  observer.observe(screen, options);"
+      "}",
+      &json));
+  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
+  const base::DictionaryValue* status = NULL;
+  ASSERT_TRUE(value_ptr.get());
+  ASSERT_TRUE(value_ptr->GetAsDictionary(&status));
+  std::string heading;
+  EXPECT_TRUE(status->GetString("heading", &heading));
+  std::string subheading;
+  EXPECT_TRUE(status->GetString("subheading", &subheading));
+  std::string content_heading;
+  EXPECT_TRUE(status->GetString("contentHeading", &content_heading));
+  std::string content;
+  EXPECT_TRUE(status->GetString("content", &content));
+  bool error;
+  EXPECT_TRUE(status->GetBoolean("error", &error));
+  bool accept_enabled;
+  EXPECT_TRUE(status->GetBoolean("acceptEnabled", &accept_enabled));
+
+  // Verify that the screen's headings have been set correctly.
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_HEADING,
+                                UTF8ToUTF16(kDomain)),
+      heading);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING,
+                                UTF8ToUTF16(kDomain)),
+      subheading);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_CONTENT_HEADING,
+                                UTF8ToUTF16(kDomain)),
+      content_heading);
+
+  if (!GetParam()) {
+    // The Terms of Service URL was invalid. Verify that the screen is showing
+    // an error and the accept button is disabled.
+    EXPECT_TRUE(error);
+    EXPECT_FALSE(accept_enabled);
+    return;
+  }
+
+  // The Terms of Service URL was valid. Verify that the screen is showing the
+  // downloaded Terms of Service and the accept button is enabled.
+  base::FilePath test_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  std::string terms_of_service;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      test_dir.Append(kExistentTermsOfServicePath), &terms_of_service));
+  EXPECT_EQ(terms_of_service, content);
+  EXPECT_FALSE(error);
+  EXPECT_TRUE(accept_enabled);
+
+  // Click the accept button.
+  ASSERT_TRUE(content::ExecuteScript(contents,
+                                     "$('tos-accept-button').click();"));
+
+  // Wait for the session to start.
+  if (!IsSessionStarted()) {
+    content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
+                                          base::Bind(IsSessionStarted)).Wait();
+  }
 }
+
+INSTANTIATE_TEST_CASE_P(TermsOfServiceTestInstance,
+                        TermsOfServiceTest, testing::Bool());
 
 }  // namespace policy

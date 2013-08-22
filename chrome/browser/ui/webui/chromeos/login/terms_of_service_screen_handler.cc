@@ -101,7 +101,7 @@ void TermsOfServiceScreenHandler::Initialize() {
 
 void TermsOfServiceScreenHandler::UpdateDomainInUI() {
   if (page_is_ready())
-    CallJS("cr.ui.Oobe.setTermsOfServiceDomain", domain_);
+    CallJS("setDomain", domain_);
 }
 
 void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
@@ -113,9 +113,9 @@ void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
   // download is still in progress and the UI will be updated when the
   // OnLoadError() or the OnLoadSuccess() callback is called.
   if (load_error_)
-    CallJS("cr.ui.Oobe.setTermsOfServiceLoadError");
+    CallJS("setTermsOfServiceLoadError");
   else if (!terms_of_service_.empty())
-    CallJS("cr.ui.Oobe.setTermsOfService", terms_of_service_);
+    CallJS("setTermsOfService", terms_of_service_);
 }
 
 void TermsOfServiceScreenHandler::HandleBack() {

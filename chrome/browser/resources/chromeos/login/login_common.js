@@ -225,32 +225,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Sets the domain name whose Terms of Service are being shown on the Terms of
-   * Service screen.
-   * @param {string} domain The domain name.
-   */
-  Oobe.setTermsOfServiceDomain = function(domain) {
-    login.TermsOfServiceScreen.setDomain(domain);
-  };
-
-  /**
-   * Displays an error message on the Terms of Service screen. Called when the
-   * download of the Terms of Service has failed.
-   */
-  Oobe.setTermsOfServiceLoadError = function() {
-    $('terms-of-service').classList.remove('tos-loading');
-    $('terms-of-service').classList.add('error');
-  };
-
-  /**
-   * Displays the given |termsOfService| on the Terms of Service screen.
-   * @param {string} termsOfService The terms of service, as plain text.
-   */
-  Oobe.setTermsOfService = function(termsOfService) {
-    login.TermsOfServiceScreen.setTermsOfService(termsOfService);
-  };
-
-  /**
    * Clears password field in user-pod.
    */
   Oobe.clearUserPodPassword = function() {

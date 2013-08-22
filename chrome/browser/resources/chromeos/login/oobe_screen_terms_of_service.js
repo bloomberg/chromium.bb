@@ -10,6 +10,7 @@ login.createScreen('TermsOfServiceScreen', 'terms-of-service',
   function() { return {
     EXTERNAL_API: [
       'setDomain',
+      'setTermsOfServiceLoadError',
       'setTermsOfService'
     ],
 
@@ -25,6 +26,15 @@ login.createScreen('TermsOfServiceScreen', 'terms-of-service',
           loadTimeData.getStringF('termsOfServiceScreenSubheading', domain);
       $('tos-content-heading').textContent =
           loadTimeData.getStringF('termsOfServiceContentHeading', domain);
+    },
+
+    /**
+     * Displays an error message on the Terms of Service screen. Called when the
+     * download of the Terms of Service has failed.
+     */
+    setTermsOfServiceLoadError: function() {
+      this.classList.remove('tos-loading');
+      this.classList.add('error');
     },
 
     /**
