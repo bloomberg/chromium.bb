@@ -37,7 +37,6 @@ using WebKit::WebPrivatePtr;
 using WebKit::WebRenderingStatsImpl;
 using WebKit::WebSize;
 using WebKit::WebView;
-using WebKit::WebViewBenchmarkSupport;
 
 const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
 
