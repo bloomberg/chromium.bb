@@ -22,7 +22,6 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
-CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 
 ----- tests for calling methods of another frame using Function.call -----
 
@@ -32,6 +31,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS window.setTimeout.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.setInterval.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS window.showModalDialog.call(targetWindow); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.open.call(targetWindow, '') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS: window.getSelection.call(targetWindow) should be 'undefined' and is.
 PASS: window.find.call(targetWindow, 'string', false, false, false, false, false, false) should be 'undefined' and is.
 PASS: window.confirm.call(targetWindow, 'message') should be 'undefined' and is.
@@ -41,7 +41,6 @@ PASS: window.getMatchedCSSRules.call(targetWindow, document.body, '') should be 
 PASS: window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0) should be 'undefined' and is.
 PASS: window.atob.call(targetWindow, 'string') should be 'undefined' and is.
 PASS: window.btoa.call(targetWindow, 'string') should be 'undefined' and is.
-PASS: window.open.call(targetWindow, '') should be 'undefined' and is.
 PASS: window.addEventListener.call(targetWindow, 'load', null, false); should be 'undefined' and is.
 PASS: window.removeEventListener.call(targetWindow, 'load', null, false); should be 'undefined' and is.
 PASS: window.clearTimeout.call(targetWindow, 0); should be 'undefined' and is.

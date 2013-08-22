@@ -29,6 +29,7 @@ window.onload = function()
     shouldThrow("window.setTimeout.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.setInterval.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.showModalDialog.call(targetWindow);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.open.call(targetWindow, '')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldBeUndefined("window.getSelection.call(targetWindow)");
     shouldBeUndefined("window.find.call(targetWindow, 'string', false, false, false, false, false, false)");
     shouldBeUndefined("window.confirm.call(targetWindow, 'message')");
@@ -38,7 +39,6 @@ window.onload = function()
     shouldBeUndefined("window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0)");
     shouldBeUndefined("window.atob.call(targetWindow, 'string')");
     shouldBeUndefined("window.btoa.call(targetWindow, 'string')");
-    shouldBeUndefined("window.open.call(targetWindow, '')");
 
     // These always return undefined so we use the error console to detect failure
     shouldBeUndefined("window.addEventListener.call(targetWindow, 'load', null, false);");

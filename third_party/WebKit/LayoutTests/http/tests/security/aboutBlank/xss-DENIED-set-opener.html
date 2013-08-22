@@ -52,7 +52,12 @@
 
         setTimeout(pollForDone, 1);
 
-        window.open.call(frames[0], '', 'attacker');
+        try {
+            window.open.call(frames[0], '', 'attacker');
+            log("FAIL: 'window.open' called on another frame should throw.");
+        } catch (e) {
+            log("PASS: 'window.open' called on another frame threw: " + e);
+        }
     }
 
     pollForDone = function()

@@ -220,9 +220,11 @@ void V8Window::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
 void V8Window::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
-
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     // Opener can be shadowed if it is in the same domain.
     // Have a special handling of null value to behave
@@ -371,8 +373,11 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     DOMWindow* impl = V8Window::toNative(args.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame()))
+    ExceptionState es(args.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     // FIXME: Handle exceptions properly.
     String urlString = toWebCoreStringWithUndefinedOrNullCheck(args[0]);
