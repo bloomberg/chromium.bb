@@ -451,7 +451,6 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
   while (new_focus_traversable) {
     DCHECK(!v);
     focus_traversable = new_focus_traversable;
-    starting_view = new_starting_view;
     new_focus_traversable = NULL;
     starting_view = NULL;
     v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
