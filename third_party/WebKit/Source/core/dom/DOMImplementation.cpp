@@ -184,7 +184,7 @@ PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const String& qua
     if (!Document::parseQualifiedName(qualifiedName, prefix, localName, es))
         return 0;
 
-    return DocumentType::create(0, qualifiedName, publicId, systemId);
+    return DocumentType::create(m_document, qualifiedName, publicId, systemId);
 }
 
 DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
@@ -211,16 +211,6 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
         documentElement = doc->createElementNS(namespaceURI, qualifiedName, es);
         if (es.hadException())
             return 0;
-    }
-
-    // WrongDocumentError: Raised if doctype has already been used with a different document or was
-    // created from a different implementation.
-    // Hixie's interpretation of the DOM Core spec suggests we should prefer
-    // other exceptions to WrongDocumentError (based on order mentioned in spec),
-    // but this matches the new DOM Core spec (http://www.w3.org/TR/domcore/).
-    if (doctype && doctype->document()) {
-        es.throwDOMException(WrongDocumentError);
-        return 0;
     }
 
     if (doctype)

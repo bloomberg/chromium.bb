@@ -174,10 +174,6 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
         return false;
     }
 
-    if (newChild->inDocument() && newChild->isDocumentTypeNode()) {
-        es.throwDOMException(HierarchyRequestError);
-        return false;
-    }
     if (containsConsideringHostElements(newChild, newParent)) {
         es.throwDOMException(HierarchyRequestError);
         return false;
