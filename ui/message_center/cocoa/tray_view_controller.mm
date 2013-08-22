@@ -126,6 +126,9 @@ const CGFloat kTrayBottomMargin = 75;
     animation_.reset();
   }
   if (clearAllInProgress_) {
+    // To stop chain of clearOneNotification calls to start new animations.
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
     for (NSViewAnimation* animation in clearAllAnimations_.get()) {
       [animation stopAnimation];
       [animation setDelegate:nil];
