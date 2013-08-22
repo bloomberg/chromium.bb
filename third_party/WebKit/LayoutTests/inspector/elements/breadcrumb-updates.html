@@ -28,13 +28,15 @@ function test()
     function step1()
     {
         dumpBreadcrumb("Original breadcrumb");
-        InspectorTest.evaluateInPage("changeClass()", step2);
+        InspectorTest.addSniffer(WebInspector.panels.elements, "updateBreadcrumb", step2);
+        InspectorTest.evaluateInPage("changeClass()");
     }
 
     function step2()
     {
         dumpBreadcrumb("After class change");
-        InspectorTest.evaluateInPage("deleteClass()", step3);
+        InspectorTest.addSniffer(WebInspector.panels.elements, "updateBreadcrumb", step3);
+        InspectorTest.evaluateInPage("deleteClass()");
     }
 
     function step3()
