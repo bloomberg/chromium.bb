@@ -31,12 +31,6 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 // unmount.
 void OpenRemovableDrive(const base::FilePath& file_path);
 
-// Opens an action choice dialog for an external drive.
-// One of the actions is opening the File Manager. Passes |advanced_mode|
-// flag to the dialog. If it is enabled, then auto-choice gets disabled.
-void OpenActionChoiceDialog(const base::FilePath& file_path,
-                            bool advanced_mode);
-
 // Opens an item (file or directory). If the target is a directory, the
 // directory will be opened in the file manager. If the target is a file, the
 // file will be opened using a file handler, a file browser handler, or the
