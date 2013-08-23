@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -212,6 +213,9 @@ public class SelectActionModeCallback implements ActionMode.Callback {
                     i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
                     i.putExtra(SearchManager.QUERY, selection);
                     i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
+                    if (!(getContext() instanceof Activity)) {
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
                     try {
                         getContext().startActivity(i);
                     } catch (android.content.ActivityNotFoundException ex) {
