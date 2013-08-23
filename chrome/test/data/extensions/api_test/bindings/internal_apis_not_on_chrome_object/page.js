@@ -6,4 +6,5 @@ chrome.test.assertFalse(chrome.hasOwnProperty('downloadsInternal'));
 chrome.test.assertFalse(chrome.hasOwnProperty('events'));
 chrome.test.assertFalse(chrome.hasOwnProperty('fileBrowserHandlerInternal'));
 chrome.test.assertFalse(chrome.hasOwnProperty('webRequestInternal'));
+chrome.test.assertFalse(chrome.hasOwnProperty('webview'));
 chrome.test.succeed();

@@ -15,6 +15,7 @@ var messagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
+var webView = require('binding').Binding.create('webview').generate();
 
 // This secret enables hiding <webview> private members from the outside scope.
 // Outside of this file, |secret| is inaccessible. The only way to access the
@@ -228,7 +229,7 @@ WebViewInternal.prototype.go_ = function(relativeIndex) {
   if (!this.instanceId_) {
     return;
   }
-  chrome.webview.go(this.instanceId_, relativeIndex);
+  webView.go(this.instanceId_, relativeIndex);
 };
 
 /**
@@ -238,7 +239,7 @@ WebViewInternal.prototype.reload_ = function() {
   if (!this.instanceId_) {
     return;
   }
-  chrome.webview.reload(this.instanceId_);
+  webView.reload(this.instanceId_);
 };
 
 /**
@@ -248,7 +249,7 @@ WebViewInternal.prototype.stop_ = function() {
   if (!this.instanceId_) {
     return;
   }
-  chrome.webview.stop(this.instanceId_);
+  webView.stop(this.instanceId_);
 };
 
 /**
@@ -258,7 +259,7 @@ WebViewInternal.prototype.terminate_ = function() {
   if (!this.instanceId_) {
     return;
   }
-  chrome.webview.terminate(this.instanceId_);
+  webView.terminate(this.instanceId_);
 };
 
 /**
@@ -278,7 +279,7 @@ WebViewInternal.prototype.validateExecuteCodeCall_  = function() {
 WebViewInternal.prototype.executeScript_ = function(var_args) {
   this.validateExecuteCodeCall_();
   var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
-  $Function.apply(chrome.webview.executeScript, null, args);
+  $Function.apply(webView.executeScript, null, args);
 };
 
 /**
@@ -287,7 +288,7 @@ WebViewInternal.prototype.executeScript_ = function(var_args) {
 WebViewInternal.prototype.insertCSS_ = function(var_args) {
   this.validateExecuteCodeCall_();
   var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
-  $Function.apply(chrome.webview.insertCSS, null, args);
+  $Function.apply(webView.insertCSS, null, args);
 };
 
 /**
@@ -536,12 +537,12 @@ WebViewInternal.prototype.setupExtNewWindowEvent_ =
         // then we will fail and it will be treated as if the new window
         // was rejected. The permission API plumbing is used here to clean
         // up the state created for the new window if attaching fails.
-        chrome.webview.setPermission(self.instanceId_, requestId, attached, '');
+        webView.setPermission(self.instanceId_, requestId, attached, '');
       }, 0);
     },
     discard: function() {
       validateCall();
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
     }
   };
   webviewEvent.window = window;
@@ -558,13 +559,13 @@ WebViewInternal.prototype.setupExtNewWindowEvent_ =
       if (actionTaken) {
         return;
       }
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
       showWarningMessage();
     });
   } else {
     actionTaken = true;
     // The default action is to discard the window.
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    webView.setPermission(self.instanceId_, requestId, false, '');
     showWarningMessage();
   }
 };
@@ -604,11 +605,11 @@ WebViewInternal.prototype.setupExtPermissionEvent_ =
   var request = {
     allow: function() {
       validateCall();
-      chrome.webview.setPermission(self.instanceId_, requestId, true, '');
+      webView.setPermission(self.instanceId_, requestId, true, '');
     },
     deny: function() {
       validateCall();
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
     }
   };
   webviewEvent.request = request;
@@ -625,12 +626,12 @@ WebViewInternal.prototype.setupExtPermissionEvent_ =
       if (decisionMade) {
         return;
       }
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
       showWarningMessage(event.permission);
     });
   } else {
     decisionMade = true;
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    webView.setPermission(self.instanceId_, requestId, false, '');
     showWarningMessage(event.permission);
   }
 };
@@ -807,5 +808,6 @@ WebViewInternal.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {};
  */
 WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
 
+exports.webView = webView;
 exports.WebViewInternal = WebViewInternal;
 exports.CreateEvent = createEvent;

@@ -17,6 +17,7 @@ var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebViewInternal = require('webView').WebViewInternal;
+var webView = require('webView').webView;
 
 var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
   'dialog': {
@@ -79,12 +80,11 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      chrome.webview.setPermission(
-          self.instanceId_, requestId, true, user_input);
+      webView.setPermission(self.instanceId_, requestId, true, user_input);
     },
     cancel: function() {
       validateCall();
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
     }
   };
   webviewEvent.dialog = dialog;
@@ -102,13 +102,13 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
       if (actionTaken) {
         return;
       }
-      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      webView.setPermission(self.instanceId_, requestId, false, '');
       showWarningMessage(event.messageType);
     });
   } else {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    webView.setPermission(self.instanceId_, requestId, false, '');
     showWarningMessage(event.messageType);
   }
 };
@@ -125,7 +125,7 @@ WebViewInternal.prototype.clearData_ = function(var_args) {
     return;
   }
   var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
-  $Function.apply(chrome.webview.clearData, null, args);
+  $Function.apply(webView.clearData, null, args);
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {

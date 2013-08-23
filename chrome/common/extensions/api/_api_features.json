@@ -594,6 +594,7 @@
     "contexts": ["blessed_extension"]
   },
   "webview": {
+    "internal": true,
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]
   },
