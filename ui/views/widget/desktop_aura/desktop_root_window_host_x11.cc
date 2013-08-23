@@ -520,8 +520,15 @@ void DesktopRootWindowHostX11::SetWindowIcons(
 }
 
 void DesktopRootWindowHostX11::InitModalType(ui::ModalType modal_type) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  switch (modal_type) {
+    case ui::MODAL_TYPE_NONE:
+      break;
+    default:
+      // TODO(erg): Figure out under what situations |modal_type| isn't
+      // none. The comment in desktop_native_widget_aura.cc suggests that this
+      // is rare.
+      NOTIMPLEMENTED();
+  }
 }
 
 void DesktopRootWindowHostX11::FlashFrame(bool flash_frame) {
