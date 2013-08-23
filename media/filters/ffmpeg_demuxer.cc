@@ -590,8 +590,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     media_log_->SetStringProperty("audio_sample_format", sample_name);
 
-    media_log_->SetStringProperty("audio_codec_name",
-                                  audio_codec->codec_name);
+    AVCodec* codec = avcodec_find_decoder(audio_codec->codec_id);
+    if (codec) {
+      media_log_->SetStringProperty("audio_codec_name", codec->name);
+    }
+
     media_log_->SetIntegerProperty("audio_sample_rate",
                                    audio_codec->sample_rate);
     media_log_->SetIntegerProperty("audio_channels_count",
@@ -606,7 +609,12 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   if (video_stream) {
     AVCodecContext* video_codec = video_stream->codec;
     media_log_->SetBooleanProperty("found_video_stream", true);
-    media_log_->SetStringProperty("video_codec_name", video_codec->codec_name);
+
+    AVCodec* codec = avcodec_find_decoder(video_codec->codec_id);
+    if (codec) {
+      media_log_->SetStringProperty("video_codec_name", codec->name);
+    }
+
     media_log_->SetIntegerProperty("width", video_codec->width);
     media_log_->SetIntegerProperty("height", video_codec->height);
     media_log_->SetIntegerProperty("coded_width",
