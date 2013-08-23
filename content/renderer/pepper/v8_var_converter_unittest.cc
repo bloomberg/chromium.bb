@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "content/renderer/pepper/resource_converter.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/array_var.h"
@@ -40,6 +41,14 @@ using ppapi::VarTracker;
 namespace content {
 
 namespace {
+
+class MockResourceConverter : public content::ResourceConverter {
+ public:
+  virtual ~MockResourceConverter() {}
+  virtual void ShutDown(const base::Callback<void(bool)>& callback) OVERRIDE {
+    callback.Run(true);
+  }
+};
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
 typedef base::hash_map<int64_t, v8::Handle<v8::Value> > VarHandleMap;
@@ -140,6 +149,9 @@ class V8VarConverterTest : public testing::Test {
         conversion_event_(true, false),
         callback_thread_("callback_thread") {
     callback_thread_.Start();
+    converter_.reset(new V8VarConverter(
+        callback_thread_.message_loop_proxy(),
+        scoped_ptr<ResourceConverter>(new MockResourceConverter).Pass()));
   }
   virtual ~V8VarConverterTest() {}
 
@@ -160,9 +172,8 @@ class V8VarConverterTest : public testing::Test {
   bool FromV8ValueSync(v8::Handle<v8::Value> val,
                        v8::Handle<v8::Context> context,
                        PP_Var* result) {
-    V8VarConverter::FromV8Value(val, context, base::Bind(
-        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)),
-        callback_thread_.message_loop_proxy());
+    converter_->FromV8Value(val, context, base::Bind(
+        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)));
     conversion_event_.Wait();
     conversion_event_.Reset();
     if (conversion_success_)
@@ -185,7 +196,7 @@ class V8VarConverterTest : public testing::Test {
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, context_);
     v8::Handle<v8::Value> v8_result;
-    if (!V8VarConverter::ToV8Value(var, context, &v8_result))
+    if (!converter_->ToV8Value(var, context, &v8_result))
       return false;
     if (!Equals(var, v8_result))
       return false;
@@ -208,6 +219,8 @@ class V8VarConverterTest : public testing::Test {
 
   // Context for the JavaScript in the test.
   v8::Persistent<v8::Context> context_;
+
+  scoped_ptr<V8VarConverter> converter_;
 
  private:
   TestGlobals globals_;
@@ -327,8 +340,8 @@ TEST_F(V8VarConverterTest, Cycles) {
 
     // Array <-> dictionary cycle.
     dictionary->SetWithStringKey("1", release_array.get());
-    ASSERT_FALSE(V8VarConverter::ToV8Value(release_dictionary.get(),
-                                           context, &v8_result));
+    ASSERT_FALSE(converter_->ToV8Value(release_dictionary.get(),
+                                       context, &v8_result));
     // Break the cycle.
     // TODO(raymes): We need some better machinery for releasing vars with
     // cycles. Remove the code below once we have that.
@@ -336,8 +349,8 @@ TEST_F(V8VarConverterTest, Cycles) {
 
     // Array with self reference.
     array->Set(0, release_array.get());
-    ASSERT_FALSE(V8VarConverter::ToV8Value(release_array.get(),
-                                           context, &v8_result));
+    ASSERT_FALSE(converter_->ToV8Value(release_array.get(),
+                                       context, &v8_result));
     // Break the self reference.
     array->Set(0, PP_MakeUndefined());
   }

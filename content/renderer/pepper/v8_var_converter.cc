@@ -64,7 +64,6 @@ inline size_t hash_value(const HashedHandle& handle) {
 }  // namespace BASE_HASH_NAMESPACE
 
 namespace content {
-namespace V8VarConverter {
 
 namespace {
 
@@ -235,6 +234,21 @@ bool CanHaveChildren(PP_Var var) {
 
 }  // namespace
 
+V8VarConverter::V8VarConverter()
+    : message_loop_proxy_(base::MessageLoopProxy::current()),
+      resource_converter_(new ResourceConverterImpl()) {
+}
+
+V8VarConverter::V8VarConverter(
+    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+    scoped_ptr<ResourceConverter> resource_converter)
+    : message_loop_proxy_(message_loop_proxy),
+      resource_converter_(resource_converter.release()) {
+}
+
+V8VarConverter::~V8VarConverter() {
+}
+
 // To/FromV8Value use a stack-based DFS search to traverse V8/Var graph. Each
 // iteration, the top node on the stack examined. If the node has not been
 // visited yet (i.e. sentinel == false) then it is added to the list of parents
@@ -245,9 +259,9 @@ bool CanHaveChildren(PP_Var var) {
 // node at the top of the stack has already been visited, then we pop it off the
 // stack and erase it from the list of parents.
 // static
-bool ToV8Value(const PP_Var& var,
-               v8::Handle<v8::Context> context,
-               v8::Handle<v8::Value>* result) {
+bool V8VarConverter::ToV8Value(const PP_Var& var,
+                               v8::Handle<v8::Context> context,
+                               v8::Handle<v8::Value>* result) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
 
@@ -348,18 +362,15 @@ bool ToV8Value(const PP_Var& var,
   return true;
 }
 
-void FromV8Value(
+void V8VarConverter::FromV8Value(
     v8::Handle<v8::Value> val,
     v8::Handle<v8::Context> context,
-    const base::Callback<void(const ScopedPPVar&, bool)>& callback,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy) {
+    const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
 
   HandleVarMap visited_handles;
   ParentHandleSet parent_handles;
-
-  ResourceConverter resource_converter;
 
   std::stack<StackEntry<v8::Handle<v8::Value> > > stack;
   stack.push(StackEntry<v8::Handle<v8::Value> >(val));
@@ -382,8 +393,8 @@ void FromV8Value(
     bool did_create = false;
     if (!GetOrCreateVar(current_v8, &current_var, &did_create,
                         &visited_handles, &parent_handles,
-                        &resource_converter)) {
-      message_loop_proxy->PostTask(FROM_HERE,
+                        resource_converter_.get())) {
+      message_loop_proxy_->PostTask(FROM_HERE,
           base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
       return;
     }
@@ -402,7 +413,7 @@ void FromV8Value(
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
       if (!array_var) {
         NOTREACHED();
-        message_loop_proxy->PostTask(FROM_HERE,
+        message_loop_proxy_->PostTask(FROM_HERE,
             base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
         return;
       }
@@ -411,7 +422,7 @@ void FromV8Value(
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_array->Get(i);
         if (try_catch.HasCaught()) {
-          message_loop_proxy->PostTask(FROM_HERE,
+          message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
           return;
         }
@@ -422,8 +433,8 @@ void FromV8Value(
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
                             &visited_handles, &parent_handles,
-                            &resource_converter)) {
-          message_loop_proxy->PostTask(FROM_HERE,
+                            resource_converter_.get())) {
+          message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
           return;
         }
@@ -440,7 +451,7 @@ void FromV8Value(
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
       if (!dict_var) {
         NOTREACHED();
-        message_loop_proxy->PostTask(FROM_HERE,
+        message_loop_proxy_->PostTask(FROM_HERE,
             base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
         return;
       }
@@ -453,7 +464,7 @@ void FromV8Value(
         if (!key->IsString() && !key->IsNumber()) {
           NOTREACHED() << "Key \"" << *v8::String::AsciiValue(key) << "\" "
                           "is neither a string nor a number";
-          message_loop_proxy->PostTask(FROM_HERE,
+          message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
           return;
         }
@@ -467,7 +478,7 @@ void FromV8Value(
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_object->Get(key);
         if (try_catch.HasCaught()) {
-          message_loop_proxy->PostTask(FROM_HERE,
+          message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
           return;
         }
@@ -475,8 +486,8 @@ void FromV8Value(
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
                             &visited_handles, &parent_handles,
-                            &resource_converter)) {
-          message_loop_proxy->PostTask(FROM_HERE,
+                            resource_converter_.get())) {
+          message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
           return;
         }
@@ -489,15 +500,7 @@ void FromV8Value(
       }
     }
   }
-  resource_converter.ShutDown(base::Bind(callback, root), message_loop_proxy);
+  resource_converter_->ShutDown(base::Bind(callback, root));
 }
 
-void FromV8Value(
-    v8::Handle<v8::Value> val,
-    v8::Handle<v8::Context> context,
-    const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
-  FromV8Value(val, context, callback, base::MessageLoopProxy::current());
-}
-
-}  // namespace V8VarConverter
 }  // namespace content

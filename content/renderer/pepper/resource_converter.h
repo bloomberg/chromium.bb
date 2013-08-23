@@ -8,24 +8,28 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // This class is responsible for converting V8 vars to Pepper resources.
-class ResourceConverter {
+class CONTENT_EXPORT ResourceConverter {
  public:
-  ResourceConverter();
-  ~ResourceConverter();
-  // ShutDown must be called before any vars created by the ResourceConverter
+  virtual ~ResourceConverter();
+
+ // ShutDown must be called before any vars created by the ResourceConverter
   // are valid. It handles creating any resource hosts that need to be created.
-  // |message_loop_proxy| is the message loop to run the callback from.
-  void ShutDown(
-      const base::Callback<void(bool)>& callback,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy);
+  virtual void ShutDown(const base::Callback<void(bool)>& callback) = 0;
+};
+
+class ResourceConverterImpl : public ResourceConverter {
+ public:
+  ResourceConverterImpl();
+  virtual ~ResourceConverterImpl();
+  virtual void ShutDown(const base::Callback<void(bool)>& callback) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceConverter);
+  DISALLOW_COPY_AND_ASSIGN(ResourceConverterImpl);
 };
 
 }  // namespace content

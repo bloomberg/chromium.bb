@@ -9,17 +9,19 @@
 
 namespace content {
 
-ResourceConverter::ResourceConverter() {
-}
-
 ResourceConverter::~ResourceConverter() {
 }
 
-void ResourceConverter::ShutDown(
-    const base::Callback<void(bool)>& callback,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy) {
+ResourceConverterImpl::ResourceConverterImpl() {
+}
+
+ResourceConverterImpl::~ResourceConverterImpl() {
+}
+
+void ResourceConverterImpl::ShutDown(
+    const base::Callback<void(bool)>& callback) {
   // TODO(raymes): Implement the creation of a browser resource host here.
-  message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
 }  // namespace content
