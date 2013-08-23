@@ -72,6 +72,15 @@ class CopyOperation {
       const FileOperationCallback& callback);
 
  private:
+  // Part of TransferFileFromLocalToRemote(). Called after preparation is done.
+  // |resource_id| is available only if the file is JSON GDoc file.
+  void TransferFileFromLocalToRemoteAfterPrepare(
+      const base::FilePath& local_src_path,
+      const base::FilePath& remote_dest_path,
+      const FileOperationCallback& callback,
+      std::string* resource_id,
+      FileError error);
+
   // Creates an empty file on the server at |remote_dest_path| to ensure
   // the location, stores a file at |local_file_path| in cache and marks it
   // dirty, so that SyncClient will upload the data later.
@@ -151,35 +160,6 @@ class CopyOperation {
                                 FileError error,
                                 const base::FilePath& local_file_path,
                                 scoped_ptr<ResourceEntry> entry);
-
-  // Part of TransferFileFromLocalToRemote(). Called after |parent_entry| is
-  // retrieved in the blocking pool.
-  void TransferFileFromLocalToRemoteAfterPrepare(
-      const base::FilePath& local_src_file_path,
-      const base::FilePath& remote_dest_file_path,
-      const FileOperationCallback& callback,
-      ResourceEntry* parent_entry,
-      FileError error);
-
-  // Part of TransferFileFromLocalToRemote(). Called after the result of
-  // GetAboutResource() is avaiable.
-  void TransferFileFromLocalToRemoteAfterGetQuota(
-      const base::FilePath& local_src_file_path,
-      const base::FilePath& remote_dest_file_path,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
-  // Initiates transfer of |local_file_path| with |resource_id| to
-  // |remote_dest_file_path|. |local_file_path| must be a file from the local
-  // file system, |remote_dest_file_path| is the virtual destination path within
-  // Drive file system. If |resource_id| is a non-empty string, the transfer is
-  // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
-  // TransferRegularFile.
-  void TransferFileForResourceId(const base::FilePath& local_file_path,
-                                 const base::FilePath& remote_dest_file_path,
-                                 const FileOperationCallback& callback,
-                                 const std::string& resource_id);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

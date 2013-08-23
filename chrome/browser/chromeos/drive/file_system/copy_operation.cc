@@ -65,13 +65,25 @@ FileError UpdateLocalStateForScheduleTransfer(
 // of |remote_path| to prepare the necessary information for transfer.
 FileError PrepareTransferFileFromLocalToRemote(
     internal::ResourceMetadata* metadata,
-    const base::FilePath& local_path,
-    const base::FilePath& remote_path,
-    ResourceEntry* parent_entry) {
-  DCHECK(metadata);
-  DCHECK(parent_entry);
+    const base::FilePath& local_src_path,
+    const base::FilePath& remote_dest_path,
+    std::string* resource_id) {
+  ResourceEntry parent_entry;
+  FileError error = metadata->GetResourceEntryByPath(
+      remote_dest_path.DirName(), &parent_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
-  return metadata->GetResourceEntryByPath(remote_path.DirName(), parent_entry);
+  // The destination's parent must be a directory.
+  if (!parent_entry.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
+
+  // Try to parse GDoc File and extract the resource id, if necessary.
+  // Failing isn't problem. It'd be handled as a regular file, then.
+  if (util::HasGDocFileExtension(local_src_path))
+    *resource_id = util::ReadResourceIdFromGDocFile(local_src_path);
+
+  return FILE_ERROR_OK;
 }
 
 FileError AddEntryToLocalMetadata(internal::ResourceMetadata* metadata,
@@ -138,28 +150,62 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
 }
 
 void CopyOperation::TransferFileFromLocalToRemote(
-    const base::FilePath& local_src_file_path,
-    const base::FilePath& remote_dest_file_path,
+    const base::FilePath& local_src_path,
+    const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  ResourceEntry* parent_entry = new ResourceEntry;
+  std::string* resource_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&PrepareTransferFileFromLocalToRemote,
-                 metadata_,
-                 local_src_file_path,
-                 remote_dest_file_path,
-                 parent_entry),
+      base::Bind(
+          &PrepareTransferFileFromLocalToRemote,
+          metadata_, local_src_path, remote_dest_path, resource_id),
       base::Bind(
           &CopyOperation::TransferFileFromLocalToRemoteAfterPrepare,
           weak_ptr_factory_.GetWeakPtr(),
-          local_src_file_path,
-          remote_dest_file_path,
-          callback,
-          base::Owned(parent_entry)));
+          local_src_path, remote_dest_path, callback,
+          base::Owned(resource_id)));
+}
+
+void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
+    const base::FilePath& local_src_path,
+    const base::FilePath& remote_dest_path,
+    const FileOperationCallback& callback,
+    std::string* resource_id,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  // For regular files, schedule the transfer.
+  if (resource_id->empty()) {
+    ScheduleTransferRegularFile(local_src_path, remote_dest_path, callback);
+    return;
+  }
+
+  // This is uploading a JSON file representing a hosted document.
+  // Copy the document on the Drive server.
+
+  // GDoc file may contain a resource ID in the old format.
+  const std::string canonicalized_resource_id =
+      drive_service_->CanonicalizeResourceId(*resource_id);
+
+  // TODO(hidehiko): Use CopyResource for Drive API v2.
+
+  CopyHostedDocumentToDirectory(
+      // Drop the document extension, which should not be
+      // in the document title.
+      // TODO(yoshiki): Remove this code with crbug.com/223304.
+      remote_dest_path.RemoveExtension(),
+      canonicalized_resource_id,
+      callback);
 }
 
 void CopyOperation::ScheduleTransferRegularFile(
@@ -457,77 +503,6 @@ void CopyOperation::OnGetFileCompleteForCopy(
   // This callback is only triggered for a regular file via Copy().
   DCHECK(entry && !entry->file_specific_info().is_hosted_document());
   ScheduleTransferRegularFile(local_file_path, remote_dest_path, callback);
-}
-
-void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
-    const base::FilePath& local_src_file_path,
-    const base::FilePath& remote_dest_file_path,
-    const FileOperationCallback& callback,
-    ResourceEntry* parent_entry,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(parent_entry);
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  if (!parent_entry->file_info().is_directory()) {
-    // The parent of |remote_dest_file_path| is not a directory.
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  if (util::HasGDocFileExtension(local_src_file_path)) {
-    // TODO(hidehiko): This should be a part of
-    // PrepareTransferFileFromLocalToRemote.
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(&util::ReadResourceIdFromGDocFile, local_src_file_path),
-        base::Bind(&CopyOperation::TransferFileForResourceId,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   local_src_file_path,
-                   remote_dest_file_path,
-                   callback));
-  } else {
-    ScheduleTransferRegularFile(
-        local_src_file_path, remote_dest_file_path, callback);
-  }
-}
-
-void CopyOperation::TransferFileForResourceId(
-    const base::FilePath& local_file_path,
-    const base::FilePath& remote_dest_file_path,
-    const FileOperationCallback& callback,
-    const std::string& resource_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (resource_id.empty()) {
-    // If |resource_id| is empty, upload the local file as a regular file.
-    ScheduleTransferRegularFile(
-        local_file_path, remote_dest_file_path, callback);
-    return;
-  }
-
-  // GDoc file may contain a resource ID in the old format.
-  const std::string canonicalized_resource_id =
-      drive_service_->CanonicalizeResourceId(resource_id);
-
-  // TODO(hidehiko): Use CopyResource for Drive API v2.
-
-  // Otherwise, copy the document on the server side and add the new copy
-  // to the destination directory (collection).
-  CopyHostedDocumentToDirectory(
-      // Drop the document extension, which should not be
-      // in the document title.
-      // TODO(yoshiki): Remove this code with crbug.com/223304.
-      remote_dest_file_path.RemoveExtension(),
-      canonicalized_resource_id,
-      callback);
 }
 
 }  // namespace file_system
