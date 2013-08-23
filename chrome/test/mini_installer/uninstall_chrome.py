@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Uninstall Chrome.
+"""Uninstalls Chrome.
 
 This script reads the uninstall command from registry, calls it, and verifies
 the output status code.
@@ -12,6 +12,8 @@ import _winreg
 import argparse
 import subprocess
 import sys
+
+import path_resolver
 
 
 def main():
@@ -28,8 +30,9 @@ def main():
   else:
     root_key = _winreg.HKEY_CURRENT_USER
   sub_key = ('SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\'
-             'Google Chrome')
-  key = _winreg.OpenKey(root_key, sub_key, 0, _winreg.KEY_QUERY_VALUE)
+             '$CHROME_LONG_NAME')
+  resolved_sub_key = path_resolver.ResolvePath(sub_key)
+  key = _winreg.OpenKey(root_key, resolved_sub_key, 0, _winreg.KEY_QUERY_VALUE)
   uninstall_string, _ = _winreg.QueryValueEx(key, 'UninstallString')
   exit_status = subprocess.call(uninstall_string, shell=True)
   # The exit status for successful uninstallation of Chrome is 19 (see

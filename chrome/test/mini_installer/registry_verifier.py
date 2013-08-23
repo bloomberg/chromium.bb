@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import _winreg
+import path_resolver
 
 
 def VerifyRegistryEntries(entries):
@@ -43,10 +44,12 @@ def VerifyRegistryEntry(key, expectation):
             the key.
   """
   root_key, sub_key = key.split('\\', 1)
+  resolved_sub_key = path_resolver.ResolvePath(sub_key)
   try:
     # Query the Windows registry for the registry key. It will throw a
     # WindowsError if the key doesn't exist.
-    _ = _winreg.OpenKey(RootKeyConstant(root_key), sub_key, 0, _winreg.KEY_READ)
+    _ = _winreg.OpenKey(RootKeyConstant(root_key), resolved_sub_key, 0,
+                        _winreg.KEY_READ)
   except WindowsError:
     # Key doesn't exist. See that it matches the expectation.
     assert not expectation['exists'], 'Registry entry %s is missing' % key

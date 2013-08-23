@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import file_verifier
+import process_verifier
 import registry_verifier
 
 
@@ -19,6 +20,8 @@ def Verify(property):
   for verifier_name, value in property.iteritems():
     if verifier_name == 'Files':
       file_verifier.VerifyFiles(value)
+    elif verifier_name == 'Processes':
+      process_verifier.VerifyProcesses(value)
     elif verifier_name == 'RegistryEntries':
       registry_verifier.VerifyRegistryEntries(value)
     else:
