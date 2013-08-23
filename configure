@@ -1679,7 +1679,7 @@ ppc4xx_deps="ppc"
 
 vis_deps="sparc"
 
-x86_64_suggest="fast_cmov i686"
+x86_64_suggest="fast_cmov i686 cpunop"
 
 amd3dnow_deps="mmx"
 amd3dnowext_deps="amd3dnow"

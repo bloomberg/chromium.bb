@@ -1,41 +1,11 @@
-Current Status as of May 23, 2013
+Current Status as of Aug 22, 2013
 
 
 Upstream cherry-picks:
-d18341fb1121332056aecc00096159df16d01107:
-  aacdec: free frame buffer if no audio was decoded
-  See https://ffmpeg.org/trac/ffmpeg/2095.
-  See also https://ffmpeg.org/trac/ffmpeg/2529 for this and the next item
-  below.
-
-004779cc59ae6b649e20aa260cd4a4d2e1f4bc48:
-  avcodec/utils: Fix leak by dereferencing audio frame when side data
-  causes whole frame skip (when avctx->refcounted_frames is true).
-  See https://ffmpeg.org/trac/ffmpeg/2529 for this and the previous item.
-
-fbaf75b166cd067cf383a75ffcccb1e2b370bf6d: (See http://crbug.com/234630#c5)
-  h264: Use the correct croping values.
-
-7edb984dd051b6919d7d8471c70499273f31b0fa: (See http://crbug.com/234630#c5)
-  avutil/log: Fix context pointer used for get_category()
-
-e3869dd17ee15a1732dacba24e4cff36dd3d4cc5 and
-5747d835c775597dcfd8ee1c49dfa5c6fe391c7c:
-  lavc/x86 constants.c and dsp_util_mmx.[ch] refactoring.  This unblocked
-  linking in build_ffmpeg.sh with MSVC.
-
-c54a1565f512858ccfa70392f40f11c098bc1b63
-  fixes read_frame_internal() issues when skipping to keyframes.
-
 
 Current patches:
 
 to_upstream/
-uninitcond_dct_token_vp3_dequant.patch
-  wolenetz: Initializes all dct_tokens to zero.  Upstream may take
-  fix differently.
-  See https://ffmpeg.org/trac/ffmpeg/attachment/ticket/2527
-
 unblock_windows_build.patch
   wolenetz: MSVC fails to detect that abort() in av_assert0(0) occurs in
   all code paths in lavc/utils.c avcodec_default_reget_buffer().  This patch

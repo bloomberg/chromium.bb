@@ -27,6 +27,8 @@ void avcodec_get_frame_defaults(AVFrame *pic);
 void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
 int av_packet_split_side_data(AVPacket *pkt);
 uint8_t *av_packet_get_side_data(AVPacket *pkt, enum AVPacketSideDataType type, int *size);
+void av_frame_unref(AVFrame *frame);
+void av_frame_free(AVFrame **frame);
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);

@@ -142,7 +142,6 @@ def CleanObjectFiles(object_files):
       'libavcodec/resample2.o',
       'libavcodec/x86/dnxhd_mmx.o',
       'libavformat/sdp.o',
-      'libavutil/adler32.o',
       'libavutil/aes.o',
       'libavutil/des.o',
       'libavutil/file.o',
