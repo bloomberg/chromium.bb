@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,14 +66,14 @@ chrome.test.runTests([
   //  Window2: a,b
   //  Window3: a,b
   //
-  // After retriveClosedTabs:
+  // After retrieveClosedTabs:
   //
   //  Window1: c
   //  Window2: a,b
   //  Window3: a,b
   //  ClosedList: a,b
   //
-  // After retriveClosedWindows:
+  // After retrieveClosedWindows:
   //
   //  Window1: c
   //  ClosedList: Window2,Window3,a,b
@@ -114,8 +114,8 @@ chrome.test.runTests([
       function each() {
       },
       function done() {
-        chrome.sessionRestore.getRecentlyClosed(
-          {maxResults: 2, entryType: "tab"},
+        chrome.sessions.getRecentlyClosed(
+          {maxResults: 2},
           callbackPass(function(entries) {
             var expectedEntries = [
               { tab: { url: pages[0] } },
@@ -123,7 +123,7 @@ chrome.test.runTests([
             ];
             checkEntries(expectedEntries, entries);
             entries.forEach(function(entry) {
-              recentlyClosedTabIds.push(entry.id);
+              recentlyClosedTabIds.push(entry.tab.sessionId);
             });
           })
         );
@@ -140,8 +140,8 @@ chrome.test.runTests([
       function each() {
       },
       function done() {
-        chrome.sessionRestore.getRecentlyClosed(
-          {maxResults: 2, entryType: "window"},
+        chrome.sessions.getRecentlyClosed(
+          {maxResults: 2},
           callbackPass(function(entries) {
             var expectedEntries = [
               { window: { tabsLength: 2 } },
@@ -149,10 +149,10 @@ chrome.test.runTests([
             ];
             checkEntries(expectedEntries, entries);
             entries[0].window.tabs.forEach(function(tab) {
-              recentlyClosedSecondWindowTabIds.push(tab.id);
+              recentlyClosedSecondWindowTabIds.push(tab.sessionId);
             });
             entries.forEach(function(entry) {
-              recentlyClosedWindowIds.push(entry.id);
+              recentlyClosedWindowIds.push(entry.window.sessionId);
             });
           })
         );
@@ -163,7 +163,7 @@ chrome.test.runTests([
   function retrieveClosedEntries() {
     // Check that the recently closed list contains what we expect
     // after removing tabs and windows.
-    chrome.sessionRestore.getRecentlyClosed(
+    chrome.sessions.getRecentlyClosed(
       callbackPass(function(entries) {
         var expectedEntries = [
           { window: { tabsLength: 2 } },
@@ -181,7 +181,7 @@ chrome.test.runTests([
   function retrieveMaxEntries() {
     // Check that the recently closed list contains what we expect
     // after removing tabs and windows.
-    chrome.sessionRestore.getRecentlyClosed({maxResults: 25},
+    chrome.sessions.getRecentlyClosed({maxResults: 25},
       callbackPass(function(entries) {
         var expectedEntries = [
           { window: { tabsLength: 2 } },
@@ -200,21 +200,19 @@ chrome.test.runTests([
     chrome.windows.get(windowIds[0], {"populate": true},
       callbackPass(function(win) {
         var tabCountBeforeRestore = win.tabs.length;
-        callForEach(
-          chrome.sessionRestore.restore,
-          recentlyClosedTabIds.slice(0, 2),
-          function each() {
-          },
-          function done() {
-            chrome.windows.get(windowIds[0], {"populate": true},
-              callbackPass(function(win){
-                assertEq(tabCountBeforeRestore + 2, win.tabs.length);
-                win.tabs.forEach(function(tab, i) {
-                  assertEq(pages[i++], tab.url);
-                });
-              })
-            );
-          }
+        chrome.sessions.restore(recentlyClosedTabIds[0], function(tab_session) {
+          assertEq(pages[0], tab_session.tab.url);
+        });
+        chrome.sessions.restore(recentlyClosedTabIds[1], function(tab_session) {
+          assertEq(pages[1], tab_session.tab.url);
+        });
+        chrome.windows.get(windowIds[0], {"populate": true},
+          callbackPass(function(win){
+            assertEq(tabCountBeforeRestore + 2, win.tabs.length);
+            win.tabs.forEach(function(tab, i) {
+              assertEq(pages[i++], tab.url);
+            });
+          })
         );
       })
     );
@@ -223,8 +221,9 @@ chrome.test.runTests([
   function restoreTabInClosedWindow() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      chrome.sessionRestore.restore(recentlyClosedSecondWindowTabIds[0],
-        callbackPass(function() {
+      chrome.sessions.restore(recentlyClosedSecondWindowTabIds[0],
+        callbackPass(function(tab_session) {
+          assertEq(pages[0], tab_session.tab.url);
           chrome.windows.getAll({"populate": true},
             callbackPass(function(win) {
               assertEq(windowCountBeforeRestore + 1, win.length);
@@ -240,27 +239,26 @@ chrome.test.runTests([
   function restoreClosedWindows() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      callForEach(
-        chrome.sessionRestore.restore,
-        recentlyClosedWindowIds.slice(0, 1),
-        function each() {
-        },
-        function done() {
-          chrome.windows.getAll({"populate": true},
-            callbackPass(function(win) {
-              assertEq(windowCountBeforeRestore + 1, win.length);
-            })
-          );
-        }
-      );
+      chrome.sessions.restore(recentlyClosedWindowIds[0],
+          function(win_session) {
+            assertEq(1, win_session.window.tabs.length);
+          });
+      function done() {
+        chrome.windows.getAll({"populate": true},
+          callbackPass(function(win) {
+            assertEq(windowCountBeforeRestore + 1, win.length);
+          })
+        );
+      }
     }));
   },
 
   function restoreSameEntryTwice() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      chrome.sessionRestore.restore(recentlyClosedWindowIds[0],
-        callbackFail("Invalid session id.", function() {
+      var id = recentlyClosedWindowIds[0];
+      chrome.sessions.restore(id,
+        callbackFail("Invalid session id: \"" + id + "\".", function() {
           chrome.windows.getAll({"populate": true},
             callbackPass(function(win) {
               assertEq(windowCountBeforeRestore, win.length);
@@ -274,8 +272,8 @@ chrome.test.runTests([
   function restoreInvalidEntries() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      chrome.sessionRestore.restore(-1,
-        callbackFail("Invalid session id.", function() {
+      chrome.sessions.restore("-1",
+        callbackFail("Invalid session id: \"-1\".", function() {
           chrome.windows.getAll({"populate": true},
             callbackPass(function(win) {
               assertEq(windowCountBeforeRestore, win.length);
@@ -289,7 +287,8 @@ chrome.test.runTests([
   function restoreMostRecentEntry() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      chrome.sessionRestore.restore(callbackPass(function() {
+      chrome.sessions.restore(callbackPass(function(win_session) {
+        assertEq(2, win_session.window.tabs.length);
         chrome.windows.getAll({"populate": true},
           callbackPass(function(win) {
             assertEq(windowCountBeforeRestore + 1, win.length);
@@ -302,7 +301,7 @@ chrome.test.runTests([
   function checkRecentlyClosedListEmpty() {
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
-      chrome.sessionRestore.restore(
+      chrome.sessions.restore(
         callbackFail("There are no recently closed sessions.", function() {
           chrome.windows.getAll({"populate": true},
             callbackPass(function(win) {
@@ -313,5 +312,4 @@ chrome.test.runTests([
       );
     }));
   }
-
 ]);

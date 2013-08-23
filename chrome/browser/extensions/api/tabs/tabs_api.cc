@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/api/tabs/windows_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -170,36 +171,6 @@ bool GetBrowserFromWindowID(
   return true;
 }
 
-bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
-                           int window_id,
-                           WindowController** controller) {
-  if (window_id == extension_misc::kCurrentWindowId) {
-    WindowController* extension_window_controller =
-        function->dispatcher()->delegate()->GetExtensionWindowController();
-    // If there is a window controller associated with this extension, use that.
-    if (extension_window_controller) {
-      *controller = extension_window_controller;
-    } else {
-      // Otherwise get the focused or most recently added window.
-      *controller = WindowControllerList::GetInstance()->
-          CurrentWindowForFunction(function);
-    }
-    if (!(*controller)) {
-      function->SetError(keys::kNoCurrentWindowError);
-      return false;
-    }
-  } else {
-    *controller = WindowControllerList::GetInstance()->
-        FindWindowForFunctionById(function, window_id);
-    if (!(*controller)) {
-      function->SetError(ErrorUtils::FormatErrorMessage(
-          keys::kWindowNotFoundError, base::IntToString(window_id)));
-      return false;
-    }
-  }
-  return true;
-}
-
 // |error_message| can optionally be passed in and will be set with an
 // appropriate message if the tab cannot be found by id.
 bool GetTabById(int tab_id,
@@ -264,8 +235,11 @@ bool WindowsGetFunction::RunImpl() {
     populate_tabs = *params->get_info->populate;
 
   WindowController* controller;
-  if (!GetWindowFromWindowID(this, params->window_id, &controller))
+  if (!windows_util::GetWindowFromWindowID(this,
+                                           params->window_id,
+                                           &controller)) {
     return false;
+  }
 
   if (populate_tabs)
     SetResult(controller->CreateWindowValueWithTabs(GetExtension()));
@@ -283,9 +257,9 @@ bool WindowsGetCurrentFunction::RunImpl() {
     populate_tabs = *params->get_info->populate;
 
   WindowController* controller;
-  if (!GetWindowFromWindowID(this,
-                             extension_misc::kCurrentWindowId,
-                             &controller)) {
+  if (!windows_util::GetWindowFromWindowID(this,
+                                           extension_misc::kCurrentWindowId,
+                                           &controller)) {
     return false;
   }
   if (populate_tabs)
@@ -694,7 +668,7 @@ bool WindowsUpdateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
   WindowController* controller;
-  if (!GetWindowFromWindowID(this, window_id, &controller))
+  if (!windows_util::GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
 #if defined(OS_WIN)
@@ -838,7 +812,7 @@ bool WindowsRemoveFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
   WindowController* controller;
-  if (!GetWindowFromWindowID(this, window_id, &controller))
+  if (!windows_util::GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
 #if defined(OS_WIN)

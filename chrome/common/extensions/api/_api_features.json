@@ -469,8 +469,8 @@
     "dependencies": ["permission:serial"],
     "contexts": ["blessed_extension"]
   },
-  "sessionRestore": {
-    "dependencies": ["permission:sessionRestore"],
+  "sessions": {
+    "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]
   },
   "socket": {
