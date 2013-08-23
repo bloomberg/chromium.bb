@@ -3092,11 +3092,6 @@ ExtractAndCheck() {
     count=$((count+1))
     ${checker} $i
   done
-  if [ "${count}" = "0" ] ; then
-    echo "FAIL - archive empty or wrong contents: ${archive}"
-    ls -l "${tmp}"
-    exit -1
-  fi
   echo "PASS  (${count} files)"
   rm -rf "${tmp}"
   spopd
