@@ -99,6 +99,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void PrepareForShutdown();
 
   // Repost event for re-processing. Used when exiting context menus.
+  // We only support the ET_MOUSE_PRESSED and ET_GESTURE_TAP_DOWN event
+  // types.
   void RepostEvent(const ui::LocatedEvent& event);
 
   RootWindowHostDelegate* AsRootWindowHostDelegate();
@@ -394,6 +396,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SynthesizeMouseMoveEvent();
 
   gfx::Transform GetInverseRootTransform() const;
+
+  // Reposts the gesture event to the Window which is a target for the event
+  // passed in.
+  bool DispatchGestureEventRepost(ui::GestureEvent* event);
 
   scoped_ptr<ui::Compositor> compositor_;
 

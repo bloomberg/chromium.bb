@@ -393,7 +393,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       paint_layered_window_factory_(this),
       can_update_layered_window_(true),
       is_first_nccalc_(true),
-      autohide_factory_(this) {
+      autohide_factory_(this),
+      touch_event_factory_(this) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -2041,11 +2042,17 @@ void HWNDMessageHandler::OnThemeChanged() {
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
+  // Handle touch events only on Aura for now.
+#if !defined(USE_AURA)
+  SetMsgHandled(FALSE);
+  return 0;
+#endif
   int num_points = LOWORD(w_param);
   scoped_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
                                    sizeof(TOUCHINPUT))) {
+    TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
       ui::EventType touch_event_type = ui::ET_UNKNOWN;
 
@@ -2058,8 +2065,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       } else if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
         touch_event_type = ui::ET_TOUCH_MOVED;
       }
-      // Handle touch events only on Aura for now.
-#if defined(USE_AURA)
       if (touch_event_type != ui::ET_UNKNOWN) {
         POINT point;
         point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
@@ -2074,10 +2079,16 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
             gfx::Point(point.x, point.y),
             input[i].dwID % ui::GestureSequence::kMaxGesturePoints,
             base::TimeDelta::FromMilliseconds(input[i].dwTime));
-        delegate_->HandleTouchEvent(event);
+        touch_events.push_back(event);
       }
-#endif
     }
+    // Handle the touch events asynchronously. We need this because touch
+    // events on windows don't fire if we enter a modal loop in the context of
+    // a touch event.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&HWNDMessageHandler::HandleTouchEvents,
+            touch_event_factory_.GetWeakPtr(), touch_events));
   }
   CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
   SetMsgHandled(FALSE);
@@ -2179,6 +2190,13 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   else if (window_pos->flags & SWP_HIDEWINDOW)
     delegate_->HandleVisibilityChanged(false);
   SetMsgHandled(FALSE);
+}
+
+void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
+  if (!delegate_)
+    return;
+  for (size_t i = 0; i < touch_events.size(); ++i)
+    delegate_->HandleTouchEvent(touch_events[i]);
 }
 
 }  // namespace views

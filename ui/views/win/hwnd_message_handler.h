@@ -11,6 +11,7 @@
 #include <windows.h>
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -20,6 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/win/win_util.h"
 #include "ui/base/accessibility/accessibility_types.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/rect.h"
@@ -364,6 +366,12 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);
 
+  typedef std::vector<ui::TouchEvent> TouchEvents;
+  // Helper to handle the list of touch events passed in. We need this because
+  // touch events on windows don't fire if we enter a modal loop in the context
+  // of a touch event.
+  void HandleTouchEvents(const TouchEvents& touch_events);
+
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
@@ -469,6 +477,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // A factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
+
+  // A factory that allows us to process touch events asynchronously.
+  base::WeakPtrFactory<HWNDMessageHandler> touch_event_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

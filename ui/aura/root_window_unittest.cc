@@ -882,4 +882,30 @@ TEST_F(RootWindowTest, GestureEndDeliveredAfterNestedGestures) {
   EXPECT_EQ(1, d2.gesture_end_count());
 }
 
+// Tests whether we can repost the Tap down gesture event.
+TEST_F(RootWindowTest, RepostTapdownGestureTest) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
+
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP_DOWN, 0.0f, 0.0f);
+  gfx::Point point(10, 10);
+  ui::GestureEvent event(
+      ui::ET_GESTURE_TAP_DOWN,
+      point.x(),
+      point.y(),
+      0,
+      ui::EventTimeForNow(),
+      details,
+      0);
+  root_window()->RepostEvent(event);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(EventTypesToString(filter->events()).find("GESTURE_TAP_DOWN") !=
+              std::string::npos);
+  filter->events().clear();
+}
+
 }  // namespace aura

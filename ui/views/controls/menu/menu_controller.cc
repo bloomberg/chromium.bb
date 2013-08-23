@@ -2124,6 +2124,15 @@ void MenuController::RepostEvent(SubmenuView* source,
         PostMessage(window, event_type, nc_hit_result,
                     MAKELPARAM(screen_loc.x(), screen_loc.y()));
       }
+    } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+#if defined(USE_AURA)
+      // Gesture events need to be posted to the target root window. In
+      // desktop chrome there could be multiple root windows.
+      aura::RootWindow* target_root =
+          aura::RootWindow::GetForAcceleratedWidget(window);
+      if (target_root)
+        target_root->RepostEvent(event);
+#endif
     }
   }
 }

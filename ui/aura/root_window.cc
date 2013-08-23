@@ -216,6 +216,8 @@ void RootWindow::PrepareForShutdown() {
 }
 
 void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
+  DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
+         event.type() == ui::ET_GESTURE_TAP_DOWN);
   // We allow for only one outstanding repostable event. This is used
   // in exiting context menus.  A dropped repost request is allowed.
   if (event.type() == ui::ET_MOUSE_PRESSED) {
@@ -224,15 +226,22 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
             static_cast<const ui::MouseEvent&>(event),
             static_cast<aura::Window*>(event.target()),
             static_cast<aura::Window*>(this)));
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RootWindow::DispatchHeldEvents,
-                   repostable_event_factory_.GetWeakPtr()));
   } else {
-    DCHECK(event.type() == ui::ET_GESTURE_TAP_DOWN);
-    held_repostable_event_.reset();
-    // TODO(sschmitz): add similar code for gesture events.
+    const ui::GestureEvent* gesture_event =
+        static_cast<const ui::GestureEvent*>(&event);
+    held_repostable_event_.reset(new ui::GestureEvent(
+        gesture_event->type(),
+        gesture_event->root_location().x(),
+        gesture_event->root_location().y(),
+        gesture_event->flags(),
+        gesture_event->time_stamp(),
+        gesture_event->details(),
+        gesture_event->touch_ids_bitfield()));
   }
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RootWindow::DispatchHeldEvents,
+                  repostable_event_factory_.GetWeakPtr()));
 }
 
 RootWindowHostDelegate* RootWindow::AsRootWindowHostDelegate() {
@@ -1013,6 +1022,23 @@ bool RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
   return DispatchMouseEventToTarget(event, target);
 }
 
+bool RootWindow::DispatchGestureEventRepost(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP_DOWN)
+    return false;
+
+  // Cleanup stale gesture events for the old gesture target.
+  GestureConsumer* old_consumer = GetGestureTarget(event);
+  if (old_consumer)
+    CleanupGestureRecognizerState(static_cast<aura::Window*>(old_consumer));
+
+  Window* new_consumer = GetEventHandlerForPoint(event->root_location());
+  if (new_consumer) {
+    ProcessEvent(new_consumer, event);
+    return event->handled();
+  }
+  return false;
+}
+
 bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
                                             Window* target) {
   client::CursorClient* cursor_client = client::GetCursorClient(this);
@@ -1140,11 +1166,14 @@ void RootWindow::DispatchHeldEvents() {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
       ui::MouseEvent mouse_event(
           static_cast<const ui::MouseEvent&>(*held_repostable_event_.get()));
-      held_repostable_event_.reset(); // must be reset before dispatch
+      held_repostable_event_.reset();  // must be reset before dispatch
       DispatchMouseEventRepost(&mouse_event);
     } else {
       DCHECK(held_repostable_event_->type() == ui::ET_GESTURE_TAP_DOWN);
-      // TODO(sschmitz): add similar code for gesture events
+      ui::GestureEvent gesture_event(
+          static_cast<const ui::GestureEvent&>(*held_repostable_event_.get()));
+      held_repostable_event_.reset();  // must be reset before dispatch
+      DispatchGestureEventRepost(&gesture_event);
     }
     held_repostable_event_.reset();
   }

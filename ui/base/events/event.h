@@ -702,6 +702,10 @@ class UI_EXPORT GestureEvent : public LocatedEvent {
   // gesture. If there are no touches associated with this gesture, returns -1.
   int GetLowestTouchId() const;
 
+  unsigned int touch_ids_bitfield() const {
+    return touch_ids_bitfield_;
+  }
+
  private:
   GestureEventDetails details_;
 
@@ -710,8 +714,6 @@ class UI_EXPORT GestureEvent : public LocatedEvent {
   // This value is stored as a bitfield because the number of touch ids varies,
   // but we currently don't need more than 32 touches at a time.
   const unsigned int touch_ids_bitfield_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };
 
 }  // namespace ui
