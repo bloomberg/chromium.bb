@@ -221,7 +221,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesListEmpty) {
   EXPECT_EQ(0u, devices->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionWindow) {
+// Flaky timeout: http://crbug.com/278372
+IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
+                       DISABLED_RestoreForeignSessionWindow) {
   CreateSessionModels();
 
   scoped_ptr<base::DictionaryValue> restored_window_session(utils::ToDictionary(
