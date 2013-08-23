@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 #include "ui/gl/android/surface_texture_listener.h"
 
 namespace ui {
@@ -13,6 +14,8 @@ namespace gl {
 namespace android {
 
 static base::android::RegistrationMethod kGLRegisteredMethods[] = {
+  { "SurfaceTextureBridge",
+    gfx::SurfaceTextureBridge::RegisterSurfaceTextureBridge },
   { "SurfaceTextureListener",
     gfx::SurfaceTextureListener::RegisterSurfaceTextureListener },
 };

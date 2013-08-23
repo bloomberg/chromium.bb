@@ -10,25 +10,10 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
-#include "jni/SurfaceTexture_jni.h"
+#include "jni/SurfaceTextureBridge_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture_listener.h"
 #include "ui/gl/gl_bindings.h"
-
-using base::android::AttachCurrentThread;
-using base::android::CheckException;
-using base::android::GetClass;
-using base::android::ScopedJavaLocalRef;
-
-namespace {
-bool g_jni_initialized = false;
-
-void RegisterNativesIfNeeded(JNIEnv* env) {
-  if (!g_jni_initialized) {
-    JNI_SurfaceTexture::RegisterNativesImpl(env);
-    g_jni_initialized = true;
-  }
-}
 
 // TODO(boliu): Remove this method when when we move off ICS. See
 // http://crbug.com/161864.
@@ -39,66 +24,38 @@ bool GlContextMethodsAvailable() {
   return available;
 }
 
-}  // namespace
-
 namespace gfx {
 
 SurfaceTextureBridge::SurfaceTextureBridge(int texture_id) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-  RegisterNativesIfNeeded(env);
-
-  ScopedJavaLocalRef<jobject> tmp(
-      JNI_SurfaceTexture::Java_SurfaceTexture_Constructor(
-          env, texture_id));
-  DCHECK(!tmp.is_null());
-  j_surface_texture_.Reset(tmp);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  j_surface_texture_.Reset(Java_SurfaceTextureBridge_create(env, texture_id));
 }
 
 SurfaceTextureBridge::~SurfaceTextureBridge() {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-
-  // Release the listener.
-  JNI_SurfaceTexture::Java_SurfaceTexture_setOnFrameAvailableListener(
-      env, j_surface_texture_.obj(), NULL);
-
-  // Release graphics memory.
-  JNI_SurfaceTexture::Java_SurfaceTexture_release(
-      env, j_surface_texture_.obj());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTextureBridge_destroy(env, j_surface_texture_.obj());
 }
 
 void SurfaceTextureBridge::SetFrameAvailableCallback(
     const base::Closure& callback) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-
-  // Since the listener is owned by the Java SurfaceTexture object, setting
-  // a new listener here will release an existing one at the same time.
-  ScopedJavaLocalRef<jobject> j_listener(
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTextureBridge_setFrameAvailableCallback(
       env,
-      SurfaceTextureListener::CreateSurfaceTextureListener(env, callback));
-  DCHECK(!j_listener.is_null());
-
-  // Set it as the onFrameAvailableListener for our SurfaceTexture instance.
-  JNI_SurfaceTexture::Java_SurfaceTexture_setOnFrameAvailableListener(
-      env, j_surface_texture_.obj(), j_listener.obj());
+      j_surface_texture_.obj(),
+      reinterpret_cast<int>(new SurfaceTextureListener(callback)));
 }
 
 void SurfaceTextureBridge::UpdateTexImage() {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-
-  JNI_SurfaceTexture::Java_SurfaceTexture_updateTexImage(
-      env, j_surface_texture_.obj());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTextureBridge_updateTexImage(env, j_surface_texture_.obj());
 }
 
 void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
+  JNIEnv* env = base::android::AttachCurrentThread();
 
-  ScopedJavaLocalRef<jfloatArray> jmatrix(env, env->NewFloatArray(16));
-  JNI_SurfaceTexture::Java_SurfaceTexture_getTransformMatrix(
+  base::android::ScopedJavaLocalRef<jfloatArray> jmatrix(
+      env, env->NewFloatArray(16));
+  Java_SurfaceTextureBridge_getTransformMatrix(
       env, j_surface_texture_.obj(), jmatrix.obj());
 
   jboolean is_copy;
@@ -110,11 +67,10 @@ void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
 }
 
 void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
+  JNIEnv* env = base::android::AttachCurrentThread();
 
   if (width > 0 && height > 0) {
-    JNI_SurfaceTexture::Java_SurfaceTexture_setDefaultBufferSize(
+    Java_SurfaceTextureBridge_setDefaultBufferSize(
         env, j_surface_texture_.obj(), static_cast<jint>(width),
         static_cast<jint>(height));
   } else {
@@ -128,28 +84,31 @@ void SurfaceTextureBridge::AttachToGLContext() {
     int texture_id;
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
     DCHECK(texture_id);
-    JNIEnv* env = AttachCurrentThread();
-    // Note: This method is only available on JB and greater.
-    JNI_SurfaceTexture::Java_SurfaceTexture_attachToGLContext(
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_SurfaceTextureBridge_attachToGLContext(
         env, j_surface_texture_.obj(), texture_id);
   }
 }
 
 void SurfaceTextureBridge::DetachFromGLContext() {
   if (GlContextMethodsAvailable()) {
-    JNIEnv* env = AttachCurrentThread();
-    // Note: This method is only available on JB and greater.
-    JNI_SurfaceTexture::Java_SurfaceTexture_detachFromGLContext(
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_SurfaceTextureBridge_detachFromGLContext(
         env, j_surface_texture_.obj());
   }
 }
 
 ANativeWindow* SurfaceTextureBridge::CreateSurface() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaSurface surface(this);
-  ANativeWindow* native_window =
-      ANativeWindow_fromSurface(env, surface.j_surface().obj());
+  ANativeWindow* native_window = ANativeWindow_fromSurface(
+      env, surface.j_surface().obj());
   return native_window;
+}
+
+// static
+bool SurfaceTextureBridge::RegisterSurfaceTextureBridge(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace gfx

@@ -12,19 +12,6 @@
 
 namespace gfx {
 
-// static
-jobject SurfaceTextureListener::CreateSurfaceTextureListener(
-    JNIEnv* env,
-    const base::Closure& callback) {
-  // The java listener object owns and releases the native instance.
-  // This is necessary to avoid races with incoming notifications.
-  ScopedJavaLocalRef<jobject> listener(Java_SurfaceTextureListener_create(env,
-      reinterpret_cast<int>(new SurfaceTextureListener(callback))));
-
-  DCHECK(!listener.is_null());
-  return listener.Release();
-}
-
 SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback)
     : callback_(callback),
       browser_loop_(base::MessageLoopProxy::current()) {
