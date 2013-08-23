@@ -223,11 +223,8 @@ void Predictor::PreconnectUsage::ObserveNavigationChain(
 
   GURL canonical_url(Predictor::CanonicalizeUrl(url_chain.back()));
 
-  // Record the preconnect trigger for the url as used if exist
   MRUPreconnects::iterator itPreconnect = mru_preconnects_.Peek(canonical_url);
   bool was_preconnected = (itPreconnect != mru_preconnects_.end());
-  if (was_preconnected)
-    itPreconnect->second.set_was_used();
 
   // This is an UMA which was named incorrectly. This actually measures the
   // ratio of URLRequests which have used a preconnected session.
@@ -253,8 +250,10 @@ void Predictor::PreconnectUsage::ObserveLinkNavigation(const GURL& url) {
     MRUPreconnects::iterator itPreconnect =
         mru_preconnects_.Peek(canonical_url);
     bool was_preconnected = (itPreconnect != mru_preconnects_.end());
-    if (was_preconnected)
+    if (was_preconnected) {
+      itPreconnect->second.set_was_used();
       did_use_preconnect = true;
+    }
   }
 
   UMA_HISTOGRAM_BOOLEAN("Net.PreconnectedLinkNavigations", did_use_preconnect);
