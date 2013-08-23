@@ -5316,6 +5316,61 @@ TEST(HttpCache, CachedRedirect) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
+// Verify that no-cache resources are stored in cache, but are not fetched from
+// cache during normal loads.
+TEST(HttpCache, CacheControlNoCacheNormalLoad) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "cache-control: no-cache\n";
+
+  // Initial load.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Try loading again; it should result in a network fetch.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  disk_cache::Entry* entry;
+  EXPECT_TRUE(cache.OpenBackendEntry(transaction.url, &entry));
+  entry->Close();
+}
+
+// Verify that no-cache resources are stored in cache and fetched from cache
+// when the LOAD_PREFERRING_CACHE flag is set.
+TEST(HttpCache, CacheControlNoCacheHistoryLoad) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "cache-control: no-cache\n";
+
+  // Initial load.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Try loading again with LOAD_PREFERRING_CACHE.
+  transaction.load_flags = net::LOAD_PREFERRING_CACHE;
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  disk_cache::Entry* entry;
+  EXPECT_TRUE(cache.OpenBackendEntry(transaction.url, &entry));
+  entry->Close();
+}
+
 TEST(HttpCache, CacheControlNoStore) {
   MockHttpCache cache;
 
