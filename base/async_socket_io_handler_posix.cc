@@ -8,7 +8,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 
-namespace media {
+namespace base {
 
 AsyncSocketIoHandler::AsyncSocketIoHandler()
     : socket_(base::SyncSocket::kInvalidHandle),
@@ -95,4 +95,4 @@ void AsyncSocketIoHandler::EnsureWatchingSocket() {
   }
 }
 
-}  // namespace media.
+}  // namespace base.

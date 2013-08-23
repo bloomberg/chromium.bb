@@ -4,7 +4,7 @@
 
 #include "base/async_socket_io_handler.h"
 
-namespace media {
+namespace base {
 
 AsyncSocketIoHandler::AsyncSocketIoHandler()
     : socket_(base::SyncSocket::kInvalidHandle),
@@ -74,4 +74,4 @@ bool AsyncSocketIoHandler::Initialize(base::SyncSocket::Handle socket,
   return true;
 }
 
-}  // namespace media.
+}  // namespace base.

@@ -56,7 +56,7 @@ class TestSocketReader {
     }
   }
 
-  media::AsyncSocketIoHandler io_handler;
+  base::AsyncSocketIoHandler io_handler;
   base::CancelableSyncSocket* socket_;  // Ownership lies outside the class.
   char buffer_[kAsyncSocketIoTestStringLength];
   int number_of_reads_before_quit_;
