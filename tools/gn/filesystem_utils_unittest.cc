@@ -93,6 +93,23 @@ TEST(FilesystemUtils, IsPathAbsolute) {
 TEST(FilesystemUtils, MakeAbsolutePathRelativeIfPossible) {
   std::string dest;
 
+#if defined(OS_WIN)
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("C:\\base", "C:\\base\\foo",
+                                                 &dest));
+  EXPECT_EQ("//foo", dest);
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("C:\\base", "/C:/base/foo",
+                                                 &dest));
+  EXPECT_EQ("//foo", dest);
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("c:\\base", "C:\\base\\foo\\",
+                                                 &dest));
+  EXPECT_EQ("//foo\\", dest);
+
+  EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("C:\\base", "C:\\ba", &dest));
+  EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("C:\\base",
+                                                  "C:\\/notbase/foo",
+                                                  &dest));
+#else
+
   EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("/base", "/base/foo/", &dest));
   EXPECT_EQ("//foo/", dest);
   EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("/base", "/base/foo", &dest));
@@ -104,9 +121,6 @@ TEST(FilesystemUtils, MakeAbsolutePathRelativeIfPossible) {
   EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("/base", "/ba", &dest));
   EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("/base", "/notbase/foo",
                                                   &dest));
-
-#if defined(OS_WIN)
-  //EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("
 #endif
 }
 

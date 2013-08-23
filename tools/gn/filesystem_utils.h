@@ -111,6 +111,8 @@ bool IsPathAbsolute(const base::StringPiece& path);
 // The source_root should be a base::FilePath converted to UTF-8. On Windows,
 // it should begin with a "C:/" rather than being our SourceFile's style
 // ("/C:/"). The source root can end with a slash or not.
+//
+// Note that this does not attempt to normalize slashes in the output.
 bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
                                         const base::StringPiece& path,
                                         std::string* dest);

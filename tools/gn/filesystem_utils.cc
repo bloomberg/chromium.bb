@@ -5,6 +5,7 @@
 #include "tools/gn/filesystem_utils.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "tools/gn/location.h"
@@ -63,7 +64,49 @@ DotDisposition ClassifyAfterDot(const std::string& path,
   return NOT_A_DIRECTORY;
 }
 
-}  // namesapce
+#if defined(OS_WIN)
+inline char NormalizeWindowsPathChar(char c) {
+  if (c == '/')
+    return '\\';
+  return base::ToLowerASCII(c);
+}
+
+// Attempts to do a case and slash-insensitive comparison of two 8-bit Windows
+// paths.
+bool AreAbsoluteWindowsPathsEqual(const base::StringPiece& a,
+                                  const base::StringPiece& b) {
+  if (a.size() != b.size())
+    return false;
+
+  // For now, just do a case-insensitive ASCII comparison. We could convert to
+  // UTF-16 and use ICU if necessary. Or maybe base::strcasecmp is good enough?
+  for (size_t i = 0; i < a.size(); i++) {
+    if (NormalizeWindowsPathChar(a[i]) != NormalizeWindowsPathChar(b[i]))
+      return false;
+  }
+  return true;
+}
+
+bool DoesBeginWindowsDriveLetter(const base::StringPiece& path) {
+  if (path.size() < 3)
+    return false;
+
+  // Check colon first, this will generally fail fastest.
+  if (path[1] != ':')
+    return false;
+
+  // Check drive letter
+  if (!((path[0] >= 'A' && path[0] <= 'Z') ||
+         path[0] >= 'a' && path[0] <= 'z'))
+    return false;
+
+  if (path[2] != '/' && path[2] != '\\')
+    return false;
+  return true;
+}
+#endif
+
+}  // namespace
 
 SourceFileType GetSourceFileType(const SourceFile& file,
                                  Settings::TargetOS os) {
@@ -286,25 +329,60 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
   // Source root should be canonical on Windows.
   DCHECK(source_root.size() > 2 && source_root[0] != '/' &&
          source_root[1] == ':' && source_root[2] =='\\');
-#error
+
+  size_t after_common_index = std::string::npos;
+  if (DoesBeginWindowsDriveLetter(path)) {
+    // Handle "C:\foo"
+    if (AreAbsoluteWindowsPathsEqual(source_root,
+                                     path.substr(0, source_root.size())))
+      after_common_index = source_root.size();
+    else
+      return false;
+  } else if (path[0] == '/' && source_root.size() <= path.size() - 1 &&
+             DoesBeginWindowsDriveLetter(path.substr(1))) {
+    // Handle "/C:/foo"
+    if (AreAbsoluteWindowsPathsEqual(source_root,
+                                     path.substr(1, source_root.size())))
+      after_common_index = source_root.size() + 1;
+    else
+      return false;
+  } else {
+    return false;
+  }
+
+  // If we get here, there's a match and after_common_index identifies the
+  // part after it.
+
+  // The base may or may not have a trailing slash, so skip all slashes from
+  // the path after our prefix match.
+  size_t first_after_slash = after_common_index;
+  while (first_after_slash < path.size() &&
+         (path[first_after_slash] == '/' || path[first_after_slash] == '\\'))
+    first_after_slash++;
+
+  dest->assign("//");  // Result is source root relative.
+  dest->append(&path.data()[first_after_slash],
+               path.size() - first_after_slash);
+  return true;
+
 #else
+
   // On non-Windows this is easy. Since we know both are absolute, just do a
   // prefix check.
   if (path.substr(0, source_root.size()) == source_root) {
-    dest->assign("//");  // Result is source root relative.
-
     // The base may or may not have a trailing slash, so skip all slashes from
     // the path after our prefix match.
     size_t first_after_slash = source_root.size();
     while (first_after_slash < path.size() && path[first_after_slash] == '/')
       first_after_slash++;
 
+    dest->assign("//");  // Result is source root relative.
     dest->append(&path.data()[first_after_slash],
                  path.size() - first_after_slash);
     return true;
   }
-#endif
   return false;
+#endif
 }
 
 std::string InvertDir(const SourceDir& path) {
