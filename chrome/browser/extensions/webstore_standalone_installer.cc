@@ -212,6 +212,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
           scoped_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy())));
   approval->skip_post_install_ui = !ShouldShowPostInstallUI();
   approval->use_app_installed_bubble = ShouldShowAppInstalledBubble();
+  approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile_,
