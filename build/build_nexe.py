@@ -365,13 +365,6 @@ class Builder(object):
       RemoveFile(temp_file.name)
     return ecode
 
-  def RunWithRetry(self, cmd_line, out):
-    err = self.Run(cmd_line, out)
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
-    return err
-
   def GetObjectName(self, src):
     if self.strip:
       src = src.replace(self.strip,'')
@@ -499,7 +492,7 @@ class Builder(object):
                 '-MD', '-MF', outd] + extra + self.compile_options
     if self.gomacc:
       cmd_line.insert(0, self.gomacc)
-    err = self.RunWithRetry(cmd_line, out)
+    err = self.Run(cmd_line, out)
     if err:
       self.CleanOutput(outd)
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
@@ -525,7 +518,7 @@ class Builder(object):
       cmd_line += srcs
     cmd_line += self.link_options
 
-    err = self.RunWithRetry(cmd_line, out)
+    err = self.Run(cmd_line, out)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
@@ -539,7 +532,7 @@ class Builder(object):
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
     cmd_line += self.link_options
 
-    err = self.RunWithRetry(cmd_line, out)
+    err = self.Run(cmd_line, out)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
@@ -563,7 +556,7 @@ class Builder(object):
 
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
-    err = self.RunWithRetry(cmd_line, out)
+    err = self.Run(cmd_line, out)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
@@ -583,12 +576,12 @@ class Builder(object):
     # pnacl does not have an objcopy so there are no way to embed a link
     if self.is_pnacl_toolchain:
       cmd_line = [strip_name, strip_option, src, '-o', out]
-      err = self.RunWithRetry(cmd_line, out)
+      err = self.Run(cmd_line, out)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     else:
       cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
-      err = self.RunWithRetry(cmd_line, pre_debug_tagging)
+      err = self.Run(cmd_line, pre_debug_tagging)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
@@ -596,7 +589,7 @@ class Builder(object):
       objcopy_name = self.GetObjCopy()
       cmd_line = [objcopy_name, '--add-gnu-debuglink', src,
                   pre_debug_tagging, out]
-      err = self.RunWithRetry(cmd_line, out)
+      err = self.Run(cmd_line, out)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
@@ -613,7 +606,7 @@ class Builder(object):
     self.CleanOutput(out)
     bin_name = self.GetPnaclFinalize()
     cmd_line = [bin_name, src, '-o', out]
-    err = self.RunWithRetry(cmd_line, out)
+    err = self.Run(cmd_line, out)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
