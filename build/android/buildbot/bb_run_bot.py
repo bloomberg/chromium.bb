@@ -45,10 +45,12 @@ def DictDiff(d1, d2):
   return '\n'.join(diff)
 
 
-def GetEnvironment(host_obj, testing):
+def GetEnvironment(host_obj, testing, extra_env_vars=None):
   init_env = dict(os.environ)
   init_env['GYP_GENERATORS'] = 'ninja'
   init_env['GOMA_DIR'] = bb_utils.GOMA_DIR
+  if extra_env_vars:
+    init_env.update(extra_env_vars)
   envsetup_cmd = '. build/android/envsetup.sh'
   if host_obj.target_arch:
     envsetup_cmd += ' --target-arch=%s' % host_obj.target_arch
