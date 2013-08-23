@@ -85,7 +85,7 @@ StackFrame* StackwalkerAddressList::GetCallerFrame(const CallStack* stack,
   // explicitly provided.
   StackFrame* frame = new StackFrame();
   frame->instruction = frames_[frame_index];
-  frame->trust = StackFrame::FRAME_TRUST_CONTEXT;
+  frame->trust = StackFrame::FRAME_TRUST_PREWALKED;
   return frame;
 }
 

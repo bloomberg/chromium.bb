@@ -106,8 +106,14 @@ class StackwalkerAddressListTest : public testing::Test {
   void CheckCallStack(const CallStack& call_stack) {
     const std::vector<StackFrame*>* frames = call_stack.frames();
     ASSERT_EQ(arraysize(kDummyFrames), frames->size());
-    for (size_t i = 0; i < arraysize(kDummyFrames); ++i)
+    for (size_t i = 0; i < arraysize(kDummyFrames); ++i) {
       ASSERT_EQ(kDummyFrames[i], frames->at(i)->instruction);
+      if (i == 0) {
+        ASSERT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frames->at(i)->trust);
+      } else {
+        ASSERT_EQ(StackFrame::FRAME_TRUST_PREWALKED, frames->at(i)->trust);
+      }
+    }
     ASSERT_EQ(static_cast<const CodeModule*>(&module2), frames->at(0)->module);
     ASSERT_EQ(static_cast<const CodeModule*>(&module2), frames->at(1)->module);
     ASSERT_EQ(static_cast<const CodeModule*>(&module2), frames->at(2)->module);
