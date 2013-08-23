@@ -115,6 +115,8 @@ const char kRelativeRootGenDir_Help[] =
     "\n"
     "  Generally scripts should use \"relative_target_output_dir\" instead.\n"
     "\n"
+    "  See also \"root_gen_dir\".\n"
+    "\n"
     "Example:\n"
     "\n"
     "  If your current build file is in \"//tools\", you might write\n"
@@ -154,7 +156,6 @@ extern const char kRelativeSourceRootDir_Help[] =
     "    command = \"$relative_build_to_source_root_dir/third_party/gold/ld\n"
     "  }\n";
 
-
 const char kRelativeTargetGenDir[] = "relative_target_gen_dir";
 const char kRelativeTargetGenDir_HelpShort[] =
     "relative_target_gen_dir: [string] Relative dir for generated files.";
@@ -167,8 +168,10 @@ const char kRelativeTargetGenDir_Help[] =
     "  Normally used when invoking scripts (the current directory of which is\n"
     "  that of the invoking buildfile) that need to write files.\n"
     "\n"
-    "  Scripts generating final rather than intermetiate files should use the\n"
+    "  Scripts generating final rather than intermediate files should use the\n"
     "  \"relative_target_output_dir\" instead.\n"
+    "\n"
+    "  See also \"target_gen_dir\".\n"
     "\n"
     "Example:\n"
     "\n"
@@ -194,6 +197,41 @@ const char kRelativeTargetOutputDir_Help[] =
     "\n"
     "  If your current build file is in \"//tools\", you might write\n"
     "  args = [ \"$relative_target_output_dir/final.lib\" ]\n";
+
+const char kRootGenDir[] = "root_gen_dir";
+const char kRootGenDir_HelpShort[] =
+    "root_gen_dir: [string] Absolute root dir for generated files.";
+const char kRootGenDir_Help[] =
+    "root_gen_dir: Absolute root dir for generated files.\n"
+    "\n"
+    "  Absolute path to the root of the generated output directory tree for\n"
+    "  the current toolchain. An example value might be \"//out/Debug/gen\".\n"
+    "  It will not have a trailing slash.\n"
+    "\n"
+    "  This is primarily useful for setting up include paths for generated\n"
+    "  files. Scripts will want the \"relative_root_gen_dir\" instead\n"
+    "  which will be relative to the scripts' current directory.\n"
+    "\n"
+    "  See also \"relative_root_gen_dir\" and \"target_gen_dir\".\n";
+
+const char kTargetGenDir[] = "target_gen_dir";
+const char kTargetGenDir_HelpShort[] =
+    "target_gen_dir: [string] Absolute dir for generated files.";
+const char kTargetGenDir_Help[] =
+    "target_gen_dir: Absolute dir for generated files.\n"
+    "\n"
+    "  Absolute path to the target's generated file directory. If your\n"
+    "  current target is in \"//tools/doom_melon\" then this value might be\n"
+    "  \"//out/Debug/gen/tools/doom_melon\". It will not have a trailing\n"
+    "  slash.\n"
+    "\n"
+    "  Scripts generating files will generally want the relative version of\n"
+    "  this instead: \"relative_target_gen_dir\".\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "  # Add the gen directory to the include path.\n"
+    "  args = [ target_gen_dir ]\n";
 
 // Target variables ------------------------------------------------------------
 
@@ -444,6 +482,8 @@ const VariableInfoMap& GetBuiltinVariables() {
     INSERT_VARIABLE(RelativeSourceRootDir)
     INSERT_VARIABLE(RelativeTargetGenDir)
     INSERT_VARIABLE(RelativeTargetOutputDir)
+    INSERT_VARIABLE(RootGenDir)
+    INSERT_VARIABLE(TargetGenDir)
   }
   return info_map;
 }

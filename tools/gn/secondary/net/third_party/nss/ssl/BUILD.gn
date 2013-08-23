@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+config("crssl_config") {
+  includes = [
+    "//net/third_party/nss/ssl",
+  ]
+}
+
 # Not named "ssl" so the lib doesn't conflict with OpenSSL's libssl
 component("crssl") {
   sources = [
@@ -59,6 +65,8 @@ component("crssl") {
   configs -= "//build/config/compiler:chromium_code"
   configs += "//build/config/compiler:no_chromium_code"
 
+  direct_dependent_configs = [ ":crssl_config" ]
+
   if (is_win) {
     sources -= [
       "unix_err.c",
@@ -73,7 +81,6 @@ component("crssl") {
 
   if (is_linux) {
     includes = [ "bodge" ]
-    direct_dependent_configs = [ "//net/third_party/nss:nss_linux_config" ]
   }
   if (is_mac) {
     sources -= "bodge/secitem_array.c"

@@ -14,7 +14,7 @@
 // variable support.
 class ScopePerFileProvider : public Scope::ProgrammaticProvider {
  public:
-  ScopePerFileProvider(Scope* scope, const SourceFile& source_file);
+  ScopePerFileProvider(Scope* scope);
   virtual ~ScopePerFileProvider();
 
   // ProgrammaticProvider implementation.
@@ -31,6 +31,8 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   const Value* GetRelativeSourceRootDir();
   const Value* GetRelativeTargetOutputDir();
   const Value* GetRelativeTargetGenDir();
+  const Value* GetRootGenDir();
+  const Value* GetTargetGenDir();
 
   static std::string GetRootOutputDirWithNoLastSlash(const Settings* settings);
   static std::string GetRootGenDirWithNoLastSlash(const Settings* settings);
@@ -42,8 +44,6 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   // result would be empty, "." is returned to indicate the current dir.
   static std::string InvertDirWithNoLastSlash(const SourceDir& dir);
 
-  SourceFile source_file_;
-
   // All values are lazily created.
   scoped_ptr<Value> current_toolchain_;
   scoped_ptr<Value> default_toolchain_;
@@ -54,6 +54,8 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   scoped_ptr<Value> relative_source_root_dir_;
   scoped_ptr<Value> relative_target_output_dir_;
   scoped_ptr<Value> relative_target_gen_dir_;
+  scoped_ptr<Value> root_gen_dir_;
+  scoped_ptr<Value> target_gen_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopePerFileProvider);
 };

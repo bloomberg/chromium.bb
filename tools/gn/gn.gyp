@@ -169,6 +169,7 @@
         'parser_unittest.cc',
         'path_output_unittest.cc',
         'pattern_unittest.cc',
+        'scope_per_file_provider_unittest.cc',
         'source_dir_unittest.cc',
         'string_utils_unittest.cc',
         'target_generator_unittest.cc',

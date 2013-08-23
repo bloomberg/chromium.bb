@@ -537,7 +537,7 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
     }
 
     Scope our_scope(info->settings.base_config());
-    ScopePerFileProvider per_file_provider(&our_scope, file_name);
+    ScopePerFileProvider per_file_provider(&our_scope);
     our_scope.set_source_dir(file_name.GetDir());
 
     Err err;

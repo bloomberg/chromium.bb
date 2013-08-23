@@ -22,7 +22,17 @@ template("grit") {
     [ "--outputs", "$output_dir", source, "-f", resource_ids ],
     "list lines")
 
-  custom(target_name + "_grit") {
+  # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
+  # the source code expects to include via "grit/foo.h". It would be nice to
+  # change this to including absolute paths relative to the root gen directory
+  # (like "mycomponent/foo.h"). This config sets up the include path.
+  grit_config = target_name + "_grit_config"
+  config(grit_config) {
+    includes = [ target_gen_dir ]
+  }
+
+  grit_custom_target = target_name + "_grit"
+  custom(grit_custom_target) {
     script = "$relative_source_root_dir/tools/grit/grit.py"
     data = grit_inputs  # TODO(brettw) this should be inputs or something
     outputs = grit_outputs
@@ -39,6 +49,7 @@ template("grit") {
   # same as the argument the template was invoked with.
   static_library(target_name) {
     sources = grit_outputs
-    deps = [ ":${target_name}_grit" ]
+    deps = [ ":$grit_custom_target" ]
+    direct_dependent_configs = [ ":$grit_config" ]
   }
 }

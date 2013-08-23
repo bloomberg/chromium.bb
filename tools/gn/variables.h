@@ -65,6 +65,14 @@ extern const char kRelativeTargetOutputDir[];
 extern const char kRelativeTargetOutputDir_HelpShort[];
 extern const char kRelativeTargetOutputDir_Help[];
 
+extern const char kRootGenDir[];
+extern const char kRootGenDir_HelpShort[];
+extern const char kRootGenDir_Help[];
+
+extern const char kTargetGenDir[];
+extern const char kTargetGenDir_HelpShort[];
+extern const char kTargetGenDir_Help[];
+
 // Target vars -----------------------------------------------------------------
 
 extern const char kAllDependentConfigs[];

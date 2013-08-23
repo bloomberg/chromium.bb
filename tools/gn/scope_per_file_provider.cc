@@ -11,10 +11,8 @@
 #include "tools/gn/value.h"
 #include "tools/gn/variables.h"
 
-ScopePerFileProvider::ScopePerFileProvider(Scope* scope,
-                                           const SourceFile& source_file)
-    : ProgrammaticProvider(scope),
-      source_file_(source_file) {
+ScopePerFileProvider::ScopePerFileProvider(Scope* scope)
+    : ProgrammaticProvider(scope) {
 }
 
 ScopePerFileProvider::~ScopePerFileProvider() {
@@ -41,6 +39,10 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
     return GetRelativeTargetOutputDir();
   if (ident == variables::kRelativeTargetGenDir)
     return GetRelativeTargetGenDir();
+  if (ident == variables::kRootGenDir)
+    return GetRootGenDir();
+  if (ident == variables::kTargetGenDir)
+    return GetTargetGenDir();
   return NULL;
 }
 
@@ -111,7 +113,7 @@ const Value* ScopePerFileProvider::GetRelativeTargetOutputDir() {
   if (!relative_target_output_dir_) {
     relative_target_output_dir_.reset(new Value(NULL,
         GetRelativeRootWithNoLastSlash() +
-        GetRootOutputDirWithNoLastSlash(scope_->settings()) + "obj/" +
+        GetRootOutputDirWithNoLastSlash(scope_->settings()) + "/obj" +
         GetFileDirWithNoLastSlash()));
   }
   return relative_target_output_dir_.get();
@@ -125,6 +127,24 @@ const Value* ScopePerFileProvider::GetRelativeTargetGenDir() {
         GetFileDirWithNoLastSlash()));
   }
   return relative_target_gen_dir_.get();
+}
+
+const Value* ScopePerFileProvider::GetRootGenDir() {
+  if (!root_gen_dir_) {
+    root_gen_dir_.reset(new Value(NULL,
+        "/" + GetRootGenDirWithNoLastSlash(scope_->settings())));
+  }
+  return root_gen_dir_.get();
+}
+
+const Value* ScopePerFileProvider::GetTargetGenDir() {
+  if (!target_gen_dir_) {
+    target_gen_dir_.reset(new Value(NULL,
+        "/" +
+        GetRootGenDirWithNoLastSlash(scope_->settings()) +
+        GetFileDirWithNoLastSlash()));
+  }
+  return target_gen_dir_.get();
 }
 
 // static
