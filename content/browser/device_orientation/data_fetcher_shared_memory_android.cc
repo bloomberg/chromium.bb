@@ -28,7 +28,12 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
       }
       break;
     case CONSUMER_TYPE_ORIENTATION:
-      NOTIMPLEMENTED();
+      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
+          sizeof(DeviceOrientationHardwareBuffer))) {
+        return DataFetcherImplAndroid::GetInstance()->
+            StartFetchingDeviceOrientationData(
+                static_cast<DeviceOrientationHardwareBuffer*>(buffer));
+      }
       break;
     default:
       NOTREACHED();
@@ -42,8 +47,9 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       DataFetcherImplAndroid::GetInstance()->StopFetchingDeviceMotionData();
       return true;
     case CONSUMER_TYPE_ORIENTATION:
-      NOTIMPLEMENTED();
-      break;
+      DataFetcherImplAndroid::GetInstance()->
+          StopFetchingDeviceOrientationData();
+      return true;
     default:
       NOTREACHED();
   }

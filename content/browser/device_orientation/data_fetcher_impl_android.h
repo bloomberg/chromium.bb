@@ -11,6 +11,7 @@
 #include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
 #include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -55,6 +56,10 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
   bool StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
   void StopFetchingDeviceMotionData();
 
+  bool StartFetchingDeviceOrientationData(
+      DeviceOrientationHardwareBuffer* buffer);
+  void StopFetchingDeviceOrientationData();
+
  protected:
   DataFetcherImplAndroid();
   virtual ~DataFetcherImplAndroid();
@@ -66,9 +71,11 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
 
   const Orientation* GetOrientation();
 
-  void CheckBufferReadyToRead();
-  void SetBufferReadyStatus(bool ready);
-  void ClearInternalBuffers();
+  void CheckMotionBufferReadyToRead();
+  void SetMotionBufferReadyStatus(bool ready);
+  void ClearInternalMotionBuffers();
+
+  void SetOrientationBufferReadyStatus(bool ready);
 
   enum {
     RECEIVED_MOTION_DATA_ACCELERATION = 0,
@@ -88,7 +95,9 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
   int number_active_device_motion_sensors_;
   int received_motion_data_[RECEIVED_MOTION_DATA_MAX];
   DeviceMotionHardwareBuffer* device_motion_buffer_;
-  bool is_buffer_ready_;
+  DeviceOrientationHardwareBuffer* device_orientation_buffer_;
+  bool is_motion_buffer_ready_;
+  bool is_orientation_buffer_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherImplAndroid);
 };
