@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Parse the manifest, and mangle it via "alterManifest" (which should already
-// be defined before running this file).
+// Parse the manifest, and delete the permissions key.
 var manifestObj = JSON.parse(getManifest());
-var manifest = alterManifest(manifestObj);
+delete manifestObj["permissions"];
 
-// Now cause the install to proceed - the C++ code will verify
-// that we get an install error after unpacking the crx file because the crx
-// file's manifest won't match what we provided for the confirmation dialog
-// here.
+var manifest = JSON.stringify(manifestObj);
+
+// Now do the install - we should get an install error because the actual crx
+// had more permissions than the manifest we passed in to
+// beginInstallWithManifest3.
 chrome.webstorePrivate.beginInstallWithManifest3(
     { 'id': extensionId, 'manifest': manifest },
     function(result) {

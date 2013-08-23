@@ -129,41 +129,56 @@ scoped_refptr<MockPromptProxy> CreateMockPromptProxyForBrowser(
 
 class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
  public:
-  // Installs a crx from |crx_relpath| (a path relative to the extension test
-  // data dir) with expected id |id|. Returns the installer.
-  scoped_refptr<CrxInstaller> InstallWithPrompt(
-      const std::string& ext_relpath,
+  scoped_ptr<WebstoreInstaller::Approval> GetApproval(
+      const char* manifest_dir,
       const std::string& id,
-      scoped_refptr<MockPromptProxy> mock_install_prompt) {
+      bool strict_manifest_checks) {
+    scoped_ptr<WebstoreInstaller::Approval> result;
+
+    base::FilePath ext_path = test_data_dir_.AppendASCII(manifest_dir);
+    std::string error;
+    scoped_ptr<base::DictionaryValue> parsed_manifest(
+        extension_file_util::LoadManifest(ext_path, &error));
+    if (!parsed_manifest.get() || !error.empty())
+      return result.Pass();
+
+    return WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+        browser()->profile(),
+        id,
+        parsed_manifest.Pass(),
+        strict_manifest_checks);
+  }
+
+  void RunCrxInstaller(const WebstoreInstaller::Approval* approval,
+                       scoped_ptr<ExtensionInstallPrompt> prompt,
+                       const base::FilePath& crx_path) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    base::FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
-
-    std::string error;
-    base::DictionaryValue* parsed_manifest =
-        extension_file_util::LoadManifest(ext_path, &error);
-    if (!parsed_manifest)
-      return scoped_refptr<CrxInstaller>();
-
-    scoped_ptr<WebstoreInstaller::Approval> approval;
-    if (!id.empty()) {
-      approval = WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          browser()->profile(),
-          id,
-          scoped_ptr<base::DictionaryValue>(parsed_manifest));
-    }
-
     scoped_refptr<CrxInstaller> installer(
-        CrxInstaller::Create(service,
-                             mock_install_prompt->CreatePrompt(),
-                             approval.get()       /* keep ownership */));
+        CrxInstaller::Create(service, prompt.Pass(), approval));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
-    installer->InstallCrx(PackExtension(ext_path));
+    installer->InstallCrx(crx_path);
     content::RunMessageLoop();
+  }
+
+  // Installs a crx from |crx_relpath| (a path relative to the extension test
+  // data dir) with expected id |id|.
+  void InstallWithPrompt(const char* ext_relpath,
+                         const std::string& id,
+                         scoped_refptr<MockPromptProxy> mock_install_prompt) {
+    base::FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
+
+    scoped_ptr<WebstoreInstaller::Approval> approval;
+    if (!id.empty())
+      approval = GetApproval(ext_relpath, id, true);
+
+    base::FilePath crx_path = PackExtension(ext_path);
+    EXPECT_FALSE(crx_path.empty());
+    RunCrxInstaller(approval.get(), mock_install_prompt->CreatePrompt(),
+                    crx_path);
 
     EXPECT_TRUE(mock_install_prompt->did_succeed());
-    return installer;
   }
 
   // Installs an extension and checks that it has scopes granted IFF
@@ -180,8 +195,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         CreateMockPromptProxyForBrowser(browser());
 
     mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
-    scoped_refptr<CrxInstaller> installer =
-        InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
+    InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
     scoped_refptr<PermissionSet> permissions =
         service->extension_prefs()->GetGrantedPermissions(
@@ -226,8 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   // Even whitelisted extensions with NPAPI should not prompt.
   scoped_refptr<MockPromptProxy> mock_prompt =
       CreateMockPromptProxyForBrowser(browser());
-  scoped_refptr<CrxInstaller> installer =
-      InstallWithPrompt("uitest/plugins", id, mock_prompt);
+  InstallWithPrompt("uitest/plugins", id, mock_prompt);
   EXPECT_FALSE(mock_prompt->confirmation_requested());
   EXPECT_TRUE(service->GetExtensionById(id, false));
 }
@@ -445,6 +458,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
   base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
                                           .AppendASCII("theme_hidpi.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, NonStrictManifestCheck) {
+  scoped_refptr<MockPromptProxy> mock_prompt =
+      CreateMockPromptProxyForBrowser(browser());
+
+  // We want to simulate the case where the webstore sends a more recent
+  // version of the manifest, but the downloaded .crx file is old since
+  // the newly published version hasn't fully propagated to all the download
+  // servers yet. So load the v2 manifest, but then install the v1 crx file.
+  std::string id = "lhnaeclnpobnlbjbgogdanmhadigfnjp";
+  scoped_ptr<WebstoreInstaller::Approval> approval =
+      GetApproval("crx_installer/v2_no_permission_change/", id, false);
+
+  RunCrxInstaller(approval.get(), mock_prompt->CreatePrompt(),
+                  test_data_dir_.AppendASCII("crx_installer/v1.crx"));
+
+  EXPECT_TRUE(mock_prompt->did_succeed());
 }
 
 }  // namespace extensions

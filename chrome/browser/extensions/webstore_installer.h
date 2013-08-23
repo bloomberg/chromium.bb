@@ -76,10 +76,17 @@ class WebstoreInstaller :public content::NotificationObserver,
   // be checked further for additional details.
   struct Approval : public base::SupportsUserData::Data {
     static scoped_ptr<Approval> CreateWithInstallPrompt(Profile* profile);
+
+    // Creates an Approval that will skip putting up an install confirmation
+    // prompt if the actual manifest from the extension to be installed matches
+    // |parsed_manifest|. The |strict_manifest_check| controls whether we want
+    // to require an exact manifest match, or are willing to tolerate a looser
+    // check just that the effective permissions are the same.
     static scoped_ptr<Approval> CreateWithNoInstallPrompt(
         Profile* profile,
         const std::string& extension_id,
-        scoped_ptr<base::DictionaryValue> parsed_manifest);
+        scoped_ptr<base::DictionaryValue> parsed_manifest,
+        bool strict_manifest_check);
 
     virtual ~Approval();
 
@@ -107,6 +114,10 @@ class WebstoreInstaller :public content::NotificationObserver,
 
     // Whether we should enable the launcher before installing the app.
     bool enable_launcher;
+
+    // Whether we want a strict manifest equality check, or just want a match
+    // for effective permissions.
+    bool strict_manifest_check;
 
     // Used to show the install dialog.
     ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback;

@@ -162,7 +162,7 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
             profile_,
             i->first,
             scoped_ptr<base::DictionaryValue>(
-                parsed_manifests_[i->first]->DeepCopy())));
+                parsed_manifests_[i->first]->DeepCopy()), true));
     approval->use_app_installed_bubble = false;
     approval->skip_post_install_ui = true;
 

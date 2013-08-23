@@ -463,7 +463,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   // entry is only valid for some number of minutes.
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile(), params_->details.id, parsed_manifest_.Pass()));
+          profile(), params_->details.id, parsed_manifest_.Pass(), false));
   approval->use_app_installed_bubble = params_->details.app_install_bubble;
   approval->enable_launcher = params_->details.enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order

@@ -40,6 +40,8 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -101,6 +103,7 @@ CrxInstaller::CrxInstaller(
     : install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
       approved_(false),
+      expected_manifest_strict_checking_(true),
       extensions_enabled_(service_weak->extensions_enabled()),
       delete_source_(false),
       create_app_shortcut_(false),
@@ -135,6 +138,7 @@ CrxInstaller::CrxInstaller(
     // so we can check that they match the CRX's.
     approved_ = true;
     expected_manifest_.reset(approval->manifest->DeepCopy());
+    expected_manifest_strict_checking_ = approval->strict_manifest_check;
     expected_id_ = approval->extension_id;
   }
 
@@ -247,11 +251,30 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   // Make sure the manifests match if we want to bypass the prompt.
-  if (approved_ &&
-      (!expected_manifest_.get() ||
-       !expected_manifest_->Equals(original_manifest_.get()))) {
-    return CrxInstallerError(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
+  if (approved_) {
+    bool valid = false;
+    if (expected_manifest_.get()) {
+      valid = expected_manifest_->Equals(original_manifest_.get());
+      if (!valid && !expected_manifest_strict_checking_) {
+        std::string error;
+        scoped_refptr<Extension> dummy_extension =
+            Extension::Create(base::FilePath(),
+                              install_source_,
+                              *expected_manifest_->value(),
+                              creation_flags_,
+                              &error);
+        if (error.empty()) {
+          scoped_refptr<const PermissionSet> expected_permissions =
+              PermissionsData::GetActivePermissions(dummy_extension.get());
+          valid = !(expected_permissions->HasLessPrivilegesThan(
+              PermissionsData::GetActivePermissions(extension),
+              extension->GetType()));
+        }
+      }
+    }
+    if (!valid)
+      return CrxInstallerError(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
   }
 
   // The checks below are skipped for themes and external installs.

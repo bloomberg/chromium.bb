@@ -288,6 +288,11 @@ class CrxInstaller
   // extension's manifest must match this for the install to proceed.
   scoped_ptr<Manifest> expected_manifest_;
 
+  // Set to true if we want a strict, exact match check between the actual and
+  // expected manifest, rather than just a check that the effective permissions
+  // are the same.
+  bool expected_manifest_strict_checking_;
+
   // If non-NULL, contains the expected version of the extension we're
   // installing.  Important for external sources, where claiming the wrong
   // version could cause unnecessary unpacking of an extension at every

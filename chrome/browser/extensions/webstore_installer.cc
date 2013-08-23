@@ -163,7 +163,8 @@ WebstoreInstaller::Approval::Approval()
       use_app_installed_bubble(false),
       skip_post_install_ui(false),
       skip_install_dialog(false),
-      enable_launcher(false) {
+      enable_launcher(false),
+      strict_manifest_check(true) {
 }
 
 scoped_ptr<WebstoreInstaller::Approval>
@@ -177,7 +178,8 @@ scoped_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
     Profile* profile,
     const std::string& extension_id,
-    scoped_ptr<base::DictionaryValue> parsed_manifest) {
+    scoped_ptr<base::DictionaryValue> parsed_manifest,
+    bool strict_manifest_check) {
   scoped_ptr<Approval> result(new Approval());
   result->extension_id = extension_id;
   result->profile = profile;
@@ -185,6 +187,7 @@ WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
       new Manifest(Manifest::INVALID_LOCATION,
                    scoped_ptr<DictionaryValue>(parsed_manifest->DeepCopy())));
   result->skip_install_dialog = true;
+  result->strict_manifest_check = strict_manifest_check;
   return result.Pass();
 }
 
