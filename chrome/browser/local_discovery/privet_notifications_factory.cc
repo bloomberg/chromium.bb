@@ -21,7 +21,6 @@ PrivetNotificationServiceFactory::PrivetNotificationServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "PrivetNotificationService",
         BrowserContextDependencyManager::GetInstance()) {
-  LOG(INFO) << "Privet notification factory created";
 }
 
 PrivetNotificationServiceFactory::~PrivetNotificationServiceFactory() {
