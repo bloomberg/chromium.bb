@@ -115,6 +115,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
         withexitstatus=True, logfile=sys.stdout, timeout=1800,
         env=os.environ)
     end_time = datetime.datetime.now()
+    if exit_code is None:
+      exit_code = -1
     logging.info('%s : exit_code=%d in %d secs at %s',
                  test_name, exit_code, (end_time - start_time).seconds,
                  self.device)
