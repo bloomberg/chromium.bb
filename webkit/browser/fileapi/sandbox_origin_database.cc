@@ -76,7 +76,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
 
   std::string path = FilePathToString(db_path);
   leveldb::Options options;
-  options.max_open_files = 16;
+  options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
@@ -122,7 +122,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
 bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   leveldb::Options options;
-  options.max_open_files = 16;
+  options.max_open_files = 0;  // Use minimum.
   if (!leveldb::RepairDB(db_path, options).ok() ||
       !Init(FAIL_IF_NONEXISTENT, FAIL_ON_CORRUPTION)) {
     LOG(WARNING) << "Failed to repair SandboxOriginDatabase.";
