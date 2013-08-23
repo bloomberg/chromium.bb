@@ -152,6 +152,12 @@ drm_backend_la_SOURCES =			\
 	launcher-util.h				\
 	libbacklight.c				\
 	libbacklight.h
+
+if ENABLE_LIBVA
+drm_backend_la_SOURCES += vaapi-recorder.c
+drm_backend_la_LIBADD += $(LIBVA_LIBS)
+drm_backend_la_CFLAGS += $(LIBVA_CFLAGS)
+endif
 endif
 
 if ENABLE_WAYLAND_COMPOSITOR

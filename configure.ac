@@ -240,6 +240,11 @@ PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
 AS_IF([test "x$have_webp" = "xyes"],
       [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
 
+PKG_CHECK_MODULES(LIBVA, [libva >= 0.34.0 libva-drm >= 0.34.0], [have_libva=yes], [have_libva=no])
+AS_IF([test "x$have_libva" = "xyes"],
+      [AC_DEFINE([HAVE_LIBVA], [1], [Have libva])])
+AM_CONDITIONAL(ENABLE_LIBVA, test "x$have_libva" = "xyes")
+
 AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
 if test x$have_jpeglib = xyes; then
   JPEG_LIBS="-ljpeg"
@@ -480,4 +485,5 @@ AC_MSG_RESULT([
 	LCMS2 Support			${have_lcms}
 	libwebp Support			${have_webp}
 	libunwind Support		${have_libunwind}
+	VA H.264 encoding Support	${have_libva}
 ])

@@ -47,6 +47,7 @@
 #include "pixman-renderer.h"
 #include "udev-seat.h"
 #include "launcher-util.h"
+#include "vaapi-recorder.h"
 
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
@@ -75,6 +76,7 @@ struct drm_compositor {
 	struct {
 		int id;
 		int fd;
+		char *filename;
 	} drm;
 	struct gbm_device *gbm;
 	uint32_t *crtcs;
@@ -159,6 +161,9 @@ struct drm_output {
 	pixman_image_t *image[2];
 	int current_image;
 	pixman_region32_t previous_damage;
+
+	struct vaapi_recorder *recorder;
+	struct wl_listener recorder_frame_listener;
 };
 
 /*
@@ -717,6 +722,11 @@ page_flip_handler(int fd, unsigned int frame,
 	if (!output->vblank_pending) {
 		msecs = sec * 1000 + usec / 1000;
 		weston_output_finish_frame(&output->base, msecs);
+
+		/* We can't call this from frame_notify, because the output's
+		 * repaint needed flag is cleared just after that */
+		if (output->recorder)
+			weston_output_schedule_repaint(&output->base);
 	}
 }
 
@@ -1215,6 +1225,7 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	weston_log("using %s\n", filename);
 
 	ec->drm.fd = fd;
+	ec->drm.filename = strdup(filename);
 
 	ret = drmGetCap(fd, DRM_CAP_TIMESTAMP_MONOTONIC, &cap);
 	if (ret == 0 && cap == 1)
@@ -2435,6 +2446,102 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 	}
 }
 
+#ifdef HAVE_LIBVA
+static void
+recorder_frame_notify(struct wl_listener *listener, void *data)
+{
+	struct drm_output *output;
+	struct drm_compositor *c;
+	int fd, ret;
+
+	output = container_of(listener, struct drm_output,
+			      recorder_frame_listener);
+	c = (struct drm_compositor *) output->base.compositor;
+
+	if (!output->recorder)
+		return;
+
+	ret = drmPrimeHandleToFD(c->drm.fd, output->current->handle,
+				 DRM_CLOEXEC, &fd);
+	if (ret) {
+		weston_log("[libva recorder] "
+			   "failed to create prime fd for front buffer\n");
+		return;
+	}
+
+	vaapi_recorder_frame(output->recorder, fd, output->current->stride / 4);
+
+	close(fd);
+}
+
+static void *
+create_recorder(struct drm_compositor *c, int width, int height,
+		const char *filename)
+{
+	int fd;
+	drm_magic_t magic;
+
+	fd = open(c->drm.filename, O_RDWR | O_CLOEXEC);
+	if (fd < 0)
+		return NULL;
+
+	drmGetMagic(fd, &magic);
+	drmAuthMagic(c->drm.fd, magic);
+
+	return vaapi_recorder_create(fd, width, height, filename);
+}
+
+static void
+recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		 void *data)
+{
+	struct drm_compositor *c = data;
+	struct drm_output *output;
+	int width, height;
+
+	output = container_of(c->base.output_list.next,
+			      struct drm_output, base.link);
+
+	if (!output->recorder) {
+		width = output->base.current->width;
+		height = output->base.current->height;
+
+		output->recorder =
+			create_recorder(c, width, height, "capture.h264");
+		if (!output->recorder) {
+			weston_log("failed to create vaapi recorder\n");
+			return;
+		}
+
+		output->base.disable_planes++;
+
+		output->recorder_frame_listener.notify = recorder_frame_notify;
+		wl_signal_add(&output->base.frame_signal,
+			      &output->recorder_frame_listener);
+
+		weston_output_schedule_repaint(&output->base);
+
+		weston_log("[libva recorder] initialized\n");
+	} else {
+		vaapi_recorder_destroy(output->recorder);
+		/* FIXME: close drm fd passed to recorder */
+		output->recorder = NULL;
+
+		output->base.disable_planes--;
+
+		wl_list_remove(&output->recorder_frame_listener.link);
+		weston_log("[libva recorder] done\n");
+	}
+}
+#else
+static void
+recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		 void *data)
+{
+	weston_log("Compiled without libva support\n");
+}
+#endif
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat_id, int tty, int pixman,
@@ -2568,6 +2675,8 @@ drm_compositor_create(struct wl_display *display,
 					    planes_binding, ec);
 	weston_compositor_add_debug_binding(&ec->base, KEY_V,
 					    planes_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_Q,
+					    recorder_binding, ec);
 
 	return &ec->base;
 
