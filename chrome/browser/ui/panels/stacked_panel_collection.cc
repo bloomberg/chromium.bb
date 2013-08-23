@@ -280,11 +280,18 @@ void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
   }
 
   // If an active panel is being closed, try to focus the next recently active
-  // panel in the stack.
+  // panel in the stack that is not minimized.
   if (reason == PanelCollection::PANEL_CLOSED &&
       panel->IsActive() &&
       !most_recently_active_panels_.empty()) {
-    most_recently_active_panels_.front()->Activate();
+    for (Panels::const_iterator iter = most_recently_active_panels_.begin();
+       iter != most_recently_active_panels_.end(); ++iter) {
+      Panel* other_panel = *iter;
+      if (!IsPanelMinimized(other_panel)) {
+        other_panel->Activate();
+        break;
+      }
+    }
   }
 
   // If the top panel is closed, move up all other panels to stay at the same
