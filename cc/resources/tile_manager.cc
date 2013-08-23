@@ -142,6 +142,7 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),
+      prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
       all_tiles_required_for_activation_have_been_initialized_(true),
@@ -158,8 +159,6 @@ TileManager::~TileManager() {
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
 
-  // Clear |prioritized_tiles_| so that tiles kept alive by it can be freed.
-  prioritized_tiles_.Clear();
   DCHECK_EQ(0u, tiles_.size());
 
   TileVector empty;
@@ -188,6 +187,7 @@ void TileManager::RegisterTile(Tile* tile) {
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile;
+  prioritized_tiles_dirty_ = true;
 }
 
 void TileManager::UnregisterTile(Tile* tile) {
@@ -195,10 +195,25 @@ void TileManager::UnregisterTile(Tile* tile) {
 
   DCHECK(tiles_.find(tile->id()) != tiles_.end());
   tiles_.erase(tile->id());
+  prioritized_tiles_dirty_ = true;
+}
+
+void TileManager::DidChangeTilePriority(Tile* tile) {
+  prioritized_tiles_dirty_ = true;
 }
 
 bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
   return GlobalState().tree_priority != SMOOTHNESS_TAKES_PRIORITY;
+}
+
+PrioritizedTileSet* TileManager::GetPrioritizedTileSet() {
+  if (!prioritized_tiles_dirty_)
+    return &prioritized_tiles_;
+
+  prioritized_tiles_.Clear();
+  GetTilesWithAssignedBins(&prioritized_tiles_);
+  prioritized_tiles_dirty_ = false;
+  return &prioritized_tiles_;
 }
 
 void TileManager::DidFinishRunningTasks() {
@@ -212,7 +227,7 @@ void TileManager::DidFinishRunningTasks() {
   raster_worker_pool_->CheckForCompletedTasks();
 
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(&prioritized_tiles_,
+  AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
                          &tiles_that_need_to_be_rasterized);
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
@@ -250,8 +265,8 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
   client_->NotifyReadyToActivate();
 }
 
-void TileManager::GetPrioritizedTileSet(PrioritizedTileSet* tiles) {
-  TRACE_EVENT0("cc", "TileManager::GetPrioritizedTileSet");
+void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
+  TRACE_EVENT0("cc", "TileManager::GetTilesWithAssignedBins");
 
   const TileMemoryLimitPolicy memory_policy = global_state_.memory_limit_policy;
   const TreePriority tree_priority = global_state_.tree_priority;
@@ -341,13 +356,8 @@ void TileManager::GetPrioritizedTileSet(PrioritizedTileSet* tiles) {
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
 
-  // Clear |prioritized_tiles_| so that tiles kept alive by it can be freed.
-  prioritized_tiles_.Clear();
-
-  GetPrioritizedTileSet(&prioritized_tiles_);
-
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(&prioritized_tiles_,
+  AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
                          &tiles_that_need_to_be_rasterized);
   CleanUpUnusedImageDecodeTasks();
 

@@ -13,8 +13,8 @@ namespace cc {
 
 class BinComparator {
  public:
-  bool operator()(const scoped_refptr<Tile>& a,
-                  const scoped_refptr<Tile>& b) const {
+  bool operator()(const Tile* a,
+                  const Tile* b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
 
@@ -46,7 +46,7 @@ class BinComparator {
 
 namespace {
 
-typedef std::vector<scoped_refptr<Tile> > TileVector;
+typedef std::vector<Tile*> TileVector;
 
 void SortBinTiles(ManagedTileBin bin, TileVector* tiles) {
   switch (bin) {
@@ -75,7 +75,7 @@ PrioritizedTileSet::PrioritizedTileSet() {
 PrioritizedTileSet::~PrioritizedTileSet() {}
 
 void PrioritizedTileSet::InsertTile(Tile* tile, ManagedTileBin bin) {
-  tiles_[bin].push_back(make_scoped_refptr(tile));
+  tiles_[bin].push_back(tile);
   bin_sorted_[bin] = false;
 }
 
@@ -124,7 +124,7 @@ PrioritizedTileSet::Iterator::operator++() {
 
 Tile* PrioritizedTileSet::Iterator::operator*() {
   DCHECK(iterator_ != tile_set_->tiles_[current_bin_].end());
-  return iterator_->get();
+  return *iterator_;
 }
 
 void PrioritizedTileSet::Iterator::AdvanceList() {

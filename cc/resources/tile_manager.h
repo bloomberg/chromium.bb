@@ -109,6 +109,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   friend class Tile;
   void RegisterTile(Tile* tile);
   void UnregisterTile(Tile* tile);
+  void DidChangeTilePriority(Tile* tile);
 
   // Overriden from RasterWorkerPoolClient:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const
@@ -126,7 +127,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void AssignGpuMemoryToTiles(
       PrioritizedTileSet* tiles,
       TileVector* tiles_that_need_to_be_rasterized);
-  void GetPrioritizedTileSet(PrioritizedTileSet* tiles);
+  void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
 
  private:
   void OnImageDecodeTaskCompleted(
@@ -149,6 +150,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       Tile* tile, skia::LazyPixelRef* pixel_ref);
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
+  PrioritizedTileSet* GetPrioritizedTileSet();
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -159,6 +161,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   TileMap tiles_;
 
   PrioritizedTileSet prioritized_tiles_;
+  bool prioritized_tiles_dirty_;
 
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;

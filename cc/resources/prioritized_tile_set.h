@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/managed_tile_state.h"
 
@@ -43,7 +41,7 @@ class CC_EXPORT PrioritizedTileSet {
 
     PrioritizedTileSet* tile_set_;
     ManagedTileBin current_bin_;
-    std::vector<scoped_refptr<Tile> >::iterator iterator_;
+    std::vector<Tile*>::iterator iterator_;
     bool use_priority_ordering_;
   };
 
@@ -52,8 +50,7 @@ class CC_EXPORT PrioritizedTileSet {
 
   void SortBinIfNeeded(ManagedTileBin bin);
 
-  typedef scoped_refptr<Tile> TileRef;
-  std::vector<TileRef> tiles_[NUM_BINS];
+  std::vector<Tile*> tiles_[NUM_BINS];
   bool bin_sorted_[NUM_BINS];
 };
 

@@ -680,7 +680,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
         continue;
 
       missing_region.Subtract(iter.geometry_rect());
-      iter->mark_required_for_activation();
+      iter->MarkRequiredForActivation();
     }
   }
 
@@ -705,7 +705,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     if (!missing_region.Intersects(iter.geometry_rect()))
       continue;
 
-    iter->mark_required_for_activation();
+    iter->MarkRequiredForActivation();
   }
 }
 

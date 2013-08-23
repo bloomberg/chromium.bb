@@ -41,6 +41,16 @@ Tile::~Tile() {
   tile_manager_->UnregisterTile(this);
 }
 
+void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {
+  priority_[tree] = priority;
+  tile_manager_->DidChangeTilePriority(this);
+}
+
+void Tile::MarkRequiredForActivation() {
+  priority_[PENDING_TREE].required_for_activation = true;
+  tile_manager_->DidChangeTilePriority(this);
+}
+
 scoped_ptr<base::Value> Tile::AsValue() const {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   TracedValue::MakeDictIntoImplicitSnapshot(res.get(), "cc::Tile", this);

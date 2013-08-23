@@ -53,13 +53,9 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
                         priority_[PENDING_TREE]);
   }
 
-  void SetPriority(WhichTree tree, const TilePriority& priority) {
-    priority_[tree] = priority;
-  }
+  void SetPriority(WhichTree tree, const TilePriority& priority);
 
-  void mark_required_for_activation() {
-    priority_[PENDING_TREE].required_for_activation = true;
-  }
+  void MarkRequiredForActivation();
 
   bool required_for_activation() const {
     return priority_[PENDING_TREE].required_for_activation;
