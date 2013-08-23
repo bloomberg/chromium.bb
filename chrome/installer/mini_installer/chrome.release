@@ -38,6 +38,8 @@ chrome_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
 chrome_touch_100_percent.pak: %(VersionDir)s\
+chrome_touch_140_percent.pak: %(VersionDir)s\
+chrome_touch_180_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 SecondaryTile.png: %(VersionDir)s\
