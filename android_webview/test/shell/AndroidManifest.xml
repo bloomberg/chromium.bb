@@ -25,6 +25,8 @@
         <category android:name="android.intent.category.FRAMEWORK_INSTRUMENTATION_TEST" />
       </intent-filter>
     </activity>
+    <provider android:name="org.chromium.android_webview.test.TestContentProvider"
+        android:authorities="org.chromium.android_webview.test.TestContentProvider" />
   </application>
 
   <!-- TODO(joth): Change minSdkVersion to 16 when crbug/161864 lands. -->

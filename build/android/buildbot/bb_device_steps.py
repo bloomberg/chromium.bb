@@ -141,6 +141,14 @@ def InstallApk(options, test, print_step=False):
   """
   if print_step:
     bb_annotations.PrintNamedStep('install_%s' % test.name.lower())
+  # TODO(gkanwar): Quick hack to make sure AndroidWebViewTest.apk is replaced
+  # before AndroidWebView.apk is. This can be removed once the bots cycle.
+  args = ['--apk', '%s.apk' % test.test_apk]
+  if options.target == 'Release':
+    args.append('--release')
+
+  RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
+
   args = ['--apk', test.apk, '--apk_package', test.apk_package]
   if options.target == 'Release':
     args.append('--release')
