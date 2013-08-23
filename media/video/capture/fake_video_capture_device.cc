@@ -57,7 +57,8 @@ FakeVideoCaptureDevice::FakeVideoCaptureDevice(const Name& device_name)
       observer_(NULL),
       state_(kIdle),
       capture_thread_("CaptureThread"),
-      frame_count_(0) {
+      frame_count_(0),
+      capabilities_roster_index_(0) {
 }
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
