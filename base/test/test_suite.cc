@@ -246,7 +246,7 @@ void TestSuite::Initialize() {
     logging::SetLogAssertHandler(UnitTestAssertHandler);
   }
 
-  icu_util::Initialize();
+  base::i18n::InitializeICU();
 
   CatchMaybeTests();
   ResetCommandLine();

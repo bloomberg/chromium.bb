@@ -716,7 +716,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     RegisterPathProvider();
     RegisterContentSchemes(true);
 
-    CHECK(icu_util::Initialize());
+    CHECK(base::i18n::InitializeICU());
 
     InitializeStatsTable(command_line);
 

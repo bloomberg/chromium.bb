@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
   ui::RegisterPathProvider();
-  icu_util::Initialize();
+  base::i18n::InitializeICU();
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   return DemoMain();

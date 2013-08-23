@@ -17,7 +17,7 @@ namespace shell {
 
 void PreMainMessageLoopStart() {
   ui::RegisterPathProvider();
-  icu_util::Initialize();
+  base::i18n::InitializeICU();
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   base::scoped_nsobject<NSNib> nib(

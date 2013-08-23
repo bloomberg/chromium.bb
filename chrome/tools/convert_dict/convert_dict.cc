@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     return PrintHelp();
 
   base::AtExitManager exit_manager;
-  icu_util::Initialize();
+  base::i18n::InitializeICU();
 
   base::FilePath file_base = base::FilePath(argv[1]);
 

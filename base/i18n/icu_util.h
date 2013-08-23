@@ -7,12 +7,14 @@
 
 #include "base/i18n/base_i18n_export.h"
 
-namespace icu_util {
+namespace base {
+namespace i18n {
 
 // Call this function to load ICU's data tables for the current process.  This
 // function should be called before ICU is used.
-BASE_I18N_EXPORT bool Initialize();
+BASE_I18N_EXPORT bool InitializeICU();
 
-}  // namespace icu_util
+}  // namespace i18n
+}  // namespace base
 
 #endif  // BASE_I18N_ICU_UTIL_H_
