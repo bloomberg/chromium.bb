@@ -141,3 +141,11 @@ COMPILE_ASSERT_MATCHING_UINT64(
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForMask,
     WebKit::CompositingReasonLayerForMask);
+
+COMPILE_ASSERT_MATCHING_UINT64(
+    cc::kCompositingReasonOverflowScrollingParent,
+    WebKit::CompositingReasonOverflowScrollingParent);
+
+COMPILE_ASSERT_MATCHING_UINT64(
+    cc::kCompositingReasonOutOfFlowClipping,
+    WebKit::CompositingReasonOutOfFlowClipping);
