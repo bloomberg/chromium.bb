@@ -5565,10 +5565,10 @@ static const V8DOMConfiguration::BatchedConstant V8TestObjectConsts[] = {
     {"CONST_VALUE_8", 8},
     {"CONST_VALUE_9", -1},
     {"CONST_VALUE_10", "my constant string"},
-    {"CONST_VALUE_11", -1},
-    {"CONST_VALUE_12", 1},
+    {"CONST_VALUE_11", 0xffffffff},
+    {"CONST_VALUE_12", 0x01},
     {"CONST_VALUE_13", 0X20},
-    {"CONST_VALUE_14", 6844},
+    {"CONST_VALUE_14", 0x1abc},
     {"CONST_JAVASCRIPT", 15},
     {"DEPRECATED_CONSTANT", 1},
 };

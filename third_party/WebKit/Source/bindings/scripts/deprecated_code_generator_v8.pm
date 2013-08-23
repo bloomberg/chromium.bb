@@ -4153,11 +4153,6 @@ END
         } else {
             my $conditionalString = GenerateConditionalString($constant);
             $code .= "#if ${conditionalString}\n" if $conditionalString;
-            # If the value we're dealing with is a hex number, preprocess it into a signed integer
-            # here, rather than running static_cast<signed int> in the generated code.
-            if (substr($value, 0, 2) eq "0x") {
-              $value = unpack('i', pack('I', hex($value)));
-            }
             $code .= <<END;
     {"${name}", $value},
 END
