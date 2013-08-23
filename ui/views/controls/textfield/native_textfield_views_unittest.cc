@@ -792,7 +792,7 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
 TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  SetClipboardText(std::string());
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::Clipboard::BUFFER_STANDARD);
   textfield_view_->ClearEditHistory();
   EXPECT_TRUE(GetContextMenuModel());
   VerifyTextfieldContextMenuContents(false, false, GetContextMenuModel());
