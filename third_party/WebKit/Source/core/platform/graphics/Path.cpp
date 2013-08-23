@@ -276,18 +276,18 @@ void Path::closeSubpath()
     m_path.close();
 }
 
-void Path::addArc(const FloatPoint& p, float r, float sa, float ea, bool anticlockwise)
+void Path::addArc(const FloatPoint& p, float radius, float startAngle, float endAngle, bool anticlockwise)
 {
     SkScalar cx = WebCoreFloatToSkScalar(p.x());
     SkScalar cy = WebCoreFloatToSkScalar(p.y());
-    SkScalar radius = WebCoreFloatToSkScalar(r);
+    SkScalar radiusScalar = WebCoreFloatToSkScalar(radius);
     SkScalar s360 = SkIntToScalar(360);
 
     SkRect oval;
-    oval.set(cx - radius, cy - radius, cx + radius, cy + radius);
+    oval.set(cx - radiusScalar, cy - radiusScalar, cx + radiusScalar, cy + radiusScalar);
 
-    float sweep = ea - sa;
-    SkScalar startDegrees = WebCoreFloatToSkScalar(sa * 180 / piFloat);
+    float sweep = endAngle - startAngle;
+    SkScalar startDegrees = WebCoreFloatToSkScalar(startAngle * 180 / piFloat);
     SkScalar sweepDegrees = WebCoreFloatToSkScalar(sweep * 180 / piFloat);
     // Check for a circle.
     if (sweepDegrees >= s360 || sweepDegrees <= -s360) {

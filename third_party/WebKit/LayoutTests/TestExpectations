@@ -1242,6 +1242,10 @@ crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_rep
 
 crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
+# Pixel test is needed.
+crbug.com/130260 fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/130260 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 

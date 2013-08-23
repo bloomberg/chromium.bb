@@ -130,36 +130,60 @@ void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, E
         m_path.addArcTo(p1, p2, r);
 }
 
-void CanvasPathMethods::arc(float x, float y, float r, float sa, float ea, bool anticlockwise, ExceptionState& es)
+static float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
 {
-    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(r) || !std::isfinite(sa) || !std::isfinite(ea))
+    float twoPi = 2 * piFloat;
+    float newEndAngle = endAngle;
+    /* http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-arc
+     * If the anticlockwise argument is false and endAngle-startAngle is equal to or greater than 2pi, or,
+     * if the anticlockwise argument is true and startAngle-endAngle is equal to or greater than 2pi,
+     * then the arc is the whole circumference of this ellipse.
+     */
+    if (!anticlockwise && endAngle - startAngle >= twoPi)
+        newEndAngle = startAngle + twoPi + fmodf(endAngle - startAngle, twoPi);
+    else if (anticlockwise && startAngle - endAngle >= twoPi)
+        newEndAngle = startAngle - twoPi - fmodf(startAngle - endAngle, twoPi);
+
+    /*
+     * Otherwise, the arc is the path along the circumference of this ellipse from the start point to the end point,
+     * going anti-clockwise if the anticlockwise argument is true, and clockwise otherwise.
+     * Since the points are on the ellipse, as opposed to being simply angles from zero,
+     * the arc can never cover an angle greater than 2pi radians.
+     */
+    /* NOTE: When startAngle = 0, endAngle = 2Pi and anticlockwise = true, the spec does not indicate clearly.
+     * We draw the entire circle, because some web sites use arc(x, y, r, 0, 2*Math.PI, true) to draw circle.
+     * We preserve backward-compatibility.
+     */
+    else if (!anticlockwise && startAngle > endAngle)
+        newEndAngle = startAngle + (twoPi - fmodf(startAngle - endAngle, twoPi));
+    else if (anticlockwise && startAngle < endAngle)
+        newEndAngle = startAngle - (twoPi - fmodf(endAngle - startAngle, twoPi));
+
+    ASSERT(std::abs(newEndAngle - startAngle) < 4 * piFloat);
+    return newEndAngle;
+}
+
+void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
+{
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
         return;
 
-    if (r < 0) {
+    if (radius < 0) {
         es.throwDOMException(IndexSizeError);
-        return;
-    }
-
-    if (!r || sa == ea) {
-        // The arc is empty but we still need to draw the connecting line.
-        lineTo(x + r * cosf(sa), y + r * sinf(sa));
         return;
     }
 
     if (!isTransformInvertible())
         return;
 
-    // If 'sa' and 'ea' differ by more than 2Pi, just add a circle starting/ending at 'sa'.
-    if (anticlockwise && sa - ea >= 2 * piFloat) {
-        m_path.addArc(FloatPoint(x, y), r, sa, sa - 2 * piFloat, anticlockwise);
-        return;
-    }
-    if (!anticlockwise && ea - sa >= 2 * piFloat) {
-        m_path.addArc(FloatPoint(x, y), r, sa, sa + 2 * piFloat, anticlockwise);
+    if (!radius || startAngle == endAngle) {
+        // The arc is empty but we still need to draw the connecting line.
+        lineTo(x + radius * cosf(startAngle), y + radius * sinf(startAngle));
         return;
     }
 
-    m_path.addArc(FloatPoint(x, y), r, sa, ea, anticlockwise);
+    float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
+    m_path.addArc(FloatPoint(x, y), radius, startAngle, adjustedEndAngle, anticlockwise);
 }
 
 void CanvasPathMethods::rect(float x, float y, float width, float height)
