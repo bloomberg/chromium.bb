@@ -15,3 +15,4 @@ Local Modifications:
 - Exposing an API (libusb_interrupt_handle_event) to explicitly interrupt
   libusb_handle_event.
 - windows-build.patch has been applied.
+- darwin-sigfpe.patch has been applied.
