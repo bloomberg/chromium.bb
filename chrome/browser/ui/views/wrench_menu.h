@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -17,6 +18,7 @@
 
 class BookmarkMenuDelegate;
 class Browser;
+class WrenchMenuObserver;
 
 namespace ui {
 class NativeTheme;
@@ -52,6 +54,9 @@ class WrenchMenu : public views::MenuDelegate,
   const views::MenuConfig& GetMenuConfig() const;
 
   bool use_new_menu() const { return use_new_menu_; }
+
+  void AddObserver(WrenchMenuObserver* observer);
+  void RemoveObserver(WrenchMenuObserver* observer);
 
   // MenuDelegate overrides:
   virtual const gfx::Font* GetLabelFont(int index) const OVERRIDE;
@@ -189,6 +194,8 @@ class WrenchMenu : public views::MenuDelegate,
   const bool use_new_menu_;
 
   const bool supports_new_separators_;
+
+  ObserverList<WrenchMenuObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenu);
 };

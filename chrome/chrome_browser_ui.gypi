@@ -1958,6 +1958,7 @@
         'browser/ui/views/website_settings/website_settings_popup_view.h',
         'browser/ui/views/wrench_menu.cc',
         'browser/ui/views/wrench_menu.h',
+        'browser/ui/views/wrench_menu_observer.h',
         'browser/ui/views/wrench_toolbar_button.cc',
         'browser/ui/views/wrench_toolbar_button.h',
         'browser/ui/web_applications/web_app_ui.cc',

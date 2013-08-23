@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
+#include "chrome/browser/ui/views/wrench_menu_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -320,11 +321,19 @@ string16 GetAccessibleNameForWrenchMenuItem(
 
 // WrenchMenuView is a view that can contain label buttons.
 class WrenchMenuView : public views::View,
-                       public views::ButtonListener {
+                       public views::ButtonListener,
+                       public WrenchMenuObserver {
  public:
   WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
       : menu_(menu),
-        menu_model_(menu_model) {}
+        menu_model_(menu_model) {
+    menu_->AddObserver(this);
+  }
+
+  virtual ~WrenchMenuView() {
+    if (menu_)
+      menu_->RemoveObserver(this);
+  }
 
   // Overridden from views::View.
   virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
@@ -348,6 +357,8 @@ class WrenchMenuView : public views::View,
                                        int index,
                                        MenuButtonBackground** background,
                                        int acc_string_id) {
+    // Should only be invoked during construction when |menu_| is valid.
+    DCHECK(menu_);
     LabelButton* button = new LabelButton(this, gfx::RemoveAcceleratorChar(
         l10n_util::GetStringUTF16(string_id), '&', NULL, NULL));
     button->SetAccessibleName(
@@ -371,14 +382,26 @@ class WrenchMenuView : public views::View,
     return button;
   }
 
+  // Overridden from WrenchMenuObserver:
+  virtual void WrenchMenuDestroyed() OVERRIDE {
+    menu_->RemoveObserver(this);
+    menu_ = NULL;
+    menu_model_ = NULL;
+  }
+
  protected:
+  WrenchMenu* menu() { return menu_; }
+  MenuModel* menu_model() { return menu_model_; }
+
+ private:
   // Hosting WrenchMenu.
+  // WARNING: this may be NULL during shutdown.
   WrenchMenu* menu_;
 
   // The menu model containing the increment/decrement/reset items.
+  // WARNING: this may be NULL during shutdown.
   MenuModel* menu_model_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuView);
 };
 
@@ -433,12 +456,12 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 
     LabelButton* paste = CreateAndConfigureButton(
         IDS_PASTE,
-        menu_->use_new_menu() && menu_->supports_new_separators_ ?
+        menu->use_new_menu() && menu->supports_new_separators_ ?
             MenuButtonBackground::CENTER_BUTTON :
             MenuButtonBackground::RIGHT_BUTTON,
         paste_index,
         NULL);
-    if (menu_->use_new_menu()) {
+    if (menu->use_new_menu()) {
       cut->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
       copy->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
       paste->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
@@ -469,7 +492,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    menu_->CancelAndEvaluate(menu_model_, sender->tag());
+    menu()->CancelAndEvaluate(menu_model(), sender->tag());
   }
 
  private:
@@ -511,8 +534,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
     HostZoomMap::GetForBrowserContext(
-        menu_->browser_->profile())->AddZoomLevelChangedCallback(
-            zoom_callback_);
+        menu->browser_->profile())->AddZoomLevelChangedCallback(zoom_callback_);
 
     decrement_button_ = CreateButtonWithAccName(
         IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON, decrement_index,
@@ -524,10 +546,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     MenuButtonBackground* center_bg = new MenuButtonBackground(
-        menu_->use_new_menu() && menu_->supports_new_separators_ ?
+        menu->use_new_menu() && menu->supports_new_separators_ ?
             MenuButtonBackground::RIGHT_BUTTON :
             MenuButtonBackground::CENTER_BUTTON,
-        menu_->use_new_menu());
+        menu->use_new_menu());
     zoom_label_->set_background(center_bg);
     const MenuConfig& menu_config(menu->GetMenuConfig());
     zoom_label_->set_border(
@@ -548,7 +570,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);
     fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
-    if (menu_->use_new_menu()) {
+    if (menu->use_new_menu()) {
       zoom_label_->SetEnabledColor(kTouchButtonText);
       decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
                                       kTouchButtonText);
@@ -576,12 +598,12 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     fullscreen_button_->SetImageAlignment(
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
     int horizontal_padding =
-        menu_->use_new_menu() ? kHorizontalTouchPadding : kHorizontalPadding;
+        menu->use_new_menu() ? kHorizontalTouchPadding : kHorizontalPadding;
     fullscreen_button_->set_border(views::Border::CreateEmptyBorder(
         0, horizontal_padding, 0, horizontal_padding));
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON,
-                                 menu_->use_new_menu()));
+                                 menu->use_new_menu()));
     fullscreen_button_->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(
             menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
@@ -591,9 +613,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   }
 
   virtual ~ZoomView() {
-    HostZoomMap::GetForBrowserContext(
-        menu_->browser_->profile())->RemoveZoomLevelChangedCallback(
-            zoom_callback_);
+    Shutdown();
   }
 
   // Overridden from View.
@@ -601,7 +621,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
-    int zoom_padding = menu_->use_new_menu() ? kTouchZoomPadding : kZoomPadding;
+    int zoom_padding = menu()->use_new_menu() ?
+        kTouchZoomPadding : kZoomPadding;
     int fullscreen_width = fullscreen_button_->GetPreferredSize().width() +
                            zoom_padding;
     // Returned height doesn't matter as MenuItemView forces everything to the
@@ -629,10 +650,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     bounds.set_width(button_width);
     increment_button_->SetBoundsRect(bounds);
 
-    x += bounds.width() + (menu_->use_new_menu() ? 0 : kZoomPadding);
+    x += bounds.width() + (menu()->use_new_menu() ? 0 : kZoomPadding);
     bounds.set_x(x);
     bounds.set_width(fullscreen_button_->GetPreferredSize().width() +
-                     (menu_->use_new_menu() ? kTouchZoomPadding : 0));
+                     (menu()->use_new_menu() ? kTouchZoomPadding : 0));
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
@@ -640,14 +661,30 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender->tag() == fullscreen_index_) {
-      menu_->CancelAndEvaluate(menu_model_, sender->tag());
+      menu()->CancelAndEvaluate(menu_model(), sender->tag());
     } else {
       // Zoom buttons don't close the menu.
-      menu_model_->ActivatedAt(sender->tag());
+      menu_model()->ActivatedAt(sender->tag());
     }
   }
 
+  // Overridden from WrenchMenuObserver.
+  virtual void WrenchMenuDestroyed() OVERRIDE {
+    Shutdown();
+    WrenchMenuView::WrenchMenuDestroyed();
+  }
+
  private:
+  // Invoked from the destructor or when the WrenchMenu is destroyed.
+  void Shutdown() {
+    if (!menu())
+      return;
+
+    HostZoomMap::GetForBrowserContext(
+        menu()->browser_->profile())->RemoveZoomLevelChangedCallback(
+            zoom_callback_);
+  }
+
   void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
     UpdateZoomControls();
   }
@@ -656,7 +693,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     bool enable_increment = false;
     bool enable_decrement = false;
     WebContents* selected_tab =
-        menu_->browser_->tab_strip_model()->GetActiveWebContents();
+        menu()->browser_->tab_strip_model()->GetActiveWebContents();
     int zoom = 100;
     if (selected_tab)
       zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
@@ -677,7 +714,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     int max_w = 0;
 
     WebContents* selected_tab =
-        menu_->browser_->tab_strip_model()->GetActiveWebContents();
+        menu()->browser_->tab_strip_model()->GetActiveWebContents();
     if (selected_tab) {
       int min_percent = selected_tab->GetMinimumZoomPercent();
       int max_percent = selected_tab->GetMaximumZoomPercent();
@@ -811,6 +848,7 @@ WrenchMenu::~WrenchMenu() {
     if (model)
       model->RemoveObserver(this);
   }
+  FOR_EACH_OBSERVER(WrenchMenuObserver, observer_list_, WrenchMenuDestroyed());
 }
 
 void WrenchMenu::Init(ui::MenuModel* model) {
@@ -857,6 +895,14 @@ const ui::NativeTheme* WrenchMenu::GetNativeTheme() const {
 
 const views::MenuConfig& WrenchMenu::GetMenuConfig() const {
   return MenuConfig::instance(GetNativeTheme());
+}
+
+void WrenchMenu::AddObserver(WrenchMenuObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void WrenchMenu::RemoveObserver(WrenchMenuObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 const gfx::Font* WrenchMenu::GetLabelFont(int index) const {
