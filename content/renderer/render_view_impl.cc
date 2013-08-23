@@ -3053,6 +3053,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           media_player_manager_.get(),
           media_player_proxy_,
           stream_texture_factory.release(),
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
           new RenderMediaLog()));
 #if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
   if (media_stream_client_->IsMediaStream(url)) {
