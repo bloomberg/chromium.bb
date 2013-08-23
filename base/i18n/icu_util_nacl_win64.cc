@@ -4,10 +4,12 @@
 
 #include "base/i18n/icu_util.h"
 
-namespace icu_util {
+namespace base {
+namespace i18n {
 
-bool Initialize() {
+BASE_I18N_EXPORT bool InitializeICU() {
   return true;
 }
 
-}  // namespace icu_util
+}  // namespace i18n
+}  // namespace base
