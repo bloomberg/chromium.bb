@@ -24,25 +24,9 @@
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Mock;
-using testing::ReturnRef;
-
 namespace policy {
-
-namespace {
-
-class MockCertTrustAnchorProvider : public net::CertTrustAnchorProvider {
- public:
-  MockCertTrustAnchorProvider() {}
-  virtual ~MockCertTrustAnchorProvider() {}
-
-  MOCK_METHOD0(GetAdditionalTrustAnchors, const net::CertificateList&());
-};
-
-}  // namespace
 
 // This is actually a unit test, but is linked with browser_tests because
 // importing a certificate into the NSS test database persists for the duration
@@ -68,7 +52,8 @@ class PolicyCertVerifierTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("profile");
 
-    cert_verifier_.reset(new PolicyCertVerifier(profile_, &trust_provider_));
+    cert_verifier_.reset(new PolicyCertVerifier(profile_));
+    cert_verifier_->InitializeOnIOThread();
   }
 
   bool SupportsAdditionalTrustAnchors() {
@@ -98,9 +83,7 @@ class PolicyCertVerifierTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
-  MockCertTrustAnchorProvider trust_provider_;
   scoped_ptr<PolicyCertVerifier> cert_verifier_;
-  const net::CertificateList empty_cert_list_;
 };
 
 TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
@@ -112,8 +95,6 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
   net::CertVerifier::RequestHandle request_handle;
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(empty_cert_list_));
   int error = cert_verifier_->Verify(cert.get(),
                                      "127.0.0.1",
                                      0,
@@ -122,7 +103,6 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
                                      callback.callback(),
                                      &request_handle,
                                      net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -130,8 +110,6 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
 
   // Issuing the same request again hits the cache. This tests the synchronous
   // path.
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(empty_cert_list_));
   error = cert_verifier_->Verify(cert.get(),
                                  "127.0.0.1",
                                  0,
@@ -140,7 +118,6 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
                                  callback.callback(),
                                  &request_handle,
                                  net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
 
   // The profile is not tainted.
@@ -175,8 +152,6 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
   net::CertVerifier::RequestHandle request_handle;
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(empty_cert_list_));
   int error = cert_verifier_->Verify(cert.get(),
                                      "127.0.0.1",
                                      0,
@@ -185,7 +160,6 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
                                      callback.callback(),
                                      &request_handle,
                                      net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -220,8 +194,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
   net::CertVerifier::RequestHandle request_handle;
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(additional_trust_anchors));
+  cert_verifier_->SetTrustAnchors(additional_trust_anchors);
   int error = cert_verifier_->Verify(cert.get(),
                                      "127.0.0.1",
                                      0,
@@ -230,7 +203,6 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
                                      callback.callback(),
                                      &request_handle,
                                      net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -264,8 +236,6 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
   net::CertVerifier::RequestHandle request_handle;
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(empty_cert_list_));
   int error = cert_verifier_->Verify(cert.get(),
                                      "127.0.0.1",
                                      0,
@@ -274,7 +244,6 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
                                      callback.callback(),
                                      &request_handle,
                                      net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -286,8 +255,7 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
       profile_->GetPrefs()->GetBoolean(prefs::kUsedPolicyCertificatesOnce));
 
   // Verify() again with the additional trust anchors.
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(additional_trust_anchors));
+  cert_verifier_->SetTrustAnchors(additional_trust_anchors);
   error = cert_verifier_->Verify(cert.get(),
                                  "127.0.0.1",
                                  0,
@@ -296,7 +264,6 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
                                  callback.callback(),
                                  &request_handle,
                                  net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -309,8 +276,7 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
       profile_->GetPrefs()->GetBoolean(prefs::kUsedPolicyCertificatesOnce));
 
   // Verifying after removing the trust anchors should now fail.
-  EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
-      .WillOnce(ReturnRef(empty_cert_list_));
+  cert_verifier_->SetTrustAnchors(net::CertificateList());
   error = cert_verifier_->Verify(cert.get(),
                                  "127.0.0.1",
                                  0,
@@ -319,7 +285,6 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
                                  callback.callback(),
                                  &request_handle,
                                  net::BoundNetLog());
-  Mock::VerifyAndClearExpectations(&trust_provider_);
   // Note: this hits the cached result from the first Verify() in this test.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
 

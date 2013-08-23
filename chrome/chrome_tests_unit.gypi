@@ -707,7 +707,7 @@
         'browser/chromeos/policy/device_local_account_policy_service_unittest.cc',
         'browser/chromeos/policy/enterprise_install_attributes_unittest.cc',
         'browser/chromeos/policy/login_screen_power_management_policy_unittest.cc',
-        'browser/chromeos/policy/network_configuration_updater_impl_unittest.cc',
+        'browser/chromeos/policy/network_configuration_updater_unittest.cc',
         'browser/chromeos/policy/proxy_policy_provider_unittest.cc',
         'browser/chromeos/policy/recommendation_restorer_unittest.cc',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos_unittest.cc',

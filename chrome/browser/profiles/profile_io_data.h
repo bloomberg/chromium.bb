@@ -44,7 +44,6 @@ class ResourcePrefetchPredictorObserver;
 }
 
 namespace net {
-class CertTrustAnchorProvider;
 class CertVerifier;
 class CookieStore;
 class FraudulentCertificateReporter;
@@ -60,6 +59,7 @@ class URLRequestJobFactoryImpl;
 }  // namespace net
 
 namespace policy {
+class PolicyCertVerifier;
 class URLBlacklistManager;
 }  // namespace policy
 
@@ -275,9 +275,7 @@ class ProfileIOData {
 #endif
 
 #if defined(OS_CHROMEOS)
-    // This is used to build the CertVerifier on the IO thread, and is a shared
-    // provider used by all profiles for now.
-    net::CertTrustAnchorProvider* trust_anchor_provider;
+    scoped_ptr<policy::PolicyCertVerifier> cert_verifier;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to

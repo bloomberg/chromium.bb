@@ -5,66 +5,95 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_NETWORK_CONFIGURATION_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_NETWORK_CONFIGURATION_UPDATER_H_
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "net/cert/x509_certificate.h"
+#include <string>
 
-namespace chromeos {
-class User;
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/policy_service.h"
+#include "chromeos/network/onc/onc_constants.h"
+
+namespace base {
+class Value;
 }
 
-namespace net {
-class CertTrustAnchorProvider;
+namespace chromeos {
+class ManagedNetworkConfigurationHandler;
+
+namespace onc {
+class CertificateImporter;
+}
 }
 
 namespace policy {
 
-class PolicyService;
+class PolicyMap;
 
-// Keeps track of the network configuration policy settings and pushes changes
-// to the respective configuration backend, which in turn writes configurations
-// to Shill.
-class NetworkConfigurationUpdater {
+// Implements the common part of tracking a OpenNetworkConfiguration device or
+// user policy. Pushes the network configs to the
+// ManagedNetworkConfigurationHandler, which in turn writes configurations to
+// Shill. Certificates are imported with the chromeos::onc::CertificateImporter.
+// For user policies the subclass UserNetworkConfigurationUpdater must be used.
+// Does not handle proxy settings.
+class NetworkConfigurationUpdater : public PolicyService::Observer {
  public:
-  NetworkConfigurationUpdater();
   virtual ~NetworkConfigurationUpdater();
 
-  // Provides the user policy service to the updater. Before this function is
-  // called and the policy service is completely initialized, the user policy is
-  // not applied. This function may trigger immediate policy applications.  Web
-  // trust isn't given to certificates imported from ONC by default. Setting
-  // |allow_trust_certs_from_policy| to true allows giving Web trust to the
-  // certificates that request it. References to |user_policy_service| and
-  // |user| are stored until UnsetUserPolicyService() is called.
-  virtual void SetUserPolicyService(bool allow_trusted_certs_from_policy,
-                                    const chromeos::User* user,
-                                    PolicyService* user_policy_service) = 0;
+  // Creates an updater that applies the ONC device policy from |policy_service|
+  // once the policy service is completely initialized and on each policy
+  // change.
+  static scoped_ptr<NetworkConfigurationUpdater> CreateForDevicePolicy(
+      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
+      PolicyService* policy_service,
+      chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
-  // Unregisters from the PolicyService previously provided by
-  // SetUserPolicyService and unsets the stored pointer.
-  virtual void UnsetUserPolicyService() = 0;
-
-  // Returns a CertTrustAnchorProvider that provides the list of server and
-  // CA certificates with the Web trust flag set that were retrieved from the
-  // last user ONC policy update.
-  // This getter must be used on the UI thread, and the provider must be used
-  // on the IO thread. It is only valid as long as the
-  // NetworkConfigurationUpdater is valid; the NetworkConfigurationUpdater
-  // outlives all the profiles, and deletes the provider on the IO thread.
-  net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
+  // PolicyService::Observer overrides
+  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
+                               const PolicyMap& previous,
+                               const PolicyMap& current) OVERRIDE;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
 
  protected:
-  void SetAllowTrustedCertsFromPolicy();
+  NetworkConfigurationUpdater(
+      chromeos::onc::ONCSource onc_source,
+      std::string policy_key,
+      scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
+      PolicyService* policy_service,
+      chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
-  void SetTrustAnchors(scoped_ptr<net::CertificateList> web_trust_certs);
+  void Init();
+
+  // Imports the certificates part of the policy.
+  virtual void ImportCertificates(const base::ListValue& certificates_onc);
+
+  // Pushes the network part of the policy to the
+  // ManagedNetworkConfigurationHandler. This can be overridden by subclasses to
+  // modify |network_configs_onc| before the actual application.
+  virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc);
+
+  chromeos::onc::ONCSource onc_source_;
+
+  // Pointer to the global singleton or a test instance.
+  chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
+
+  scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 
  private:
-  // Whether Web trust is allowed or not.
-  bool allow_trusted_certificates_from_policy_;
+  // Called if the ONC policy changed.
+  void OnPolicyChanged(const base::Value* previous, const base::Value* current);
 
-  // An implementation of CertTrustAnchorProvider. Owned by this class, but
-  // runs and is deleted on the IO thread.
-  net::CertTrustAnchorProvider* cert_trust_provider_;
+  // Apply the observed policy, i.e. both networks and certificates.
+  void ApplyPolicy();
+
+  std::string LogHeader() const;
+
+  std::string policy_key_;
+
+  // Used to register for notifications from the |policy_service_|.
+  PolicyChangeRegistrar policy_change_registrar_;
+
+  // Used to retrieve the policies.
+  PolicyService* policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdater);
 };

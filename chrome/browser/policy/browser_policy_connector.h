@@ -23,7 +23,6 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace net {
-class CertTrustAnchorProvider;
 class URLRequestContextGetter;
 }
 
@@ -110,12 +109,6 @@ class BrowserPolicyConnector {
 
 #if defined(OS_CHROMEOS)
   AppPackUpdater* GetAppPackUpdater();
-
-  NetworkConfigurationUpdater* network_configuration_updater() {
-    return network_configuration_updater_.get();
-  }
-
-  net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
 
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
     return device_cloud_policy_manager_.get();

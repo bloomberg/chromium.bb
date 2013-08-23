@@ -50,10 +50,16 @@ void CallbackWrapper(void* profile,
 
 }  // namespace
 
-PolicyCertVerifier::PolicyCertVerifier(
-    void* profile,
-    net::CertTrustAnchorProvider* trust_anchor_provider)
+PolicyCertVerifier::PolicyCertVerifier(void* profile)
     : profile_(profile) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+PolicyCertVerifier::~PolicyCertVerifier() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+}
+
+void PolicyCertVerifier::InitializeOnIOThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   scoped_refptr<net::CertVerifyProc> verify_proc =
       net::CertVerifyProc::CreateDefault();
@@ -63,12 +69,14 @@ PolicyCertVerifier::PolicyCertVerifier(
   }
   net::MultiThreadedCertVerifier* verifier =
       new net::MultiThreadedCertVerifier(verify_proc.get());
-  verifier->SetCertTrustAnchorProvider(trust_anchor_provider);
+  verifier->SetCertTrustAnchorProvider(this);
   delegate_.reset(verifier);
 }
 
-PolicyCertVerifier::~PolicyCertVerifier() {
+void PolicyCertVerifier::SetTrustAnchors(
+    const net::CertificateList& trust_anchors) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  trust_anchors_ = trust_anchors;
 }
 
 int PolicyCertVerifier::Verify(net::X509Certificate* cert,
@@ -80,6 +88,7 @@ int PolicyCertVerifier::Verify(net::X509Certificate* cert,
                                RequestHandle* out_req,
                                const net::BoundNetLog& net_log) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(delegate_);
   net::CompletionCallback wrapped_callback =
       base::Bind(&CallbackWrapper, profile_, verify_result, callback);
   int error = delegate_->Verify(cert, hostname, flags, crl_set, verify_result,
@@ -92,6 +101,11 @@ int PolicyCertVerifier::Verify(net::X509Certificate* cert,
 void PolicyCertVerifier::CancelRequest(RequestHandle req) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   delegate_->CancelRequest(req);
+}
+
+const net::CertificateList& PolicyCertVerifier::GetAdditionalTrustAnchors() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  return trust_anchors_;
 }
 
 }  // namespace policy

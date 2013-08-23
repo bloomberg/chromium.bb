@@ -23,12 +23,14 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -111,9 +113,16 @@ void ProfilePolicyConnector::Init(
       connector->SetUserPolicyDelegate(special_user_policy_provider_.get());
 
     // A reference to |user| is stored by the NetworkConfigurationUpdater until
-    // UnsetUserPolicyService during Shutdown is called.
-    connector->network_configuration_updater()->SetUserPolicyService(
-        allow_trusted_certs_from_policy, user, policy_service());
+    // the Updater is destructed during Shutdown.
+    network_configuration_updater_ =
+        UserNetworkConfigurationUpdater::CreateForUserPolicy(
+            allow_trusted_certs_from_policy,
+            *user,
+            scoped_ptr<chromeos::onc::CertificateImporter>(
+                new chromeos::onc::CertificateImporterImpl),
+            policy_service(),
+            chromeos::NetworkHandler::Get()
+                ->managed_network_configuration_handler());
   }
 #endif
 }
@@ -124,12 +133,9 @@ void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
 
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
-  if (is_primary_user_) {
-    BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-    connector->SetUserPolicyDelegate(NULL);
-    connector->network_configuration_updater()->UnsetUserPolicyService();
-  }
+  if (is_primary_user_)
+    g_browser_process->browser_policy_connector()->SetUserPolicyDelegate(NULL);
+  network_configuration_updater_.reset();
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
@@ -139,6 +145,21 @@ void ProfilePolicyConnector::Shutdown() {
     managed_mode_policy_provider_->Shutdown();
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+void ProfilePolicyConnector::SetPolicyCertVerifier(
+    PolicyCertVerifier* cert_verifier) {
+  if (network_configuration_updater_)
+    network_configuration_updater_->SetPolicyCertVerifier(cert_verifier);
+}
+
+void ProfilePolicyConnector::GetWebTrustedCertificates(
+    net::CertificateList* certs) const {
+  certs->clear();
+  if (network_configuration_updater_)
+    network_configuration_updater_->GetWebTrustedCertificates(certs);
+}
+#endif
 
 bool ProfilePolicyConnector::UsedPolicyCertificates() {
 #if defined(OS_CHROMEOS)

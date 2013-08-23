@@ -19,7 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
@@ -29,11 +29,12 @@
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
-#include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -119,26 +120,6 @@ struct CertEquals {
   }
   const net::X509Certificate* cert_;
 };
-
-#if defined(OS_CHROMEOS)
-net::CertificateList CopyPolicyWebTrustCerts(
-    net::CertTrustAnchorProvider* provider) {
-  // Return a copy.
-  return provider->GetAdditionalTrustAnchors();
-}
-
-void RetrievePolicyWebTrustCerts(
-    base::Callback<void(const net::CertificateList&)> on_completion) {
-  net::CertTrustAnchorProvider* provider =
-      g_browser_process->browser_policy_connector()->
-          GetCertTrustAnchorProvider();
-  // Retrieve the anchors on the IO thread.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CopyPolicyWebTrustCerts, base::Unretained(provider)),
-      on_completion);
-}
-#endif
 
 // Determine whether a certificate was stored with web trust by a policy.
 bool IsPolicyInstalledWithWebTrust(
@@ -507,13 +488,16 @@ void CertificateManagerHandler::RegisterMessages() {
 }
 
 void CertificateManagerHandler::CertificatesRefreshed() {
+  net::CertificateList web_trusted_certs;
 #if defined(OS_CHROMEOS)
-  RetrievePolicyWebTrustCerts(
-      base::Bind(&CertificateManagerHandler::OnPolicyWebTrustCertsRetrieved,
-                 weak_ptr_factory_.GetWeakPtr()));
-#else
-  OnPolicyWebTrustCertsRetrieved(net::CertificateList());
+  policy::ProfilePolicyConnectorFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()))->GetWebTrustedCertificates(
+          &web_trusted_certs);
 #endif
+  PopulateTree("personalCertsTab", net::USER_CERT, web_trusted_certs);
+  PopulateTree("serverCertsTab", net::SERVER_CERT, web_trusted_certs);
+  PopulateTree("caCertsTab", net::CA_CERT, web_trusted_certs);
+  PopulateTree("otherCertsTab", net::UNKNOWN_CERT, web_trusted_certs);
 }
 
 void CertificateManagerHandler::FileSelected(const base::FilePath& path,
@@ -1074,15 +1058,6 @@ void CertificateManagerHandler::PopulateTree(
     args.Append(nodes);
     web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }
-}
-
-void CertificateManagerHandler::OnPolicyWebTrustCertsRetrieved(
-    const net::CertificateList& web_trust_certs) {
-  PopulateTree("personalCertsTab", net::USER_CERT, web_trust_certs);
-  PopulateTree("serverCertsTab", net::SERVER_CERT, web_trust_certs);
-  PopulateTree("caCertsTab", net::CA_CERT, web_trust_certs);
-  PopulateTree("otherCertsTab", net::UNKNOWN_CERT, web_trust_certs);
-  VLOG(1) << "populating finished";
 }
 
 void CertificateManagerHandler::ShowError(const std::string& title,

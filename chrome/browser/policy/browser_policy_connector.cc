@@ -62,7 +62,6 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -231,11 +230,13 @@ void BrowserPolicyConnector::Init(
   policy_statistics_collector_->Initialize();
 
 #if defined(OS_CHROMEOS)
-  network_configuration_updater_.reset(new NetworkConfigurationUpdaterImpl(
-      GetPolicyService(),
-      chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
-      scoped_ptr<chromeos::onc::CertificateImporter>(
-          new chromeos::onc::CertificateImporterImpl)));
+  network_configuration_updater_ =
+      NetworkConfigurationUpdater::CreateForDevicePolicy(
+          scoped_ptr<chromeos::onc::CertificateImporter>(
+              new chromeos::onc::CertificateImporterImpl),
+          GetPolicyService(),
+          chromeos::NetworkHandler::Get()
+              ->managed_network_configuration_handler());
 #endif
 
   is_initialized_ = true;
@@ -361,11 +362,6 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
         new AppPackUpdater(request_context_.get(), install_attributes_.get()));
   }
   return app_pack_updater_.get();
-}
-
-net::CertTrustAnchorProvider*
-BrowserPolicyConnector::GetCertTrustAnchorProvider() {
-  return network_configuration_updater()->GetCertTrustAnchorProvider();
 }
 
 void BrowserPolicyConnector::SetUserPolicyDelegate(

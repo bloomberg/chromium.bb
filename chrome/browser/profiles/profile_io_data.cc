@@ -90,7 +90,8 @@
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserContext;
@@ -277,9 +278,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       managed_user_service->GetURLFilterForIOThread();
 #endif
 #if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  params->trust_anchor_provider = connector->GetCertTrustAnchorProvider();
+  params->cert_verifier.reset(new policy::PolicyCertVerifier(profile));
+  policy::ProfilePolicyConnectorFactory::GetForProfile(profile)
+      ->SetPolicyCertVerifier(params->cert_verifier.get());
 #endif
 
   params->profile = profile;
@@ -389,9 +390,6 @@ ProfileIOData::ProfileParams::ProfileParams()
     : io_thread(NULL),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
-#endif
-#if defined(OS_CHROMEOS)
-      trust_anchor_provider(NULL),
 #endif
       profile(NULL) {
 }
@@ -810,8 +808,8 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 #endif
 
 #if defined(OS_CHROMEOS)
-  cert_verifier_.reset(new policy::PolicyCertVerifier(
-      profile_params_->profile, profile_params_->trust_anchor_provider));
+  profile_params_->cert_verifier->InitializeOnIOThread();
+  cert_verifier_ = profile_params_->cert_verifier.Pass();
   main_request_context_->set_cert_verifier(cert_verifier_.get());
 #else
   main_request_context_->set_cert_verifier(
