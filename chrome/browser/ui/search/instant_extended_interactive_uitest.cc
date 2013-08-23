@@ -1379,16 +1379,11 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
 }
 
-// Flaky on Mac and Linux Tests bots.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_UpdateSearchQueryOnForwardNavigation DISABLED_UpdateSearchQueryOnForwardNavigation
-#else
-#define MAYBE_UpdateSearchQueryOnForwardNavigation UpdateSearchQueryOnForwardNavigation
-#endif
+// Flaky: crbug.com/253092.
 // Test to verify that the omnibox search query is updated on browser
 // forward button press events.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_UpdateSearchQueryOnForwardNavigation) {
+                       DISABLED_UpdateSearchQueryOnForwardNavigation) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus omnibox and confirm overlay isn't shown.
