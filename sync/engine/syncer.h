@@ -72,7 +72,7 @@ class SYNC_EXPORT_PRIVATE Syncer {
   void ApplyUpdates(sessions::SyncSession* session);
   bool DownloadAndApplyUpdates(
       sessions::SyncSession* session,
-      base::Callback<SyncerError(void)> download_fn);
+      base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn);
 
   void HandleCycleBegin(sessions::SyncSession* session);
   bool HandleCycleEnd(

@@ -234,10 +234,6 @@ class MockConnectionManager : public ServerConnectionManager {
     expected_filter_ = expected_filter;
   }
 
-  void ExpectGetUpdatesRequestStates(const ModelTypeInvalidationMap& states) {
-    expected_states_ = states;
-  }
-
   void SetServerReachable();
 
   void SetServerNotReachable();
@@ -393,8 +389,6 @@ class MockConnectionManager : public ServerConnectionManager {
   bool use_legacy_bookmarks_protocol_;
 
   ModelTypeSet expected_filter_;
-
-  ModelTypeInvalidationMap expected_states_;
 
   int num_get_updates_requests_;
 

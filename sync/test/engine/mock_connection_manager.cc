@@ -502,12 +502,6 @@ void MockConnectionManager::ProcessGetUpdates(
         GetProgressMarkerForType(gu.from_progress_marker(), model_type);
     EXPECT_EQ(expected_filter_.Has(model_type), (progress_marker != NULL))
         << "Syncer requested_types differs from test expectation.";
-    if (progress_marker) {
-      EXPECT_EQ((expected_states_.count(model_type) > 0 ?
-                 expected_states_[model_type].payload :
-                 std::string()),
-                progress_marker->notification_hint());
-    }
   }
 
   // Verify that the items we're about to send back to the client are of

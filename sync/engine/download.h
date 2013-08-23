@@ -26,33 +26,37 @@ class Syncer;
 // This function executes a single GetUpdate request and stores the response in
 // the session's StatusController.  It constructs the type of request used to
 // keep types in sync when in normal mode.
-SYNC_EXPORT_PRIVATE SyncerError NormalDownloadUpdates(
+SYNC_EXPORT_PRIVATE void BuildNormalDownloadUpdates(
     sessions::SyncSession* session,
     bool create_mobile_bookmarks_folder,
     ModelTypeSet request_types,
-    const sessions::NudgeTracker& nudge_tracker);
+    const sessions::NudgeTracker& nudge_tracker,
+    sync_pb::ClientToServerMessage* client_to_server_message);
 
 // This function executes a single GetUpdate request and stores the response in
 // the session's StatusController.  It constructs the type of request used to
 // initialize a type for the first time.
-SYNC_EXPORT_PRIVATE SyncerError DownloadUpdatesForConfigure(
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForConfigure(
     sessions::SyncSession* session,
     bool create_mobile_bookmarks_folder,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    ModelTypeSet request_types);
+    ModelTypeSet request_types,
+    sync_pb::ClientToServerMessage* client_to_server_message);
 
 // This function executes a single GetUpdate request and stores the response in
 // the session's status controller.  It constructs the type of request used for
 // periodic polling.
-SYNC_EXPORT_PRIVATE SyncerError DownloadUpdatesForPoll(
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForPoll(
     sessions::SyncSession* session,
     bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types);
+    ModelTypeSet request_types,
+    sync_pb::ClientToServerMessage* client_to_server_message);
 
-// A helper to set debug info.  Exposed only for testing.
-SYNC_EXPORT_PRIVATE void AppendClientDebugInfoIfNeeded(
-    sessions::SyncSession* session,
-    sync_pb::DebugInfo* debug_info);
+// Sends the specified message to the server and stores the response in a member
+// of the |session|'s StatusController.
+SYNC_EXPORT_PRIVATE SyncerError
+    ExecuteDownloadUpdates(sessions::SyncSession* session,
+                           sync_pb::ClientToServerMessage* msg);
 
 }  // namespace syncer
 

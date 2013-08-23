@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/traffic_recorder.h"
+#include "sync/internal_api/debug_info_event_listener.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/sync_session.h"
@@ -26,16 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::NiceMock;
-
 namespace syncer {
-
-class MockDebugInfoGetter : public sessions::DebugInfoGetter {
- public:
-  MockDebugInfoGetter();
-  virtual ~MockDebugInfoGetter();
-  MOCK_METHOD1(GetAndClearDebugInfo, void(sync_pb::DebugInfo* debug_info));
-};
 
 // A test fixture that simplifies writing unit tests for individual
 // SyncerCommands, providing convenient access to a test directory
@@ -45,39 +37,21 @@ class SyncerCommandTestBase : public testing::Test,
  public:
   // SyncSession::Delegate implementation.
   virtual void OnThrottled(
-      const base::TimeDelta& throttle_duration) OVERRIDE {
-    FAIL() << "Should not get silenced.";
-  }
+      const base::TimeDelta& throttle_duration) OVERRIDE;
   virtual void OnTypesThrottled(
       ModelTypeSet types,
-      const base::TimeDelta& throttle_duration) OVERRIDE {
-    FAIL() << "Should not get silenced.";
-  }
-  virtual bool IsCurrentlyThrottled() OVERRIDE {
-    return false;
-  }
+      const base::TimeDelta& throttle_duration) OVERRIDE;
+  virtual bool IsCurrentlyThrottled() OVERRIDE;
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval) OVERRIDE {
-    FAIL() << "Should not get poll interval update.";
-  }
+      const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) OVERRIDE {
-    FAIL() << "Should not get poll interval update.";
-  }
+      const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedSessionsCommitDelay(
-      const base::TimeDelta& new_delay) OVERRIDE {
-    FAIL() << "Should not get sessions commit delay.";
-  }
-  virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE {
-    FAIL() << "Should not get hint buffer size.";
-  }
-  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
-    FAIL() << "Shouldn't be called.";
-  }
+      const base::TimeDelta& new_delay) OVERRIDE;
+  virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
+  virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
-      const sessions::SyncSessionSnapshot& session) OVERRIDE {
-    return;
-  }
+      const sessions::SyncSessionSnapshot& session) OVERRIDE;
 
   std::vector<ModelSafeWorker*> GetWorkers() {
     std::vector<ModelSafeWorker*> workers;
@@ -117,7 +91,7 @@ class SyncerCommandTestBase : public testing::Test,
             mock_server_.get(), directory(),
             GetWorkers(), extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(),
-            &mock_debug_info_getter_,
+            &debug_info_event_listener_,
             &traffic_recorder_,
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance experiment
@@ -147,10 +121,9 @@ class SyncerCommandTestBase : public testing::Test,
     return mock_server_.get();
   }
 
-  MockDebugInfoGetter* mock_debug_info_getter() {
-    return &mock_debug_info_getter_;
+  DebugInfoEventListener* debug_info_event_listener() {
+    return &debug_info_event_listener_;
   }
-
   // Helper functions to check command.GetGroupsToChange().
 
   void ExpectNoGroupsToChange(const ModelChangingSyncerCommand& command) {
@@ -193,7 +166,7 @@ class SyncerCommandTestBase : public testing::Test,
   scoped_ptr<sessions::SyncSession> session_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;
-  NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
+  DebugInfoEventListener debug_info_event_listener_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   TrafficRecorder traffic_recorder_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);

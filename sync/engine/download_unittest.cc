@@ -8,8 +8,6 @@
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
 
-using ::testing::_;
-
 namespace syncer {
 
 // A test fixture for tests exercising download updates functions.
@@ -36,25 +34,48 @@ class DownloadUpdatesTest : public SyncerCommandTest {
 };
 
 TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
-  ConfigureMockServerConnection();
-
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-  mock_server()->ExpectGetUpdatesRequestTypes(
-      GetRoutingInfoTypes(routing_info()));
   scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::Build(context(),
-                                   delegate()));
-  NormalDownloadUpdates(session.get(),
-                        false,
-                        GetRoutingInfoTypes(routing_info()),
-                        nudge_tracker);
+      sessions::SyncSession::Build(context(), delegate()));
+  sync_pb::ClientToServerMessage msg;
+  BuildNormalDownloadUpdates(session.get(),
+                             false,
+                             GetRoutingInfoTypes(routing_info()),
+                             nudge_tracker,
+                             &msg);
+
+  const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
+            gu_msg.caller_info().source());
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
+  for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
+        gu_msg.from_progress_marker(i).data_type_id());
+    EXPECT_TRUE(GetRoutingInfoTypes(routing_info()).Has(type));
+
+    const sync_pb::DataTypeProgressMarker& progress_marker =
+        gu_msg.from_progress_marker(i);
+    const sync_pb::GetUpdateTriggers& gu_trigger =
+        progress_marker.get_update_triggers();
+
+    // We perform some basic tests of GU trigger and source fields here.  The
+    // more complicated scenarios are tested by the NudgeTracker tests.
+    if (type == BOOKMARKS) {
+      EXPECT_TRUE(progress_marker.has_notification_hint());
+      EXPECT_EQ("", progress_marker.notification_hint());
+      EXPECT_EQ(1, gu_trigger.local_modification_nudges());
+      EXPECT_EQ(0, gu_trigger.datatype_refresh_nudges());
+    } else {
+      EXPECT_FALSE(progress_marker.has_notification_hint());
+      EXPECT_EQ(0, gu_trigger.local_modification_nudges());
+      EXPECT_EQ(0, gu_trigger.datatype_refresh_nudges());
+    }
+  }
 }
 
 TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
-  ConfigureMockServerConnection();
-
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
       ModelTypeSetToInvalidationMap(ModelTypeSet(AUTOFILL),
@@ -65,40 +86,83 @@ TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   nudge_tracker.RecordRemoteInvalidation(
       ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
                                     "preferences_payload"));
+  ModelTypeSet notified_types;
+  notified_types.Put(AUTOFILL);
+  notified_types.Put(BOOKMARKS);
+  notified_types.Put(PREFERENCES);
 
-  ModelTypeInvalidationMap invalidation_map;
-  Invalidation i1;
-  i1.payload = "autofill_payload";
-  invalidation_map.insert(std::make_pair(AUTOFILL, i1));
-  Invalidation i2;
-  i2.payload = "bookmark_payload";
-  invalidation_map.insert(std::make_pair(BOOKMARKS, i2));
-  Invalidation i3;
-  i3.payload = "preferences_payload";
-  invalidation_map.insert(std::make_pair(PREFERENCES, i3));
-
-  mock_server()->ExpectGetUpdatesRequestTypes(
-      GetRoutingInfoTypes(routing_info()));
-  mock_server()->ExpectGetUpdatesRequestStates(
-      invalidation_map);
   scoped_ptr<sessions::SyncSession> session(
       sessions::SyncSession::Build(context(), delegate()));
-  NormalDownloadUpdates(session.get(),
-                        false,
-                        GetRoutingInfoTypes(routing_info()),
-                        nudge_tracker);
+  sync_pb::ClientToServerMessage msg;
+  BuildNormalDownloadUpdates(session.get(),
+                             false,
+                             GetRoutingInfoTypes(routing_info()),
+                             nudge_tracker,
+                             &msg);
+
+  const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
+            gu_msg.caller_info().source());
+  EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
+  for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
+        gu_msg.from_progress_marker(i).data_type_id());
+    EXPECT_TRUE(GetRoutingInfoTypes(routing_info()).Has(type));
+
+    const sync_pb::DataTypeProgressMarker& progress_marker =
+        gu_msg.from_progress_marker(i);
+    const sync_pb::GetUpdateTriggers& gu_trigger =
+        progress_marker.get_update_triggers();
+
+    // We perform some basic tests of GU trigger and source fields here.  The
+    // more complicated scenarios are tested by the NudgeTracker tests.
+    if (notified_types.Has(type)) {
+      EXPECT_TRUE(progress_marker.has_notification_hint());
+      EXPECT_FALSE(progress_marker.notification_hint().empty());
+      EXPECT_EQ(1, gu_trigger.notification_hint_size());
+    } else {
+      EXPECT_FALSE(progress_marker.has_notification_hint());
+      EXPECT_EQ(0, gu_trigger.notification_hint_size());
+    }
+  }
 }
 
+// Test that debug info is sent uploaded only once per sync session.
 TEST_F(DownloadUpdatesTest, VerifyAppendDebugInfo) {
-  sync_pb::DebugInfo debug_info;
-  EXPECT_CALL(*(mock_debug_info_getter()), GetAndClearDebugInfo(_))
-      .Times(1);
-  // The first of a set of repeated GUs will set it.
-  AppendClientDebugInfoIfNeeded(session(), &debug_info);
+  // Start by expecting that no events are uploaded.
+  sessions::NudgeTracker nudge_tracker;
+  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-  // Subsequent GUs will not.
-  // Verify by checking that GetAndClearDebugInfo() is not called again.
-  AppendClientDebugInfoIfNeeded(session(), &debug_info);
+  sync_pb::ClientToServerMessage msg1;
+  scoped_ptr<sessions::SyncSession> session1(
+      sessions::SyncSession::Build(context(), delegate()));
+  BuildNormalDownloadUpdates(session1.get(),
+                             false,
+                             GetRoutingInfoTypes(routing_info()),
+                             nudge_tracker,
+                             &msg1);
+  EXPECT_EQ(0, msg1.debug_info().events_size());
+
+  // Create a new session, record an event, and try again.
+  scoped_ptr<sessions::SyncSession> session2(
+      sessions::SyncSession::Build(context(), delegate()));
+  debug_info_event_listener()->OnConfigureComplete();
+  sync_pb::ClientToServerMessage msg2;
+  BuildNormalDownloadUpdates(session2.get(),
+                             false,
+                             GetRoutingInfoTypes(routing_info()),
+                             nudge_tracker,
+                             &msg2);
+  EXPECT_EQ(1, msg2.debug_info().events_size());
+
+  // Events should never be sent up more than once per session.
+  sync_pb::ClientToServerMessage msg3;
+  BuildNormalDownloadUpdates(session2.get(),
+                             false,
+                             GetRoutingInfoTypes(routing_info()),
+                             nudge_tracker,
+                             &msg3);
+  EXPECT_EQ(0, msg3.debug_info().events_size());
 }
 
 }  // namespace syncer

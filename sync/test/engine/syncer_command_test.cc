@@ -9,6 +9,49 @@ namespace syncer {
 const unsigned int kMaxMessages = 10;
 const unsigned int kMaxMessageSize = 5 * 1024;
 
+void SyncerCommandTestBase::OnThrottled(
+    const base::TimeDelta& throttle_duration) {
+  FAIL() << "Should not get silenced.";
+}
+
+void SyncerCommandTestBase::OnTypesThrottled(
+    ModelTypeSet types,
+    const base::TimeDelta& throttle_duration) {
+  FAIL() << "Should not get silenced.";
+}
+
+bool SyncerCommandTestBase::IsCurrentlyThrottled() {
+  return false;
+}
+
+void SyncerCommandTestBase::OnReceivedLongPollIntervalUpdate(
+    const base::TimeDelta& new_interval) {
+  FAIL() << "Should not get poll interval update.";
+}
+
+void SyncerCommandTestBase::OnReceivedShortPollIntervalUpdate(
+    const base::TimeDelta& new_interval) {
+  FAIL() << "Should not get poll interval update.";
+}
+
+void SyncerCommandTestBase::OnReceivedSessionsCommitDelay(
+    const base::TimeDelta& new_delay) {
+  FAIL() << "Should not get sessions commit delay.";
+}
+
+void SyncerCommandTestBase::OnReceivedClientInvalidationHintBufferSize(
+    int size) {
+  FAIL() << "Should not get hint buffer size.";
+}
+
+void SyncerCommandTestBase::OnShouldStopSyncingPermanently() {
+  FAIL() << "Shouldn't be called.";
+}
+
+void SyncerCommandTestBase::OnSyncProtocolError(
+    const sessions::SyncSessionSnapshot& session) {
+  return;
+}
 SyncerCommandTestBase::SyncerCommandTestBase()
     : traffic_recorder_(kMaxMessages, kMaxMessageSize) {
 }
@@ -39,12 +82,6 @@ void SyncerCommandTest::SetUp() {
 
 void SyncerCommandTest::TearDown() {
   dir_maker_.TearDown();
-}
-
-MockDebugInfoGetter::MockDebugInfoGetter() {
-}
-
-MockDebugInfoGetter::~MockDebugInfoGetter() {
 }
 
 }  // namespace syncer

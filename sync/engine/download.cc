@@ -79,48 +79,20 @@ bool ShouldRequestEncryptionKey(
   return need_encryption_key;
 }
 
-SyncerError ExecuteDownloadUpdates(
+void AppendClientDebugInfoIfNeeded(
     SyncSession* session,
-    sync_pb::ClientToServerMessage* msg) {
-  sync_pb::ClientToServerResponse update_response;
-  StatusController* status = session->mutable_status_controller();
-  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
-
-  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      msg,
-      &update_response,
-      session);
-
-  DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
-      update_response);
-
-  if (result != SYNCER_OK) {
-    status->mutable_updates_response()->Clear();
-    LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
-  } else {
-    status->mutable_updates_response()->CopyFrom(update_response);
-
-    DVLOG(1) << "GetUpdates "
-             << " returned " << update_response.get_updates().entries_size()
-             << " updates and indicated "
-             << update_response.get_updates().changes_remaining()
-             << " updates left on server.";
-
-    if (need_encryption_key ||
-        update_response.get_updates().encryption_keys_size() > 0) {
-      syncable::Directory* dir = session->context()->directory();
-      status->set_last_get_key_result(
-          HandleGetEncryptionKeyResponse(update_response, dir));
+    DebugInfo* debug_info) {
+  // We want to send the debug info only once per sync cycle. Check if it has
+  // already been sent.
+  if (!session->status_controller().debug_info_sent()) {
+    DVLOG(1) << "Sending client debug info ...";
+    // Could be null in some unit tests.
+    if (session->context()->debug_info_getter()) {
+      session->context()->debug_info_getter()->GetAndClearDebugInfo(
+          debug_info);
     }
+    session->mutable_status_controller()->set_debug_info_sent();
   }
-
-  ProcessUpdatesCommand process_updates;
-  process_updates.Execute(session);
-
-  StoreTimestampsCommand store_timestamps;
-  store_timestamps.Execute(session);
-
-  return result;
 }
 
 void InitDownloadUpdatesRequest(
@@ -166,19 +138,19 @@ void InitDownloadUpdatesRequest(
 
 }  // namespace
 
-SyncerError NormalDownloadUpdates(
+void BuildNormalDownloadUpdates(
     SyncSession* session,
     bool create_mobile_bookmarks_folder,
     ModelTypeSet request_types,
-    const sessions::NudgeTracker& nudge_tracker) {
-  sync_pb::ClientToServerMessage client_to_server_message;
+    const sessions::NudgeTracker& nudge_tracker,
+    sync_pb::ClientToServerMessage* client_to_server_message) {
   InitDownloadUpdatesRequest(
       session,
       create_mobile_bookmarks_folder,
-      &client_to_server_message,
+      client_to_server_message,
       request_types);
   sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message.mutable_get_updates();
+      client_to_server_message->mutable_get_updates();
 
   // Request updates for all requested types.
   DVLOG(1) << "Getting updates for types "
@@ -207,23 +179,21 @@ SyncerError NormalDownloadUpdates(
         type,
         progress_marker->mutable_get_update_triggers());
   }
-
-  return ExecuteDownloadUpdates(session, &client_to_server_message);
 }
 
-SyncerError DownloadUpdatesForConfigure(
+void BuildDownloadUpdatesForConfigure(
     SyncSession* session,
     bool create_mobile_bookmarks_folder,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-    ModelTypeSet request_types) {
-  sync_pb::ClientToServerMessage client_to_server_message;
+    ModelTypeSet request_types,
+    sync_pb::ClientToServerMessage* client_to_server_message) {
   InitDownloadUpdatesRequest(
       session,
       create_mobile_bookmarks_folder,
-      &client_to_server_message,
+      client_to_server_message,
       request_types);
   sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message.mutable_get_updates();
+      client_to_server_message->mutable_get_updates();
 
   // Request updates for all enabled types.
   DVLOG(1) << "Initial download for types "
@@ -237,22 +207,20 @@ SyncerError DownloadUpdatesForConfigure(
   sync_pb::SyncEnums::GetUpdatesOrigin origin =
       ConvertConfigureSourceToOrigin(source);
   get_updates->set_get_updates_origin(origin);
-
-  return ExecuteDownloadUpdates(session, &client_to_server_message);
 }
 
-SyncerError DownloadUpdatesForPoll(
+void BuildDownloadUpdatesForPoll(
     SyncSession* session,
     bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types) {
-  sync_pb::ClientToServerMessage client_to_server_message;
+    ModelTypeSet request_types,
+    sync_pb::ClientToServerMessage* client_to_server_message) {
   InitDownloadUpdatesRequest(
       session,
       create_mobile_bookmarks_folder,
-      &client_to_server_message,
+      client_to_server_message,
       request_types);
   sync_pb::GetUpdatesMessage* get_updates =
-      client_to_server_message.mutable_get_updates();
+      client_to_server_message->mutable_get_updates();
 
   DVLOG(1) << "Polling for types "
            << ModelTypeSetToString(request_types);
@@ -264,24 +232,50 @@ SyncerError DownloadUpdatesForPoll(
 
   // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::PERIODIC);
-
-  return ExecuteDownloadUpdates(session, &client_to_server_message);
 }
 
-void AppendClientDebugInfoIfNeeded(
+SyncerError ExecuteDownloadUpdates(
     SyncSession* session,
-    DebugInfo* debug_info) {
-  // We want to send the debug info only once per sync cycle. Check if it has
-  // already been sent.
-  if (!session->status_controller().debug_info_sent()) {
-    DVLOG(1) << "Sending client debug info ...";
-    // could be null in some unit tests.
-    if (session->context()->debug_info_getter()) {
-      session->context()->debug_info_getter()->GetAndClearDebugInfo(
-          debug_info);
+    sync_pb::ClientToServerMessage* msg) {
+  sync_pb::ClientToServerResponse update_response;
+  StatusController* status = session->mutable_status_controller();
+  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
+
+  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
+      msg,
+      &update_response,
+      session);
+
+  DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
+      update_response);
+
+  if (result != SYNCER_OK) {
+    status->mutable_updates_response()->Clear();
+    LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
+  } else {
+    status->mutable_updates_response()->CopyFrom(update_response);
+
+    DVLOG(1) << "GetUpdates "
+             << " returned " << update_response.get_updates().entries_size()
+             << " updates and indicated "
+             << update_response.get_updates().changes_remaining()
+             << " updates left on server.";
+
+    if (need_encryption_key ||
+        update_response.get_updates().encryption_keys_size() > 0) {
+      syncable::Directory* dir = session->context()->directory();
+      status->set_last_get_key_result(
+          HandleGetEncryptionKeyResponse(update_response, dir));
     }
-    session->mutable_status_controller()->set_debug_info_sent();
   }
+
+  ProcessUpdatesCommand process_updates;
+  process_updates.Execute(session);
+
+  StoreTimestampsCommand store_timestamps;
+  store_timestamps.Execute(session);
+
+  return result;
 }
 
 }  // namespace syncer
