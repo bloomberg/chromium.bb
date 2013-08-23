@@ -45,6 +45,7 @@
 #include "public/platform/WebIDBKey.h"
 #include "public/platform/WebIDBKeyPath.h"
 #include "public/platform/WebIDBMetadata.h"
+#include "public/platform/WebMediaSource.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
@@ -71,7 +72,6 @@
 #include "WebInputElement.h"
 #include "WebMediaPlayer.h"
 #include "WebMediaPlayerClient.h"
-#include "WebMediaSourceClient.h"
 #include "WebNotificationPresenter.h"
 #include "WebPageVisibilityState.h"
 #include "WebSettings.h"
@@ -416,13 +416,13 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadNone, MediaPlayer::None);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadMetaData, MediaPlayer::MetaData);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadAuto, MediaPlayer::Auto);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusOk, MediaSourcePrivate::Ok);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusNotSupported, MediaSourcePrivate::NotSupported);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusReachedIdLimit, MediaSourcePrivate::ReachedIdLimit);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusOk, MediaSourcePrivate::Ok);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusNotSupported, MediaSourcePrivate::NotSupported);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusReachedIdLimit, MediaSourcePrivate::ReachedIdLimit);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusNoError, MediaSourcePrivate::EosNoError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusNetworkError, MediaSourcePrivate::EosNetworkError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusDecodeError, MediaSourcePrivate::EosDecodeError);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusNoError, MediaSourcePrivate::EosNoError);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusNetworkError, MediaSourcePrivate::EosNetworkError);
+COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusDecodeError, MediaSourcePrivate::EosDecodeError);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::MediaKeyExceptionNoError, MediaPlayer::NoError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::MediaKeyExceptionInvalidPlayerState, MediaPlayer::InvalidPlayerState);
