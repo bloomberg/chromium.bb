@@ -34,6 +34,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -58,6 +59,7 @@
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebRuntimeFeatures;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
@@ -117,6 +119,17 @@ class RenderViewImplTest : public RenderViewTest {
   RenderViewImplTest() {
     // Attach a pseudo keyboard device to this object.
     mock_keyboard_.reset(new MockKeyboard());
+  }
+
+  virtual ~RenderViewImplTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    RenderViewTest::SetUp();
+    // This test depends on Blink flag InputModeAttribute, which is enabled
+    // under only test. Content browser test doesn't enable the feature so we
+    // need enable it manually.
+    // TODO(yoichio): Remove this if InputMode feature is enabled by default.
+    WebRuntimeFeatures::enableInputModeAttribute(true);
   }
 
   RenderViewImpl* view() {
@@ -771,10 +784,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
 
 // Test that our IME backend sends a notification message when the input focus
 // changes.
-// crbug.com/276821:
-// Because Blink change cause this test failed, we first disabled this test and
-// fix later.
-TEST_F(RenderViewImplTest, DISABLED_OnImeTypeChanged) {
+TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   // Enable our IME backend code.
   view()->OnSetInputMethodActive(true);
 
