@@ -59,7 +59,7 @@ public:
     void transactionFinished(IDBTransaction*);
 
     // Implement the IDL
-    const String name() const { return m_metadata.name; }
+    const String& name() const { return m_metadata.name; }
     PassRefPtr<IDBAny> version() const;
     PassRefPtr<DOMStringList> objectStoreNames() const;
 
@@ -91,7 +91,7 @@ public:
 
     bool isClosePending() const { return m_closePending; }
     void forceClose();
-    const IDBDatabaseMetadata metadata() const { return m_metadata; }
+    const IDBDatabaseMetadata& metadata() const { return m_metadata; }
     void enqueueEvent(PassRefPtr<Event>);
 
     using EventTarget::dispatchEvent;

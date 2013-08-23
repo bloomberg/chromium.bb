@@ -57,9 +57,9 @@ public:
 
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }
-    const String name() const { return m_metadata.name; }
+    const String& name() const { return m_metadata.name; }
     PassRefPtr<IDBAny> keyPathAny() const { return IDBAny::create(m_metadata.keyPath); }
-    const IDBKeyPath keyPath() const { return m_metadata.keyPath; }
+    const IDBKeyPath& keyPath() const { return m_metadata.keyPath; }
     PassRefPtr<DOMStringList> indexNames() const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
