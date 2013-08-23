@@ -73,6 +73,10 @@ def BuildArgParser():
   parser.add_option('--ppapi_plugin', dest='ppapi_plugin', action='store',
                     type='string', default=None,
                     help='Use the browser plugin located here.')
+  parser.add_option('--ppapi_plugin_mimetype', dest='ppapi_plugin_mimetype',
+                    action='store', type='string', default='application/x-nacl',
+                    help='Associate this mimetype with the browser plugin. '
+                    'Unused if --ppapi_plugin is not specified.')
   parser.add_option('--sel_ldr', dest='sel_ldr', action='store',
                     type='string', default=None,
                     help='Use the sel_ldr located here.')

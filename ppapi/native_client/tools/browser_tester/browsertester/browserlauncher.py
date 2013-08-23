@@ -304,8 +304,9 @@ class ChromeLauncher(BrowserLauncher):
       if disable_sandbox:
         cmd.append('--no-sandbox')
     else:
-      cmd.append('--register-pepper-plugins=%s;application/x-nacl'
-                 % self.options.ppapi_plugin)
+      cmd.append('--register-pepper-plugins=%s;%s'
+                 % (self.options.ppapi_plugin,
+                    self.options.ppapi_plugin_mimetype))
       cmd.append('--no-sandbox')
     if self.options.browser_extensions:
       cmd.append('--load-extension=%s' %
