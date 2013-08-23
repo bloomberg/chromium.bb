@@ -260,6 +260,57 @@ void ConnectToNetwork(const std::string& service_path,
   CallConnectToNetwork(service_path, check_error_state, owning_window);
 }
 
+void SetTechnologyEnabled(const std::string& technology, bool enabled_state) {
+  std::string log_string =
+      base::StringPrintf("technology %s, target state: %s",
+                         technology.c_str(),
+                         (enabled_state ? "ENABLED" : "DISABLED"));
+  NET_LOG_USER("SetTechnologyEnabled", log_string);
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  bool enabled = handler->IsTechnologyEnabled(technology);
+  if (enabled_state == enabled) {
+    NET_LOG_USER("Technology already in target state.", log_string);
+    return;
+  }
+  if (enabled) {
+    // User requested to disable the technology.
+    handler->SetTechnologyEnabled(
+        technology, false, chromeos::network_handler::ErrorCallback());
+    return;
+  }
+  // If we're dealing with a mobile network, then handle SIM lock here.
+  // SIM locking only applies to cellular, so the code below won't execute
+  // if |technology| has been explicitly set to WiMAX.
+  if (technology == NetworkStateHandler::kMatchTypeMobile ||
+      technology == flimflam::kTypeCellular) {
+    const DeviceState* mobile = handler->GetDeviceStateByType(technology);
+    if (!mobile) {
+      NET_LOG_ERROR("SetTechnologyEnabled with no device", log_string);
+      return;
+    }
+    // The following only applies to cellular.
+    if (mobile->type() == flimflam::kTypeCellular) {
+      if (mobile->IsSimAbsent()) {
+        // If this is true, then we have a cellular device with no SIM inserted.
+        // TODO(armansito): Chrome should display a notification here, prompting
+        // the user to insert a SIM card and restart the device to enable
+        // cellular. See crbug.com/125171.
+        NET_LOG_USER("Cannot enable cellular device without SIM.", log_string);
+        return;
+      }
+      if (!mobile->sim_lock_type().empty()) {
+        // A SIM has been inserted, but it is locked. Let the user unlock it
+        // via the dialog.
+        ash::Shell::GetInstance()->system_tray_delegate()->
+            ShowMobileSimDialog();
+        return;
+      }
+    }
+  }
+  handler->SetTechnologyEnabled(
+    technology, true, chromeos::network_handler::ErrorCallback());
+}
+
 void ActivateCellular(const std::string& service_path) {
   NET_LOG_USER("ActivateCellular", service_path);
   const NetworkState* cellular =

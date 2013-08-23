@@ -856,25 +856,8 @@ void NetworkStateListDetailedView::ToggleMobile() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled =
       handler->IsTechnologyEnabled(NetworkStateHandler::kMatchTypeMobile);
-  if (enabled) {
-    handler->SetTechnologyEnabled(
-        NetworkStateHandler::kMatchTypeMobile, false,
-        chromeos::network_handler::ErrorCallback());
-  } else {
-    const DeviceState* mobile =
-        handler->GetDeviceStateByType(NetworkStateHandler::kMatchTypeMobile);
-    if (!mobile) {
-      LOG(ERROR) << "Mobile device not found.";
-      return;
-    }
-    if (!mobile->sim_lock_type().empty() || mobile->IsSimAbsent()) {
-      ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSimDialog();
-    } else {
-      handler->SetTechnologyEnabled(
-          NetworkStateHandler::kMatchTypeMobile, true,
-          chromeos::network_handler::ErrorCallback());
-    }
-  }
+  ash::network_connect::SetTechnologyEnabled(
+      NetworkStateHandler::kMatchTypeMobile, !enabled);
 }
 
 }  // namespace tray

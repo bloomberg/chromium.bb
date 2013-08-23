@@ -24,6 +24,12 @@ namespace network_connect {
 ASH_EXPORT void ConnectToNetwork(const std::string& service_path,
                                  gfx::NativeWindow owning_window);
 
+// Enables or disables a network technology. If |technology| refers to cellular
+// and the device cannot be enabled due to a SIM lock, this function will
+// launch the SIM unlock dialog.
+ASH_EXPORT void SetTechnologyEnabled(const std::string& technology,
+                                     bool enabled_state);
+
 // Requests network activation and handles any errors and notifications.
 ASH_EXPORT void ActivateCellular(const std::string& service_path);
 
