@@ -50,6 +50,7 @@ static const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 static const char kLocalChrome[] = "Local Chrome";
 static const char kChrome[] = "Chrome";
 static const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
+static const char kListProcessesCommand[] = "shell:ps";
 
 static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
@@ -248,8 +249,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
                        base::Bind(&AdbPagesCommand::ReceivedSockets, this));
   }
 
-  void ReceivedSockets(int result,
-                       const std::string& response) {
+  void ReceivedSockets(int result, const std::string& response) {
     DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     if (result < 0) {
       devices_.pop_back();
@@ -258,6 +258,15 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
     }
 
     ParseSocketsList(response);
+    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
+    device->RunCommand(kListProcessesCommand,
+                       base::Bind(&AdbPagesCommand::ReceivedProcesses, this));
+  }
+
+  void ReceivedProcesses(int result, const std::string& response) {
+    if (result >= 0)
+      ParseProcessList(response);
+
     if (browsers_.size() == 0) {
       devices_.pop_back();
       ProcessSerials();
@@ -365,7 +374,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
         base::StringPrintf(kDevToolsChannelNameFormat, "");
     for (size_t i = 1; i < entries.size(); ++i) {
       std::vector<std::string> fields;
-      Tokenize(entries[i], " ", &fields);
+      Tokenize(entries[i], " \r", &fields);
       if (fields.size() < 8)
         continue;
       if (fields[3] != "00010000" || fields[5] != "01")
@@ -376,20 +385,48 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
       size_t socket_name_pos = path_field.find(channel_pattern);
       if (socket_name_pos == std::string::npos)
         continue;
-      std::string socket = path_field.substr(1, path_field.size() - 2);
-      std::string package = path_field.substr(1, socket_name_pos - 1);
-      if (socket_name_pos + channel_pattern.size() < path_field.size() - 1) {
-        package += path_field.substr(
-            socket_name_pos + channel_pattern.size(), path_field.size() - 1);
-      }
-      package[0] = base::ToUpperASCII(package[0]);
+
+      std::string socket = path_field.substr(1);
       scoped_refptr<DevToolsAdbBridge::RemoteBrowser> remote_browser =
           new DevToolsAdbBridge::RemoteBrowser(
               bridge_, remote_device->device(), socket);
-      remote_browser->set_product(package);
+
+      std::string product = path_field.substr(1, socket_name_pos - 1);
+      product[0] = base::ToUpperASCII(product[0]);
+      remote_browser->set_product(product);
+
+      size_t socket_name_end = socket_name_pos + channel_pattern.size();
+      if (socket_name_end < path_field.size() &&
+          path_field[socket_name_end] == '_') {
+        remote_browser->set_pid(path_field.substr(socket_name_end + 1));
+      }
       remote_device->AddBrowser(remote_browser);
     }
     browsers_ = remote_device->browsers();
+  }
+
+  void ParseProcessList(const std::string& response) {
+    // On Android, 'ps' output looks like this:
+    // USER PID PPID VSIZE RSS WCHAN PC ? NAME
+    typedef std::map<std::string, std::string> StringMap;
+    StringMap pid_to_package;
+    std::vector<std::string> entries;
+    Tokenize(response, "\n", &entries);
+    for (size_t i = 1; i < entries.size(); ++i) {
+      std::vector<std::string> fields;
+      Tokenize(entries[i], " \r", &fields);
+      if (fields.size() < 9)
+        continue;
+      pid_to_package[fields[1]] = fields[8];
+    }
+    DevToolsAdbBridge::RemoteBrowsers browsers =
+        remote_devices_->back()->browsers();
+    for (DevToolsAdbBridge::RemoteBrowsers::iterator it = browsers.begin();
+        it != browsers.end(); ++it) {
+      StringMap::iterator pit = pid_to_package.find((*it)->pid());
+      if (pit != pid_to_package.end())
+        (*it)->set_package(pit->second);
+    }
   }
 
   scoped_refptr<DevToolsAdbBridge> bridge_;

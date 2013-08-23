@@ -136,6 +136,10 @@ class DevToolsAdbBridge
     void set_product(const std::string& product) { product_ = product; }
     std::string version() { return version_; }
     void set_version(const std::string& version) { version_ = version; }
+    std::string pid() { return pid_; }
+    void set_pid(const std::string& pid) { pid_ = pid; }
+    std::string package() { return package_; }
+    void set_package(const std::string& package) { package_ = package; }
 
     RemotePages& pages() { return pages_; }
     void AddPage(scoped_refptr<RemotePage> page) { pages_.push_back(page); }
@@ -157,6 +161,8 @@ class DevToolsAdbBridge
     const std::string socket_;
     std::string product_;
     std::string version_;
+    std::string pid_;
+    std::string package_;
     RemotePages pages_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);

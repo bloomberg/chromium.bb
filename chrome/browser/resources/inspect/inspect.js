@@ -212,7 +212,10 @@ function populateDeviceLists(devices) {
 
         var browserHeader = document.createElement('div');
         browserHeader.className = 'browser-header';
-        browserHeader.textContent = browser.adbBrowserProduct;
+        if (browser.adbBrowserPackage && !isChrome)
+          browserHeader.textContent = browser.adbBrowserPackage;
+        else
+          browserHeader.textContent = browser.adbBrowserProduct;
         var majorChromeVersion = 0;
         if (browser.adbBrowserVersion) {
           browserHeader.textContent += ' (' + browser.adbBrowserVersion + ')';

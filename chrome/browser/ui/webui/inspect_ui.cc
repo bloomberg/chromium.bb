@@ -94,6 +94,7 @@ static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
 static const char kAdbBrowserProductField[] = "adbBrowserProduct";
+static const char kAdbBrowserPackageField[] = "adbBrowserPackage";
 static const char kAdbBrowserVersionField[] = "adbBrowserVersion";
 static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
@@ -603,6 +604,7 @@ void InspectUI::RemoteDevicesChanged(
       DevToolsAdbBridge::RemoteBrowser* browser = bit->get();
       DictionaryValue* browser_data = new DictionaryValue();
       browser_data->SetString(kAdbBrowserProductField, browser->product());
+      browser_data->SetString(kAdbBrowserPackageField, browser->package());
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
       std::string browser_id = base::StringPrintf(
           "browser:%s:%s:%s",
