@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/window_selector.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/window_util.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"

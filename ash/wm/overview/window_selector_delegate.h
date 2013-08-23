@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_SELECTOR_DELEGATE_H_
-#define ASH_WM_WINDOW_SELECTOR_DELEGATE_H_
+#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_
+#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
@@ -29,4 +29,4 @@ class ASH_EXPORT WindowSelectorDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_SELECTOR_DELEGATE_H_
+#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_DELEGATE_H_

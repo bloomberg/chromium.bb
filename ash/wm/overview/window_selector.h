@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_SELECTOR_H_
-#define ASH_WM_WINDOW_SELECTOR_H_
+#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
+#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_
 
 #include <vector>
 
@@ -117,4 +117,4 @@ class WindowSelector : public ui::EventHandler,
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_SELECTOR_H_
+#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_H_

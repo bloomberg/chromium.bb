@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_SELECTOR_CONTROLLER_H_
-#define ASH_WM_WINDOW_SELECTOR_CONTROLLER_H_
+#ifndef ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
+#define ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
 
 #include <list>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/window_selector.h"
-#include "ash/wm/window_selector_delegate.h"
+#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_delegate.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
@@ -69,4 +69,4 @@ class ASH_EXPORT WindowSelectorController
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_SELECTOR_CONTROLLER_H_
+#endif  // ASH_WM_OVERVIEW_WINDOW_SELECTOR_CONTROLLER_H_
