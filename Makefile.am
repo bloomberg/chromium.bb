@@ -191,6 +191,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/stackwalker_amd64.h \
 	src/processor/stackwalker_arm.cc \
 	src/processor/stackwalker_arm.h \
+	src/processor/stackwalker_address_list.cc \
+	src/processor/stackwalker_address_list.h \
 	src/processor/stackwalker_ppc.cc \
 	src/processor/stackwalker_ppc.h \
 	src/processor/stackwalker_ppc64.cc \
@@ -287,6 +289,7 @@ check_PROGRAMS += \
 	src/processor/range_map_unittest \
 	src/processor/stackwalker_amd64_unittest \
 	src/processor/stackwalker_arm_unittest \
+	src/processor/stackwalker_address_list_unittest \
 	src/processor/stackwalker_x86_unittest \
 	src/processor/synth_minidump_unittest
 endif
@@ -624,6 +627,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
@@ -713,6 +717,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
@@ -838,6 +843,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
@@ -871,6 +877,22 @@ src_processor_stackwalker_arm_unittest_LDADD = \
 	src/libbreakpad.a \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_stackwalker_arm_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
+src_processor_stackwalker_address_list_unittest_SOURCES = \
+	src/common/test_assembler.cc \
+	src/processor/stackwalker_address_list_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+src_processor_stackwalker_address_list_unittest_LDADD = \
+	src/libbreakpad.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+src_processor_stackwalker_address_list_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
 	-I$(top_srcdir)/src/testing/gtest/include \
@@ -959,6 +981,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
 	src/processor/stackwalker_sparc.o \
