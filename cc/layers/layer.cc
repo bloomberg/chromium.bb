@@ -56,6 +56,8 @@ Layer::Layer()
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
+      scroll_parent_(NULL),
+      clip_parent_(NULL),
       replica_layer_(NULL),
       raster_scale_(0.f),
       client_(NULL) {
@@ -88,6 +90,9 @@ Layer::~Layer() {
     DCHECK_EQ(this, replica_layer_->parent());
     replica_layer_->RemoveFromParent();
   }
+
+  RemoveFromScrollTree();
+  RemoveFromClipTree();
 }
 
 void Layer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -566,6 +571,66 @@ bool Layer::TransformIsAnimating() const {
   return layer_animation_controller_->IsAnimatingProperty(Animation::Transform);
 }
 
+void Layer::SetScrollParent(Layer* parent) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (scroll_parent_ == parent)
+    return;
+
+  if (scroll_parent_)
+    scroll_parent_->RemoveScrollChild(this);
+
+  scroll_parent_ = parent;
+
+  if (scroll_parent_)
+    scroll_parent_->AddScrollChild(this);
+
+  SetNeedsCommit();
+}
+
+void Layer::AddScrollChild(Layer* child) {
+  if (!scroll_children_)
+    scroll_children_.reset(new std::set<Layer*>);
+  scroll_children_->insert(child);
+  SetNeedsCommit();
+}
+
+void Layer::RemoveScrollChild(Layer* child) {
+  scroll_children_->erase(child);
+  if (scroll_children_->empty())
+    scroll_children_.reset();
+  SetNeedsCommit();
+}
+
+void Layer::SetClipParent(Layer* ancestor) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (clip_parent_ == ancestor)
+    return;
+
+  if (clip_parent_)
+    clip_parent_->RemoveClipChild(this);
+
+  clip_parent_ = ancestor;
+
+  if (clip_parent_)
+    clip_parent_->AddClipChild(this);
+
+  SetNeedsCommit();
+}
+
+void Layer::AddClipChild(Layer* child) {
+  if (!clip_children_)
+    clip_children_.reset(new std::set<Layer*>);
+  clip_children_->insert(child);
+  SetNeedsCommit();
+}
+
+void Layer::RemoveClipChild(Layer* child) {
+  clip_children_->erase(child);
+  if (clip_children_->empty())
+    clip_children_.reset();
+  SetNeedsCommit();
+}
+
 void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
   if (scroll_offset_ == scroll_offset)
@@ -794,6 +859,37 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
 
+  LayerImpl* scroll_parent = NULL;
+  if (scroll_parent_)
+    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
+
+  layer->SetScrollParent(scroll_parent);
+  if (scroll_children_) {
+    std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>;
+    for (std::set<Layer*>::iterator it = scroll_children_->begin();
+        it != scroll_children_->end(); ++it)
+      scroll_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
+    layer->SetScrollChildren(scroll_children);
+  }
+
+  LayerImpl* clip_parent = NULL;
+  if (clip_parent_) {
+    clip_parent =
+        layer->layer_tree_impl()->LayerById(clip_parent_->id());
+  }
+
+  layer->SetClipParent(clip_parent);
+  if (clip_children_) {
+    std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>;
+    for (std::set<Layer*>::iterator it = clip_children_->begin();
+        it != clip_children_->end(); ++it) {
+      LayerImpl* clip_child = layer->layer_tree_impl()->LayerById((*it)->id());
+      DCHECK(clip_child);
+      clip_children->insert(clip_child);
+    }
+    layer->SetClipChildren(clip_children);
+  }
+
   // Wrap the copy_requests_ in a PostTask to the main thread.
   ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;
   for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
@@ -983,6 +1079,32 @@ RenderingStatsInstrumentation* Layer::rendering_stats_instrumentation() const {
 
 bool Layer::SupportsLCDText() const {
   return false;
+}
+
+void Layer::RemoveFromScrollTree() {
+  if (scroll_children_.get()) {
+    for (std::set<Layer*>::iterator it = scroll_children_->begin();
+        it != scroll_children_->end(); ++it)
+      (*it)->scroll_parent_ = NULL;
+  }
+
+  if (scroll_parent_)
+    scroll_parent_->RemoveScrollChild(this);
+
+  scroll_parent_ = NULL;
+}
+
+void Layer::RemoveFromClipTree() {
+  if (clip_children_.get()) {
+    for (std::set<Layer*>::iterator it = clip_children_->begin();
+        it != clip_children_->end(); ++it)
+      (*it)->clip_parent_ = NULL;
+  }
+
+  if (clip_parent_)
+    clip_parent_->RemoveClipChild(this);
+
+  clip_parent_ = NULL;
 }
 
 }  // namespace cc

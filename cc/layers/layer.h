@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_LAYER_H_
 #define CC_LAYERS_LAYER_H_
 
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -156,6 +157,34 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+
+  void SetScrollParent(Layer* parent);
+
+  Layer* scroll_parent() { return scroll_parent_; }
+  const Layer* scroll_parent() const { return scroll_parent_; }
+
+  void AddScrollChild(Layer* child);
+  void RemoveScrollChild(Layer* child);
+
+  std::set<Layer*>* scroll_children() { return scroll_children_.get(); }
+  const std::set<Layer*>* scroll_children() const {
+    return scroll_children_.get();
+  }
+
+  void SetClipParent(Layer* ancestor);
+
+  Layer* clip_parent() { return clip_parent_; }
+  const Layer* clip_parent() const {
+    return clip_parent_;
+  }
+
+  void AddClipChild(Layer* child);
+  void RemoveClipChild(Layer* child);
+
+  std::set<Layer*>* clip_children() { return clip_children_.get(); }
+  const std::set<Layer*>* clip_children() const {
+    return clip_children_.get();
+  }
 
   DrawProperties<Layer, RenderSurface>& draw_properties() {
     return draw_properties_;
@@ -431,6 +460,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return needs_push_properties() || descendant_needs_push_properties();
   }
 
+  // If this layer has a scroll parent, it removes |this| from its list of
+  // scroll children.
+  void RemoveFromScrollTree();
+
+  // If this layer has a clip parent, it removes |this| from its list of clip
+  // children.
+  void RemoveFromClipTree();
+
   void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
 
   // This flag is set when the layer needs to push properties to the impl
@@ -519,6 +556,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool use_parent_backface_visibility_;
   bool draw_checkerboard_for_missing_tiles_;
   bool force_render_surface_;
+  Layer* scroll_parent_;
+  scoped_ptr<std::set<Layer*> > scroll_children_;
+
+  Layer* clip_parent_;
+  scoped_ptr<std::set<Layer*> > clip_children_;
 
   gfx::Transform transform_;
   gfx::Transform sublayer_transform_;

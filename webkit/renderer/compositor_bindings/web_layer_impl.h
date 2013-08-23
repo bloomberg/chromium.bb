@@ -126,6 +126,9 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   // LayerClient implementation.
   virtual std::string DebugName() OVERRIDE;
 
+  virtual void setScrollParent(WebKit::WebLayer* parent);
+  virtual void setClipParent(WebKit::WebLayer* parent);
+
  protected:
   scoped_refptr<cc::Layer> layer_;
   WebKit::WebLayerClient* web_layer_client_;

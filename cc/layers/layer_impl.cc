@@ -29,6 +29,8 @@ namespace cc {
 
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
     : parent_(NULL),
+      scroll_parent_(NULL),
+      clip_parent_(NULL),
       mask_layer_id_(-1),
       replica_layer_id_(-1),
       layer_id_(id),
@@ -73,6 +75,24 @@ LayerImpl::~LayerImpl() {
 
   layer_tree_impl_->UnregisterLayer(this);
   layer_animation_controller_->RemoveValueObserver(this);
+
+  if (scroll_children_) {
+    for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
+        it != scroll_children_->end(); ++it)
+      (*it)->scroll_parent_ = NULL;
+  }
+
+  if (scroll_parent_)
+    scroll_parent_->RemoveScrollChild(this);
+
+  if (clip_children_) {
+    for (std::set<LayerImpl*>::iterator it = clip_children_->begin();
+        it != clip_children_->end(); ++it)
+      (*it)->clip_parent_ = NULL;
+  }
+
+  if (clip_parent_)
+    clip_parent_->RemoveClipChild(this);
 }
 
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
@@ -102,6 +122,64 @@ void LayerImpl::ClearChildList() {
 
   children_.clear();
   layer_tree_impl()->set_needs_update_draw_properties();
+}
+
+bool LayerImpl::HasAncestor(const LayerImpl* ancestor) const {
+  if (!ancestor)
+    return false;
+
+  for (const LayerImpl* layer = this; layer; layer = layer->parent()) {
+    if (layer == ancestor)
+      return true;
+  }
+
+  return false;
+}
+
+void LayerImpl::SetScrollParent(LayerImpl* parent) {
+  if (scroll_parent_ == parent)
+    return;
+
+  if (scroll_parent_)
+    scroll_parent_->RemoveScrollChild(this);
+
+  scroll_parent_ = parent;
+}
+
+void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
+  if (scroll_children_.get() == children)
+    return;
+  scroll_children_.reset(children);
+}
+
+void LayerImpl::RemoveScrollChild(LayerImpl* child) {
+  DCHECK(scroll_children_);
+  scroll_children_->erase(child);
+  if (scroll_children_->empty())
+    scroll_children_.reset();
+}
+
+void LayerImpl::SetClipParent(LayerImpl* ancestor) {
+  if (clip_parent_ == ancestor)
+    return;
+
+  if (clip_parent_)
+    clip_parent_->RemoveClipChild(this);
+
+  clip_parent_ = ancestor;
+}
+
+void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
+  if (clip_children_.get() == children)
+    return;
+  clip_children_.reset(children);
+}
+
+void LayerImpl::RemoveClipChild(LayerImpl* child) {
+  DCHECK(clip_children_);
+  clip_children_->erase(child);
+  if (clip_children_->empty())
+    clip_children_.reset();
 }
 
 void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
@@ -440,6 +518,34 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollable(scrollable_);
   layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
+
+  LayerImpl* scroll_parent = NULL;
+  if (scroll_parent_)
+    scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
+
+  layer->SetScrollParent(scroll_parent);
+  if (scroll_children_) {
+    std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>;
+    for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
+        it != scroll_children_->end(); ++it)
+      scroll_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
+    layer->SetScrollChildren(scroll_children);
+  }
+
+  LayerImpl* clip_parent = NULL;
+  if (clip_parent_) {
+    clip_parent = layer->layer_tree_impl()->LayerById(
+        clip_parent_->id());
+  }
+
+  layer->SetClipParent(clip_parent);
+  if (clip_children_) {
+    std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>;
+    for (std::set<LayerImpl*>::iterator it = clip_children_->begin();
+        it != clip_children_->end(); ++it)
+      clip_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
+    layer->SetClipChildren(clip_children);
+  }
 
   layer->PassCopyRequests(&copy_requests_);
 
@@ -1129,6 +1235,12 @@ CompositingReasonsAsValue(CompositingReasons reasons) {
   if (reasons & kCompositingReasonLayerForMask)
     reason_list->AppendString("Is a mask layer");
 
+  if (reasons & kCompositingReasonOverflowScrollingParent)
+    reason_list->AppendString("Scroll parent is not an ancestor");
+
+  if (reasons & kCompositingReasonOutOfFlowClipping)
+    reason_list->AppendString("Has clipping ancestor");
+
   return reason_list.PassAs<base::Value>();
 }
 
@@ -1158,6 +1270,12 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
     state->Set("mask_layer", mask_layer_->AsValue().release());
   if (replica_layer_)
     state->Set("replica_layer", replica_layer_->AsValue().release());
+
+  if (scroll_parent_)
+    state->SetInteger("scroll_parent", scroll_parent_->id());
+
+  if (clip_parent_)
+    state->SetInteger("clip_parent", clip_parent_->id());
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
