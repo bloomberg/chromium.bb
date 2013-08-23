@@ -81,12 +81,13 @@ class InputType {
 public:
     static PassOwnPtr<InputType> create(HTMLInputElement*, const AtomicString&);
     static PassOwnPtr<InputType> createText(HTMLInputElement*);
+    static const AtomicString& normalizeTypeName(const AtomicString&);
     virtual ~InputType();
 
+    static bool canChangeFromAnotherType(const AtomicString& normalizedTypeName);
     static bool themeSupportsDataListUI(InputType*);
 
     virtual const AtomicString& formControlType() const = 0;
-    virtual bool canChangeFromAnotherType() const;
 
     // Type query functions
 
