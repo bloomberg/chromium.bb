@@ -21,23 +21,23 @@ class FakeTemplateDataSource(object):
 file_system = TestFileSystem({
   'permissions.json': json.dumps({
     'host-permissions': {
-        'name': 'match pattern',
-        'anchor': 'custom-anchor',
-        'platforms': ['app', 'extension'],
-        'partial': 'host_permissions.html',
-        'literal_name': True
+      'name': 'match pattern',
+      'anchor': 'custom-anchor',
+      'platforms': ['app', 'extension'],
+      'partial': 'host_permissions.html',
+      'literal_name': True
     },
     'activeTab': {
-        'partial': 'active_tab.html'
+      'partial': 'active_tab.html'
     },
     'alarms': {
-        'partial': 'alarms.html'
+      'partial': 'alarms.html'
     },
     'audioCapture': {
-        'partial': 'audio_capture.html'
+      'partial': 'audio_capture.html'
     },
     'background': {
-        'partial': 'background.html'
+      'partial': 'background.html'
     }
   }),
   '_permission_features.json': json.dumps({
@@ -52,9 +52,19 @@ file_system = TestFileSystem({
     },
     'background': {
       'extension_types': ['extension', 'packaged_app', 'hosted_app']
+    },
+    'commandLinePrivate': {
+      'extension_types': 'all'
+    },
+    'cookies': {
+      'extension_types': ['platform_app']
     }
   }),
-  '_api_features.json': json.dumps({})
+  '_api_features.json': json.dumps({
+    'cookies': {
+      'dependencies': ['permission:cookies']
+    }
+  })
 })
 
 class PermissionsDataSourceTest(unittest.TestCase):
@@ -98,6 +108,12 @@ class PermissionsDataSourceTest(unittest.TestCase):
         'name': 'audioCapture',
         'anchor': 'audioCapture',
         'description': 'partial audio_capture.html',
+        'platforms': ['app']
+      },
+      {
+        'anchor': 'cookies',
+        'name': 'cookies',
+        'description': 'partial permissions/generic_description',
         'platforms': ['app']
       },
       {

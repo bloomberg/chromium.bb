@@ -9,11 +9,14 @@ import features_utility as features
 from third_party.json_schema_compiler.json_parse import Parse
 
 def _ListifyPermissions(permissions):
-  '''Filter out any permissions that do not have a description then sort
-  permissions features by name into a list.
+  '''Filter out any permissions that do not have a description or with a name
+  that ends with Private then sort permissions features by name into a list.
   '''
+  def filter_permissions(perm):
+    return 'description' in perm and not perm['name'].endswith('Private')
+
   return sorted(
-      ifilter(lambda p: 'description' in p, permissions.values()),
+      ifilter(filter_permissions, permissions.values()),
       key=itemgetter('name'))
 
 def _AddDependencyDescriptions(permissions, api_features):
