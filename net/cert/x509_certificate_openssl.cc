@@ -456,7 +456,7 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
       break;
     case EVP_PKEY_EC:
       *type = kPublicKeyTypeECDSA;
-      *size_bits = EVP_PKEY_size(key);
+      *size_bits = EVP_PKEY_bits(key);
       break;
     case EVP_PKEY_DH:
       *type = kPublicKeyTypeDH;
