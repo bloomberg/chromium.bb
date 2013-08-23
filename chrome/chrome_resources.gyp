@@ -278,6 +278,7 @@
       },
       'dependencies': [
         'chrome_extra_resources',
+        'packed_resources',
       ],
       'actions': [
         {

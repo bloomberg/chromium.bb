@@ -6,7 +6,6 @@
     ['OS=="linux"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/libclearkeycdm.so',
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',

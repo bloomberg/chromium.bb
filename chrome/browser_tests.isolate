@@ -14,7 +14,6 @@
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/libclearkeycdm.so',
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
