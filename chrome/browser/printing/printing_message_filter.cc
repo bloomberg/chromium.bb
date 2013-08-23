@@ -361,6 +361,11 @@ void PrintingMessageFilter::OnScriptedPrintReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
+#if defined(OS_ANDROID)
+  // We need to save the routing ID here because Send method below deletes the
+  // |reply_msg| before we can get the routing ID for the Android code.
+  int routing_id = reply_msg->routing_id();
+#endif
   if (printer_query->last_status() != printing::PrintingContext::OK ||
       !printer_query->settings().dpi()) {
     params.Reset();
@@ -380,7 +385,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&PrintingMessageFilter::UpdateFileDescriptor, this,
-                     reply_msg->routing_id(), file_descriptor));
+                     routing_id, file_descriptor));
     }
 #endif
     print_job_manager_->QueuePrinterQuery(printer_query.get());

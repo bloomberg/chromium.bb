@@ -28,7 +28,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
 
   // Called from Java, when printing settings from the user are ready or the
   // printing operation is canceled.
-  void AskUserForSettingsReply(bool success);
+  void AskUserForSettingsReply(JNIEnv* env, jobject obj, jboolean success);
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(
