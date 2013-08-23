@@ -29,6 +29,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/FrameView.h"
 #include "core/platform/Logging.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -571,7 +572,7 @@ void MemoryCache::evictResources()
 
 void MemoryCache::prune(Resource* justReleasedResource)
 {
-    ASSERT(WebKit::Platform::current()); // This method should not be called after WebKit::shutdown().
+    TRACE_EVENT0("renderer", "MemoryCache::prune()");
 
     if (m_inPruneResources)
         return;
