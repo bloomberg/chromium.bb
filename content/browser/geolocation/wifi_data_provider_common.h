@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "content/browser/geolocation/device_data_provider.h"
+#include "content/browser/geolocation/wifi_data_provider.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -62,7 +62,7 @@ class GenericPollingPolicy : public PollingPolicyInterface {
 // providers. It's optional for specific platforms to derive this, but if they
 // do polling behavior is taken care of by this base class, and all the platform
 // need do is provide the underlying WLAN access API and polling policy.
-// Also designed this way to for ease of testing the cross-platform behavior.
+// Also designed this way for ease of testing the cross-platform behavior.
 class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProviderImplBase {
  public:
   // Interface to abstract the low level data OS library call, and to allow
@@ -84,14 +84,14 @@ class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProviderImplBase {
  protected:
   virtual ~WifiDataProviderCommon();
 
-  // Returns ownership. Will be called from the worker thread.
+  // Returns ownership.
   virtual WlanApiInterface* NewWlanApi() = 0;
 
-  // Returns ownership. Will be called from the worker thread.
+  // Returns ownership.
   virtual PollingPolicyInterface* NewPollingPolicy() = 0;
 
  private:
-  // Runs a scan. Notifies the listeners if new data is found.
+  // Runs a scan. Calls the callbacks if new data is found.
   void DoWifiScanTask();
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.

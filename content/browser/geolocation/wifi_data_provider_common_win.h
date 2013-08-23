@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <ntddndis.h>
 
-#include "content/browser/geolocation/device_data_provider.h"
+#include "content/browser/geolocation/wifi_data_provider.h"
 
 namespace content {
 

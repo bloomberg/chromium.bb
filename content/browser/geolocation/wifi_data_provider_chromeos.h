@@ -31,7 +31,7 @@ class CONTENT_EXPORT WifiDataProviderChromeOs
   // Client thread
   void DidWifiScanTaskNoResults();
   void DidWifiScanTask(const WifiData& new_data);
-  void MaybeNotifyListeners(bool update_available);
+  void MaybeRunCallbacks(bool update_available);
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.
   void ScheduleNextScan(int interval);

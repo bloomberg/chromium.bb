@@ -1,16 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/geolocation/device_data_provider.h"
+#include "content/browser/geolocation/wifi_data.h"
+
+#include "base/logging.h"
 
 namespace content {
-
-// statics
-template<> DeviceDataProvider<WifiData>*
-    DeviceDataProvider<WifiData>::instance_ = NULL;
-template<> DeviceDataProvider<WifiData>::ImplFactoryFunction
-    DeviceDataProvider<WifiData>::factory_function_ = DefaultFactoryFunction;
 
 AccessPointData::AccessPointData()
     : radio_signal_strength(kint32min),
@@ -35,7 +31,7 @@ bool WifiData::DiffersSignificantly(const WifiData& other) const {
                                                 min_ap_count / 2);
   if (max_ap_count > min_ap_count + difference_threadhold)
     return true;
-  // Compute size of interesction of old and new sets.
+  // Compute size of intersection of old and new sets.
   size_t num_common = 0;
   for (AccessPointDataSet::const_iterator iter = access_point_data.begin();
        iter != access_point_data.end();

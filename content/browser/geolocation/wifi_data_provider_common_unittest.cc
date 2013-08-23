@@ -42,7 +42,7 @@ class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   }
 };
 
-class MockPollingPolicy :public PollingPolicyInterface {
+class MockPollingPolicy : public PollingPolicyInterface {
  public:
   MockPollingPolicy() {
     ON_CALL(*this,PollingInterval())
@@ -57,26 +57,24 @@ class MockPollingPolicy :public PollingPolicyInterface {
   virtual void UpdatePollingInterval(bool) {}
 };
 
-// Stops the specified (nested) message loop when the listener is called back.
-class MessageLoopQuitListener
-    : public WifiDataProviderCommon::ListenerInterface {
+// Stops the specified (nested) message loop when the callback is called.
+class MessageLoopQuitter {
  public:
-  explicit MessageLoopQuitListener(base::MessageLoop* message_loop)
-      : message_loop_to_quit_(message_loop) {
+  explicit MessageLoopQuitter(base::MessageLoop* message_loop)
+      : message_loop_to_quit_(message_loop),
+        callback_(base::Bind(&MessageLoopQuitter::WifiDataUpdateAvailable,
+                             base::Unretained(this))) {
     CHECK(message_loop_to_quit_ != NULL);
   }
-  // ListenerInterface
-  virtual void DeviceDataUpdateAvailable(
-      DeviceDataProvider<WifiData>* provider) OVERRIDE {
+
+  void WifiDataUpdateAvailable(WifiDataProvider* provider) {
     // Provider should call back on client's thread.
     EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
-    provider_ = provider;
     message_loop_to_quit_->QuitNow();
   }
   base::MessageLoop* message_loop_to_quit_;
-  DeviceDataProvider<WifiData>* provider_;
+  WifiDataProvider::WifiDataUpdateCallback callback_;
 };
-
 
 class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
  public:
@@ -111,24 +109,24 @@ WifiDataProviderImplBase* CreateWifiDataProviderCommonWithMock() {
 class GeolocationWifiDataProviderCommonTest : public testing::Test {
  public:
   GeolocationWifiDataProviderCommonTest()
-      : quit_listener_(&main_message_loop_) {
+      : loop_quitter_(&main_message_loop_) {
   }
 
   virtual void SetUp() {
     provider_ = new WifiDataProviderCommonWithMock;
     wlan_api_ = provider_->new_wlan_api_.get();
     polling_policy_ = provider_->new_polling_policy_.get();
-    provider_->AddListener(&quit_listener_);
+    provider_->AddCallback(&loop_quitter_.callback_);
   }
   virtual void TearDown() {
-    provider_->RemoveListener(&quit_listener_);
+    provider_->RemoveCallback(&loop_quitter_.callback_);
     provider_->StopDataProvider();
     provider_ = NULL;
   }
 
  protected:
   base::MessageLoop main_message_loop_;
-  MessageLoopQuitListener quit_listener_;
+  MessageLoopQuitter loop_quitter_;
   scoped_refptr<WifiDataProviderCommonWithMock> provider_;
   MockWlanApi* wlan_api_;
   MockPollingPolicy* polling_policy_;
@@ -141,7 +139,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, CreateDestroy) {
   EXPECT_TRUE(NULL != wlan_api_);
 }
 
-TEST_F(GeolocationWifiDataProviderCommonTest, StartThread) {
+TEST_F(GeolocationWifiDataProviderCommonTest, RunNormal) {
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, PollingInterval())
@@ -190,9 +188,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
       .Times(AtLeast(1));
   provider_->StartDataProvider();
   main_message_loop_.Run();
-  // Check we had at least one call. The worker thread may have raced ahead
-  // and made multiple calls.
-  EXPECT_GT(wlan_api_->calls_, 0);
+  EXPECT_EQ(wlan_api_->calls_, 1);
   WifiData data;
   EXPECT_TRUE(provider_->GetData(&data));
   EXPECT_EQ(0, static_cast<int>(data.access_point_data.size()));
@@ -213,21 +209,20 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
 
   provider_->StartDataProvider();
   main_message_loop_.Run();
-  EXPECT_GT(wlan_api_->calls_, 0);
+  EXPECT_EQ(wlan_api_->calls_, 1);
   WifiData data;
   EXPECT_TRUE(provider_->GetData(&data));
   EXPECT_EQ(1, static_cast<int>(data.access_point_data.size()));
   EXPECT_EQ(single_access_point.ssid, data.access_point_data.begin()->ssid);
 }
 
-TEST_F(GeolocationWifiDataProviderCommonTest,
-       StartThreadViaDeviceDataProvider) {
-  MessageLoopQuitListener quit_listener(&main_message_loop_);
+TEST_F(GeolocationWifiDataProviderCommonTest, RegisterUnregister) {
+  MessageLoopQuitter loop_quitter(&main_message_loop_);
   WifiDataProvider::SetFactory(CreateWifiDataProviderCommonWithMock);
-  DeviceDataProvider<WifiData>::Register(&quit_listener);
+  WifiDataProvider::Register(&loop_quitter.callback_);
   main_message_loop_.Run();
-  DeviceDataProvider<WifiData>::Unregister(&quit_listener);
-  DeviceDataProvider<WifiData>::ResetFactory();
+  WifiDataProvider::Unregister(&loop_quitter.callback_);
+  WifiDataProvider::ResetFactory();
 }
 
 }  // namespace content

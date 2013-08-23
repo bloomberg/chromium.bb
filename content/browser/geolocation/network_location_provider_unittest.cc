@@ -46,54 +46,49 @@ class MessageLoopQuitListener {
   const LocationProvider* updated_provider_;
 };
 
-// A mock implementation of DeviceDataProviderImplBase for testing. Adapted from
+// A mock implementation of WifiDataProviderImplBase for testing. Adapted from
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation_test.cc
-template<typename DataType>
-class MockDeviceDataProviderImpl
-    : public DeviceDataProviderImplBase<DataType> {
+class MockWifiDataProviderImpl : public WifiDataProviderImplBase {
  public:
-  // Factory method for use with DeviceDataProvider::SetFactory.
-  static DeviceDataProviderImplBase<DataType>* GetInstance() {
+  // Factory method for use with WifiDataProvider::SetFactory.
+  static WifiDataProviderImplBase* GetInstance() {
     CHECK(instance_);
     return instance_;
   }
 
-  static MockDeviceDataProviderImpl<DataType>* CreateInstance() {
+  static MockWifiDataProviderImpl* CreateInstance() {
     CHECK(!instance_);
-    instance_ = new MockDeviceDataProviderImpl<DataType>;
+    instance_ = new MockWifiDataProviderImpl;
     return instance_;
   }
 
-  MockDeviceDataProviderImpl()
+  MockWifiDataProviderImpl()
       : start_calls_(0),
         stop_calls_(0),
         got_data_(true) {
   }
 
-  virtual ~MockDeviceDataProviderImpl() {
-    CHECK(this == instance_);
-    instance_ = NULL;
-  }
-
-  // DeviceDataProviderImplBase implementation.
-  virtual void StartDataProvider() {
+  // WifiDataProviderImplBase implementation.
+  virtual void StartDataProvider() OVERRIDE {
     ++start_calls_;
   }
-  virtual void StopDataProvider() {
+
+  virtual void StopDataProvider() OVERRIDE {
     ++stop_calls_;
   }
-  virtual bool GetData(DataType* data_out) {
+
+  virtual bool GetData(WifiData* data_out) OVERRIDE {
     CHECK(data_out);
     *data_out = data_;
     return got_data_;
   }
 
-  void SetData(const DataType& new_data) {
+  void SetData(const WifiData& new_data) {
     got_data_ = true;
     const bool differs = data_.DiffersSignificantly(new_data);
     data_ = new_data;
     if (differs)
-      this->NotifyListeners();
+      this->RunCallbacks();
   }
 
   void set_got_data(bool got_data) { got_data_ = got_data; }
@@ -101,17 +96,20 @@ class MockDeviceDataProviderImpl
   int stop_calls_;
 
  private:
-  static MockDeviceDataProviderImpl<DataType>* instance_;
+  virtual ~MockWifiDataProviderImpl() {
+    CHECK(this == instance_);
+    instance_ = NULL;
+  }
 
-  DataType data_;
+  static MockWifiDataProviderImpl* instance_;
+
+  WifiData data_;
   bool got_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceDataProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(MockWifiDataProviderImpl);
 };
 
-template<typename DataType>
-MockDeviceDataProviderImpl<DataType>*
-MockDeviceDataProviderImpl<DataType>::instance_ = NULL;
+MockWifiDataProviderImpl* MockWifiDataProviderImpl::instance_ = NULL;
 
 // Main test fixture
 class GeolocationNetworkProviderTest : public testing::Test {
@@ -120,7 +118,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     test_server_url_ = GURL(kTestServerUrl);
     access_token_store_ = new FakeAccessTokenStore;
     wifi_data_provider_ =
-        MockDeviceDataProviderImpl<WifiData>::CreateInstance();
+        MockWifiDataProviderImpl::CreateInstance();
   }
 
   virtual void TearDown() {
@@ -142,8 +140,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
-    WifiDataProvider::SetFactory(
-        MockDeviceDataProviderImpl<WifiData>::GetInstance);
+    WifiDataProvider::SetFactory(MockWifiDataProviderImpl::GetInstance);
   }
 
   // Returns the current url fetcher (if any) and advances the id ready for the
@@ -324,7 +321,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   base::MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
+  scoped_refptr<MockWifiDataProviderImpl> wifi_data_provider_;
 };
 
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
@@ -491,7 +488,7 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
 }
 
 TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
-  // Send initial request with empty device data
+  // Send initial request with empty data
   scoped_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();

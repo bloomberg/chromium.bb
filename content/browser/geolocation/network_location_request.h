@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/geolocation/device_data_provider.h"
+#include "content/browser/geolocation/wifi_data_provider.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -21,7 +21,7 @@ class URLRequestContextGetter;
 namespace content {
 struct Geoposition;
 
-// Takes a set of device data and sends it to a server to get a position fix.
+// Takes wifi data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
 class NetworkLocationRequest : private net::URLFetcherDelegate {
  public:

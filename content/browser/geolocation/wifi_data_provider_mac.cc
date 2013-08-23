@@ -158,7 +158,6 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 }  // namespace
 
 // static
-template<>
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new MacWifiDataProvider();
 }

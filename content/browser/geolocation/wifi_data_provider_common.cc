@@ -75,7 +75,7 @@ void WifiDataProviderCommon::DoWifiScanTask() {
   }
   if (update_available || !is_first_scan_complete_) {
     is_first_scan_complete_ = true;
-    NotifyListeners();
+    RunCallbacks();
   }
 }
 

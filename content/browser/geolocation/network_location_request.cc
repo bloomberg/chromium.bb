@@ -271,7 +271,7 @@ void GetLocationFromResponse(bool http_post_result,
     FormatPositionError(server_url, message, position);
     return;
   }
-  // We use the timestamp from the device data that was used to generate
+  // We use the timestamp from the wifi data that was used to generate
   // this position fix.
   if (!ParseServerResponse(response_body, timestamp, position, access_token)) {
     // We failed to parse the repsonse.

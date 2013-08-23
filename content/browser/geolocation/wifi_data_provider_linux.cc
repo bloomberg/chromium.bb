@@ -344,7 +344,6 @@ scoped_ptr<dbus::Response> NetworkManagerWlanApi::GetAccessPointProperty(
 }  // namespace
 
 // static
-template<>
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new WifiDataProviderLinux();
 }

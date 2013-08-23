@@ -15,9 +15,9 @@
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
-#include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/location_provider_base.h"
 #include "content/browser/geolocation/network_location_request.h"
+#include "content/browser/geolocation/wifi_data_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
 
@@ -27,14 +27,12 @@ class AccessTokenStore;
 
 class NetworkLocationProvider
     : public base::NonThreadSafe,
-      public LocationProviderBase,
-      public WifiDataProvider::ListenerInterface {
+      public LocationProviderBase {
  public:
   // Cache of recently resolved locations. Public for tests.
   class CONTENT_EXPORT PositionCache {
    public:
-    // The maximum size of the cache of positions for previously requested
-    // device data.
+    // The maximum size of the cache of positions.
     static const size_t kMaximumSize;
 
     PositionCache();
@@ -47,19 +45,19 @@ class NetworkLocationProvider
     bool CachePosition(const WifiData& wifi_data,
                        const Geoposition& position);
 
-    // Searches for a cached position response for the current set of device
-    // data. Returns NULL if the position is not in the cache, or the cached
+    // Searches for a cached position response for the current set of data.
+    // Returns NULL if the position is not in the cache, or the cached
     // position if available. Ownership remains with the cache.
     const Geoposition* FindPosition(const WifiData& wifi_data);
 
    private:
     // Makes the key for the map of cached positions, using a set of
-    // device data. Returns true if a good key was generated, false otherwise.
+    // data. Returns true if a good key was generated, false otherwise.
     static bool MakeKey(const WifiData& wifi_data,
                         string16* key);
 
     // The cache of positions. This is stored as a map keyed on a string that
-    // represents a set of device data, and a list to provide
+    // represents a set of data, and a list to provide
     // least-recently-added eviction.
     typedef std::map<string16, Geoposition> CacheMap;
     CacheMap cache_;
@@ -84,13 +82,13 @@ class NetworkLocationProvider
   // Satisfies a position request from cache or network.
   void RequestPosition();
 
-  // Internal helper used by DeviceDataUpdateAvailable
-  void OnDeviceDataUpdated();
+  // Called from a callback when new wifi data is available.
+  void WifiDataUpdateAvailable(WifiDataProvider* provider);
+
+  // Internal helper used by WifiDataUpdateAvailable.
+  void OnWifiDataUpdated();
 
   bool IsStarted() const;
-
-  // DeviceDataProvider::ListenerInterface implementation.
-  virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider) OVERRIDE;
 
   void LocationResponseAvailable(const Geoposition& position,
                                  bool server_error,
@@ -102,12 +100,14 @@ class NetworkLocationProvider
   // The wifi data provider, acquired via global factories.
   WifiDataProvider* wifi_data_provider_;
 
-  // The  wifi data, flags to indicate if the data set is complete.
+  WifiDataProvider::WifiDataUpdateCallback wifi_data_update_callback_;
+
+  // The  wifi data and a flag to indicate if the data set is complete.
   WifiData wifi_data_;
   bool is_wifi_data_complete_;
 
-  // The timestamp for the latest device data update.
-  base::Time device_data_updated_timestamp_;
+  // The timestamp for the latest wifi data update.
+  base::Time wifi_data_updated_timestamp_;
 
   // Cached value loaded from the token store or set by a previous server
   // response, and sent in each subsequent network request.
@@ -124,9 +124,10 @@ class NetworkLocationProvider
   // The network location request object, and the url it uses.
   scoped_ptr<NetworkLocationRequest> request_;
 
-  base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
   // The cache of positions.
   scoped_ptr<PositionCache> position_cache_;
+
+  base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationProvider);
 };
