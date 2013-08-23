@@ -88,7 +88,7 @@ void PrintViewManagerBase::UpdateScriptedPrintingBlocked() {
        !printing_enabled_.GetValue() || tab_content_blocked_));
 }
 
-void PrintViewManagerBase::StopNavigation() {
+void PrintViewManagerBase::NavigationStopped() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
 }

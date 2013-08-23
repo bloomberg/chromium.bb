@@ -1155,7 +1155,7 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
 
 void WebContentsImpl::Stop() {
   render_manager_.Stop();
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, StopNavigation());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, NavigationStopped());
 }
 
 WebContents* WebContentsImpl::Clone() {

@@ -70,7 +70,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Cancels the print job.
-  virtual void StopNavigation() OVERRIDE;
+  virtual void NavigationStopped() OVERRIDE;
 
   // IPC Message handlers.
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);

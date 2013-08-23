@@ -43,7 +43,7 @@ class ThumbnailTabHelper
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void StopNavigation() OVERRIDE;
+  virtual void NavigationStopped() OVERRIDE;
 
   // Update the thumbnail of the given tab contents if necessary.
   void UpdateThumbnailIfNecessary(content::WebContents* web_contents);

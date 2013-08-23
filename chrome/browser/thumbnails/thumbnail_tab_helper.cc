@@ -181,7 +181,7 @@ void ThumbnailTabHelper::DidStartLoading(
   load_interrupted_ = false;
 }
 
-void ThumbnailTabHelper::StopNavigation() {
+void ThumbnailTabHelper::NavigationStopped() {
   // This function gets called when the page loading is interrupted by the
   // stop button.
   load_interrupted_ = true;
