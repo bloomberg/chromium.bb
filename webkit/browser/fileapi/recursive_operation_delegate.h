@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_
 #define WEBKIT_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_
 
-#include <queue>
+#include <stack>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -19,16 +19,10 @@ class FileSystemContext;
 class FileSystemOperationRunner;
 
 // A base class for recursive operation delegates.
-// This also provides some convenient default implementations for subclasses
-// like StartRecursiveOperation() and  NewNestedOperation().
 //
 // In short, each subclass should override ProcessFile and ProcessDirectory
 // to process a directory or a file. To start the recursive operation it
 // should also call StartRecursiveOperation.
-//
-// Each subclass can call NewNestedOperation to create a new file system
-// operation to perform a sub-operations, e.g. can call RemoveFile for
-// recursive Remove.
 class RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
@@ -89,8 +83,8 @@ class RecursiveOperationDelegate
 
   FileSystemContext* file_system_context_;
   StatusCallback callback_;
-  std::queue<FileSystemURL> pending_directories_;
-  std::queue<FileSystemURL> pending_files_;
+  std::stack<FileSystemURL> pending_directories_;
+  std::stack<FileSystemURL> pending_files_;
   int inflight_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(RecursiveOperationDelegate);

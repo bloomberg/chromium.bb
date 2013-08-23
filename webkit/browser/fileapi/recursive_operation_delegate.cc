@@ -44,7 +44,7 @@ void RecursiveOperationDelegate::ProcessNextDirectory() {
     callback_.Run(base::PLATFORM_FILE_OK);
     return;
   }
-  FileSystemURL url = pending_directories_.front();
+  FileSystemURL url = pending_directories_.top();
   pending_directories_.pop();
   inflight_operations_++;
   ProcessDirectory(
@@ -59,7 +59,7 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
   }
   while (!pending_files_.empty() &&
          inflight_operations_ < kMaxInflightOperations) {
-    FileSystemURL url = pending_files_.front();
+    FileSystemURL url = pending_files_.top();
     pending_files_.pop();
     inflight_operations_++;
     base::MessageLoopProxy::current()->PostTask(
@@ -100,7 +100,7 @@ void RecursiveOperationDelegate::DidReadDirectory(
     bool has_more) {
   if (error != base::PLATFORM_FILE_OK) {
     if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
-      // The given path may have been a file, so try RemoveFile now.
+      // The given path may have been a file, so try ProcessFile now.
       ProcessFile(parent,
                   base::Bind(&RecursiveOperationDelegate::DidTryProcessFile,
                              AsWeakPtr(), error));
