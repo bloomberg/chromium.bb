@@ -91,7 +91,7 @@ function test()
                     return;
                 }
                 InspectorTest.addResult("");
-                InspectorTest.addSniffer(view.domStorageModel, "_domStorageItemAdded", itemAdded);
+                InspectorTest.addSniffer(WebInspector.domStorageModel, "_domStorageItemAdded", itemAdded);
                 var command = "addItem('key" + index + "', 'value" + index + "');";
                 InspectorTest.addResult(command);
                 InspectorTest.evaluateInPage(command);
@@ -118,7 +118,7 @@ function test()
                     return;
                 }
                 InspectorTest.addResult("");
-                InspectorTest.addSniffer(view.domStorageModel, "_domStorageItemRemoved", itemRemoved);
+                InspectorTest.addSniffer(WebInspector.domStorageModel, "_domStorageItemRemoved", itemRemoved);
                 var command = "removeItem('key" + index + "');";
                 InspectorTest.addResult(command);
                 InspectorTest.evaluateInPage(command);
@@ -130,7 +130,7 @@ function test()
         function updateItemTest(next)
         {
             InspectorTest.addResult("");
-            InspectorTest.addSniffer(view.domStorageModel, "_domStorageItemUpdated", itemUpdated);
+            InspectorTest.addSniffer(WebInspector.domStorageModel, "_domStorageItemUpdated", itemUpdated);
             var command = "updateItem('key2', 'VALUE2');";
             InspectorTest.addResult(command);
             InspectorTest.evaluateInPage(command);
@@ -151,7 +151,7 @@ function test()
             }
 
             InspectorTest.addResult("");
-            InspectorTest.addSniffer(view.domStorageModel, "_domStorageItemsCleared", itemsCleared);
+            InspectorTest.addSniffer(WebInspector.domStorageModel, "_domStorageItemsCleared", itemsCleared);
             var command = "clear()";
             InspectorTest.addResult(command);
             InspectorTest.evaluateInPage(command);
