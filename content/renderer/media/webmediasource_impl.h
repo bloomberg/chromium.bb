@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "media/base/media_log.h"
-#include "third_party/WebKit/public/web/WebMediaSourceClient.h"
+#include "third_party/WebKit/public/platform/WebMediaSource.h"
 
 namespace media {
 class ChunkDemuxer;
