@@ -108,7 +108,7 @@ WebRTCPeerConnectionHandler* WebTestInterfaces::createWebRTCPeerConnectionHandle
 
 WebMIDIAccessor* WebTestInterfaces::createMIDIAccessor(WebMIDIAccessorClient* client)
 {
-    return new MockWebMIDIAccessor(client);
+    return new MockWebMIDIAccessor(client, m_interfaces.get());
 }
 
 WebAudioDevice* WebTestInterfaces::createAudioDevice(double sampleRate)

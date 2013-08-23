@@ -279,6 +279,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setGeolocationPermission", &TestRunner::setGeolocationPermission);
     bindMethod("setMockGeolocationPositionUnavailableError", &TestRunner::setMockGeolocationPositionUnavailableError);
     bindMethod("setMockGeolocationPosition", &TestRunner::setMockGeolocationPosition);
+    bindMethod("setMIDIAccessorResult", &TestRunner::setMIDIAccessorResult);
     bindMethod("setMIDISysExPermission", &TestRunner::setMIDISysExPermission);
 #if ENABLE_NOTIFICATIONS
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
@@ -420,6 +421,7 @@ void TestRunner::reset()
     m_testRepaint = false;
     m_sweepHorizontally = false;
     m_isPrinting = false;
+    m_midiAccessorResult = true;
     m_shouldStayOnPageAfterHandlingBeforeUnload = false;
     m_shouldDumpResourcePriorities = false;
 
@@ -720,6 +722,11 @@ bool TestRunner::isPointerLocked()
 void TestRunner::setToolTipText(const WebKit::WebString& text)
 {
     m_tooltipText.set(text.utf8());
+}
+
+bool TestRunner::midiAccessorResult()
+{
+    return m_midiAccessorResult;
 }
 
 TestRunner::TestPageOverlay::TestPageOverlay(WebKit::WebView* webView) : m_webView(webView)
@@ -1820,6 +1827,14 @@ void TestRunner::setMockGeolocationPositionUnavailableError(const CppArgumentLis
     const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
     for (unsigned i = 0; i < windowList.size(); ++i)
         windowList.at(i)->geolocationClientMock()->setPositionUnavailableError(WebString::fromUTF8(arguments[0].toString()));
+}
+
+void TestRunner::setMIDIAccessorResult(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    if (arguments.size() < 1 || !arguments[0].isBool())
+        return;
+    m_midiAccessorResult = arguments[0].toBoolean();
 }
 
 void TestRunner::setMIDISysExPermission(const CppArgumentList& arguments, CppVariant* result)

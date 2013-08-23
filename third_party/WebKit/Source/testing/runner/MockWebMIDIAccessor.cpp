@@ -30,14 +30,18 @@
 
 #include "MockWebMIDIAccessor.h"
 
+#include "TestInterfaces.h"
+#include "TestRunner.h"
 #include "public/platform/WebMIDIAccessorClient.h"
+#include "public/testing/WebTestRunner.h"
 
 using namespace WebKit;
 
 namespace WebTestRunner {
 
-MockWebMIDIAccessor::MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient* client)
+MockWebMIDIAccessor::MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient* client, TestInterfaces* interfaces)
     : m_client(client)
+    , m_interfaces(interfaces)
 {
 }
 
@@ -50,7 +54,7 @@ void MockWebMIDIAccessor::startSession()
     // Add a mock input and output port.
     m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
     m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
-    m_client->didStartSession(true);
+    m_client->didStartSession(m_interfaces->testRunner()->midiAccessorResult());
 }
 
 } // namespace WebTestRunner

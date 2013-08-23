@@ -40,9 +40,11 @@ class WebMIDIAccessorClient;
 
 namespace WebTestRunner {
 
+class TestInterfaces;
+
 class MockWebMIDIAccessor : public WebKit::WebMIDIAccessor {
 public:
-    explicit MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient*);
+    explicit MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient*, TestInterfaces*);
     virtual ~MockWebMIDIAccessor();
 
     // WebKit::WebMIDIAccessor implementation.
@@ -55,6 +57,7 @@ public:
 
 private:
     WebKit::WebMIDIAccessorClient* m_client;
+    TestInterfaces* m_interfaces;
 };
 
 } // namespace WebTestRunner

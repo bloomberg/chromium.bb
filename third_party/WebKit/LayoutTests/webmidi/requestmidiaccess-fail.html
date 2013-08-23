@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="../fast/js/resources/js-test-style.css">
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Tests navigator.requestMIDIAccess failure.");
+
+function successCallback(access) {
+    testFailed('requestMIDIAccess() does not fail unexpectedly.');
+    finishJSTest();
+}
+
+function errorCallback(error) {
+    shouldBe("error.name", "'InvalidStateError'");
+    testPassed('requestMIDIAccess() fail as expected.');
+    finishJSTest();
+}
+
+window.jsTestIsAsync = true;
+
+// set testRunner configuration so that requestMIDIAccess returns "InvalidStateError".
+testRunner.setMIDIAccessorResult(false);
+try {
+    navigator.requestMIDIAccess().then(successCallback, errorCallback);
+    testPassed('navigator.requestMIDIAccess() did not throw exception.');
+} catch(e) {
+    testFailed('navigator.requestMIDIAccess() should not throw exception.');
+    finishJSTest();
+}
+
+window.successfullyParsed = true;
+
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

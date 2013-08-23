@@ -131,6 +131,8 @@ public:
     bool isPointerLocked();
     void setToolTipText(const WebKit::WebString&);
 
+    bool midiAccessorResult();
+
     // A single item in the work queue.
     class WorkItem {
     public:
@@ -463,6 +465,7 @@ private:
     void setMockGeolocationPositionUnavailableError(const CppArgumentList&, CppVariant*);
 
     // MIDI function to control permission handling.
+    void setMIDIAccessorResult(const CppArgumentList&, CppVariant*);
     void setMIDISysExPermission(const CppArgumentList&, CppVariant*);
 
 #if ENABLE_NOTIFICATIONS
@@ -676,6 +679,9 @@ private:
 
     // If true, layout is to target printed pages.
     bool m_isPrinting;
+
+    // If false, MockWebMIDIAccessor fails on startSession() for testing.
+    bool m_midiAccessorResult;
 
     bool m_shouldStayOnPageAfterHandlingBeforeUnload;
 
