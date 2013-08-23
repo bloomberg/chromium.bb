@@ -85,6 +85,9 @@ def GetExecutableDirForProject(desc, toolchain, config):
 
 
 def GetBrowserTesterCommand(desc, toolchain, config):
+  if browser_path is None:
+    buildbot_common.ErrorExit('Failed to find chrome browser using FindChrome.')
+
   args = [
     sys.executable,
     browser_tester_py,
@@ -297,8 +300,9 @@ def main(args):
           type='int', default=1)
 
   options, args = parser.parse_args(args[1:])
-  if args:
-    parser.error('Not expecting any arguments.')
+  if options.project:
+    parser.error('The -p/--project option is deprecated.\n'
+                 'Just use positional paramaters instead.')
 
   if not options.toolchain:
     options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
@@ -319,9 +323,9 @@ def main(args):
   if options.dest:
     include['DEST'] = options.dest
     print 'Filter by type: ' + str(options.dest)
-  if options.project:
-    include['NAME'] = options.project
-    print 'Filter by name: ' + str(options.project)
+  if args:
+    include['NAME'] = args
+    print 'Filter by name: ' + str(args)
   if not options.config:
     options.config = ALL_CONFIGS
 

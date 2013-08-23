@@ -204,7 +204,7 @@ def BuildProjects(pepperdir, project_tree, deps=True,
     BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
 
-def main(args):
+def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('-c', '--clobber',
       help='Clobber project directories before copying new files',
@@ -227,9 +227,10 @@ def main(args):
       action='append')
   parser.add_option('-v', '--verbose', action='store_true')
 
-  options, args = parser.parse_args(args[1:])
-  if args:
-    parser.error('Not expecting any arguments.')
+  options, args = parser.parse_args(argv[1:])
+  if options.project:
+    parser.error('The -p/--project option is deprecated.\n'
+                 'Just use positional paramaters instead.')
 
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
@@ -258,9 +259,9 @@ def main(args):
   if options.dest:
     filters['DEST'] = options.dest
     print 'Filter by type: ' + str(options.dest)
-  if options.project:
-    filters['NAME'] = options.project
-    print 'Filter by name: ' + str(options.project)
+  if args:
+    filters['NAME'] = args
+    print 'Filter by name: ' + str(args)
 
   try:
     project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
