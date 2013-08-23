@@ -182,7 +182,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     // Always open new window in the active display.
     gfx::Rect active_area = active->GetBoundsInScreen();
     gfx::Rect work_area =
-        monitor_info_provider_->GetMonitorWorkAreaMatching(active_area);
+        screen_->GetDisplayMatching(active_area).work_area();
 
     // This is a window / app. See if there is no window and try to place it.
     int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
@@ -238,9 +238,8 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
 
 void WindowSizer::GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
-  DCHECK(monitor_info_provider_.get());
 
-  gfx::Rect work_area = monitor_info_provider_->GetPrimaryDisplayWorkArea();
+  gfx::Rect work_area = screen_->GetPrimaryDisplay().work_area();
 
   // There should be a 'desktop' border around the window at the left and right
   // side.

@@ -24,26 +24,6 @@ const int kMinVisibleHeight = 30;
 // Minimum width of the visible part of a window.
 const int kMinVisibleWidth = 30;
 
-class DefaultMonitorInfoProvider : public MonitorInfoProvider {
- public:
-  explicit DefaultMonitorInfoProvider(const gfx::Screen* screen)
-      : screen_(screen) {}
-  // Overridden from MonitorInfoProvider:
-  virtual gfx::Rect GetPrimaryDisplayWorkArea() const OVERRIDE {
-    return screen_->GetPrimaryDisplay().work_area();
-  }
-  virtual gfx::Rect GetPrimaryDisplayBounds() const OVERRIDE {
-    return screen_->GetPrimaryDisplay().bounds();
-  }
-  virtual gfx::Rect GetMonitorWorkAreaMatching(
-      const gfx::Rect& match_rect) const OVERRIDE {
-    return screen_->GetDisplayMatching(match_rect).work_area();
-  }
- private:
-  const gfx::Screen* screen_;
-  DISALLOW_COPY_AND_ASSIGN(DefaultMonitorInfoProvider);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // An implementation of WindowSizer::StateProvider that gets the last active
 // and persistent state from the browser window and the user's profile.
@@ -163,18 +143,18 @@ const int WindowSizer::kMaximumWindowWidth = 1100;
 
 WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)
     : state_provider_(state_provider),
-      monitor_info_provider_(new DefaultMonitorInfoProvider(
-          // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
-          gfx::Screen::GetNativeScreen())),
+      // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
+      screen_(gfx::Screen::GetNativeScreen()),
       browser_(browser) {
 }
 
 WindowSizer::WindowSizer(StateProvider* state_provider,
-                         MonitorInfoProvider* monitor_info_provider,
+                         gfx::Screen* screen,
                          const Browser* browser)
     : state_provider_(state_provider),
-      monitor_info_provider_(monitor_info_provider),
+      screen_(screen),
       browser_(browser) {
+  DCHECK(screen_);
 }
 
 WindowSizer::~WindowSizer() {
@@ -230,8 +210,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     // of the anchor window. Note: AdjustBoundsToBeVisibleOnMonitorContaining
     // does not exactly what we want: It makes only sure that "a minimal part"
     // is visible on the screen.
-    gfx::Rect work_area =
-        monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds);
+    gfx::Rect work_area = screen_->GetDisplayMatching(*bounds).work_area();
     // Resize so that it fits.
     bounds->AdjustToFit(work_area);
   }
@@ -275,9 +254,8 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   }
 #endif
   DCHECK(default_bounds);
-  DCHECK(monitor_info_provider_.get());
 
-  gfx::Rect work_area = monitor_info_provider_->GetPrimaryDisplayWorkArea();
+  gfx::Rect work_area = screen_->GetPrimaryDisplay().work_area();
 
   // The default size is either some reasonably wide width, or if the work
   // area is narrower, then the work area width less some aesthetic padding.
@@ -286,7 +264,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
 
   // For wider aspect ratio displays at higher resolutions, we might size the
   // window narrower to allow two windows to easily be placed side-by-side.
-  gfx::Rect screen_size = monitor_info_provider_->GetPrimaryDisplayBounds();
+  gfx::Rect screen_size = screen_->GetPrimaryDisplay().bounds();
   double width_to_height =
     static_cast<double>(screen_size.width()) / screen_size.height();
 
@@ -312,12 +290,10 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
     const gfx::Rect& saved_work_area,
     gfx::Rect* bounds) const {
   DCHECK(bounds);
-  DCHECK(monitor_info_provider_.get());
 
   // Find the size of the work area of the monitor that intersects the bounds
   // of the anchor window.
-  gfx::Rect work_area =
-      monitor_info_provider_->GetMonitorWorkAreaMatching(other_bounds);
+  gfx::Rect work_area = screen_->GetDisplayMatching(other_bounds).work_area();
 
   // If height or width are 0, reset to the default size.
   gfx::Rect default_bounds;

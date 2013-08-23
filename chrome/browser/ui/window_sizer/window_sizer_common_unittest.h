@@ -48,32 +48,6 @@ static const gfx::Rect taskbar_right_work_area(0, 0, 917, 768);
 
 extern int kWindowTilePixels;
 
-// Testing implementation of WindowSizer::MonitorInfoProvider that we can use
-// to fake various monitor layouts and sizes.
-class TestMonitorInfoProvider : public MonitorInfoProvider {
- public:
-  TestMonitorInfoProvider();
-  virtual ~TestMonitorInfoProvider();
-
-  void AddMonitor(const gfx::Rect& bounds, const gfx::Rect& work_area);
-
-  // Overridden from WindowSizer::MonitorInfoProvider:
-  virtual gfx::Rect GetPrimaryDisplayWorkArea() const OVERRIDE;
-
-  virtual gfx::Rect GetPrimaryDisplayBounds() const OVERRIDE;
-
-  virtual gfx::Rect GetMonitorWorkAreaMatching(
-      const gfx::Rect& match_rect) const OVERRIDE;
-
- private:
-  size_t GetMonitorIndexMatchingBounds(const gfx::Rect& match_rect) const;
-
-  std::vector<gfx::Rect> monitor_bounds_;
-  std::vector<gfx::Rect> work_areas_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMonitorInfoProvider);
-};
-
 // Testing implementation of WindowSizer::StateProvider that we use to fake
 // persistent storage and existing windows.
 class TestStateProvider : public WindowSizer::StateProvider {
