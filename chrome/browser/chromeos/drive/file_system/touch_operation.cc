@@ -110,6 +110,7 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::RefreshEntry,
                  base::Unretained(metadata_),
+                 entry.resource_id(),
                  entry),
       base::Bind(&TouchOperation::TouchFileAfterRefreshMetadata,
                  weak_ptr_factory_.GetWeakPtr(),

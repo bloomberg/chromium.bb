@@ -408,14 +408,12 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   return FILE_ERROR_OK;
 }
 
-FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
+FileError ResourceMetadata::RefreshEntry(const std::string& id,
+                                         const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
-
-  // TODO(hashimoto): Stop relying on |entry.resource_id()| crbug.com/275270
-  const std::string& id = entry.resource_id();
 
   ResourceEntry old_entry;
   if (!storage_->GetEntry(id, &old_entry))

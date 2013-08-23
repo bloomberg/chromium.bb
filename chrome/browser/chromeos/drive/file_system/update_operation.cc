@@ -76,7 +76,7 @@ FileError UpdateFileLocalState(
   if (!ConvertToResourceEntry(*resource_entry, &entry))
     return FILE_ERROR_NOT_A_FILE;
 
-  FileError error = metadata->RefreshEntry(entry);
+  FileError error = metadata->RefreshEntry(entry.resource_id(), entry);
   if (error != FILE_ERROR_OK)
     return error;
 

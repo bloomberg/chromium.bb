@@ -165,9 +165,8 @@ class ResourceMetadata {
       const base::FilePath& second_path,
       const GetResourceEntryPairCallback& callback);
 
-  // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
-  // TODO(hashimoto): Stop relying on |entry.resource_id()| crbug.com/275270
-  FileError RefreshEntry(const ResourceEntry& entry);
+  // Replaces an existing entry whose ID is |id| with |entry|.
+  FileError RefreshEntry(const std::string& id, const ResourceEntry& entry);
 
   // Recursively gets directories under the entry pointed to by |id|.
   void GetSubDirectoriesRecursively(const std::string& id,

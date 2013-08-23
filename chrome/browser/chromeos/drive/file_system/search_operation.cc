@@ -43,7 +43,7 @@ FileError RefreshEntriesOnBlockingPool(
       continue;  // Skip non-file entries.
 
     const std::string id = entry.resource_id();
-    FileError error = resource_metadata->RefreshEntry(entry);
+    FileError error = resource_metadata->RefreshEntry(id, entry);
     if (error == FILE_ERROR_NOT_FOUND) {
       // The result is absent in local resource metadata. This can happen if
       // the metadata is not synced to the latest server state yet. In that

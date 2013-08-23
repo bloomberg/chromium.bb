@@ -253,7 +253,8 @@ void ChangeListProcessor::RemoveEntry(const ResourceEntry& entry) {
 }
 
 void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry) {
-  FileError error = resource_metadata_->RefreshEntry(entry);
+  FileError error =
+      resource_metadata_->RefreshEntry(entry.resource_id(), entry);
 
   if (error == FILE_ERROR_OK)
     UpdateChangedDirs(entry);
@@ -321,7 +322,7 @@ FileError ChangeListProcessor::RefreshDirectory(
       continue;
     }
 
-    error = resource_metadata->RefreshEntry(entry);
+    error = resource_metadata->RefreshEntry(it->first, entry);
     if (error == FILE_ERROR_NOT_FOUND)  // If refreshing fails, try adding.
       error = resource_metadata->AddEntry(entry);
 
@@ -331,7 +332,8 @@ FileError ChangeListProcessor::RefreshDirectory(
 
   directory.mutable_directory_specific_info()->set_changestamp(
       directory_fetch_info.changestamp());
-  error = resource_metadata->RefreshEntry(directory);
+  error = resource_metadata->RefreshEntry(directory_fetch_info.resource_id(),
+                                          directory);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -340,9 +342,13 @@ FileError ChangeListProcessor::RefreshDirectory(
 }
 
 void ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
+  std::string root_local_id;
+  FileError error = resource_metadata_->GetIdByPath(
+      util::GetDriveMyDriveRootPath(), &root_local_id);
+
   ResourceEntry root;
-  FileError error = resource_metadata_->GetResourceEntryByPath(
-      util::GetDriveMyDriveRootPath(), &root);
+  if (error == FILE_ERROR_OK)
+    error = resource_metadata_->GetResourceEntryById(root_local_id, &root);
 
   if (error != FILE_ERROR_OK) {
     // TODO(satorux): Need to trigger recovery if root is corrupt.
@@ -353,7 +359,7 @@ void ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
   // The changestamp should always be updated.
   root.mutable_directory_specific_info()->set_changestamp(largest_changestamp);
 
-  error = resource_metadata_->RefreshEntry(root);
+  error = resource_metadata_->RefreshEntry(root_local_id, root);
 
   LOG_IF(WARNING, error != FILE_ERROR_OK) << "Failed to refresh root directory";
 }
