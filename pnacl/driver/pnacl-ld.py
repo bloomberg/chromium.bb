@@ -252,9 +252,6 @@ LDPatterns = [
   ( '-mmipselelf_nacl',      "env.set('ARCH', 'MIPS32')"),
   ( ('-m','mipselelf_nacl'), "env.set('ARCH', 'MIPS32')"),
 
-  ( ('(-?-wrap)', '(.+)'), AddToBCLinkFlags),
-  ( ('(-?-wrap=.+)'),      AddToBCLinkFlags),
-
   # NOTE: For scons tests, the code generation fPIC flag is used with pnacl-ld.
   ( '-fPIC',               "env.set('PIC', '1')"),
 
