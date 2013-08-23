@@ -309,7 +309,6 @@ _COPY_PATHS = (
   Path('chrome_sandbox', mode=04755,
        dest=_CHROME_SANDBOX_DEST),
   Path('chrome-wrapper'),
-  Path('chrome.pak'),
   Path('chrome_100_percent.pak'),
   Path('chrome_200_percent.pak',
        cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
