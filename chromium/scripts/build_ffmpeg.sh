@@ -374,6 +374,7 @@ if [ "$TARGET_OS" = "mac" ]; then
     add_flag_common --enable-yasm
     add_flag_common --cc=clang
     add_flag_common --cxx=clang++
+    add_flag_common --cpu=core2
     if [ "$TARGET_ARCH" = "ia32" ]; then
       add_flag_common --arch=i686
       add_flag_common --extra-cflags=-m32
