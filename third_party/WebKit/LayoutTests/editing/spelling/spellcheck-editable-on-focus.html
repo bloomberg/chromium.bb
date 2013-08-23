@@ -36,9 +36,9 @@ function test()
     function waitForMarkersToAppear(nretry)
     {
         if (nretry > 0
-            && !internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")
-            && !internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")
-            && !internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")) {
+            && (!internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")
+            || !internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")
+            || !internals.markerCountForNode(findFirstTextNode(testTextField), "spelling"))) {
             window.setTimeout(function() { waitForMarkersToAppear(nretry - 1); }, 5);
         } else {
             shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
