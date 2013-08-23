@@ -325,13 +325,18 @@ class AndroidDevices(object):
         for device_serial in devices:
             commands = AndroidCommands(executive, device_serial, self._debug_logging)
             if self._battery_level_for_device(commands) < AndroidDevices.MINIMUM_BATTERY_PERCENTAGE:
+                _log.warning('Device with serial "%s" skipped because it has less than %d percent battery.'
+                    % (commands.get_serial(), AndroidDevices.MINIMUM_BATTERY_PERCENTAGE))
+                continue
+
+            if not self._is_device_screen_on(commands):
+                _log.warning('Device with serial "%s" skipped because the screen must be on.' % commands.get_serial())
                 continue
 
             self._usable_devices.append(commands)
 
         if not self._usable_devices:
-            raise AssertionError('No devices attached with more than %d percent battery.' %
-                AndroidDevices.MINIMUM_BATTERY_PERCENTAGE)
+            raise AssertionError('No usable devices are available for running layout tests.')
 
         return self._usable_devices
 
@@ -356,6 +361,10 @@ class AndroidDevices(object):
             return 100
 
         return int(re.findall('level: (\d+)', battery_status)[0])
+
+    def _is_device_screen_on(self, commands):
+        power_status = commands.run(['shell', 'dumpsys', 'power'])
+        return 'mScreenOn=true' in power_status or 'mScreenOn=SCREEN_ON_BIT' in power_status
 
 
 class AndroidPort(chromium.ChromiumPort):

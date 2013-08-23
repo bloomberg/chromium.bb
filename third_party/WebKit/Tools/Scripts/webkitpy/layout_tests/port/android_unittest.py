@@ -71,6 +71,8 @@ class MockAndroidDebugBridge:
                 return 'mockoutput'
             if len(args) > 5 and args[5] == 'battery':
                 return 'level: 99'
+            if len(args) > 5 and args[5] == 'power':
+                return 'mScreenOn=true'
 
         return ''
 
