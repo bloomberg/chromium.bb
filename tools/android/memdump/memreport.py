@@ -202,7 +202,7 @@ def _RunManualGraph(package_name, interval):
 
   def _CollectStats(count):
     adb = android_commands.AndroidCommands()
-    pid_list = adb.ExtractPid('com.google.android.apps.chrome')
+    pid_list = adb.ExtractPid(package_name)
     memdump = adb.RunShellCommand('/data/local/tmp/memdump ' +
                                   ' '.join(pid_list))
     process_stats = _CollectMemoryStats(memdump,
