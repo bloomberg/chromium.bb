@@ -265,7 +265,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 } // namespace TestEventTargetV8Internal
 
-static const V8DOMConfiguration::BatchedMethod V8TestEventTargetMethods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestEventTargetMethods[] = {
     {"item", TestEventTargetV8Internal::itemMethodCallback, 0, 1},
     {"namedItem", TestEventTargetV8Internal::namedItemMethodCallback, 0, 1},
 };
@@ -275,7 +275,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::H
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestEventTarget", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestEventTarget::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestEventTarget", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestEventTarget::internalFieldCount,
         0, 0,
         V8TestEventTargetMethods, WTF_ARRAY_LENGTH(V8TestEventTargetMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.

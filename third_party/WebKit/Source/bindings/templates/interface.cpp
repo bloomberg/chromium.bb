@@ -57,7 +57,7 @@ namespace {{cpp_class_name}}V8Internal {
 template <typename T> void V8_USE(T) { }
 
 {% for attribute in attributes %}
-static void {{attribute.name}}AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {{attribute.cpp_type}} result = imp->{{attribute.cpp_method_name}}();
@@ -70,10 +70,10 @@ static void {{attribute.name}}AttrGetter(v8::Local<v8::String> name, const v8::P
     }
 }
 
-static void {{attribute.name}}AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttrGetter(name, info);
+    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -82,9 +82,9 @@ static void {{attribute.name}}AttrGetterCallback(v8::Local<v8::String> name, con
 } // namespace {{cpp_class_name}}V8Internal
 
 {% if attributes %}
-static const V8DOMConfiguration::BatchedAttribute {{v8_class_name}}Attributes[] = {
+static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
 {% for attribute in attributes %}
-    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 {% endfor %}
 };
 
@@ -96,7 +96,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
         {{attribute_templates}}, {{number_of_attributes}},
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.

@@ -66,32 +66,32 @@ namespace EventV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void locationAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void locationAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
     return;
 }
 
-static void locationAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void locationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    EventV8Internal::locationAttrGetter(name, info);
+    EventV8Internal::locationAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void keyLocationAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void keyLocationAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
     return;
 }
 
-static void keyLocationAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     UseCounter::countDeprecation(activeDOMWindow(), UseCounter::KeyboardEventKeyLocation);
-    EventV8Internal::keyLocationAttrGetter(name, info);
+    EventV8Internal::keyLocationAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -117,11 +117,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 }
 } // namespace EventV8Internal
 
-static const V8DOMConfiguration::BatchedAttribute V8TestExtendedEventAttrs[] = {
-    // Attribute 'location'
-    {"location", EventV8Internal::locationAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'keyLocation'
-    {"keyLocation", EventV8Internal::keyLocationAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+static const V8DOMConfiguration::AttributeConfiguration V8TestExtendedEventAttributes[] = {
+    {"location", EventV8Internal::locationAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"keyLocation", EventV8Internal::keyLocationAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 bool fillEventInit(EventInit& eventInit, const Dictionary& options)
@@ -157,10 +155,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8:
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::testEnabled())
-        defaultSignature = V8DOMConfiguration::configureTemplate(desc, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
-        V8TestExtendedEventAttrs, WTF_ARRAY_LENGTH(V8TestExtendedEventAttrs),
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
+        V8TestExtendedEventAttributes, WTF_ARRAY_LENGTH(V8TestExtendedEventAttributes),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestExtendedEvent::constructorCallback);

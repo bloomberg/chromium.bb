@@ -52,6 +52,7 @@ public:
     }
     static void installPerContextProperties(v8::Handle<v8::Object>, TestTypedefs*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+
 private:
     friend v8::Handle<v8::Object> wrap(TestTypedefs*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestTypedefs>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -62,7 +63,6 @@ class WrapperTypeTraits<TestTypedefs > {
 public:
     static WrapperTypeInfo* info() { return &V8TestTypedefs::info; }
 };
-
 
 inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -122,25 +122,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestTypedefs*
 }
 
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr< TestTypedefs > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<TestTypedefs > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr< TestTypedefs > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestTypedefs > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValue(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr< TestTypedefs > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestTypedefs > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr< TestTypedefs > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestTypedefs > impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }

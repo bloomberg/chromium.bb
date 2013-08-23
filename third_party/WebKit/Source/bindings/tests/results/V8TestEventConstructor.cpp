@@ -62,31 +62,31 @@ namespace TestEventConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void attr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr1(), info.GetIsolate());
     return;
 }
 
-static void attr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestEventConstructorV8Internal::attr1AttrGetter(name, info);
+    TestEventConstructorV8Internal::attr1AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void attr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr2(), info.GetIsolate());
     return;
 }
 
-static void attr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestEventConstructorV8Internal::attr2AttrGetter(name, info);
+    TestEventConstructorV8Internal::attr2AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -112,11 +112,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 }
 } // namespace TestEventConstructorV8Internal
 
-static const V8DOMConfiguration::BatchedAttribute V8TestEventConstructorAttrs[] = {
-    // Attribute 'attr1'
-    {"attr1", TestEventConstructorV8Internal::attr1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'attr2'
-    {"attr2", TestEventConstructorV8Internal::attr2AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+static const V8DOMConfiguration::AttributeConfiguration V8TestEventConstructorAttributes[] = {
+    {"attr1", TestEventConstructorV8Internal::attr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"attr2", TestEventConstructorV8Internal::attr2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 bool fillTestEventConstructorInit(TestEventConstructorInit& eventInit, const Dictionary& options)
@@ -146,8 +144,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventConstructorTemplate(
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestEventConstructor", v8::Local<v8::FunctionTemplate>(), V8TestEventConstructor::internalFieldCount,
-        V8TestEventConstructorAttrs, WTF_ARRAY_LENGTH(V8TestEventConstructorAttrs),
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestEventConstructor", v8::Local<v8::FunctionTemplate>(), V8TestEventConstructor::internalFieldCount,
+        V8TestEventConstructorAttributes, WTF_ARRAY_LENGTH(V8TestEventConstructorAttributes),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestEventConstructor::constructorCallback);

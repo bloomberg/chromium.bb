@@ -52,42 +52,42 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     v8::Handle<v8::Object> holder = args.Holder();
     HTMLCanvasElement* imp = V8HTMLCanvasElement::toNative(holder);
     String contextId = toWebCoreString(args[0]);
-    RefPtr<CanvasContextAttributes> attrs;
+    RefPtr<CanvasContextAttributes> attributes;
     if (contextId == "webgl" || contextId == "experimental-webgl" || contextId == "webkit-3d") {
-        RefPtr<WebGLContextAttributes> webGLAttrs = WebGLContextAttributes::create();
+        RefPtr<WebGLContextAttributes> webGLAttributes = WebGLContextAttributes::create();
         if (args.Length() > 1 && args[1]->IsObject()) {
-            v8::Handle<v8::Object> jsAttrs = args[1]->ToObject();
+            v8::Handle<v8::Object> jsAttributes = args[1]->ToObject();
             v8::Handle<v8::String> alpha = v8::String::NewSymbol("alpha");
-            if (jsAttrs->Has(alpha))
-                webGLAttrs->setAlpha(jsAttrs->Get(alpha)->BooleanValue());
+            if (jsAttributes->Has(alpha))
+                webGLAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());
             v8::Handle<v8::String> depth = v8::String::NewSymbol("depth");
-            if (jsAttrs->Has(depth))
-                webGLAttrs->setDepth(jsAttrs->Get(depth)->BooleanValue());
+            if (jsAttributes->Has(depth))
+                webGLAttributes->setDepth(jsAttributes->Get(depth)->BooleanValue());
             v8::Handle<v8::String> stencil = v8::String::NewSymbol("stencil");
-            if (jsAttrs->Has(stencil))
-                webGLAttrs->setStencil(jsAttrs->Get(stencil)->BooleanValue());
+            if (jsAttributes->Has(stencil))
+                webGLAttributes->setStencil(jsAttributes->Get(stencil)->BooleanValue());
             v8::Handle<v8::String> antialias = v8::String::NewSymbol("antialias");
-            if (jsAttrs->Has(antialias))
-                webGLAttrs->setAntialias(jsAttrs->Get(antialias)->BooleanValue());
+            if (jsAttributes->Has(antialias))
+                webGLAttributes->setAntialias(jsAttributes->Get(antialias)->BooleanValue());
             v8::Handle<v8::String> premultipliedAlpha = v8::String::NewSymbol("premultipliedAlpha");
-            if (jsAttrs->Has(premultipliedAlpha))
-                webGLAttrs->setPremultipliedAlpha(jsAttrs->Get(premultipliedAlpha)->BooleanValue());
+            if (jsAttributes->Has(premultipliedAlpha))
+                webGLAttributes->setPremultipliedAlpha(jsAttributes->Get(premultipliedAlpha)->BooleanValue());
             v8::Handle<v8::String> preserveDrawingBuffer = v8::String::NewSymbol("preserveDrawingBuffer");
-            if (jsAttrs->Has(preserveDrawingBuffer))
-                webGLAttrs->setPreserveDrawingBuffer(jsAttrs->Get(preserveDrawingBuffer)->BooleanValue());
+            if (jsAttributes->Has(preserveDrawingBuffer))
+                webGLAttributes->setPreserveDrawingBuffer(jsAttributes->Get(preserveDrawingBuffer)->BooleanValue());
         }
-        attrs = webGLAttrs;
+        attributes = webGLAttributes;
     } else {
-        RefPtr<Canvas2DContextAttributes> canvas2DAttrs = Canvas2DContextAttributes::create();
+        RefPtr<Canvas2DContextAttributes> canvas2DAttributes = Canvas2DContextAttributes::create();
         if (args.Length() > 1 && args[1]->IsObject()) {
-            v8::Handle<v8::Object> jsAttrs = args[1]->ToObject();
+            v8::Handle<v8::Object> jsAttributes = args[1]->ToObject();
             v8::Handle<v8::String> alpha = v8::String::NewSymbol("alpha");
-            if (jsAttrs->Has(alpha))
-                canvas2DAttrs->setAlpha(jsAttrs->Get(alpha)->BooleanValue());
+            if (jsAttributes->Has(alpha))
+                canvas2DAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());
         }
-        attrs = canvas2DAttrs;
+        attributes = canvas2DAttributes;
     }
-    CanvasRenderingContext* result = imp->getContext(contextId, attrs.get());
+    CanvasRenderingContext* result = imp->getContext(contextId, attributes.get());
     if (!result) {
         v8SetReturnValueNull(args);
         return;

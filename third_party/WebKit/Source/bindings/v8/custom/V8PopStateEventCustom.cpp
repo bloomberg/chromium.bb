@@ -46,7 +46,7 @@ static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8
     return state;
 }
 
-void V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8PopStateEvent::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state());
 

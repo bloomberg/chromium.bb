@@ -33,22 +33,22 @@
 
 namespace WebCore {
 
-void V8DOMConfiguration::batchConfigureAttributes(v8::Handle<v8::ObjectTemplate> instance, v8::Handle<v8::ObjectTemplate> prototype, const BatchedAttribute* attributes, size_t attributeCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instance, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     for (size_t i = 0; i < attributeCount; ++i)
-        configureAttribute(instance, prototype, attributes[i], isolate, currentWorldType);
+        installAttribute(instance, prototype, attributes[i], isolate, currentWorldType);
 }
 
-void V8DOMConfiguration::batchConfigureConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const BatchedConstant* constants, size_t constantCount, v8::Isolate* isolate)
+void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < constantCount; ++i) {
-        const BatchedConstant* constant = &constants[i];
+        const ConstantConfiguration* constant = &constants[i];
         functionDescriptor->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), v8::ReadOnly);
         prototype->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), v8::ReadOnly);
     }
 }
 
-void V8DOMConfiguration::batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const BatchedMethod* callbacks, size_t callbackCount, v8::Isolate*, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate*, WrapperWorldType currentWorldType)
 {
     for (size_t i = 0; i < callbackCount; ++i) {
         v8::FunctionCallback callback = callbacks[i].callback;
@@ -58,8 +58,8 @@ void V8DOMConfiguration::batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate> 
     }
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::configureTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass,
-    size_t fieldCount, const BatchedAttribute* attributes, size_t attributeCount, const BatchedMethod* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass,
+    size_t fieldCount, const AttributeConfiguration* attributes, size_t attributeCount, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionDescriptor->SetClassName(v8::String::NewSymbol(interfaceName));
     v8::Local<v8::ObjectTemplate> instance = functionDescriptor->InstanceTemplate();
@@ -74,10 +74,10 @@ v8::Local<v8::Signature> V8DOMConfiguration::configureTemplate(v8::Handle<v8::Fu
     }
 
     if (attributeCount)
-        batchConfigureAttributes(instance, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
+        installAttributes(instance, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(functionDescriptor);
     if (callbackCount)
-        batchConfigureCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate, currentWorldType);
+        installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate, currentWorldType);
     return defaultSignature;
 }
 

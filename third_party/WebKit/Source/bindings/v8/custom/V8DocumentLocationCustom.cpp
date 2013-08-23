@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-void V8Document::locationAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Document::locationAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Document* document = V8Document::toNative(info.Holder());
     if (!document->frame()) {
@@ -44,7 +44,7 @@ void V8Document::locationAttrGetterCustom(v8::Local<v8::String> name, const v8::
     v8SetReturnValueFast(info, window->location(), document);
 }
 
-void V8Document::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8Document::locationAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     Document* document = V8Document::toNative(info.Holder());
     if (!document->frame())

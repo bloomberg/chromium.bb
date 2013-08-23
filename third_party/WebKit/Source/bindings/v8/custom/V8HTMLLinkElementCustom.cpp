@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-void V8HTMLLinkElement::sizesAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8HTMLLinkElement::sizesAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     HTMLLinkElement* imp = V8HTMLLinkElement::toNative(info.Holder());
     imp->setSizes(toWebCoreString(value));

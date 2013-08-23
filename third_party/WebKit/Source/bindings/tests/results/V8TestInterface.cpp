@@ -72,7 +72,7 @@ template <typename T> void V8_USE(T) { }
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStaticReadOnlyAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueInt(info, TestImplements::implementsStaticReadOnlyAttr());
     return;
@@ -82,10 +82,10 @@ static void implementsStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, c
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStaticReadOnlyAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -93,7 +93,7 @@ static void implementsStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String>
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStaticAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueString(info, TestImplements::implementsStaticAttr(), info.GetIsolate());
     return;
@@ -103,10 +103,10 @@ static void implementsStaticAttrAttrGetter(v8::Local<v8::String> name, const v8:
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStaticAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::implementsStaticAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::implementsStaticAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -114,7 +114,7 @@ static void implementsStaticAttrAttrGetterCallback(v8::Local<v8::String> name, c
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsStaticAttrAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestImplements::setImplementsStaticAttr(v);
@@ -125,10 +125,10 @@ static void implementsStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsStaticAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::implementsStaticAttrAttrSetter(name, value, info);
+    TestInterfaceV8Internal::implementsStaticAttrAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -136,7 +136,7 @@ static void implementsStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueString(info, TestImplements::implementsStr1(imp), info.GetIsolate());
@@ -147,10 +147,10 @@ static void implementsStr1AttrGetter(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::implementsStr1AttrGetter(name, info);
+    TestInterfaceV8Internal::implementsStr1AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -158,7 +158,7 @@ static void implementsStr1AttrGetterCallback(v8::Local<v8::String> name, const v
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueString(info, TestImplements::implementsStr2(imp), info.GetIsolate());
@@ -169,10 +169,10 @@ static void implementsStr2AttrGetter(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::implementsStr2AttrGetter(name, info);
+    TestInterfaceV8Internal::implementsStr2AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -180,7 +180,7 @@ static void implementsStr2AttrGetterCallback(v8::Local<v8::String> name, const v
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsStr2AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
@@ -192,10 +192,10 @@ static void implementsStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr2AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsStr2AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::implementsStr2AttrSetter(name, value, info);
+    TestInterfaceV8Internal::implementsStr2AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -203,10 +203,10 @@ static void implementsStr2AttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr3AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsStr3AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    V8TestInterface::implementsStr3AttrGetterCustom(name, info);
+    V8TestInterface::implementsStr3AttributeGetterCustom(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -214,10 +214,10 @@ static void implementsStr3AttrGetterCallback(v8::Local<v8::String> name, const v
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsStr3AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    V8TestInterface::implementsStr3AttrSetterCustom(name, value, info);
+    V8TestInterface::implementsStr3AttributeSetterCustom(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -225,7 +225,7 @@ static void implementsStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsNodeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestImplements::implementsNode(imp), imp);
@@ -236,10 +236,10 @@ static void implementsNodeAttrGetter(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsNodeAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void implementsNodeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::implementsNodeAttrGetter(name, info);
+    TestInterfaceV8Internal::implementsNodeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -247,7 +247,7 @@ static void implementsNodeAttrGetterCallback(v8::Local<v8::String> name, const v
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsNodeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -259,10 +259,10 @@ static void implementsNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void implementsNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void implementsNodeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::implementsNodeAttrSetter(name, value, info);
+    TestInterfaceV8Internal::implementsNodeAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -270,7 +270,7 @@ static void implementsNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node23AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node23AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestImplements::node23(imp), imp);
@@ -281,10 +281,10 @@ static void Node23AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node23AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node23AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node23AttrGetter(name, info);
+    TestInterfaceV8Internal::Node23AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -292,7 +292,7 @@ static void Node23AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node23AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node23AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -304,10 +304,10 @@ static void Node23AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node23AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node23AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node23AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node23AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -315,7 +315,7 @@ static void Node23AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node24AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node24AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestImplements::node24(imp), imp);
@@ -326,10 +326,10 @@ static void Node24AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node24AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node24AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node24AttrGetter(name, info);
+    TestInterfaceV8Internal::Node24AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -337,7 +337,7 @@ static void Node24AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node24AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node24AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -349,10 +349,10 @@ static void Node24AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node24AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node24AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node24AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node24AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -360,7 +360,7 @@ static void Node24AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node25AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node25AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestImplements::node25(imp), imp);
@@ -371,10 +371,10 @@ static void Node25AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node25AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node25AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node25AttrGetter(name, info);
+    TestInterfaceV8Internal::Node25AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -382,7 +382,7 @@ static void Node25AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node25AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node25AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -394,10 +394,10 @@ static void Node25AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
-static void Node25AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node25AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node25AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node25AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -405,7 +405,7 @@ static void Node25AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStaticReadOnlyAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueInt(info, TestPartialInterface::supplementalStaticReadOnlyAttr());
     return;
@@ -415,10 +415,10 @@ static void supplementalStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name,
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStaticReadOnlyAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -426,7 +426,7 @@ static void supplementalStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::Strin
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStaticAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueString(info, TestPartialInterface::supplementalStaticAttr(), info.GetIsolate());
     return;
@@ -436,10 +436,10 @@ static void supplementalStaticAttrAttrGetter(v8::Local<v8::String> name, const v
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStaticAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::supplementalStaticAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStaticAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -447,7 +447,7 @@ static void supplementalStaticAttrAttrGetterCallback(v8::Local<v8::String> name,
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalStaticAttrAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestPartialInterface::setSupplementalStaticAttr(v);
@@ -458,10 +458,10 @@ static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Loc
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalStaticAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::supplementalStaticAttrAttrSetter(name, value, info);
+    TestInterfaceV8Internal::supplementalStaticAttrAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -469,7 +469,7 @@ static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name,
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueString(info, TestPartialInterface::supplementalStr1(imp), info.GetIsolate());
@@ -480,10 +480,10 @@ static void supplementalStr1AttrGetter(v8::Local<v8::String> name, const v8::Pro
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::supplementalStr1AttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStr1AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -491,7 +491,7 @@ static void supplementalStr1AttrGetterCallback(v8::Local<v8::String> name, const
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueString(info, TestPartialInterface::supplementalStr2(imp), info.GetIsolate());
@@ -502,10 +502,10 @@ static void supplementalStr2AttrGetter(v8::Local<v8::String> name, const v8::Pro
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::supplementalStr2AttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStr2AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -513,7 +513,7 @@ static void supplementalStr2AttrGetterCallback(v8::Local<v8::String> name, const
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalStr2AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
@@ -525,10 +525,10 @@ static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalStr2AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::supplementalStr2AttrSetter(name, value, info);
+    TestInterfaceV8Internal::supplementalStr2AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -536,10 +536,10 @@ static void supplementalStr2AttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr3AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalStr3AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    V8TestInterface::supplementalStr3AttrGetterCustom(name, info);
+    V8TestInterface::supplementalStr3AttributeGetterCustom(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -547,10 +547,10 @@ static void supplementalStr3AttrGetterCallback(v8::Local<v8::String> name, const
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalStr3AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    V8TestInterface::supplementalStr3AttrSetterCustom(name, value, info);
+    V8TestInterface::supplementalStr3AttributeSetterCustom(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -558,7 +558,7 @@ static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalNodeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestPartialInterface::supplementalNode(imp), imp);
@@ -569,10 +569,10 @@ static void supplementalNodeAttrGetter(v8::Local<v8::String> name, const v8::Pro
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void supplementalNodeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::supplementalNodeAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalNodeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -580,7 +580,7 @@ static void supplementalNodeAttrGetterCallback(v8::Local<v8::String> name, const
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalNodeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -592,10 +592,10 @@ static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void supplementalNodeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::supplementalNodeAttrSetter(name, value, info);
+    TestInterfaceV8Internal::supplementalNodeAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -603,7 +603,7 @@ static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node13AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestPartialInterface::node13(imp), imp);
@@ -614,10 +614,10 @@ static void Node13AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node13AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node13AttrGetter(name, info);
+    TestInterfaceV8Internal::Node13AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -625,7 +625,7 @@ static void Node13AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node13AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -637,10 +637,10 @@ static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node13AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node13AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node13AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -648,7 +648,7 @@ static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node14AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestPartialInterface::node14(imp), imp);
@@ -659,10 +659,10 @@ static void Node14AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node14AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node14AttrGetter(name, info);
+    TestInterfaceV8Internal::Node14AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -670,7 +670,7 @@ static void Node14AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node14AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -682,10 +682,10 @@ static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node14AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node14AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node14AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -693,7 +693,7 @@ static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node15AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     v8SetReturnValueFast(info, TestPartialInterface::node15(imp), imp);
@@ -704,10 +704,10 @@ static void Node15AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallb
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void Node15AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node15AttrGetter(name, info);
+    TestInterfaceV8Internal::Node15AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -715,7 +715,7 @@ static void Node15AttrGetterCallback(v8::Local<v8::String> name, const v8::Prope
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node15AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -727,10 +727,10 @@ static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void Node15AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node15AttrSetter(name, value, info);
+    TestInterfaceV8Internal::Node15AttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -1021,58 +1021,46 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 } // namespace TestInterfaceV8Internal
 
-static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceAttrs[] = {
+static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsStaticReadOnlyAttr'
-    {"implementsStaticReadOnlyAttr", TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsStaticReadOnlyAttr", TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsStaticAttr'
-    {"implementsStaticAttr", TestInterfaceV8Internal::implementsStaticAttrAttrGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsStaticAttr", TestInterfaceV8Internal::implementsStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsStr1'
-    {"implementsStr1", TestInterfaceV8Internal::implementsStr1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsStr1", TestInterfaceV8Internal::implementsStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsStr2'
-    {"implementsStr2", TestInterfaceV8Internal::implementsStr2AttrGetterCallback, TestInterfaceV8Internal::implementsStr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsStr2", TestInterfaceV8Internal::implementsStr2AttributeGetterCallback, TestInterfaceV8Internal::implementsStr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsStr3'
-    {"implementsStr3", TestInterfaceV8Internal::implementsStr3AttrGetterCallback, TestInterfaceV8Internal::implementsStr3AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsStr3", TestInterfaceV8Internal::implementsStr3AttributeGetterCallback, TestInterfaceV8Internal::implementsStr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    // Attribute 'implementsNode'
-    {"implementsNode", TestInterfaceV8Internal::implementsNodeAttrGetterCallback, TestInterfaceV8Internal::implementsNodeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"implementsNode", TestInterfaceV8Internal::implementsNodeAttributeGetterCallback, TestInterfaceV8Internal::implementsNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStaticReadOnlyAttr'
-    {"supplementalStaticReadOnlyAttr", TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalStaticReadOnlyAttr", TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStaticAttr'
-    {"supplementalStaticAttr", TestInterfaceV8Internal::supplementalStaticAttrAttrGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalStaticAttr", TestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr1'
-    {"supplementalStr1", TestInterfaceV8Internal::supplementalStr1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalStr1", TestInterfaceV8Internal::supplementalStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr2'
-    {"supplementalStr2", TestInterfaceV8Internal::supplementalStr2AttrGetterCallback, TestInterfaceV8Internal::supplementalStr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalStr2", TestInterfaceV8Internal::supplementalStr2AttributeGetterCallback, TestInterfaceV8Internal::supplementalStr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr3'
-    {"supplementalStr3", TestInterfaceV8Internal::supplementalStr3AttrGetterCallback, TestInterfaceV8Internal::supplementalStr3AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalStr3", TestInterfaceV8Internal::supplementalStr3AttributeGetterCallback, TestInterfaceV8Internal::supplementalStr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalNode'
-    {"supplementalNode", TestInterfaceV8Internal::supplementalNodeAttrGetterCallback, TestInterfaceV8Internal::supplementalNodeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"supplementalNode", TestInterfaceV8Internal::supplementalNodeAttributeGetterCallback, TestInterfaceV8Internal::supplementalNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
-static const V8DOMConfiguration::BatchedMethod V8TestInterfaceMethods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"implementsMethod1", TestInterfaceV8Internal::implementsMethod1MethodCallback, 0, 0},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -1087,7 +1075,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestInterfaceMethods[] = {
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
-static const V8DOMConfiguration::BatchedConstant V8TestInterfaceConsts[] = {
+static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"IMPLEMENTSCONSTANT1", 1},
 #endif
@@ -1101,7 +1089,6 @@ static const V8DOMConfiguration::BatchedConstant V8TestInterfaceConsts[] = {
     {"SUPPLEMENTALCONSTANT2", 2},
 #endif
 };
-
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TestInterfaceEnumIMPLEMENTSCONSTANT1IsWrongUseDoNotCheckConstants);
@@ -1137,8 +1124,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
-        V8TestInterfaceAttrs, WTF_ARRAY_LENGTH(V8TestInterfaceAttrs),
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
+        V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
         V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestInterface::constructorCallback);
@@ -1150,20 +1137,18 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
     if (RuntimeEnabledFeatures::condition23Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node23'
-        {"Node23", TestInterfaceV8Internal::Node23AttrGetterCallback, TestInterfaceV8Internal::Node23AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"Node23", TestInterfaceV8Internal::Node23AttributeGetterCallback, TestInterfaceV8Internal::Node23AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (RuntimeEnabledFeatures::condition13Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node13'
-        {"Node13", TestInterfaceV8Internal::Node13AttrGetterCallback, TestInterfaceV8Internal::Node13AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"Node13", TestInterfaceV8Internal::Node13AttributeGetterCallback, TestInterfaceV8Internal::Node13AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -1190,7 +1175,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 #if ENABLE(Condition11) || ENABLE(Condition12)
     desc->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-    V8DOMConfiguration::batchConfigureConstants(desc, proto, V8TestInterfaceConsts, WTF_ARRAY_LENGTH(V8TestInterfaceConsts), isolate);
+    V8DOMConfiguration::installConstants(desc, proto, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -1230,37 +1215,33 @@ void V8TestInterface::installPerContextProperties(v8::Handle<v8::Object> instanc
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
     if (ContextFeatures::condition24Enabled(impl->document())) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node24'
-        {"Node24", TestInterfaceV8Internal::Node24AttrGetterCallback, TestInterfaceV8Internal::Node24AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
+        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        {"Node24", TestInterfaceV8Internal::Node24AttributeGetterCallback, TestInterfaceV8Internal::Node24AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
     if (ContextFeatures::condition26Enabled(impl->document()) && RuntimeEnabledFeatures::condition25Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node25'
-        {"Node25", TestInterfaceV8Internal::Node25AttrGetterCallback, TestInterfaceV8Internal::Node25AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
+        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        {"Node25", TestInterfaceV8Internal::Node25AttributeGetterCallback, TestInterfaceV8Internal::Node25AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (ContextFeatures::condition14Enabled(impl->document())) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node14'
-        {"Node14", TestInterfaceV8Internal::Node14AttrGetterCallback, TestInterfaceV8Internal::Node14AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
+        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        {"Node14", TestInterfaceV8Internal::Node14AttributeGetterCallback, TestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (ContextFeatures::condition16Enabled(impl->document()) && RuntimeEnabledFeatures::condition15Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node15'
-        {"Node15", TestInterfaceV8Internal::Node15AttrGetterCallback, TestInterfaceV8Internal::Node15AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
+        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        {"Node15", TestInterfaceV8Internal::Node15AttributeGetterCallback, TestInterfaceV8Internal::Node15AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 }

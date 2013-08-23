@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-void V8Event::clipboardDataAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Event::clipboardDataAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* event = V8Event::toNative(info.Holder());
 

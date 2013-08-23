@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-void V8History::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8History::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     History* history = V8History::toNative(info.Holder());
 

@@ -701,14 +701,14 @@ END
         if (HasCustomGetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
-    static void ${name}AttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void ${name}AttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
         if (HasCustomSetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
-    static void ${name}AttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    static void ${name}AttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
@@ -792,6 +792,7 @@ END
     friend v8::Handle<v8::Object> wrap(Node*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     }
+    $header{classPublic}->add("\n");  # blank line to separate classPrivate
 
     my $noToV8 = $interface->extendedAttributes->{"DoNotGenerateToV8"};
     my $noWrap = $interface->extendedAttributes->{"DoNotGenerateWrap"} || $noToV8;
@@ -810,7 +811,6 @@ class WrapperTypeTraits<${nativeType} > {
 public:
     static WrapperTypeInfo* info() { return &${v8ClassName}::info; }
 };
-
 END
 
     my $customWrap = $interface->extendedAttributes->{"CustomToV8"};
@@ -919,25 +919,25 @@ END
 
     $header{nameSpaceWebCore}->add(<<END);
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValue(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
@@ -1142,7 +1142,7 @@ sub GenerateDomainSafeFunctionGetter
     AddToImplIncludes("core/page/Frame.h");
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static const char* privateTemplateUniqueKey = "${funcName}PrivateTemplate";
@@ -1176,10 +1176,10 @@ static void ${funcName}AttrGetter(v8::Local<v8::String> name, const v8::Property
 
 END
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    ${implClassName}V8Internal::${funcName}AttrGetter(name, info);
+    ${implClassName}V8Internal::${funcName}AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -1293,7 +1293,7 @@ END
     return $code;
 }
 
-sub GenerateNormalAttrGetterCallback
+sub GenerateNormalAttributeGetterCallback
 {
     my $attribute = shift;
     my $interface = shift;
@@ -1308,7 +1308,7 @@ sub GenerateNormalAttrGetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttrGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
@@ -1317,9 +1317,9 @@ sub GenerateNormalAttrGetterCallback
         $code .= GenerateActivityLogging("Getter", $interface, "${attrName}");
     }
     if (HasCustomGetter($attrExt)) {
-        $code .= "    ${v8ClassName}::${attrName}AttrGetterCustom(name, info);\n";
+        $code .= "    ${v8ClassName}::${attrName}AttributeGetterCustom(name, info);\n";
     } else {
-        $code .= "    ${implClassName}V8Internal::${attrName}AttrGetter${forMainWorldSuffix}(name, info);\n";
+        $code .= "    ${implClassName}V8Internal::${attrName}AttributeGetter${forMainWorldSuffix}(name, info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
@@ -1328,7 +1328,7 @@ sub GenerateNormalAttrGetterCallback
     $implementation{nameSpaceInternal}->add($code);
 }
 
-sub GetCachedAttr
+sub GetCachedAttribute
 {
     my $attribute = shift;
     my $attrExt = $attribute->extendedAttributes;
@@ -1338,7 +1338,7 @@ sub GetCachedAttr
     return "";
 }
 
-sub GenerateNormalAttrGetter
+sub GenerateNormalAttributeGetter
 {
     my $attribute = shift;
     my $interface = shift;
@@ -1350,7 +1350,7 @@ sub GenerateNormalAttrGetter
     my $attrExt = $attribute->extendedAttributes;
     my $attrName = $attribute->name;
     my $attrType = $attribute->type;
-    my $attrCached = GetCachedAttr($attribute);
+    my $attrCached = GetCachedAttribute($attribute);
 
     if (HasCustomGetter($attrExt)) {
         return;
@@ -1364,7 +1364,7 @@ sub GenerateNormalAttrGetter
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
     $code .= <<END;
-static void ${attrName}AttrGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${attrName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
 END
     if ($svgNativeType) {
@@ -1677,26 +1677,26 @@ sub ShouldKeepAttributeAlive
     return 1;
 }
 
-sub GenerateReplaceableAttrSetterCallback
+sub GenerateReplaceableAttributeSetterCallback
 {
     my $interface = shift;
     my $implClassName = GetImplName($interface);
 
     my $code = "";
-    $code .= "static void ${implClassName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
+    $code .= "static void ${implClassName}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
     $code .= GenerateCustomElementInvocationScopeIfNeeded($interface->extendedAttributes);
     if (HasActivityLogging("", $interface->extendedAttributes, "Setter")) {
-         die "IDL error: ActivityLog attribute cannot exist on a ReplacableAttrSetterCallback";
+         die "IDL error: ActivityLog attribute cannot exist on a ReplacableAttributeSetterCallback";
     }
-    $code .= "    ${implClassName}V8Internal::${implClassName}ReplaceableAttrSetter(name, value, info);\n";
+    $code .= "    ${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetter(name, value, info);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 
-sub GenerateReplaceableAttrSetter
+sub GenerateReplaceableAttributeSetter
 {
     my $interface = shift;
 
@@ -1705,7 +1705,7 @@ sub GenerateReplaceableAttrSetter
 
     my $code = "";
     $code .= <<END;
-static void ${implClassName}ReplaceableAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void ${implClassName}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
 END
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
@@ -1747,7 +1747,7 @@ END
     return $code;
 }
 
-sub GenerateNormalAttrSetterCallback
+sub GenerateNormalAttributeSetterCallback
 {
     my $attribute = shift;
     my $interface = shift;
@@ -1762,7 +1762,7 @@ sub GenerateNormalAttrSetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
+    $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMSetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
@@ -1772,9 +1772,9 @@ sub GenerateNormalAttrSetterCallback
     }
     $code .= GenerateCustomElementInvocationScopeIfNeeded($attrExt);
     if (HasCustomSetter($attrExt)) {
-        $code .= "    ${v8ClassName}::${attrName}AttrSetterCustom(name, value, info);\n";
+        $code .= "    ${v8ClassName}::${attrName}AttributeSetterCustom(name, value, info);\n";
     } else {
-        $code .= "    ${implClassName}V8Internal::${attrName}AttrSetter${forMainWorldSuffix}(name, value, info);\n";
+        $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(name, value, info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
@@ -1782,7 +1782,7 @@ sub GenerateNormalAttrSetterCallback
     $implementation{nameSpaceInternal}->add($code);
 }
 
-sub GenerateNormalAttrSetter
+sub GenerateNormalAttributeSetter
 {
     my $attribute = shift;
     my $interface = shift;
@@ -1794,7 +1794,7 @@ sub GenerateNormalAttrSetter
     my $attrName = $attribute->name;
     my $attrExt = $attribute->extendedAttributes;
     my $attrType = $attribute->type;
-    my $attrCached = GetCachedAttr($attribute);
+    my $attrCached = GetCachedAttribute($attribute);
 
     if (HasCustomSetter($attrExt)) {
         return;
@@ -1803,7 +1803,7 @@ sub GenerateNormalAttrSetter
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
-    $code .= "static void ${attrName}AttrSetter${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
+    $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
 
     # If the "StrictTypeChecking" extended attribute is present, and the attribute's type is an
@@ -1851,6 +1851,7 @@ END
             AddToImplIncludes("${namespace}.h");
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
             $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, value);\n";
+            # Attr (not Attribute) used in content attributes
             $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n";
             $code .= "}\n\n";
             $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2924,7 +2925,7 @@ END
     return $content;
 }
 
-sub GenerateBatchedAttributeData
+sub GenerateAttributeConfigurationArray
 {
     my $interface = shift;
     my $attributes = shift;
@@ -2934,14 +2935,14 @@ sub GenerateBatchedAttributeData
         my $conditionalString = GenerateConditionalString($attribute);
         my $subCode = "";
         $subCode .= "#if ${conditionalString}\n" if $conditionalString;
-        $subCode .= GenerateSingleBatchedAttribute($interface, $attribute, ",", "");
+        $subCode .= GenerateAttributeConfiguration($interface, $attribute, ",", "");
         $subCode .= "#endif // ${conditionalString}\n" if $conditionalString;
         $code .= $subCode;
     }
     return $code;
 }
 
-sub GenerateSingleBatchedAttribute
+sub GenerateAttributeConfiguration
 {
     my $interface = shift;
     my $attribute = shift;
@@ -2978,7 +2979,7 @@ sub GenerateSingleBatchedAttribute
     my $setter;
     my $getterForMainWorld;
     my $setterForMainWorld;
-    my $propAttr = "v8::None";
+    my $propAttribute = "v8::None";
 
     my $isConstructor = ($attribute->type =~ /Constructor$/);
 
@@ -2986,14 +2987,14 @@ sub GenerateSingleBatchedAttribute
     # As per Web IDL specification, constructor properties on the ECMAScript global object should be
     # configurable and should not be enumerable.
     if ($attrExt->{"NotEnumerable"} || $isConstructor) {
-        $propAttr .= " | v8::DontEnum";
+        $propAttribute .= " | v8::DontEnum";
     }
     if ($attrExt->{"Unforgeable"} && !$isConstructor) {
-        $propAttr .= " | v8::DontDelete";
+        $propAttribute .= " | v8::DontDelete";
     }
 
     my $on_proto = "0 /* on instance */";
-    my $data = "0 /* no data */";
+    my $data = "0";  # no data
 
     # Constructor
     if ($isConstructor) {
@@ -3007,18 +3008,18 @@ sub GenerateSingleBatchedAttribute
         }
         $data = "&V8${constructorType}::info";
         $getter = "${implClassName}V8Internal::${implClassName}ConstructorGetter";
-        $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttrSetterCallback";
+        $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
         $getterForMainWorld = "0";
         $setterForMainWorld = "0";
     } else {
         # Default Getter and Setter
-        $getter = "${implClassName}V8Internal::${attrName}AttrGetterCallback";
-        $setter = "${implClassName}V8Internal::${attrName}AttrSetterCallback";
+        $getter = "${implClassName}V8Internal::${attrName}AttributeGetterCallback";
+        $setter = "${implClassName}V8Internal::${attrName}AttributeSetterCallback";
         $getterForMainWorld = "${getter}ForMainWorld";
         $setterForMainWorld = "${setter}ForMainWorld";
 
         if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
-            $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttrSetterCallback";
+            $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
             $setterForMainWorld = "0";
         }
     }
@@ -3039,10 +3040,7 @@ sub GenerateSingleBatchedAttribute
       $setterForMainWorld = "0";
     }
 
-    my $commentInfo = "Attribute '$attrName'";
-
-    $code .= $indent . "    \/\/ $commentInfo\n";
-    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttr), $on_proto}" . $delimiter . "\n";
+    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttribute), $on_proto}" . $delimiter . "\n";
     return $code;
 }
 
@@ -3083,7 +3081,7 @@ sub GenerateNonStandardFunction
         $property_attributes .= " | v8::ReadOnly";
     }
 
-    my $commentInfo = "Function '$name' (ExtAttr: '" . join(' ', keys(%{$attrExt})) . "')";
+    my $commentInfo = "Function '$name' (Extended Attributes: '" . join(' ', keys(%{$attrExt})) . "')";
 
     my $template = "proto";
     if ($attrExt->{"Unforgeable"}) {
@@ -3114,7 +3112,7 @@ sub GenerateNonStandardFunction
         $code .= <<END;
 
     // $commentInfo
-    ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttrGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+    ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
 END
         return $code;
     }
@@ -3957,20 +3955,20 @@ END
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
         }
 
-        GenerateNormalAttrGetter($attribute, $interface, "");
-        GenerateNormalAttrGetterCallback($attribute, $interface, "");
+        GenerateNormalAttributeGetter($attribute, $interface, "");
+        GenerateNormalAttributeGetterCallback($attribute, $interface, "");
         if ($attrExt->{"PerWorldBindings"}) {
-            GenerateNormalAttrGetter($attribute, $interface, "ForMainWorld");
-            GenerateNormalAttrGetterCallback($attribute, $interface, "ForMainWorld");
+            GenerateNormalAttributeGetter($attribute, $interface, "ForMainWorld");
+            GenerateNormalAttributeGetterCallback($attribute, $interface, "ForMainWorld");
         }
         if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
             $hasReplaceable = 1;
         } elsif (!IsReadonly($attribute)) {
-            GenerateNormalAttrSetter($attribute, $interface, "");
-            GenerateNormalAttrSetterCallback($attribute, $interface, "");
+            GenerateNormalAttributeSetter($attribute, $interface, "");
+            GenerateNormalAttributeSetterCallback($attribute, $interface, "");
             if ($attrExt->{"PerWorldBindings"}) {
-              GenerateNormalAttrSetter($attribute, $interface, "ForMainWorld");
-              GenerateNormalAttrSetterCallback($attribute, $interface, "ForMainWorld");
+              GenerateNormalAttributeSetter($attribute, $interface, "ForMainWorld");
+              GenerateNormalAttributeSetterCallback($attribute, $interface, "ForMainWorld");
             }
         }
     }
@@ -3980,8 +3978,8 @@ END
     }
 
     if ($hasConstructors || $hasReplaceable) {
-        GenerateReplaceableAttrSetter($interface);
-        GenerateReplaceableAttrSetterCallback($interface);
+        GenerateReplaceableAttributeSetter($interface);
+        GenerateReplaceableAttributeSetterCallback($interface);
     }
 
     if (NeedsOpaqueRootForGC($interface)) {
@@ -4084,8 +4082,8 @@ END
     # Put the attributes that disallow shadowing on the shadow object.
     if (@disallowsShadowing) {
         my $code = "";
-        $code .= "static const V8DOMConfiguration::BatchedAttribute shadowAttrs[] = {\n";
-        $code .= GenerateBatchedAttributeData($interface, \@disallowsShadowing);
+        $code .= "static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {\n";
+        $code .= GenerateAttributeConfigurationArray($interface, \@disallowsShadowing);
         $code .= "};\n\n";
         $implementation{nameSpaceWebCore}->add($code);
     }
@@ -4094,8 +4092,8 @@ END
     if (@$attributes) {
         $has_attributes = 1;
         my $code = "";
-        $code .= "static const V8DOMConfiguration::BatchedAttribute ${v8ClassName}Attrs[] = {\n";
-        $code .= GenerateBatchedAttributeData($interface, $attributes);
+        $code .= "static const V8DOMConfiguration::AttributeConfiguration ${v8ClassName}Attributes[] = {\n";
+        $code .= GenerateAttributeConfigurationArray($interface, $attributes);
         $code .= "};\n\n";
         $implementation{nameSpaceWebCore}->add($code);
     }
@@ -4112,7 +4110,7 @@ END
         next if $function->name eq "";
         if (!$has_callbacks) {
             $has_callbacks = 1;
-            $code .= "static const V8DOMConfiguration::BatchedMethod ${v8ClassName}Methods[] = {\n";
+            $code .= "static const V8DOMConfiguration::MethodConfiguration ${v8ClassName}Methods[] = {\n";
         }
         my $name = $function->name;
         my $methodForMainWorld = "0";
@@ -4137,7 +4135,7 @@ END
     $code = "";
     if (@{$interface->constants}) {
         $has_constants = 1;
-        $code .= "static const V8DOMConfiguration::BatchedConstant ${v8ClassName}Consts[] = {\n";
+        $code .= "static const V8DOMConfiguration::ConstantConfiguration ${v8ClassName}Constants[] = {\n";
     }
     foreach my $constant (@{$interface->constants}) {
         my $name = $constant->name;
@@ -4189,7 +4187,7 @@ END
         $implementation{nameSpaceWebCore}->add(<<END);
 static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate, currentWorldType);
+    V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
 
     // Install a security handler with V8.
     templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::info));
@@ -4214,17 +4212,17 @@ END
         my $enable_function = GetRuntimeEnableFunctionName($interface);
         $code .= <<END;
     if (!${enable_function}())
-        defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
     }
     $code .=  <<END;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,
 END
     # Set up our attributes if we have them
     if ($has_attributes) {
         $code .= <<END;
-        ${v8ClassName}Attrs, WTF_ARRAY_LENGTH(${v8ClassName}Attrs),
+        ${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),
 END
     } else {
         $code .= <<END;
@@ -4266,17 +4264,17 @@ END
         $code .=  "    $access_check\n";
     }
 
-    # Setup the enable-at-runtime attrs if we have them
+    # Setup the enable-at-runtime attributes if we have them
     foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
         next if grep { $_ eq $runtime_attr } @enabledPerContextAttributes;
         my $enable_function = GetRuntimeEnableFunctionName($runtime_attr);
         my $conditionalString = GenerateConditionalString($runtime_attr);
         $code .= "\n#if ${conditionalString}\n" if $conditionalString;
         $code .= "    if (${enable_function}()) {\n";
-        $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
-        $code .= GenerateSingleBatchedAttribute($interface, $runtime_attr, ";", "    ");
+        $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
+        $code .= GenerateAttributeConfiguration($interface, $runtime_attr, ";", "    ");
         $code .= <<END;
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 END
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
@@ -4291,8 +4289,8 @@ END
         $code .= "\n#if ${conditionalString}\n" if $conditionalString;
         $code .= "    if (${enable_function}()) {\n";
         $code .= <<END;
-        static const V8DOMConfiguration::BatchedConstant constData = {"${name}", static_cast<signed int>(${value})};
-        V8DOMConfiguration::batchConfigureConstants(desc, proto, &constData, 1, isolate);
+        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
+        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
 END
         $code .= "    }\n";
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
@@ -4320,7 +4318,7 @@ END
 
     if ($has_constants) {
         $code .= <<END;
-    V8DOMConfiguration::batchConfigureConstants(desc, proto, ${v8ClassName}Consts, WTF_ARRAY_LENGTH(${v8ClassName}Consts), isolate);
+    V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
 END
     }
 
@@ -4395,22 +4393,22 @@ void ${v8ClassName}::installPerContextProperties(v8::Handle<v8::Object> instance
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
 END
 
-        # Setup the enable-by-settings attrs if we have them
-        foreach my $runtimeAttr (@enabledPerContextAttributes) {
-            my $enableFunction = GetContextEnableFunction($runtimeAttr);
-            my $conditionalString = GenerateConditionalString($runtimeAttr);
+        # Setup the enable-by-settings attributes if we have them
+        foreach my $runtimeAttribute (@enabledPerContextAttributes) {
+            my $enableFunction = GetContextEnableFunction($runtimeAttribute);
+            my $conditionalString = GenerateConditionalString($runtimeAttribute);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            if (grep { $_ eq $runtimeAttr } @enabledAtRuntimeAttributes) {
-                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttr);
+            if (grep { $_ eq $runtimeAttribute } @enabledAtRuntimeAttributes) {
+                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttribute);
                 $code .= "    if (${enableFunction}(impl->document()) && ${runtimeEnableFunction}()) {\n";
             } else {
                 $code .= "    if (${enableFunction}(impl->document())) {\n";
             }
 
-            $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
-            $code .= GenerateSingleBatchedAttribute($interface, $runtimeAttr, ";", "    ");
+            $code .= "        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\\\n";
+            $code .= GenerateAttributeConfiguration($interface, $runtimeAttribute, ";", "    ");
             $code .= <<END;
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
 END
             $code .= "    }\n";
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
@@ -5870,6 +5868,7 @@ sub ContentAttributeName
     my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
 
     AddToImplIncludes("${namespace}.h");
+    # Attr (not Attribute) used in core content attributes
     return "WebCore::${namespace}::${contentAttributeName}Attr";
 }
 
@@ -5969,7 +5968,6 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
     my @checks = ();
     # If necessary, check that all constants are available as enums with the same value.
     if (!$interface->extendedAttributes->{"DoNotCheckConstants"} && @{$interface->constants}) {
-        push(@checks, "\n");
         foreach my $constant (@{$interface->constants}) {
             my $reflect = $constant->extendedAttributes->{"Reflect"};
             my $name = $reflect ? $reflect : $constant->name;

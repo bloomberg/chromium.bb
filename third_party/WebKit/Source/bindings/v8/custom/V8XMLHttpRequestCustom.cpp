@@ -68,7 +68,7 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
     args.GetReturnValue().Set(wrapper);
 }
 
-void V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8XMLHttpRequest::responseTextAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
@@ -82,14 +82,14 @@ void V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, 
     v8SetReturnValue(info, text.v8Value());
 }
 
-void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8XMLHttpRequest::responseAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
 
     switch (xmlHttpRequest->responseTypeCode()) {
     case XMLHttpRequest::ResponseTypeDefault:
     case XMLHttpRequest::ResponseTypeText:
-        responseTextAttrGetterCustom(name, info);
+        responseTextAttributeGetterCustom(name, info);
         return;
 
     case XMLHttpRequest::ResponseTypeJSON:

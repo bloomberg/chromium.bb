@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-void V8SVGLength::valueAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8SVGLength::valueAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     SVGLength& imp = wrapper->propertyReference();
@@ -51,7 +51,7 @@ void V8SVGLength::valueAttrGetterCustom(v8::Local<v8::String> name, const v8::Pr
     v8SetReturnValue(info, value);
 }
 
-void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     if (wrapper->isReadOnly()) {
