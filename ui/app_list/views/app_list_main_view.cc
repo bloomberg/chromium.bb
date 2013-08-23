@@ -77,13 +77,13 @@ class AppListMainView::IconLoader : public AppListItemModelObserver {
 AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                  AppListModel* model,
                                  PaginationModel* pagination_model,
-                                 views::View* anchor)
+                                 gfx::NativeView parent)
     : delegate_(delegate),
       model_(model),
       search_box_view_(NULL),
       contents_view_(NULL) {
   // Starts icon loading early.
-  PreloadIcons(pagination_model, anchor);
+  PreloadIcons(pagination_model, parent);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
@@ -139,12 +139,10 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
 }
 
 void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
-                                   views::View* anchor) {
+                                   gfx::NativeView parent) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
-  if (anchor && anchor->GetWidget()) {
-    scale_factor = ui::GetScaleFactorForNativeView(
-        anchor->GetWidget()->GetNativeView());
-  }
+  if (parent)
+    scale_factor = ui::GetScaleFactorForNativeView(parent);
 
   // |pagination_model| could have -1 as the initial selected page and
   // assumes first page (i.e. index 0) will be used in this case.

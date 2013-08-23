@@ -73,7 +73,7 @@ void AppListView::InitAsBubble(gfx::NativeView parent,
   app_list_main_view_ = new AppListMainView(delegate_.get(),
                                             model_.get(),
                                             pagination_model,
-                                            anchor);
+                                            parent);
   AddChildView(app_list_main_view_);
 #if defined(USE_AURA)
   app_list_main_view_->SetPaintToLayer(true);
