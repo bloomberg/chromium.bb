@@ -186,7 +186,7 @@ void ElementShadow::populate(Node* node, Vector<Node*>& pool)
     InsertionPoint* insertionPoint = toInsertionPoint(node);
     if (insertionPoint->hasDistribution()) {
         for (size_t i = 0; i < insertionPoint->size(); ++i)
-            populate(insertionPoint->at(i), pool);
+            pool.append(insertionPoint->at(i));
     } else {
         for (Node* fallbackNode = insertionPoint->firstChild(); fallbackNode; fallbackNode = fallbackNode->nextSibling())
             pool.append(fallbackNode);

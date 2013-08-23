@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/dom/shadow/ContentDistribution.h"
 
+#include "core/dom/shadow/InsertionPoint.h"
+
 namespace WebCore {
 
 void ContentDistribution::swap(ContentDistribution& other)
@@ -37,6 +39,7 @@ void ContentDistribution::swap(ContentDistribution& other)
 
 void ContentDistribution::append(PassRefPtr<Node> node)
 {
+    ASSERT(!isActiveInsertionPoint(node.get()));
     size_t size = m_nodes.size();
     m_indices.set(node.get(), size);
     m_nodes.append(node);
