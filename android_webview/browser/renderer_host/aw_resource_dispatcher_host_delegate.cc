@@ -21,6 +21,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
 using android_webview::AwContentsIoThreadClient;
@@ -245,10 +246,16 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   std::string mime_type;
   int64 content_length = request->GetExpectedContentSize();
 
-  request->GetResponseHeaderByName("content-disposition", &content_disposition);
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
-  request->GetMimeType(&mime_type);
+
+
+  net::HttpResponseHeaders* response_headers = request->response_headers();
+  if (response_headers) {
+    response_headers->GetNormalizedHeader("content-disposition",
+        &content_disposition);
+    response_headers->GetMimeType(&mime_type);
+  }
 
   request->Cancel();
 
