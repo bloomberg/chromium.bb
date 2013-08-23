@@ -405,7 +405,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_autofillPopup(0)
     , m_isTransparent(false)
     , m_tabsToLinks(false)
-    , m_benchmarkSupport(this)
     , m_layerTreeView(0)
     , m_rootLayer(0)
     , m_rootGraphicsLayer(0)
@@ -846,11 +845,6 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
 void WebViewImpl::enableFakePageScaleAnimationForTesting(bool enable)
 {
     m_enableFakePageScaleAnimationForTesting = enable;
-}
-
-WebViewBenchmarkSupport* WebViewImpl::benchmarkSupport()
-{
-    return &m_benchmarkSupport;
 }
 
 void WebViewImpl::setShowFPSCounter(bool show)

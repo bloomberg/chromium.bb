@@ -254,8 +254,6 @@
       'WebUserGestureIndicator.cpp',
       'WebUserGestureToken.cpp',
       'WebUserMediaRequest.cpp',
-      'WebViewBenchmarkSupportImpl.cpp',
-      'WebViewBenchmarkSupportImpl.h',
       'WebViewImpl.cpp',
       'WebViewImpl.h',
       'WebWorkerBase.cpp',

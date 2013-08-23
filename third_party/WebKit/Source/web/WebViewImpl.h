@@ -44,7 +44,6 @@
 #include "WebInputEvent.h"
 #include "WebNavigationPolicy.h"
 #include "WebView.h"
-#include "WebViewBenchmarkSupportImpl.h"
 #include "core/page/PagePopupDriver.h"
 #include "core/page/PageScaleConstraintsSet.h"
 #include "core/platform/Timer.h"
@@ -121,7 +120,6 @@ class WebPagePopupImpl;
 class WebPrerendererClient;
 class WebSettingsImpl;
 class WebTouchEvent;
-class WebViewBenchmarkSupport;
 class FullscreenController;
 
 class WebViewImpl : public WebView
@@ -311,7 +309,6 @@ public:
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */);
     virtual void removePageOverlay(WebPageOverlay*);
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&);
-    virtual WebViewBenchmarkSupport* benchmarkSupport();
     virtual void setShowPaintRects(bool);
     virtual void setShowDebugBorders(bool);
     virtual void setShowFPSCounter(bool);
@@ -792,8 +789,6 @@ private:
 
     // If set, the (plugin) node which has mouse capture.
     RefPtr<WebCore::Node> m_mouseCaptureNode;
-
-    WebViewBenchmarkSupportImpl m_benchmarkSupport;
 
     WebCore::IntRect m_rootLayerScrollDamage;
     WebLayerTreeView* m_layerTreeView;

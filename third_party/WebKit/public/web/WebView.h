@@ -59,7 +59,6 @@ class WebSpellCheckClient;
 class WebString;
 class WebPasswordGeneratorClient;
 class WebValidationMessageClient;
-class WebViewBenchmarkSupport;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
@@ -491,10 +490,6 @@ public:
     virtual void setShowFPSCounter(bool) = 0;
     virtual void setContinuousPaintingEnabled(bool) = 0;
     virtual void setShowScrollBottleneckRects(bool) = 0;
-
-    // Benchmarking support -------------------------------------------------
-
-    virtual WebViewBenchmarkSupport* benchmarkSupport() { return 0; }
 
     // Visibility -----------------------------------------------------------
 
