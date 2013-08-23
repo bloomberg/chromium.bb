@@ -231,9 +231,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool);
 
   // See ClientSocketPool::RequestSocket for documentation on this function.
-  // ClientSocketPoolBaseHelper takes ownership of |request|, which must be
-  // heap allocated.
-  int RequestSocket(const std::string& group_name, const Request* request);
+  int RequestSocket(const std::string& group_name,
+                    scoped_ptr<const Request> request);
 
   // See ClientSocketPool::RequestSocket for documentation on this function.
   void RequestSockets(const std::string& group_name,
@@ -405,18 +404,50 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     void RemoveJob(ConnectJob* job);
     void RemoveAllJobs();
 
+    bool has_pending_requests() const {
+      return !pending_requests_.empty();
+    }
+
+    size_t pending_request_count() const {
+      return pending_requests_.size();
+    }
+
+    // Gets (but does not remove) the next pending request. Returns
+    // NULL if there are no pending requests.
+    const Request* GetNextPendingRequest() const;
+
+    // Returns true if there is a connect job for |handle|.
+    bool HasConnectJobForHandle(const ClientSocketHandle* handle) const;
+
+    // Inserts the request into the queue based on priority
+    // order. Older requests are prioritized over requests of equal
+    // priority.
+    void InsertPendingRequest(scoped_ptr<const Request> r);
+
+    // Gets and removes the next pending request. Returns NULL if
+    // there are no pending requests.
+    scoped_ptr<const Request> PopNextPendingRequest();
+
+    // Finds the pending request for |handle| and removes it. Returns
+    // the removed pending request, or NULL if there was none.
+    scoped_ptr<const Request> FindAndRemovePendingRequest(
+        ClientSocketHandle* handle);
+
     void IncrementActiveSocketCount() { active_socket_count_++; }
     void DecrementActiveSocketCount() { active_socket_count_--; }
 
     int unassigned_job_count() const { return unassigned_job_count_; }
     const std::set<ConnectJob*>& jobs() const { return jobs_; }
     const std::list<IdleSocket>& idle_sockets() const { return idle_sockets_; }
-    const RequestQueue& pending_requests() const { return pending_requests_; }
     int active_socket_count() const { return active_socket_count_; }
-    RequestQueue* mutable_pending_requests() { return &pending_requests_; }
     std::list<IdleSocket>* mutable_idle_sockets() { return &idle_sockets_; }
 
    private:
+    // Returns the iterator's pending request after removing it from
+    // the queue.
+    scoped_ptr<const Request> RemovePendingRequest(
+        const RequestQueue::iterator& it);
+
     // Called when the backup socket timer fires.
     void OnBackupSocketTimerFired(
         std::string group_name,
@@ -457,15 +488,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   typedef std::map<const ClientSocketHandle*, CallbackResultPair>
       PendingCallbackMap;
-
-  // Inserts the request into the queue based on order they will receive
-  // sockets. Sockets which ignore the socket pool limits are first. Then
-  // requests are sorted by priority, with higher priorities closer to the
-  // front. Older requests are prioritized over requests of equal priority.
-  static void InsertRequestIntoQueue(const Request* r,
-                                     RequestQueue* pending_requests);
-  static const Request* RemoveRequestFromQueue(const RequestQueue::iterator& it,
-                                               Group* group);
 
   Group* GetOrCreateGroup(const std::string& group_name);
   void RemoveGroup(const std::string& group_name);
@@ -526,14 +548,14 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // it does not handle logging into NetLog of the queueing status of
   // |request|.
   int RequestSocketInternal(const std::string& group_name,
-                            const Request* request);
+                            const Request& request);
 
   // Assigns an idle socket for the group to the request.
   // Returns |true| if an idle socket is available, false otherwise.
-  bool AssignIdleSocketToRequest(const Request* request, Group* group);
+  bool AssignIdleSocketToRequest(const Request& request, Group* group);
 
   static void LogBoundConnectJobToRequest(
-      const NetLog::Source& connect_job_source, const Request* request);
+      const NetLog::Source& connect_job_source, const Request& request);
 
   // Same as CloseOneIdleSocket() except it won't close an idle socket in
   // |group|.  If |group| is NULL, it is ignored.  Returns true if it closed a
@@ -703,12 +725,15 @@ class ClientSocketPoolBase {
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
                     const BoundNetLog& net_log) {
-    Request* request =
+    scoped_ptr<const Request> request(
         new Request(handle, callback, priority,
                     internal::ClientSocketPoolBaseHelper::NORMAL,
                     params->ignore_limits(),
-                    params, net_log);
-    return helper_.RequestSocket(group_name, request);
+                    params, net_log));
+    return helper_.RequestSocket(
+        group_name,
+        request.template PassAs<
+            const internal::ClientSocketPoolBaseHelper::Request>());
   }
 
   // RequestSockets bundles up the parameters into a Request and then forwards
