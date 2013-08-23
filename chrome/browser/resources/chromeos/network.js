@@ -51,9 +51,13 @@ var NetworkUI = function() {
       return null;
     var res = document.createElement('p');
     var textWrapper = document.createElement('span');
+    var fileinfo = '';
+    if ($('log-fileinfo').checked)
+      fileinfo = logEntry['file'];
     textWrapper.textContent = loadTimeData.getStringF(
       'logEntryFormat',
       logEntry['timestamp'],
+      fileinfo,
       logEntry['event'],
       logEntry['description']);
     res.appendChild(createLevelTag(level));
@@ -162,6 +166,8 @@ var NetworkUI = function() {
     $('log-event').onclick = sendRefresh;
     $('log-debug').checked = false;
     $('log-debug').onclick = sendRefresh;
+    $('log-fileinfo').checked = false;
+    $('log-fileinfo').onclick = sendRefresh;
     setRefresh();
     sendRefresh();
   });

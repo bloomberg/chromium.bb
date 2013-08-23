@@ -78,7 +78,7 @@ void NetworkMessageHandler::RespondToPage(
 }
 
 std::string NetworkMessageHandler::GetNetworkEventLog() const {
-  std::string format = "time,desc,json";
+  std::string format = "json";
   return chromeos::network_event_log::GetAsString(
       chromeos::network_event_log::NEWEST_FIRST,
       format,
@@ -121,6 +121,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("logLevelUserText", IDS_NETWORK_LOG_LEVEL_USER);
   html->AddLocalizedString("logLevelEventText", IDS_NETWORK_LOG_LEVEL_EVENT);
   html->AddLocalizedString("logLevelDebugText", IDS_NETWORK_LOG_LEVEL_DEBUG);
+  html->AddLocalizedString("logLevelFileinfoText",
+                           IDS_NETWORK_LOG_LEVEL_FILEINFO);
   html->AddLocalizedString("logEntryFormat", IDS_NETWORK_LOG_ENTRY);
   html->SetJsonPath(kStringsJsFile);
 

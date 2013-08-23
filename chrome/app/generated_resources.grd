@@ -14922,10 +14922,14 @@ Do you accept?
       <message name="IDS_NETWORK_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
         Debug
       </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_FILEINFO" desc="Debug logging level checkbox">
+        File Info
+      </message>
       <message name="IDS_NETWORK_LOG_ENTRY" desc="The log entry displayed in network event log table.">
         [<ph name="TIMESTAMP">$1<ex>Timestamp</ex></ph>]
-        <ph name="EVENT_NAME">$2<ex>Event Name</ex></ph>
-        <ph name="DESCRIPTION">$3<ex>Description</ex></ph>
+        <ph name="FILE_INFO">$2<ex>file:123</ex></ph>
+        <ph name="EVENT_NAME">$3<ex>Event Name</ex></ph>
+        <ph name="DESCRIPTION">$4<ex>Description</ex></ph>
       </message>
     </if>
 
