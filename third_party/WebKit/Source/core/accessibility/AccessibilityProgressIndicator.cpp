@@ -46,6 +46,9 @@ bool AccessibilityProgressIndicator::computeAccessibilityIsIgnored() const
 
 float AccessibilityProgressIndicator::valueForRange() const
 {
+    if (hasAttribute(aria_valuenowAttr))
+        return getAttribute(aria_valuenowAttr).toFloat();
+
     if (element()->position() >= 0)
         return narrowPrecisionToFloat(element()->value());
     // Indeterminate progress bar should return 0.
@@ -54,11 +57,17 @@ float AccessibilityProgressIndicator::valueForRange() const
 
 float AccessibilityProgressIndicator::maxValueForRange() const
 {
+    if (hasAttribute(aria_valuemaxAttr))
+        return getAttribute(aria_valuemaxAttr).toFloat();
+
     return narrowPrecisionToFloat(element()->max());
 }
 
 float AccessibilityProgressIndicator::minValueForRange() const
 {
+    if (hasAttribute(aria_valueminAttr))
+        return getAttribute(aria_valueminAttr).toFloat();
+
     return 0.0f;
 }
 

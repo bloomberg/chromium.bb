@@ -112,21 +112,6 @@ AccessibilityObject* AccessibilitySlider::elementAccessibilityHitTest(const IntP
     return axObjectCache()->getOrCreate(m_renderer);
 }
 
-float AccessibilitySlider::valueForRange() const
-{
-    return element()->value().toFloat();
-}
-
-float AccessibilitySlider::maxValueForRange() const
-{
-    return static_cast<float>(element()->maximum());
-}
-
-float AccessibilitySlider::minValueForRange() const
-{
-    return static_cast<float>(element()->minimum());
-}
-
 void AccessibilitySlider::setValue(const String& value)
 {
     HTMLInputElement* input = element();

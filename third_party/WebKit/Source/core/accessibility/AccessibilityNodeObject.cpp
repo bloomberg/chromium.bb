@@ -281,19 +281,6 @@ bool AccessibilityNodeObject::hasContentEditableAttributeSet() const
     return contentEditableValue.isEmpty() || equalIgnoringCase(contentEditableValue, "true");
 }
 
-bool AccessibilityNodeObject::isARIARange() const
-{
-    switch (m_ariaRole) {
-    case ProgressIndicatorRole:
-    case SliderRole:
-    case ScrollBarRole:
-    case SpinButtonRole:
-        return true;
-    default:
-        return false;
-    }
-}
-
 bool AccessibilityNodeObject::isDescendantOfBarrenParent() const
 {
     for (AccessibilityObject* object = parentObject(); object; object = object->parentObject()) {
@@ -874,7 +861,7 @@ void AccessibilityNodeObject::colorValue(int& r, int& g, int& b) const
 
 String AccessibilityNodeObject::valueDescription() const
 {
-    if (!isARIARange())
+    if (!supportsRangeValue())
         return String();
 
     return getAttribute(aria_valuetextAttr).string();
@@ -882,44 +869,44 @@ String AccessibilityNodeObject::valueDescription() const
 
 float AccessibilityNodeObject::valueForRange() const
 {
+    if (hasAttribute(aria_valuenowAttr))
+        return getAttribute(aria_valuenowAttr).toFloat();
+
     if (node() && node()->hasTagName(inputTag)) {
         HTMLInputElement* input = toHTMLInputElement(node());
         if (input->isRangeControl())
             return input->valueAsNumber();
     }
 
-    if (!isARIARange())
-        return 0.0f;
-
-    return getAttribute(aria_valuenowAttr).toFloat();
+    return 0.0;
 }
 
 float AccessibilityNodeObject::maxValueForRange() const
 {
+    if (hasAttribute(aria_valuemaxAttr))
+        return getAttribute(aria_valuemaxAttr).toFloat();
+
     if (node() && node()->hasTagName(inputTag)) {
         HTMLInputElement* input = toHTMLInputElement(node());
         if (input->isRangeControl())
             return input->maximum();
     }
 
-    if (!isARIARange())
-        return 0.0f;
-
-    return getAttribute(aria_valuemaxAttr).toFloat();
+    return 0.0;
 }
 
 float AccessibilityNodeObject::minValueForRange() const
 {
+    if (hasAttribute(aria_valueminAttr))
+        return getAttribute(aria_valueminAttr).toFloat();
+
     if (node() && node()->hasTagName(inputTag)) {
         HTMLInputElement* input = toHTMLInputElement(node());
         if (input->isRangeControl())
             return input->minimum();
     }
 
-    if (!isARIARange())
-        return 0.0f;
-
-    return getAttribute(aria_valueminAttr).toFloat();
+    return 0.0;
 }
 
 float AccessibilityNodeObject::stepValueForRange() const

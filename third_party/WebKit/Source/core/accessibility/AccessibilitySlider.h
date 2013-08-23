@@ -59,9 +59,6 @@ private:
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
     virtual void setValue(const String&) OVERRIDE;
-    virtual float valueForRange() const OVERRIDE;
-    virtual float maxValueForRange() const OVERRIDE;
-    virtual float minValueForRange() const OVERRIDE;
     virtual AccessibilityOrientation orientation() const OVERRIDE;
 };
 
