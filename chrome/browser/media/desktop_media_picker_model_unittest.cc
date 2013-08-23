@@ -5,7 +5,6 @@
 #include "chrome/browser/media/desktop_media_picker_model.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "content/public/test/test_browser_thread.h"
@@ -16,7 +15,6 @@
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
 using testing::_;
-using testing::AtMost;
 using testing::DoAll;
 
 namespace {
@@ -63,19 +61,18 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   FakeWindowCapturer()
       : callback_(NULL) {
   }
-  virtual ~FakeWindowCapturer() {
-    STLDeleteContainerPairSecondPointers(frames_.begin(), frames_.end());
-  }
+  virtual ~FakeWindowCapturer() {}
 
   void SetWindowList(const WindowList& list) {
     base::AutoLock lock(window_list_lock_);
     window_list_ = list;
   }
 
-  void SetNextFrame(WindowId window_id,
-                    scoped_ptr<webrtc::DesktopFrame> frame) {
-    base::AutoLock lock(frames_lock_);
-    frames_[window_id] = frame.release();
+  // Sets |value| thats going to be used to memset() content of the frames
+  // generated for |window_id|. By default generated frames are set to zeros.
+  void SetNextFrameValue(WindowId window_id, int8_t value) {
+    base::AutoLock lock(frame_values_lock_);
+    frame_values_[window_id] = value;
   }
 
   // webrtc::WindowCapturer implementation.
@@ -86,18 +83,14 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE {
     DCHECK(callback_);
 
-    base::AutoLock lock(frames_lock_);
+    base::AutoLock lock(frame_values_lock_);
 
-    webrtc::DesktopFrame* frame;
-    std::map<WindowId, webrtc::DesktopFrame*>::iterator it =
-        frames_.find(selected_window_id_);
-    if (it == frames_.end()) {
-      frame = new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10));
-      memset(frame->data(), 0, frame->stride() * frame->size().height());
-    } else {
-      frame = it->second;
-      frames_.erase(it);
-    }
+    std::map<WindowId, int8_t>::iterator it =
+        frame_values_.find(selected_window_id_);
+    int8_t value = (it != frame_values_.end()) ? it->second : 0;
+    webrtc::DesktopFrame* frame =
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10));
+    memset(frame->data(), value, frame->stride() * frame->size().height());
     callback_->OnCaptureCompleted(frame);
   }
 
@@ -120,8 +113,8 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   WindowId selected_window_id_;
 
   // Frames to be captured per window.
-  std::map<WindowId, webrtc::DesktopFrame*> frames_;
-  base::Lock frames_lock_;
+  std::map<WindowId, int8_t> frame_values_;
+  base::Lock frame_values_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWindowCapturer);
 };
@@ -366,8 +359,7 @@ TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
   EXPECT_EQ(model_->source(1).name, base::UTF8ToUTF16(kTestTitle));
 }
 
-// Disabled due to flakiness on all platforms, see http://crbug.com/275260.
-TEST_F(DesktopMediaPickerModelTest, DISABLED_UpdateThumbnail) {
+TEST_F(DesktopMediaPickerModelTest, UpdateThumbnail) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -403,10 +395,7 @@ TEST_F(DesktopMediaPickerModelTest, DISABLED_UpdateThumbnail) {
     .WillOnce(QuitMessageLoop(&message_loop_));
 
   // Update frame for the window and verify that we get notification about it.
-  scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));
-  memset(frame->data(), 1, frame->stride() * frame->size().height());
-  window_capturer_->SetNextFrame(0, frame.Pass());
+  window_capturer_->SetNextFrameValue(0, 1);
 
   message_loop_.Run();
 }
