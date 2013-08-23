@@ -314,7 +314,9 @@ def UploadCoverageData(options, path, coverage_type):
   Returns:
     None.
   """
-  revision = options.build_properties.get('got_revision', 'testing')
+  revision = options.build_properties.get('got_revision')
+  if not revision:
+    revision = options.build_properties.get('revision', 'testing')
   bot_id = options.build_properties.get('buildername', 'testing')
   randhash = hashlib.sha1(str(random.random())).hexdigest()
   gs_path = '%s/%s/%s/%s/%s' % (options.coverage_bucket, coverage_type,
