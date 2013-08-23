@@ -11,8 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
-#include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
-#include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
@@ -27,6 +25,7 @@
 #include "base/observer_list.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/screen_security/screen_capture_observer.h"
 #include "ash/system/chromeos/screen_security/screen_share_observer.h"
@@ -118,13 +117,6 @@ public:
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
 #if defined(OS_CHROMEOS)
-  void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
-                               NetworkObserver::MessageType message_type,
-                               NetworkObserver::NetworkType network_type,
-                               const base::string16& title,
-                               const base::string16& message,
-                               const std::vector<base::string16>& links);
-  void NotifyClearNetworkMessage(NetworkObserver::MessageType message_type);
   void NotifyRequestToggleWifi();
   void NotifyEnterpriseDomainChanged();
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,

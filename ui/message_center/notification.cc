@@ -5,6 +5,7 @@
 #include "ui/message_center/notification.h"
 
 #include "base/logging.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
 namespace {
@@ -117,6 +118,28 @@ void Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {
 void Notification::SetSystemPriority() {
   optional_fields_.priority = SYSTEM_PRIORITY;
   optional_fields_.never_timeout = true;
+}
+
+// static
+scoped_ptr<Notification> Notification::CreateSystemNotification(
+    const std::string& notification_id,
+    const base::string16& title,
+    const base::string16& message,
+    const gfx::Image& icon,
+    const base::Closure& click_callback) {
+  scoped_ptr<Notification> notification(
+      new Notification(
+          NOTIFICATION_TYPE_SIMPLE,
+          notification_id,
+          title,
+          message,
+          icon,
+          base::string16()  /* display_source */,
+          std::string()  /* extension_id */,
+          RichNotificationData(),
+          new HandleNotificationClickedDelegate(click_callback)));
+  notification->SetSystemPriority();
+  return notification.Pass();
 }
 
 }  // namespace message_center

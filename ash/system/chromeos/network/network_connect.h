@@ -18,6 +18,9 @@ class DictionaryValue;
 namespace ash {
 namespace network_connect {
 
+ASH_EXPORT extern const char kNetworkConnectNotificationId[];
+ASH_EXPORT extern const char kNetworkActivateNotificationId[];
+
 // Requests a network connection and handles any errors and notifications.
 // |owning_window| is used to parent any UI on failure (e.g. for certificate
 // enrollment). If NULL, the default window will be used.

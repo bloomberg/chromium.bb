@@ -122,21 +122,21 @@
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
     Network Connection Error
   </message>
-  <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS" desc="Message for network connection error notification with details">
+  <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE" desc="Message for network connection error notification">
     Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
   </message>
   <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_SERVER_MESSAGE" desc="Message for network connection error notification with details and a server message">
 Failed to connect to '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
 Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
   </message>
+  <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME" desc="Message for network connection error where the network name is unavailable">
+    Failed to connect to network: <ph name="details">$2<ex>Unrecognized error</ex></ph>
+  </message>
   <message name="IDS_NETWORK_OUT_OF_CREDITS_TITLE" desc="Title for network out of data error notification">
     Network Connection Error
   </message>
   <message name="IDS_NETWORK_OUT_OF_CREDITS_BODY" desc="Message body for network out of data error notification">
-    You may have used up your mobile data allowance.
-  </message>
-  <message name="IDS_NETWORK_OUT_OF_CREDITS_LINK" desc="Link text for network out of data error notification">
-    Visit the <ph name="name">$1<ex>GoogleGuest</ex></ph> activation portal to buy more data.
+    You may have used up your mobile data allowance. Visit the <ph name="name">$1<ex>GoogleGuest</ex></ph> activation portal to buy more data.
   </message>
   <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
     Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>

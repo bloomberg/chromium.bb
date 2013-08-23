@@ -5,7 +5,6 @@
 #include "ash/system/chromeos/network/network_connect.h"
 
 #include "ash/shell.h"
-#include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -28,6 +27,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 
 using chromeos::DeviceState;
 using chromeos::NetworkConfigurationHandler;
@@ -119,8 +120,8 @@ void OnConnectSucceeded(const std::string& service_path) {
   NET_LOG_USER("Connect Succeeded", service_path);
   if (!ash::Shell::HasInstance())
     return;
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
-      NetworkObserver::ERROR_CONNECT_FAILED);
+  message_center::MessageCenter::Get()->RemoveNotification(
+      network_connect::kNetworkConnectNotificationId, false /* not by user */);
 }
 
 // If |check_error_state| is true, error state for the network is checked,
@@ -133,8 +134,8 @@ void CallConnectToNetwork(const std::string& service_path,
                           gfx::NativeWindow owning_window) {
   if (!ash::Shell::HasInstance())
     return;
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
-      NetworkObserver::ERROR_CONNECT_FAILED);
+  message_center::MessageCenter::Get()->RemoveNotification(
+      network_connect::kNetworkConnectNotificationId, false /* not by user */);
 
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path,
@@ -253,9 +254,25 @@ void ConfigureSetProfileSucceeded(
 
 namespace network_connect {
 
+const char kNetworkConnectNotificationId[] =
+    "chrome://settings/internet/connect";
+const char kNetworkActivateNotificationId[] =
+    "chrome://settings/internet/activate";
+
 void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow owning_window) {
   NET_LOG_USER("ConnectToNetwork", service_path);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (network && !network->error().empty()) {
+    NET_LOG_USER("Configure: " + network->error(), service_path);
+    // If the network is in an error state, show the configuration UI directly
+    // to avoid a spurious notification.
+    ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+        service_path);
+    return;
+  }
   const bool check_error_state = true;
   CallConnectToNetwork(service_path, check_error_state, owning_window);
 }
@@ -357,20 +374,16 @@ void ShowMobileSetup(const std::string& service_path) {
   if (cellular->activation_state() != flimflam::kActivationStateActivated &&
       cellular->activate_over_non_cellular_networks() &&
       !handler->DefaultNetwork()) {
-    std::string technology = cellular->network_technology();
-    ash::NetworkObserver::NetworkType network_type =
-        (technology == flimflam::kNetworkTechnologyLte ||
-         technology == flimflam::kNetworkTechnologyLteAdvanced)
-        ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
-        : ash::NetworkObserver::NETWORK_CELLULAR;
-    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-        NULL,
-        ash::NetworkObserver::ERROR_CONNECT_FAILED,
-        network_type,
-        l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
-        l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
-                                   UTF8ToUTF16((cellular->name()))),
-        std::vector<string16>());
+    message_center::MessageCenter::Get()->AddNotification(
+        message_center::Notification::CreateSystemNotification(
+            kNetworkActivateNotificationId,
+            l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
+            l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
+                                       UTF8ToUTF16(cellular->name())),
+            ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
+            base::Bind(&ash::network_connect::ShowNetworkSettings,
+                       service_path)));
     return;
   }
   ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetupDialog(

@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_connect.h"
-#include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -29,12 +28,14 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ash_strings.h"
+#include "grit/ash_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -70,8 +71,7 @@ void SetIntegerLocalPref(const char* pref_name, int value) {
   prefs->SetInteger(pref_name, value);
 }
 
-// Returns prefs::kShow3gPromoNotification or false
-// if there's no active browser.
+// Returns prefs::kShow3gPromoNotification or false if no active browser.
 bool ShouldShow3gPromoNotification() {
   return GetBooleanPref(prefs::kShow3gPromoNotification);
 }
@@ -94,9 +94,10 @@ const chromeos::MobileConfig::Carrier* GetCarrier(
     const NetworkState* cellular) {
   const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
       GetDeviceState(cellular->device_path());
-  std::string carrier_id = device->home_provider_id();
+  std::string carrier_id = device ? device->home_provider_id() : "";
   if (carrier_id.empty()) {
-    NET_LOG_ERROR("Empty carrier ID with a cellular device", device->path());
+    NET_LOG_ERROR("Empty carrier ID for cellular network",
+                  device ? device->path(): "No device");
     return NULL;
   }
 
@@ -125,14 +126,17 @@ const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
   return deal;
 }
 
-ash::NetworkObserver::NetworkType NetworkTypeForNetwork(
-    const NetworkState* network) {
-  DCHECK(network);
-  const std::string& technology = network->network_technology();
-  return (technology == flimflam::kNetworkTechnologyLte ||
-          technology == flimflam::kNetworkTechnologyLteAdvanced)
-      ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
-      : ash::NetworkObserver::NETWORK_CELLULAR;
+void NotificationClicked(const std::string& service_path,
+                         const std::string& info_url) {
+  if (info_url.empty())
+    ash::network_connect::ShowNetworkSettings(service_path);
+
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  if (!browser)
+    return;
+  chrome::ShowSingletonTab(browser, GURL(info_url));
 }
 
 }  // namespace
@@ -142,9 +146,7 @@ ash::NetworkObserver::NetworkType NetworkTypeForNetwork(
 
 DataPromoNotification::DataPromoNotification()
     : check_for_promo_(true),
-      cellular_activating_(false),
       weak_ptr_factory_(this) {
-  UpdateCellularActivating();
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 }
 
@@ -153,7 +155,6 @@ DataPromoNotification::~DataPromoNotification() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
   }
-  CloseNotification();
 }
 
 void DataPromoNotification::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -166,82 +167,12 @@ void DataPromoNotification::NetworkPropertiesUpdated(
   if (!network || network->type() != flimflam::kTypeCellular)
     return;
   ShowOptionalMobileDataPromoNotification();
-  UpdateCellularActivating();
 }
 
 void DataPromoNotification::DefaultNetworkChanged(const NetworkState* network) {
   // Call NetworkPropertiesUpdated in case the Cellular network became the
   // default network.
   NetworkPropertiesUpdated(network);
-}
-
-void DataPromoNotification::NotificationLinkClicked(
-    ash::NetworkObserver::MessageType message_type,
-    size_t link_index) {
-  const NetworkState* cellular =
-      NetworkHandler::Get()->network_state_handler()->
-      FirstNetworkByType(flimflam::kTypeCellular);
-  std::string service_path = cellular ? cellular->path() : "";
-  if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
-    ash::network_connect::ShowNetworkSettings(service_path);
-    ash::Shell::GetInstance()->system_tray_notifier()->
-        NotifyClearNetworkMessage(message_type);
-  }
-  if (message_type != ash::NetworkObserver::MESSAGE_DATA_PROMO)
-    return;
-
-  // If we have a deal info URL defined that means that there are
-  // two links in the bubble. Let the user close it manually then giving the
-  // ability to navigate to the second link.
-  if (deal_info_url_.empty())
-    CloseNotification();
-
-  std::string deal_url_to_open;
-  if (link_index == 0) {
-    if (!deal_topup_url_.empty()) {
-      deal_url_to_open = deal_topup_url_;
-    } else {
-      ash::network_connect::ShowNetworkSettings(service_path);
-      return;
-    }
-  } else if (link_index == 1) {
-    deal_url_to_open = deal_info_url_;
-  }
-
-  if (!deal_url_to_open.empty()) {
-    Browser* browser = chrome::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    if (!browser)
-      return;
-    chrome::ShowSingletonTab(browser, GURL(deal_url_to_open));
-  }
-}
-
-void DataPromoNotification::UpdateCellularActivating() {
-  // We only care about the first (default) cellular network.
-  const NetworkState* cellular =
-      NetworkHandler::Get()->network_state_handler()->
-      FirstNetworkByType(flimflam::kTypeCellular);
-  if (!cellular)
-    return;
-
-  std::string activation_state = cellular->activation_state();
-  if (activation_state == flimflam::kActivationStateActivating) {
-    cellular_activating_ = true;
-  } else if (cellular_activating_ &&
-             activation_state == flimflam::kActivationStateActivated) {
-    cellular_activating_ = false;
-    ash::Shell::GetInstance()->system_tray_notifier()->
-        NotifySetNetworkMessage(
-            NULL,
-            ash::NetworkObserver::MESSAGE_DATA_PROMO,
-            NetworkTypeForNetwork(cellular),
-            l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
-            l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
-                                       UTF8ToUTF16((cellular->name()))),
-            std::vector<string16>());
-  }
 }
 
 void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
@@ -259,55 +190,49 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
       HasPendingConnectRequest())
     return;
 
-  std::string deal_text;
   int carrier_deal_promo_pref = kNotificationCountPrefDefault;
   const MobileConfig::CarrierDeal* deal = NULL;
   const MobileConfig::Carrier* carrier = GetCarrier(default_network);
   if (carrier)
     deal = GetCarrierDeal(carrier);
-  deal_info_url_.clear();
-  deal_topup_url_.clear();
+
+  string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
+  std::string info_url;
   if (deal) {
     carrier_deal_promo_pref = GetCarrierDealPromoShown();
     const std::string locale = g_browser_process->GetApplicationLocale();
-    deal_text = deal->GetLocalizedString(locale, "notification_text");
-    deal_info_url_ = deal->info_url();
-    deal_topup_url_ = carrier->top_up_url();
+    std::string deal_text =
+        deal->GetLocalizedString(locale, "notification_text");
+    message = UTF8ToUTF16(deal_text + "\n\n") + message;
+    info_url = deal->info_url();
+    if (info_url.empty() && carrier)
+      info_url = carrier->top_up_url();
   } else if (!ShouldShow3gPromoNotification()) {
     check_for_promo_ = false;
     return;
   }
 
-  string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
-  if (!deal_text.empty())
-    message = UTF8ToUTF16(deal_text + "\n\n") + message;
-
-  // Use deal URL if it's defined or general "Network Settings" URL.
-  int link_message_id;
-  if (deal_topup_url_.empty())
-    link_message_id = IDS_OFFLINE_NETWORK_SETTINGS;
+  int icon_id;
+  if (default_network->network_technology() == flimflam::kNetworkTechnologyLte)
+    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
   else
-    link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
+    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
+  const gfx::Image& icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
 
-  ash::NetworkObserver::NetworkType type =
-      NetworkTypeForNetwork(default_network);
+  message_center::MessageCenter::Get()->AddNotification(
+      message_center::Notification::CreateSystemNotification(
+          ash::network_connect::kNetworkActivateNotificationId,
+          base::string16() /* title */,
+          message,
+          icon,
+          base::Bind(&NotificationClicked,
+                     default_network->path(), info_url)));
 
-  std::vector<string16> links;
-  links.push_back(l10n_util::GetStringUTF16(link_message_id));
-  if (!deal_info_url_.empty())
-    links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-      this, ash::NetworkObserver::MESSAGE_DATA_PROMO,
-      type, string16(), message, links);
   check_for_promo_ = false;
   SetShow3gPromoNotification(false);
   if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
     SetCarrierDealPromoShown(carrier_deal_promo_pref + 1);
-}
-
-void DataPromoNotification::CloseNotification() {
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
-      ash::NetworkObserver::MESSAGE_DATA_PROMO);
 }
 
 }  // namespace chromeos

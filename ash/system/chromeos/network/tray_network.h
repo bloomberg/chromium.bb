@@ -24,9 +24,6 @@ namespace internal {
 namespace tray {
 class NetworkDefaultView;
 class NetworkDetailedView;
-class NetworkMessages;
-class NetworkMessageView;
-class NetworkNotificationView;
 class NetworkTrayView;
 }
 
@@ -43,25 +40,14 @@ class TrayNetwork : public SystemTrayItem,
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
   // NetworkObserver
-  virtual void SetNetworkMessage(
-      NetworkTrayDelegate* delegate,
-      MessageType message_type,
-      NetworkType network_type,
-      const base::string16& title,
-      const base::string16& message,
-      const std::vector<base::string16>& links) OVERRIDE;
-  virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void RequestToggleWifi() OVERRIDE;
 
   // TrayNetworkStateObserver::Delegate
@@ -70,18 +56,9 @@ class TrayNetwork : public SystemTrayItem,
       const chromeos::NetworkState* network) OVERRIDE;
 
  private:
-  friend class tray::NetworkMessageView;
-  friend class tray::NetworkNotificationView;
-
-  void LinkClicked(MessageType message_type, int link_id);
-
-  const tray::NetworkMessages* messages() const { return messages_.get(); }
-
   tray::NetworkTrayView* tray_;
   tray::NetworkDefaultView* default_;
   tray::NetworkDetailedView* detailed_;
-  tray::NetworkNotificationView* notification_;
-  scoped_ptr<tray::NetworkMessages> messages_;
   bool request_wifi_view_;
   scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
 

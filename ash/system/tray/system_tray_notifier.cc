@@ -287,31 +287,6 @@ void SystemTrayNotifier::NotifyUserUpdate() {
 
 #if defined(OS_CHROMEOS)
 
-void SystemTrayNotifier::NotifySetNetworkMessage(
-    NetworkTrayDelegate* delegate,
-    NetworkObserver::MessageType message_type,
-    NetworkObserver::NetworkType network_type,
-    const base::string16& title,
-    const base::string16& message,
-    const std::vector<base::string16>& links) {
-  FOR_EACH_OBSERVER(NetworkObserver,
-                    network_observers_,
-                    SetNetworkMessage(
-                        delegate,
-                        message_type,
-                        network_type,
-                        title,
-                        message,
-                        links));
-}
-
-void SystemTrayNotifier::NotifyClearNetworkMessage(
-    NetworkObserver::MessageType message_type) {
-  FOR_EACH_OBSERVER(NetworkObserver,
-                    network_observers_,
-                    ClearNetworkMessage(message_type));
-}
-
 void SystemTrayNotifier::NotifyRequestToggleWifi() {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,

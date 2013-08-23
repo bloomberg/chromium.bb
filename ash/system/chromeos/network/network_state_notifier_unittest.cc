@@ -15,6 +15,7 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/message_center/message_center.h"
 
 namespace {
 
@@ -90,7 +91,10 @@ TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   ash::network_connect::ConnectToNetwork("wifi1", NULL /* owning_window */);
   RunAllPendingInMessageLoop();
   // Failure should spawn a notification.
-  EXPECT_TRUE(GetSystemTray()->CloseNotificationBubbleForTest());
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  EXPECT_TRUE(message_center->HasNotification(
+      network_connect::kNetworkConnectNotificationId));
 }
 
 }  // namespace test

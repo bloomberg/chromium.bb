@@ -167,6 +167,15 @@ class MESSAGE_CENTER_EXPORT Notification {
   void ButtonClick(int index) const { delegate()->ButtonClick(index); }
   void Close(bool by_user) const { delegate()->Close(by_user); }
 
+  // Helper method to create a simple System notification. |click_callback|
+  // will be invoked when the notification is clicked.
+  static scoped_ptr<Notification> CreateSystemNotification(
+      const std::string& notification_id,
+      const base::string16& title,
+      const base::string16& message,
+      const gfx::Image& icon,
+      const base::Closure& click_callback);
+
  protected:
   // The type of notification we'd like displayed.
   NotificationType type_;

@@ -19,7 +19,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/network/network_connect.h"
-#include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"

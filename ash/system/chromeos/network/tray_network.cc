@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -16,7 +15,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
-#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,59 +39,7 @@ using chromeos::NetworkStateHandler;
 namespace ash {
 namespace internal {
 
-namespace {
-
-int GetMessageIcon(NetworkObserver::MessageType message_type,
-                   NetworkObserver::NetworkType network_type) {
-  switch(message_type) {
-    case NetworkObserver::ERROR_CONNECT_FAILED:
-      if (NetworkObserver::NETWORK_CELLULAR == network_type)
-        return IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED;
-      else
-        return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-    case NetworkObserver::ERROR_OUT_OF_CREDITS:
-    case NetworkObserver::MESSAGE_DATA_PROMO:
-      if (network_type == TrayNetwork::NETWORK_CELLULAR_LTE)
-        return IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
-      else
-        return IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-}  // namespace
-
 namespace tray {
-
-class NetworkMessages {
- public:
-  struct Message {
-    Message() : delegate(NULL) {}
-    Message(NetworkTrayDelegate* in_delegate,
-            NetworkObserver::NetworkType network_type,
-            const base::string16& in_title,
-            const base::string16& in_message,
-            const std::vector<base::string16>& in_links) :
-        delegate(in_delegate),
-        network_type_(network_type),
-        title(in_title),
-        message(in_message),
-        links(in_links) {}
-    NetworkTrayDelegate* delegate;
-    NetworkObserver::NetworkType network_type_;
-    base::string16 title;
-    base::string16 message;
-    std::vector<base::string16> links;
-  };
-  typedef std::map<NetworkObserver::MessageType, Message> MessageMap;
-
-  MessageMap& messages() { return messages_; }
-  const MessageMap& messages() const { return messages_; }
-
- private:
-  MessageMap messages_;
-};
 
 class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver {
@@ -296,112 +242,6 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   DISALLOW_COPY_AND_ASSIGN(NetworkWifiDetailedView);
 };
 
-class NetworkMessageView : public views::View,
-                           public views::LinkListener {
- public:
-  NetworkMessageView(TrayNetwork* tray_network,
-                     NetworkObserver::MessageType message_type,
-                     const NetworkMessages::Message& network_msg)
-      : tray_network_(tray_network),
-        message_type_(message_type),
-        network_type_(network_msg.network_type_) {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-
-    if (!network_msg.title.empty()) {
-      views::Label* title = new views::Label(network_msg.title);
-      title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-      AddChildView(title);
-    }
-
-    if (!network_msg.message.empty()) {
-      views::Label* message = new views::Label(network_msg.message);
-      message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      message->SetMultiLine(true);
-      message->SizeToFit(kTrayNotificationContentsWidth);
-      AddChildView(message);
-    }
-
-    if (!network_msg.links.empty()) {
-      for (size_t i = 0; i < network_msg.links.size(); ++i) {
-        views::Link* link = new views::Link(network_msg.links[i]);
-        link->set_id(i);
-        link->set_listener(this);
-        link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        link->SetMultiLine(true);
-        link->SizeToFit(kTrayNotificationContentsWidth);
-        AddChildView(link);
-      }
-    }
-  }
-
-  virtual ~NetworkMessageView() {
-  }
-
-  // Overridden from views::LinkListener.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
-    tray_network_->LinkClicked(message_type_, source->id());
-  }
-
-  NetworkObserver::MessageType message_type() const { return message_type_; }
-  NetworkObserver::NetworkType network_type() const { return network_type_; }
-
- private:
-  TrayNetwork* tray_network_;
-  NetworkObserver::MessageType message_type_;
-  NetworkObserver::NetworkType network_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkMessageView);
-};
-
-class NetworkNotificationView : public TrayNotificationView {
- public:
-  explicit NetworkNotificationView(TrayNetwork* tray_network)
-      : TrayNotificationView(tray_network, 0),
-        tray_network_(tray_network) {
-    CreateMessageView();
-    InitView(network_message_view_);
-    SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        GetMessageIcon(network_message_view_->message_type(),
-            network_message_view_->network_type())));
-  }
-
-  // Overridden from TrayNotificationView.
-  virtual void OnClose() OVERRIDE {
-    tray_network_->ClearNetworkMessage(network_message_view_->message_type());
-  }
-
-  virtual void OnClickAction() OVERRIDE {
-    if (network_message_view_->message_type() !=
-        TrayNetwork::MESSAGE_DATA_PROMO)
-      tray_network_->PopupDetailedView(0, true);
-  }
-
-  void Update() {
-    CreateMessageView();
-    UpdateViewAndImage(network_message_view_,
-        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            GetMessageIcon(network_message_view_->message_type(),
-                network_message_view_->network_type())));
-  }
-
- private:
-  void CreateMessageView() {
-    // Display the first (highest priority) message.
-    CHECK(!tray_network_->messages()->messages().empty());
-    NetworkMessages::MessageMap::const_iterator iter =
-        tray_network_->messages()->messages().begin();
-    network_message_view_ =
-        new NetworkMessageView(tray_network_, iter->first, iter->second);
-  }
-
-  TrayNetwork* tray_network_;
-  tray::NetworkMessageView* network_message_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkNotificationView);
-};
-
 }  // namespace tray
 
 TrayNetwork::TrayNetwork(SystemTray* system_tray)
@@ -409,8 +249,6 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       tray_(NULL),
       default_(NULL),
       detailed_(NULL),
-      notification_(NULL),
-      messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
@@ -442,9 +280,6 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
-  // Clear any notifications when showing the detailed view.
-  messages_->messages().clear();
-  HideNotificationView();
   if (request_wifi_view_) {
     detailed_ = new tray::NetworkWifiDetailedView(this);
     request_wifi_view_ = false;
@@ -454,14 +289,6 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
     detailed_->Init();
   }
   return detailed_;
-}
-
-views::View* TrayNetwork::CreateNotificationView(user::LoginStatus status) {
-  CHECK(notification_ == NULL);
-  if (messages_->messages().empty())
-    return NULL;  // Message has already been cleared.
-  notification_ = new tray::NetworkNotificationView(this);
-  return notification_;
 }
 
 void TrayNetwork::DestroyTrayView() {
@@ -476,44 +303,12 @@ void TrayNetwork::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayNetwork::DestroyNotificationView() {
-  notification_ = NULL;
-}
-
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (tray_)
     SetTrayImageItemBorder(tray_, alignment);
-}
-
-void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
-                                    MessageType message_type,
-                                    NetworkType network_type,
-                                    const base::string16& title,
-                                    const base::string16& message,
-                                    const std::vector<base::string16>& links) {
-  messages_->messages()[message_type] = tray::NetworkMessages::Message(
-      delegate, network_type, title, message, links);
-  if (!Shell::GetInstance()->system_tray_delegate()->IsOobeCompleted())
-    return;
-  if (notification_)
-    notification_->Update();
-  else
-    ShowNotificationView();
-}
-
-void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
-  messages_->messages().erase(message_type);
-  if (messages_->messages().empty()) {
-    HideNotificationView();
-    return;
-  }
-  if (notification_)
-    notification_->Update();
-  else
-    ShowNotificationView();
 }
 
 void TrayNetwork::RequestToggleWifi() {
@@ -546,13 +341,6 @@ void TrayNetwork::NetworkStateChanged(bool list_changed) {
 void TrayNetwork::NetworkServiceChanged(const chromeos::NetworkState* network) {
   if (detailed_)
     detailed_->NetworkServiceChanged(network);
-}
-
-void TrayNetwork::LinkClicked(MessageType message_type, int link_id) {
-  tray::NetworkMessages::MessageMap::const_iterator iter =
-      messages()->messages().find(message_type);
-  if (iter != messages()->messages().end() && iter->second.delegate)
-    iter->second.delegate->NotificationLinkClicked(message_type, link_id);
 }
 
 }  // namespace internal

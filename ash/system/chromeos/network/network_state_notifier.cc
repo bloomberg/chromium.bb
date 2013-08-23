@@ -6,8 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_connect.h"
-#include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,9 +15,13 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
@@ -26,6 +29,9 @@ using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
 namespace {
+
+const char kNetworkOutOfCreditsNotificationId[] =
+    "chrome://settings/internet/out-of-credits";
 
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
@@ -42,22 +48,38 @@ string16 GetConnectErrorString(const std::string& error_name) {
   return string16();
 }
 
+void ShowErrorNotification(const std::string& notification_id,
+                           const std::string& network_type,
+                           const base::string16& title,
+                           const base::string16& message,
+                           const base::Closure& callback) {
+  int icon_id = (network_type == flimflam::kTypeCellular) ?
+      IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED :
+      IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+  const gfx::Image& icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
+  message_center::MessageCenter::Get()->AddNotification(
+      message_center::Notification::CreateSystemNotification(
+          notification_id, title, message, icon, callback));
+}
+
+void ConfigureNetwork(const std::string& service_path) {
+  ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+      service_path);
+}
+
 }  // namespace
 
 namespace ash {
 
 NetworkStateNotifier::NetworkStateNotifier()
-    : cellular_out_of_credits_(false),
+    : did_show_out_of_credits_(false),
       weak_ptr_factory_(this) {
   if (!NetworkHandler::IsInitialized())
     return;
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
-
-  // Initialize |last_active_network_|.
-  const NetworkState* default_network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (default_network && default_network->IsConnectedState())
-    last_active_network_ = default_network->path();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  handler->AddObserver(this, FROM_HERE);
+  UpdateDefaultNetwork(handler->DefaultNetwork());
 }
 
 NetworkStateNotifier::~NetworkStateNotifier() {
@@ -68,63 +90,110 @@ NetworkStateNotifier::~NetworkStateNotifier() {
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
-  if (!network || !network->IsConnectedState())
+  if (!UpdateDefaultNetwork(network))
     return;
-  if (network->path() != last_active_network_) {
-    last_active_network_ = network->path();
-    // Reset state for new connected network
-    cellular_out_of_credits_ = false;
-    NetworkPropertiesUpdated(network);
-  }
+  // If the default network changes to another network, allow the out of
+  // credits notification to be shown again. A delay prevents the notification
+  // from being shown too frequently (see below).
+  if (network)
+    did_show_out_of_credits_ = false;
 }
 
 void NetworkStateNotifier::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  // Trigger "Out of credits" notification if the cellular network is the most
-  // recent default network (i.e. we have not switched to another network).
-  if (network->type() == flimflam::kTypeCellular &&
-      network->path() == last_active_network_) {
-    cellular_network_ = network->path();
-    if (network->cellular_out_of_credits() &&
-        !cellular_out_of_credits_) {
-      cellular_out_of_credits_ = true;
-      base::TimeDelta dtime = base::Time::Now() - out_of_credits_notify_time_;
-      if (dtime.InSeconds() > kMinTimeBetweenOutOfCreditsNotifySeconds) {
-        out_of_credits_notify_time_ = base::Time::Now();
-        std::vector<string16> links;
-        links.push_back(
-            l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_CREDITS_LINK,
-                                       UTF8ToUTF16(network->name())));
-        ash::Shell::GetInstance()->system_tray_notifier()->
-            NotifySetNetworkMessage(
-                this,
-                NetworkObserver::ERROR_OUT_OF_CREDITS,
-                NetworkObserver::GetNetworkTypeForNetworkState(network),
-                l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
-                l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_BODY),
-                links);
-      }
-    }
+  if (network->type() != flimflam::kTypeCellular)
+    return;
+  UpdateCellularOutOfCredits(network);
+  UpdateCellularActivating(network);
+}
+
+bool NetworkStateNotifier::UpdateDefaultNetwork(const NetworkState* network) {
+  std::string default_network_path;
+  if (network)
+    default_network_path = network->path();
+  if (default_network_path != last_default_network_) {
+    last_default_network_ = default_network_path;
+    return true;
+  }
+  return false;
+}
+
+void NetworkStateNotifier::UpdateCellularOutOfCredits(
+    const NetworkState* cellular) {
+  // Only display a notification if we are out of credits and have not already
+  // shown a notification (or have since connected to another network type).
+  if (!cellular->cellular_out_of_credits() || did_show_out_of_credits_)
+    return;
+
+  // Only display a notification if not connected, connecting, or waiting to
+  // connect to another network.
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* default_network = handler->DefaultNetwork();
+  if (default_network && default_network != cellular)
+    return;
+  if (handler->ConnectingNetworkByType(
+          NetworkStateHandler::kMatchTypeNonVirtual) ||
+      NetworkHandler::Get()->network_connection_handler()
+          ->HasPendingConnectRequest())
+    return;
+
+  did_show_out_of_credits_ = true;
+  base::TimeDelta dtime = base::Time::Now() - out_of_credits_notify_time_;
+  if (dtime.InSeconds() > kMinTimeBetweenOutOfCreditsNotifySeconds) {
+    out_of_credits_notify_time_ = base::Time::Now();
+    string16 error_msg = l10n_util::GetStringFUTF16(
+        IDS_NETWORK_OUT_OF_CREDITS_BODY,
+        UTF8ToUTF16(cellular->name()));
+    ShowErrorNotification(
+        kNetworkOutOfCreditsNotificationId,
+        cellular->type(),
+        l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
+        error_msg,
+        base::Bind(&ConfigureNetwork, cellular->path()));
   }
 }
 
-void NetworkStateNotifier::NotificationLinkClicked(
-    NetworkObserver::MessageType message_type,
-    size_t link_index) {
-  if (message_type == NetworkObserver::ERROR_OUT_OF_CREDITS) {
-    if (!cellular_network_.empty()) {
-      // This will trigger the activation / portal code.
-      Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-          cellular_network_);
-    }
-    ash::Shell::GetInstance()->system_tray_notifier()->
-        NotifyClearNetworkMessage(message_type);
+void NetworkStateNotifier::UpdateCellularActivating(
+    const NetworkState* cellular) {
+  // Keep track of any activating cellular network.
+  std::string activation_state = cellular->activation_state();
+  if (activation_state == flimflam::kActivationStateActivating) {
+    cellular_activating_.insert(cellular->path());
+    return;
   }
+  // Only display a notification if this network was activating and is now
+  // activated.
+  if (!cellular_activating_.count(cellular->path()) ||
+      activation_state != flimflam::kActivationStateActivated)
+    return;
+
+  cellular_activating_.erase(cellular->path());
+  int icon_id;
+  if (cellular->network_technology() == flimflam::kNetworkTechnologyLte)
+    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
+  else
+    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
+  const gfx::Image& icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
+  message_center::MessageCenter::Get()->AddNotification(
+      message_center::Notification::CreateSystemNotification(
+          ash::network_connect::kNetworkActivateNotificationId,
+          l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
+          l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
+                                     UTF8ToUTF16((cellular->name()))),
+          icon,
+          base::Bind(&ash::network_connect::ShowNetworkSettings,
+                     cellular->path())));
 }
 
 void NetworkStateNotifier::ShowNetworkConnectError(
     const std::string& error_name,
     const std::string& service_path) {
+  if (service_path.empty()) {
+    base::DictionaryValue shill_properties;
+    ShowConnectErrorNotification(error_name, service_path, shill_properties);
+    return;
+  }
   // Get the up-to-date properties for the network and display the error.
   NetworkHandler::Get()->network_configuration_handler()->GetProperties(
       service_path,
@@ -174,13 +243,17 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
 
   string16 error_msg;
   if (!network_error_details.empty()) {
+    // network_name should't be empty if network_error_details is set.
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_SERVER_MESSAGE,
         UTF8ToUTF16(network_name), error,
         UTF8ToUTF16(network_error_details));
+  } else if (network_name.empty()) {
+    error_msg = l10n_util::GetStringFUTF16(
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME, error);
   } else {
     error_msg = l10n_util::GetStringFUTF16(
-        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
         UTF8ToUTF16(network_name), error);
   }
 
@@ -188,32 +261,12 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   shill_properties.GetStringWithoutPathExpansion(
       flimflam::kTypeProperty, &network_type);
 
-  NetworkObserver::NetworkType type = NetworkObserver::NETWORK_UNKNOWN;
-  if (network_type == flimflam::kTypeCellular) {
-    std::string network_technology;
-    shill_properties.GetStringWithoutPathExpansion(
-        flimflam::kNetworkTechnologyProperty, &network_technology);
-    if (network_technology == flimflam::kNetworkTechnologyLte ||
-        network_technology == flimflam::kNetworkTechnologyLteAdvanced)
-      type = NetworkObserver::NETWORK_CELLULAR_LTE;
-    else
-      type = NetworkObserver::NETWORK_CELLULAR;
-  } else if (network_type == flimflam::kTypeEthernet) {
-    type = NetworkObserver:: NETWORK_ETHERNET;
-  } else if (network_type == flimflam::kTypeWifi) {
-    type = NetworkObserver:: NETWORK_WIFI;
-  } else {
-    NOTREACHED();
-  }
-
-  std::vector<string16> no_links;
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-      this,
-      NetworkObserver::ERROR_CONNECT_FAILED,
-      type,
+  ShowErrorNotification(
+      network_connect::kNetworkConnectNotificationId,
+      network_type,
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE),
       error_msg,
-      no_links);
+      base::Bind(&network_connect::ShowNetworkSettings, service_path));
 }
 
 }  // namespace ash

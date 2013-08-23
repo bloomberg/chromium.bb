@@ -5,10 +5,9 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
 #define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
 
-#include <map>
+#include <set>
 
 #include "ash/ash_export.h"
-#include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,8 +33,7 @@ namespace ash {
 // 2. It observes NetworkState changes to generate notifications when a
 //    Cellular network is out of credits.
 class ASH_EXPORT NetworkStateNotifier :
-      public chromeos::NetworkStateHandlerObserver,
-      public NetworkTrayDelegate {
+      public chromeos::NetworkStateHandlerObserver {
  public:
   NetworkStateNotifier();
   virtual ~NetworkStateNotifier();
@@ -45,11 +43,6 @@ class ASH_EXPORT NetworkStateNotifier :
       const chromeos::NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
-
-  // NetworkTrayDelegate
-  virtual void NotificationLinkClicked(
-      NetworkObserver::MessageType message_type,
-      size_t link_index) OVERRIDE;
 
   // Show a connection error notification. If |error_name| matches an error
   // defined in NetworkConnectionHandler for connect, configure, or activation
@@ -74,10 +67,17 @@ class ASH_EXPORT NetworkStateNotifier :
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
 
-  std::string last_active_network_;
-  std::string cellular_network_;
-  bool cellular_out_of_credits_;
+  // Returns true if the default network changed.
+  bool UpdateDefaultNetwork(const chromeos::NetworkState* network);
+
+  // Helper methods to update state and check for notifications.
+  void UpdateCellularOutOfCredits(const chromeos::NetworkState* cellular);
+  void UpdateCellularActivating(const chromeos::NetworkState* cellular);
+
+  std::string last_default_network_;
+  bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;
+  std::set<std::string> cellular_activating_;
   base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
