@@ -54,10 +54,6 @@ const char kAshDisableAudioDeviceMenu[] =
 // Disable auto window maximization logic.
 const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 
-// Disable support for auto window placement.
-const char kAshDisableAutoWindowPlacement[] =
-    "ash-enable-auto-window-placement";
-
 // Disables the limitter to throttle how quickly a user
 // can change display settings.
 const char kAshDisableDisplayChangeLimiter[] =

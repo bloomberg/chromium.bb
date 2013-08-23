@@ -776,13 +776,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoMaximizing)
   },
-  {
-    "ash-disable-auto-window-placement",
-    IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME,
-    IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoWindowPlacement)
-  },
 #endif
   {
     "per-tile-painting",

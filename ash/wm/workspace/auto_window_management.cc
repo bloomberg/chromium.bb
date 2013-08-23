@@ -26,10 +26,8 @@ namespace {
 const int kWindowAutoMoveDurationMS = 125;
 
 // Check if any management should be performed (with a given |window|).
-bool UseAutoWindowMagerForWindow(const aura::Window* window) {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshDisableAutoWindowPlacement) &&
-         GetTrackedByWorkspace(window) &&
+bool UseAutoWindowManager(const aura::Window* window) {
+  return GetTrackedByWorkspace(window) &&
          wm::IsWindowPositionManaged(window);
 }
 
@@ -142,7 +140,7 @@ void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
 } // namespace
 
 void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
-  if (!UseAutoWindowMagerForWindow(removed_window))
+  if (!UseAutoWindowManager(removed_window))
     return;
   // Find a single open browser window.
   aura::Window* other_shown_window = NULL;
@@ -154,7 +152,7 @@ void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
 }
 
 void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
-  if (!UseAutoWindowMagerForWindow(added_window) ||
+  if (!UseAutoWindowManager(added_window) ||
       wm::HasUserChangedWindowPositionOrSize(added_window) ||
       !added_window->TargetVisibility())
     return;

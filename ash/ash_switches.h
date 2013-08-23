@@ -30,7 +30,6 @@ ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
 ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif
 ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
-ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisableImmersiveFullscreen[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
