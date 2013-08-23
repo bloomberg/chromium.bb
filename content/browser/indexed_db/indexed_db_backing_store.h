@@ -22,6 +22,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
 

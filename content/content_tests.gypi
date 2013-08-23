@@ -761,6 +761,7 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/mesa/mesa.gyp:osmesa',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
             '../ui/gl/gl.gyp:gl',
