@@ -64,7 +64,7 @@ StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
 
 void StreamTextureProxyImpl::Release() {
   SetClient(NULL);
-  if (!loop_->BelongsToCurrentThread())
+  if (loop_.get() && !loop_->BelongsToCurrentThread())
     loop_->DeleteSoon(FROM_HERE, this);
   else
     delete this;
