@@ -107,7 +107,6 @@ fontVariant
 fontWeight
 glyphOrientationHorizontal
 glyphOrientationVertical
-gridTemplate
 height
 imageRendering
 justifyContent
