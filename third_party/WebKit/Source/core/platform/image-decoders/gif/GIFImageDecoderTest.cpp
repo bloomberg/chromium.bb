@@ -46,8 +46,6 @@
 using namespace WebCore;
 using namespace WebKit;
 
-#if !OS(ANDROID)
-
 namespace {
 
 PassRefPtr<SharedBuffer> readFile(const char* fileName)
@@ -453,5 +451,3 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
     EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
 }
-
-#endif

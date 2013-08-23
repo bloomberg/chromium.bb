@@ -36,6 +36,8 @@
         ],
         'isolate_dependency_untracked': [
           'tests/data/',
+          # Required by some image decoder tests.
+          '../../LayoutTests/fast/images/resources/',
         ],
       },
     }],

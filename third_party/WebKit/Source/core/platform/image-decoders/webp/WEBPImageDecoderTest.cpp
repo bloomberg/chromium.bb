@@ -48,8 +48,6 @@
 using namespace WebCore;
 using namespace WebKit;
 
-#if !OS(ANDROID)
-
 namespace {
 
 PassRefPtr<SharedBuffer> readFile(const char* fileName)
@@ -459,5 +457,3 @@ TEST_F(AnimatedWebPTests, decodeAfterReallocatingData)
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated.webp");
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
-
-#endif
