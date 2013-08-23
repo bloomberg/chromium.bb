@@ -54,7 +54,6 @@ const char* kMethodString[] = {
 // - Neither Transfer-Encoding nor Content-Length is present and message
 //   is tagged as complete.
 bool IsCompleteMessage(const HTTPMessage& message) {
-  return true;
   const BalsaHeaders* headers = message.headers();
   StringPiece content_length = headers->GetHeader(kContentLength);
   if (!content_length.empty()) {
