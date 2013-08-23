@@ -42,6 +42,23 @@ void OpenItem(const base::FilePath& file_path);
 // |file_path|, with the item selected.
 void ShowItemInFolder(const base::FilePath& file_path);
 
+// Opens the file specified by |file_path| with the browser. This function takes
+// care of the following intricacies:
+//
+// - If the file is a Drive hosted document, the hosted document will be
+//   opened in the browser by extracting the right URL for the file.
+// - If the file is a CRX file, the CRX file will be installed.
+// - If the file is on Drive, the file will be downloaded from Drive as
+//   needed.
+//
+// Returns false if failed to open. This happens if the file type is unknown.
+bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path);
+
+// Checks whether a pepper plugin for |file_extension| is enabled.
+bool ShouldBeOpenedWithPlugin(
+    Profile* profile,
+    const base::FilePath::StringType& file_extension);
+
 // Returns the MIME type of |file_path|. Returns "" if the MIME type is
 // unknown.
 std::string GetMimeTypeForPath(const base::FilePath& file_path);
