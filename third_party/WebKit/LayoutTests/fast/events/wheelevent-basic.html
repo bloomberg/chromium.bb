@@ -4,8 +4,10 @@
 <link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-WheelEvent">
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
-var deltaX = 10;
-var deltaY = 120;
+var deltaX = 0;
+var deltaY = 0;
+var expectedDeltaX;
+var expectedDeltaY;
 
 var testDiv;
 function runTest() {
@@ -23,48 +25,49 @@ function runTest() {
     testDiv.addEventListener('wheel', wheelHandler);
     if (window.eventSender) {
         eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-        eventSender.mouseScrollBy(deltaX, deltaY);
+        eventSender.mouseScrollBy(-1, -2);
+        expectedDeltaX = testDiv.scrollLeft;
+        expectedDeltaY = testDiv.scrollTop;
+        shouldBeTrue("deltaX > 0");
+        shouldBe("deltaX", "expectedDeltaX");
+        shouldBeTrue("deltaY > 0");
+        shouldBe("deltaY", "expectedDeltaY");
     } else {
         debug("FAIL: This test requires window.eventSender.");
-        finishJSTest();
     }
 }
 
 var testEvent;
-var tickMultiplier = 120;
-var expectedDeltaX = -deltaX * tickMultiplier;
-var expectedDeltaY = -deltaY * tickMultiplier;
 function wheelHandler(e) {
     testEvent = e;
     shouldBe("testEvent.__proto__", "WheelEvent.prototype");
     shouldBe("testEvent.__proto__.__proto__", "MouseEvent.prototype");
-    shouldBe("testEvent.deltaX", "expectedDeltaX");
-    shouldBe("testEvent.deltaY", "expectedDeltaY");
+    if (e.deltaX)
+      deltaX = e.deltaX;
+    if (e.deltaY)
+      deltaY = e.deltaY;
     shouldBe("testEvent.deltaZ", "0");
     shouldBe("testEvent.deltaMode", "WheelEvent.DOM_DELTA_PIXEL")
-
-    testDiv.removeEventListener("wheel", wheelHandler);
-    finishJSTest();
 }
 
 </script>
 </head>
 <body>
 <span id="parent">
-    <div id="target" style="border:solid 1px green; width:220px; height:70px; overflow:scroll">
-        TOP TOP TOP TOP TOP TOP TOP
-        Scroll mouse wheel over here
-        Scroll mouse wheel over here
-        Scroll mouse wheel over here
-        Scroll mouse wheel over here
-        Scroll mouse wheel over here
-        Scroll mouse wheel over here
-        END END END END END END END
+    <div id="target" style="border:solid 1px green; width:220px; height:70px; overflow:scroll; white-space:nowrap;">
+        TOP TOP TOP TOP TOP TOP TOP TOP TOP TOP TOP TOP TOP TOP<br/>
+        Scroll mouse wheel over here<br/>
+        Scroll mouse wheel over here<br/>
+        Scroll mouse wheel over here<br/>
+        Scroll mouse wheel over here<br/>
+        Scroll mouse wheel over here<br/>
+        Scroll mouse wheel over here<br/>
+        END END END END END END END END END END END END END END<br/>
     </div>
 </span>
+<div id="console"></div>
 <script>
 description("Tests the basic functionality of the standard wheel event");
-window.jsTestIsAsync = true;
 
 runTest();
 </script>

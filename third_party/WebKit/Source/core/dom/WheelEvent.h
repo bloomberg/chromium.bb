@@ -85,11 +85,11 @@ public:
     double deltaY() const { return m_deltaY; } // Positive when scrolling down.
     double deltaZ() const { return m_deltaZ; }
     int wheelDelta() const { return wheelDeltaY() ? wheelDeltaY() : wheelDeltaX(); } // Deprecated.
-    int wheelDeltaX() const { return -m_deltaX; } // Deprecated, negative when scrolling right.
-    int wheelDeltaY() const { return -m_deltaY; } // Deprecated, negative when scrolling down.
-    int rawDeltaX() const { return m_rawDelta.x(); }
-    int rawDeltaY() const { return m_rawDelta.y(); }
+    int wheelDeltaX() const { return m_wheelDelta.x(); } // Deprecated, negative when scrolling right.
+    int wheelDeltaY() const { return m_wheelDelta.y(); } // Deprecated, negative when scrolling down.
     unsigned deltaMode() const { return m_deltaMode; }
+    float ticksX() const { return static_cast<float>(m_wheelDelta.x()) / TickMultiplier; }
+    float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
 
     bool webkitDirectionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
 
@@ -103,10 +103,10 @@ private:
         unsigned, PassRefPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice);
 
+    IntPoint m_wheelDelta;
     double m_deltaX;
     double m_deltaY;
     double m_deltaZ;
-    IntPoint m_rawDelta;
     unsigned m_deltaMode;
     bool m_directionInvertedFromDevice;
 };

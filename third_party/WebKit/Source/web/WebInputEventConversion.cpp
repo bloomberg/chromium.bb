@@ -582,10 +582,10 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
         return;
     type = WebInputEvent::MouseWheel;
     updateWebMouseEventFromWebCoreMouseEvent(event, *widget, *renderObject, *this);
-    deltaX = static_cast<float>(event.rawDeltaX());
-    deltaY = static_cast<float>(event.rawDeltaY());
-    wheelTicksX = static_cast<float>(event.wheelDeltaX()) / WheelEvent::TickMultiplier;
-    wheelTicksY = static_cast<float>(event.wheelDeltaY()) / WheelEvent::TickMultiplier;
+    deltaX = -event.deltaX();
+    deltaY = -event.deltaY();
+    wheelTicksX = event.ticksX();
+    wheelTicksY = event.ticksY();
     scrollByPage = event.deltaMode() == WheelEvent::DOM_DELTA_PAGE;
 }
 
