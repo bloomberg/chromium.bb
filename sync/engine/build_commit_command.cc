@@ -118,14 +118,6 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   AddExtensionsActivityToMessage(session, commit_message);
   AddClientConfigParamsToMessage(session, commit_message);
 
-  // Cache previously computed position values.  Because |commit_ids|
-  // is already in sibling order, we should always hit this map after
-  // the first sibling in a consecutive run of commit items.  The
-  // entries in this map are (low, high) values describing the
-  // space of positions that are immediate successors of the item
-  // whose ID is the map's key.
-  std::map<Id, std::pair<int64, int64> > position_map;
-
   for (size_t i = 0; i < batch_commit_set_.Size(); i++) {
     Id id = batch_commit_set_.GetCommitIdAt(i);
     sync_pb::SyncEntity* sync_entry = commit_message->add_entries();
