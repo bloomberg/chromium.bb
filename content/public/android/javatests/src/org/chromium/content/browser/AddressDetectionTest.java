@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -21,8 +22,12 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
         return intentUrl.equals(expectedUrl);
     }
 
+    /*
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    http://crbug.com/278599
+    */
+    @DisabledTest
     public void testMultipleAddressesInText() throws Throwable {
         startActivityWithTestUrl("content/content_detection/geo_address_multiple.html");
         assertWaitForPageScaleFactorMatch(1.0f);
