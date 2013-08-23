@@ -6,6 +6,20 @@
 
 /**
  * @fileoverview Utility objects and functions for Google Now extension.
+ * Most important entities here:
+ * (1) 'wrapper' is a module used to add error handling and other services to
+ *     callbacks for HTML and Chrome functions and Chrome event listeners.
+ *     Chrome invokes extension code through event listeners. Once entered via
+ *     an event listener, the extension may call a Chrome/HTML API method
+ *     passing a callback (and so forth), and that callback must occur later,
+ *     otherwise, we generate an error. Chrome may unload event pages waiting
+ *     for an event. When the event fires, Chrome will reload the event page. We
+ *     don't require event listeners to fire because they are generally not
+ *     predictable (like a location change event).
+ * (2) Task Manager (built with buildTaskManager() call) provides controlling
+ *     mutually excluding chains of callbacks called tasks. Task Manager uses
+ *     WrapperPlugins to add instrumentation code to 'wrapper' to determine
+ *     when a task completes.
  */
 
 // TODO(vadimt): Figure out the server name. Use it in the manifest and for
@@ -58,8 +72,311 @@ function buildServerRequest(handlerName, contentType) {
   return request;
 }
 
+/**
+ * Sends an error report to the server.
+ * @param {Error} error Error to send.
+ */
+function sendErrorReport(error) {
+  // Don't remove 'error.stack.replace' below!
+  var filteredStack = error.canSendMessageToServer ?
+      error.stack : error.stack.replace(/.*\n/, '(message removed)\n');
+  var file;
+  var line;
+  var topFrameLineMatch = filteredStack.match(/\n    at .*\n/);
+  var topFrame = topFrameLineMatch && topFrameLineMatch[0];
+  if (topFrame) {
+    // Examples of a frame:
+    // 1. '\n    at someFunction (chrome-extension://
+    //     pmofbkohncoogjjhahejjfbppikbjigm/background.js:915:15)\n'
+    // 2. '\n    at chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/
+    //     utility.js:269:18\n'
+    // 3. '\n    at Function.target.(anonymous function) (extensions::
+    //     SafeBuiltins:19:14)\n'
+    // 4. '\n    at Event.dispatchToListener (event_bindings:382:22)\n'
+    var errorLocation;
+    // Find the the parentheses at the end of the line, if any.
+    var parenthesesMatch = topFrame.match(/\(.*\)\n/);
+    if (parenthesesMatch && parenthesesMatch[0]) {
+      errorLocation =
+          parenthesesMatch[0].substring(1, parenthesesMatch[0].length - 2);
+    } else {
+      errorLocation = topFrame;
+    }
+
+    var topFrameElements = errorLocation.split(':');
+    // topFrameElements is an array that ends like:
+    // [N-3] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
+    // [N-2] 308
+    // [N-1] 19
+    if (topFrameElements.length >= 3) {
+      file = topFrameElements[topFrameElements.length - 3];
+      line = topFrameElements[topFrameElements.length - 2];
+    }
+  }
+
+  var requestParameters =
+      'error=' + encodeURIComponent(error.name) +
+      '&script=' + encodeURIComponent(file) +
+      '&line=' + encodeURIComponent(line) +
+      '&trace=' + encodeURIComponent(filteredStack);
+  var request = buildServerRequest('jserror',
+                                   'application/x-www-form-urlencoded');
+  request.onloadend = function(event) {
+    console.log('sendErrorReport status: ' + request.status);
+  };
+  request.send(requestParameters);
+}
+
+// Limiting 1 error report per background page load.
+var errorReported = false;
+
+/**
+ * Reports an error to the server and the user, as appropriate.
+ * @param {Error} error Error to report.
+ */
+function reportError(error) {
+  var message = 'Critical error:\n' + error.stack;
+  console.error(message);
+  if (!errorReported) {
+    errorReported = true;
+    chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
+      if (isEnabled)
+        sendErrorReport(error);
+      if (DEBUG_MODE)
+        alert(message);
+    });
+  }
+}
+
 // Partial mirror of chrome.* for all instrumented functions.
 var instrumented = {};
+
+/**
+ * Wrapper plugin. These plugins extend instrumentation added by
+ * wrapper.wrapCallback by adding code that executes before and after the call
+ * to the original callback provided by the extension.
+ *
+ * @typedef {{
+ *   prologue: function (),
+ *   epilogue: function ()
+ * }}
+ */
+var WrapperPlugin;
+
+/**
+ * Wrapper for callbacks. Used to add error handling and other services to
+ * callbacks for HTML and Chrome functions and events.
+ */
+var wrapper = (function() {
+  /**
+   * Factory for wrapper plugins. If specified, it's used to generate an
+   * instance of WrapperPlugin each time we wrap a callback (which corresponds
+   * to addListener call for Chrome events, and to every API call that specifies
+   * a callback). WrapperPlugin's lifetime ends when the callback for which it
+   * was generated, exits. It's possible to have several instances of
+   * WrapperPlugin at the same time.
+   * An instance of WrapperPlugin can have state that can be shared by its
+   * constructor, prologue() and epilogue(). Also WrapperPlugins can change
+   * state of other objects, for example, to do refcounting.
+   * @type {function(): WrapperPlugin}
+   */
+  var wrapperPluginFactory = null;
+
+  /**
+   * Registers a wrapper plugin factory.
+   * @param {function(): WrapperPlugin} factory Wrapper plugin factory.
+   */
+  function registerWrapperPluginFactory(factory) {
+    if (wrapperPluginFactory) {
+      reportError(buildErrorWithMessageForServer(
+          'registerWrapperPluginFactory: factory is already registered.'));
+    }
+
+    wrapperPluginFactory = factory;
+  }
+
+  /**
+   * True if currently executed code runs in a callback or event handler that
+   * was instrumented by wrapper.wrapCallback() call.
+   * @type {boolean}
+   */
+  var isInWrappedCallback = false;
+
+  /**
+   * Required callbacks that are not yet called. Includes both task and non-task
+   * callbacks. This is a map from unique callback id to the stack at the moment
+   * when the callback was wrapped. This stack identifies the callback.
+   * Used only for diagnostics.
+   * @type {Object.<number, string>}
+   */
+  var pendingCallbacks = {};
+
+  /**
+   * Unique ID of the next callback.
+   * @type {number}
+   */
+  var nextCallbackId = 0;
+
+  /**
+   * Gets diagnostic string with the status of the wrapper.
+   * @return {string} Diagnostic string.
+   */
+  function debugGetStateString() {
+    return 'pendingCallbacks = ' + JSON.stringify(pendingCallbacks);
+  }
+
+  /**
+   * Checks that we run in a wrapped callback.
+   */
+  function checkInWrappedCallback() {
+    if (!isInWrappedCallback) {
+      reportError(buildErrorWithMessageForServer(
+          'Not in instrumented callback'));
+    }
+  }
+
+  /**
+   * Adds error processing to an API callback.
+   * @param {Function} callback Callback to instrument.
+   * @param {boolean=} opt_isEventListener True if the callback is a listener to
+   *     a Chrome API event.
+   * @return {Function} Instrumented callback.
+   */
+  function wrapCallback(callback, opt_isEventListener) {
+    var callbackId = nextCallbackId++;
+
+    if (!opt_isEventListener) {
+      checkInWrappedCallback();
+      pendingCallbacks[callbackId] = new Error().stack;
+    }
+
+    // wrapperPluginFactory may be null before task manager is built, and in
+    // tests.
+    var wrapperPluginInstance = wrapperPluginFactory && wrapperPluginFactory();
+
+    return function() {
+      // This is the wrapper for the callback.
+      try {
+        verify(!isInWrappedCallback, 'Re-entering instrumented callback');
+        isInWrappedCallback = true;
+
+        if (!opt_isEventListener)
+          delete pendingCallbacks[callbackId];
+
+        if (wrapperPluginInstance)
+          wrapperPluginInstance.prologue();
+
+        // Call the original callback.
+        callback.apply(null, arguments);
+
+        if (wrapperPluginInstance)
+          wrapperPluginInstance.epilogue();
+
+        verify(isInWrappedCallback,
+               'Instrumented callback is not instrumented upon exit');
+        isInWrappedCallback = false;
+      } catch (error) {
+        reportError(error);
+      }
+    };
+  }
+
+  /**
+   * Returns an instrumented function.
+   * @param {!Array.<string>} functionIdentifierParts Path to the chrome.*
+   *     function.
+   * @param {string} functionName Name of the chrome API function.
+   * @param {number} callbackParameter Index of the callback parameter to this
+   *     API function.
+   * @return {Function} An instrumented function.
+   */
+  function createInstrumentedFunction(
+      functionIdentifierParts,
+      functionName,
+      callbackParameter) {
+    return function() {
+      // This is the wrapper for the API function. Pass the wrapped callback to
+      // the original function.
+      var callback = arguments[callbackParameter];
+      if (typeof callback != 'function') {
+        reportError(buildErrorWithMessageForServer(
+            'Argument ' + callbackParameter + ' of ' +
+            functionIdentifierParts.join('.') + '.' + functionName +
+            ' is not a function'));
+      }
+      arguments[callbackParameter] = wrapCallback(
+          callback, functionName == 'addListener');
+
+      var chromeContainer = chrome;
+      functionIdentifierParts.forEach(function(fragment) {
+        chromeContainer = chromeContainer[fragment];
+      });
+      return chromeContainer[functionName].
+          apply(chromeContainer, arguments);
+    };
+  }
+
+  /**
+   * Instruments an API function to add error processing to its user
+   * code-provided callback.
+   * @param {string} functionIdentifier Full identifier of the function without
+   *     the 'chrome.' portion.
+   * @param {number} callbackParameter Index of the callback parameter to this
+   *     API function.
+   */
+  function instrumentChromeApiFunction(functionIdentifier, callbackParameter) {
+    var functionIdentifierParts = functionIdentifier.split('.');
+    var functionName = functionIdentifierParts.pop();
+    var chromeContainer = chrome;
+    var instrumentedContainer = instrumented;
+    functionIdentifierParts.forEach(function(fragment) {
+      chromeContainer = chromeContainer[fragment];
+      if (!chromeContainer) {
+        reportError(buildErrorWithMessageForServer(
+            'Cannot instrument ' + functionIdentifier));
+      }
+
+      if (!(fragment in instrumentedContainer))
+        instrumentedContainer[fragment] = {};
+
+      instrumentedContainer = instrumentedContainer[fragment];
+    });
+
+    var targetFunction = chromeContainer[functionName];
+    if (!targetFunction) {
+      reportError(buildErrorWithMessageForServer(
+          'Cannot instrument ' + functionIdentifier));
+    }
+
+    instrumentedContainer[functionName] = createInstrumentedFunction(
+        functionIdentifierParts,
+        functionName,
+        callbackParameter);
+  }
+
+  instrumentChromeApiFunction('runtime.onSuspend.addListener', 0);
+
+  instrumented.runtime.onSuspend.addListener(function() {
+    var stringifiedPendingCallbacks = JSON.stringify(pendingCallbacks);
+    verify(
+        stringifiedPendingCallbacks == '{}',
+        'Pending callbacks when unloading event page:' +
+        stringifiedPendingCallbacks);
+  });
+
+  return {
+    wrapCallback: wrapCallback,
+    instrumentChromeApiFunction: instrumentChromeApiFunction,
+    registerWrapperPluginFactory: registerWrapperPluginFactory,
+    checkInWrappedCallback: checkInWrappedCallback,
+    debugGetStateString: debugGetStateString
+  };
+})();
+
+wrapper.instrumentChromeApiFunction('alarms.get', 1);
+wrapper.instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
+wrapper.instrumentChromeApiFunction('identity.getAuthToken', 1);
+wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
 
 /**
  * Builds the object to manage tasks (mutually exclusive chains of events).
@@ -83,35 +400,10 @@ function buildTaskManager(areConflicting) {
   var taskPendingCallbackCount = 0;
 
   /**
-   * Required callbacks that are not yet called. Includes both task and non-task
-   * callbacks. This is a map from unique callback id to the stack at the moment
-   * when the callback was wrapped. This stack identifies the callback.
-   * Used only for diagnostics.
-   * @type {Object.<number, string>}
-   */
-  var pendingCallbacks = {};
-
-  /**
    * True if currently executed code is a part of a task.
    * @type {boolean}
    */
   var isInTask = false;
-
-  /**
-   * True if currently executed code runs in an instrumented callback.
-   * @type {boolean}
-   */
-  var isInInstrumentedCallback = false;
-
-  /**
-   * Checks that we run in an instrumented callback.
-   */
-  function checkInInstrumentedCallback() {
-    if (!isInInstrumentedCallback) {
-      reportError(buildErrorWithMessageForServer(
-          'Not in instrumented callback'));
-    }
-  }
 
   /**
    * Starts the first queued task.
@@ -126,8 +418,8 @@ function buildTaskManager(areConflicting) {
         taskPendingCallbackCount == 0,
         'tasks.startFirst: still have pending task callbacks: ' +
         taskPendingCallbackCount +
-        ', queue = ' + JSON.stringify(queue) +
-        ', pendingCallbacks = ' + JSON.stringify(pendingCallbacks));
+        ', queue = ' + JSON.stringify(queue) + ', ' +
+        wrapper.debugGetStateString());
     var entry = queue[0];
     console.log('Starting task ' + entry.name);
 
@@ -165,7 +457,7 @@ function buildTaskManager(areConflicting) {
    *     parameter. Call this callback on completion.
    */
   function add(taskName, task) {
-    checkInInstrumentedCallback();
+    wrapper.checkInWrappedCallback();
     console.log('Adding task ' + taskName);
     if (!canQueue(taskName))
       return;
@@ -190,230 +482,56 @@ function buildTaskManager(areConflicting) {
       startFirst();
   }
 
-  // Limiting 1 error report per background page load.
-  var errorReported = false;
-
-  /**
-   * Sends an error report to the server.
-   * @param {Error} error Error to send.
-   */
-  function sendErrorReport(error) {
-    var filteredStack = error.canSendMessageToServer ?
-        error.stack : error.stack.replace(/.*\n/, '(message removed)\n');
-    var file;
-    var line;
-    var topFrameLineMatch = filteredStack.match(/\n    at .*\n/);
-    var topFrame = topFrameLineMatch && topFrameLineMatch[0];
-    if (topFrame) {
-      // Examples of a frame:
-      // 1. '\n    at someFunction (chrome-extension://
-      //     pmofbkohncoogjjhahejjfbppikbjigm/background.js:915:15)\n'
-      // 2. '\n    at chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/
-      //     utility.js:269:18\n'
-      // 3. '\n    at Function.target.(anonymous function) (extensions::
-      //     SafeBuiltins:19:14)\n'
-      // 4. '\n    at Event.dispatchToListener (event_bindings:382:22)\n'
-      var errorLocation;
-      // Find the the parentheses at the end of the line, if any.
-      var parenthesesMatch = topFrame.match(/\(.*\)\n/);
-      if (parenthesesMatch && parenthesesMatch[0]) {
-        errorLocation =
-            parenthesesMatch[0].substring(1, parenthesesMatch[0].length - 2);
-      } else {
-        errorLocation = topFrame;
-      }
-
-      var topFrameElements = errorLocation.split(':');
-      // topFrameElements is an array that ends like:
-      // [N-3] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
-      // [N-2] 308
-      // [N-1] 19
-      if (topFrameElements.length >= 3) {
-        file = topFrameElements[topFrameElements.length - 3];
-        line = topFrameElements[topFrameElements.length - 2];
-      }
-    }
-
-    var requestParameters =
-        'error=' + encodeURIComponent(error.name) +
-        '&script=' + encodeURIComponent(file) +
-        '&line=' + encodeURIComponent(line) +
-        '&trace=' + encodeURIComponent(filteredStack);
-    var request = buildServerRequest('jserror',
-                                     'application/x-www-form-urlencoded');
-    request.onloadend = function(event) {
-      console.log('sendErrorReport status: ' + request.status);
-    };
-    request.send(requestParameters);
-  }
-
-  /**
-   * Reports an error to the server and the user, as appropriate.
-   * @param {Error} error Error to report.
-   */
-  function reportError(error) {
-    var message = 'Critical error:\n' + error.stack;
-    console.error(message);
-    if (!errorReported) {
-      errorReported = true;
-      chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
-        if (isEnabled)
-          sendErrorReport(error);
-        if (DEBUG_MODE)
-          alert(message);
-      });
-    }
-  }
-
-  /**
-   * Unique ID of the next callback.
-   * @type {number}
-   */
-  var nextCallbackId = 0;
-
-  /**
-   * Adds error processing to an API callback.
-   * @param {Function} callback Callback to instrument.
-   * @param {boolean=} opt_isEventListener True if the callback is an event
-   *      listener.
-   * @return {Function} Instrumented callback.
-   */
-  function wrapCallback(callback, opt_isEventListener) {
-    verify(!(opt_isEventListener && isInTask),
-           'Unrequired callback in a task.');
-    var callbackId = nextCallbackId++;
-    var isTaskCallback = isInTask;
-    if (isTaskCallback)
-      ++taskPendingCallbackCount;
-    if (!opt_isEventListener) {
-      checkInInstrumentedCallback();
-      pendingCallbacks[callbackId] = new Error().stack;
-    }
-
-    return function() {
-      // This is the wrapper for the callback.
-      try {
-        verify(!isInInstrumentedCallback, 'Re-entering instrumented callback');
-        isInInstrumentedCallback = true;
-
-        if (isTaskCallback) {
-          verify(!isInTask, 'wrapCallback: already in task');
-          isInTask = true;
-        }
-        if (!opt_isEventListener)
-          delete pendingCallbacks[callbackId];
-
-        // Call the original callback.
-        callback.apply(null, arguments);
-
-        if (isTaskCallback) {
-          verify(isInTask, 'wrapCallback: not in task at exit');
-          isInTask = false;
-          if (--taskPendingCallbackCount == 0)
-            finish();
-        }
-
-        verify(isInInstrumentedCallback,
-               'Instrumented callback is not instrumented upon exit');
-        isInInstrumentedCallback = false;
-      } catch (error) {
-        reportError(error);
-      }
-    };
-  }
-
-  /**
-   * Returns an instrumented function.
-   * @param {array} functionIdentifierParts Path to the chrome.* function.
-   * @param {string} functionName Name of the chrome API function.
-   * @param {number} callbackParameter Index of the callback parameter to this
-   *     API function.
-   * @return {function} An instrumented function.
-   */
-  function createInstrumentedFunction(
-      functionIdentifierParts,
-      functionName,
-      callbackParameter) {
-    return function() {
-      // This is the wrapper for the API function. Pass the wrapped callback to
-      // the original function.
-      var callback = arguments[callbackParameter];
-      if (typeof callback != 'function') {
-        reportError(buildErrorWithMessageForServer(
-            'Argument ' + callbackParameter + ' of ' +
-            functionIdentifierParts.join('.') + '.' + functionName +
-            ' is not a function'));
-      }
-      arguments[callbackParameter] = wrapCallback(
-          callback, functionName == 'addListener');
-
-      var chromeContainer = chrome;
-      functionIdentifierParts.map(function(fragment) {
-        chromeContainer = chromeContainer[fragment];
-      });
-      return chromeContainer[functionName].
-          apply(chromeContainer, arguments);
-    };
-  }
-
-  /**
-   * Instruments an API function to add error processing to its user
-   * code-provided callback.
-   * @param {string} functionIdentifier Full identifier of the function without
-   *     the 'chrome.' portion.
-   * @param {number} callbackParameter Index of the callback parameter to this
-   *     API function.
-   */
-  function instrumentChromeApiFunction(functionIdentifier, callbackParameter) {
-    var functionIdentifierParts = functionIdentifier.split('.');
-    var functionName = functionIdentifierParts.pop();
-    var chromeContainer = chrome;
-    var instrumentedContainer = instrumented;
-    functionIdentifierParts.map(function(fragment) {
-      chromeContainer = chromeContainer[fragment];
-      if (!chromeContainer) {
-        reportError(buildErrorWithMessageForServer(
-            'Cannot instrument ' + functionIdentifier));
-      }
-
-      if (!(fragment in instrumentedContainer))
-        instrumentedContainer[fragment] = {};
-
-      instrumentedContainer = instrumentedContainer[fragment];
-    });
-
-    var targetFunction = chromeContainer[functionName];
-    if (!targetFunction) {
-      reportError(buildErrorWithMessageForServer(
-          'Cannot instrument ' + functionIdentifier));
-    }
-
-    instrumentedContainer[functionName] = createInstrumentedFunction(
-        functionIdentifierParts,
-        functionName,
-        callbackParameter);
-  }
-
-  instrumentChromeApiFunction('alarms.get', 1);
-  instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
-  instrumentChromeApiFunction('identity.getAuthToken', 1);
-  instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
-  instrumentChromeApiFunction('runtime.onSuspend.addListener', 0);
-
-  chrome.runtime.onSuspend.addListener(function() {
-    var stringifiedPendingCallbacks = JSON.stringify(pendingCallbacks);
+  instrumented.runtime.onSuspend.addListener(function() {
     verify(
-        queue.length == 0 && stringifiedPendingCallbacks == '{}',
-        'Incomplete task or pending callbacks when unloading event page,' +
-        ' queue = ' + JSON.stringify(queue) +
-        ', pendingCallbacks = ' + stringifiedPendingCallbacks);
+        queue.length == 0,
+        'Incomplete task when unloading event page,' +
+        ' queue = ' + JSON.stringify(queue) + ', ' +
+        wrapper.debugGetStateString());
+  });
+
+
+  /**
+   * Wrapper plugin for tasks.
+   * @constructor
+   */
+  function TasksWrapperPlugin() {
+    this.isTaskCallback = isInTask;
+    if (this.isTaskCallback)
+      ++taskPendingCallbackCount;
+  }
+
+  TasksWrapperPlugin.prototype = {
+    /**
+     * Plugin code to be executed before invoking the original callback.
+     */
+    prologue: function() {
+      if (this.isTaskCallback) {
+        verify(!isInTask, 'TasksWrapperPlugin.prologue: already in task');
+        isInTask = true;
+      }
+    },
+
+    /**
+     * Plugin code to be executed after invoking the original callback.
+     */
+    epilogue: function() {
+      if (this.isTaskCallback) {
+        verify(isInTask, 'TasksWrapperPlugin.epilogue: not in task at exit');
+        isInTask = false;
+        if (--taskPendingCallbackCount == 0)
+          finish();
+      }
+    }
+  };
+
+  wrapper.registerWrapperPluginFactory(function() {
+    return new TasksWrapperPlugin();
   });
 
   return {
     add: add,
-    debugSetStepName: function() {},  // TODO(vadimt): remove
-    instrumentChromeApiFunction: instrumentChromeApiFunction,
-    wrapCallback: wrapCallback
+    debugSetStepName: function() {}  // TODO(vadimt): remove
   };
 }
 

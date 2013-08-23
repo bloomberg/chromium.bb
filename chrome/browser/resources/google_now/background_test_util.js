@@ -6,11 +6,10 @@
 
 function emptyMock() {}
 
+var wrapper = {instrumentChromeApiFunction: emptyMock};
+
 function buildTaskManager() {
-  return {
-    debugSetStepName: emptyMock,
-    instrumentChromeApiFunction: emptyMock,
-  };
+  return {debugSetStepName: emptyMock};
 }
 
 function buildAuthenticationManager() {
@@ -40,4 +39,3 @@ instrumented['runtime'] = {
   onInstalled: emptyListener,
   onStartup: emptyListener
 };
-

@@ -116,29 +116,29 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
-tasks.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
-tasks.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
-tasks.instrumentChromeApiFunction('notifications.create', 2);
-tasks.instrumentChromeApiFunction('notifications.update', 2);
-tasks.instrumentChromeApiFunction('notifications.getAll', 0);
-tasks.instrumentChromeApiFunction(
+wrapper.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
+wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
+wrapper.instrumentChromeApiFunction('notifications.create', 2);
+wrapper.instrumentChromeApiFunction('notifications.update', 2);
+wrapper.instrumentChromeApiFunction('notifications.getAll', 0);
+wrapper.instrumentChromeApiFunction(
     'notifications.onButtonClicked.addListener', 0);
-tasks.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
-tasks.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
-tasks.instrumentChromeApiFunction('omnibox.onInputEntered.addListener', 0);
-tasks.instrumentChromeApiFunction(
+wrapper.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
+wrapper.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
+wrapper.instrumentChromeApiFunction('omnibox.onInputEntered.addListener', 0);
+wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.get',
     1);
-tasks.instrumentChromeApiFunction(
+wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
     0);
-tasks.instrumentChromeApiFunction('permissions.contains', 1);
-tasks.instrumentChromeApiFunction('permissions.remove', 1);
-tasks.instrumentChromeApiFunction('permissions.request', 1);
-tasks.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
-tasks.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
-tasks.instrumentChromeApiFunction('tabs.create', 1);
-tasks.instrumentChromeApiFunction('storage.local.get', 1);
+wrapper.instrumentChromeApiFunction('permissions.contains', 1);
+wrapper.instrumentChromeApiFunction('permissions.remove', 1);
+wrapper.instrumentChromeApiFunction('permissions.request', 1);
+wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
+wrapper.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
+wrapper.instrumentChromeApiFunction('tabs.create', 1);
+wrapper.instrumentChromeApiFunction('storage.local.get', 1);
 
 var updateCardsAttempts = buildAttemptManager(
     'cards-update',
@@ -208,7 +208,7 @@ function setAuthorization(request, callbackBoolean) {
 
     // Instrument onloadend to remove stale auth tokens.
     var originalOnLoadEnd = request.onloadend;
-    request.onloadend = tasks.wrapCallback(function(event) {
+    request.onloadend = wrapper.wrapCallback(function(event) {
       if (request.status == HTTP_FORBIDDEN ||
           request.status == HTTP_UNAUTHORIZED) {
         tasks.debugSetStepName('setAuthorization-removeToken');
