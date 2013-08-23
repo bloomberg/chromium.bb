@@ -87,6 +87,8 @@ void StartLibraryWatchOnFileThread(
     const FileWatchStartedCallback& watch_started_callback,
     const base::FilePathWatcher::Callback& library_changed_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  // The watcher is created on the FILE thread because it is very difficult
+  // to safely pass an already-created member to a different thread.
   scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
   bool success = watcher->Watch(
       library_path, false /*recursive*/,
@@ -201,7 +203,8 @@ ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
     : library_path_(library_path),
       auto_add_path_(GetAutoAddPath(library_path)),
       needs_refresh_(true),
-      is_valid_(false) {
+      is_valid_(false),
+      weak_factory_(this) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!library_path_.empty());
 
@@ -210,8 +213,10 @@ ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
       FROM_HERE,
       base::Bind(StartLibraryWatchOnFileThread,
                  library_path_,
-                 base::Bind(&ITunesDataProvider::OnLibraryWatchStartedCallback),
-                 base::Bind(&ITunesDataProvider::OnLibraryChangedCallback)));
+                 base::Bind(&ITunesDataProvider::OnLibraryWatchStarted,
+                            weak_factory_.GetWeakPtr()),
+                 base::Bind(&ITunesDataProvider::OnLibraryChanged,
+                            weak_factory_.GetWeakPtr())));
 }
 
 ITunesDataProvider::~ITunesDataProvider() {}
@@ -228,7 +233,9 @@ void ITunesDataProvider::RefreshData(const ReadyCallback& ready_callback) {
   needs_refresh_ = false;
   xml_parser_ = new SafeITunesLibraryParser(
       library_path_,
-      base::Bind(&ITunesDataProvider::OnLibraryParsedCallback, ready_callback));
+      base::Bind(&ITunesDataProvider::OnLibraryParsed,
+                 weak_factory_.GetWeakPtr(),
+                 ready_callback));
   xml_parser_->Start();
 }
 
@@ -316,41 +323,6 @@ ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
       result = album_lookup->second;
   }
   return result;
-}
-
-// static
-void ITunesDataProvider::OnLibraryWatchStartedCallback(
-    scoped_ptr<base::FilePathWatcher> library_watcher) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  ITunesDataProvider* provider =
-      chrome::ImportedMediaGalleryRegistry::ITunesDataProvider();
-  if (provider)
-    provider->OnLibraryWatchStarted(library_watcher.Pass());
-}
-
-// static
-void ITunesDataProvider::OnLibraryChangedCallback(const base::FilePath& path,
-                                                  bool error) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  ITunesDataProvider* provider =
-      chrome::ImportedMediaGalleryRegistry::ITunesDataProvider();
-  if (provider)
-    provider->OnLibraryChanged(path, error);
-}
-
-// static
-void ITunesDataProvider::OnLibraryParsedCallback(
-    const ReadyCallback& ready_callback,
-    bool result,
-    const parser::Library& library) {
-  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  ITunesDataProvider* provider =
-      chrome::ImportedMediaGalleryRegistry::ITunesDataProvider();
-  if (!provider) {
-    ready_callback.Run(false);
-    return;
-  }
-  provider->OnLibraryParsed(ready_callback, result, library);
 }
 
 void ITunesDataProvider::OnLibraryWatchStarted(

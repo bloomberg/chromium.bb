@@ -71,17 +71,6 @@ class ITunesDataProvider {
   typedef std::map<AlbumName, Album> Artist;
   typedef std::map<ArtistName, Artist> Library;
 
-  // These are hacks to work around http://crbug.com/165590. Otherwise a
-  // WeakPtrFactory would be the obvious answer here.
-  // static so they can call their real counterparts.
-  // TODO(vandebo) Remove these when the bug is fixed.
-  static void OnLibraryWatchStartedCallback(
-      scoped_ptr<base::FilePathWatcher> library_watcher);
-  static void OnLibraryChangedCallback(const base::FilePath& path, bool error);
-  static void OnLibraryParsedCallback(const ReadyCallback& ready_callback,
-                                      bool result,
-                                      const parser::Library& library);
-
   // Called when the FilePathWatcher for |library_path_| has tried to add an
   // watch.
   void OnLibraryWatchStarted(scoped_ptr<base::FilePathWatcher> library_watcher);
@@ -114,6 +103,8 @@ class ITunesDataProvider {
   scoped_ptr<base::FilePathWatcher> library_watcher_;
 
   scoped_refptr<SafeITunesLibraryParser> xml_parser_;
+
+  base::WeakPtrFactory<ITunesDataProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesDataProvider);
 };
