@@ -11,6 +11,7 @@ namespace extension_page_actions_api_constants {
 
 // Keys.
 extern const char kTabIdKey[];
+extern const char kTabUrlKey[];
 extern const char kUrlKey[];
 extern const char kTitleKey[];
 extern const char kButtonKey[];

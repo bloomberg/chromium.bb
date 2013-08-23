@@ -7,6 +7,7 @@
 namespace extension_page_actions_api_constants {
 
 const char kTabIdKey[] = "tabId";
+const char kTabUrlKey[] = "tabUrl";
 const char kUrlKey[] = "url";
 const char kTitleKey[] = "title";
 const char kButtonKey[] = "button";

@@ -29,17 +29,59 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
   explicit ExtensionActionAPI(Profile* profile);
   virtual ~ExtensionActionAPI();
 
+  // Convenience method to get the instance for a profile.
+  static ExtensionActionAPI* Get(Profile* profile);
+
   static bool GetBrowserActionVisibility(const ExtensionPrefs* prefs,
                                          const std::string& extension_id);
   static void SetBrowserActionVisibility(ExtensionPrefs* prefs,
                                          const std::string& extension_id,
                                          bool visible);
 
+  // Fires the onClicked event for page_action.
+  static void PageActionExecuted(Profile* profile,
+                                 const ExtensionAction& page_action,
+                                 int tab_id,
+                                 const std::string& url,
+                                 int button);
+
+  // Fires the onClicked event for script_badge.
+  static void ScriptBadgeExecuted(Profile* profile,
+                                  const ExtensionAction& script_badge,
+                                  int tab_id);
+
+  // Fires the onClicked event for browser_action.
+  static void BrowserActionExecuted(Profile* profile,
+                                    const ExtensionAction& browser_action,
+                                    content::WebContents* web_contents);
+
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<ExtensionActionAPI>* GetFactoryInstance();
 
  private:
   friend class ProfileKeyedAPIFactory<ExtensionActionAPI>;
+
+  // The DispatchEvent methods forward events to the |profile|'s event router.
+  static void DispatchEventToExtension(Profile* profile,
+                                       const std::string& extension_id,
+                                       const char* event_name,
+                                       scoped_ptr<base::ListValue> event_args);
+
+  // Called to dispatch a deprecated style page action click event that was
+  // registered like:
+  //   chrome.pageActions["name"].addListener(function(actionId, info){})
+  static void DispatchOldPageActionEvent(Profile* profile,
+    const std::string& extension_id,
+    const std::string& page_action_id,
+    int tab_id,
+    const std::string& url,
+    int button);
+
+  // Called when either a browser or page action is executed. Figures out which
+  // event to send based on what the extension wants.
+  static void ExtensionActionExecuted(Profile* profile,
+                                      const ExtensionAction& extension_action,
+                                      content::WebContents* web_contents);
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() { return "ExtensionActionAPI"; }

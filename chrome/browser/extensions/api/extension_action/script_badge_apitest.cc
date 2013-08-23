@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -77,9 +77,7 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   {
     // Simulate the script badge being clicked.
     ResultCatcher catcher;
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->browser_event_router()->ScriptBadgeExecuted(
+    ExtensionActionAPI::ScriptBadgeExecuted(
         browser()->profile(), *script_badge, tab_id);
     EXPECT_TRUE(catcher.GetNextResult());
   }

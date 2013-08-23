@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -60,9 +60,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
     ResultCatcher catcher;
     int tab_id = ExtensionTabUtil::GetTabId(
         browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->browser_event_router()->PageActionExecuted(
+    ExtensionActionAPI::PageActionExecuted(
         browser()->profile(), *action, tab_id, std::string(), 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
@@ -105,9 +103,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->browser_event_router()->PageActionExecuted(
+    ExtensionActionAPI::PageActionExecuted(
         browser()->profile(), *page_action, tab_id, std::string(), 1);
     ASSERT_TRUE(catcher.GetNextResult());
   }
@@ -184,10 +180,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, OldPageActions) {
     ResultCatcher catcher;
     int tab_id = ExtensionTabUtil::GetTabId(
         browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
     ExtensionAction* page_action = GetPageAction(*extension);
-    service->browser_event_router()->PageActionExecuted(
+    ExtensionActionAPI::PageActionExecuted(
         browser()->profile(), *page_action, tab_id, std::string(), 1);
     EXPECT_TRUE(catcher.GetNextResult());
   }
@@ -257,9 +251,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
     ResultCatcher catcher;
     int tab_id = ExtensionTabUtil::GetTabId(
         browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->browser_event_router()->PageActionExecuted(
+    ExtensionActionAPI::PageActionExecuted(
         browser()->profile(), *page_action, tab_id, std::string(), 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }

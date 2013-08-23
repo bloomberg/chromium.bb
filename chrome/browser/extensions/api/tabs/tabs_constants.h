@@ -43,7 +43,6 @@ extern const char kStatusKey[];
 extern const char kTabIdKey[];
 extern const char kTabIdsKey[];
 extern const char kTabsKey[];
-extern const char kTabUrlKey[];
 extern const char kTitleKey[];
 extern const char kToIndexKey[];
 extern const char kTopKey[];

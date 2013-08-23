@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -130,13 +129,9 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     const Extension* extension,
     Browser* browser,
     GURL* popup_url_out) {
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return ACTION_NONE;
-
-  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
-  if (tab_id < 0)
+  content::WebContents* web_contents = NULL;
+  int tab_id = 0;
+  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
     return ACTION_NONE;
 
   ExtensionAction* browser_action =
@@ -156,8 +151,8 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     return ACTION_SHOW_POPUP;
   }
 
-  service_->browser_event_router()->BrowserActionExecuted(
-      *browser_action, browser);
+  extensions::ExtensionActionAPI::BrowserActionExecuted(
+      service_->profile(), *browser_action, web_contents);
   return ACTION_NONE;
 }
 

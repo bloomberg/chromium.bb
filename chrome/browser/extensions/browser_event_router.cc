@@ -7,11 +7,9 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -21,7 +19,6 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,7 +28,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace tab_keys = extensions::tabs_constants;
-namespace page_actions_keys = extension_page_actions_api_constants;
 
 using content::NavigationController;
 using content::WebContents;
@@ -394,23 +390,6 @@ void BrowserEventRouter::DispatchEvent(
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void BrowserEventRouter::DispatchEventToExtension(
-    Profile* profile,
-    const std::string& extension_id,
-    const char* event_name,
-    scoped_ptr<base::ListValue> event_args,
-    EventRouter::UserGestureState user_gesture) {
-  if (!profile_->IsSameProfile(profile) ||
-      !extensions::ExtensionSystem::Get(profile)->event_router())
-    return;
-
-  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->restrict_to_profile = profile;
-  event->user_gesture = user_gesture;
-  ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
-}
-
 void BrowserEventRouter::DispatchSimpleBrowserEvent(
     Profile* profile, const int window_id, const char* event_name) {
   if (!profile_->IsSameProfile(profile))
@@ -554,98 +533,5 @@ void BrowserEventRouter::TabPinnedStateChanged(WebContents* contents,
 }
 
 void BrowserEventRouter::TabStripEmpty() {}
-
-void BrowserEventRouter::DispatchOldPageActionEvent(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& page_action_id,
-    int tab_id,
-    const std::string& url,
-    int button) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(page_action_id));
-
-  DictionaryValue* data = new DictionaryValue();
-  data->Set(tab_keys::kTabIdKey, new base::FundamentalValue(tab_id));
-  data->Set(tab_keys::kTabUrlKey, new base::StringValue(url));
-  data->Set(page_actions_keys::kButtonKey,
-            new base::FundamentalValue(button));
-  args->Append(data);
-
-  DispatchEventToExtension(profile, extension_id, "pageActions", args.Pass(),
-                           EventRouter::USER_GESTURE_ENABLED);
-}
-
-void BrowserEventRouter::BrowserActionExecuted(
-    const ExtensionAction& browser_action,
-    Browser* browser) {
-  Profile* profile = browser->profile();
-  WebContents* web_contents = NULL;
-  int tab_id = 0;
-  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
-    return;
-  ExtensionActionExecuted(profile, browser_action, web_contents);
-}
-
-void BrowserEventRouter::PageActionExecuted(Profile* profile,
-                                            const ExtensionAction& page_action,
-                                            int tab_id,
-                                            const std::string& url,
-                                            int button) {
-  DispatchOldPageActionEvent(profile, page_action.extension_id(),
-                             page_action.id(), tab_id, url, button);
-  WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &web_contents, NULL)) {
-    return;
-  }
-  ExtensionActionExecuted(profile, page_action, web_contents);
-}
-
-void BrowserEventRouter::ScriptBadgeExecuted(
-    Profile* profile,
-    const ExtensionAction& script_badge,
-    int tab_id) {
-  WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &web_contents, NULL)) {
-    return;
-  }
-  ExtensionActionExecuted(profile, script_badge, web_contents);
-}
-
-void BrowserEventRouter::ExtensionActionExecuted(
-    Profile* profile,
-    const ExtensionAction& extension_action,
-    WebContents* web_contents) {
-  const char* event_name = NULL;
-  switch (extension_action.action_type()) {
-    case ActionInfo::TYPE_BROWSER:
-      event_name = "browserAction.onClicked";
-      break;
-    case ActionInfo::TYPE_PAGE:
-      event_name = "pageAction.onClicked";
-      break;
-    case ActionInfo::TYPE_SCRIPT_BADGE:
-      event_name = "scriptBadge.onClicked";
-      break;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      // The System Indicator handles its own clicks.
-      break;
-  }
-
-  if (event_name) {
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-        web_contents);
-    args->Append(tab_value);
-
-    DispatchEventToExtension(profile,
-                             extension_action.extension_id(),
-                             event_name,
-                             args.Pass(),
-                             EventRouter::USER_GESTURE_ENABLED);
-  }
-}
 
 }  // namespace extensions

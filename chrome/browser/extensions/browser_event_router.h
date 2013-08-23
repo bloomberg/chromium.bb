@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -69,22 +68,6 @@ class BrowserEventRouter : public TabStripModelObserver,
                                      int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
-  // Fires the onClicked event for page_action.
-  void PageActionExecuted(Profile* profile,
-                          const ExtensionAction& page_action,
-                          int tab_id,
-                          const std::string& url,
-                          int button);
-
-  // Fires the onClicked event for script_badge.
-  void ScriptBadgeExecuted(Profile* profile,
-                           const ExtensionAction& script_badge,
-                           int tab_id);
-
-  // Fires the onClicked event for browser_action.
-  void BrowserActionExecuted(const ExtensionAction& browser_action,
-                             Browser* browser);
-
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -109,12 +92,6 @@ class BrowserEventRouter : public TabStripModelObserver,
                      scoped_ptr<base::ListValue> args,
                      EventRouter::UserGestureState user_gesture);
 
-  void DispatchEventToExtension(Profile* profile,
-                                const std::string& extension_id,
-                                const char* event_name,
-                                scoped_ptr<base::ListValue> event_args,
-                                EventRouter::UserGestureState user_gesture);
-
   void DispatchEventsAcrossIncognito(
       Profile* profile,
       const char* event_name,
@@ -129,16 +106,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   // and dispatches the event to the extension.
   void DispatchTabUpdatedEvent(content::WebContents* contents,
                                scoped_ptr<DictionaryValue> changed_properties);
-
-  // Called to dispatch a deprecated style page action click event that was
-  // registered like:
-  //   chrome.pageActions["name"].addListener(function(actionId, info){})
-  void DispatchOldPageActionEvent(Profile* profile,
-    const std::string& extension_id,
-    const std::string& page_action_id,
-    int tab_id,
-    const std::string& url,
-    int button);
 
   // Register ourselves to receive the various notifications we are interested
   // in for a browser.
@@ -191,12 +158,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   // Gets the TabEntry for the given |contents|. Returns TabEntry* if
   // found, NULL if not.
   TabEntry* GetTabEntry(const content::WebContents* contents);
-
-  // Called when either a browser or page action is executed. Figures out which
-  // event to send based on what the extension wants.
-  void ExtensionActionExecuted(Profile* profile,
-                               const ExtensionAction& extension_action,
-                               content::WebContents* web_contents);
 
   std::map<int, TabEntry> tab_entries_;
 

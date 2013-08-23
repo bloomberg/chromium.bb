@@ -40,7 +40,6 @@ const char kStatusKey[] = "status";
 const char kTabIdKey[] = "tabId";
 const char kTabIdsKey[] = "tabIds";
 const char kTabsKey[] = "tabs";
-const char kTabUrlKey[] = "tabUrl";
 const char kTitleKey[] = "title";
 const char kToIndexKey[] = "toIndex";
 const char kTopKey[] = "top";

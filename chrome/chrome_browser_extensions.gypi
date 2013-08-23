@@ -856,6 +856,7 @@
             # less intertwined in the main codebase.
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/extensions/.*_api\.cc$'],
+            ['exclude', '^browser/extensions/browser_event_router.cc'],
             ['include', '^browser/extensions/api/activity_log_private/activity_log_private_api.cc'],
             ['include', '^browser/extensions/api/activity_log_private/activity_log_private_api.h'],
             ['include', '^browser/extensions/api/alarms/alarm_manager.cc'],
