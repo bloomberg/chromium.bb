@@ -319,14 +319,16 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   }
 
   void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
-                                          ui::MenuModel* menu_model) {
-    EXPECT_TRUE(menu_model->IsEnabledAt(4 /* Separator */));
-    EXPECT_TRUE(menu_model->IsEnabledAt(5 /* SELECT ALL */));
-    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(0 /* CUT */));
-    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(1 /* COPY */));
-    EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(3 /* DELETE */));
-    string16 str(GetClipboardText());
-    EXPECT_NE(str.empty(), menu_model->IsEnabledAt(2 /* PASTE */));
+                                          bool can_undo,
+                                          ui::MenuModel* menu) {
+    EXPECT_EQ(can_undo, menu->IsEnabledAt(0 /* UNDO */));
+    EXPECT_TRUE(menu->IsEnabledAt(1 /* Separator */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(2 /* CUT */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(3 /* COPY */));
+    EXPECT_NE(GetClipboardText().empty(), menu->IsEnabledAt(4 /* PASTE */));
+    EXPECT_EQ(textfield_has_selection, menu->IsEnabledAt(5 /* DELETE */));
+    EXPECT_TRUE(menu->IsEnabledAt(6 /* Separator */));
+    EXPECT_TRUE(menu->IsEnabledAt(7 /* SELECT ALL */));
   }
 
   // We need widget to populate wrapper class.
@@ -790,11 +792,23 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
 TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
+  SetClipboardText(std::string());
+  textfield_view_->ClearEditHistory();
   EXPECT_TRUE(GetContextMenuModel());
-  VerifyTextfieldContextMenuContents(false, GetContextMenuModel());
+  VerifyTextfieldContextMenuContents(false, false, GetContextMenuModel());
 
   textfield_->SelectAll(false);
-  VerifyTextfieldContextMenuContents(true, GetContextMenuModel());
+  VerifyTextfieldContextMenuContents(true, false, GetContextMenuModel());
+
+  SendKeyEvent(ui::VKEY_T);
+  VerifyTextfieldContextMenuContents(false, true, GetContextMenuModel());
+
+  textfield_->SelectAll(false);
+  VerifyTextfieldContextMenuContents(true, true, GetContextMenuModel());
+
+  // Exercise the "paste enabled?" check in the verifier.
+  SetClipboardText("Test");
+  VerifyTextfieldContextMenuContents(true, true, GetContextMenuModel());
 }
 
 TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {

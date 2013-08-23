@@ -744,6 +744,8 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
   bool editable = !textfield_->read_only();
   string16 result;
   switch (command_id) {
+    case IDS_APP_UNDO:
+      return editable && model_->CanUndo();
     case IDS_APP_CUT:
       return editable && model_->HasSelection() && !textfield_->IsObscured();
     case IDS_APP_COPY:
@@ -787,6 +789,12 @@ void NativeTextfieldViews::ExecuteCommand(int command_id, int event_flags) {
   } else {
     bool text_changed = false;
     switch (command_id) {
+      case IDS_APP_UNDO:
+        OnBeforeUserAction();
+        text_changed = model_->Undo();
+        UpdateAfterChange(text_changed, text_changed);
+        OnAfterUserAction();
+        break;
       case IDS_APP_CUT:
         OnBeforeUserAction();
         text_changed = Cut();
@@ -1321,6 +1329,8 @@ void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
 void NativeTextfieldViews::UpdateContextMenu() {
   if (!context_menu_contents_.get()) {
     context_menu_contents_.reset(new ui::SimpleMenuModel(this));
+    context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
+    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
     context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
     context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
