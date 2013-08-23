@@ -18,7 +18,7 @@ namespace gfx {
 
 // Listener class for all the callbacks from android SurfaceTexture.
 class GL_EXPORT SurfaceTextureListener {
- public:
+public:
   // Destroy this listener.
   void Destroy(JNIEnv* env, jobject obj);
 
@@ -27,13 +27,18 @@ class GL_EXPORT SurfaceTextureListener {
 
   static bool RegisterSurfaceTextureListener(JNIEnv* env);
 
- private:
-  // Native code should not hold any reference to this object, and instead pass
-  // it up to Java for being referenced by a SurfaceTexture instance.
+private:
   SurfaceTextureListener(const base::Closure& callback);
   ~SurfaceTextureListener();
 
   friend class SurfaceTextureBridge;
+
+  // Static factory method for the creation of a SurfaceTextureListener.
+  // The native code should not hold any reference to the returned object,
+  // but only use it to pass it up to Java for being referenced by a
+  // SurfaceTexture instance.
+  static jobject CreateSurfaceTextureListener(JNIEnv* env,
+                                              const base::Closure& callback);
 
   base::Closure callback_;
 

@@ -313,6 +313,15 @@
     ['OS=="android"' , {
       'targets': [
         {
+          'target_name': 'surface_texture_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'ui/gl',
+            'input_java_class': 'android/graphics/SurfaceTexture.class',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+        },
+        {
           'target_name': 'surface_jni_headers',
           'type': 'none',
           'variables': {
@@ -325,10 +334,10 @@
           'target_name': 'gl_jni_headers',
           'type': 'none',
           'dependencies': [
+            'surface_texture_jni_headers',
             'surface_jni_headers',
           ],
           'sources': [
-            '../android/java/src/org/chromium/ui/gfx/SurfaceTextureBridge.java',
             '../android/java/src/org/chromium/ui/gfx/SurfaceTextureListener.java',
           ],
           'variables': {
