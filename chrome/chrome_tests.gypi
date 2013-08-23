@@ -1667,6 +1667,7 @@
         'browser/ui/webui/options/settings_format_browsertest.js',
         'browser/ui/webui/policy_ui_browsertest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
+        'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/web_ui_test_handler.cc',
         'browser/ui/webui/web_ui_test_handler.h',
@@ -1860,6 +1861,8 @@
             'browser/signin/signin_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_extension_browsertest.cc',
+            # chromeos does not use the desktop user manager
+            'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
           ],
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
