@@ -49,6 +49,8 @@ public:
 
     bool equals(const CSSFunctionValue&) const;
 
+    CSSValueList* arguments() const { return m_args.get(); }
+
 private:
     explicit CSSFunctionValue(CSSParserFunction*);
     CSSFunctionValue(String, PassRefPtr<CSSValueList>);
@@ -57,6 +59,22 @@ private:
     RefPtr<CSSValueList> m_args;
 };
 
+inline CSSFunctionValue* toCSSFunctionValue(CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value->isFunctionValue());
+    return static_cast<CSSFunctionValue*>(value);
 }
+
+inline const CSSFunctionValue* toCSSFunctionValue(const CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value->isFunctionValue());
+    return static_cast<const CSSFunctionValue*>(value);
+}
+
+// Catch any unneeded cast.
+void toCSSFunctionValue(const CSSFunctionValue*);
+
+} // namespace WebCore
+
 #endif
 

@@ -4,100 +4,132 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Test getting grid-definition-columns and grid-definition-rows set through CSS
-PASS getComputedStyle(gridWithNoneElement, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(gridWithNoneElement, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(gridWithFixedElement, '').getPropertyValue('grid-definition-columns') is '10px'
-PASS getComputedStyle(gridWithFixedElement, '').getPropertyValue('grid-definition-rows') is '15px'
-PASS getComputedStyle(gridWithPercentElement, '').getPropertyValue('grid-definition-columns') is '53%'
-PASS getComputedStyle(gridWithPercentElement, '').getPropertyValue('grid-definition-rows') is '27%'
-PASS getComputedStyle(gridWithAutoElement, '').getPropertyValue('grid-definition-columns') is 'auto'
-PASS getComputedStyle(gridWithAutoElement, '').getPropertyValue('grid-definition-rows') is 'auto'
-PASS getComputedStyle(gridWithEMElement, '').getPropertyValue('grid-definition-columns') is '100px'
-PASS getComputedStyle(gridWithEMElement, '').getPropertyValue('grid-definition-rows') is '150px'
-PASS getComputedStyle(gridWithViewPortPercentageElement, '').getPropertyValue('grid-definition-columns') is '64px'
-PASS getComputedStyle(gridWithViewPortPercentageElement, '').getPropertyValue('grid-definition-rows') is '60px'
-PASS getComputedStyle(gridWithMinMax, '').getPropertyValue('grid-definition-columns') is 'minmax(10%, 15px)'
-PASS getComputedStyle(gridWithMinMax, '').getPropertyValue('grid-definition-rows') is 'minmax(20px, 50%)'
-PASS getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-definition-columns') is 'min-content'
-PASS getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-definition-rows') is 'min-content'
-PASS getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-definition-columns') is 'max-content'
-PASS getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-definition-rows') is 'max-content'
-PASS getComputedStyle(gridWithFraction, '').getPropertyValue('grid-definition-columns') is '1fr'
-PASS getComputedStyle(gridWithFraction, '').getPropertyValue('grid-definition-rows') is '2fr'
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "10px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "15px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "53%"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "27%"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "100px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "150px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "64px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "60px"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(10%, 15px)"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(20px, 50%)"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "min-content"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "min-content"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "max-content"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "max-content"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "1fr"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "2fr"
 
 Test getting wrong values for grid-definition-columns and grid-definition-rows through CSS (they should resolve to the default: 'none')
-PASS getComputedStyle(gridWithFitContentElement, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(gridWithFitContentElement, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(gridWithFitAvailableElement, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(gridWithFitAvailableElement, '').getPropertyValue('grid-definition-rows') is 'none'
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
 
 Test the initial value
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
 
 Test getting and setting grid-definition-columns and grid-definition-rows through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '18px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '66px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '55%'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '40%'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'auto'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'auto'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '80px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '150px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'min-content'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'min-content'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'max-content'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'max-content'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "18px"
+PASS element.style.gridDefinitionColumns is "18px"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "66px"
+PASS element.style.gridDefinitionRows is "66px"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "55%"
+PASS element.style.gridDefinitionColumns is "55%"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "40%"
+PASS element.style.gridDefinitionRows is "40%"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "auto"
+PASS element.style.gridDefinitionColumns is "auto"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "auto"
+PASS element.style.gridDefinitionRows is "auto"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "80px"
+PASS element.style.gridDefinitionColumns is "10vw"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "150px"
+PASS element.style.gridDefinitionRows is "25vh"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "min-content"
+PASS element.style.gridDefinitionColumns is "min-content"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "min-content"
+PASS element.style.gridDefinitionRows is "min-content"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "max-content"
+PASS element.style.gridDefinitionColumns is "max-content"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "max-content"
+PASS element.style.gridDefinitionRows is "max-content"
 
 Test getting and setting grid-definition-columns and grid-definition-rows to minmax() values through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(55%, 45px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(30px, 40%)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(220px, 48px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(80px, 50px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(min-content, 48px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(80px, min-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(220px, max-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(max-content, 50px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(220px, max-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(max-content, 50px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'minmax(min-content, max-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'minmax(max-content, min-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '3600fr'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '154fr'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '3.1459fr'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '2.718fr'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '3fr'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '4fr'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(55%, 45px)"
+PASS element.style.gridDefinitionColumns is "minmax(55%, 45px)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(30px, 40%)"
+PASS element.style.gridDefinitionRows is "minmax(30px, 40%)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(220px, 48px)"
+PASS element.style.gridDefinitionColumns is "minmax(22em, 8vh)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(80px, 50px)"
+PASS element.style.gridDefinitionRows is "minmax(10vw, 5em)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(min-content, 48px)"
+PASS element.style.gridDefinitionColumns is "minmax(min-content, 8vh)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(80px, min-content)"
+PASS element.style.gridDefinitionRows is "minmax(10vw, min-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(220px, max-content)"
+PASS element.style.gridDefinitionColumns is "minmax(22em, max-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(max-content, 50px)"
+PASS element.style.gridDefinitionRows is "minmax(max-content, 5em)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "minmax(min-content, max-content)"
+PASS element.style.gridDefinitionColumns is "minmax(min-content, max-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "minmax(max-content, min-content)"
+PASS element.style.gridDefinitionRows is "minmax(max-content, min-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "3600fr"
+PASS element.style.gridDefinitionColumns is "3600fr"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "154fr"
+PASS element.style.gridDefinitionRows is "154fr"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "3.1459fr"
+PASS element.style.gridDefinitionColumns is "3.1459fr"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "2.718fr"
+PASS element.style.gridDefinitionRows is "2.718fr"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "3fr"
+PASS element.style.gridDefinitionColumns is "3fr"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "4fr"
+PASS element.style.gridDefinitionRows is "4fr"
 
 Test setting grid-definition-columns and grid-definition-rows to bad values through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
 
 Test setting grid-definition-columns and grid-definition-rows back to 'none' through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '18px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is '66px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
-PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "18px"
+PASS element.style.gridDefinitionColumns is "18px"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "66px"
+PASS element.style.gridDefinitionRows is "66px"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS element.style.gridDefinitionColumns is "none"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS element.style.gridDefinitionRows is "none"
 
 Test setting grid-definition-columns and grid-definition-rows to 'inherit' through JS
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is '50px last'

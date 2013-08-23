@@ -1046,6 +1046,9 @@ String CSSPrimitiveValue::customCssText(CssTextFormattingFlags formattingFlag) c
             text = result.toString();
             break;
         }
+        case CSS_FR:
+            text = formatNumber(m_value.num, "fr");
+            break;
         case CSS_PAIR:
             text = getPairValue()->cssText();
             break;
@@ -1207,6 +1210,7 @@ PassRefPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
     case CSS_DPPX:
     case CSS_DPI:
     case CSS_DPCM:
+    case CSS_FR:
         result = CSSPrimitiveValue::create(m_value.num, static_cast<UnitTypes>(m_primitiveUnitType));
         break;
     case CSS_PROPERTY_ID:
@@ -1268,6 +1272,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_VMIN:
     case CSS_VMAX:
     case CSS_DIMENSION:
+    case CSS_FR:
         return m_value.num == other.m_value.num;
     case CSS_PROPERTY_ID:
         return propertyName(m_value.propertyID) == propertyName(other.m_value.propertyID);

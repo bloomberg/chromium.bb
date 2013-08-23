@@ -38,6 +38,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSImageSetValue.h"
@@ -4775,10 +4776,10 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
                 return false;
             seenTrackSizeOrRepeatFunction = true;
         } else {
-            RefPtr<CSSPrimitiveValue> primitiveValue = parseGridTrackSize(*m_valueList);
-            if (!primitiveValue)
+            RefPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
+            if (!value)
                 return false;
-            values->append(primitiveValue);
+            values->append(value);
             seenTrackSizeOrRepeatFunction = true;
         }
 
@@ -4818,7 +4819,7 @@ bool CSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
     }
 
     while (CSSParserValue* argumentValue = arguments->current()) {
-        RefPtr<CSSPrimitiveValue> trackSize = parseGridTrackSize(*arguments);
+        RefPtr<CSSValue> trackSize = parseGridTrackSize(*arguments);
         if (!trackSize)
             return false;
 
@@ -4842,7 +4843,7 @@ bool CSSParser::parseGridTrackRepeatFunction(CSSValueList& list)
     return true;
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridTrackSize(CSSParserValueList& inputList)
+PassRefPtr<CSSValue> CSSParser::parseGridTrackSize(CSSParserValueList& inputList)
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
@@ -4866,7 +4867,10 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridTrackSize(CSSParserValueList& 
         if (!maxTrackBreadth)
             return 0;
 
-        return createPrimitiveValuePair(minTrackBreadth, maxTrackBreadth);
+        RefPtr<CSSValueList> parsedArguments = CSSValueList::createCommaSeparated();
+        parsedArguments->append(minTrackBreadth);
+        parsedArguments->append(maxTrackBreadth);
+        return CSSFunctionValue::create("minmax(", parsedArguments);
     }
 
     return parseGridBreadth(currentValue);
