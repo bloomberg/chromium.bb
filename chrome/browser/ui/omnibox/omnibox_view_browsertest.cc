@@ -168,9 +168,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
       OmniboxView** omnibox_view) {
     BrowserWindow* window = browser->window();
     ASSERT_TRUE(window);
-    LocationBar* loc_bar = window->GetLocationBar();
-    ASSERT_TRUE(loc_bar);
-    *omnibox_view = loc_bar->GetLocationEntry();
+    LocationBar* location_bar = window->GetLocationBar();
+    ASSERT_TRUE(location_bar);
+    *omnibox_view = location_bar->GetLocationEntry();
     ASSERT_TRUE(*omnibox_view);
   }
 

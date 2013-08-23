@@ -96,13 +96,10 @@ bool OmniboxView::IsEditingOrEmpty() const {
 }
 
 int OmniboxView::GetIcon() const {
-  if (IsEditingOrEmpty()) {
-    return AutocompleteMatch::TypeToLocationBarIcon(model_.get() ?
-          model_->CurrentTextType() :
-              AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-  } else {
+  if (!IsEditingOrEmpty())
     return controller_->GetToolbarModel()->GetIcon();
-  }
+  return AutocompleteMatch::TypeToLocationBarIcon(model_.get() ?
+        model_->CurrentTextType() : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
 }
 
 void OmniboxView::SetUserText(const string16& text) {

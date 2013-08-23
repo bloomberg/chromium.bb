@@ -1225,35 +1225,37 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
   gtk_widget_show(separator);
 
-  // Search Engine menu item.
-  GtkWidget* search_engine_menuitem = gtk_menu_item_new_with_mnemonic(
-      ui::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(IDS_EDIT_SEARCH_ENGINES)).c_str());
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), search_engine_menuitem);
-  g_signal_connect(search_engine_menuitem, "activate",
-                   G_CALLBACK(HandleEditSearchEnginesThunk), this);
-  gtk_widget_set_sensitive(search_engine_menuitem,
-      command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
-  gtk_widget_show(search_engine_menuitem);
-
+  // Paste and Go menu item.
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
   sanitized_text_for_paste_and_go_ = text ?
       StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
       string16();
   g_free(text);
+  GtkWidget* paste_and_go_menuitem = gtk_menu_item_new_with_mnemonic(
+      ui::ConvertAcceleratorsFromWindowsStyle(l10n_util::GetStringUTF8(
+          model()->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
+              IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
+  // Detect the stock Paste menu item by searching for the stock label
+  // GTK_STOCK_PASTE.  If we don't find it, the Paste and Go item will be
+  // appended at the end of the popup menu.
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_and_go_menuitem,
+                        GetPopupMenuIndexForStockLabel(GTK_STOCK_PASTE, menu));
+  g_signal_connect(paste_and_go_menuitem, "activate",
+                   G_CALLBACK(HandlePasteAndGoThunk), this);
+  gtk_widget_set_sensitive(
+      paste_and_go_menuitem,
+      model()->CanPasteAndGo(sanitized_text_for_paste_and_go_));
+  gtk_widget_show(paste_and_go_menuitem);
 
   // Copy URL menu item.
   if (chrome::IsQueryExtractionEnabled()) {
     GtkWidget* copy_url_menuitem = gtk_menu_item_new_with_mnemonic(
         ui::ConvertAcceleratorsFromWindowsStyle(
             l10n_util::GetStringUTF8(IDS_COPY_URL)).c_str());
-
-    // Detect the Paste and Copy menu items by searching for the ones that use
-    // the stock labels (i.e. GTK_STOCK_PASTE and GTK_STOCK_COPY).
-
-    // If we don't find the stock Copy menu item, the Copy URL item will be
-    // appended at the end of the popup menu.
+    // Detect the stock Copy menu item by searching for the stock label
+    // GTK_STOCK_COPY.  If we don't find it, the Copy URL item will be appended
+    // at the end of the popup menu.
     gtk_menu_shell_insert(GTK_MENU_SHELL(menu), copy_url_menuitem,
                           GetPopupMenuIndexForStockLabel(GTK_STOCK_COPY, menu));
     g_signal_connect(copy_url_menuitem, "activate",
@@ -1265,33 +1267,33 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
     gtk_widget_show(copy_url_menuitem);
   }
 
-  // Paste and Go menu item.
-  GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
-      ui::ConvertAcceleratorsFromWindowsStyle(l10n_util::GetStringUTF8(
-          model()->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
-              IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
-
-  // If we don't find the stock Paste menu item, the Paste and Go item will be
-  // appended at the end of the popup menu.
-  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem,
-                        GetPopupMenuIndexForStockLabel(GTK_STOCK_PASTE, menu));
-
-  g_signal_connect(paste_go_menuitem, "activate",
-                   G_CALLBACK(HandlePasteAndGoThunk), this);
-  gtk_widget_set_sensitive(paste_go_menuitem,
-      model()->CanPasteAndGo(sanitized_text_for_paste_and_go_));
-  gtk_widget_show(paste_go_menuitem);
+  // Edit Search Engines menu item.
+  GtkWidget* edit_search_engines_menuitem = gtk_menu_item_new_with_mnemonic(
+      ui::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(IDS_EDIT_SEARCH_ENGINES)).c_str());
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), edit_search_engines_menuitem);
+  g_signal_connect(edit_search_engines_menuitem, "activate",
+                   G_CALLBACK(HandleEditSearchEnginesThunk), this);
+  gtk_widget_set_sensitive(
+      edit_search_engines_menuitem,
+      command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
+  gtk_widget_show(edit_search_engines_menuitem);
 
   g_signal_connect(menu, "deactivate",
                    G_CALLBACK(HandlePopupMenuDeactivateThunk), this);
 }
 
-void OmniboxViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
-  command_updater()->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
-}
-
 void OmniboxViewGtk::HandlePasteAndGo(GtkWidget* sender) {
   model()->PasteAndGo(sanitized_text_for_paste_and_go_);
+}
+
+void OmniboxViewGtk::HandleCopyURLClipboard(GtkWidget* sender) {
+  DoWriteToClipboard(controller()->GetToolbarModel()->GetURL(),
+                     controller()->GetToolbarModel()->GetText(false));
+}
+
+void OmniboxViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
+  command_updater()->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
 }
 
 void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
@@ -1561,11 +1563,6 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
 
 void OmniboxViewGtk::HandleCopyClipboard(GtkWidget* sender) {
   HandleCopyOrCutClipboard(true);
-}
-
-void OmniboxViewGtk::HandleCopyURLClipboard(GtkWidget* sender) {
-  DoWriteToClipboard(controller()->GetToolbarModel()->GetURL(),
-                     controller()->GetToolbarModel()->GetText(false));
 }
 
 void OmniboxViewGtk::HandleCutClipboard(GtkWidget* sender) {

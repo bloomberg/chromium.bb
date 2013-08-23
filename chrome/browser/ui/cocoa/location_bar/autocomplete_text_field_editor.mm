@@ -258,10 +258,11 @@ BOOL ThePasteboardIsTooDamnBig() {
                keyEquivalent:@""];
     }
 
+    [menu addItem:[NSMenuItem separatorItem]];
+
     NSString* search_engine_label =
         l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
     DCHECK([search_engine_label length]);
-    [menu addItem:[NSMenuItem separatorItem]];
     NSMenuItem* item = [menu addItemWithTitle:search_engine_label
                                        action:@selector(commandDispatch:)
                                 keyEquivalent:@""];

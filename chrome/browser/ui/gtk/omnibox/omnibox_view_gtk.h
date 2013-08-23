@@ -157,8 +157,9 @@ class OmniboxViewGtk : public OmniboxView,
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleViewSizeRequest,
                        GtkRequisition*);
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePopulatePopup, GtkMenu*);
-  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleEditSearchEngines);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteAndGo);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyURLClipboard);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleEditSearchEngines);
   CHROMEGTK_CALLBACK_6(OmniboxViewGtk, void, HandleDragDataReceived,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
@@ -170,7 +171,6 @@ class OmniboxViewGtk : public OmniboxView,
                        GdkDragContext*);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleBackSpace);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyClipboard);
-  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyURLClipboard);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCutClipboard);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteClipboard);
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleExposeEvent,

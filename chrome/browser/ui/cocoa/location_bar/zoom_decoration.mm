@@ -101,11 +101,8 @@ bool ZoomDecoration::IsAtDefaultZoom() const {
 }
 
 bool ZoomDecoration::ShouldShowDecoration() const {
-  if (owner_->GetToolbarModel()->input_in_progress())
-    return false;
-  if (bubble_)
-    return true;
-  return !IsAtDefaultZoom();
+  return !owner_->GetToolbarModel()->input_in_progress() &&
+      (bubble_ || !IsAtDefaultZoom());
 }
 
 bool ZoomDecoration::AcceptsMousePress() {

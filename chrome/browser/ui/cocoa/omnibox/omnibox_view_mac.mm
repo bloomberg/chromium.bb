@@ -219,7 +219,6 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
     RevertAll();
     // TODO(shess): Figure out how this case is used, to make sure
     // we're getting the selection and popup right.
-
   } else {
     // TODO(shess): This corresponds to _win and _gtk, except those
     // guard it with a test for whether the security level changed.

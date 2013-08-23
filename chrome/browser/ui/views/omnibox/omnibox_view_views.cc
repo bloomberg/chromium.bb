@@ -756,23 +756,25 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
 }
 
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
-  // Minor note: We use IDC_ for command id here while the underlying textfield
-  // is using IDS_ for all its command ids. This is because views cannot depend
-  // on IDC_ for now.
-  menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
-      IDS_EDIT_SEARCH_ENGINES);
-
   if (chrome::IsQueryExtractionEnabled()) {
     int copy_position = menu_contents->GetIndexOfCommandId(IDS_APP_COPY);
-    DCHECK(copy_position >= 0);
+    DCHECK_GE(copy_position, 0);
     menu_contents->InsertItemWithStringIdAt(
         copy_position + 1, IDC_COPY_URL, IDS_COPY_URL);
   }
 
   int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
-  DCHECK(paste_position >= 0);
+  DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(
       paste_position + 1, IDS_PASTE_AND_GO, IDS_PASTE_AND_GO);
+
+  menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
+
+  // Minor note: We use IDC_ for command id here while the underlying textfield
+  // is using IDS_ for all its command ids. This is because views cannot depend
+  // on IDC_ for now.
+  menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
+      IDS_EDIT_SEARCH_ENGINES);
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
@@ -789,13 +791,10 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
 }
 
 string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
-  if (command_id == IDS_PASTE_AND_GO) {
-    return l10n_util::GetStringUTF16(
-        model()->IsPasteAndSearch(GetClipboardText()) ?
-        IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
-  }
-
-  return string16();
+  DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
+  return l10n_util::GetStringUTF16(
+      model()->IsPasteAndSearch(GetClipboardText()) ?
+          IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
 bool OmniboxViewViews::HandlesCommand(int command_id) const {
@@ -806,24 +805,23 @@ bool OmniboxViewViews::HandlesCommand(int command_id) const {
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
+    case IDC_COPY_URL:
+      DoCopyURL(controller()->GetToolbarModel()->GetURL(),
+                controller()->GetToolbarModel()->GetText(false));
+      break;
     case IDS_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
       break;
     case IDC_EDIT_SEARCH_ENGINES:
       command_updater()->ExecuteCommand(command_id);
       break;
-    case IDC_COPY_URL:
-      CopyURL();
-      break;
 
-    case IDS_APP_PASTE:
-      OnBeforePossibleChange();
-      OnPaste();
-      OnAfterPossibleChange();
-      break;
     default:
       OnBeforePossibleChange();
-      command_updater()->ExecuteCommand(command_id);
+      if (command_id == IDS_APP_PASTE)
+        OnPaste();
+      else
+        command_updater()->ExecuteCommand(command_id);
       OnAfterPossibleChange();
       break;
   }
@@ -897,11 +895,6 @@ void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
 string16 OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support IME.
   return views::Textfield::GetSelectedText();
-}
-
-void OmniboxViewViews::CopyURL() {
-  DoCopyURL(controller()->GetToolbarModel()->GetURL(),
-            controller()->GetToolbarModel()->GetText(false));
 }
 
 void OmniboxViewViews::OnPaste() {

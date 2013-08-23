@@ -926,7 +926,7 @@ void LocationBarViewGtk::UpdatePageActions() {
   }
 
   if (!page_action_views_.empty() && contents) {
-    GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+    GURL url = GetWebContents()->GetURL();
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(

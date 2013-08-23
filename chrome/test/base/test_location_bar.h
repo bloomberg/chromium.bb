@@ -26,7 +26,7 @@ class TestLocationBar : public LocationBar {
     transition_ = transition;
   }
 
-  // Overridden from LocationBar:
+  // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE {}
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
@@ -46,7 +46,6 @@ class TestLocationBar : public LocationBar {
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
  private:
-
   // Test-supplied values that will be returned through the LocationBar
   // interface.
   string16 input_string_;

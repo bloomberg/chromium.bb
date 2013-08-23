@@ -1315,12 +1315,10 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return AutocompleteInput::HOMEPAGE;
   if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
-      true)) {
+      true))
     return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-  }
-  if (delegate_->IsSearchResultsPage()) {
+  if (delegate_->IsSearchResultsPage())
     return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  }
   return AutocompleteInput::OTHER;
 }
 

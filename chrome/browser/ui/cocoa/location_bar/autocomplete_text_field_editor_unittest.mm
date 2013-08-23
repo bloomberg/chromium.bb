@@ -250,8 +250,8 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, PasteAndGo) {
   [editor_ pasteAndGo:nil];
 }
 
-// Test that the menu is constructed correctly when CanPasteAndGo().
-TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenu) {
+// Test that the menu is constructed correctly.
+TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
   EXPECT_CALL(field_observer_, GetPasteActionStringId()).
       WillOnce(Return(IDS_PASTE_AND_GO));
 
@@ -266,32 +266,8 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenu) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
   EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
-
-  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
   EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
-  i++;
-}
-
-// Test that the menu is constructed correctly when !CanPasteAndGo().
-TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoMenu) {
-  EXPECT_CALL(field_observer_, GetPasteActionStringId()).
-      WillOnce(Return(IDS_PASTE_AND_GO));
-
-  NSMenu* menu = [editor_ menuForEvent:nil];
-  NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 7U);
-  // TODO(shess): Check the titles, too?
-  NSUInteger i = 0;  // Use an index to make future changes easier.
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copyURL:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
-  EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
-
-  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
-  EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
-  i++;
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(commandDispatch:));
 }
 
 // Test that the menu is constructed correctly when field isn't
@@ -311,28 +287,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenuNotEditable) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
-}
-
-// Test that the menu is constructed correctly when ShouldEnableCopyURL()
-// returns true.
-TEST_F(AutocompleteTextFieldEditorObserverTest, ShouldEnableCopyURLMenu) {
-  EXPECT_CALL(field_observer_, GetPasteActionStringId()).
-      WillOnce(Return(IDS_PASTE_AND_GO));
-
-  NSMenu* menu = [editor_ menuForEvent:nil];
-  NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 7U);
-  // TODO(shess): Check the titles, too?
-  NSUInteger i = 0;  // Use an index to make future changes easier.
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copyURL:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
-  EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
-
-  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
-  EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
 }
 
 // Test that the menu validation works as expected when CanPasteAndGo().
