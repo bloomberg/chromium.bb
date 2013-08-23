@@ -35,6 +35,10 @@ namespace IPC {
 class ChannelProxy;
 }
 
+namespace nacl {
+void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size);
+}
+
 // Represents the browser side of the browser <--> NaCl communication
 // channel. There will be one NaClProcessHost per NaCl process
 // The browser is responsible for starting the NaCl process

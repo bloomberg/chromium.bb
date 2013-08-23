@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/process_iterator.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -68,6 +69,56 @@ using content::ChildProcessData;
 using content::ChildProcessHost;
 using ppapi::proxy::SerializedHandle;
 
+#if defined(OS_WIN)
+
+namespace {
+
+// Looks for the largest contiguous unallocated region of address
+// space and returns it via |*out_addr| and |*out_size|.
+void FindAddressSpace(base::ProcessHandle process,
+                      char** out_addr, size_t* out_size) {
+  *out_addr = NULL;
+  *out_size = 0;
+  char* addr = 0;
+  while (true) {
+    MEMORY_BASIC_INFORMATION info;
+    size_t result = VirtualQueryEx(process, static_cast<void*>(addr),
+                                   &info, sizeof(info));
+    if (result < sizeof(info))
+      break;
+    if (info.State == MEM_FREE && info.RegionSize > *out_size) {
+      *out_addr = addr;
+      *out_size = info.RegionSize;
+    }
+    addr += info.RegionSize;
+  }
+}
+
+}  // namespace
+
+namespace nacl {
+
+// Allocates |size| bytes of address space in the given process at a
+// randomised address.
+void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size) {
+  char* addr;
+  size_t avail_size;
+  FindAddressSpace(process, &addr, &avail_size);
+  if (avail_size < size)
+    return NULL;
+  size_t offset = base::RandGenerator(avail_size - size);
+  const int kPageSize = 0x10000;
+  void* request_addr =
+      reinterpret_cast<void*>(reinterpret_cast<uint64>(addr + offset)
+                              & ~(kPageSize - 1));
+  return VirtualAllocEx(process, request_addr, size,
+                        MEM_RESERVE, PAGE_NOACCESS);
+}
+
+}  // namespace nacl
+
+#endif  // defined(OS_WIN)
+
 namespace {
 
 #if defined(OS_WIN)
@@ -90,13 +141,8 @@ class NaClSandboxedProcessLauncherDelegate
     // scanning the address space using VirtualQuery.
     // TODO(bbudge) Handle the --no-sandbox case.
     // http://code.google.com/p/nativeclient/issues/detail?id=2131
-    const SIZE_T kOneGigabyte = 1 << 30;
-    void* nacl_mem = VirtualAllocEx(process,
-                                    NULL,
-                                    kOneGigabyte,
-                                    MEM_RESERVE,
-                                    PAGE_NOACCESS);
-    if (!nacl_mem) {
+    const SIZE_T kNaClSandboxSize = 1 << 30;
+    if (!nacl::AllocateAddressSpaceASLR(process, kNaClSandboxSize)) {
       DLOG(WARNING) << "Failed to reserve address space for Native Client";
     }
   }
