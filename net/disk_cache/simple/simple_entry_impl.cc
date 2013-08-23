@@ -246,7 +246,7 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
   // have the entry in the index but we don't have the created files yet, this
   // way we never leak files. CreationOperationComplete will remove the entry
   // from the index if the creation fails.
-  backend_->index()->Insert(key_);
+  backend_->index()->Insert(entry_hash_);
 
   RunNextOperationIfNeeded();
   return ret_value;
@@ -536,7 +536,7 @@ void SimpleEntryImpl::RemoveSelfFromBackend() {
 void SimpleEntryImpl::MarkAsDoomed() {
   if (!backend_.get())
     return;
-  backend_->index()->Remove(key_);
+  backend_->index()->Remove(entry_hash_);
   RemoveSelfFromBackend();
 }
 
@@ -780,7 +780,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
 
   state_ = STATE_IO_PENDING;
   if (backend_.get())
-    backend_->index()->UseIfExists(key_);
+    backend_->index()->UseIfExists(entry_hash_);
 
   scoped_ptr<uint32> read_crc32(new uint32());
   scoped_ptr<int> result(new int());
@@ -840,7 +840,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
   if (backend_.get())
-    backend_->index()->UseIfExists(key_);
+    backend_->index()->UseIfExists(entry_hash_);
   // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
   // if |offset == 0| or we have already computed the CRC for [0 .. offset).
   // We rely on most write operations being sequential, start to end to compute
@@ -1120,7 +1120,7 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
     data_size_[i] = entry_stat.data_size[i];
   }
   if (backend_.get())
-    backend_->index()->UpdateEntrySize(key_, GetDiskUsage());
+    backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
 }
 
 int64 SimpleEntryImpl::GetDiskUsage() const {

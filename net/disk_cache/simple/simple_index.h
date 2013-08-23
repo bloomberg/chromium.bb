@@ -6,7 +6,6 @@
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 
 #include <list>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -83,26 +82,26 @@ class NET_EXPORT_PRIVATE SimpleIndex
   bool SetMaxSize(int max_bytes);
   int max_size() const { return max_size_; }
 
-  void Insert(const std::string& key);
-  void Remove(const std::string& key);
+  void Insert(uint64 entry_hash);
+  void Remove(uint64 entry_hash);
 
   // Check whether the index has the entry given the hash of its key.
-  bool Has(uint64 hash) const;
+  bool Has(uint64 entry_hash) const;
 
   // Update the last used time of the entry with the given key and return true
   // iff the entry exist in the index.
-  bool UseIfExists(const std::string& key);
+  bool UseIfExists(uint64 entry_hash);
 
   void WriteToDisk();
 
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the
   // entry.
-  bool UpdateEntrySize(const std::string& key, uint64 entry_size);
+  bool UpdateEntrySize(uint64 entry_hash, uint64 entry_size);
 
   typedef base::hash_map<uint64, EntryMetadata> EntrySet;
 
-  static void InsertInEntrySet(uint64 hash_key,
+  static void InsertInEntrySet(uint64 entry_hash,
                                const EntryMetadata& entry_metadata,
                                EntrySet* entry_set);
 
@@ -161,7 +160,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   bool eviction_in_progress_;
   base::TimeTicks eviction_start_time_;
 
-  // This stores all the hash_key of entries that are removed during
+  // This stores all the entry_hash of entries that are removed during
   // initialization.
   base::hash_set<uint64> removed_entries_;
   bool initialized_;
