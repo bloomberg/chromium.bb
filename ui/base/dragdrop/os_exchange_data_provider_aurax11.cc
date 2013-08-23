@@ -196,13 +196,14 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
 
       std::vector<base::string16> tokens;
       size_t num_tokens = Tokenize(unparsed, ASCIIToUTF16("\n"), &tokens);
-      if (num_tokens >= 2) {
+      if (num_tokens > 0) {
+        if (num_tokens > 1)
+          *title = tokens[1];
+        else
+          *title = string16();
+
         *url = GURL(tokens[0]);
-        *title = tokens[1];
         return true;
-      } else {
-        NOTREACHED() << "Data that claimed to be a Mozilla URL has "
-                     << num_tokens << " tokens instead of 2.";
       }
     } else if (data.GetType() == atom_cache_.GetAtom(
                    Clipboard::kMimeTypeURIList)) {

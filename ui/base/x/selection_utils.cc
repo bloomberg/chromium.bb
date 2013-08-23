@@ -104,6 +104,7 @@ SelectionFormatMap::~SelectionFormatMap() {}
 void SelectionFormatMap::Insert(
     ::Atom atom,
     const scoped_refptr<base::RefCountedMemory>& item) {
+  data_.erase(atom);
   data_.insert(std::make_pair(atom, item));
 }
 

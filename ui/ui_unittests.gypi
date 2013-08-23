@@ -152,6 +152,7 @@
         'base/cocoa/menu_controller_unittest.mm',
         'base/cocoa/nsgraphics_context_additions_unittest.mm',
         'base/cocoa/tracking_area_unittest.mm',
+        'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
         'base/events/event_dispatcher_unittest.cc',
         'base/events/event_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
@@ -320,6 +321,11 @@
             'base/dialogs/select_file_dialog_win_unittest.cc',
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'gfx/screen_unittest.cc',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources!': [
+            'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
           ],
         }],
       ],
