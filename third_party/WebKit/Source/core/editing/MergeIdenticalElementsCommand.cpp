@@ -55,7 +55,7 @@ void MergeIdenticalElementsCommand::doApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].release(), m_atChild.get(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+        m_element2->insertBefore(children[i].release(), m_atChild.get(), IGNORE_EXCEPTION);
 
     m_element1->remove(IGNORE_EXCEPTION);
 }
@@ -73,7 +73,7 @@ void MergeIdenticalElementsCommand::doUnapply()
 
     TrackExceptionState es;
 
-    parent->insertBefore(m_element1.get(), m_element2.get(), es, DeprecatedAttachNow);
+    parent->insertBefore(m_element1.get(), m_element2.get(), es);
     if (es.hadException())
         return;
 
@@ -83,7 +83,7 @@ void MergeIdenticalElementsCommand::doUnapply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i].release(), es, DeprecatedAttachNow);
+        m_element1->appendChild(children[i].release(), es);
 }
 
 #ifndef NDEBUG
