@@ -4208,6 +4208,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Installer.AttemptsCount.Total" units="count">
+  <summary>
+    The number of update attempts until the update has been applied. This is
+    reported every time the device has completed an update.
+  </summary>
+</histogram>
+
 <histogram name="Installer.DevModeErrorCodes" enum="UpdateEngineErrorCode">
   <summary>Errors from update_engine process when running in dev mode.</summary>
 </histogram>
@@ -4228,15 +4235,58 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Installer.FullPayloadAttemptNumber" units="count">
+  <summary>
+    The number of update attempts with a full update payload until the update
+    has been applied. This is reported on every update attempt.
+  </summary>
+</histogram>
+
 <histogram name="Installer.NormalErrorCodes" enum="UpdateEngineErrorCode">
   <summary>
     Errors from update_engine process when running in normal mode.
   </summary>
 </histogram>
 
+<histogram name="Installer.PayloadAttemptNumber" units="count">
+  <summary>
+    The number of update attempts until the update has been applied. This is
+    reported on every update attempt.
+  </summary>
+</histogram>
+
+<histogram name="Installer.PayloadFormat" enum="UpdateEnginePayloadFormat">
+  <summary>
+    The type of update payload used to update the device. The difference between
+    &quot;Full&quot; and &quot;Forced Full&quot; is that in the latter, the
+    request sent to Omaha included a directive saying that a delta payload
+    wasn't accepted. A &quot;Full&quot; payload is one where a delta payload was
+    accepted but Omaha provided a full payload. This is reported every time the
+    device has completed an update.
+  </summary>
+</histogram>
+
+<histogram name="Installer.RebootToNewPartitionAttempt" units="count">
+  <summary>
+    The number of consecutive times a device has failed to boot an update that
+    successfully applied. This metric is reported every time the firmware fails
+    to boot the slot with the update and fell back to the slot it originally
+    updated from.
+  </summary>
+</histogram>
+
 <histogram name="Installer.SuccessfulMBsDownloadedFrom" units="MB">
   <summary>
     Number of MBs downloaded from during an update that completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="Installer.TimeToRebootMinutes" units="Minutes">
+  <summary>
+    Wall-clock duration between when an update has successfully completed (and
+    the user is presented with the &quot;reboot arrow&quot;) and when the system
+    has booted into the new update. This is reported every time the device is
+    rebooted after an update has been applied.
   </summary>
 </histogram>
 
@@ -4249,9 +4299,9 @@ other types of suffix sets.
 
 <histogram name="Installer.UpdateDurationMinutes" units="Minutes">
   <summary>
-    Absolute wallclock time duration it took for the update to complete from the
-    time an update first began.  It includes not just the time the device was
-    up, but also includes the time the device spent sleeping.
+    Absolute wall-clock time duration it took for the update to complete from
+    the time an update first began.  It includes not just the time the device
+    was up, but also includes the time the device spent sleeping.
   </summary>
 </histogram>
 
@@ -4268,6 +4318,22 @@ other types of suffix sets.
   <summary>
     Number of times the device was rebooted by the user since an update began
     and until it completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdatesAbandonedCount" units="count">
+  <summary>
+    The number of update attempts that didn't complete because a newer update
+    was detected during the update operation. This is reported every time the
+    device has completed an update.
+  </summary>
+</histogram>
+
+<histogram name="Installer.UpdatesAbandonedEventCount" units="count">
+  <summary>
+    The number of consecutive different abandoned update payloads since the last
+    successful update. This is reported every time an update payload is
+    abandoned because a newer update payload is available.
   </summary>
 </histogram>
 
@@ -9647,6 +9713,126 @@ other types of suffix sets.
     Overscroll gestures initiated by the user. Note that not all overcroll
     gestures started are completed (e.g. the overscroll gesture is aborted if
     user clicks or presses a key during the gesture).
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.Canceled.WaitingTimeSeconds" units="seconds">
+  <summary>
+    The wall-clock time spent until a lookup was canceled.  This is reported
+    every time p2p is used to find a candidate but the request was canceled.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.Found.CandidateCount" units="count">
+  <summary>
+    The number of candidates on the LAN, i.e. the number of peers on the LAN
+    offering at least N bytes of the requested file X. This is reported after
+    examining responses from all peers on the LAN and picking a candidate.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.Found.ConnectionCount" units="count">
+  <summary>
+    The number of p2p downloads of the peer that the returned URL points to.
+    This is reported after examining responses from all peers on the LAN and
+    picking a candidate.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.Found.WaitingTimeSeconds" units="seconds">
+  <summary>
+    The wall-clock time spent waiting for the LAN-wide number of p2p downloads
+    (i.e. the sum of p2p downloads from each peer on the LAN) to drop below the
+    threshold.  This is reported after examining responses from all peers on the
+    LAN and picking a candidate.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.LookupResult" enum="P2PLookupResult">
+  <summary>
+    The result of the lookup. Possible values include &quot;Found&quot; (if a
+    candidate - i.e. a peer offering at least N bytes of file X - was chosen),
+    &quot;Not Found&quot; (if no candidate could be found), &quot;Vanished&quot;
+    (if a candidate was found but vanished while waiting in line),
+    &quot;Canceled&quot; (if a candidate was found but the request was canceled
+    while waiting in line), and &quot;Filtered&quot; (if it was detected that
+    mDNS was filtered). This is reported after examining responses from all
+    peers on the LAN when p2p is used to find a candidate.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.NumPeers" units="count">
+  <summary>
+    The number of peers implementing p2p file sharing on the network. This is
+    reported every time p2p is used to look up a resource on a network where
+    mDNS is not filtered.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Client.Vanished.WaitingTimeSeconds" units="seconds">
+  <summary>
+    The wall-clock time spent waiting for one or more candidates (i.e. peers
+    offering at least N bytes of file X) that all vanished before the LAN-wide
+    number of p2p downloads dropped below the threshold. This is reported every
+    time candidates were found using p2p but then vanished.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.ClientCount" units="count">
+  <summary>
+    The number of currently connected HTTP clients. This is reported every time
+    a HTTP client connects.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.ContentServedInterruptedMB" units="MB">
+  <summary>
+    Number of megabytes (1,000,000 bytes) served from the device (via HTTP)
+    where the client disconnects prematurely. This is reported every time a file
+    is served and the client disconnects before receiving all data.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.ContentServedSuccessfullyMB" units="MB">
+  <summary>
+    Number of megabytes (1,000,000 bytes) served from the device (via HTTP).
+    This is reported every time a file have been served successfully.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.DownloadSpeedKBps" units="kB/s">
+  <summary>
+    The average speed at which the download was served at, in kB/s. This is
+    reported every time a file have been served successfully.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.FileCount" units="count">
+  <summary>
+    The number of files available via p2p. This is reported every time a file is
+    added or removed to the /var/cache/p2p directory.
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.RangeBeginPercentage" units="%">
+  <summary>
+    When a client resumes a download, the HTTP request includes range specifier
+    to skip the bytes it already has. This metric conveys this as a percentage
+    of the the file size.  This is reported every time a file is served, even if
+    the request does not include a range specifier (in which case 0 is
+    reported).
+  </summary>
+</histogram>
+
+<histogram name="P2P.Server.RequestResult" enum="P2PServerResult">
+  <summary>
+    The result of the HTTP request. Possible values include &quot;Response
+    Sent&quot; (the resource was found and the response was successfully sent),
+    &quot;Response Interrupted&quot; (the resource was found but the client
+    disconnected), &quot;Malformed&quot; (the request was malformed), &quot;Not
+    Found&quot; (the request was for a resource that was not found), and
+    &quot;Index&quot; (the request was for the '/' or '/index.html' resource).
+    This is reported for every HTTP request handled.
   </summary>
 </histogram>
 
@@ -20877,6 +21063,22 @@ other types of suffix sets.
   <int value="4" label="East">Scrolled from left towards right</int>
 </enum>
 
+<enum name="P2PLookupResult" type="int">
+  <int value="0" label="Found"/>
+  <int value="1" label="Not Found"/>
+  <int value="2" label="Vanished"/>
+  <int value="3" label="Canceled"/>
+  <int value="4" label="Filtered"/>
+</enum>
+
+<enum name="P2PServerResult" type="int">
+  <int value="0" label="Response Sent"/>
+  <int value="1" label="Response Interrupted"/>
+  <int value="2" label="Malformed"/>
+  <int value="3" label="Not Found"/>
+  <int value="4" label="Index"/>
+</enum>
+
 <enum name="ParsedCookieStatus" type="int">
   <int value="0" label="All cookie values valid and without control chars"/>
   <int value="1" label="Cookie contains control chars"/>
@@ -22804,6 +23006,12 @@ other types of suffix sets.
   <int value="40" label="kErrorCodeOmahaUpdateDeferredForBackoff"/>
   <int value="41" label="kErrorCodePostinstallPowerwashError"/>
   <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
+</enum>
+
+<enum name="UpdateEnginePayloadFormat" type="int">
+  <int value="0" label="Full"/>
+  <int value="1" label="Delta"/>
+  <int value="2" label="Forced Full"/>
 </enum>
 
 <enum name="UrlResolutionResult" type="int">
