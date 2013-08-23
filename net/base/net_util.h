@@ -112,11 +112,14 @@ NET_EXPORT std::string GetHostAndPort(const GURL& url);
 NET_EXPORT_PRIVATE std::string GetHostAndOptionalPort(const GURL& url);
 
 // Returns true if |hostname| contains a non-registerable or non-assignable
-// domain name (eg: a gTLD that has not been assigned by IANA)
-//
-// TODO(rsleevi): http://crbug.com/119212 - Also match internal IP
-// address ranges.
+// domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
+// that falls in an IANA-reserved range.
 NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
+
+// Returns true if an IP address hostname is in a range reserved by the IANA.
+// Works with both IPv4 and IPv6 addresses, and only compares against a given
+// protocols's reserved ranges.
+NET_EXPORT bool IsIPAddressReserved(const IPAddressNumber& address);
 
 // Convenience struct for when you need a |struct sockaddr|.
 struct SockaddrStorage {

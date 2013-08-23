@@ -691,11 +691,19 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
                                             certs[2]->os_cert_handle()));
 }
 
+#if defined(OS_ANDROID)
+// TODO(ppi): Disabled because is_issued_by_known_root is incorrect on Android.
+// Once this is fixed, re-enable this check for android. crbug.com/116838
+#define MAYBE_IntranetHostsRejected DISABLED_IntranetHostsRejected
+#else
+#define MAYBE_IntranetHostsRejected IntranetHostsRejected
+#endif
+
 // Test that certificates issued for 'intranet' names (that is, containing no
 // known public registry controlled domain information) issued by well-known
 // CAs are flagged appropriately, while certificates that are issued by
 // internal CAs are not flagged.
-TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
+TEST_F(CertVerifyProcTest, MAYBE_IntranetHostsRejected) {
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "ok_cert.pem",
       X509Certificate::FORMAT_AUTO);

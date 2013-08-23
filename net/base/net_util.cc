@@ -899,6 +899,28 @@ bool FilePathToString16(const base::FilePath& path, base::string16* converted) {
 #endif
 }
 
+bool IPNumberPrefixCheck(const IPAddressNumber& ip_number,
+                         const unsigned char* ip_prefix,
+                         size_t prefix_length_in_bits) {
+  // Compare all the bytes that fall entirely within the prefix.
+  int num_entire_bytes_in_prefix = prefix_length_in_bits / 8;
+  for (int i = 0; i < num_entire_bytes_in_prefix; ++i) {
+    if (ip_number[i] != ip_prefix[i])
+      return false;
+  }
+
+  // In case the prefix was not a multiple of 8, there will be 1 byte
+  // which is only partially masked.
+  int remaining_bits = prefix_length_in_bits % 8;
+  if (remaining_bits != 0) {
+    unsigned char mask = 0xFF << (8 - remaining_bits);
+    int i = num_entire_bytes_in_prefix;
+    if ((ip_number[i] & mask) != (ip_prefix[i] & mask))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 const FormatUrlType kFormatUrlOmitNothing                     = 0;
@@ -1391,7 +1413,6 @@ std::string GetHostAndOptionalPort(const GURL& url) {
   return url.host();
 }
 
-// static
 bool IsHostnameNonUnique(const std::string& hostname) {
   // CanonicalizeHost requires surrounding brackets to parse an IPv6 address.
   const std::string host_or_ip = hostname.find(':') != std::string::npos ?
@@ -1404,11 +1425,24 @@ bool IsHostnameNonUnique(const std::string& hostname) {
   if (canonical_name.empty())
     return false;
 
-  // If |hostname| is an IP address, presume it's unique.
-  // TODO(rsleevi): In the future, this should also reject IP addresses in
-  // IANA-reserved ranges.
-  if (host_info.IsIPAddress())
-    return false;
+  // If |hostname| is an IP address, check to see if it's in an IANA-reserved
+  // range.
+  if (host_info.IsIPAddress()) {
+    IPAddressNumber host_addr;
+    if (!ParseIPLiteralToNumber(hostname.substr(host_info.out_host.begin,
+                                                host_info.out_host.len),
+                                &host_addr)) {
+      return false;
+    }
+    switch (host_info.family) {
+      case url_canon::CanonHostInfo::IPV4:
+      case url_canon::CanonHostInfo::IPV6:
+        return IsIPAddressReserved(host_addr);
+      case url_canon::CanonHostInfo::NEUTRAL:
+      case url_canon::CanonHostInfo::BROKEN:
+        return false;
+    }
+  }
 
   // Check for a registry controlled portion of |hostname|, ignoring private
   // registries, as they already chain to ICANN-administered registries,
@@ -1423,6 +1457,57 @@ bool IsHostnameNonUnique(const std::string& hostname) {
                   canonical_name,
                   registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
                   registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
+// Don't compare IPv4 and IPv6 addresses (they have different range
+// reservations). Keep separate reservation arrays for each IP type, and
+// consolidate adjacent reserved ranges within a reservation array when
+// possible.
+// Sources for info:
+// www.iana.org/assignments/ipv4-address-space/ipv4-address-space.xhtml
+// www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml
+// They're formatted here with the prefix as the last element. For example:
+// 10.0.0.0/8 becomes 10,0,0,0,8 and fec0::/10 becomes 0xfe,0xc0,0,0,0...,10.
+bool IsIPAddressReserved(const IPAddressNumber& host_addr) {
+  static const unsigned char kReservedIPv4[][5] = {
+      { 0,0,0,0,8 }, { 10,0,0,0,8 }, { 100,64,0,0,10 }, { 127,0,0,0,8 },
+      { 169,254,0,0,16 }, { 172,16,0,0,12 }, { 192,0,2,0,24 },
+      { 192,88,99,0,24 }, { 192,168,0,0,16 }, { 198,18,0,0,15 },
+      { 198,51,100,0,24 }, { 203,0,113,0,24 }, { 224,0,0,0,3 }
+  };
+  static const unsigned char kReservedIPv6[][17] = {
+      { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8 },
+      { 0x40,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2 },
+      { 0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2 },
+      { 0xc0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3 },
+      { 0xe0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4 },
+      { 0xf0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5 },
+      { 0xf8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6 },
+      { 0xfc,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7 },
+      { 0xfe,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9 },
+      { 0xfe,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10 },
+      { 0xfe,0xc0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10 },
+  };
+  size_t array_size = 0;
+  const unsigned char* array = NULL;
+  switch (host_addr.size()) {
+    case kIPv4AddressSize:
+      array_size = arraysize(kReservedIPv4);
+      array = kReservedIPv4[0];
+      break;
+    case kIPv6AddressSize:
+      array_size = arraysize(kReservedIPv6);
+      array = kReservedIPv6[0];
+      break;
+  }
+  if (!array)
+    return false;
+  size_t width = host_addr.size() + 1;
+  for (size_t i = 0; i < array_size; ++i, array += width) {
+    if (IPNumberPrefixCheck(host_addr, array, array[width-1]))
+      return true;
+  }
+  return false;
 }
 
 // Extracts the address and port portions of a sockaddr.
@@ -1996,25 +2081,7 @@ bool IPNumberMatchesPrefix(const IPAddressNumber& ip_number,
                                  96 + prefix_length_in_bits);
   }
 
-  // Otherwise we are comparing two IPv4 addresses, or two IPv6 addresses.
-  // Compare all the bytes that fall entirely within the prefix.
-  int num_entire_bytes_in_prefix = prefix_length_in_bits / 8;
-  for (int i = 0; i < num_entire_bytes_in_prefix; ++i) {
-    if (ip_number[i] != ip_prefix[i])
-      return false;
-  }
-
-  // In case the prefix was not a multiple of 8, there will be 1 byte
-  // which is only partially masked.
-  int remaining_bits = prefix_length_in_bits % 8;
-  if (remaining_bits != 0) {
-    unsigned char mask = 0xFF << (8 - remaining_bits);
-    int i = num_entire_bytes_in_prefix;
-    if ((ip_number[i] & mask) != (ip_prefix[i] & mask))
-      return false;
-  }
-
-  return true;
+  return IPNumberPrefixCheck(ip_number, &ip_prefix[0], prefix_length_in_bits);
 }
 
 const uint16* GetPortFieldFromSockaddr(const struct sockaddr* address,

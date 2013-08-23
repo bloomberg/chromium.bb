@@ -3517,15 +3517,27 @@ const NonUniqueNameTestData kNonUniqueNameTestData[] = {
     // Domains under private registries.
     { true, "appspot.com" },
     { true, "test.appspot.com" },
-    // IPv4 addresses (in various forms).
+    // Unreserved IPv4 addresses (in various forms).
     { true, "8.8.8.8" },
-    { true, "1.2.3" },
-    { true, "14.15" },
-    { true, "676768" },
-    // IPv6 addresses.
-    { true, "FEDC:ba98:7654:3210:FEDC:BA98:7654:3210" },
-    { true, "::192.9.5.5" },
-    { true, "FEED::BEEF" },
+    { true, "99.64.0.0" },
+    { true, "212.15.0.0" },
+    { true, "212.15" },
+    { true, "212.15.0" },
+    { true, "3557752832" },
+    // Reserved IPv4 addresses (in various forms).
+    { false, "192.168.0.0" },
+    { false, "192.168.0.6" },
+    { false, "10.0.0.5" },
+    { false, "10.0" },
+    { false, "10.0.0" },
+    { false, "3232235526" },
+    // Unreserved IPv6 addresses.
+    { true, "FFC0:ba98:7654:3210:FEDC:BA98:7654:3210" },
+    { true, "2000:ba98:7654:2301:EFCD:BA98:7654:3210" },
+    // Reserved IPv6 addresses.
+    { false, "::192.9.5.5" },
+    { false, "FEED::BEEF" },
+    { false, "FEC0:ba98:7654:3210:FEDC:BA98:7654:3210" },
     // 'internal'/non-IANA assigned domains.
     { false, "intranet" },
     { false, "intranet." },

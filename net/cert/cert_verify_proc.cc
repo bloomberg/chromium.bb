@@ -242,16 +242,19 @@ int CertVerifyProc::Verify(X509Certificate* cert,
       rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
+#if !defined(OS_ANDROID)
   // Flag certificates from publicly-trusted CAs that are issued to intranet
   // hosts. While the CA/Browser Forum Baseline Requirements (v1.1) permit
   // these to be issued until 1 November 2015, they represent a real risk for
   // the deployment of gTLDs and are being phased out ahead of the hard
   // deadline.
-  // TODO(rsleevi): http://crbug.com/119212 - Also match internal IP address
-  // ranges.
+  //
+  // TODO(ppi): is_issued_by_known_root is incorrect on Android. Once this is
+  // fixed, re-enable this check for Android. crbug.com/116838
   if (verify_result->is_issued_by_known_root && IsHostnameNonUnique(hostname)) {
     verify_result->cert_status |= CERT_STATUS_NON_UNIQUE_NAME;
   }
+#endif
 
   return rv;
 }
