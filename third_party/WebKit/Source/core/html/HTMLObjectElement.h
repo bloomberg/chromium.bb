@@ -81,7 +81,7 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString& imageSourceURL() const OVERRIDE;
 
-    virtual RenderWidget* renderWidgetForJSBindings() const;
+    virtual RenderWidget* existingRenderWidget() const OVERRIDE;
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 

@@ -31,6 +31,9 @@ class HTMLAppletElement FINAL : public HTMLPlugInImageElement {
 public:
     static PassRefPtr<HTMLAppletElement> create(const QualifiedName&, Document*, bool createdByParser);
 
+protected:
+    virtual RenderWidget* renderWidgetForJSBindings() const OVERRIDE;
+
 private:
     HTMLAppletElement(const QualifiedName&, Document*, bool createdByParser);
 
@@ -39,7 +42,7 @@ private:
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    virtual RenderWidget* renderWidgetForJSBindings() const;
+    virtual RenderWidget* existingRenderWidget() const OVERRIDE;
     virtual void updateWidget(PluginCreationOption) OVERRIDE;
 
     bool canEmbedJava() const;

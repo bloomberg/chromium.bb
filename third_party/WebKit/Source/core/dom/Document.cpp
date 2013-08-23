@@ -4875,9 +4875,7 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 {
     if (!m_touchEventTargets.get())
         return;
-    // TODO(rbyers): Re-enable this ASSERT - http://crbug.com/254203.
-    // The known failure is benign, but the fix somehow causes a perf regression.
-    // ASSERT(m_touchEventTargets->contains(handler));
+    ASSERT(m_touchEventTargets->contains(handler));
     m_touchEventTargets->remove(handler);
     if (Document* parent = parentDocument()) {
         parent->didRemoveTouchEventHandler(this);
@@ -4900,9 +4898,12 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 
 void Document::didRemoveEventTargetNode(Node* handler)
 {
-    if (m_touchEventTargets) {
-        m_touchEventTargets->removeAll(handler);
-        if ((handler == this || m_touchEventTargets->isEmpty()) && parentDocument())
+    if (m_touchEventTargets && !m_touchEventTargets->isEmpty()) {
+        if (handler == this)
+            m_touchEventTargets->clear();
+        else
+            m_touchEventTargets->removeAll(handler);
+        if (m_touchEventTargets->isEmpty() && parentDocument())
             parentDocument()->didRemoveEventTargetNode(this);
     }
 }

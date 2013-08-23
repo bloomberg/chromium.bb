@@ -70,9 +70,8 @@ static inline RenderWidget* findWidgetRenderer(const Node* n)
     return 0;
 }
 
-RenderWidget* HTMLEmbedElement::renderWidgetForJSBindings() const
+RenderWidget* HTMLEmbedElement::existingRenderWidget() const
 {
-    document()->updateLayoutIgnorePendingStylesheets();
     return findWidgetRenderer(this);
 }
 

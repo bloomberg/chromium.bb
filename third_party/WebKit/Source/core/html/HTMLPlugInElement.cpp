@@ -79,6 +79,15 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     return true;
 }
 
+void HTMLPlugInElement::removeAllEventListeners()
+{
+    HTMLFrameOwnerElement::removeAllEventListeners();
+    if (RenderWidget* renderer = existingRenderWidget()) {
+        if (Widget* widget = renderer->widget())
+            widget->eventListenersRemoved();
+    }
+}
+
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
     m_instance.clear();
@@ -198,6 +207,12 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     if (event->defaultHandled())
         return;
     HTMLFrameOwnerElement::defaultEventHandler(event);
+}
+
+RenderWidget* HTMLPlugInElement::renderWidgetForJSBindings() const
+{
+    document()->updateLayoutIgnorePendingStylesheets();
+    return existingRenderWidget();
 }
 
 bool HTMLPlugInElement::isKeyboardFocusable() const

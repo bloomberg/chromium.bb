@@ -87,8 +87,11 @@ RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
 {
     if (!canEmbedJava())
         return 0;
+    return HTMLPlugInImageElement::renderWidgetForJSBindings();
+}
 
-    document()->updateLayoutIgnorePendingStylesheets();
+RenderWidget* HTMLAppletElement::existingRenderWidget() const
+{
     return renderPart();
 }
 

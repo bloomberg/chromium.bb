@@ -66,6 +66,8 @@ public:
 
     virtual bool isPlugInImageElement() const { return false; }
 
+    virtual void removeAllEventListeners() OVERRIDE FINAL;
+
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document*);
 
@@ -77,12 +79,16 @@ protected:
 
     virtual bool dispatchBeforeLoadEvent(const String& sourceURL) OVERRIDE;
 
+    // Create or update the RenderWidget and return it, triggering layout if necessary.
+    virtual RenderWidget* renderWidgetForJSBindings() const;
+
 private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     virtual void defaultEventHandler(Event*);
 
-    virtual RenderWidget* renderWidgetForJSBindings() const = 0;
+    // Return any existing RenderWidget without triggering relayout, or 0 if it doesn't yet exist.
+    virtual RenderWidget* existingRenderWidget() const = 0;
 
     virtual bool supportsFocus() const OVERRIDE { return true; };
     virtual bool rendererIsFocusable() const OVERRIDE;
