@@ -248,12 +248,14 @@ class _Results(object):
     Returns:
        A list of RecordedTraceback objects.
     """
+    tracebacks = []
     for name, result, description, _ in self._results_log:
       # If result is not in NON_FAILURE_TYPES, then the stage failed, and
       # result is the exception object and description is a string containing
       # the full traceback.
       if result not in self.NON_FAILURE_TYPES:
-        yield RecordedTraceback(name, result, description)
+        tracebacks.append(RecordedTraceback(name, result, description))
+    return tracebacks
 
   def Report(self, out, archive_urls=None, current_version=None):
     """Generate a user friendly text display of the results data."""
