@@ -1,6 +1,6 @@
 {
   "description": "Chrome Endure test for Google Calendar.",
-  "archive_data_file": "../data/endure_calendar_forward_backward.json",
+  "archive_data_file": "../data/calendar_forward_backward.json",
   "credentials_path": "../data/credentials.json",
   "user_agent_type": "desktop",
   "pages": [
@@ -10,45 +10,54 @@
       "credentials": "google",
       "wait_for_element_with_selector": "div[class~=\"navForward\"]",
       "post_navigate_javascript_to_execute": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();",
+      "wait_seconds": 2,
       "endure": [
         {
           "action": "click_element",
           "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navForward\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navForward\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navForward\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navBack\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navBack\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navBack\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navBack\"]"
         },
         {
           "action": "click_element",
           "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
           "wait_for_element_with_selector": "div[class~=\"navForward\"]"
         }
       ]
