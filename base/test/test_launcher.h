@@ -43,6 +43,10 @@ struct TestResult {
   // True if the test passed.
   bool success;
 
+  // True if the test binary crashed while executing this test (i.e. the test
+  // didn't actually finish).
+  bool crashed;
+
   // Time it took to run the test.
   base::TimeDelta elapsed_time;
 };

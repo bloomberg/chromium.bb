@@ -10,6 +10,7 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kTestLargeTimeout[];
+extern const char kTestLauncherOutput[];
 extern const char kTestTinyTimeout[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];

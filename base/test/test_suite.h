@@ -37,6 +37,8 @@ class TestSuite {
 
   void ResetCommandLine();
 
+  void AddTestLauncherResultPrinter();
+
   int Run();
 
  protected:

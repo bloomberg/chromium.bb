@@ -277,6 +277,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
   }
 
   int num_runnable_tests = 0;
+  size_t num_started_tests = 0;
 
   ResultsPrinter printer(*command_line);
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
@@ -305,10 +306,11 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
 
       bool should_run = ShouldRunTestOnShard(total_shards, shard_index,
                                              num_runnable_tests);
-      num_runnable_tests += 1;
+      num_runnable_tests++;
       if (!should_run)
         continue;
 
+      num_started_tests++;
       launcher_delegate->RunTest(test_case,
                                  test_info,
                                  base::Bind(
@@ -319,20 +321,33 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
 
   launcher_delegate->RunRemainingTests();
 
+  bool result = true;
+
   printf("%" PRIuS " test%s run\n",
          printer.test_run_count(),
          printer.test_run_count() > 1 ? "s" : "");
   printf("%" PRIuS " test%s failed\n",
          printer.failed_tests().size(),
          printer.failed_tests().size() != 1 ? "s" : "");
-  if (printer.failed_tests().empty())
-    return true;
+  if (num_started_tests != printer.test_run_count()) {
+    result = false;
+    // TODO(phajdan.jr): Print more detailed info which test results
+    // are missing or superfluous.
+    printf("BUG: %" PRIuS " tests started but only got results for %" PRIuS
+           " tests back.\n", num_started_tests, printer.test_run_count());
+  }
 
-  printf("Failing tests:\n");
-  for (size_t i = 0; i < printer.failed_tests().size(); ++i)
-    printf("%s\n", printer.failed_tests()[i].c_str());
+  if (!printer.failed_tests().empty()) {
+    result = false;
 
-  return false;
+    printf("Failing tests:\n");
+    for (size_t i = 0; i < printer.failed_tests().size(); ++i)
+      printf("%s\n", printer.failed_tests()[i].c_str());
+  }
+
+  fflush(stdout);
+
+  return result;
 }
 
 }  // namespace
@@ -345,7 +360,7 @@ const char kGTestOutputFlag[] = "gtest_output";
 
 const char kHelpFlag[]   = "help";
 
-TestResult::TestResult() {
+TestResult::TestResult() : success(false), crashed(false) {
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {

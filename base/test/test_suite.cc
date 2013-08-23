@@ -11,13 +11,16 @@
 #include "base/debug/debug_on_start_win.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
+#include "base/test/gtest_xml_util.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -142,6 +145,34 @@ void TestSuite::ResetCommandLine() {
   listeners.Append(new TestClientInitializer);
 }
 
+#if !defined(OS_IOS)
+void TestSuite::AddTestLauncherResultPrinter() {
+  // Only add the custom printer if requested.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherOutput)) {
+    return;
+  }
+
+  FilePath output_path(CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+                           switches::kTestLauncherOutput));
+
+  // Do not add the result printer if output path already exists. It's an
+  // indicator there is a process printing to that file, and we're likely
+  // its child. Do not clobber the results in that case.
+  if (PathExists(output_path)) {
+    LOG(WARNING) << "Test launcher output path " << output_path.AsUTF8Unsafe()
+                 << " exists. Not adding test launcher result printer.";
+    return;
+  }
+
+  XmlUnitTestResultPrinter* printer = new XmlUnitTestResultPrinter;
+  CHECK(printer->Initialize(output_path));
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(printer);
+}
+#endif  // !defined(OS_IOS)
+
 // Don't add additional code to this method.  Instead add it to
 // Initialize().  See bug 6436.
 int TestSuite::Run() {
@@ -250,6 +281,9 @@ void TestSuite::Initialize() {
 
   CatchMaybeTests();
   ResetCommandLine();
+#if !defined(OS_IOS)
+  AddTestLauncherResultPrinter();
+#endif  // !defined(OS_IOS)
 
   TestTimeouts::Initialize();
 }

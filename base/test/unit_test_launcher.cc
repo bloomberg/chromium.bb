@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/test_launcher.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,22 +37,10 @@ const char kSingleProcessTestsFlag[] = "single-process-tests";
 CommandLine GetCommandLineForChildGTestProcess(
     const std::vector<std::string>& test_names,
     const base::FilePath& output_file) {
-  CommandLine new_cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
-  CommandLine::SwitchMap switches =
-      CommandLine::ForCurrentProcess()->GetSwitches();
+  CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
 
-  switches.erase(kGTestOutputFlag);
-  new_cmd_line.AppendSwitchPath(
-      kGTestOutputFlag,
-      base::FilePath(FILE_PATH_LITERAL("xml:") + output_file.value()));
-
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-        iter != switches.end(); ++iter) {
-    new_cmd_line.AppendSwitchNative(iter->first, iter->second);
-  }
-
-  new_cmd_line.AppendSwitchASCII(kGTestFilterFlag,
-                                  JoinString(test_names, ":"));
+  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
+  new_cmd_line.AppendSwitchASCII(kGTestFilterFlag, JoinString(test_names, ":"));
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
   new_cmd_line.AppendSwitch(kBraveNewTestLauncherFlag);
 
@@ -125,29 +114,53 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                                             timeout,
                                             &was_timeout);
 
-    ProcessTestResults(output_file, exit_code);
+    std::vector<TestLaunchInfo> tests_to_relaunch_after_crash;
+    ProcessTestResults(output_file, exit_code, &tests_to_relaunch_after_crash);
 
-    tests_.clear();
+    tests_ = tests_to_relaunch_after_crash;
   }
 
-  void ProcessTestResults(const base::FilePath& output_file, int exit_code) {
+  void ProcessTestResults(
+      const base::FilePath& output_file,
+      int exit_code,
+      std::vector<TestLaunchInfo>* tests_to_relaunch_after_crash) {
     std::vector<TestResult> test_results;
-    bool have_test_results = ProcessGTestOutput(output_file, &test_results);
+    bool crashed = false;
+    bool have_test_results =
+        ProcessGTestOutput(output_file, &test_results, &crashed);
 
     if (have_test_results) {
       // TODO(phajdan.jr): Check for duplicates and mismatches between
       // the results we got from XML file and tests we intended to run.
-      std::map<std::string, bool> results_map;
+      std::map<std::string, TestResult> results_map;
       for (size_t i = 0; i < test_results.size(); i++)
-        results_map[test_results[i].GetFullName()] = test_results[i].success;
+        results_map[test_results[i].GetFullName()] = test_results[i];
+
+      bool had_crashed_test = false;
 
       for (size_t i = 0; i < tests_.size(); i++) {
-        TestResult test_result;
-        test_result.test_case_name = tests_[i].test_case_name;
-        test_result.test_name = tests_[i].test_name;
-        test_result.success = results_map[tests_[i].GetFullName()];
-        tests_[i].callback.Run(test_result);
+        if (ContainsKey(results_map, tests_[i].GetFullName())) {
+          TestResult result = results_map[tests_[i].GetFullName()];
+          if (result.crashed)
+            had_crashed_test = true;
+          tests_[i].callback.Run(results_map[tests_[i].GetFullName()]);
+        } else if (had_crashed_test) {
+          tests_to_relaunch_after_crash->push_back(tests_[i]);
+        } else {
+          // TODO(phajdan.jr): Explicitly pass the info that the test didn't
+          // run for a mysterious reason.
+          LOG(ERROR) << "no test result for " << tests_[i].GetFullName();
+          TestResult test_result;
+          test_result.test_case_name = tests_[i].test_case_name;
+          test_result.test_name = tests_[i].test_name;
+          test_result.success = false;
+          test_result.crashed = false;
+          tests_[i].callback.Run(test_result);
+        }
       }
+
+      // TODO(phajdan.jr): Handle the case where processing XML output
+      // indicates a crash but none of the test results is marked as crashing.
 
       // TODO(phajdan.jr): Handle the case where the exit code is non-zero
       // but results file indicates that all tests passed (e.g. crash during
@@ -163,6 +176,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         test_result.test_case_name = tests_[i].test_case_name;
         test_result.test_name = tests_[i].test_name;
         test_result.success = (exit_code == 0);
+        test_result.crashed = false;
         tests_[i].callback.Run(test_result);
       }
     }
