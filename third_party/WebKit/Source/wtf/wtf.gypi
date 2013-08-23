@@ -94,7 +94,6 @@
             'PassOwnPtr.h',
             'PassRefPtr.h',
             'PassTraits.h',
-            'Platform.h',
             'PossiblyNull.h',
             'PrintStream.cpp',
             'PrintStream.h',
