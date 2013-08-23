@@ -563,33 +563,13 @@ void GpuDataManagerImplPrivate::GetGLStrings(std::string* gl_vendor,
 
 void GpuDataManagerImplPrivate::Initialize() {
   TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // TODO(gab): Enable GPU blacklist usage on all the bots
-  // (http://crbug.com/277242).
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kSkipGpuDataLoading) &&
       !command_line->HasSwitch(switches::kUseGpuInTests))
     return;
-#endif
 
   gpu::GPUInfo gpu_info;
-  if (command_line->GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
-    // If using the OSMesa GL implementation, use fake vendor and device ids to
-    // make sure it never gets blacklisted. This is better than simply
-    // cancelling GPUInfo gathering as it allows us to proceed with loading the
-    // blacklist below which may have non-device specific entries we want to
-    // apply anyways (e.g., OS version blacklisting).
-    gpu_info.gpu.vendor_id = 0xffff;
-    gpu_info.gpu.device_id = 0xffff;
-
-    // Hardcode these two values otherwise blacklisting rules #12, 55, and 74 in
-    // kSoftwareRenderingListJson result in a positive match as GpuControlList
-    // assumes a match (by design) when a property is required for the
-    // verification yet not present in the GpuInfo.
-    gpu_info.driver_vendor = gfx::kGLImplementationOSMesaName;
-    gpu_info.driver_date = "2013.8";
-  } else {
+  {
     TRACE_EVENT0("startup",
       "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
     gpu::CollectBasicGraphicsInfo(&gpu_info);

@@ -215,6 +215,7 @@ extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
+CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 extern const char kTabCaptureDownscaleQuality[];
@@ -279,10 +280,6 @@ extern const char kChildCleanExit[];
 
 #if defined(USE_AURA)
 CONTENT_EXPORT extern const char kTestCompositor[];
-#endif
-
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

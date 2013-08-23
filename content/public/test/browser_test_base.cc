@@ -100,11 +100,7 @@ void BrowserTestBase::SetUp() {
 
   command_line->AppendSwitch(switches::kDomAutomationController);
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // TODO(gab): Enable GPU blacklist usage on all the bots
-  // (http://crbug.com/277242).
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
-#endif
 
 #if defined(USE_AURA)
   // Use test contexts for browser tests unless they override and force us to
