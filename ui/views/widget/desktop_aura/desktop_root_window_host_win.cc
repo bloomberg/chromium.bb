@@ -108,9 +108,8 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
                         native_widget_delegate_);
 
   HWND parent_hwnd = NULL;
-  aura::Window* parent_window = params.parent;
-  if (parent_window)
-    parent_hwnd = parent_window->GetRootWindow()->GetAcceleratedWidget();
+  if (params.parent && params.parent->GetRootWindow())
+    parent_hwnd = params.parent->GetRootWindow()->GetAcceleratedWidget();
 
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
