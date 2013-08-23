@@ -37,6 +37,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/BeforeUnloadEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
@@ -157,8 +158,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     if (returnValue.IsEmpty())
         return;
 
-    if (!returnValue->IsNull() && !returnValue->IsUndefined() && event->storesResultAsString())
-        event->storeResult(toWebCoreString(returnValue));
+    if (!returnValue->IsNull() && !returnValue->IsUndefined() && event->isBeforeUnloadEvent())
+        toBeforeUnloadEvent(event)->setReturnValue(toWebCoreString(returnValue));
 
     if (m_isAttribute && shouldPreventDefault(returnValue))
         event->preventDefault();
