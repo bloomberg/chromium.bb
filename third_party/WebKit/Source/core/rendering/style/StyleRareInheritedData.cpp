@@ -76,9 +76,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , textEmphasisPosition(TextEmphasisPositionOver)
     , m_textAlignLast(RenderStyle::initialTextAlignLast())
     , m_textOrientation(TextOrientationVerticalRight)
-#if ENABLE(CSS3_TEXT)
     , m_textIndentLine(RenderStyle::initialTextIndentLine())
-#endif
     , m_lineBoxContain(RenderStyle::initialLineBoxContain())
     , m_imageRendering(RenderStyle::initialImageRendering())
     , m_lineSnap(RenderStyle::initialLineSnap())
@@ -130,9 +128,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisPosition(o.textEmphasisPosition)
     , m_textAlignLast(o.m_textAlignLast)
     , m_textOrientation(o.m_textOrientation)
-#if ENABLE(CSS3_TEXT)
     , m_textIndentLine(o.m_textIndentLine)
-#endif
     , m_lineBoxContain(o.m_lineBoxContain)
     , m_imageRendering(o.m_imageRendering)
     , m_lineSnap(o.m_lineSnap)
@@ -203,9 +199,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && textEmphasisPosition == o.textEmphasisPosition
         && m_textAlignLast == o.m_textAlignLast
         && m_textOrientation == o.m_textOrientation
-#if ENABLE(CSS3_TEXT)
         && m_textIndentLine == o.m_textIndentLine
-#endif
         && m_lineBoxContain == o.m_lineBoxContain
         && hyphenationString == o.hyphenationString
         && locale == o.locale

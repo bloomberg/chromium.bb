@@ -9144,11 +9144,13 @@ PassRefPtr<CSSValue> CSSParser::parseTextIndent()
         }
     }
 
-#if ENABLE(CSS3_TEXT)
-    // The case where text-indent has only <length>(or <percentage>) value
-    // is handled above if statement even though CSS3_TEXT is enabled.
+    if (!RuntimeEnabledFeatures::css3TextEnabled())
+        return 0;
 
-    // [ [ <length> | <percentage> ] && -webkit-each-line ] | inherit
+    // The case where text-indent has only <length>(or <percentage>) value
+    // is handled above if statement even though css3TextEnabled() returns true.
+
+    // [ [ <length> | <percentage> ] && each-line ] | inherit
     if (m_valueList->size() != 2)
         return 0;
 
@@ -9156,20 +9158,19 @@ PassRefPtr<CSSValue> CSSParser::parseTextIndent()
     CSSParserValue* secondValue = m_valueList->next();
     CSSParserValue* lengthOrPercentageValue = 0;
 
-    // [ <length> | <percentage> ] -webkit-each-line
-    if (validUnit(firstValue, FLength | FPercent) && secondValue->id == CSSValueWebkitEachLine)
+    // [ <length> | <percentage> ] each-line
+    if (validUnit(firstValue, FLength | FPercent) && secondValue->id == CSSValueEachLine)
         lengthOrPercentageValue = firstValue;
-    // -webkit-each-line [ <length> | <percentage> ]
-    else if (firstValue->id == CSSValueWebkitEachLine && validUnit(secondValue, FLength | FPercent))
+    // each-line [ <length> | <percentage> ]
+    else if (firstValue->id == CSSValueEachLine && validUnit(secondValue, FLength | FPercent))
         lengthOrPercentageValue = secondValue;
 
     if (lengthOrPercentageValue) {
         list->append(createPrimitiveNumericValue(lengthOrPercentageValue));
-        list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+        list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
         m_valueList->next();
         return list.release();
     }
-#endif
 
     return 0;
 }

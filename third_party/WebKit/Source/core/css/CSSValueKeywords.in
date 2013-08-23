@@ -981,7 +981,7 @@ no-drag
 span
 
 // text-indent
--webkit-each-line condition=CSS3_TEXT
+each-line
 
 // (scan:) media feature
 progressive

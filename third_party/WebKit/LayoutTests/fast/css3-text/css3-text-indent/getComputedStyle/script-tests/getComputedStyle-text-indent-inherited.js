@@ -20,12 +20,12 @@ function inheritanceTest(ancestorValue)
     testComputedStyle(ancestorValue, ancestorValue);
 }
 
-description("This tests check that the value of text-indent is properly inherited to the child.");
+description("This test checks that the value of text-indent is properly inherited to the child.");
 
 ancestor = document.getElementById('ancestor');
 child = document.getElementById('child');
 
 inheritanceTest("10px");
-inheritanceTest("10px -webkit-each-line");
+inheritanceTest("10px each-line");
 
-ownValueTest("10px -webkit-each-line", "10px");
+ownValueTest("10px each-line", "10px");

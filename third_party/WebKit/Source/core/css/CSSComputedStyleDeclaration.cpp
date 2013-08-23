@@ -2245,14 +2245,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
         case CSSPropertyTextIndent: {
             RefPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style->textIndent(), style.get());
-#if ENABLE(CSS3_TEXT)
-            if (style->textIndentLine() == TextIndentEachLine) {
+            if (RuntimeEnabledFeatures::css3TextEnabled() && style->textIndentLine() == TextIndentEachLine) {
                 RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
                 list->append(textIndent.release());
-                list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+                list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
                 return list.release();
             }
-#endif
             return textIndent.release();
         }
         case CSSPropertyTextShadow:

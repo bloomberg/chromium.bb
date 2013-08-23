@@ -516,17 +516,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextDecoration(StyleResolverSta
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(StyleResolverState& state)
 {
     state.style()->setTextIndent(state.parentStyle()->textIndent());
-#if ENABLE(CSS3_TEXT)
     state.style()->setTextIndentLine(state.parentStyle()->textIndentLine());
-#endif
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyTextIndent(StyleResolverState& state)
 {
     state.style()->setTextIndent(RenderStyle::initialTextIndent());
-#if ENABLE(CSS3_TEXT)
     state.style()->setTextIndentLine(RenderStyle::initialTextIndentLine());
-#endif
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& state, CSSValue* value)
@@ -534,9 +530,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     if (!value->isValueList())
         return;
 
-    // [ <length> | <percentage> ] -webkit-each-line
+    // [ <length> | <percentage> ] each-line
     // The order is guaranteed. See CSSParser::parseTextIndent.
-    // The second value, -webkit-each-line is handled only when CSS3_TEXT is enabled.
+    // The second value, each-line is handled only when css3TextEnabled() returns true.
 
     CSSValueList* valueList = toCSSValueList(value);
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->itemWithoutBoundsCheck(0));
@@ -544,16 +540,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     ASSERT(!lengthOrPercentageValue.isUndefined());
     state.style()->setTextIndent(lengthOrPercentageValue);
 
-#if ENABLE(CSS3_TEXT)
     ASSERT(valueList->length() <= 2);
     CSSPrimitiveValue* eachLineValue = toCSSPrimitiveValue(valueList->item(1));
     if (eachLineValue) {
-        ASSERT(eachLineValue->getValueID() == CSSValueWebkitEachLine);
+        ASSERT(eachLineValue->getValueID() == CSSValueEachLine);
         state.style()->setTextIndentLine(TextIndentEachLine);
-    } else {
+    } else
         state.style()->setTextIndentLine(TextIndentFirstLine);
-    }
-#endif
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverState& state, CSSValue* value)

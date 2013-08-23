@@ -1010,13 +1010,9 @@ static IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBrea
 {
     if (isFirstLine)
         return IndentText;
-#if ENABLE(CSS3_TEXT)
     if (isAfterHardLineBreak && style->textIndentLine() == TextIndentEachLine)
         return IndentText;
-#else
-    UNUSED_PARAM(isAfterHardLineBreak);
-    UNUSED_PARAM(style);
-#endif
+
     return DoNotIndentText;
 }
 
@@ -1035,7 +1031,7 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
 
     // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted line of an element. For example, the first line of an anonymous block
     // box is only affected if it is the first child of its parent element."
-    // CSS3 "text-indent", "-webkit-each-line" affects the first line of the block container as well as each line after a forced line break,
+    // CSS3 "text-indent", "each-line" affects the first line of the block container as well as each line after a forced line break,
     // but does not affect lines after a soft wrap break.
     bool isFirstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->firstChild() != this);
     bool isAfterHardLineBreak = lineBox->prevRootBox() && lineBox->prevRootBox()->endsWithBreak();
