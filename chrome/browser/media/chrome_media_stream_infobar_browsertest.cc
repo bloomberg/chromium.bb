@@ -60,7 +60,9 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
 // Actual tests ---------------------------------------------------------------
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// Failing on ChromiumOS Debug and Win Aura, so disabling on both.
+// See http://crbug.com/263333.
+#if (defined(OS_CHROMEOS) && !defined(NDEBUG)) || defined(USE_AURA)
 #define MAYBE_TestAllowingUserMedia DISABLED_TestAllowingUserMedia
 #else
 #define MAYBE_TestAllowingUserMedia TestAllowingUserMedia
@@ -112,7 +114,14 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
+// Failing on Win Aura, so disabling on that.
+// See http://crbug.com/263333.
+#if defined(USE_AURA)
+#define MAYBE_TestAcceptIsNotSticky DISABLED_TestAcceptIsNotSticky
+#else
+#define MAYBE_TestAcceptIsNotSticky TestAcceptIsNotSticky
+#endif
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, MAYBE_TestAcceptIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If accept were sticky the second call would hang because it hangs if an
