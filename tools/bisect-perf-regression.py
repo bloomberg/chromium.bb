@@ -2016,8 +2016,7 @@ class BisectPerformanceMetrics(object):
 
         std_error = ('+-%.02f' %
             current_data['value']['std_err']).center(14, ' ')
-        mean = ('+-%.02f' %
-            current_data['value']['mean']).center(12, ' ')
+        mean = ('%.02f' % current_data['value']['mean']).center(12, ' ')
         print '  %8s  %40s  %12s %14s %13s' % (
             current_data['depot'], current_id, mean, std_error, state_str)
 
