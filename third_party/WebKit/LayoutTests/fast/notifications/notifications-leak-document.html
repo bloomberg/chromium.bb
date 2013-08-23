@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script src="../js/resources/leak-check.js"></script>
+    <script>
+        testRunner.grantWebNotificationPermission("file://");
+        var tolerance = {'numberOfLiveDocuments': 0};
+
+        doLeakTest('./resources/notification-show.html', tolerance);
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

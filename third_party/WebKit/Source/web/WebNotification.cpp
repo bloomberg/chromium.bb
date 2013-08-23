@@ -111,39 +111,24 @@ void WebNotification::detachPresenter()
 
 void WebNotification::dispatchDisplayEvent()
 {
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    dispatchEvent("display");
-#endif
-    dispatchEvent("show");
+    m_private->dispatchShowEvent();
 }
 
 void WebNotification::dispatchErrorEvent(const WebKit::WebString& /* errorMessage */)
 {
     // FIXME: errorMessage not supported by WebCore yet
-    dispatchEvent(eventNames().errorEvent);
+    m_private->dispatchErrorEvent();
 }
 
 void WebNotification::dispatchCloseEvent(bool /* byUser */)
 {
     // FIXME: byUser flag not supported by WebCore yet
-    dispatchEvent(eventNames().closeEvent);
+    m_private->dispatchCloseEvent();
 }
 
 void WebNotification::dispatchClickEvent()
 {
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    WindowFocusAllowedIndicator windowFocusAllowed;
-    dispatchEvent(eventNames().clickEvent);
-}
-
-void WebNotification::dispatchEvent(const WTF::AtomicString& type)
-{
-    // Do not dispatch if the context is gone.
-    if (!m_private->scriptExecutionContext())
-        return;
-
-    RefPtr<Event> event = Event::create(type, false, true);
-    m_private->dispatchEvent(event.release());
+    m_private->dispatchClickEvent();
 }
 
 WebNotification::WebNotification(const WTF::PassRefPtr<Notification>& notification)

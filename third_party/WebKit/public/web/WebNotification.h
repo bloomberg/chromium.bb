@@ -108,7 +108,6 @@ public:
 
 private:
     void assign(WebNotificationPrivate*);
-    void dispatchEvent(const WTF::AtomicString& type);
     WebNotificationPrivate* m_private;
 };
 

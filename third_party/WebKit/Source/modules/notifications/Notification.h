@@ -123,6 +123,7 @@ public:
     // EventTarget interface
     virtual const AtomicString& interfaceName() const;
     virtual ScriptExecutionContext* scriptExecutionContext() const { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual bool dispatchEvent(PassRefPtr<Event>);
 
     // ActiveDOMObject interface
     virtual void contextDestroyed();

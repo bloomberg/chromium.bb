@@ -199,11 +199,15 @@ void Notification::finalize()
 
 void Notification::dispatchShowEvent()
 {
+#if ENABLE(LEGACY_NOTIFICATIONS)
+    dispatchEvent(Event::create(eventNames().displayEvent, false, false));
+#endif
     dispatchEvent(Event::create(eventNames().showEvent, false, false));
 }
 
 void Notification::dispatchClickEvent()
 {
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     WindowFocusAllowedIndicator windowFocusAllowed;
     dispatchEvent(Event::create(eventNames().clickEvent, false, false));
 }
@@ -228,6 +232,14 @@ void Notification::taskTimerFired(Timer<Notification>* timer)
 }
 #endif
 
+bool Notification::dispatchEvent(PassRefPtr<Event> event)
+{
+    // Do not dispatch if the context is gone.
+    if (!scriptExecutionContext())
+        return false;
+
+    return EventTarget::dispatchEvent(event);
+}
 
 #if ENABLE(NOTIFICATIONS)
 const String& Notification::permission(ScriptExecutionContext* context)
