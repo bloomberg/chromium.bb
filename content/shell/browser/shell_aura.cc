@@ -304,7 +304,8 @@ void Shell::PlatformExit() {
   std::vector<Shell*> windows = windows_;
   for (std::vector<Shell*>::iterator it = windows.begin();
        it != windows.end(); ++it) {
-    (*it)->window_widget_->Close();
+    if (!(*it)->headless_)
+      (*it)->window_widget_->Close();
   }
 #if defined(OS_CHROMEOS)
   if (minimal_shell_)
@@ -322,6 +323,8 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   if (control == BACK_BUTTON) {
@@ -337,6 +340,8 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetAddressBarURL(url);
@@ -346,6 +351,8 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  if (headless_)
+    return;
 #if defined(OS_CHROMEOS)
   window_widget_ =
       views::Widget::CreateWindowWithContextAndBounds(
@@ -366,6 +373,8 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWebContents(web_contents_.get());
@@ -375,10 +384,14 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
+  if (headless_)
+    return;
   window_widget_->CloseNow();
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWindowTitle(title);
