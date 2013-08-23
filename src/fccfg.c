@@ -649,8 +649,10 @@ FcConfigAddRule (FcConfig	*config,
 {
     FcSubst	*subst, **prev;
     FcRule	*r;
-    int		num;
+    int		n = 0;
 
+    if (!rule)
+	return FcFalse;
     switch (kind) {
     case FcMatchPattern:
 	prev = &config->substPattern;
@@ -671,7 +673,6 @@ FcConfigAddRule (FcConfig	*config,
     *prev = subst;
     subst->next = NULL;
     subst->rule = rule;
-    num = 0;
     for (r = rule; r; r = r->next)
     {
 	switch (r->type)
@@ -680,19 +681,21 @@ FcConfigAddRule (FcConfig	*config,
 	    if (r->u.test &&
 		r->u.test->kind == FcMatchDefault)
 		r->u.test->kind = kind;
-	    if (r->u.test->object > FC_MAX_BASE_OBJECT)
-		num++;
+
+	    if (n < r->u.test->object)
+		n = r->u.test->object;
 	    break;
 	case FcRuleEdit:
-	    if (r->u.edit->object > FC_MAX_BASE_OBJECT)
-		num++;
+	    if (n < r->u.edit->object)
+		n = r->u.edit->object;
 	    break;
 	default:
 	    break;
 	}
     }
-    if (config->maxObjects < num)
-	config->maxObjects = num;
+    n = FC_OBJ_ID (n) - FC_MAX_BASE_OBJECT;
+    if (config->maxObjects < n)
+	config->maxObjects = n;
     if (FcDebug () & FC_DBG_EDIT)
     {
 	printf ("Add Subst ");
@@ -700,11 +703,6 @@ FcConfigAddRule (FcConfig	*config,
     }
     return FcTrue;
 }
-
-typedef struct _FcSubState {
-    FcPatternElt   *elt;
-    FcValueList    *value;
-} FcSubState;
 
 static FcValue
 FcConfigPromote (FcValue v, FcValue u, FcValuePromotionBuffer *buf)
@@ -1503,8 +1501,6 @@ FcConfigSubstituteWithPat (FcConfig    *config,
     int		    i, nobjs;
     FcBool	    retval = FcTrue;
 
-#define FC_OBJ_ID(_n_)	((_n_) > FC_MAX_BASE_OBJECT ? ((_n_) - FC_EXT_OBJ_INDEX) : (_n_))
-
     if (!config)
     {
 	config = FcConfigGetCurrent ();
@@ -1744,8 +1740,6 @@ bail1:
 	free (elt);
     if (value)
 	free (value);
-
-#undef FC_OBJ_ID
 
     return retval;
 }
