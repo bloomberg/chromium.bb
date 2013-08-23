@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/open_file_operation.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -160,6 +161,15 @@ void OpenFileOperation::CloseFile(const std::string& resource_id) {
     // All clients closes this file, so notify to upload the file.
     open_files_.erase(resource_id);
     observer_->OnCacheFileUploadNeededByOperation(resource_id);
+
+    // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
+    // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(
+            base::Bind(&internal::FileCache::FreeDiskSpaceIfNeededFor,
+                       base::Unretained(cache_),
+                       0))));
   }
 }
 

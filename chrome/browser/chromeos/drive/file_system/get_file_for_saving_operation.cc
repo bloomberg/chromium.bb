@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/get_file_for_saving_operation.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
@@ -35,6 +36,7 @@ GetFileForSavingOperation::GetFileForSavingOperation(
                                                 cache,
                                                 temporary_file_directory)),
       file_write_watcher_(new internal::FileWriteWatcher),
+      blocking_task_runner_(blocking_task_runner),
       observer_(observer),
       cache_(cache),
       weak_ptr_factory_(this) {
@@ -149,6 +151,15 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
 
 void GetFileForSavingOperation::OnWriteEvent(const std::string& resource_id) {
   observer_->OnCacheFileUploadNeededByOperation(resource_id);
+
+  // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
+  // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(
+          base::Bind(&internal::FileCache::FreeDiskSpaceIfNeededFor,
+                     base::Unretained(cache_),
+                     0))));
 }
 
 }  // namespace file_system

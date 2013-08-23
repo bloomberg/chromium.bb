@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_GET_FILE_FOR_SAVING_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -80,6 +81,7 @@ class GetFileForSavingOperation {
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
   scoped_ptr<internal::FileWriteWatcher> file_write_watcher_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
   internal::FileCache* cache_;
 
