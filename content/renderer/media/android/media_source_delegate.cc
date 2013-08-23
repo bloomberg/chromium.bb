@@ -16,7 +16,6 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 using media::DemuxerStream;
