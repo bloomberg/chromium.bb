@@ -564,8 +564,10 @@
             'proguard_enabled_input_path': '<(obfuscated_jar_path)',
           }],
           ['emma_instrument != 0', {
-            'dex_input_paths': [ '<(emma_device_jar)' ],
             'dex_no_locals': 1,
+          }],
+          ['emma_instrument != 0 and is_test_apk == 0', {
+            'dex_input_paths': [ '<(emma_device_jar)' ],
           }],
         ],
         'input_paths': [ '<(instr_stamp)' ],
