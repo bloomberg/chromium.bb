@@ -41,6 +41,12 @@ const char kBlacklistAcceleratedCompositing[] =
 // Blacklist the GPU for WebGL.
 const char kBlacklistWebGL[]                = "blacklist-webgl";
 
+// Block cross-site documents (i.e., HTML/XML/JSON) from being loaded in
+// subresources when a document is not supposed to read them.  This will later
+// allow us to block them from the entire renderer process when site isolation
+// is enabled.
+const char kBlockCrossSiteDocuments[]     = "block-cross-site-documents";
+
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 

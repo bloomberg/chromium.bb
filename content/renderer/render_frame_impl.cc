@@ -544,6 +544,7 @@ void RenderFrameImpl::willSendRequest(
                            was_after_preconnect_request,
                            (frame == top_frame),
                            frame->identifier(),
+                           GURL(frame->document().securityOrigin().toString()),
                            frame->parent() == top_frame,
                            frame->parent() ? frame->parent()->identifier() : -1,
                            navigation_state->allow_download(),

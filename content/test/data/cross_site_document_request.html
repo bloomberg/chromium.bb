@@ -1,0 +1,81 @@
+<html>
+<head>
+</head>
+<body>
+This test shows that cross-site documents are blocked by SiteIsolationPolicy
+even if the Same Origin Policy is turned off in the renderer. The Same Origin
+Policy can be circumvented when the renderer is compromised, but we have
+SiteIsolationPolicy that blocks cross-site documents at the IPC layer. For now
+cross-site document blocking by SiteIsolationPolicy is done in the renderer, but
+our ultimate plan is to do that in the browser process.
+
+<script>
+var xhrStatus = -1;
+var pathPrefix = "http://bar.com/files/site_isolation/";
+
+// We only block cross-site documents with a blacklisted mime type(text/html,
+// text/xml, application/json), that are correctly sniffed as the content type
+// that they claim to be. We also block text/plain documents when their body
+// looks like one of the blacklisted content types.
+
+var blockedResourceUrls = ['valid.html', 'comment_valid.html', 'valid.xml',
+'valid.json', 'html.txt', 'xml.txt', 'json.txt'];
+
+var nonBlockedResourceUrls = ['js.html', 'comment_js.html', 'js.xml', 'js.json',
+'js.txt', 'img.html', 'img.xml', 'img.json', 'img.txt', 'comment_js.html'];
+
+var resourceUrls = blockedResourceUrls.concat(nonBlockedResourceUrls);
+
+var failed = false;
+function sendRequest(resourceUrl) {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var prefix = "";
+      if ((blockedResourceUrls.indexOf(resourceUrl) != -1 &&
+           xhr.responseText != " ") ||
+          (nonBlockedResourceUrls.indexOf(resourceUrl) != -1 &&
+           xhr.responseText == " ")) {
+        // Test failed. Either a resource that should have been blocked is not
+        // blocked, or a resource that should have not been blocked is blocked.
+        domAutomationController.setAutomationId(0);
+        domAutomationController.send(0);
+        if (blockedResourceUrls.indexOf(resourceUrl) != -1) {
+          prefix = "[ERROR:resource to be blocked wasn't blocked]";
+        } else {
+          prefix = "[ERROR:resource to be unblocked was blocked]";
+        }
+      }
+      document.getElementById("response_body").value +=
+          ("\n" + prefix + "response to " + resourceUrl + "(" +
+           xhr.getResponseHeader("content-type") + ") " +
+           (xhr.responseText == " " ? "blocked" : "not-blocked"));
+      drive();
+    }
+  }
+  xhr.open('GET', pathPrefix + resourceUrl);
+  xhr.send();
+}
+
+var cnt = 0;
+function drive() {
+  if (cnt < resourceUrls.length) {
+    sendRequest(resourceUrls[cnt]);
+    ++cnt;
+  } else {
+    // All the test cases are successfully passed.
+    domAutomationController.setAutomationId(0);
+    domAutomationController.send(1);
+  }
+}
+
+window.onload = function() {
+  // The call to pushState with another domain will succeed, since the
+  // test uses --disable-web-security.
+  history.pushState('', '', 'http://bar.com/files/main.html');
+  drive();
+}
+</script>
+<textarea rows=20 cols=50 id='response_body'></textarea>
+</body>
+</html>

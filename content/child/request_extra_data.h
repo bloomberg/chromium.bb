@@ -22,6 +22,7 @@ class CONTENT_EXPORT RequestExtraData
                    bool was_after_preconnect_request,
                    bool is_main_frame,
                    int64 frame_id,
+                   const GURL& frame_origin,
                    bool parent_is_main_frame,
                    int64 parent_frame_id,
                    bool allow_download,
@@ -32,6 +33,7 @@ class CONTENT_EXPORT RequestExtraData
 
   bool is_main_frame() const { return is_main_frame_; }
   int64 frame_id() const { return frame_id_; }
+  GURL frame_origin() const { return frame_origin_; }
   bool parent_is_main_frame() const { return parent_is_main_frame_; }
   int64 parent_frame_id() const { return parent_frame_id_; }
   bool allow_download() const { return allow_download_; }
@@ -46,6 +48,7 @@ class CONTENT_EXPORT RequestExtraData
  private:
   bool is_main_frame_;
   int64 frame_id_;
+  GURL frame_origin_;
   bool parent_is_main_frame_;
   int64 parent_frame_id_;
   bool allow_download_;

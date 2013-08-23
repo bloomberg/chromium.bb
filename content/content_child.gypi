@@ -120,6 +120,8 @@
     'child/resource_dispatcher.h',
     'child/runtime_features.cc',
     'child/runtime_features.h',
+    'child/site_isolation_policy.cc',
+    'child/site_isolation_policy.h',
     'child/socket_stream_dispatcher.cc',
     'child/socket_stream_dispatcher.h',
     'child/thread_safe_sender.cc',

@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/site_isolation_policy.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
@@ -96,6 +97,9 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   // The routing id used when sending IPC messages.
   int routing_id_;
 
+  // The security origin of the frame that initiates this request.
+  GURL frame_origin_;
+
   bool is_synchronous_request_;
 };
 
@@ -135,6 +139,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
         extra_data->transferred_request_child_id();
     request_.transferred_request_request_id =
         extra_data->transferred_request_request_id();
+    frame_origin_ = extra_data->frame_origin();
   } else {
     request_.is_main_frame = false;
     request_.frame_id = -1;
@@ -179,7 +184,7 @@ bool IPCResourceLoaderBridge::Start(Peer* peer) {
 
   // generate the request ID, and append it to the message
   request_id_ = dispatcher_->AddPendingRequest(
-      peer_, request_.resource_type, request_.url);
+      peer_, request_.resource_type, frame_origin_, request_.url);
 
   return dispatcher_->message_sender()->Send(
       new ResourceHostMsg_RequestResource(routing_id_, request_id_, request_));
@@ -346,6 +351,11 @@ void ResourceDispatcher::OnReceivedResponse(
 
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
+  SiteIsolationPolicy::OnReceivedResponse(request_id,
+                                          request_info->frame_origin,
+                                          request_info->response_url,
+                                          request_info->resource_type,
+                                          renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -411,10 +421,24 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
     CHECK(data_ptr);
     CHECK(data_ptr + data_offset);
 
-    request_info->peer->OnReceivedData(
-        data_ptr + data_offset,
-        data_length,
-        encoded_data_length);
+    // Check whether this response data is compliant with our cross-site
+    // document blocking policy.
+    std::string alternative_data;
+    bool blocked_response = SiteIsolationPolicy::ShouldBlockResponse(
+        request_id, data_ptr + data_offset, data_length, &alternative_data);
+
+    // When the response is not blocked.
+    if (!blocked_response) {
+      request_info->peer->OnReceivedData(
+          data_ptr + data_offset, data_length, encoded_data_length);
+    } else if (alternative_data.size() > 0) {
+      // When the response is blocked, and when we have any alternative data to
+      // send to the renderer. When |alternative_data| is zero-sized, we do not
+      // call peer's callback.
+      request_info->peer->OnReceivedData(alternative_data.data(),
+                                         alternative_data.size(),
+                                         alternative_data.size());
+    }
 
     UMA_HISTOGRAM_TIMES("ResourceDispatcher.OnReceivedDataTime",
                         base::TimeTicks::Now() - time_start);
@@ -462,6 +486,9 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info = GetPendingRequestInfo(request_id);
     if (!request_info)
       return;
+    // We update the response_url here so that we can send it to
+    // SiteIsolationPolicy later when OnReceivedResponse is called.
+    request_info->response_url = new_url;
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(routing_id, request_id,
                                            has_new_first_party_for_cookies,
@@ -488,6 +515,8 @@ void ResourceDispatcher::OnRequestComplete(
     bool was_ignored_by_handler,
     const std::string& security_info,
     const base::TimeTicks& browser_completion_time) {
+  SiteIsolationPolicy::OnRequestComplete(request_id);
+
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -517,11 +546,12 @@ void ResourceDispatcher::OnRequestComplete(
 int ResourceDispatcher::AddPendingRequest(
     ResourceLoaderBridge::Peer* callback,
     ResourceType::Type resource_type,
+    const GURL& frame_origin,
     const GURL& request_url) {
   // Compute a unique request_id for this renderer process.
   int id = MakeRequestID();
   pending_requests_[id] =
-      PendingRequestInfo(callback, resource_type, request_url);
+      PendingRequestInfo(callback, resource_type, frame_origin, request_url);
   return id;
 }
 
@@ -530,6 +560,7 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   if (it == pending_requests_.end())
     return false;
 
+  SiteIsolationPolicy::OnRequestComplete(request_id);
   PendingRequestInfo& request_info = it->second;
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
@@ -545,6 +576,7 @@ void ResourceDispatcher::CancelPendingRequest(int routing_id,
     return;
   }
 
+  SiteIsolationPolicy::OnRequestComplete(request_id);
   PendingRequestInfo& request_info = it->second;
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
@@ -592,11 +624,14 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     webkit_glue::ResourceLoaderBridge::Peer* peer,
     ResourceType::Type resource_type,
+    const GURL& frame_origin,
     const GURL& request_url)
     : peer(peer),
       resource_type(resource_type),
       is_deferred(false),
       url(request_url),
+      frame_origin(frame_origin),
+      response_url(request_url),
       request_start(base::TimeTicks::Now()) {
 }
 

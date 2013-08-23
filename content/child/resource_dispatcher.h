@@ -45,6 +45,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // requests' ID
   int AddPendingRequest(webkit_glue::ResourceLoaderBridge::Peer* callback,
                         ResourceType::Type resource_type,
+                        const GURL& frame_origin,
                         const GURL& request_url);
 
   // Removes a request from the pending_requests_ list, returning true if the
@@ -85,6 +86,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     PendingRequestInfo(webkit_glue::ResourceLoaderBridge::Peer* peer,
                        ResourceType::Type resource_type,
+                       const GURL& frame_origin,
                        const GURL& request_url);
 
     ~PendingRequestInfo();
@@ -93,7 +95,12 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     ResourceType::Type resource_type;
     MessageQueue deferred_message_queue;
     bool is_deferred;
+    // Original requested url.
     GURL url;
+    // The security origin of the frame that initiates this request.
+    GURL frame_origin;
+    // The url of the latest response even in case of redirection.
+    GURL response_url;
     linked_ptr<IPC::Message> pending_redirect_message;
     base::TimeTicks request_start;
     base::TimeTicks response_start;

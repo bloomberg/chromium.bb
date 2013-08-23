@@ -840,6 +840,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAudioBufferSize,
     switches::kAuditAllHandles,
     switches::kAuditHandles,
+    switches::kBlockCrossSiteDocuments,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
     switches::kDisableAcceleratedVideoDecode,

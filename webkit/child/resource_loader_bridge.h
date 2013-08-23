@@ -127,7 +127,7 @@ class ResourceLoaderBridge {
   // These callbacks mirror net::URLRequest::Delegate and the order and
   // conditions in which they will be called are identical. See url_request.h
   // for more information.
-  class Peer {
+  class WEBKIT_CHILD_EXPORT Peer {
    public:
     // Called as upload progress is made.
     // note: only for requests with LOAD_ENABLE_UPLOAD_PROGRESS set
