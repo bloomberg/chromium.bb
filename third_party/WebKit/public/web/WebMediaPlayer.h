@@ -95,19 +95,7 @@ public:
 
     virtual ~WebMediaPlayer() { }
 
-    virtual void load(LoadType, const WebURL&, CORSMode) { }
-
-    // FIXME: Remove the following two load() methods once Chromium-side changes land.
-    virtual void load(const WebURL& url, CORSMode corsMode)
-    {
-        load(LoadTypeURL, url, corsMode);
-    }
-
-    virtual void load(const WebURL& url, WebMediaSource* mediaSource, CORSMode corsMode)
-    {
-        delete mediaSource;
-        load(LoadTypeMediaSource, url, corsMode);
-    }
+    virtual void load(LoadType, const WebURL&, CORSMode) = 0;
 
     // Playback controls.
     virtual void play() = 0;

@@ -38,8 +38,7 @@ namespace WebKit {
 
 class WebSourceBuffer;
 
-// FIXME: Rename this to WebMediaSource after Chromium-side has been migrated to this object.
-class WebMediaSourceNew {
+class WebMediaSource {
 public:
     enum AddStatus {
         AddStatusOk,
@@ -53,7 +52,7 @@ public:
         EndOfStreamStatusDecodeError,
     };
 
-    virtual ~WebMediaSourceNew() { }
+    virtual ~WebMediaSource() { }
 
     virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer**) = 0;
     virtual double duration() = 0;
@@ -62,13 +61,8 @@ public:
     virtual void unmarkEndOfStream() = 0;
 };
 
-class WebMediaSourceClient;
-
-// FIXME: Remove this once the Chromium-side has been migrated to WebMediaSourceNew.
-class WebMediaSource {
-public:
-    virtual ~WebMediaSource() { };
-    virtual void open(WebMediaSourceClient*) = 0;
+// FIXME: Remove this once the Chromium-side has been migrated to WebMediaSource.
+class WebMediaSourceNew : public WebMediaSource {
 };
 
 } // namespace WebKit
