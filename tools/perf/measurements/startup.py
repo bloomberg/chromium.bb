@@ -23,7 +23,6 @@ class Startup(page_measurement.PageMeasurement):
 
   def __init__(self):
     super(Startup, self).__init__(needs_browser_restart_after_each_run=True)
-    self._cold = False
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--cold', action='store_true',
@@ -36,9 +35,7 @@ class Startup(page_measurement.PageMeasurement):
     # or --cold is explicitly specified.
     # assert options.warm != options.cold, \
     #     "You must specify either --warm or --cold"
-    self._cold = options.cold
-
-    if self._cold:
+    if options.cold:
       options.clear_sytem_cache_for_browser_and_profile_on_start = True
     else:
       self.discard_first_result = True
