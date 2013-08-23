@@ -52,6 +52,17 @@ HTMLElement* RenderTextControl::innerTextElement() const
     return textFormControlElement()->innerTextElement();
 }
 
+void RenderTextControl::addChild(RenderObject* newChild, RenderObject* beforeChild)
+{
+    // FIXME: This is a terrible hack to get the caret over the placeholder text since it'll
+    // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
+    Node* node = newChild->node();
+    if (node && node->isElementNode() && toElement(node)->part() == "-webkit-input-placeholder")
+        RenderBlock::addChild(newChild, firstChild());
+    else
+        RenderBlock::addChild(newChild, beforeChild);
+}
+
 void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);

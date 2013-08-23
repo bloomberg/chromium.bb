@@ -519,12 +519,6 @@ HTMLElement* HTMLTextAreaElement::placeholderElement() const
     return m_placeholder;
 }
 
-void HTMLTextAreaElement::attach(const AttachContext& context)
-{
-    HTMLTextFormControlElement::attach(context);
-    fixPlaceholderRenderer(m_placeholder, innerTextElement());
-}
-
 bool HTMLTextAreaElement::matchesReadOnlyPseudoClass() const
 {
     return isReadOnly();
@@ -540,7 +534,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     String placeholderText = strippedPlaceholder();
     if (placeholderText.isEmpty()) {
         if (m_placeholder) {
-            userAgentShadowRoot()->removeChild(m_placeholder, ASSERT_NO_EXCEPTION);
+            userAgentShadowRoot()->removeChild(m_placeholder);
             m_placeholder = 0;
         }
         return;
@@ -549,10 +543,9 @@ void HTMLTextAreaElement::updatePlaceholderText()
         RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
         m_placeholder = placeholder.get();
         m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling());
     }
-    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
-    fixPlaceholderRenderer(m_placeholder, innerTextElement());
+    m_placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
 }
 
 }

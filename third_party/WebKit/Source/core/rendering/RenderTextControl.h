@@ -74,6 +74,8 @@ private:
     virtual bool canHaveGeneratedChildren() const OVERRIDE { return false; }
     virtual bool canBeReplacedWithInlineRunIn() const OVERRIDE;
 
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE FINAL;
+
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
     virtual bool canBeProgramaticallyScrolled() const { return true; }
