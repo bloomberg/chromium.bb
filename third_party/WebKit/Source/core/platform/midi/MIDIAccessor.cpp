@@ -76,9 +76,14 @@ void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufa
     m_client->didAddOutputPort(id, manufacturer, name, version);
 }
 
+void MIDIAccessor::didStartSession(bool success)
+{
+    m_client->didStartSession(success);
+}
+
 void MIDIAccessor::didStartSession()
 {
-    m_client->didStartSession();
+    m_client->didStartSession(true);
 }
 
 void MIDIAccessor::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)

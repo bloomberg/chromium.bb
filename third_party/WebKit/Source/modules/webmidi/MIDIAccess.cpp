@@ -94,12 +94,15 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
     m_outputs.append(MIDIOutput::create(this, portIndex, scriptExecutionContext(), id, manufacturer, name, version));
 }
 
-void MIDIAccess::didStartSession()
+void MIDIAccess::didStartSession(bool success)
 {
     ASSERT(isMainThread());
 
-    m_hasAccess = true;
-    m_promise->fulfill();
+    m_hasAccess = success;
+    if (success)
+        m_promise->fulfill();
+    else
+        m_promise->reject(DOMError::create("InvalidStateError"));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
@@ -178,8 +181,7 @@ void MIDIAccess::permissionDenied()
     ASSERT(isMainThread());
 
     m_hasAccess = false;
-    RefPtr<DOMError> error = DOMError::create("SecurityError");
-    m_promise->reject(error);
+    m_promise->reject(DOMError::create("SecurityError"));
 }
 
 } // namespace WebCore

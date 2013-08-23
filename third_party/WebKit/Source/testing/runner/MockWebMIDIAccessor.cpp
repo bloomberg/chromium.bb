@@ -50,7 +50,7 @@ void MockWebMIDIAccessor::startSession()
     // Add a mock input and output port.
     m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
     m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
-    m_client->didStartSession();
+    m_client->didStartSession(true);
 }
 
 } // namespace WebTestRunner

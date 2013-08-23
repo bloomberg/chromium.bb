@@ -52,8 +52,11 @@ public:
     // WebKit::WebMIDIAccessorClient
     virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
     virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
+    virtual void didStartSession(bool success) OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+
+    // FIXME: Remove deprecated API once chromium switch over to new one.
+    virtual void didStartSession() OVERRIDE;
 
 private:
     explicit MIDIAccessor(MIDIAccessorClient*);

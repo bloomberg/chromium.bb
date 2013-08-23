@@ -40,6 +40,9 @@ public:
     virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
     virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
 
+    virtual void didStartSession(bool success) = 0;
+
+    // FIXME: Remove deprecated API once chromium switch over to new one.
     virtual void didStartSession() = 0;
 
     // |timeStamp| is in milliseconds according to the Web MIDI API.
