@@ -40,46 +40,38 @@ function buildCardSet() {
                 JSON.stringify(cardCreateInfo));
 
     if (cardCreateInfo.previousVersion !== cardCreateInfo.version) {
-      try {
-        // Delete a notification with the specified id if it already exists, and
-        // then create a notification.
-        instrumented.notifications.create(
-            cardId,
-            cardCreateInfo.notification,
-            function(newNotificationId) {
-              if (!newNotificationId || chrome.runtime.lastError) {
-                var errorMessage = chrome.runtime.lastError &&
-                                   chrome.runtime.lastError.message;
-                console.error('notifications.create: ID=' + newNotificationId +
-                              ', ERROR=' + errorMessage);
-                return;
-              }
+      // Delete a notification with the specified id if it already exists, and
+      // then create a notification.
+      instrumented.notifications.create(
+          cardId,
+          cardCreateInfo.notification,
+          function(newNotificationId) {
+            if (!newNotificationId || chrome.runtime.lastError) {
+              var errorMessage = chrome.runtime.lastError &&
+                                  chrome.runtime.lastError.message;
+              console.error('notifications.create: ID=' + newNotificationId +
+                            ', ERROR=' + errorMessage);
+              return;
+            }
 
-              scheduleHiding(cardId, cardCreateInfo.timeHide);
-            });
-      } catch (error) {
-        console.error('Error in notifications.create: ' + error);
-      }
+            scheduleHiding(cardId, cardCreateInfo.timeHide);
+          });
     } else {
-      try {
-        // Update existing notification.
-        instrumented.notifications.update(
-            cardId,
-            cardCreateInfo.notification,
-            function(wasUpdated) {
-              if (!wasUpdated || chrome.runtime.lastError) {
-                var errorMessage = chrome.runtime.lastError &&
-                                   chrome.runtime.lastError.message;
-                console.error('notifications.update: UPDATED=' + wasUpdated +
-                              ', ERROR=' + errorMessage);
-                return;
-              }
+      // Update existing notification.
+      instrumented.notifications.update(
+          cardId,
+          cardCreateInfo.notification,
+          function(wasUpdated) {
+            if (!wasUpdated || chrome.runtime.lastError) {
+              var errorMessage = chrome.runtime.lastError &&
+                                  chrome.runtime.lastError.message;
+              console.error('notifications.update: UPDATED=' + wasUpdated +
+                            ', ERROR=' + errorMessage);
+              return;
+            }
 
-              scheduleHiding(cardId, cardCreateInfo.timeHide);
-            });
-      } catch (error) {
-        console.error('Error in notifications.update: ' + error);
-      }
+            scheduleHiding(cardId, cardCreateInfo.timeHide);
+          });
     }
   }
 
@@ -154,8 +146,9 @@ function buildCardSet() {
       // Alarm to show the card.
       var cardId = alarm.name.substring(cardShowPrefix.length);
       instrumented.storage.local.get('notificationsData', function(items) {
-        items.notificationsData = items.notificationsData || {};
         console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
+        if (!items || !items.notificationsData)
+          return;
         var notificationData = items.notificationsData[cardId];
         if (!notificationData)
           return;

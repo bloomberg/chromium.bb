@@ -504,6 +504,10 @@ function buildAttemptManager(
    */
   function planForNext(callback) {
     instrumented.storage.local.get(currentDelayStorageKey, function(items) {
+      if (!items) {
+        items = {};
+        items[currentDelayStorageKey] = maximumDelaySeconds;
+      }
       console.log('planForNext-get-storage ' + JSON.stringify(items));
       scheduleNextAttempt(items[currentDelayStorageKey]);
       callback();
@@ -554,15 +558,15 @@ function buildAuthenticationManager() {
   /**
    * Removes the specified cached token.
    * @param {string} token Authentication Token to remove from the cache.
-   * @param {function} onSuccess Called on completion.
+   * @param {function} callback Called on completion.
    */
-  function removeToken(token, onSuccess) {
+  function removeToken(token, callback) {
     instrumented.identity.removeCachedAuthToken({token: token}, function() {
       // Removing the token from the cache will change the sign in state.
       // Repoll now to check the state and notify listeners.
       // This also lets Chrome now about a possible problem with the token.
       isSignedIn(function() {});
-      onSuccess();
+      callback();
     });
   }
 

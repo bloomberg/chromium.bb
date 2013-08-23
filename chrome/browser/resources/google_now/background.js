@@ -23,8 +23,7 @@
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
 // TODO(vadimt): Remove 'console' calls.
-// TODO(vadimt): Consider sending JS stacks for chrome.* API errors and
-// malformed server responses.
+// TODO(vadimt): Consider sending JS stacks for malformed server responses.
 
 /**
  * Standard response code for successful HTTP requests. This is the only success
@@ -346,6 +345,7 @@ function removeAllCards() {
   // notifications center and bug 260376 is fixed, the below clearing
   // code is no longer necessary.
   instrumented.notifications.getAll(function(notifications) {
+    notifications = notifications || {};
     for (var notificationId in notifications) {
       chrome.notifications.clear(notificationId, function() {});
     }
@@ -405,7 +405,7 @@ function requestLocation() {
   console.log('requestLocation');
   recordEvent(GoogleNowEvent.LOCATION_REQUEST);
   // TODO(vadimt): Figure out location request options.
-  chrome.metricsPrivate.getVariationParams('GoogleNow', function(params) {
+  instrumented.metricsPrivate.getVariationParams('GoogleNow', function(params) {
     var minDistanceInMeters =
         parseInt(params && params.minDistanceInMeters, 10) ||
         100;
@@ -582,15 +582,12 @@ function retryPendingDismissals() {
  */
 function onNotificationClicked(notificationId, selector) {
   instrumented.storage.local.get('notificationsData', function(items) {
-    items.notificationsData = items.notificationsData || {};
+    var notificationData = items &&
+        items.notificationsData &&
+        items.notificationsData[notificationId];
 
-    var notificationData = items.notificationsData[notificationId];
-
-    if (!notificationData) {
-      // 'notificationsData' in storage may not match the actual list of
-      // notifications.
+    if (!notificationData)
       return;
-    }
 
     var actionUrls = notificationData.actionUrls;
     if (typeof actionUrls != 'object') {
@@ -598,8 +595,7 @@ function onNotificationClicked(notificationId, selector) {
     }
 
     var url = selector(actionUrls);
-
-    if (typeof url != 'string')
+    if (!url)
       return;
 
     instrumented.tabs.create({url: url}, function(tab) {
@@ -886,7 +882,8 @@ function onStateChange() {
                   instrumented.storage.local.get(
                       'userRespondedToToast',
                       function(items) {
-                        var userRespondedToToast = !!items.userRespondedToToast;
+                        var userRespondedToToast =
+                            !items || !!items.userRespondedToToast;
                         updateRunningState(
                             signedIn,
                             geolocationEnabled,
@@ -974,10 +971,9 @@ instrumented.notifications.onButtonClicked.addListener(
         chrome.metricsPrivate.recordUserAction(
             'GoogleNow.ButtonClicked' + buttonIndex);
         onNotificationClicked(notificationId, function(actionUrls) {
-          if (!Array.isArray(actionUrls.buttonUrls))
-            return undefined;
-
-          return actionUrls.buttonUrls[buttonIndex];
+          var url = actionUrls.buttonUrls[buttonIndex];
+          verify(url, 'onButtonClicked: no url for a button');
+          return url;
         });
       }
     });

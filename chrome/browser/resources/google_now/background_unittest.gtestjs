@@ -445,39 +445,6 @@ TEST_F(
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_UrlNotString',
-    function() {
-      // Tests the case when selector returns a non-string, probably because of
-      // a malformed server response.
-      // In this case, the function should do nothing.
-
-      // Setup and expectations.
-      var testActionUrls = {testField: 'TEST VALUE'};
-      var testNotificationId = 'TEST_ID';
-      var testNotificationData = {
-          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
-      };
-      var testActionUrl = {};
-
-      mockOnNotificationClickedDependencies(this);
-      this.makeMockLocalFunctions(['selector']);
-
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(eq('notificationsData')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
-      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
-          returnValue(testActionUrl));
-
-      // Invoking the tested function.
-      onNotificationClicked(
-          testNotificationId, this.mockLocalFunctions.functions().selector);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
     'OnNotificationClicked_TabCreateSuccess',
     function() {
       // Tests the selected URL is OK and crome.tabs.create suceeds.
