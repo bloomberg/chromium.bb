@@ -13,22 +13,23 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_KERNEL_SERVICE_H_
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 
 EXTERN_C_BEGIN
 
-struct NaClKernelService {
-  struct NaClSimpleService  base NACL_IS_REFCOUNT_SUBCLASS;
+struct NaClRuntimeHostInterface;
 
-  struct NaClApp            *nap;
+struct NaClKernelService {
+  struct NaClSimpleService        base NACL_IS_REFCOUNT_SUBCLASS;
+
+  struct NaClRuntimeHostInterface *runtime_host;
 };
 
 int NaClKernelServiceCtor(
-    struct NaClKernelService      *self,
-    NaClThreadIfFactoryFunction   thread_factory_fn,
-    void                          *thread_factory_data,
-    struct NaClApp                *nap);
+    struct NaClKernelService        *self,
+    NaClThreadIfFactoryFunction     thread_factory_fn,
+    void                            *thread_factory_data,
+    struct NaClRuntimeHostInterface *runtime_host);
 
 void NaClKernelServiceDtor(struct NaClRefCount *vself);
 

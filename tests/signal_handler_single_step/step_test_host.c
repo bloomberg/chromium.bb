@@ -170,7 +170,6 @@ int main(int argc, char **argv) {
   NaClSignalHandlerSet(TrapSignalHandler);
 
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
-  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
   CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
   CHECK(NaClWaitForMainThreadToExit(&app) == 0);
 

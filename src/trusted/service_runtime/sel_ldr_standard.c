@@ -25,7 +25,6 @@
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
@@ -37,6 +36,7 @@
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
+#include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -485,12 +485,29 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 }
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
-  struct NaClManifestProxy                    *manifest_proxy = NULL;
-  struct NaClKernelService                    *kernel_service = NULL;
-  int                                         rv = 0;
-  enum NaClReverseChannelInitializationState  init_state;
+  struct NaClKernelService  *kernel_service = NULL;
+  int                       rv = 0;
+
+  NaClLog(4, "NaClAppLaunchServiceThreads: Entered, nap 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) nap);
 
   NaClNameServiceLaunch(nap->name_service);
+
+  if (LOAD_OK != NaClWaitForStartModuleCommand(nap)) {
+    return rv;
+  }
+
+  NaClXMutexLock(&nap->mu);
+  if (NULL == nap->runtime_host_interface) {
+    nap->runtime_host_interface = malloc(sizeof *nap->runtime_host_interface);
+    if (NULL == nap->runtime_host_interface ||
+        !NaClRuntimeHostInterfaceCtor_protected(nap->runtime_host_interface)) {
+      NaClLog(LOG_ERROR, "NaClAppLaunchServiceThreads:"
+              " Failed to initialise runtime host interface\n");
+      goto done;
+    }
+  }
+  NaClXMutexUnlock(&nap->mu);
 
   kernel_service = (struct NaClKernelService *) malloc(sizeof *kernel_service);
   if (NULL == kernel_service) {
@@ -502,7 +519,7 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   if (!NaClKernelServiceCtor(kernel_service,
                              NaClAddrSpSquattingThreadIfFactoryFunction,
                              (void *) nap,
-                             nap)) {
+                             nap->runtime_host_interface)) {
     NaClLog(LOG_ERROR,
             "NaClAppLaunchServiceThreads: KernServiceCtor failed\n");
     free(kernel_service);
@@ -523,99 +540,9 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
    * that reference.
    */
 
-  /*
-   * The locking here isn't really needed.  Here is why:
-   * reverse_channel_initialized is written in reverse_setup RPC
-   * handler of the secure command channel RPC handler thread.  and
-   * the RPC order requires that the plugin invoke reverse_setup prior
-   * to invoking start_module, so there will have been plenty of other
-   * synchronization operations to force cache coherency
-   * (module_may_start, for example, is set in the cache of the secure
-   * channel RPC handler (in start_module) and read by the main
-   * thread, and the synchronization operations needed to propagate
-   * its value properly suffices to propagate
-   * reverse_channel_initialized as well).  However, reading it while
-   * holding a lock is more obviously correct for tools like tsan.
-   * Due to the RPC order, it is impossible for
-   * reverse_channel_initialized to get set after the unlock and
-   * before the if test.
-   */
   NaClXMutexLock(&nap->mu);
-  /*
-   * If no reverse_setup RPC was made, then we do not set up a
-   * manifest proxy.  Otherwise, we make sure that the reverse channel
-   * setup is done, so that the application can actually use
-   * reverse-channel-based services such as the manifest proxy.
-   */
-  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
-      (init_state = nap->reverse_channel_initialization_state)) {
-    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
-      (init_state = nap->reverse_channel_initialization_state)) {
-      NaClXCondVarWait(&nap->cv, &nap->mu);
-    }
-  }
-  NaClXMutexUnlock(&nap->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED != init_state) {
-    NaClLog(3,
-            ("NaClAppLaunchServiceThreads: no reverse channel;"
-             " launched kernel services.\n"));
-    NaClLog(3,
-            ("NaClAppLaunchServiceThreads: no reverse channel;"
-             " NOT launching manifest proxy.\n"));
-    nap->kernel_service = kernel_service;
-    kernel_service = NULL;
-
-    rv = 1;
-    goto done;
-  }
-
-  /*
-   * Allocate/construct the manifest proxy without grabbing global
-   * locks.
-   */
-  NaClLog(3, "NaClAppLaunchServiceThreads: launching manifest proxy\n");
-
-  /*
-   * ReverseClientSetup RPC should be done via the command channel
-   * prior to the load_module / start_module RPCs, and
-   *  occurs after that, so checking
-   * nap->reverse_client suffices for determining whether the proxy is
-   * exporting reverse services.
-   */
-  manifest_proxy = (struct NaClManifestProxy *) malloc(sizeof *manifest_proxy);
-  if (NULL == manifest_proxy) {
-    NaClLog(LOG_ERROR, "No memory for manifest proxy\n");
-    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
-    goto done;
-  }
-  if (!NaClManifestProxyCtor(manifest_proxy,
-                             NaClAddrSpSquattingThreadIfFactoryFunction,
-                             (void *) nap,
-                             nap)) {
-    NaClLog(LOG_ERROR, "ManifestProxyCtor failed\n");
-    /* do not leave a non-NULL pointer to a not-fully constructed object */
-    free(manifest_proxy);
-    manifest_proxy = NULL;
-    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
-    goto done;
-  }
-
-  /*
-   * NaClSimpleServiceStartServiceThread requires the nap->mu lock.
-   */
-  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
-                                           manifest_proxy)) {
-    NaClLog(LOG_ERROR, "ManifestProxy start service failed\n");
-    NaClDescUnref(kernel_service->base.bound_and_cap[1]);
-    goto done;
-  }
-
-  NaClXMutexLock(&nap->mu);
-  CHECK(NULL == nap->manifest_proxy);
   CHECK(NULL == nap->kernel_service);
 
-  nap->manifest_proxy = manifest_proxy;
-  manifest_proxy = NULL;
   nap->kernel_service = kernel_service;
   kernel_service = NULL;
   NaClXMutexUnlock(&nap->mu);
@@ -623,15 +550,6 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
 
 done:
   NaClXMutexLock(&nap->mu);
-  if (NULL != nap->manifest_proxy) {
-    NaClLog(3,
-            ("NaClAppLaunchServiceThreads: adding manifest proxy to"
-             " name service\n"));
-    (*NACL_VTBL(NaClNameService, nap->name_service)->
-     CreateDescEntry)(nap->name_service,
-                      "ManifestNameService", NACL_ABI_O_RDWR,
-                      NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
-  }
   if (NULL != nap->kernel_service) {
     NaClLog(3,
             ("NaClAppLaunchServiceThreads: adding kernel service to"
@@ -641,7 +559,6 @@ done:
                       "KernelService", NACL_ABI_O_RDWR,
                       NaClDescRef(nap->kernel_service->base.bound_and_cap[1]));
   }
-
   NaClXMutexUnlock(&nap->mu);
 
   /*
@@ -653,14 +570,12 @@ done:
    * transferred to the NaClApp object the corresponding automatic
    * variable is set to NULL.
    */
-  NaClRefCountSafeUnref((struct NaClRefCount *) manifest_proxy);
   NaClRefCountSafeUnref((struct NaClRefCount *) kernel_service);
   return rv;
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
-  int           rv = 0;
-  NaClSrpcError rpc_result;
+  int rv = 0;
 
   NaClXMutexLock(&nap->mu);
   /*
@@ -673,14 +588,12 @@ int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
     return 0;
   }
 
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      nap->reverse_channel_initialization_state) {
+  if (NULL != nap->runtime_host_interface) {
     /* TODO(halyavin) update NaCl plugin to accept full exit_status value */
     if (NACL_ABI_WIFEXITED(exit_status)) {
-      rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                             NACL_REVERSE_CONTROL_REPORT_STATUS,
-                                             NACL_ABI_WEXITSTATUS(exit_status));
-      rv = NACL_SRPC_RESULT_OK == rpc_result;
+    rv = (*NACL_VTBL(NaClRuntimeHostInterface, nap->runtime_host_interface)->
+          ReportExitStatus)(nap->runtime_host_interface,
+                            NACL_ABI_WEXITSTATUS(exit_status));
     }
     /*
      * Due to cross-repository checkins, the Cr-side might not yet

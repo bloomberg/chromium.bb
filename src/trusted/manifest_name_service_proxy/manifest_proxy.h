@@ -15,6 +15,8 @@
 
 EXTERN_C_BEGIN
 
+struct NaClSecureService;
+
 /*
  * Trusted SRPC server that proxies name service lookups to the
  * browser plugin.  This is Pepper2-specific code that could, in
@@ -28,7 +30,7 @@ EXTERN_C_BEGIN
 struct NaClManifestProxy {
   struct NaClSimpleService  base NACL_IS_REFCOUNT_SUBCLASS;
 
-  struct NaClApp  *nap;
+  struct NaClSecureService  *server;
 };
 
 struct NaClManifestProxyConnection {
@@ -43,7 +45,7 @@ struct NaClManifestProxyConnection {
 extern struct NaClSimpleServiceVtbl const kNaClManifestProxyVtbl;
 
 /*
- * The nap reference is used by the connection factory to initiate a
+ * The client reference is used by the connection factory to initiate a
  * reverse connection: the connection factory enqueue a callback via
  * the NaClSecureReverseClientCtor that wakes up the connection
  * factory which issues an upcall on the existing reverse connection
@@ -52,10 +54,10 @@ extern struct NaClSimpleServiceVtbl const kNaClManifestProxyVtbl;
  * the NaClManifestConnection object, and subsequent RPC handlers use
  * the connection object's reverse channel to forward RPC requests.
  */
-int NaClManifestProxyCtor(struct NaClManifestProxy    *self,
-                          NaClThreadIfFactoryFunction thread_factory_fn,
-                          void                        *thread_factory_data,
-                          struct NaClApp              *nap);
+int NaClManifestProxyCtor(struct NaClManifestProxy      *self,
+                          NaClThreadIfFactoryFunction   thread_factory_fn,
+                          void                          *thread_factory_data,
+                          struct NaClSecureService      *service);
 
 int NaClManifestProxyConnectionCtor(struct NaClManifestProxyConnection  *self,
                                     struct NaClManifestProxy            *server,

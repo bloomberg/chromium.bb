@@ -192,7 +192,7 @@ static struct NaClDesc *NaClResourceNaClAppDevOpen(
   struct NaClResourceNaClApp  *self = (struct NaClResourceNaClApp *) vself;
   struct NaClDescPostMessage  *ndpm = NULL;
 
-  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_REV_CHAN
+  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_RUNTIME_HOST
       || !allow_debug) {
     return NULL;
   }
@@ -207,7 +207,7 @@ static struct NaClDesc *NaClResourceNaClAppDevOpen(
 
     ndpm = malloc(sizeof *ndpm);
     if (NULL != ndpm) {
-      if (!NaClDescPostMessageCtor(ndpm, self->nap)) {
+      if (!NaClDescPostMessageCtor(ndpm, self->nap->runtime_host_interface)) {
         free(ndpm);
         ndpm = NULL;
       }

@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_REVERSE_QUOTA_INTERFACE_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_REVERSE_QUOTA_INTERFACE_H__ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_REVERSE_QUOTA_INTERFACE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_REVERSE_QUOTA_INTERFACE_H_
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -16,7 +16,9 @@
 #include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_quota_interface.h"
 
-struct NaClApp;
+EXTERN_C_BEGIN
+
+struct NaClSecureService;
 
 /*
  * A descriptor quota interface that works over the reverse channel to Chrome.
@@ -24,10 +26,14 @@ struct NaClApp;
 
 struct NaClReverseQuotaInterface {
   struct NaClDescQuotaInterface base NACL_IS_REFCOUNT_SUBCLASS;
-  struct NaClApp *nap;
+
+  struct NaClSecureService      *server;
 };
 
-int NaClReverseQuotaInterfaceCtor(struct NaClReverseQuotaInterface *self,
-                                  struct NaClApp *nap);
+int NaClReverseQuotaInterfaceCtor(
+    struct NaClReverseQuotaInterface    *self,
+    struct NaClSecureService            *server);
 
-#endif
+EXTERN_C_END
+
+#endif /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_REVERSE_QUOTA_INTERFACE_H_ */

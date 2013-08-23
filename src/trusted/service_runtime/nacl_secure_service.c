@@ -6,23 +6,35 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
 
+#include <string.h>
+
+#include "native_client/src/public/secure_service.h"
+
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
+#include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "native_client/src/trusted/service_runtime/nacl_reverse_host_interface.h"
+#include "native_client/src/trusted/service_runtime/nacl_reverse_quota_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+struct NaClSrpcHandlerDesc const kNaClSecureServiceHandlers[];
 
-int NaClSecureServiceCtor(struct NaClSecureService          *self,
-                          struct NaClSrpcHandlerDesc const  *srpc_handlers,
-                          struct NaClApp                    *nap,
-                          struct NaClDesc                   *service_port,
-                          struct NaClDesc                   *sock_addr) {
+int NaClSecureServiceCtor(struct NaClSecureService  *self,
+                          struct NaClApp            *nap,
+                          struct NaClDesc           *service_port,
+                          struct NaClDesc           *sock_addr) {
   NaClLog(4,
           "Entered NaClSecureServiceCtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -30,7 +42,7 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
           "NaClSecureServiceCtor__NaClSimpleServiceWithSocketCtor",
           !NaClSimpleServiceWithSocketCtor(
               &self->base,
-              srpc_handlers,
+              kNaClSecureServiceHandlers,
               NaClThreadInterfaceThreadFactory,
               (void *) self,
               service_port,
@@ -41,12 +53,23 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
     NaClLog(4, "NaClMutexCtor failed\n");
     goto failure_mutex_ctor;
   }
+  if (!NaClCondVarCtor(&self->cv)) {
+    NaClLog(4, "NaClCondVar failed\n");
+    goto failure_condvar_ctor;
+  }
+  NaClXMutexCtor(&self->mu);
+  NaClXCondVarCtor(&self->cv);
   self->nap = nap;
+  self->reverse_channel_initialization_state =
+      NACL_REVERSE_CHANNEL_UNINITIALIZED;
+  self->reverse_client = NULL;
   self->conn_count = 0;
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSecureServiceVtbl;
   return 1;
 
+ failure_condvar_ctor:
+  NaClMutexDtor(&self->mu);
  failure_mutex_ctor:
   (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
  done:
@@ -56,10 +79,31 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
 void NaClSecureServiceDtor(struct NaClRefCount *vself) {
   struct NaClSecureService *self = (struct NaClSecureService *) vself;
 
+  NaClXMutexLock(&self->mu);
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      self->reverse_channel_initialization_state) {
+    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
+           self->reverse_channel_initialization_state) {
+      NaClXCondVarWait(&self->cv, &self->mu);
+    }
+  }
+
   if (0 != self->conn_count) {
     NaClLog(LOG_FATAL,
             "SecureService dtor when connection count is nonzero\n");
   }
+  self->conn_count = 0;
+
+  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
+      self->reverse_channel_initialization_state) {
+    NaClSrpcDtor(&self->reverse_channel);
+  }
+  if (NULL != self->reverse_client) {
+    NaClRefCountUnref((struct NaClRefCount *) self->reverse_client);
+  }
+  NaClXMutexUnlock(&self->mu);
+
+  NaClCondVarDtor(&self->cv);
   NaClMutexDtor(&self->mu);
 
   NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl const *)
@@ -71,12 +115,9 @@ int NaClSecureServiceConnectionFactory(
     struct NaClSimpleService            *vself,
     struct NaClDesc                     *conn,
     struct NaClSimpleServiceConnection  **out) {
-  struct NaClSecureService *self =
-      (struct NaClSecureService *) vself;
-
   /* our instance_data is not connection specific */
   return NaClSimpleServiceConnectionFactoryWithInstanceData(
-      vself, conn, (void *) self->nap, out);
+      vself, conn, (struct NaClSecureService *) vself, out);
 }
 
 static void NaClSecureServiceConnectionCountIncr(
@@ -106,13 +147,7 @@ static void NaClSecureServiceConnectionCountDecr(
      * Set that we are killed by SIGKILL so that debug stub could report
      * this to debugger.
      */
-    NaClXMutexLock(&self->nap->mu);
-    self->nap->exit_status = NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL);
-    NaClXMutexUnlock(&self->nap->mu);
-    if (NULL != self->nap->debug_stub_callbacks) {
-      self->nap->debug_stub_callbacks->process_exit_hook();
-    }
-    NaClExit(0);
+    NaClAppShutdown(self->nap, NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL));
   }
   NaClXMutexUnlock(&self->mu);
 }
@@ -143,6 +178,335 @@ void NaClSecureServiceRpcHandler(struct NaClSimpleService           *vself,
   NaClLog(4, "NaClSecureChannelThread closed.\n");
   NaClSecureServiceConnectionCountDecr(self);
 }
+
+static void NaClSecureServiceLoadModuleRpcCallback(
+    void            *instance_data,
+    NaClErrorCode   status) {
+  struct NaClSrpcClosure *done_cls =
+      (struct NaClSrpcClosure *) instance_data;
+  UNREFERENCED_PARAMETER(status);
+  NaClLog(4, "NaClSecureChannelLoadModuleRpcCallback: status %d\n", status);
+  (*done_cls->Run)(done_cls);
+}
+
+static void NaClSecureServiceLoadModuleRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  struct NaClSecureService        *nssp =
+      (struct NaClSecureService *) rpc->channel->server_instance_data;
+  struct NaClDesc                 *nexe = in_args[0]->u.hval;
+  char                            *aux_info;
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(4, "NaClSecureServiceLoadModuleRpc: loading module\n");
+
+  rpc->result = NACL_SRPC_RESULT_INTERNAL;
+
+  aux_info = strdup(in_args[1]->arrays.str);
+  if (NULL == aux_info) {
+    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+    (*done_cls->Run)(done_cls);
+    goto cleanup;
+  }
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+  NaClAppLoadModule(nssp->nap,
+                    nexe,
+                    aux_info,
+                    NaClSecureServiceLoadModuleRpcCallback,
+                    (void *) done_cls);
+
+ cleanup:
+  NaClLog(4, "NaClSecureServiceLoadModuleRpc: done\n");
+  NaClDescUnref(nexe);
+}
+
+/*
+ * The first connection is performed by this callback handler.  This
+ * spawns a client thread that will bootstrap the other connections by
+ * stashing the connection represented by |conn| to make reverse RPCs
+ * to ask the peer to connect to us.  No thread is spawned; we just
+ * wrap access to the connection with a lock.
+ *
+ * Subsequent connection callbacks will pass the connection to the
+ * actual thread that made the connection request using |conn|
+ * received in the first connection.
+ */
+static void NaClSecureReverseClientCallback(
+    void                        *state,
+    struct NaClThreadInterface  *tif,
+    struct NaClDesc             *new_conn) {
+  struct NaClSecureService          *self =
+      (struct NaClSecureService *) state;
+  struct NaClApp                    *nap = self->nap;
+  struct NaClManifestProxy          *manifest_proxy;
+  struct NaClReverseHostInterface   *reverse_host_interface;
+  struct NaClReverseQuotaInterface  *reverse_quota_interface;
+  UNREFERENCED_PARAMETER(tif);
+
+  NaClLog(4,
+          ("Entered NaClSecureReverseClientCallback: self 0x%"NACL_PRIxPTR","
+           " nap 0x%"NACL_PRIxPTR", new_conn 0x%"NACL_PRIxPTR"\n"),
+          (uintptr_t) self, (uintptr_t) nap, (uintptr_t) new_conn);
+
+  NaClXMutexLock(&self->mu);
+  if (NACL_REVERSE_CHANNEL_INITIALIZATING !=
+      self->reverse_channel_initialization_state) {
+    /*
+     * The reverse channel connection capability is used to make the
+     * RPC that invokes this callback (this callback is invoked on a
+     * reverse channel connect), so the plugin wants to initialize the
+     * reverse channel and in particular the state must be either be
+     * in-progress or finished.
+     */
+    NaClLog(LOG_FATAL, "Reverse channel already initialized\n");
+  }
+  NaClXMutexUnlock(&self->mu);
+  if (!NaClSrpcClientCtor(&self->reverse_channel, new_conn)) {
+    NaClLog(LOG_FATAL, "Reverse channel SRPC Client Ctor failed\n");
+    goto done;
+  }
+  reverse_host_interface = (struct NaClReverseHostInterface *)
+    malloc(sizeof *reverse_host_interface);
+  if (NULL == reverse_host_interface ||
+      NACL_FI_ERROR_COND(
+          ("NaClSecureReverseClientCallback"
+           "__NaClReverseInterfaceCtor"),
+          !NaClReverseHostInterfaceCtor(reverse_host_interface,
+                                        self))) {
+    NaClLog(LOG_FATAL, "Reverse interface ctor failed\n");
+    goto cleanup_reverse_host_interface;
+  }
+  NaClAppRuntimeHostSetup(nap, (struct NaClRuntimeHostInterface *)
+      reverse_host_interface);
+
+  reverse_quota_interface = (struct NaClReverseQuotaInterface *)
+    malloc(sizeof *reverse_quota_interface);
+  if (NULL == reverse_quota_interface ||
+      NACL_FI_ERROR_COND(
+          ("NaClSecureReverseClientCallback"
+           "__NaClReverseQuotaInterfaceCtor"),
+          !NaClReverseQuotaInterfaceCtor(reverse_quota_interface,
+                                         self))) {
+    NaClLog(LOG_FATAL, "Reverse quota interface ctor failed\n");
+    goto cleanup_reverse_quota_interface;
+  }
+  NaClAppDescQuotaSetup(nap, (struct NaClDescQuotaInterface *)
+      reverse_quota_interface);
+
+  NaClRefCountSafeUnref((struct NaClRefCount *) reverse_quota_interface);
+  reverse_quota_interface = NULL;
+
+  manifest_proxy = (struct NaClManifestProxy *)
+      malloc(sizeof *manifest_proxy);
+  if (NULL == manifest_proxy ||
+      !NaClManifestProxyCtor(manifest_proxy,
+                             NaClAddrSpSquattingThreadIfFactoryFunction,
+                             (void *) nap,
+                             self)) {
+    NaClLog(LOG_FATAL, "Manifest proxy ctor failed\n");
+    goto cleanup_manifest_proxy;
+  }
+
+  /*
+   * NaClSimpleServiceStartServiceThread requires the nap->mu lock.
+   */
+  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
+                                           manifest_proxy)) {
+    NaClLog(LOG_FATAL, "ManifestProxy start service failed\n");
+    goto cleanup_manifest_proxy;
+  }
+
+  NaClXMutexLock(&nap->mu);
+  (*NACL_VTBL(NaClNameService, nap->name_service)->
+    CreateDescEntry)(nap->name_service,
+                     "ManifestNameService", NACL_ABI_O_RDWR,
+                     NaClDescRef(manifest_proxy->base.bound_and_cap[1]));
+  NaClXMutexUnlock(&nap->mu);
+
+  NaClXMutexLock(&self->mu);
+  self->reverse_channel_initialization_state =
+    NACL_REVERSE_CHANNEL_INITIALIZED;
+  NaClXCondVarBroadcast(&self->cv);
+  NaClXMutexUnlock(&self->mu);
+
+ cleanup_manifest_proxy:
+  NaClRefCountSafeUnref((struct NaClRefCount *) manifest_proxy);
+ cleanup_reverse_quota_interface:
+  NaClRefCountSafeUnref((struct NaClRefCount *) reverse_quota_interface);
+ cleanup_reverse_host_interface:
+  NaClRefCountSafeUnref((struct NaClRefCount *) reverse_host_interface);
+ done:
+  NaClLog(4, "Leaving NaClSecureReverseClientCallback\n");
+}
+
+static void NaClSecureServiceReverseSetupRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  struct NaClSecureService        *nssp =
+      (struct NaClSecureService *) rpc->channel->server_instance_data;
+  struct NaClDesc                 *rev_addr = NULL;
+  struct NaClSecureReverseClient  *rev;
+  UNREFERENCED_PARAMETER(in_args);
+
+  NaClLog(4, "NaClSecureServiceReverseSetupRpc: reverse setup\n");
+
+  NaClXMutexLock(&nssp->mu);
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      nssp->reverse_channel_initialization_state) {
+    NaClLog(LOG_ERROR, "NaClSecureServiceReverseSetupRpc:"
+            " reverse channel initialization state not uninitialized\n");
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+  nssp->reverse_channel_initialization_state =
+      NACL_REVERSE_CHANNEL_INITIALIZATING;
+  NaClXCondVarBroadcast(&nssp->cv);
+
+  /* the reverse connection is still coming */
+  rev = (struct NaClSecureReverseClient *) malloc(sizeof *rev);
+  if (NULL == rev) {
+    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+    goto cleanup;
+  }
+  NaClLog(4, "NaClSecureServiceReverseSetupRpc:"
+          " invoking NaClSecureReverseClientCtor\n");
+  if (!NaClSecureReverseClientCtor(rev,
+                                   NaClSecureReverseClientCallback,
+                                   (void *) nssp)) {
+    free(rev);
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+
+  if (!NaClSimpleRevClientStartServiceThread(&rev->base)) {
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
+
+  nssp->reverse_client = (struct NaClSecureReverseClient *) NaClRefCountRef(
+      (struct NaClRefCount *) rev);
+
+  out_args[0]->u.hval = NaClDescRef(rev->base.bound_and_cap[1]);
+  rpc->result = NACL_SRPC_RESULT_OK;
+ cleanup:
+  NaClXMutexUnlock(&nssp->mu);
+  NaClLog(4, "NaClSecureServiceReverseSetupRpc: done, "
+          " rev_addr 0x%08"NACL_PRIxPTR"\n",
+          (uintptr_t) rev_addr);
+  (*done_cls->Run)(done_cls);
+}
+
+struct StartModuleCallbackState {
+  int                    *out_status;
+  struct NaClSrpcClosure *cls;
+};
+
+static void NaClSecureServiceStartModuleRpcCallback(
+    void            *instance_data,
+    NaClErrorCode   status) {
+  struct StartModuleCallbackState *state =
+      (struct StartModuleCallbackState *) instance_data;
+  NaClLog(4, "NaClSecureChannelStartModuleRpcCallback: status %d\n", status);
+
+  /*
+   * The RPC reply is now sent.  This has to occur before we signal
+   * the main thread to possibly start, since in the case of a failure
+   * the main thread may quickly exit.  If the main thread does this
+   * before we sent the RPC reply, then the plugin will be left
+   * without an answer.
+   */
+  *state->out_status = (int) status;
+  (*state->cls->Run)(state->cls);
+  free(state);
+}
+
+static void NaClSecureServiceStartModuleRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  struct NaClSecureService        *nssp =
+      (struct NaClSecureService *) rpc->channel->server_instance_data;
+  struct StartModuleCallbackState *state;
+  UNREFERENCED_PARAMETER(in_args);
+
+  NaClLog(4, "NaClSecureChannelStartModuleRpc: starting module\n");
+
+  /*
+   * When reverse setup is being used, we have to block and wait for reverse
+   * channel to become initialized before we can proceed with start module.
+   */
+  NaClXMutexLock(&nssp->mu);
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      nssp->reverse_channel_initialization_state) {
+    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
+           nssp->reverse_channel_initialization_state) {
+      NaClXCondVarWait(&nssp->cv, &nssp->mu);
+    }
+  }
+  NaClXMutexUnlock(&nssp->mu);
+
+  state = (struct StartModuleCallbackState *) malloc(sizeof *state);
+  if (NULL == state) {
+    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+    (*done_cls->Run)(done_cls);
+    return;
+  }
+  state->out_status = &out_args[0]->u.ival;
+  state->cls = done_cls;
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+  NaClAppStartModule(nssp->nap,
+                     NaClSecureServiceStartModuleRpcCallback,
+                     (void *) state);
+
+  NaClLog(4, "NaClSecureChannelStartModuleRpc: done\n");
+}
+
+static void NaClSecureServiceLogRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done_cls) {
+  int   severity = in_args[0]->u.ival;
+  char  *msg = in_args[1]->arrays.str;
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(5, "NaClSecureChannelLogRpc\n");
+  NaClLog(severity, "%s\n", msg);
+  NaClLog(5, "NaClSecureChannelLogRpc\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+  (*done_cls->Run)(done_cls);
+}
+
+static void NaClSecureServiceShutdownRpc(
+    struct NaClSrpcRpc      *rpc,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args,
+    struct NaClSrpcClosure  *done) {
+  struct NaClSecureService  *nssp =
+      (struct NaClSecureService *) rpc->channel->server_instance_data;
+  UNREFERENCED_PARAMETER(rpc);
+  UNREFERENCED_PARAMETER(in_args);
+  UNREFERENCED_PARAMETER(out_args);
+  UNREFERENCED_PARAMETER(done);
+
+  NaClAppShutdown(nssp->nap, 0);
+}
+
+struct NaClSrpcHandlerDesc const kNaClSecureServiceHandlers[] = {
+  { NACL_SECURE_SERVICE_LOAD_MODULE, NaClSecureServiceLoadModuleRpc, },
+  { NACL_SECURE_SERVICE_REVERSE_SETUP, NaClSecureServiceReverseSetupRpc, },
+  { NACL_SECURE_SERVICE_START_MODULE, NaClSecureServiceStartModuleRpc, },
+  { NACL_SECURE_SERVICE_LOG, NaClSecureServiceLogRpc, },
+  { NACL_SECURE_SERVICE_HARD_SHUTDOWN, NaClSecureServiceShutdownRpc, },
+  { (char const *) NULL, (NaClSrpcMethod) NULL, },
+};
 
 struct NaClSimpleServiceVtbl const kNaClSecureServiceVtbl = {
   {
@@ -196,13 +560,10 @@ int NaClSecureReverseClientCtor(
     struct NaClSecureReverseClient  *self,
     void                            (*client_callback)(
         void *, struct NaClThreadInterface*, struct NaClDesc *),
-    void                            *state,
-    struct NaClApp                  *nap) {
+    void                            *state) {
   NaClLog(4,
-          ("Entered NaClSecureReverseClientCtor, self 0x%"NACL_PRIxPTR","
-           " nap 0x%"NACL_PRIxPTR"\n"),
-          (uintptr_t) self,
-          (uintptr_t) nap);
+          "Entered NaClSecureReverseClientCtor, self 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
   if (!NaClSimpleRevClientCtor(&self->base,
                                NaClSecureReverseClientInternalCallback,
                                (void *) self,
@@ -214,7 +575,6 @@ int NaClSecureReverseClientCtor(
   if (!NaClMutexCtor(&self->mu)) {
     goto failure_mutex_ctor;
   }
-  self->nap = nap;
   self->queue_head = (struct NaClSecureRevClientConnHandler *) NULL;
   self->queue_insert = &self->queue_head;
 
@@ -235,7 +595,6 @@ int NaClSecureReverseClientCtor(
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSimpleRevClientVtbl;
 
-  self->nap = NULL;
   self->queue_insert = (struct NaClSecureRevClientConnHandler **) NULL;
   NaClMutexDtor(&self->mu);
 

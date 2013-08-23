@@ -469,7 +469,6 @@ int main(int argc, char **argv) {
   CHECK(NaClAppCtor(&app));
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
-  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   NaClAddSyscall(NACL_sys_test_syscall_1, SpinWaitTestSyscall);
   NaClAddSyscall(NACL_sys_test_syscall_2, SimpleTestSyscall);

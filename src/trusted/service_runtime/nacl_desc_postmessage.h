@@ -22,11 +22,11 @@ EXTERN_C_BEGIN
 struct NaClDescEffector;
 struct NaClDescXferState;
 struct NaClMessageHeader;
+struct NaClRuntimeHostInterface;
 
 /*
- * A NaClDesc subclass that passes Write data to the browser via
- * postmessage.  Objects of this class should be instantiated only if
- * the NaClApp object's reverse channel is available.
+ * A NaClDesc subclass that passes Write data to the runtime host
+ * via postmessage.
  *
  * This is a DEBUG interface to make it easier to determine the state
  * of a NaCl application.  The interface is enabled only when a debug
@@ -35,21 +35,11 @@ struct NaClMessageHeader;
 struct NaClDescPostMessage {
   struct NaClDesc base NACL_IS_REFCOUNT_SUBCLASS;
 
-  /*
-   * There is not much state associated with sending a write buffer to
-   * the plugin via RPC -- just behavior changes in the virtual Write
-   * function; all state is in the NaClApp object.  it is assumed that
-   * the lifetime of the pointed-to NaClApp object is at least that of
-   * this NaClDescPostMessage object.
-   */
-  struct NaClApp  *nap;
-  ssize_t         error;
+  struct NaClRuntimeHostInterface *runtime_host;
 };
 
-int NaClDescPostMessageCtor(struct NaClDescPostMessage  *self,
-                            struct NaClApp              *nap);
-
-
+int NaClDescPostMessageCtor(struct NaClDescPostMessage      *self,
+                            struct NaClRuntimeHostInterface *runtime_host);
 
 EXTERN_C_END
 

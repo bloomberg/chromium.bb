@@ -195,7 +195,6 @@ int main(int argc, char **argv) {
   g_expected_desc = MakeExampleDesc();
   NaClSetDesc(&app, 10, g_expected_desc);
 
-  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
   CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
   CHECK(NaClWaitForMainThreadToExit(&app) == 0);
 

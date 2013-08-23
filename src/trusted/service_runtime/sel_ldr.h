@@ -68,8 +68,8 @@ EXTERN_C_BEGIN
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
-struct NaClManifestProxy;
-struct NaClReverseQuotaInterface;
+struct NaClRuntimeHostInterface;
+struct NaClDescQuotaInterface;
 struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 struct NaClValidationCache;
@@ -83,7 +83,7 @@ struct NaClDebugCallbacks {
 
 enum NaClResourcePhase {
   NACL_RESOURCE_PHASE_START,
-  NACL_RESOURCE_PHASE_REV_CHAN
+  NACL_RESOURCE_PHASE_RUNTIME_HOST
 };
 
 #if NACL_WINDOWS
@@ -270,24 +270,32 @@ struct NaClApp {
   struct NaClDesc           *name_service_conn_cap;
 
   struct NaClSecureService          *secure_service;
-  struct NaClManifestProxy          *manifest_proxy;
+
   struct NaClKernelService          *kernel_service;
 
   struct NaClResourceNaClApp        resources;
   enum NaClResourcePhase            resource_phase;
 
-  struct NaClSecureReverseClient    *reverse_client;
-  enum NaClReverseChannelInitializationState {
-    NACL_REVERSE_CHANNEL_UNINITIALIZED,
-    NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED,
-    NACL_REVERSE_CHANNEL_INITIALIZED
-  }                                 reverse_channel_initialization_state;
-  struct NaClSrpcChannel            reverse_channel;
-  struct NaClReverseQuotaInterface  *reverse_quota_interface;
+  struct NaClRuntimeHostInterface   *runtime_host_interface;
+  struct NaClDescQuotaInterface     *desc_quota_interface;
 
+  /*
+   * The ordering in this enum is important. We use the ordering
+   * to check that the status of module initialization; the state
+   * is really being used as a state machine. Please do not change
+   * the ordering, if you need to add a new state please do so at
+   * the appropriate position dependending on a module loading phase.
+   */
 
-  NaClErrorCode             module_load_status;
-  int                       module_may_start;
+  enum NaClModuleInitializationState {
+    NACL_MODULE_UNINITIALIZED = 0,
+    NACL_MODULE_LOADING,
+    NACL_MODULE_LOADED,
+    NACL_MODULE_STARTING,
+    NACL_MODULE_STARTED,
+    NACL_MODULE_ERROR
+  }                                 module_initialization_state;
+  NaClErrorCode                     module_load_status;
 
   /*
    * runtime info below, thread state, etc; initialized only when app
@@ -676,6 +684,38 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
                                NaClHandle      inherited_desc);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
+
+/*
+ * Loads the |nexe| as a NaCl app module. The NaClApp takes an ownership
+ * of the |aux_info|. The |load_cb| callback is invoked before the the
+ * |nexe| is loaded to allow validation being run in parallel.
+ */
+void NaClAppLoadModule(struct NaClApp      *self,
+                       struct NaClDesc     *nexe,
+                       char                *aux_info,
+                       void                (*load_cb)(void *instance_data,
+                                                      NaClErrorCode status),
+                       void                *instance_data);
+
+int NaClAppRuntimeHostSetup(struct NaClApp                  *self,
+                            struct NaClRuntimeHostInterface *host_itf);
+
+int NaClAppDescQuotaSetup(struct NaClApp                *self,
+                          struct NaClDescQuotaInterface *rev_quota);
+
+/*
+ * Starts the NaCl app, the |start_cb| callback is invoked before the
+ * application is actually started.
+ */
+void NaClAppStartModule(struct NaClApp  *self,
+                        void            (*start_cb)(void *instance_data,
+                                                    NaClErrorCode status),
+                        void            *instance_data);
+
+void NaClAppShutdown(struct NaClApp     *self,
+                     int                exit_status);
+
+NaClErrorCode NaClWaitForLoadModuleCommand(struct NaClApp *nap) NACL_WUR;
 
 NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
 

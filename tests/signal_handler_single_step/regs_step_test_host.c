@@ -315,7 +315,6 @@ int main(int argc, char **argv) {
   CHECK(NaClAppCtor(&app));
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
-  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   NaClSignalHandlerInit();
   /*

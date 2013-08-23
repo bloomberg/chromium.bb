@@ -293,7 +293,6 @@ int main(int argc, char **argv) {
   CHECK(NaClAppCtor(nap));
   CHECK(NaClAppLoadFileFromFilename(nap, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(nap);
-  CHECK(NaClAppPrepareToLaunch(nap) == LOAD_OK);
 
 #if NACL_LINUX
   NaClSignalHandlerInit();

@@ -177,15 +177,11 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->irt_loaded = 0;
   nap->main_exe_prevalidated = 0;
 
-  nap->manifest_proxy = NULL;
   nap->kernel_service = NULL;
   nap->resource_phase = NACL_RESOURCE_PHASE_START;
   if (!NaClResourceNaClAppInit(&nap->resources, nap)) {
     goto cleanup_dynamic_load_mutex;
   }
-  nap->reverse_client = NULL;
-  nap->reverse_channel_initialization_state =
-      NACL_REVERSE_CHANNEL_UNINITIALIZED;
 
   if (!NaClMutexCtor(&nap->mu)) {
     goto cleanup_dynamic_load_mutex;
@@ -201,8 +197,11 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
   nap->syscall_table = table;
 
+  nap->runtime_host_interface = NULL;
+  nap->desc_quota_interface = NULL;
+
+  nap->module_initialization_state = NACL_MODULE_UNINITIALIZED;
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
-  nap->module_may_start = 0;  /* only when secure_service != NULL */
 
   nap->name_service = (struct NaClNameService *) malloc(
       sizeof *nap->name_service);
@@ -935,211 +934,33 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
   }
 }
 
-static void NaClSecureChannelShutdownRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done) {
-  UNREFERENCED_PARAMETER(rpc);
-  UNREFERENCED_PARAMETER(in_args);
-  UNREFERENCED_PARAMETER(out_args);
-  UNREFERENCED_PARAMETER(done);
+NaClErrorCode NaClWaitForLoadModuleCommand(struct NaClApp *nap) {
+  NaClErrorCode status;
 
-  NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
-  NaClExit(0);
-  /* Return is never reached, so no need to invoke (*done->Run)(done). */
-}
-
-/*
- * This RPC is invoked by the plugin when the nexe is downloaded as a
- * stream and not as a file. The only arguments are a handle to a
- * shared memory object that contains the nexe.
- */
-static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
-                              struct NaClSrpcArg      **in_args,
-                              struct NaClSrpcArg      **out_args,
-                              struct NaClSrpcClosure  *done) {
-  struct NaClApp          *nap =
-      (struct NaClApp *) rpc->channel->server_instance_data;
-  struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
-  char                    *aux;
-  NaClErrorCode           suberr = LOAD_INTERNAL;
-
-  UNREFERENCED_PARAMETER(out_args);
-
-  NaClLog(4, "NaClLoadModuleRpc: entered\n");
-
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
-
-  aux = strdup(in_args[1]->arrays.str);
-  if (NULL == aux) {
-    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
-    goto cleanup;
-  }
-  NaClLog(4, "Received aux_info: %s\n", aux);
-
-  /*
-   * TODO(bsy): consider doing the processing below after sending the
-   * RPC reply to increase parallelism.
-   */
-
+  NaClLog(4, "NaClWaitForLoadModuleCommand started\n");
   NaClXMutexLock(&nap->mu);
-
-  if (LOAD_STATUS_UNKNOWN != nap->module_load_status) {
-    NaClLog(LOG_ERROR, "Repeated LoadModule RPC, or platform qual error?!?\n");
-    if (LOAD_OK == nap->module_load_status) {
-      NaClLog(LOG_ERROR, "LoadModule when module_load_status is LOAD_OK?!?\n");
-      suberr = LOAD_DUP_LOAD_MODULE;
-      nap->module_load_status = suberr;
-    } else {
-      suberr = nap->module_load_status;
-    }
-    rpc->result = NACL_SRPC_RESULT_OK;
-    NaClXCondVarBroadcast(&nap->cv);
-    goto cleanup_status_mu;
+  while (nap->module_initialization_state < NACL_MODULE_LOADED) {
+    NaClXCondVarWait(&nap->cv, &nap->mu);
   }
-
-  free(nap->aux_info);
-  nap->aux_info = aux;
-
-  /*
-   * Check / Mark the nexe binary as OK to attempt memory mapping.
-   *
-   * TODO(bsy): change needed to get NaClFileToken and resolve to file
-   * path information, set NaClRichFileInfo, and stash via
-   * NaClSetFileOriginInfo, then set NACL_DESC_FLAGS_MMAP_EXEC_OK.
-   */
-
-  suberr = NACL_FI_VAL("load_module", NaClErrorCode,
-                       NaClAppLoadFile(nexe_binary, nap));
-
-  if (LOAD_OK != suberr) {
-    nap->module_load_status = suberr;
-    rpc->result = NACL_SRPC_RESULT_OK;
-    NaClXCondVarBroadcast(&nap->cv);
-  }
-
- cleanup_status_mu:
-  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
-  if (LOAD_OK != suberr) {
-    goto cleanup;
-  }
-
-  /***************************************************************************
-   * TODO(bsy): Remove/merge the code invoking NaClAppPrepareToLaunch
-   * and NaClGdbHook below with sel_main's main function.  See comment
-   * there.
-   ***************************************************************************/
-
-  /*
-   * Finish setting up the NaCl App.
-   */
-  suberr = NaClAppPrepareToLaunch(nap);
-
-  NaClXMutexLock(&nap->mu);
-
-  nap->module_load_status = suberr;
-  rpc->result = NACL_SRPC_RESULT_OK;
-
-  NaClXCondVarBroadcast(&nap->cv);
+  status = nap->module_load_status;
   NaClXMutexUnlock(&nap->mu);
+  NaClLog(4, "NaClWaitForLoadModuleCommand finished\n");
 
-  /* Give debuggers a well known point at which xlate_base is known.  */
-  NaClGdbHook(nap);
-
- cleanup:
-  NaClDescUnref(nexe_binary);
-  nexe_binary = NULL;
-  (*done->Run)(done);
+  return status;
 }
 
 NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
   NaClErrorCode status;
 
+  NaClLog(4, "NaClWaitForLoadModuleStatus started\n");
   NaClXMutexLock(&nap->mu);
   while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   NaClXMutexUnlock(&nap->mu);
+  NaClLog(4, "NaClWaitForLoadModuleStatus finished\n");
+
   return status;
-}
-
-static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
-                                            struct NaClSrpcArg     **in_args,
-                                            struct NaClSrpcArg     **out_args,
-                                            struct NaClSrpcClosure *done) {
-  /*
-   * let module start if module is okay; otherwise report error (e.g.,
-   * ABI version mismatch).
-   */
-  struct NaClApp  *nap = (struct NaClApp *) rpc->channel->server_instance_data;
-  NaClErrorCode   status;
-
-  UNREFERENCED_PARAMETER(in_args);
-
-  NaClLog(4,
-          "NaClSecureChannelStartModuleRpc started, nap 0x%"NACL_PRIxPTR"\n",
-          (uintptr_t) nap);
-
-  status = NaClWaitForLoadModuleStatus(nap);
-
-  NaClLog(4, "NaClSecureChannelStartModuleRpc: load status %d\n", status);
-
-  out_args[0]->u.ival = status;
-  rpc->result = NACL_SRPC_RESULT_OK;
-
-  /*
-   * When reverse setup is being used, we have to block and wait for reverse
-   * channel to become initialized before we can proceed with start module.
-   */
-  NaClXMutexLock(&nap->mu);
-  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
-      nap->reverse_channel_initialization_state) {
-    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
-           nap->reverse_channel_initialization_state) {
-      NaClXCondVarWait(&nap->cv, &nap->mu);
-    }
-  }
-  NaClXMutexUnlock(&nap->mu);
-
-  NaClLog(4, "NaClSecureChannelStartModuleRpc running closure\n");
-  (*done->Run)(done);
-  /*
-   * The RPC reply is now sent.  This has to occur before we signal
-   * the main thread to possibly start, since in the case of a failure
-   * the main thread may quickly exit.  If the main thread does this
-   * before we sent the RPC reply, then the plugin will be left
-   * without an answer.
-   */
-
-  NaClXMutexLock(&nap->mu);
-  if (nap->module_may_start) {
-    NaClLog(LOG_ERROR, "Duplicate StartModule RPC?!?\n");
-    status = LOAD_DUP_START_MODULE;
-  } else {
-    nap->module_may_start = 1;
-  }
-  NaClLog(4, "NaClSecureChannelStartModuleRpc: broadcasting\n");
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
-
-  NaClLog(4, "NaClSecureChannelStartModuleRpc exiting\n");
-}
-
-static void NaClSecureChannelLog(struct NaClSrpcRpc      *rpc,
-                                 struct NaClSrpcArg      **in_args,
-                                 struct NaClSrpcArg      **out_args,
-                                 struct NaClSrpcClosure  *done) {
-  int severity = in_args[0]->u.ival;
-  char *msg = in_args[1]->arrays.str;
-
-  UNREFERENCED_PARAMETER(out_args);
-
-  NaClLog(5, "NaClSecureChannelLog started\n");
-  NaClLog(severity, "%s\n", msg);
-  NaClLog(5, "NaClSecureChannelLog finished\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done->Run)(done);
 }
 
 NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {
@@ -1147,11 +968,8 @@ NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {
 
   NaClLog(4, "NaClWaitForStartModuleCommand started\n");
   NaClXMutexLock(&nap->mu);
-  while (!nap->module_may_start) {
+  while (nap->module_initialization_state < NACL_MODULE_STARTED) {
     NaClXCondVarWait(&nap->cv, &nap->mu);
-    NaClLog(4,
-            "NaClWaitForStartModuleCommand: awaken, module_may_start %d\n",
-            nap->module_may_start);
   }
   status = nap->module_load_status;
   NaClXMutexUnlock(&nap->mu);
@@ -1171,135 +989,6 @@ void NaClBlockIfCommandChannelExists(struct NaClApp *nap) {
   }
 }
 
-/*
- * The first connection is performed by this callback handler.  This
- * spawns a client thread that will bootstrap the other connections by
- * stashing the connection represented by |conn| to make reverse RPCs
- * to ask the peer to connect to us.  No thread is spawned; we just
- * wrap access to the connection with a lock.
- *
- * Subsequent connection callbacks will pass the connection to the
- * actual thread that made the connection request using |conn|
- * received in the first connection.
- */
-static void NaClSecureReverseClientCallback(
-    void                        *state,
-    struct NaClThreadInterface  *tif,
-    struct NaClDesc             *new_conn) {
-  struct NaClSecureReverseClient *self =
-      (struct NaClSecureReverseClient *) state;
-  struct NaClApp *nap = self->nap;
-
-  UNREFERENCED_PARAMETER(tif);
-
-  NaClLog(4, "Entered NaClSecureReverseClientCallback\n");
-
-  NaClLog(4, " self=0x%"NACL_PRIxPTR"\n", (uintptr_t) self);
-  NaClLog(4, " nap=0x%"NACL_PRIxPTR"\n", (uintptr_t) nap);
-  NaClXMutexLock(&nap->mu);
-
-  if (NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED !=
-      nap->reverse_channel_initialization_state) {
-    /*
-     * The reverse channel connection capability is used to make the
-     * RPC that invokes this callback (this callback is invoked on a
-     * reverse channel connect), so the plugin wants to initialize the
-     * reverse channel and in particular the state must be either be
-     * in-progress or finished.
-     */
-    NaClLog(LOG_FATAL, "Reverse channel already initialized\n");
-  }
-  if (!NaClSrpcClientCtor(&nap->reverse_channel, new_conn)) {
-    NaClLog(LOG_FATAL, "Reverse channel SRPC Client Ctor failed\n");
-  }
-  nap->reverse_quota_interface = (struct NaClReverseQuotaInterface *)
-      malloc(sizeof *nap->reverse_quota_interface);
-  if (NULL == nap->reverse_quota_interface ||
-      NACL_FI_ERROR_COND(
-          ("NaClSecureReverseClientCallback"
-           "__NaClReverseQuotaInterfaceCtor"),
-          !NaClReverseQuotaInterfaceCtor(nap->reverse_quota_interface,
-                                         nap))) {
-    NaClLog(LOG_FATAL, "Reverse quota interface Ctor failed\n");
-  }
-  nap->reverse_channel_initialization_state = NACL_REVERSE_CHANNEL_INITIALIZED;
-
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
-
-  NaClLog(4, "Leaving NaClSecureReverseClientCallback\n");
-}
-
-static void NaClSecureReverseClientSetup(struct NaClSrpcRpc     *rpc,
-                                         struct NaClSrpcArg     **in_args,
-                                         struct NaClSrpcArg     **out_args,
-                                         struct NaClSrpcClosure *done) {
-  struct NaClApp                  *nap =
-      (struct NaClApp *) rpc->channel->server_instance_data;
-  struct NaClSecureReverseClient  *rev;
-
-  UNREFERENCED_PARAMETER(in_args);
-  NaClLog(4, "Entered NaClSecureReverseClientSetup\n");
-
-  NaClXMutexLock(&nap->mu);
-  if (NULL != nap->reverse_client) {
-    NaClLog(LOG_FATAL, "Double reverse setup RPC\n");
-  }
-  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
-      nap->reverse_channel_initialization_state) {
-    NaClLog(LOG_FATAL,
-            "Reverse channel initialization state not uninitialized\n");
-  }
-  nap->reverse_channel_initialization_state =
-      NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED;
-  /* the reverse connection is still coming */
-  rev = (struct NaClSecureReverseClient *) malloc(sizeof *rev);
-  if (NULL == rev) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    goto done;
-  }
-  NaClLog(4,
-          "NaClSecureReverseClientSetup: invoking"
-          " NaClSecureReverseClientCtor\n");
-  if (!NaClSecureReverseClientCtor(rev,
-                                   NaClSecureReverseClientCallback,
-                                   (void *) rev,
-                                   nap)) {
-    free(rev);
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    goto done;
-  }
-  nap->reverse_client = (struct NaClSecureReverseClient *) NaClRefCountRef(
-      (struct NaClRefCount *) rev);
-  out_args[0]->u.hval = NaClDescRef(rev->base.bound_and_cap[1]);
-  rpc->result = NACL_SRPC_RESULT_OK;
-
-  /*
-   * Hook up reverse-channel enabled resources, e.g.,
-   * DEBUG_ONLY:dev://postmessage.  NB: Resources specified by
-   * file:path should have been taken care of earlier, in
-   * NaClAppInitialDescriptorHookup.
-   */
-  nap->resource_phase = NACL_RESOURCE_PHASE_REV_CHAN;
-  NaClLog(4, "Processing dev I/O redirection/inheritance from environment\n");
-  NaClProcessRedirControl(nap);
-  NaClLog(4, "... done.\n");
-
-  /*
-   * Service thread takes the reference rev.
-   */
-  if (!NaClSimpleRevClientStartServiceThread(&rev->base)) {
-    NaClLog(LOG_FATAL, "Could not start reverse service thread\n");
-  }
-
-done:
-  NaClXMutexUnlock(&nap->mu);
-  (*done->Run)(done);
-  NaClLog(4, "Leaving NaClSecureReverseClientSetup\n");
-}
-
-struct NaClSrpcHandlerDesc const secure_handlers[]; /* fwd */
-
 void NaClSecureCommandChannel(struct NaClApp *nap) {
   struct NaClSecureService *secure_command_server;
 
@@ -1313,7 +1002,6 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   }
   if (NACL_FI_ERROR_COND("NaClSecureCommandChannel__NaClSecureServiceCtor",
                          !NaClSecureServiceCtor(secure_command_server,
-                                                secure_handlers,
                                                 nap,
                                                 nap->secure_service_port,
                                                 nap->secure_service_address))) {
@@ -1333,15 +1021,223 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }
 
-struct NaClSrpcHandlerDesc const secure_handlers[] = {
-  { "hard_shutdown::", NaClSecureChannelShutdownRpc, },
-  { "start_module::i", NaClSecureChannelStartModuleRpc, },
-  { "log:is:", NaClSecureChannelLog, },
-  { "load_module:hs:", NaClLoadModuleRpc, },
-  { "reverse_setup::h", NaClSecureReverseClientSetup, },
-  /* add additional calls here.  upcall set up?  start module signal? */
-  { (char const *) NULL, (NaClSrpcMethod) NULL, },
-};
+void NaClAppLoadModule(struct NaClApp   *nap,
+                       struct NaClDesc  *nexe,
+                       char             *aux_info,
+                       void             (*load_cb)(void *instance_data,
+                                                   NaClErrorCode status),
+                       void             *instance_data) {
+  NaClErrorCode status = LOAD_OK;
+
+  NaClLog(4,
+          ("Entered NaClAppLoadModule: nap 0x%"NACL_PRIxPTR","
+           " nexe 0x%"NACL_PRIxPTR", aux_info \"%s\"\n"),
+          (uintptr_t) nap, (uintptr_t) nexe, aux_info);
+
+  /*
+   * TODO(bsy): consider doing the processing below after sending the
+   * RPC reply to increase parallelism.
+   */
+  NaClXMutexLock(&nap->mu);
+  if (nap->module_initialization_state != NACL_MODULE_UNINITIALIZED) {
+    NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
+    status = LOAD_DUP_LOAD_MODULE;
+    NaClXMutexUnlock(&nap->mu);
+    if (NULL != load_cb) {
+      (*load_cb)(instance_data, status);
+    }
+    return;
+  }
+  nap->module_initialization_state = NACL_MODULE_LOADING;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+
+  if (NULL != load_cb) {
+    (*load_cb)(instance_data, status);
+  }
+
+  NaClXMutexLock(&nap->mu);
+  free(nap->aux_info);
+  nap->aux_info = aux_info;
+
+  /*
+   * Check / Mark the nexe binary as OK to attempt memory mapping.
+   *
+   * TODO(bsy): change needed to get NaClFileToken and resolve to file
+   * path information, set NaClRichFileInfo, and stash via
+   * NaClSetFileOriginInfo, then set NACL_DESC_FLAGS_MMAP_EXEC_OK.
+   */
+
+  status = NACL_FI_VAL("load_module", NaClErrorCode,
+                       NaClAppLoadFile(nexe, nap));
+
+  if (LOAD_OK != status) {
+    nap->module_load_status = status;
+    nap->module_initialization_state = NACL_MODULE_ERROR;
+    NaClXCondVarBroadcast(&nap->cv);
+  }
+  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
+  if (LOAD_OK != status) {
+    return;
+  }
+
+  /***************************************************************************
+   * TODO(bsy): Remove/merge the code invoking NaClAppPrepareToLaunch
+   * and NaClGdbHook below with sel_main's main function.  See comment
+   * there.
+   ***************************************************************************/
+
+  /*
+   * Finish setting up the NaCl App.
+   */
+  status = NaClAppPrepareToLaunch(nap);
+
+  NaClXMutexLock(&nap->mu);
+  nap->module_load_status = status;
+  nap->module_initialization_state = NACL_MODULE_LOADED;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+
+  /* Give debuggers a well known point at which xlate_base is known.  */
+  NaClGdbHook(nap);
+}
+
+int NaClAppRuntimeHostSetup(struct NaClApp                  *nap,
+                            struct NaClRuntimeHostInterface *host_itf) {
+  NaClErrorCode status = LOAD_OK;
+
+  NaClLog(4,
+          ("Entered NaClAppRuntimeHostSetup, nap 0x%"NACL_PRIxPTR","
+           " host_itf 0x%"NACL_PRIxPTR"\n"),
+          (uintptr_t) nap, (uintptr_t) host_itf);
+
+  NaClXMutexLock(&nap->mu);
+  if (nap->module_initialization_state > NACL_MODULE_STARTING) {
+    NaClLog(LOG_ERROR, "NaClAppRuntimeHostSetup: too late\n");
+    status = LOAD_INTERNAL;
+    goto cleanup_status_mu;
+  }
+
+  nap->runtime_host_interface = (struct NaClRuntimeHostInterface *)
+      NaClRefCountRef((struct NaClRefCount *) host_itf);
+
+  /*
+   * Hook up runtime host enabled resources, e.g.,
+   * DEBUG_ONLY:dev://postmessage.  NB: Resources specified by
+   * file:path should have been taken care of earlier, in
+   * NaClAppInitialDescriptorHookup.
+   */
+  nap->resource_phase = NACL_RESOURCE_PHASE_RUNTIME_HOST;
+  NaClLog(4, "Processing dev I/O redirection/inheritance from environment\n");
+  NaClProcessRedirControl(nap);
+  NaClLog(4, "... done.\n");
+
+ cleanup_status_mu:
+  NaClXMutexUnlock(&nap->mu);
+  return (int) status;
+}
+
+int NaClAppDescQuotaSetup(struct NaClApp                 *nap,
+                          struct NaClDescQuotaInterface  *quota_itf) {
+  NaClErrorCode status = LOAD_OK;
+
+  NaClLog(4,
+          ("Entered NaClAppDescQuotaSetup, nap 0x%"NACL_PRIxPTR","
+           " quota_itf 0x%"NACL_PRIxPTR"\n"),
+          (uintptr_t) nap, (uintptr_t) quota_itf);
+
+  NaClXMutexLock(&nap->mu);
+  if (nap->module_initialization_state > NACL_MODULE_STARTING) {
+    NaClLog(LOG_ERROR, "NaClAppDescQuotaSetup: too late\n");
+    status = LOAD_INTERNAL;
+    goto cleanup_status_mu;
+  }
+
+  nap->desc_quota_interface = (struct NaClDescQuotaInterface *)
+    NaClRefCountRef((struct NaClRefCount *) quota_itf);
+
+ cleanup_status_mu:
+  NaClXMutexUnlock(&nap->mu);
+  return (int) status;
+}
+
+void NaClAppStartModule(struct NaClApp  *nap,
+                        void            (*start_cb)(void *instance_data,
+                                                    NaClErrorCode status),
+                        void            *instance_data) {
+  NaClErrorCode status;
+
+  NaClLog(4,
+          ("Entered NaClAppStartModule, nap 0x%"NACL_PRIxPTR","
+           " start_cb 0x%"NACL_PRIxPTR", instance_data 0x%"NACL_PRIxPTR"\n"),
+          (uintptr_t) nap, (uintptr_t) start_cb, (uintptr_t) instance_data);
+
+  /*
+   * When module is loading, we have to block and wait till it is
+   * fully loaded before we can proceed with start module.
+   */
+  NaClXMutexLock(&nap->mu);
+  if (NACL_MODULE_LOADING == nap->module_initialization_state) {
+    while (NACL_MODULE_LOADED != nap->module_initialization_state) {
+      NaClXCondVarWait(&nap->cv, &nap->mu);
+    }
+  }
+  if (nap->module_initialization_state != NACL_MODULE_LOADED) {
+    if (NACL_MODULE_ERROR == nap->module_initialization_state) {
+      NaClLog(LOG_ERROR, "NaClAppStartModule: error loading module\n");
+      status = nap->module_load_status;
+    } else if (nap->module_initialization_state > NACL_MODULE_LOADED) {
+      NaClLog(LOG_ERROR, "NaClAppStartModule: repeated invocation\n");
+      status = LOAD_DUP_START_MODULE;
+    } else if (nap->module_initialization_state < NACL_MODULE_LOADED) {
+      NaClLog(LOG_ERROR, "NaClAppStartModule: module not loaded\n");
+      status = LOAD_INTERNAL;
+    }
+    NaClXMutexUnlock(&nap->mu);
+    if (NULL != start_cb) {
+      (*start_cb)(instance_data, status);
+    }
+    return;
+  }
+  status = nap->module_load_status;
+  nap->module_initialization_state = NACL_MODULE_STARTING;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+
+  NaClLog(4, "NaClSecureChannelStartModule: load status %d\n", status);
+
+  /*
+   * We need to invoke the callback now, before we signal the main thread
+   * to possibly start by setting the state to NACL_MODULE_STARTED, since
+   * in the case of failure the main thread may quickly exit; if the main
+   * thread does this before we sent the reply, than the plugin (or any
+   * other runtime host interface) will be left without an aswer. The
+   * NACL_MODULE_STARTING state is used as an intermediate state to prevent
+   * double invocations violating the protocol.
+   */
+  if (NULL != start_cb) {
+    (*start_cb)(instance_data, status);
+  }
+
+  NaClXMutexLock(&nap->mu);
+  nap->module_initialization_state = NACL_MODULE_STARTED;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+}
+
+void NaClAppShutdown(struct NaClApp     *nap,
+                     int                exit_status) {
+  NaClLog(4, "NaClAppShutdown: nap 0x%"NACL_PRIxPTR
+          ", exit_status %d\n", (uintptr_t) nap, exit_status);
+
+  NaClXMutexLock(&nap->mu);
+  nap->exit_status = exit_status;
+  NaClXMutexUnlock(&nap->mu);
+  if (NULL != nap->debug_stub_callbacks) {
+    nap->debug_stub_callbacks->process_exit_hook();
+  }
+  NaClExit(0);
+}
 
 /*
  * It is fine to have multiple I/O operations read from memory in Write

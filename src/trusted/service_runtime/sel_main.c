@@ -45,6 +45,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -584,11 +585,6 @@ int NaClSelLdrMain(int argc, char **argv) {
       }
       NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
       NaClPerfCounterIntervalLast(&time_all_main);
-
-      NaClXMutexLock(&nap->mu);
-      nap->module_load_status = errcode;
-      NaClXCondVarBroadcast(&nap->cv);
-      NaClXMutexUnlock(&nap->mu);
     }
 
     if (fuzzing_quit_after_load) {
@@ -656,40 +652,16 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
 
   if (rpc_supplies_nexe) {
-    errcode = NaClWaitForLoadModuleStatus(nap);
+    errcode = NaClWaitForLoadModuleCommand(nap);
     NaClPerfCounterMark(&time_all_main, "WaitForLoad");
     NaClPerfCounterIntervalLast(&time_all_main);
-  } else {
-    /**************************************************************************
-     * TODO(bsy): This else block should be made unconditional and
-     * invoked after the LoadModule RPC completes, eliminating the
-     * essentially dulicated code in latter part of NaClLoadModuleRpc.
-     * This cannot be done until we have full saucer separation
-     * technology, since Chrome currently uses sel_main_chrome.c and
-     * relies on the functionality of the duplicated code.
-     *************************************************************************/
-    if (LOAD_OK == errcode) {
-      if (verbosity) {
-        gprintf((struct Gio *) &gout, "printing NaClApp details\n");
-        NaClAppPrintDetails(nap, (struct Gio *) &gout);
-      }
+  }
 
-      /*
-       * Finish setting up the NaCl App.  On x86-32, this means
-       * allocating segment selectors.  On x86-64 and ARM, this is
-       * (currently) a no-op.
-       */
-      errcode = NaClAppPrepareToLaunch(nap);
-      if (LOAD_OK != errcode) {
-        nap->module_load_status = errcode;
-        fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);
-      }
-      NaClPerfCounterMark(&time_all_main, "AppPrepLaunch");
-      NaClPerfCounterIntervalLast(&time_all_main);
+  if (LOAD_OK == errcode) {
+    if (verbosity) {
+      gprintf((struct Gio *) &gout, "printing NaClApp details\n");
+      NaClAppPrintDetails(nap, (struct Gio *) &gout);
     }
-
-    /* Give debuggers a well known point at which xlate_base is known.  */
-    NaClGdbHook(&state);
   }
 
   /*
@@ -710,7 +682,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    * Enable the outer sandbox, if one is defined.  Do this as soon as
    * possible.
    *
-   * This must come after NaClWaitForLoadModuleStatus(), which waits
+   * This must come after NaClWaitForLoadModuleCommand(), which waits
    * for another thread to have called NaClAppLoadFile().
    * NaClAppLoadFile() does not work inside the Mac outer sandbox in
    * standalone sel_ldr when using a dynamic code area because it uses
@@ -770,6 +742,8 @@ int NaClSelLdrMain(int argc, char **argv) {
     if (LOAD_OK == errcode) {
       errcode = start_result;
     }
+  } else {
+    NaClAppStartModule(nap, NULL, NULL);
   }
 
   /*

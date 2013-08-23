@@ -2726,7 +2726,7 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
                       kern_naiov[i].base + kern_naiov[i].length - 1);
   }
   ssize_retval = NACL_VTBL(NaClDesc, ndp)->RecvMsg(ndp, &recv_hdr, flags,
-      (struct NaClDescQuotaInterface *) nap->reverse_quota_interface);
+      (struct NaClDescQuotaInterface *) nap->desc_quota_interface);
   /* unlock user memory ranges in kern_naiov */
   for (i = 0; i < kern_nanimh.iov_length; ++i) {
     NaClVmIoHasEnded(nap,

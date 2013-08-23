@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
 
   CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
-  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   /* These are examples of two different ways to run untrusted code. */
   if (use_separate_thread) {

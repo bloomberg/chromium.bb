@@ -12,36 +12,38 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
 
-#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
-#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 
 
 struct NaClSrpcHandlerDesc const kNaClKernelServiceHandlers[];
 
 int NaClKernelServiceCtor(
-    struct NaClKernelService      *self,
-    NaClThreadIfFactoryFunction   thread_factory_fn,
-    void                          *thread_factory_data,
-    struct NaClApp                *nap) {
+    struct NaClKernelService        *self,
+    NaClThreadIfFactoryFunction     thread_factory_fn,
+    void                            *thread_factory_data,
+    struct NaClRuntimeHostInterface *runtime_host) {
   NaClLog(4,
-          ("NaClKernelServiceCtor: self 0x%"NACL_PRIxPTR", nap 0x%"
-           NACL_PRIxPTR"\n"),
+          ("NaClKernelServiceCtor: self 0x%"NACL_PRIxPTR","
+           " runtime_host 0x%"NACL_PRIxPTR"\n"),
           (uintptr_t) self,
-          (uintptr_t) nap);
+          (uintptr_t) runtime_host);
   if (!NaClSimpleServiceCtor(&self->base,
                              kNaClKernelServiceHandlers,
                              thread_factory_fn,
                              thread_factory_data)) {
     return 0;
   }
-  self->nap = nap;
+  self->runtime_host = (struct NaClRuntimeHostInterface *)
+      NaClRefCountRef((struct NaClRefCount *) runtime_host);
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClKernelServiceVtbl;
   return 1;
@@ -49,6 +51,9 @@ int NaClKernelServiceCtor(
 
 void NaClKernelServiceDtor(struct NaClRefCount *vself) {
   struct NaClKernelService *self = (struct NaClKernelService *) vself;
+
+  NaClRefCountUnref((struct NaClRefCount *) self->runtime_host);
+
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSimpleServiceVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
@@ -56,30 +61,12 @@ void NaClKernelServiceDtor(struct NaClRefCount *vself) {
 
 void NaClKernelServiceInitializationComplete(
     struct NaClKernelService *self) {
-  struct NaClApp  *nap;
-  NaClSrpcError   rpc_result;
-
   NaClLog(4,
           "NaClKernelServiceInitializationComplete(0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) self);
 
-  nap = self->nap;
-  NaClXMutexLock(&nap->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      nap->reverse_channel_initialization_state) {
-    rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                           NACL_REVERSE_CONTROL_INIT_DONE);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_FATAL,
-              ("NaClKernelServiceInitializationComplete: "
-               "init_done RPC failed: %d\n"),
-              rpc_result);
-    }
-  } else {
-    NaClLog(3, "NaClKernelServiceInitializationComplete: no reverse channel"
-            ", no plugin to talk to.\n");
-  }
-  NaClXMutexUnlock(&nap->mu);
+  (*NACL_VTBL(NaClRuntimeHostInterface, self->runtime_host)->
+    StartupInitializationComplete)(self->runtime_host);
 }
 
 static void NaClKernelServiceInitializationCompleteRpc(
@@ -102,10 +89,6 @@ int NaClKernelServiceCreateProcess(
     struct NaClKernelService   *self,
     struct NaClDesc            **out_sock_addr,
     struct NaClDesc            **out_app_addr) {
-  struct NaClApp  *nap;
-  NaClSrpcError   rpc_result;
-  int             status = 0;
-
   NaClLog(4,
           ("NaClKernelServiceCreateProcess(0x%08"NACL_PRIxPTR
            ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"\n"),
@@ -113,28 +96,10 @@ int NaClKernelServiceCreateProcess(
           (uintptr_t) out_sock_addr,
           (uintptr_t) out_app_addr);
 
-  nap = self->nap;
-  NaClXMutexLock(&nap->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      nap->reverse_channel_initialization_state) {
-    rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                           NACL_REVERSE_CONTROL_CREATE_PROCESS,
-                                           &status,
-                                           out_sock_addr,
-                                           out_app_addr);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_FATAL,
-              "NaClKernelServiceCreateProcess: RPC failed, result %d\n",
-              rpc_result);
-    }
-  } else {
-    NaClLog(4, "NaClKernelServiceCreateProcess: no reverse channel"
-            ", no plugin to talk to.\n");
-    status = -NACL_ABI_EAGAIN;
-  }
-  NaClXMutexUnlock(&nap->mu);
-
-  return status;
+  return (*NACL_VTBL(NaClRuntimeHostInterface, self->runtime_host)->
+          CreateProcess)(self->runtime_host,
+                         out_sock_addr,
+                         out_app_addr);
 }
 
 static void NaClKernelServiceCreateProcessRpc(

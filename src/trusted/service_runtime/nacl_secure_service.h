@@ -21,19 +21,29 @@ struct NaClApp;
  */
 
 struct NaClSecureService {
-  struct NaClSimpleService    base NACL_IS_REFCOUNT_SUBCLASS;
-  struct NaClApp              *nap;
+  struct NaClSimpleService        base NACL_IS_REFCOUNT_SUBCLASS;
+  struct NaClApp                  *nap;
 
-  struct NaClMutex            mu;
   /*
-   * |mu| protects the connection count access.
+   * |mu| and |cv| protects the reverse channel initialization state
+   * and connection count access.
    */
-  uint32_t                    conn_count;
+  struct NaClCondVar              cv;
+  struct NaClMutex                mu;
+
+  enum NaClReverseChannelInitializationState {
+    NACL_REVERSE_CHANNEL_UNINITIALIZED = 0,
+    NACL_REVERSE_CHANNEL_INITIALIZATING,
+    NACL_REVERSE_CHANNEL_INITIALIZED
+  }                               reverse_channel_initialization_state;
+  struct NaClSrpcChannel          reverse_channel;
+  struct NaClSecureReverseClient  *reverse_client;
+
+  uint32_t                        conn_count;
 };
 
 int NaClSecureServiceCtor(
     struct NaClSecureService          *self,
-    struct NaClSrpcHandlerDesc const  *srpc_handlers,
     struct NaClApp                    *nap,
     struct NaClDesc                   *service_port,
     struct NaClDesc                   *sock_addr);
@@ -42,11 +52,12 @@ void NaClSecureServiceDtor(struct NaClRefCount *vself);
 
 extern struct NaClSimpleServiceVtbl const kNaClSecureServiceVtbl;
 
+void NaClSecureCommandChannel(struct NaClApp *nap);
+
 struct NaClSecureRevClientConnHandler;  /* fwd */
 
 struct NaClSecureReverseClient {
   struct NaClSimpleRevClient              base;
-  struct NaClApp                          *nap;
 
   struct NaClMutex                        mu;
   /*
@@ -75,8 +86,7 @@ int NaClSecureReverseClientCtor(
     struct NaClSecureReverseClient *self,
     void                            (*client_callback)(
         void *, struct NaClThreadInterface *, struct NaClDesc *),
-    void                            *state,
-    struct NaClApp                  *nap);
+    void                            *state);
 
 void NaClSecureReverseClientDtor(struct NaClRefCount *vself);
 

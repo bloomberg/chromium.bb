@@ -26,21 +26,22 @@
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/nacl_runtime_host_interface.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 static struct NaClDescVtbl const kNaClDescPostMessageVtbl;  /* fwd */
 
-int NaClDescPostMessageCtor(struct NaClDescPostMessage  *self,
-                            struct NaClApp              *nap) {
+int NaClDescPostMessageCtor(struct NaClDescPostMessage      *self,
+                            struct NaClRuntimeHostInterface *runtime_host) {
   NaClLog(4, "Entered NaClDescPostMessageCtor\n");
   NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl const *) NULL;
   if (!NaClDescCtor(&self->base)) {
     NaClLog(4, "Leaving NaClDescPostMessageCtor: failed\n");
     return 0;
   }
-  self->nap = nap;
-  self->error = 0;
+  self->runtime_host = (struct NaClRuntimeHostInterface *)
+      NaClRefCountRef((struct NaClRefCount *) runtime_host);
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl const *) &kNaClDescPostMessageVtbl;
   NaClLog(4, " Write vfptr = %"NACL_PRIxPTR"\n",
@@ -53,7 +54,9 @@ static void NaClDescPostMessageDtor(struct NaClRefCount *vself) {
   struct NaClDescPostMessage  *self = (struct NaClDescPostMessage *) vself;
 
   NaClLog(4, "Entered NaClDescPostMessageDtor\n");
-  self->nap = NULL;
+
+  NaClRefCountUnref((struct NaClRefCount *) self->runtime_host);
+
   NACL_VTBL(NaClRefCount, vself) =
       (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
   (*NACL_VTBL(NaClRefCount, vself)->Dtor)(vself);
@@ -64,45 +67,14 @@ static ssize_t NaClDescPostMessageWrite(struct NaClDesc *vself,
                                         void const      *buf,
                                         size_t          len) {
   struct NaClDescPostMessage  *self = (struct NaClDescPostMessage *) vself;
-  NaClSrpcError               rpc_result;
-  int                         num_written = 0;
-  ssize_t                     rv = -NACL_ABI_EIO;
+  ssize_t                     num_written = 0;
 
   NaClLog(4, "Entered NaClDescPostMessageWrite(..., %"NACL_PRIuS")\n", len);
-  if (0 != self->error) {
-    return self->error;
-  }
-  NaClXMutexLock(&self->nap->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED !=
-      self->nap->reverse_channel_initialization_state) {
-    NaClLog(LOG_FATAL,
-            "NaClDescPostMessageWrite: Reverse channel not initialized\n");
-  }
-  if (len > NACL_ABI_SIZE_T_MAX) {
-    len = NACL_ABI_SIZE_T_MAX;  /* fits in an int32_t */
-  }
-  rpc_result = NaClSrpcInvokeBySignature(&self->nap->reverse_channel,
-                                         NACL_REVERSE_CONTROL_POST_MESSAGE,
-                                         len,
-                                         buf,
-                                         &num_written);
-  if (NACL_SRPC_RESULT_OK != rpc_result || num_written > (int) len) {
-    /*
-     * A conforming interface implementation could return an errno,
-     * but should never return a larger value.
-     */
-    rv = -NACL_ABI_EIO;
-    /*
-     * make this error permanent; other negative errno returns are
-     * considered transient.
-     */
-    self->error = rv;
-  } else {
-    rv = (ssize_t) num_written;
-  }
-  NaClXMutexUnlock(&self->nap->mu);
-  NaClLog(4, "Leaving NaClDescPostMessageWrite (%"NACL_PRIuS")\n", rv);
-  return rv;
+  num_written = (*NACL_VTBL(NaClRuntimeHostInterface, self->runtime_host)->
+                 PostMessage)(self->runtime_host, buf, len);
+  NaClLog(4, "Leaving NaClDescPostMessageWrite:"
+          " num_written %"NACL_PRIuS"\n", num_written);
+  return num_written;
 }
 
 static int NaClDescPostMessageFstat(struct NaClDesc       *vself,

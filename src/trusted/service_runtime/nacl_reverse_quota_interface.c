@@ -20,17 +20,42 @@
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+
 /*
  * A descriptor quota interface that works over the reverse channel to Chrome.
  */
 
-static void ReverseQuotaDtor(struct NaClRefCount *nrcp) {
-  NaClLog(4, "NaClReverseQuotaInterfaceDtor\n");
-  nrcp->vtbl = (struct NaClRefCountVtbl *)(&kNaClDescQuotaInterfaceVtbl);
-  (*nrcp->vtbl->Dtor)(nrcp);
+struct NaClDescQuotaInterfaceVtbl const kNaClReverseQuotaInterfaceVtbl;
+
+int NaClReverseQuotaInterfaceCtor(
+    struct NaClReverseQuotaInterface *self,
+    struct NaClSecureService         *server) {
+  NaClLog(4, "NaClReverseQuotaInterfaceCtor:"
+          " self 0x%"NACL_PRIxPTR", server 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self, (uintptr_t) server);
+  if (!NaClDescQuotaInterfaceCtor(&self->base)) {
+    return 0;
+  }
+  self->server = (struct NaClSecureService *)
+      NaClRefCountRef((struct NaClRefCount *) server);
+  NACL_VTBL(NaClRefCount, self) =
+      (struct NaClRefCountVtbl const *) &kNaClReverseQuotaInterfaceVtbl;
+  return 1;
 }
 
-static int64_t ReverseQuotaWriteRequest(
+static void NaClReverseQuotaInterfaceDtor(struct NaClRefCount *vself) {
+  struct NaClReverseQuotaInterface *self =
+      (struct NaClReverseQuotaInterface *) vself;
+  NaClLog(4, "NaClReverseQuotaInterfaceDtor\n");
+
+  NaClRefCountUnref((struct NaClRefCount *) self->server);
+
+  NACL_VTBL(NaClRefCount, self) =
+      (struct NaClRefCountVtbl *) &kNaClDescQuotaInterfaceVtbl;
+  (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
+}
+
+static int64_t NaClReverseQuotaInterfaceWriteRequest(
     struct NaClDescQuotaInterface *vself,
     uint8_t const                 *file_id,
     int64_t                       offset,
@@ -42,13 +67,13 @@ static int64_t ReverseQuotaWriteRequest(
   int64_t                           rv;
 
   NaClLog(4, "Entered NaClReverseQuotaWriteRequest\n");
-  NaClXMutexLock(&self->nap->mu);
+  NaClXMutexLock(&self->server->mu);
   if (NACL_REVERSE_CHANNEL_INITIALIZED !=
-      self->nap->reverse_channel_initialization_state) {
+      self->server->reverse_channel_initialization_state) {
     NaClLog(LOG_FATAL,
             "NaClReverseQuotaWriteRequest: Reverse channel not initialized\n");
   }
-  rpc_result = NaClSrpcInvokeBySignature(&self->nap->reverse_channel,
+  rpc_result = NaClSrpcInvokeBySignature(&self->server->reverse_channel,
                                          NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE,
                                          16,
                                          file_id,
@@ -60,12 +85,12 @@ static int64_t ReverseQuotaWriteRequest(
   } else {
     rv = allowed;
   }
-  NaClXMutexUnlock(&self->nap->mu);
+  NaClXMutexUnlock(&self->server->mu);
   NaClLog(4, "Leaving NaClReverseQuotaWriteRequest\n");
   return rv;
 }
 
-static int64_t ReverseQuotaFtruncateRequest(
+static int64_t NaClReverseQuotaInterfaceFtruncateRequest(
     struct NaClDescQuotaInterface *self,
     uint8_t const                 *file_id,
     int64_t                       length) {
@@ -78,20 +103,8 @@ static int64_t ReverseQuotaFtruncateRequest(
 
 struct NaClDescQuotaInterfaceVtbl const kNaClReverseQuotaInterfaceVtbl = {
   {
-    ReverseQuotaDtor
+    NaClReverseQuotaInterfaceDtor,
   },
-  ReverseQuotaWriteRequest,
-  ReverseQuotaFtruncateRequest
+  NaClReverseQuotaInterfaceWriteRequest,
+  NaClReverseQuotaInterfaceFtruncateRequest,
 };
-
-int NaClReverseQuotaInterfaceCtor(struct NaClReverseQuotaInterface *self,
-                                  struct NaClApp *nap) {
-  struct NaClRefCount *nrcp = (struct NaClRefCount *) self;
-  NaClLog(4, "NaClReverseQuotaInterfaceCtor\n");
-  if (!NaClDescQuotaInterfaceCtor(&(self->base))) {
-    return 0;
-  }
-  nrcp->vtbl = (struct NaClRefCountVtbl *) (&kNaClReverseQuotaInterfaceVtbl);
-  self->nap = nap;
-  return 1;
-}
