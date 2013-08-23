@@ -32,6 +32,8 @@ function test()
 
     function onGotComputedFonts(response)
     {
+        var cssFamilyName = response.cssFamilyName;
+        InspectorTest.log("cssFamilyName: " + cssFamilyName);
         var fonts = response.fonts;
         fonts.sort(function(a, b) {
             return b.glyphCount - a.glyphCount;
