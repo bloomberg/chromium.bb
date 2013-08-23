@@ -419,7 +419,8 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
     : CreateApplicationShortcutView(
           Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       web_contents_(web_contents),
-      pending_download_id_(-1)  {
+      pending_download_id_(-1),
+      weak_ptr_factory_(this)  {
 
   web_app::GetShortcutInfoForTab(web_contents_, &shortcut_info_);
   const WebApplicationInfo& app_info =
@@ -467,7 +468,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
       preferred_size,
       0,  // no maximum size
       base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   unprocessed_icons_.pop_back();
 }

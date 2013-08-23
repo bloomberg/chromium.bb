@@ -111,6 +111,8 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
   // Unprocessed icons from the WebApplicationInfo passed in.
   web_app::IconInfoList unprocessed_icons_;
 
+  base::WeakPtrFactory<CreateUrlApplicationShortcutView> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(CreateUrlApplicationShortcutView);
 };
 
