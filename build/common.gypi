@@ -546,6 +546,8 @@
         # proprietary codecs.
         ['OS=="android" or branding=="Chrome"', {
           'proprietary_codecs%': 1,
+        }, {
+          'proprietary_codecs%': 0,
         }],
 
         # Enable autofill dialog for Android, Mac and Views-enabled platforms.
@@ -882,6 +884,7 @@
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'enable_mdns%' : '<(enable_mdns)',
     'v8_optimized_debug': '<(v8_optimized_debug)',
+    'proprietary_codecs%': '<(proprietary_codecs)',
 
     # Use system nspr instead of the bundled one.
     'use_system_nspr%': 0,
@@ -940,10 +943,6 @@
     #  'win_release_RuntimeLibrary': 2
     # to ~/.gyp/include.gypi, gclient runhooks --force, and do a release build.
     'win_use_allocator_shim%': 1, # 1 = shim allocator via libcmt; 0 = msvcrt
-
-    # Whether proprietary audio/video codecs are assumed to be included with
-    # this build (only meaningful if branding!=Chrome).
-    'proprietary_codecs%': 0,
 
     # TODO(bradnelson): eliminate this when possible.
     # To allow local gyp files to prevent release.vsprops from being included.
