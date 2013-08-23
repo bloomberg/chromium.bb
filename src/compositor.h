@@ -28,8 +28,6 @@
 extern "C" {
 #endif
 
-#include "config.h"
-
 #include <pixman.h>
 #include <xkbcommon/xkbcommon.h>
 
