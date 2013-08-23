@@ -379,7 +379,8 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(4, did_swaps_);
+    // Extra commits may happen and cause swaps: http://crbug.com/276657
+    EXPECT_LE(4, did_swaps_);
   }
 
   FakeContentLayerClient client_;
