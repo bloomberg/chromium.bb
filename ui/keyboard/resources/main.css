@@ -87,6 +87,7 @@ kb-altkey::x-key {
   text-align: center;
 }
 
+.caps kb-shift-key,
 .active {
   background-color: #848490 !important;
   border-top: 2px solid #A9A9AF !important;
@@ -154,6 +155,11 @@ kb-altkey::x-key {
 
 .audio .microphone {
   background-image: url('images/microphone-green.svg');
+}
+
+/* Highlight for shift key when pressed. */
+.highlight kb-shift-key {
+  color: lightblue;
 }
 
 .layout-selector {

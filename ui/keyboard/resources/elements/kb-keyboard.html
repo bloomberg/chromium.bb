@@ -1,5 +1,5 @@
 <!--
-  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
   -->
@@ -179,6 +179,23 @@
       dblTimer_: null,
       swipeHandler: null,
 
+      /**
+      * Handles the state of the shift key.
+      */
+      keysetChanged: function() {
+        // TODO (rsadam): Generalize to avoid the need to hardcode upper. Add
+        // state attribute to shift key.
+        if (this.keyset == 'upper') {
+          // Deals with the edge case where caps was triggered by a long press.
+          // Do not want to highlight the shift key in this case.
+          if (!this.classList.contains('caps'))
+            this.classList.add('highlight');
+        } else {
+          this.classList.remove('highlight');
+          this.classList.remove('caps');
+        }
+      },
+
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
         this.swipeHandler = this.onSwipeUpdate.bind(this);
@@ -333,6 +350,13 @@
             var keysetId = '#' + this.layout + '-' + this.keyset
             this.querySelector(keysetId).nextKeyset = this.dblTimer_.nextKeyset;
             clearTimeout(this.dblTimer_);
+            
+            // Checks if shift is capitalized.
+            if (this.keyset == 'upper') {
+              this.classList.remove('highlight');
+              this.classList.add('caps');
+            }
+
             this.dblDetail_ = null;
           }
         }
@@ -417,6 +441,9 @@
           this.keyset = toKeyset;
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
               detail.nextKeyset;
+
+          // Sets the caps class before removing active to prevent flicker.
+          this.classList.add('caps');
           // Makes last pressed key inactive if transit to a new keyset on long
           // press.
           this.lastPressedKey.classList.remove('active');
@@ -424,7 +451,7 @@
       },
 
       /**
-       * Handles a change in the keyboard layout.  Auto-selects the default
+       * Handles a change in the keyboard layout. Auto-selects the default
        * keyset for the new layout.
        */
       layoutChanged: function() {
@@ -442,7 +469,7 @@
 
       /**
        * Selects the default keyset for a layout.
-       * @return {boolean} True if successful.  This method can fail if the
+       * @return {boolean} True if successful. This method can fail if the
        *     keysets corresponding to the layout have not been injected.
        */
       selectDefaultKeyset: function() {
