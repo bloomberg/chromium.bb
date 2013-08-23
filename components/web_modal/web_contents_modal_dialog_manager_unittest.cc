@@ -4,11 +4,8 @@
 
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace web_modal {
 
@@ -24,9 +21,9 @@ class WebContentsModalDialogManagerTest
 class NativeWebContentsModalDialogManagerCloseTest
     : public NativeWebContentsModalDialogManager {
  public:
-  NativeWebContentsModalDialogManagerCloseTest(
+  explicit NativeWebContentsModalDialogManagerCloseTest(
       NativeWebContentsModalDialogManagerDelegate* delegate)
-      : delegate_(delegate) {}
+      : close_count_(0), delegate_(delegate) {}
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
@@ -35,7 +32,7 @@ class NativeWebContentsModalDialogManagerCloseTest
   }
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     delegate_->WillClose(dialog);
-    close_count++;
+    ++close_count_;
   }
   virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
@@ -44,12 +41,17 @@ class NativeWebContentsModalDialogManagerCloseTest
   virtual void HostChanged(WebContentsModalDialogHost* new_host) OVERRIDE {
   }
 
-  int close_count;
+  int close_count() const { return close_count_; }
+
+ private:
+  int close_count_;
   NativeWebContentsModalDialogManagerDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerCloseTest);
 };
 
-NativeWebContentsModalDialogManager* WebContentsModalDialogManager::
-CreateNativeManager(
+NativeWebContentsModalDialogManager*
+WebContentsModalDialogManager::CreateNativeManager(
     NativeWebContentsModalDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerCloseTest(native_delegate);
 }
@@ -63,21 +65,22 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
   NativeWebContentsModalDialogManagerCloseTest* native_manager =
       new NativeWebContentsModalDialogManagerCloseTest(
           web_contents_modal_dialog_manager);
-  native_manager->close_count = 0;
 
+  // |web_contents_modal_dialog_manager| owns |native_manager| as a result.
   test_api.ResetNativeManager(native_manager);
 
   const int kWindowCount = 4;
-  for (int i = 0; i < kWindowCount; i++)
+  for (int i = 0; i < kWindowCount; i++) {
     // WebContentsModalDialogManager treats the NativeWebContentsModalDialog as
     // an opaque type, so creating fake NativeWebContentsModalDialogs using
     // reinterpret_cast is valid.
     web_contents_modal_dialog_manager->ShowDialog(
         reinterpret_cast<NativeWebContentsModalDialog>(i));
-  EXPECT_EQ(native_manager->close_count, 0);
+  }
+  EXPECT_EQ(0, native_manager->close_count());
 
   test_api.CloseAllDialogs();
-  EXPECT_EQ(native_manager->close_count, kWindowCount);
+  EXPECT_EQ(kWindowCount, native_manager->close_count());
 }
 
 }  // namespace web_modal
