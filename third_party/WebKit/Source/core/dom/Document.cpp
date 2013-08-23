@@ -806,6 +806,10 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
         es.throwDOMException(NotSupportedError);
         return 0;
     }
+    if (data.find("]]>") != WTF::notFound) {
+        es.throwDOMException(InvalidCharacterError, "String cannot contain ']]>' since that is the end delimiter of a CData section.");
+        return 0;
+    }
     return CDATASection::create(this, data);
 }
 
