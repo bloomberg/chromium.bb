@@ -50,6 +50,8 @@ const char* SyncStatusCodeToString(SyncStatusCode status) {
       return "File not empty.";
     case SYNC_FILE_ERROR_INVALID_URL:
       return "Invalid URL.";
+    case SYNC_FILE_ERROR_IO:
+      return "OS or hardware error.";
 
     // Database related errors.
     case SYNC_DATABASE_ERROR_NOT_FOUND:
@@ -139,6 +141,8 @@ SyncStatusCode PlatformFileErrorToSyncStatusCode(
       return SYNC_FILE_ERROR_NOT_EMPTY;
     case base::PLATFORM_FILE_ERROR_INVALID_URL:
       return SYNC_FILE_ERROR_INVALID_URL;
+    case base::PLATFORM_FILE_ERROR_IO:
+      return SYNC_FILE_ERROR_IO;
     default:
       return SYNC_FILE_ERROR_FAILED;
   }
