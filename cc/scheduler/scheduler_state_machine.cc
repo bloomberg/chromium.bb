@@ -101,6 +101,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_IF_POSSIBLE";
     case ACTION_DRAW_FORCED:
       return "ACTION_DRAW_FORCED";
+    case ACTION_DRAW_AND_SWAP_ABORT:
+      return "ACTION_DRAW_AND_SWAP_ABORT";
     case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
     case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
@@ -110,7 +112,7 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
   return "???";
 }
 
-scoped_ptr<base::Value> SchedulerStateMachine::AsValue() {
+scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
 
   scoped_ptr<base::DictionaryValue> major_state(new base::DictionaryValue);
@@ -208,8 +210,24 @@ bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
          last_frame_number_where_update_visible_tiles_was_called_;
 }
 
-void SchedulerStateMachine::SetPostCommitFlags() {
+void SchedulerStateMachine::HandleCommitInternal(bool commit_was_aborted) {
+  commit_count_++;
+
+  if (commit_was_aborted) {
+    commit_state_ = COMMIT_STATE_IDLE;
+  } else if (expect_immediate_begin_frame_for_main_thread_) {
+    commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
+  } else {
+    commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
+  }
+
+  if (!settings_.impl_side_painting && !commit_was_aborted)
+    needs_redraw_ = true;
+
   // This post-commit work is common to both completed and aborted commits.
+  if (draw_if_possible_failed_)
+    last_frame_number_where_draw_was_called_ = -1;
+
   if (needs_forced_redraw_after_next_commit_) {
     needs_forced_redraw_after_next_commit_ = false;
     needs_forced_redraw_ = true;
@@ -218,40 +236,52 @@ void SchedulerStateMachine::SetPostCommitFlags() {
     needs_redraw_after_next_commit_ = false;
     needs_redraw_ = true;
   }
-  texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
+
+  // If we are planing to draw with the new commit, lock the layer textures for
+  // use on the impl thread. Otherwise, leave them unlocked.
+  if (!commit_was_aborted || needs_redraw_ || needs_forced_redraw_)
+    texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
+  else
+    texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
 }
 
-bool SchedulerStateMachine::DrawSuspendedUntilCommit() const {
+bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
+  // These are all the cases where, if we do not abort draws to make
+  // forward progress, we might deadlock with the main thread.
   if (!can_draw_)
     return true;
   if (!visible_)
+    return true;
+  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
     return true;
   if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD)
     return true;
   return false;
 }
 
-bool SchedulerStateMachine::ScheduledToDraw() const {
-  if (!needs_redraw_)
-    return false;
-  if (DrawSuspendedUntilCommit())
-    return false;
-  return true;
-}
-
 bool SchedulerStateMachine::ShouldDraw() const {
+  // Always handle forced draws ASAP.
   if (needs_forced_redraw_)
     return true;
 
-  if (!ScheduledToDraw())
-    return false;
-  if (!inside_begin_frame_)
-    return false;
+  // If we are going to abort draws, we should do so ASAP.
+  if (PendingDrawsShouldBeAborted()) {
+    // TODO(brianderson): Remove the !has_pending_tree_ condition once
+    // the Scheduler controls activation. It's dangerous for us to rely on
+    // an eventual activation if we've lost the output surface.
+    return commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW &&
+           !has_pending_tree_;
+  }
+
+  // After this line, we only want to draw once per frame.
   if (HasDrawnThisFrame())
     return false;
-  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
+
+  // We currently only draw within the BeginFrame.
+  if (!inside_begin_frame_)
     return false;
-  return true;
+
+  return needs_redraw_;
 }
 
 bool SchedulerStateMachine::ShouldAttemptTreeActivation() const {
@@ -275,12 +305,6 @@ bool SchedulerStateMachine::ShouldAcquireLayerTexturesForMainThread() const {
   if (texture_state_ == LAYER_TEXTURE_STATE_UNLOCKED)
     return true;
   DCHECK_EQ(texture_state_, LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD);
-  // Transfer the lock from impl thread to main thread immediately if the
-  // impl thread is not even scheduled to draw. Guards against deadlocking.
-  if (!ScheduledToDraw())
-    return true;
-  if (!BeginFrameNeededToDrawByImplThread())
-    return true;
   return false;
 }
 
@@ -341,21 +365,14 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
         return ACTION_UPDATE_VISIBLE_TILES;
       if (ShouldAttemptTreeActivation())
         return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
-      if (ShouldDraw() || output_surface_state_ == OUTPUT_SURFACE_LOST) {
-        return needs_forced_redraw_ ? ACTION_DRAW_FORCED
-                                    : ACTION_DRAW_IF_POSSIBLE;
+      if (ShouldDraw()) {
+        if (needs_forced_redraw_)
+          return ACTION_DRAW_FORCED;
+        else if (PendingDrawsShouldBeAborted())
+          return ACTION_DRAW_AND_SWAP_ABORT;
+        else
+          return ACTION_DRAW_IF_POSSIBLE;
       }
-      // COMMIT_STATE_WAITING_FOR_FIRST_DRAW wants to enforce a draw. If
-      // can_draw_ is false or textures are not available, proceed to the next
-      // step (similar as in COMMIT_STATE_IDLE).
-      bool can_commit =
-          needs_forced_commit_ ||
-          (visible_ &&
-           current_frame_number_ >
-               last_frame_number_where_begin_frame_sent_to_main_thread_);
-      if (needs_commit_ && can_commit && DrawSuspendedUntilCommit())
-        return has_pending_tree_ ? ACTION_NONE
-                                 : ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
       return ACTION_NONE;
     }
 
@@ -401,38 +418,24 @@ void SchedulerStateMachine::UpdateState(Action action) {
           current_frame_number_;
       return;
 
-    case ACTION_COMMIT:
-      commit_count_++;
-      if (expect_immediate_begin_frame_for_main_thread_)
-        commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
-      else
-        commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
-      // When impl-side painting, we draw on activation instead of on commit.
-      if (!settings_.impl_side_painting)
-        needs_redraw_ = true;
-      if (draw_if_possible_failed_)
-        last_frame_number_where_draw_was_called_ = -1;
-      SetPostCommitFlags();
+    case ACTION_COMMIT: {
+      bool commit_was_aborted = false;
+      HandleCommitInternal(commit_was_aborted);
       return;
+    }
 
     case ACTION_DRAW_FORCED:
-    case ACTION_DRAW_IF_POSSIBLE:
-      needs_redraw_ = false;
-      needs_forced_redraw_ = false;
-      draw_if_possible_failed_ = false;
-      swap_used_incomplete_tile_ = false;
-      if (inside_begin_frame_)
-        last_frame_number_where_draw_was_called_ = current_frame_number_;
-      if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW) {
-        DCHECK(expect_immediate_begin_frame_for_main_thread_);
-        commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
-        expect_immediate_begin_frame_for_main_thread_ = false;
-      } else if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
-        commit_state_ = COMMIT_STATE_IDLE;
-      }
-      if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD)
-        texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
+    case ACTION_DRAW_IF_POSSIBLE: {
+      bool did_swap = true;
+      UpdateStateOnDraw(did_swap);
       return;
+    }
+
+    case ACTION_DRAW_AND_SWAP_ABORT: {
+      bool did_swap = false;
+      UpdateStateOnDraw(did_swap);
+      return;
+    }
 
     case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       DCHECK_EQ(commit_state_, COMMIT_STATE_IDLE);
@@ -445,6 +448,27 @@ void SchedulerStateMachine::UpdateState(Action action) {
       main_thread_needs_layer_textures_ = false;
       return;
   }
+}
+
+void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
+  if (inside_begin_frame_)
+    last_frame_number_where_draw_was_called_ = current_frame_number_;
+  if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW) {
+    DCHECK(expect_immediate_begin_frame_for_main_thread_);
+    commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
+    expect_immediate_begin_frame_for_main_thread_ = false;
+  } else if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
+    commit_state_ = COMMIT_STATE_IDLE;
+  }
+  if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD)
+    texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
+
+  needs_redraw_ = false;
+  needs_forced_redraw_ = false;
+  draw_if_possible_failed_ = false;
+
+  if (did_swap)
+    swap_used_incomplete_tile_ = false;
 }
 
 void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
@@ -537,11 +561,11 @@ void SchedulerStateMachine::FinishCommit() {
 
 void SchedulerStateMachine::BeginFrameAbortedByMainThread(bool did_handle) {
   DCHECK_EQ(commit_state_, COMMIT_STATE_FRAME_IN_PROGRESS);
-  if (expect_immediate_begin_frame_for_main_thread_) {
+  if (did_handle) {
+    bool commit_was_aborted = true;
+    HandleCommitInternal(commit_was_aborted);
+  } else if (expect_immediate_begin_frame_for_main_thread_) {
     expect_immediate_begin_frame_for_main_thread_ = false;
-  } else if (did_handle) {
-    commit_state_ = COMMIT_STATE_IDLE;
-    SetPostCommitFlags();
   } else {
     commit_state_ = COMMIT_STATE_IDLE;
     SetNeedsCommit();
