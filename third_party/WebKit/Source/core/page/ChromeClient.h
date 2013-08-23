@@ -124,12 +124,8 @@ public:
 
     virtual void setResizable(bool) = 0;
 
-    virtual void addMessageToConsole(MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID) = 0;
-    // FIXME: Remove this MessageType variant once all the clients are updated.
-    virtual void addMessageToConsole(MessageSource source, MessageType, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID)
-    {
-        addMessageToConsole(source, level, message, lineNumber, sourceID);
-    }
+    virtual bool shouldReportDetailedMessageForSource(const String& source) = 0;
+    virtual void addMessageToConsole(MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace) = 0;
 
     virtual bool canRunBeforeUnloadConfirmPanel() = 0;
     virtual bool runBeforeUnloadConfirmPanel(const String& message, Frame*) = 0;

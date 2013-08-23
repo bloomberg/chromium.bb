@@ -94,10 +94,11 @@ public:
     virtual void setMenubarVisible(bool);
     virtual bool menubarVisible();
     virtual void setResizable(bool);
+    virtual bool shouldReportDetailedMessageForSource(const WTF::String&);
     virtual void addMessageToConsole(
         WebCore::MessageSource, WebCore::MessageLevel,
         const WTF::String& message, unsigned lineNumber,
-        const WTF::String& sourceID);
+        const WTF::String& sourceID, const WTF::String& stackTrace);
     virtual bool canRunBeforeUnloadConfirmPanel();
     virtual bool runBeforeUnloadConfirmPanel(
         const WTF::String& message, WebCore::Frame*);

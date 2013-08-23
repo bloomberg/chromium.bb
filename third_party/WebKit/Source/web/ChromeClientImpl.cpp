@@ -368,17 +368,19 @@ void ChromeClientImpl::setResizable(bool value)
     m_resizable = value;
 }
 
-void ChromeClientImpl::addMessageToConsole(MessageSource source,
-                                           MessageLevel level,
-                                           const String& message,
-                                           unsigned lineNumber,
-                                           const String& sourceID)
+bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
+{
+    return m_webView->client() && m_webView->client()->shouldReportDetailedMessageForSource(url);
+}
+
+void ChromeClientImpl::addMessageToConsole(MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace)
 {
     if (m_webView->client()) {
         m_webView->client()->didAddMessageToConsole(
             WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level), message),
             sourceID,
-            lineNumber);
+            lineNumber,
+            stackTrace);
     }
 }
 

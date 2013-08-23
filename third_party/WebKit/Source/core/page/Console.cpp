@@ -42,6 +42,7 @@
 #include "core/page/Frame.h"
 #include "core/page/MemoryInfo.h"
 #include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -69,16 +70,19 @@ static void internalAddMessage(Page* page, MessageType type, MessageLevel level,
     if (!acceptNoArguments && !arguments->argumentCount())
         return;
 
-    size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, stackSize));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-
     String message;
     bool gotMessage = arguments->getFirstArgumentAsString(message);
     InspectorInstrumentation::addMessageToConsole(page, ConsoleAPIMessageSource, type, level, message, state, arguments);
 
-    if (gotMessage)
-        page->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
+    String stackTrace;
+    if (gotMessage) {
+        RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
+        if (page->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
+            callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+            stackTrace = PageConsole::formatStackTraceString(message, callStack);
+        }
+        page->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
+    }
 }
 
 void Console::debug(ScriptState* state, PassRefPtr<ScriptArguments> arguments)

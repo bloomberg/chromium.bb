@@ -38,6 +38,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Page.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -82,16 +83,36 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (source == CSSMessageSource)
         return;
 
-    page->chrome().client().addMessageToConsole(source, level, message, lineNumber, url);
+    String stackTrace;
+    if (page->chrome().client().shouldReportDetailedMessageForSource(url) && callStack)
+        stackTrace = formatStackTraceString(message, callStack);
+
+    page->chrome().client().addMessageToConsole(source, level, message, lineNumber, url, stackTrace);
 }
 
-// static
+String PageConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
+{
+    StringBuilder stackTrace;
+    for (size_t i = 0; i < callStack->size(); ++i) {
+        const ScriptCallFrame& frame = callStack->at(i);
+        stackTrace.append("\n    at " + (frame.functionName().length() ? frame.functionName() : "(anonymous function)"));
+        stackTrace.append(" (");
+        stackTrace.append(frame.sourceURL());
+        stackTrace.append(':');
+        stackTrace.append(String::number(frame.lineNumber()));
+        stackTrace.append(':');
+        stackTrace.append(String::number(frame.columnNumber()));
+        stackTrace.append(')');
+    }
+
+    return stackTrace.toString();
+}
+
 void PageConsole::mute()
 {
     muteCount++;
 }
 
-// static
 void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);

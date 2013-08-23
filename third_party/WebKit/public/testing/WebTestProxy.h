@@ -546,10 +546,10 @@ public:
         WebTestProxyBase::didFinishResourceLoad(frame, identifier);
         Base::didFinishResourceLoad(frame, identifier);
     }
-    virtual void didAddMessageToConsole(const WebKit::WebConsoleMessage& message, const WebKit::WebString& sourceName, unsigned sourceLine)
+    virtual void didAddMessageToConsole(const WebKit::WebConsoleMessage& message, const WebKit::WebString& sourceName, unsigned sourceLine, const WebKit::WebString& stackTrace)
     {
         WebTestProxyBase::didAddMessageToConsole(message, sourceName, sourceLine);
-        Base::didAddMessageToConsole(message, sourceName, sourceLine);
+        Base::didAddMessageToConsole(message, sourceName, sourceLine, stackTrace);
     }
     virtual void runModalAlertDialog(WebKit::WebFrame* frame, const WebKit::WebString& message)
     {
