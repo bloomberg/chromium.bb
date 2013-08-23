@@ -449,6 +449,13 @@ public class AwContents {
                 isAccessFromFileURLsGrantedByDefault, new AwLayoutSizer());
     }
 
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
+            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer) {
+        this(browserContext, containerView, internalAccessAdapter, contentsClient,
+                isAccessFromFileURLsGrantedByDefault, layoutSizer, false);
+    }
+
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
             InternalAccessDelegate internalDispatcher, int nativeWebContents,
             ContentViewCore.GestureStateListener pinchGestureStateListener,
@@ -473,7 +480,8 @@ public class AwContents {
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer) {
+            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer,
+            boolean supportsLegacyQuirks) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
@@ -503,7 +511,7 @@ public class AwContents {
 
                 };
         mSettings = new AwSettings(mContainerView.getContext(), hasInternetPermission, zoomListener,
-                isAccessFromFileURLsGrantedByDefault, mDIPScale);
+                isAccessFromFileURLsGrantedByDefault, mDIPScale, supportsLegacyQuirks);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());

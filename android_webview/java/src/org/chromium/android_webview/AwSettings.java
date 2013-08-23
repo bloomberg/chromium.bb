@@ -82,7 +82,7 @@ public class AwSettings {
     private String mDefaultVideoPosterURL;
     private float mInitialPageScalePercent = 0;
 
-    private final boolean mSupportDeprecatedTargetDensityDPI = true;
+    private final boolean mSupportDeprecatedTargetDensityDPI;
 
     private final boolean mPasswordEchoEnabled;
 
@@ -175,7 +175,8 @@ public class AwSettings {
     public AwSettings(Context context, boolean hasInternetPermission,
             ZoomSupportChangeListener zoomChangeListener,
             boolean isAccessFromFileURLsGrantedByDefault,
-            double dipScale) {
+            double dipScale,
+            boolean supportsLegacyQuirks) {
         ThreadUtils.assertOnUiThread();
         synchronized (mAwSettingsLock) {
             mHasInternetPermission = hasInternetPermission;
@@ -195,6 +196,8 @@ public class AwSettings {
             // Respect the system setting for password echoing.
             mPasswordEchoEnabled = Settings.System.getInt(context.getContentResolver(),
                     Settings.System.TEXT_SHOW_PASSWORD, 1) == 1;
+
+            mSupportDeprecatedTargetDensityDPI = supportsLegacyQuirks;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }

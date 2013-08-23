@@ -29,6 +29,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
 import org.chromium.content.browser.LoadUrlParams;
@@ -89,7 +90,7 @@ public class AwShellActivity extends Activity {
         }
         testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
                 testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false));
+                awContentsClient, false, new AwLayoutSizer(), true));
         testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
         return testContainerView;
     }

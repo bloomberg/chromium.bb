@@ -226,9 +226,11 @@ public class AwTestBase
         final TestDependencyFactory testDependencyFactory = createTestDependencyFactory();
         final AwTestContainerView testContainerView =
             testDependencyFactory.createAwTestContainerView(getActivity());
+        // TODO(mnaganov): Should also have tests for the "pure Chromium" mode.
+        // See http://crbug.com/278106
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false, testDependencyFactory.createLayoutSizer()));
+                awContentsClient, false, testDependencyFactory.createLayoutSizer(), true));
         return testContainerView;
     }
 
