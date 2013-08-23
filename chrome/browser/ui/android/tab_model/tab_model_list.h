@@ -12,6 +12,10 @@
 class Profile;
 class TabModel;
 
+namespace chrome {
+struct NavigateParams;
+}
+
 // Stores a list of all TabModel objects.
 class TabModelList {
  public:
@@ -19,6 +23,7 @@ class TabModelList {
   typedef TabModelVector::iterator iterator;
   typedef TabModelVector::const_iterator const_iterator;
 
+  static void HandlePopupNavigation(chrome::NavigateParams* params);
   static void AddTabModel(TabModel* tab_model);
   static void RemoveTabModel(TabModel* tab_model);
 

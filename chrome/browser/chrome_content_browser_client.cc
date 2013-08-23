@@ -81,6 +81,7 @@
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -167,10 +168,6 @@
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_ANDROID)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -525,7 +522,6 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
   g_io_thread_application_locale.Get() = locale;
 }
 
-#if !defined(OS_ANDROID)
 struct BlockedPopupParams {
   BlockedPopupParams(const GURL& target_url,
                      const content::Referrer& referrer,
@@ -572,7 +568,6 @@ void HandleBlockedPopupOnUIThread(const BlockedPopupParams& params) {
                                 params.user_gesture,
                                 params.opener_suppressed);
 }
-#endif
 
 }  // namespace
 
@@ -1996,7 +1991,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     return false;
   }
 
-#if !defined(OS_ANDROID)
   if (is_guest)
     return true;
 
@@ -2026,7 +2020,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                                           opener_id)));
     return false;
   }
-#endif
 
   return true;
 }

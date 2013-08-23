@@ -26,6 +26,12 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
     }
 
+    @CalledByNative
+    public boolean addNewContents(int nativeSourceWebContents, int nativeWebContents,
+            int disposition, Rect initialPosition, boolean userGesture) {
+        return false;
+    }
+
     // Helper functions used to create types that are part of the public interface
     @CalledByNative
     private static Rect createRect(int x, int y, int right, int bottom) {

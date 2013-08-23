@@ -20,6 +20,10 @@ namespace browser_sync {
 class SyncedTabDelegate;
 }
 
+namespace chrome {
+struct NavigateParams;
+}
+
 namespace content {
 struct ContextMenuParams;
 class WebContents;
@@ -43,6 +47,8 @@ class TabAndroid {
   virtual ToolbarModel::SecurityLevel GetSecurityLevel();
 
   const SessionID& id() const { return tab_id_; }
+
+  virtual void HandlePopupNavigation(chrome::NavigateParams* params) = 0;
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
                                          const string16& host,
@@ -90,10 +96,10 @@ class TabAndroid {
 
   static bool RegisterTabAndroid(JNIEnv* env);
 
+  static void InitTabHelpers(content::WebContents* web_contents);
+
  protected:
   virtual ~TabAndroid();
-
-  static void InitTabHelpers(content::WebContents* web_contents);
 
   content::WebContents* InitWebContentsFromView(JNIEnv* env,
                                                 jobject content_view);

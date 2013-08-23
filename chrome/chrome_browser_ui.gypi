@@ -2816,8 +2816,6 @@
             # There's no Browser/BrowserList on Android.
             'browser/ui/active_tab_tracker.cc',
             'browser/ui/active_tab_tracker.h',
-            'browser/ui/blocked_content/popup_blocker_tab_helper.cc',
-            'browser/ui/blocked_content/popup_blocker_tab_helper.h',
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.cc',
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h',
             'browser/ui/bookmarks/bookmark_context_menu_controller.cc',
@@ -2827,7 +2825,6 @@
             'browser/ui/browser_finder.cc',
             'browser/ui/browser_iterator.cc',
             'browser/ui/browser_list.cc',
-            'browser/ui/browser_navigator.cc',
             'browser/ui/browser_otr_state.cc',
             'browser/ui/browser_tab_contents.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',

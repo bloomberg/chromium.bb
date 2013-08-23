@@ -62,6 +62,15 @@ class ChromeWebContentsDelegateAndroid
       const GURL& url,
       const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 
  private:
   // NotificationObserver implementation.

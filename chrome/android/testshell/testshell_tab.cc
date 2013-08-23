@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -94,6 +95,10 @@ void TestShellTab::OnNewTabPageReady() {
 }
 
 void TestShellTab::RunExternalProtocolDialog(const GURL& url) {
+  NOTIMPLEMENTED();
+}
+
+void TestShellTab::HandlePopupNavigation(chrome::NavigateParams* params) {
   NOTIMPLEMENTED();
 }
 

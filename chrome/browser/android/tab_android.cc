@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -77,6 +78,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
   PasswordManager::CreateForWebContentsAndDelegate(
       contents, PasswordManagerDelegateImpl::FromWebContents(contents));
+  PopupBlockerTabHelper::CreateForWebContents(contents);
   PrefsTabHelper::CreateForWebContents(contents);
   prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
       contents, PasswordManager::FromWebContents(contents));

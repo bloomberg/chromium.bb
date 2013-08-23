@@ -5,18 +5,27 @@
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/command_line.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
 #include "jni/ChromeWebContentsDelegateAndroid_jni.h"
+#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
@@ -24,6 +33,7 @@
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #endif
 
+using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 using content::FileChooserParams;
 using content::WebContents;
@@ -217,6 +227,96 @@ bool ChromeWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
 #endif
 }
 
+WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
+    WebContents* source,
+    const content::OpenURLParams& params) {
+  WindowOpenDisposition disposition = params.disposition;
+  if (!source || (disposition != CURRENT_TAB &&
+                  disposition != NEW_FOREGROUND_TAB &&
+                  disposition != NEW_BACKGROUND_TAB &&
+                  disposition != OFF_THE_RECORD &&
+                  disposition != NEW_POPUP &&
+                  disposition != NEW_WINDOW)) {
+    // We can't handle this here.  Give the parent a chance.
+    return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
+  }
+
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
+  chrome::NavigateParams nav_params(profile,
+                                    params.url,
+                                    params.transition);
+  FillNavigateParamsFromOpenURLParams(&nav_params, params);
+  nav_params.source_contents = source;
+  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  nav_params.user_gesture = params.user_gesture;
+
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(source);
+  DCHECK(popup_blocker_helper);
+
+  if ((params.disposition == NEW_POPUP ||
+       params.disposition == NEW_FOREGROUND_TAB ||
+       params.disposition == NEW_BACKGROUND_TAB ||
+       params.disposition == NEW_WINDOW) &&
+      !params.user_gesture &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePopupBlocking)) {
+    if (popup_blocker_helper->MaybeBlockPopup(nav_params,
+                                              WebKit::WebWindowFeatures())) {
+      return NULL;
+    }
+  }
+
+  return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
+}
+
+void ChromeWebContentsDelegateAndroid::AddNewContents(
+    WebContents* source,
+    WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture,
+    bool* was_blocked) {
+  // No code for this yet.
+  DCHECK_NE(disposition, SAVE_TO_DISK);
+  // Can't create a new contents for the current tab - invalid case.
+  DCHECK_NE(disposition, CURRENT_TAB);
+
+  BlockedContentTabHelper* source_blocked_content = NULL;
+  if (source)
+    source_blocked_content = BlockedContentTabHelper::FromWebContents(source);
+
+  TabAndroid::InitTabHelpers(new_contents);
+
+  if (source_blocked_content) {
+    if (source_blocked_content->all_contents_blocked()) {
+      source_blocked_content->AddWebContents(
+          new_contents, disposition, initial_pos, user_gesture);
+      if (was_blocked)
+        *was_blocked = true;
+      return;
+    }
+
+    new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  bool handled = false;
+  if (!obj.is_null()) {
+    handled = Java_ChromeWebContentsDelegateAndroid_addNewContents(
+        env,
+        obj.obj(),
+        reinterpret_cast<jint>(source),
+        reinterpret_cast<jint>(new_contents),
+        static_cast<jint>(disposition),
+        NULL,
+        user_gesture);
+  }
+
+  if (!handled)
+    delete new_contents;
+}
 
 }  // namespace android
 }  // namespace chrome

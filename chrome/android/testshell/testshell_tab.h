@@ -16,6 +16,10 @@ class SyncedTabDelegate;
 }
 
 namespace chrome {
+struct NavigateParams;
+}
+
+namespace chrome {
 namespace android {
 class ChromeWebContentsDelegateAndroid;
 }
@@ -68,7 +72,7 @@ class TestShellTab : public TabAndroid {
   virtual void OnNewTabPageReady() OVERRIDE;
 
   virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
-
+  virtual void HandlePopupNavigation(chrome::NavigateParams* params) OVERRIDE;
   virtual int GetSyncId() const OVERRIDE;
   virtual void SetSyncId(int sync_id) OVERRIDE;
 

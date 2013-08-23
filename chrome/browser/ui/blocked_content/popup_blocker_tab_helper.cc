@@ -20,6 +20,10 @@
 #include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#endif
+
 using WebKit::WebWindowFeatures;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupBlockerTabHelper);
@@ -139,7 +143,11 @@ void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {
   BlockedRequest* popup = blocked_popups_.Lookup(id);
   if (!popup)
     return;
+#if defined(OS_ANDROID)
+  TabModelList::HandlePopupNavigation(&popup->params);
+#else
   chrome::Navigate(&popup->params);
+#endif
   if (popup->params.target_contents) {
     popup->params.target_contents->Send(new ChromeViewMsg_SetWindowFeatures(
         popup->params.target_contents->GetRoutingID(), popup->window_features));
