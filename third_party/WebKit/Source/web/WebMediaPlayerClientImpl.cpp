@@ -14,9 +14,9 @@
 #include "WebHelperPluginImpl.h"
 #include "WebInbandTextTrack.h"
 #include "WebMediaPlayer.h"
+#include "WebMediaSourceImpl.h"
 #include "WebViewImpl.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/page/Frame.h"
 #include "core/platform/NotImplemented.h"
@@ -283,15 +283,12 @@ void WebMediaPlayerClientImpl::loadInternal()
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
-        WebMediaPlayer::LoadType loadType = WebMediaPlayer::LoadTypeURL;
-
-        if (m_mediaSource)
-            loadType = WebMediaPlayer::LoadTypeMediaSource;
-        else if (m_isMediaStream)
-            loadType = WebMediaPlayer::LoadTypeMediaStream;
-
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
-        m_webMediaPlayer->load(loadType, m_url, corsMode);
+        if (m_mediaSource) {
+            m_webMediaPlayer->load(m_url, new WebMediaSourceImpl(m_mediaSource), corsMode);
+            return;
+        }
+        m_webMediaPlayer->load(m_url, corsMode);
     }
 }
 

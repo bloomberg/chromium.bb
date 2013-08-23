@@ -32,10 +32,8 @@
 #include "MediaSourcePrivateImpl.h"
 
 #include "SourceBufferPrivateImpl.h"
+#include "WebMediaSource.h"
 #include "WebSourceBuffer.h"
-
-#include "public/platform/WebMediaSource.h"
-
 #include <algorithm>
 #include <limits>
 #include "wtf/PassOwnPtr.h"

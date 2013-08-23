@@ -28,47 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaSource_h
-#define WebMediaSource_h
+#ifndef WebMediaSourceClient_h
+#define WebMediaSourceClient_h
 
-#include "WebTimeRange.h"
-#include "WebURL.h"
+#include "../platform/WebMediaSource.h"
 
 namespace WebKit {
 
 class WebSourceBuffer;
 
-// FIXME: Rename this to WebMediaSource after Chromium-side has been migrated to this object.
-class WebMediaSourceNew {
+class WebMediaSourceClient : public WebMediaSourceNew {
 public:
-    enum AddStatus {
-        AddStatusOk,
-        AddStatusNotSupported,
-        AddStatusReachedIdLimit
-    };
-
-    enum EndOfStreamStatus {
-        EndOfStreamStatusNoError,
-        EndOfStreamStatusNetworkError,
-        EndOfStreamStatusDecodeError,
-    };
-
-    virtual ~WebMediaSourceNew() { }
-
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer**) = 0;
-    virtual double duration() = 0;
-    virtual void setDuration(double) = 0;
-    virtual void markEndOfStream(EndOfStreamStatus) = 0;
-    virtual void unmarkEndOfStream() = 0;
-};
-
-class WebMediaSourceClient;
-
-// FIXME: Remove this once the Chromium-side has been migrated to WebMediaSourceNew.
-class WebMediaSource {
-public:
-    virtual ~WebMediaSource() { };
-    virtual void open(WebMediaSourceClient*) = 0;
+    virtual ~WebMediaSourceClient() { }
 };
 
 } // namespace WebKit
