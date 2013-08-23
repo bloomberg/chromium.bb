@@ -65,6 +65,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/unicode/UTF8.h"
+#include <libxml/catalog.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
@@ -587,17 +588,26 @@ static void finishParsing(xmlParserCtxtPtr ctxt)
 
 #define xmlParseChunk #error "Use parseChunk instead to select the correct encoding."
 
+static bool isLibxmlDefaultCatalogFile(const String& urlString)
+{
+    // On non-Windows platforms libxml asks for this URL, the
+    // "XML_XML_DEFAULT_CATALOG", on initialization.
+    if (urlString == "file:///etc/xml/catalog")
+        return true;
+
+    // On Windows, libxml computes a URL relative to where its DLL resides.
+    if (urlString.startsWith("file:///", false) && urlString.endsWith("/etc/catalog", false))
+        return true;
+    return false;
+}
+
 static bool shouldAllowExternalLoad(const KURL& url)
 {
     String urlString = url.string();
 
-    // On non-Windows platforms libxml asks for this URL, the
-    // "XML_XML_DEFAULT_CATALOG", on initialization.
-    if (urlString == "file:///etc/xml/catalog")
-        return false;
-
-    // On Windows, libxml computes a URL relative to where its DLL resides.
-    if (urlString.startsWith("file:///", false) && urlString.endsWith("/etc/catalog", false))
+    // This isn't really necessary now that initializeLibXMLIfNecessary
+    // disables catalog support in libxml, but keeping it for defense in depth.
+    if (isLibxmlDefaultCatalogFile(url))
         return false;
 
     // The most common DTD.  There isn't much point in hammering www.w3c.org
@@ -685,18 +695,27 @@ static void errorFunc(void*, const char*, ...)
     // FIXME: It would be nice to display error messages somewhere.
 }
 
-static bool didInit = false;
+static void initializeLibXMLIfNecessary()
+{
+    static bool didInit = false;
+    if (didInit)
+        return;
+
+    // We don't want libxml to try and load catalogs.
+    // FIXME: It's not nice to set global settings in libxml, embedders of Blink
+    // could be trying to use libxml themselves.
+    xmlCatalogSetDefaults(XML_CATA_ALLOW_NONE);
+    xmlInitParser();
+    xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
+    xmlRegisterOutputCallbacks(matchFunc, openFunc, writeFunc, closeFunc);
+    libxmlLoaderThread = currentThread();
+    didInit = true;
+}
+
 
 PassRefPtr<XMLParserContext> XMLParserContext::createStringParser(xmlSAXHandlerPtr handlers, void* userData)
 {
-    if (!didInit) {
-        xmlInitParser();
-        xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
-        xmlRegisterOutputCallbacks(matchFunc, openFunc, writeFunc, closeFunc);
-        libxmlLoaderThread = currentThread();
-        didInit = true;
-    }
-
+    initializeLibXMLIfNecessary();
     xmlParserCtxtPtr parser = xmlCreatePushParserCtxt(handlers, 0, 0, 0, 0);
     parser->_private = userData;
     parser->replaceEntities = true;
@@ -706,13 +725,7 @@ PassRefPtr<XMLParserContext> XMLParserContext::createStringParser(xmlSAXHandlerP
 // Chunk should be encoded in UTF-8
 PassRefPtr<XMLParserContext> XMLParserContext::createMemoryParser(xmlSAXHandlerPtr handlers, void* userData, const CString& chunk)
 {
-    if (!didInit) {
-        xmlInitParser();
-        xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
-        xmlRegisterOutputCallbacks(matchFunc, openFunc, writeFunc, closeFunc);
-        libxmlLoaderThread = currentThread();
-        didInit = true;
-    }
+    initializeLibXMLIfNecessary();
 
     // appendFragmentSource() checks that the length doesn't overflow an int.
     xmlParserCtxtPtr parser = xmlCreateMemoryParserCtxt(chunk.data(), chunk.length());

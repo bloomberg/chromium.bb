@@ -1,6 +1,2 @@
-CONSOLE MESSAGE: line 1: Document is empty
-
-CONSOLE MESSAGE: line 1: Start tag expected, '<' not found
-
 This test includes a cross-origin external entity. It passes if the load fails and thus there is no text below this line.
 
