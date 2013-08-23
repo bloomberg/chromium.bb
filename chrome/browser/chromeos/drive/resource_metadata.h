@@ -121,17 +121,17 @@ class ResourceMetadata {
   // synchronously.
   FileError AddEntry(const ResourceEntry& entry);
 
-  // Removes entry with |resource_id| from its parent.
-  FileError RemoveEntry(const std::string& resource_id);
+  // Removes entry with |id| from its parent.
+  FileError RemoveEntry(const std::string& id);
 
-  // Finds an entry (a file or a directory) by |resource_id|.
+  // Finds an entry (a file or a directory) by |id|.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void GetResourceEntryByIdOnUIThread(const std::string& resource_id,
+  void GetResourceEntryByIdOnUIThread(const std::string& id,
                                       const GetResourceEntryCallback& callback);
 
   // Synchronous version of GetResourceEntryByIdOnUIThread().
-  FileError GetResourceEntryById(const std::string& resource_id,
+  FileError GetResourceEntryById(const std::string& id,
                                  ResourceEntry* out_entry);
 
   // Finds an entry (a file or a directory) by |file_path|.
@@ -166,10 +166,11 @@ class ResourceMetadata {
       const GetResourceEntryPairCallback& callback);
 
   // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
+  // TODO(hashimoto): Stop relying on |entry.resource_id()| crbug.com/275270
   FileError RefreshEntry(const ResourceEntry& entry);
 
-  // Recursively gets directories under the entry pointed to by |resource_id|.
-  void GetSubDirectoriesRecursively(const std::string& resource_id,
+  // Recursively gets directories under the entry pointed to by |id|.
+  void GetSubDirectoriesRecursively(const std::string& id,
                                     std::set<base::FilePath>* sub_directories);
 
   // Returns the resource id of the resource named |base_name| directly under
@@ -182,7 +183,7 @@ class ResourceMetadata {
   scoped_ptr<Iterator> GetIterator();
 
   // Returns virtual file path of the entry.
-  base::FilePath GetFilePath(const std::string& resource_id);
+  base::FilePath GetFilePath(const std::string& id);
 
   // Returns ID of the entry at the given path.
   FileError GetIdByPath(const base::FilePath& file_path, std::string* out_id);
@@ -219,11 +220,13 @@ class ResourceMetadata {
   // Puts an entry under its parent directory. Removes the child from the old
   // parent if there is. This method will also do name de-duplication to ensure
   // that the exposed presentation path does not have naming conflicts. Two
-  // files with the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  bool PutEntryUnderDirectory(const ResourceEntry& entry);
+  // files with the same name "Foo" will be renamed to "Foo (1)" and "Foo (2)".
+  // |id| is used as the ID of the entry.
+  bool PutEntryUnderDirectory(const std::string& id,
+                              const ResourceEntry& entry);
 
   // Removes the entry and its descendants.
-  bool RemoveEntryRecursively(const std::string& resource_id);
+  bool RemoveEntryRecursively(const std::string& id);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

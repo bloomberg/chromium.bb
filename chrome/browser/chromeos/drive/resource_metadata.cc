@@ -192,7 +192,8 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
     other_dir.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
     other_dir.set_title(util::kDriveOtherDirName);
-    if (!PutEntryUnderDirectory(other_dir))
+    if (!PutEntryUnderDirectory(util::kDriveOtherDirSpecialResourceId,
+                                other_dir))
       return false;
   }
   return true;
@@ -270,33 +271,37 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
       !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
-  if (!PutEntryUnderDirectory(entry))
+  // TODO(hashimoto): Generate local ID here and pass it to the caller.
+  // crbug.com/26051
+  const std::string& id = entry.resource_id();
+
+  if (!PutEntryUnderDirectory(id, entry))
     return FILE_ERROR_FAILED;
 
   return FILE_ERROR_OK;
 }
 
-FileError ResourceMetadata::RemoveEntry(const std::string& resource_id) {
+FileError ResourceMetadata::RemoveEntry(const std::string& id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   // Disallow deletion of special entries "/drive" and "/drive/other".
-  if (util::IsSpecialResourceId(resource_id))
+  if (util::IsSpecialResourceId(id))
     return FILE_ERROR_ACCESS_DENIED;
 
   ResourceEntry entry;
-  if (!storage_->GetEntry(resource_id, &entry))
+  if (!storage_->GetEntry(id, &entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (!RemoveEntryRecursively(entry.resource_id()))
+  if (!RemoveEntryRecursively(id))
     return FILE_ERROR_FAILED;
   return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::GetResourceEntryByIdOnUIThread(
-    const std::string& resource_id,
+    const std::string& id,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -308,19 +313,18 @@ void ResourceMetadata::GetResourceEntryByIdOnUIThread(
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetResourceEntryById,
                  base::Unretained(this),
-                 resource_id,
+                 id,
                  entry_ptr),
       base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
 }
 
-FileError ResourceMetadata::GetResourceEntryById(
-    const std::string& resource_id,
-    ResourceEntry* out_entry) {
+FileError ResourceMetadata::GetResourceEntryById(const std::string& id,
+                                                 ResourceEntry* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!resource_id.empty());
+  DCHECK(!id.empty());
   DCHECK(out_entry);
 
-  return storage_->GetEntry(resource_id, out_entry) ?
+  return storage_->GetEntry(id, out_entry) ?
       FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
 }
 
@@ -379,8 +383,13 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entries);
 
+  std::string id;
+  FileError error = GetIdByPath(path, &id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   ResourceEntry entry;
-  FileError error = GetResourceEntryByPath(path, &entry);
+  error = GetResourceEntryById(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -388,7 +397,7 @@ FileError ResourceMetadata::ReadDirectoryByPath(
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   std::vector<std::string> children;
-  storage_->GetChildren(entry.resource_id(), &children);
+  storage_->GetChildren(id, &children);
 
   ResourceEntryVector entries(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
@@ -405,8 +414,11 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
+  // TODO(hashimoto): Stop relying on |entry.resource_id()| crbug.com/275270
+  const std::string& id = entry.resource_id();
+
   ResourceEntry old_entry;
-  if (!storage_->GetEntry(entry.resource_id(), &old_entry))
+  if (!storage_->GetEntry(id, &old_entry))
     return FILE_ERROR_NOT_FOUND;
 
   if (old_entry.parent_local_id().empty() ||  // Reject root.
@@ -423,24 +435,24 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Remove from the old parent and add it to the new parent with the new data.
-  if (!PutEntryUnderDirectory(entry))
+  if (!PutEntryUnderDirectory(id, entry))
     return FILE_ERROR_FAILED;
   return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::GetSubDirectoriesRecursively(
-    const std::string& resource_id,
+    const std::string& id,
     std::set<base::FilePath>* sub_directories) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<std::string> children;
-  storage_->GetChildren(resource_id, &children);
+  storage_->GetChildren(id, &children);
   for (size_t i = 0; i < children.size(); ++i) {
     ResourceEntry entry;
     if (storage_->GetEntry(children[i], &entry) &&
         entry.file_info().is_directory()) {
-      sub_directories->insert(GetFilePath(entry.resource_id()));
-      GetSubDirectoriesRecursively(entry.resource_id(), sub_directories);
+      sub_directories->insert(GetFilePath(children[i]));
+      GetSubDirectoriesRecursively(children[i], sub_directories);
     }
   }
 }
@@ -458,13 +470,12 @@ scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
   return storage_->GetIterator();
 }
 
-base::FilePath ResourceMetadata::GetFilePath(
-    const std::string& resource_id) {
+base::FilePath ResourceMetadata::GetFilePath(const std::string& id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   base::FilePath path;
   ResourceEntry entry;
-  if (storage_->GetEntry(resource_id, &entry)) {
+  if (storage_->GetEntry(id, &entry)) {
     if (!entry.parent_local_id().empty())
       path = GetFilePath(entry.parent_local_id());
     path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
@@ -561,8 +572,8 @@ void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetSecond(
   callback.Run(result.Pass());
 }
 
-bool ResourceMetadata::PutEntryUnderDirectory(
-    const ResourceEntry& entry) {
+bool ResourceMetadata::PutEntryUnderDirectory(const std::string& id,
+                                              const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   ResourceEntry updated_entry(entry);
@@ -579,7 +590,7 @@ bool ResourceMetadata::PutEntryUnderDirectory(
   while (true) {
     const std::string existing_entry_id =
         storage_->GetChild(entry.parent_local_id(), new_base_name);
-    if (existing_entry_id.empty() || existing_entry_id == entry.resource_id())
+    if (existing_entry_id.empty() || existing_entry_id == id)
       break;
 
     base::FilePath new_path =
@@ -593,26 +604,25 @@ bool ResourceMetadata::PutEntryUnderDirectory(
   updated_entry.set_base_name(new_base_name);
 
   // Add the entry to resource map.
-  return storage_->PutEntry(updated_entry.resource_id(), updated_entry);
+  return storage_->PutEntry(id, updated_entry);
 }
 
-bool ResourceMetadata::RemoveEntryRecursively(
-    const std::string& resource_id) {
+bool ResourceMetadata::RemoveEntryRecursively(const std::string& id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   ResourceEntry entry;
-  if (!storage_->GetEntry(resource_id, &entry))
+  if (!storage_->GetEntry(id, &entry))
     return false;
 
   if (entry.file_info().is_directory()) {
     std::vector<std::string> children;
-    storage_->GetChildren(resource_id, &children);
+    storage_->GetChildren(id, &children);
     for (size_t i = 0; i < children.size(); ++i) {
       if (!RemoveEntryRecursively(children[i]))
         return false;
     }
   }
-  return storage_->RemoveEntry(resource_id);
+  return storage_->RemoveEntry(id);
 }
 
 }  // namespace internal
