@@ -109,7 +109,6 @@ def main():
   for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
     landmines = []
     for s in options.landmine_scripts:
-      print 'Getting landmines from `%s -t %s`' % (s, target)
       proc = subprocess.Popen([sys.executable, s, '-t', target],
                               stdout=subprocess.PIPE)
       output, _ = proc.communicate()
