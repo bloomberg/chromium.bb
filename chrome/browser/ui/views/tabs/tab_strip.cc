@@ -843,14 +843,10 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
     }
   }
 
-  ui::ListSelectionModel::SelectedIndices no_longer_selected;
-  std::insert_iterator<ui::ListSelectionModel::SelectedIndices>
-      it(no_longer_selected, no_longer_selected.begin());
-  std::set_difference(old_selection.selected_indices().begin(),
-                      old_selection.selected_indices().end(),
-                      new_selection.selected_indices().begin(),
-                      new_selection.selected_indices().end(),
-                      it);
+  ui::ListSelectionModel::SelectedIndices no_longer_selected =
+      base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
+          old_selection.selected_indices(),
+          new_selection.selected_indices());
   for (size_t i = 0; i < no_longer_selected.size(); ++i)
     tab_at(no_longer_selected[i])->StopMiniTabTitleAnimation();
 }

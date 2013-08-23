@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/stl_util.h"
+
 namespace spellcheck {
 
 Feedback::Feedback() {
@@ -44,12 +46,9 @@ void Feedback::FinalizeRemovedMisspellings(
   HashCollection& renderer_hashes = renderer_it->second;
   HashCollection remaining_hashes(remaining_markers.begin(),
                                   remaining_markers.end());
-  std::vector<uint32> removed_hashes;
-  std::set_difference(renderer_hashes.begin(),
-                      renderer_hashes.end(),
-                      remaining_hashes.begin(),
-                      remaining_hashes.end(),
-                      std::back_inserter(removed_hashes));
+  std::vector<uint32> removed_hashes =
+      base::STLSetDifference<std::vector<uint32> >(renderer_hashes,
+                                                   remaining_hashes);
   for (std::vector<uint32>::const_iterator hash_it = removed_hashes.begin();
        hash_it != removed_hashes.end();
        ++hash_it) {

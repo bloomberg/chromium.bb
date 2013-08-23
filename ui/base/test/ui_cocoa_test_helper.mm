@@ -6,6 +6,7 @@
 
 #include "base/debug/debugger.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 
 @implementation CocoaTestHelperWindow
@@ -179,10 +180,8 @@ std::set<NSWindow*> CocoaTest::ApplicationWindows() {
 
 std::set<NSWindow*> CocoaTest::WindowsLeft() {
   const std::set<NSWindow*> windows(ApplicationWindows());
-  std::set<NSWindow*> windows_left;
-  std::set_difference(windows.begin(), windows.end(),
-                      initial_windows_.begin(), initial_windows_.end(),
-                      std::inserter(windows_left, windows_left.begin()));
+  std::set<NSWindow*> windows_left =
+      base::STLSetDifference<std::set<NSWindow*> >(windows, initial_windows_);
   return windows_left;
 }
 

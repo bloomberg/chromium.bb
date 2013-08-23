@@ -1092,14 +1092,10 @@ void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
       GetTabAtAdjustForAnimation(*it)->SchedulePaint();
   }
 
-  ui::ListSelectionModel::SelectedIndices no_longer_selected;
-  std::insert_iterator<std::vector<int> > it2(no_longer_selected,
-                                              no_longer_selected.begin());
-  std::set_difference(old_model.selected_indices().begin(),
-                      old_model.selected_indices().end(),
-                      model_->selection_model().selected_indices().begin(),
-                      model_->selection_model().selected_indices().end(),
-                      it2);
+  ui::ListSelectionModel::SelectedIndices no_longer_selected =
+      base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
+          old_model.selected_indices(),
+          model_->selection_model().selected_indices());
   for (std::vector<int>::iterator it = no_longer_selected.begin();
        it != no_longer_selected.end(); ++it) {
     GetTabAtAdjustForAnimation(*it)->StopMiniTabTitleAnimation();

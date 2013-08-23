@@ -3124,16 +3124,12 @@ void ExtensionService::ManageBlacklist(
     const std::set<std::string>& new_blacklisted_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::set<std::string> no_longer_blacklisted;
-  std::set_difference(old_blacklisted_ids.begin(), old_blacklisted_ids.end(),
-                      new_blacklisted_ids.begin(), new_blacklisted_ids.end(),
-                      std::inserter(no_longer_blacklisted,
-                                    no_longer_blacklisted.begin()));
-  std::set<std::string> not_yet_blacklisted;
-  std::set_difference(new_blacklisted_ids.begin(), new_blacklisted_ids.end(),
-                      old_blacklisted_ids.begin(), old_blacklisted_ids.end(),
-                      std::inserter(not_yet_blacklisted,
-                                    not_yet_blacklisted.begin()));
+  std::set<std::string> no_longer_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(old_blacklisted_ids,
+                                                     new_blacklisted_ids);
+  std::set<std::string> not_yet_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(new_blacklisted_ids,
+                                                     old_blacklisted_ids);
 
   for (std::set<std::string>::iterator it = no_longer_blacklisted.begin();
        it != no_longer_blacklisted.end(); ++it) {

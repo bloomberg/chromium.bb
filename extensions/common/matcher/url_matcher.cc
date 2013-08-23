@@ -752,19 +752,15 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
                           : registered_url_component_patterns_;
 
   // Add all patterns that are in new_patterns but not in registered_patterns.
-  std::vector<const StringPattern*> patterns_to_register;
-  std::set_difference(
-      new_patterns.begin(), new_patterns.end(),
-      registered_patterns.begin(), registered_patterns.end(),
-      std::back_inserter(patterns_to_register));
+  std::vector<const StringPattern*> patterns_to_register =
+      base::STLSetDifference<std::vector<const StringPattern*> >(
+          new_patterns, registered_patterns);
 
   // Remove all patterns that are in registered_patterns but not in
   // new_patterns.
-  std::vector<const StringPattern*> patterns_to_unregister;
-  std::set_difference(
-      registered_patterns.begin(), registered_patterns.end(),
-      new_patterns.begin(), new_patterns.end(),
-      std::back_inserter(patterns_to_unregister));
+  std::vector<const StringPattern*> patterns_to_unregister =
+      base::STLSetDifference<std::vector<const StringPattern*> >(
+           registered_patterns, new_patterns);
 
   // Update the SubstringSetMatcher.
   SubstringSetMatcher& url_matcher =

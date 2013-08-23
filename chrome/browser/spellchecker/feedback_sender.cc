@@ -345,12 +345,9 @@ void FeedbackSender::RequestDocumentMarkers() {
   // longer alive.
   std::vector<int> known_renderers = feedback_.GetRendersWithMisspellings();
   std::sort(known_renderers.begin(), known_renderers.end());
-  std::vector<int> dead_renderers;
-  std::set_difference(known_renderers.begin(),
-                      known_renderers.end(),
-                      alive_renderers.begin(),
-                      alive_renderers.end(),
-                      std::back_inserter(dead_renderers));
+  std::vector<int> dead_renderers =
+      base::STLSetDifference<std::vector<int> >(known_renderers,
+                                                alive_renderers);
   for (std::vector<int>::const_iterator it = dead_renderers.begin();
        it != dead_renderers.end();
        ++it) {

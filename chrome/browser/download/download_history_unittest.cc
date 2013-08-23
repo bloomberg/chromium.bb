@@ -171,13 +171,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void ExpectDownloadsRemoved(const IdSet& ids) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
-    IdSet differences;
-    std::insert_iterator<IdSet> differences_iter(
-        differences, differences.begin());
-    std::set_difference(ids.begin(), ids.end(),
-                        remove_downloads_.begin(),
-                        remove_downloads_.end(),
-                        differences_iter);
+    IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
     for (IdSet::const_iterator different = differences.begin();
          different != differences.end(); ++different) {
       EXPECT_TRUE(false) << *different;

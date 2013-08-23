@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -217,16 +218,12 @@ void Blacklist::SetFromUpdater(const std::vector<std::string>& ids,
 
   std::set<std::string> from_prefs = prefs_->GetBlacklistedExtensions();
 
-  std::set<std::string> no_longer_blacklisted;
-  std::set_difference(from_prefs.begin(), from_prefs.end(),
-                      ids_as_set.begin(), ids_as_set.end(),
-                      std::inserter(no_longer_blacklisted,
-                                    no_longer_blacklisted.begin()));
-  std::set<std::string> not_yet_blacklisted;
-  std::set_difference(ids_as_set.begin(), ids_as_set.end(),
-                      from_prefs.begin(), from_prefs.end(),
-                      std::inserter(not_yet_blacklisted,
-                                    not_yet_blacklisted.begin()));
+  std::set<std::string> no_longer_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(from_prefs,
+                                                     ids_as_set);
+  std::set<std::string> not_yet_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(ids_as_set,
+                                                     from_prefs);
 
   for (std::set<std::string>::iterator it = no_longer_blacklisted.begin();
        it != no_longer_blacklisted.end(); ++it) {

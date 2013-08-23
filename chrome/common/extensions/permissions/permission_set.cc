@@ -559,11 +559,9 @@ bool PermissionSet::HasLessHostPrivilegesThan(
   // considered an elevation, even though it is not (http://crbug.com/65337).
   std::set<std::string> new_hosts_set(GetDistinctHosts(new_list, false, false));
   std::set<std::string> old_hosts_set(GetDistinctHosts(old_list, false, false));
-  std::set<std::string> new_hosts_only;
-
-  std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
-                      old_hosts_set.begin(), old_hosts_set.end(),
-                      std::inserter(new_hosts_only, new_hosts_only.begin()));
+  std::set<std::string> new_hosts_only =
+      base::STLSetDifference<std::set<std::string> >(new_hosts_set,
+                                                     old_hosts_set);
 
   return !new_hosts_only.empty();
 }

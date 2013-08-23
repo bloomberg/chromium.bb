@@ -267,11 +267,9 @@ class ExtensionGalleriesHost
          ++it) {
       old_galleries.insert(it->first);
     }
-    MediaGalleryPrefIdSet invalid_galleries;
-    std::set_difference(old_galleries.begin(), old_galleries.end(),
-                        new_galleries.begin(), new_galleries.end(),
-                        std::inserter(invalid_galleries,
-                                      invalid_galleries.begin()));
+    MediaGalleryPrefIdSet invalid_galleries =
+        base::STLSetDifference<MediaGalleryPrefIdSet>(old_galleries,
+                                                      new_galleries);
     for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
          it != invalid_galleries.end();
          ++it) {

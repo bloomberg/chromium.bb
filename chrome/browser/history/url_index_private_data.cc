@@ -595,10 +595,8 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
 
     // Filter for each remaining, unique character in the term.
     Char16Set leftover_chars = Char16SetFromString16(leftovers);
-    Char16Set unique_chars;
-    std::set_difference(leftover_chars.begin(), leftover_chars.end(),
-                        prefix_chars.begin(), prefix_chars.end(),
-                        std::inserter(unique_chars, unique_chars.begin()));
+    Char16Set unique_chars =
+        base::STLSetDifference<Char16Set>(leftover_chars, prefix_chars);
 
     // Reduce the word set with any leftover, unprocessed characters.
     if (!unique_chars.empty()) {
