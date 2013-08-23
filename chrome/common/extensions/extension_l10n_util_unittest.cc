@@ -249,6 +249,16 @@ MessageBundle* CreateManifestBundle() {
   launch_web_url_tree->SetString("message", "http://www.google.com/");
   catalog->Set("launch_web_url", launch_web_url_tree);
 
+  base::DictionaryValue* first_command_description_tree =
+      new base::DictionaryValue();
+  first_command_description_tree->SetString("message", "first command");
+  catalog->Set("first_command_description", first_command_description_tree);
+
+  base::DictionaryValue* second_command_description_tree =
+      new base::DictionaryValue();
+  second_command_description_tree->SetString("message", "second command");
+  catalog->Set("second_command_description", second_command_description_tree);
+
   std::vector<linked_ptr<base::DictionaryValue> > catalogs;
   catalogs.push_back(catalog);
 
@@ -439,6 +449,48 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
 
   ASSERT_TRUE(handler->GetString(keys::kPageActionDefaultTitle, &result));
   EXPECT_EQ("file handler title", result);
+
+  EXPECT_TRUE(error.empty());
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionCommandDescription) {
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "__MSG_name__");
+  manifest.SetString(keys::kDescription, "__MSG_description__");
+  base::DictionaryValue* commands = new DictionaryValue();
+  std::string commands_title(keys::kCommands);
+  manifest.Set(commands_title, commands);
+
+  base::DictionaryValue* first_command = new DictionaryValue();
+  commands->Set("first_command", first_command);
+  first_command->SetString(keys::kDescription,
+                           "__MSG_first_command_description__");
+
+  base::DictionaryValue* second_command = new DictionaryValue();
+  commands->Set("second_command", second_command);
+  second_command->SetString(keys::kDescription,
+                            "__MSG_second_command_description__");
+
+  std::string error;
+  scoped_ptr<MessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kName, &result));
+  EXPECT_EQ("name", result);
+
+  ASSERT_TRUE(manifest.GetString(keys::kDescription, &result));
+  EXPECT_EQ("description", result);
+
+  ASSERT_TRUE(manifest.GetString("commands.first_command.description",
+                                 &result));
+  EXPECT_EQ("first command", result);
+
+  ASSERT_TRUE(manifest.GetString("commands.second_command.description",
+                                 &result));
+  EXPECT_EQ("second command", result);
 
   EXPECT_TRUE(error.empty());
 }
