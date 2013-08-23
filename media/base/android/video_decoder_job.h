@@ -1,0 +1,48 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MEDIA_BASE_ANDROID_VIDEO_DECODER_JOB_H_
+#define MEDIA_BASE_ANDROID_VIDEO_DECODER_JOB_H_
+
+#include <jni.h>
+
+#include "media/base/android/media_decoder_job.h"
+
+namespace media {
+
+class VideoCodecBridge;
+
+// Class for managing video decoding jobs.
+class VideoDecoderJob : public MediaDecoderJob {
+ public:
+  virtual ~VideoDecoderJob();
+
+  // Create a new VideoDecoderJob instance.
+  // |video_codec| - The video format the object needs to decode.
+  // |size| -  The natrual size of the output frames.
+  // |surface| - The surface to render the frames to.
+  // |media_crypto| - Handle to a Java object responsible for decrypting the
+  // video data.
+  static VideoDecoderJob* Create(
+      const VideoCodec video_codec, const gfx::Size& size, jobject surface,
+      jobject media_crypto);
+
+ private:
+  VideoDecoderJob(scoped_ptr<VideoCodecBridge> video_codec_bridge);
+
+  // MediaDecoderJob implementation.
+  virtual void ReleaseOutputBuffer(
+      int outputBufferIndex, size_t size,
+      const base::TimeDelta& presentation_timestamp,
+      const MediaDecoderJob::DecoderCallback& callback,
+      DecodeStatus status) OVERRIDE;
+
+  virtual bool ComputeTimeToRender() const OVERRIDE;
+
+  scoped_ptr<VideoCodecBridge> video_codec_bridge_;
+};
+
+}  // namespace media
+
+#endif  // MEDIA_BASE_ANDROID_VIDEO_DECODER_JOB_H_
