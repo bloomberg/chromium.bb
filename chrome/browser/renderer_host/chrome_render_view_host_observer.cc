@@ -198,6 +198,8 @@ void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
 // request based on the received thumbnail and opens the request in a new tab.
 void ChromeRenderViewHostObserver::OnRequestThumbnailForContextNodeACK(
     const SkBitmap& bitmap) {
+  if (bitmap.isNull())
+    return;
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
   const TemplateURL* const default_provider =

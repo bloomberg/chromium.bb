@@ -865,7 +865,8 @@ void RenderViewContextMenu::AppendImageItems() {
   const TemplateURL* const default_provider =
       TemplateURLServiceFactory::GetForProfile(profile_)->
           GetDefaultSearchProvider();
-  if (default_provider && !default_provider->image_url().empty() &&
+  if (params_.has_image_contents && default_provider &&
+      !default_provider->image_url().empty() &&
       default_provider->image_url_ref().IsValid()) {
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
@@ -1288,7 +1289,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           (params_.src_url.scheme() != chrome::kChromeUIScheme);
 
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
-      return !params_.is_image_blocked;
+      return params_.has_image_contents;
 
     // Media control commands should all be disabled if the player is in an
     // error state.

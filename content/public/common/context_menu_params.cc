@@ -18,7 +18,7 @@ ContextMenuParams::ContextMenuParams()
     : media_type(WebKit::WebContextMenuData::MediaTypeNone),
       x(0),
       y(0),
-      is_image_blocked(false),
+      has_image_contents(true),
       frame_id(0),
       media_flags(0),
       misspelling_hash(0),

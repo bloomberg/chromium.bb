@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -72,8 +73,9 @@ struct CONTENT_EXPORT ContextMenuParams {
   // video.
   GURL src_url;
 
-  // This is true if the context menu was invoked on a blocked image.
-  bool is_image_blocked;
+  // This is true if the context menu was invoked on an image which has
+  // non-empty contents.
+  bool has_image_contents;
 
   // This is the URL of the top level page that the context menu was invoked
   // on.
@@ -154,7 +156,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   gfx::Point selection_start;
   gfx::Point selection_end;
 #endif
-
 };
 
 }  // namespace content

@@ -334,7 +334,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.x = 0;
     params.y = 0;
-    params.is_image_blocked = false;
+    params.has_image_contents = true;
     params.media_flags = 0;
     params.spellcheck_enabled = false;
     params.is_editable = false;
