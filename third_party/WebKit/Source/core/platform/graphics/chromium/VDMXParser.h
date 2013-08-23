@@ -31,6 +31,8 @@
 #ifndef VDMXParser_h
 #define VDMXParser_h
 
+#include <stdint.h>
+
 namespace WebCore {
     bool parseVDMX(int* ymax, int* ymin,
                    const uint8_t* vdmx, size_t vdmxLength,

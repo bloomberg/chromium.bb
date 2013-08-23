@@ -40,8 +40,6 @@
 
 */
 
-#include "wtf/Platform.h"
-
 #include <stddef.h>
 
 #if !COMPILER(MSVC)

@@ -21,8 +21,6 @@
 #ifndef WTF_UnusedParam_h
 #define WTF_UnusedParam_h
 
-#include "wtf/Platform.h"
-
 #define UNUSED_PARAM(variable) (void)variable
 
 #endif /* WTF_UnusedParam_h */

@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "WebUnitTests.h"
 
 // FIXME: Can we move this to webkit/support and fix the layering violation?
