@@ -226,6 +226,14 @@ class MediaDrmBridge {
     }
 
     /**
+     * Return the security level of this DRM object.
+     */
+    @CalledByNative
+    private String getSecurityLevel() {
+        return mMediaDrm.getPropertyString("securityLevel");
+    }
+
+    /**
      * Called when the provision response is received.
      *
      * @param response Response data from the provision server.

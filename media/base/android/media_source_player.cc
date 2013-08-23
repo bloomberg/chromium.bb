@@ -59,10 +59,13 @@ MediaSourcePlayer::~MediaSourcePlayer() {
 }
 
 void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
-  // Ignore non-empty surface that is unprotected if |is_video_encrypted_| is
-  // true.
-  if (is_video_encrypted_ && !surface.IsEmpty() && !surface.is_protected())
+  // For an empty surface, always pass it to the decoder job so that it
+  // can detach from the current one. Otherwise, don't pass an unprotected
+  // surface if the video content requires a protected one.
+  if (!surface.IsEmpty() &&
+      IsProtectedSurfaceRequired() && !surface.is_protected()) {
     return;
+  }
 
   surface_ =  surface.Pass();
   pending_event_ |= SURFACE_CHANGE_EVENT_PENDING;
@@ -89,7 +92,7 @@ bool MediaSourcePlayer::Seekable() {
 void MediaSourcePlayer::Start() {
   playing_ = true;
 
-  if (is_video_encrypted_)
+  if (IsProtectedSurfaceRequired())
     manager()->OnProtectedSurfaceRequested(player_id());
 
   StartInternal();
@@ -653,6 +656,11 @@ bool MediaSourcePlayer::HasVideoData() const {
 void MediaSourcePlayer::SetVolumeInternal() {
   if (audio_decoder_job_ && volume_ >= 0)
     audio_decoder_job_.get()->SetVolume(volume_);
+}
+
+bool MediaSourcePlayer::IsProtectedSurfaceRequired() {
+  return is_video_encrypted_ &&
+      drm_bridge_ && drm_bridge_->IsProtectedSurfaceRequired();
 }
 
 }  // namespace media

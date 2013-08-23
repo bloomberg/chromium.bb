@@ -21,6 +21,12 @@ class MediaPlayerManager;
 // TODO(qinmin): implement all the functions in this class.
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
  public:
+  enum SecurityLevel {
+    SECURITY_LEVEL_NONE = 0,
+    SECURITY_LEVEL_1 = 1,
+    SECURITY_LEVEL_3 = 3,
+  };
+
   virtual ~MediaDrmBridge();
 
   // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
@@ -53,6 +59,10 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Called when error happens.
   void OnKeyError(JNIEnv* env, jobject, jstring j_session_id);
 
+  // Helper function to determine whether a protected surface is needed for the
+  // video playback.
+  bool IsProtectedSurfaceRequired();
+
   // Methods to create and release a MediaCrypto object.
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
@@ -62,6 +72,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
                  MediaPlayerManager* manager);
+
+  // Get the security level of the media.
+  SecurityLevel GetSecurityLevel();
 
   // ID of the MediaKeys object.
   int media_keys_id_;

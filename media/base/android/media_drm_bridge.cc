@@ -241,4 +241,22 @@ void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
   manager_->OnKeyError(media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
 }
 
+MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_security_level =
+      Java_MediaDrmBridge_getSecurityLevel(env, j_media_drm_.obj());
+  std::string security_level =
+      ConvertJavaStringToUTF8(env, j_security_level.obj());
+  if (0 == security_level.compare("L1"))
+    return SECURITY_LEVEL_1;
+  if (0 == security_level.compare("L3"))
+    return SECURITY_LEVEL_3;
+  DCHECK(security_level.empty());
+  return SECURITY_LEVEL_NONE;
+}
+
+bool MediaDrmBridge::IsProtectedSurfaceRequired() {
+  return MediaDrmBridge::SECURITY_LEVEL_1 == GetSecurityLevel();
+}
+
 }  // namespace media

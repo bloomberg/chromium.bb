@@ -127,6 +127,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // Helper function to set the volume.
   void SetVolumeInternal();
 
+  // Helper function to determine whether a protected surface is needed for
+  // video playback.
+  bool IsProtectedSurfaceRequired();
+
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
