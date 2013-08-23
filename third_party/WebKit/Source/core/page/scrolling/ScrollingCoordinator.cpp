@@ -448,9 +448,6 @@ void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& lay
     HashSet<const RenderLayer*> oldLayersWithTouchRects;
     m_layersWithTouchRects.swap(oldLayersWithTouchRects);
 
-    // Note that ideally we'd clear the touch event handler region on all layers first,
-    // in case there are others that no longer have any handlers. But it's unlikely to
-    // matter much in practice (just makes us more conservative).
     for (LayerHitTestRects::const_iterator iter = compositorRects.begin(); iter != compositorRects.end(); ++iter) {
         const RenderLayer* layer = iter->key;
         WebVector<WebRect> webRects(iter->value.size());
@@ -469,11 +466,12 @@ void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& lay
 
     // If there are any layers left that we haven't updated, clear them out.
     for (HashSet<const RenderLayer*>::iterator it = oldLayersWithTouchRects.begin(); it != oldLayersWithTouchRects.end(); ++it) {
-        RenderLayerBacking* backing = (*it)->backing();
-        GraphicsLayer* graphicsLayer = backing->scrollingContentsLayer();
-        if (!graphicsLayer)
-            graphicsLayer = backing->graphicsLayer();
-        graphicsLayer->platformLayer()->setTouchEventHandlerRegion(WebVector<WebRect>());
+        if (RenderLayerBacking* backing = (*it)->backing()) {
+            GraphicsLayer* graphicsLayer = backing->scrollingContentsLayer();
+            if (!graphicsLayer)
+                graphicsLayer = backing->graphicsLayer();
+            graphicsLayer->platformLayer()->setTouchEventHandlerRegion(WebVector<WebRect>());
+        }
     }
 }
 

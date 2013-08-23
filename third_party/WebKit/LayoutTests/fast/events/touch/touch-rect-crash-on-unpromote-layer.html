@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<style>
+#layer {
+  position: relative;
+  left: 10px;
+}
+.composited {
+  -webkit-transform: translate3d(0, 0, 0);
+}
+</style>
+</head>
+<body>
+<div id="layer" class="composited">A layer that may or may not be composited</div>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+    description("Make sure we don't crash when a layer with a touch event handler becomes non-composited");
+
+    if (window.internals)
+        window.internals.settings.setForceCompositingMode(true);
+
+    var layer = document.getElementById('layer');
+    layer.addEventListener('touchstart', function() {});
+
+    // Ensure we've done a layout and we have a hit rect on this composited layer.
+    var x = layer.offsetTop;
+    var rects;
+    if (window.internals) {
+      rects = window.internals.touchEventTargetLayerRects(document);
+      shouldBe("rects.length", "1");
+      shouldBeEqualToString("rects[0].layerRootNode.id", "layer");
+    }
+
+    // Make the layer non-composited
+    layer.className = '';
+
+    // Force layout and verify we now have a hit rect on the document.
+    x = layer.offsetTop;
+    if (window.internals) {
+      rects = window.internals.touchEventTargetLayerRects(document);
+      shouldBe("rects.length", "1");
+      shouldBeEqualToString("rects[0].layerRootNode.nodeName", "#document");
+    }
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
