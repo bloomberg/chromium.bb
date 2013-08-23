@@ -24,7 +24,7 @@ remoting.WcsSandboxContainer = function(sandbox) {
   this.sandbox_ = sandbox;
   /** @type {?function(string):void}
     * @private */
-  this.onLocalJid_ = null;
+  this.onConnected_ = null;
   /** @type {function(remoting.Error):void}
     * @private */
   this.onError_ = function(error) {};
@@ -34,6 +34,11 @@ remoting.WcsSandboxContainer = function(sandbox) {
   /** @type {Object.<number, XMLHttpRequest>}
     * @private */
   this.pendingXhrs_ = {};
+  /** @private */
+  this.localJid_ = '';
+
+  /** @private */
+  this.accessTokenRefreshTimerStarted_ = false;
 
   window.addEventListener('message', this.onMessage_.bind(this), false);
 
@@ -46,23 +51,20 @@ remoting.WcsSandboxContainer = function(sandbox) {
 };
 
 /**
- * @param {?function(string):void} onLocalJid Callback invoked with the client
- *     JID when the WCS code has loaded. Note that this may be called more than
- *     once (potentially with a different JID) if the WCS node is reloaded for
- *     any reason.
+ * @param {function(string):void} onConnected Callback to be called when WCS is
+ *     connected. May be called synchronously if WCS is already connected.
+ * @param {function(remoting.Error):void} onError called in case of an error.
  * @return {void} Nothing.
  */
-remoting.WcsSandboxContainer.prototype.setOnLocalJid = function(onLocalJid) {
-  this.onLocalJid_ = onLocalJid;
-};
-
-/**
- * @param {function(remoting.Error):void} onError Callback invoked if the WCS
- *     code cannot be loaded.
- * @return {void} Nothing.
- */
-remoting.WcsSandboxContainer.prototype.setOnError = function(onError) {
+remoting.WcsSandboxContainer.prototype.connect = function(
+    onConnected, onError) {
   this.onError_ = onError;
+  this.ensureAccessTokenRefreshTimer_();
+  if (this.localJid_) {
+    onConnected(this.localJid_);
+  } else {
+    this.onConnected_ = onConnected;
+  }
 };
 
 /**
@@ -75,10 +77,36 @@ remoting.WcsSandboxContainer.prototype.setOnIq = function(onIq) {
 };
 
 /**
+ * Refreshes access token and starts a timer to update it periodically.
+ *
+ * @private
+ */
+remoting.WcsSandboxContainer.prototype.ensureAccessTokenRefreshTimer_ =
+    function() {
+  if (this.accessTokenRefreshTimerStarted_) {
+    return;
+  }
+
+  this.refreshAccessToken_();
+  setInterval(this.refreshAccessToken_.bind(this), 60 * 1000);
+  this.accessTokenRefreshTimerStarted_ = true;
+}
+
+/**
+ * @private
+ * @return {void} Nothing.
+ */
+remoting.WcsSandboxContainer.prototype.refreshAccessToken_ = function() {
+  remoting.identity.callWithToken(
+      this.setAccessToken_.bind(this), this.onError_);
+};
+
+/**
+ * @private
  * @param {string} token The access token.
  * @return {void}
  */
-remoting.WcsSandboxContainer.prototype.setAccessToken = function(token) {
+remoting.WcsSandboxContainer.prototype.setAccessToken_ = function(token) {
   var message = {
     'command': 'setAccessToken',
     'token': token
@@ -113,8 +141,12 @@ remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
         console.error('onReady: missing localJid');
         break;
       }
-      if (this.onLocalJid_)
-        this.onLocalJid_(localJid);
+      this.localJid_ = localJid;
+      if (this.onConnected_) {
+        var callback = this.onConnected_;
+        this.onConnected_ = null;
+        callback(localJid);
+      }
       break;
 
     case 'onError':

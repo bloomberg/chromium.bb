@@ -23,7 +23,6 @@
 var remoting = remoting || {};
 
 /**
- * @param {string} clientJid The jid of the WCS client.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(boolean, function(string): void): void} fetchPin
  *     Called by Me2Me connections when a PIN needs to be obtained
@@ -46,15 +45,12 @@ var remoting = remoting || {};
  *     paired secret for this client, as issued by the host.
  * @constructor
  */
-remoting.ClientSession = function(clientJid, accessCode, fetchPin,
-                                  fetchThirdPartyToken, authenticationMethods,
+remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
+                                  authenticationMethods,
                                   hostId, hostJid, hostPublicKey, mode,
                                   clientPairingId, clientPairedSecret) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
-
-  /** @private */
-  this.clientJid_ = clientJid;
 
   /** @private */
   this.error_ = remoting.Error.NONE;
@@ -459,7 +455,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.onDesktopSizeChanged_.bind(this);
   this.plugin_.onSetCapabilitiesHandler =
       this.onSetCapabilities_.bind(this);
-  this.connectPluginToWcs_();
+  this.initiateConnection_();
 };
 
 /**
@@ -747,14 +743,37 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   remoting.wcsSandbox.sendIq(msg);
 };
 
+remoting.ClientSession.prototype.initiateConnection_ = function() {
+  /** @type {remoting.ClientSession} */
+  var that = this;
+
+  remoting.wcsSandbox.connect(onWcsConnected, this.resetWithError_.bind(this));
+
+  /** @param {string} localJid Local JID. */
+  function onWcsConnected(localJid) {
+    that.connectPluginToWcs_(localJid);
+    that.getSharedSecret_(onSharedSecretReceived.bind(null, localJid));
+  }
+
+  /** @param {string} localJid Local JID.
+    * @param {string} sharedSecret Shared secret. */
+  function onSharedSecretReceived(localJid, sharedSecret) {
+    that.plugin_.connect(
+        that.hostJid_, that.hostPublicKey_, localJid, sharedSecret,
+        that.authenticationMethods_, that.hostId_, that.clientPairingId_,
+        that.clientPairedSecret_);
+  };
+}
+
 /**
  * Connects the plugin to WCS.
  *
  * @private
+ * @param {string} localJid Local JID.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
-  remoting.formatIq.setJids(this.clientJid_, this.hostJid_);
+remoting.ClientSession.prototype.connectPluginToWcs_ = function(localJid) {
+  remoting.formatIq.setJids(localJid, this.hostJid_);
   var forwardIq = this.plugin_.onIncomingIq.bind(this.plugin_);
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
@@ -777,7 +796,16 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
     forwardIq(stanza);
   };
   remoting.wcsSandbox.setOnIq(onIncomingIq);
+}
 
+/**
+ * Gets shared secret to be used for connection.
+ *
+ * @param {function(string)} callback Callback called with the shared secret.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.ClientSession.prototype.getSharedSecret_ = function(callback) {
   /** @type remoting.ClientSession */
   var that = this;
   if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.THIRD_PARTY_AUTH)) {
@@ -787,11 +815,11 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
           tokenUrl, hostPublicKey, scope,
           that.plugin_.onThirdPartyTokenFetched.bind(that.plugin_));
     };
-    that.plugin_.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
+    this.plugin_.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
   }
   if (this.accessCode_) {
     // Shared secret was already supplied before connecting (It2Me case).
-    this.connectToHost_(this.accessCode_);
+    callback(this.accessCode_);
   } else if (this.plugin_.hasFeature(
       remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     // Plugin supports asynchronously asking for the PIN.
@@ -802,25 +830,12 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
                      that.plugin_.onPinFetched.bind(that.plugin_));
     };
     this.plugin_.fetchPinHandler = fetchPin;
-    this.connectToHost_('');
+    callback('');
   } else {
     // Clients that don't support asking for a PIN asynchronously also don't
     // support pairing, so request the PIN now without offering to remember it.
-    this.fetchPin_(false, this.connectToHost_.bind(this));
+    this.fetchPin_(false, callback);
   }
-};
-
-/**
- * Connects to the host.
- *
- * @param {string} sharedSecret Shared secret for SPAKE negotiation.
- * @return {void} Nothing.
- * @private
- */
-remoting.ClientSession.prototype.connectToHost_ = function(sharedSecret) {
-  this.plugin_.connect(this.hostJid_, this.hostPublicKey_, this.clientJid_,
-                       sharedSecret, this.authenticationMethods_, this.hostId_,
-                       this.clientPairingId_, this.clientPairedSecret_);
 };
 
 /**

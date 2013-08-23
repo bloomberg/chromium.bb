@@ -49,19 +49,8 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
    */
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
 
-  /**
-   * A timer that polls for an updated access token.
-   *
-   * @type {number}
-   * @private
-   */
-  this.wcsAccessTokenRefreshTimer_ = 0;
-
   // Initialize/declare per-connection state.
   this.reset();
-
-  // Pre-load WCS to improve connection time.
-  remoting.identity.callWithToken(this.loadWcs_.bind(this), this.onError_);
 };
 
 /**
@@ -244,7 +233,7 @@ remoting.SessionConnector.prototype.connectMe2MeInternal_ =
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
   this.refreshHostJidIfOffline_ = refreshHostJidIfOffline;
   this.updatePairingInfo(clientPairingId, clientPairedSecret);
-  this.createSessionIfReady_();
+  this.createSession_();
 };
 
 /**
@@ -365,7 +354,7 @@ remoting.SessionConnector.prototype.onIT2MeHostInfo_ = function(xhr) {
       this.hostJid_ = host.data.jabberId;
       this.hostPublicKey_ = host.data.publicKey;
       this.hostDisplayName_ = this.hostJid_.split('/')[0];
-      this.createSessionIfReady_();
+      this.createSession_();
       return;
     } else {
       console.error('Invalid "support-hosts" response from server.');
@@ -376,42 +365,9 @@ remoting.SessionConnector.prototype.onIT2MeHostInfo_ = function(xhr) {
 };
 
 /**
- * Load the WCS driver script.
- *
- * @param {string} token An OAuth2 access token.
- * @return {void} Nothing.
- * @private
+ * Creates ClientSession object.
  */
-remoting.SessionConnector.prototype.loadWcs_ = function(token) {
-  remoting.wcsSandbox.setOnLocalJid(this.onLocalJid_.bind(this));
-  remoting.wcsSandbox.setOnError(this.onError_);
-  remoting.wcsSandbox.setAccessToken(token);
-  this.startAccessTokenRefreshTimer_();
-};
-
-/**
- * Continue an IT2Me or Me2Me connection once WCS has been loaded.
- *
- * @param {string} clientJid The full JID of the WCS client.
- * @return {void} Nothing.
- * @private
- */
-remoting.SessionConnector.prototype.onLocalJid_ = function(clientJid) {
-  this.clientJid_ = clientJid;
-  this.createSessionIfReady_();
-};
-
-/**
- * If both the client and host JIDs are available, create a session and connect.
- *
- * @return {void} Nothing.
- * @private
- */
-remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
-  if (!this.clientJid_ || !this.hostJid_) {
-    return;
-  }
-
+remoting.SessionConnector.prototype.createSession_ = function() {
   // In some circumstances, the WCS <iframe> can get reloaded, which results
   // in a new clientJid and a new callback. In this case, remove the old
   // client plugin before instantiating a new one.
@@ -423,10 +379,9 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
   var authenticationMethods =
      'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.clientJid_, this.passPhrase_, this.fetchPin_,
-      this.fetchThirdPartyToken_, authenticationMethods, this.hostId_,
-      this.hostJid_, this.hostPublicKey_, this.connectionMode_,
-      this.clientPairingId_, this.clientPairedSecret_);
+      this.passPhrase_, this.fetchPin_, this.fetchThirdPartyToken_,
+      authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
+      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);
@@ -518,35 +473,6 @@ remoting.SessionConnector.prototype.onHostListRefresh_ = function(success) {
   }
   this.onError_(remoting.Error.HOST_IS_OFFLINE);
 };
-
-/**
- * Start a timer to periodically refresh the access token used by WCS. Access
- * tokens have a limited lifespan, and since the WCS driver runs in a sandbox,
- * it can't obtain a new one directly.
- *
- * @return {void} Nothing.
- * @private
- */
-remoting.SessionConnector.prototype.startAccessTokenRefreshTimer_ = function() {
-  if (this.wcsAccessTokenRefreshTimer_ != 0) {
-    return;
-  }
-
-  /** @type {remoting.SessionConnector} */
-  var that = this;
-  var refreshAccessToken = function() {
-    remoting.identity.callWithToken(
-        remoting.wcsSandbox.setAccessToken.bind(remoting.wcsSandbox),
-        that.onError_);
-  };
-  /**
-   * A timer that polls for an updated access token.
-   * @type {number}
-   * @private
-   */
-  this.wcsAccessTokenRefreshTimer_ = setInterval(refreshAccessToken,
-                                                 60 * 1000);
-}
 
 /**
  * @param {number} error An HTTP error code returned by the support-hosts
