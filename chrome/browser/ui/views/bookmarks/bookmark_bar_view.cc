@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -940,7 +941,8 @@ void BookmarkBarView::AnimationEnded(const ui::Animation* animation) {
   }
 }
 
-void BookmarkBarView::BookmarkMenuDeleted(BookmarkMenuController* controller) {
+void BookmarkBarView::BookmarkMenuControllerDeleted(
+    BookmarkMenuController* controller) {
   if (controller == bookmark_menu_)
     bookmark_menu_ = NULL;
   else if (controller == bookmark_drop_menu_)
@@ -1167,8 +1169,8 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
   }
 
   bookmark_utils::RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
-  bookmark_menu_ = new BookmarkMenuController(browser_,
-      page_navigator_, GetWidget(), node, start_index);
+  bookmark_menu_ = new BookmarkMenuController(
+      browser_, page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(this, false);
 }

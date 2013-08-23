@@ -1576,6 +1576,7 @@
         'browser/ui/views/bookmarks/bookmark_drag_drop_views.h',
         'browser/ui/views/bookmarks/bookmark_editor_view.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view.h',
+        'browser/ui/views/bookmarks/bookmark_menu_controller_observer.h',
         'browser/ui/views/bookmarks/bookmark_menu_controller_views.cc',
         'browser/ui/views/bookmarks/bookmark_menu_controller_views.h',
         'browser/ui/views/bookmarks/bookmark_menu_delegate.cc',
