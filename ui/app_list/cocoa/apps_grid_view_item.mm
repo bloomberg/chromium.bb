@@ -271,6 +271,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (void)setModel:(app_list::AppListItemModel*)itemModel {
+  [trackingArea_.get() clearOwner];
   if (!itemModel) {
     observerBridge_.reset();
     return;
