@@ -1247,3 +1247,5 @@ Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 
 # Temporary, cannot reproduce on local win.
 crbug.com/276861 [ Win ] fast/filesystem/op-restricted-unicode.html [ Failure Pass ]
+
+crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] editing/spelling/spellcheck-editable-on-focus.html [ Failure Pass ]
