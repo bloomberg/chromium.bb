@@ -5,16 +5,15 @@
 package org.chromium.chrome.testshell;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
+import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -56,7 +55,7 @@ public class ChromiumTestShellTestBase extends
      * loading pages. Instead it should be used more for test initialization. The proper way
      * to wait is to use a TestCallbackHelperContainer after the initial load is completed.
      * @return Whether or not the Shell was actually finished loading.
-     * @throws Exception
+     * @throws InterruptedException
      */
     protected boolean waitForActiveShellToBeDoneLoading() throws InterruptedException {
         final ChromiumTestShellActivity activity = getActivity();
@@ -89,82 +88,15 @@ public class ChromiumTestShellTestBase extends
     }
 
     /**
-     * Clear all files in the testshell's directory except 'lib'.
+     * Clear all files and folders in the Chromium testshell's application directory except 'lib'.
+     *
+     * The 'cache' directory is recreated as an empty directory.
      *
      * @return Whether clearing the application data was successful.
      */
-    protected boolean clearAppData() throws Exception {
-        final int MAX_TIMEOUT_MS = 3000;
-        final String appDir = getAppDir();
-        return CriteriaHelper.pollForCriteria(
-                new Criteria() {
-                    private boolean mDataRemoved = false;
-                    @Override
-                    public boolean isSatisfied() {
-                        if (!mDataRemoved && !removeAppData(appDir)) {
-                            return false;
-                        }
-                        mDataRemoved = true;
-                        // We have to make sure the cache directory still exists, as the framework
-                        // will try to create it otherwise and will fail for sandbox processes with
-                        // an NPE.
-                        File cacheDir = new File(appDir, "cache");
-                        if (cacheDir.exists()) {
-                            return true;
-                        }
-                        return cacheDir.mkdir();
-                    }
-                },
-                MAX_TIMEOUT_MS, MAX_TIMEOUT_MS / 10);
+    protected boolean clearAppData() throws InterruptedException {
+        return ApplicationData.clearAppData(getInstrumentation().getTargetContext());
     }
-
-    /**
-     * Remove all files and directories under the given appDir except 'lib'
-     *
-     * @param appDir the app directory to remove.
-     *
-     * @return true if succeeded.
-     */
-    private boolean removeAppData(String appDir) {
-        File[] files = new File(appDir).listFiles();
-        if (files == null) {
-            return true;
-        }
-        for (File file : files) {
-            if (!file.getAbsolutePath().endsWith("/lib") && !removeFile(file)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private String getAppDir() {
-        Context target_ctx = getInstrumentation().getTargetContext();
-        String cacheDir = target_ctx.getCacheDir().getAbsolutePath();
-        return cacheDir.substring(0, cacheDir.lastIndexOf('/'));
-    }
-
-    /**
-     * Remove the given file or directory.
-     *
-     * @param file the file or directory to remove.
-     *
-     * @return true if succeeded.
-     */
-    private static boolean removeFile(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files == null) {
-                return true;
-            }
-            for (File sub_file : files) {
-                if (!removeFile(sub_file))
-                    return false;
-            }
-        }
-        return file.delete();
-    }
-
 
     /**
      * Navigates the currently active tab to a sanitized version of {@code url}.

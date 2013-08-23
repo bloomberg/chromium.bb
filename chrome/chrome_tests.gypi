@@ -3294,6 +3294,7 @@
           'dependencies': [
             'chrome_java',
             'chromium_testshell_java',
+            'chrome_java_test_support',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             '../content/content.gyp:content_java_test_support',
@@ -3327,6 +3328,19 @@
             'chromium_testshell_uiautomator_tests_java',
           ],
           'includes': [ '../build/uiautomator_test.gypi' ],
+        },
+        {
+          'target_name': 'chrome_java_test_support',
+          'type': 'none',
+          'variables': {
+            'package_name': 'chrome_java_test_support',
+            'java_in_dir': '../chrome/test/android/javatests',
+          },
+          'dependencies': [
+            'chrome_java',
+            '../content/content.gyp:content_java_test_support',
+          ],
+          'includes': [ '../build/java.gypi' ],
         },
       ],
     }],
