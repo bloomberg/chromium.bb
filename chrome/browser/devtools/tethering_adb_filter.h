@@ -81,7 +81,7 @@ class TetheringAdbFilter : public base::RefCountedThreadSafe<
 class PortForwardingController {
  public:
   PortForwardingController(
-      base::MessageLoop* adb_message_loop,
+      scoped_refptr<DevToolsAdbBridge> bridge,
       PrefService* pref_service);
 
   virtual ~PortForwardingController();
@@ -92,7 +92,7 @@ class PortForwardingController {
   class Connection;
   typedef std::map<std::string, Connection*> Registry;
 
-  base::MessageLoop* adb_message_loop_;
+  scoped_refptr<DevToolsAdbBridge> bridge_;
   PrefService* pref_service_;
   Registry registry_;
 };

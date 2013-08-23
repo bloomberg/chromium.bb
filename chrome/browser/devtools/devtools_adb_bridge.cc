@@ -828,7 +828,7 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
       has_message_loop_(adb_thread_->message_loop() != NULL) {
   rsa_key_.reset(AndroidRSAPrivateKey(profile));
   port_forwarding_controller_.reset(
-      new PortForwardingController(GetAdbMessageLoop(), profile->GetPrefs()));
+      new PortForwardingController(this, profile->GetPrefs()));
 }
 
 void DevToolsAdbBridge::EnumerateUsbDevices(
