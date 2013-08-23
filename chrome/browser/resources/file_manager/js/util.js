@@ -1188,3 +1188,14 @@ util.isParentEntry = function(parent, child) {
   // When we support multi-file system, we need to look at filesystem, too.
   return PathUtil.isParentPath(parent.fullPath, child.fullPath);
 };
+
+/**
+ * Views files in the browser.
+ *
+ * @param {Array.<string>} urls URLs of files to view.
+ * @param {function(bool)} callback Callback notifying success or not.
+ */
+util.viewFilesInBrowser = function(urls, callback) {
+  var taskId = chrome.runtime.id + '|file|view-in-browser';
+  chrome.fileBrowserPrivate.executeTask(taskId, urls, callback);
+};

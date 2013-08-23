@@ -458,8 +458,8 @@ ActionChoice.prototype.runAction_ = function(action) {
   }
 
   if (action == this.watchSingleVideoAction_) {
-    chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()],
-        function(success) {});
+    util.viewFilesInBrowser([this.singleVideo_.toURL()],
+                            function(success) {});
     this.recordAction_('watch-single-video');
     this.close_();
     return;

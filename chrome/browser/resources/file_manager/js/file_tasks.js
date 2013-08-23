@@ -136,6 +136,28 @@ FileTasks.recordViewingFileTypeUMA_ = function(urls) {
 };
 
 /**
+ * Returns true if the taskId is for an internal task.
+ *
+ * @param {string} taskId Task identifier.
+ * @return {boolean} True if the task ID is for an internal task.
+ * @private
+ */
+FileTasks.isInternalTask_ = function(taskId) {
+  var taskParts = taskId.split('|');
+  var appId = taskParts[0];
+  var taskType = taskParts[1];
+  var actionId = taskParts[2];
+  // The action IDs here should match ones used in executeInternalTask_().
+  return (appId == chrome.runtime.id &&
+          taskType == 'file' &&
+          (actionId == 'play' ||
+           actionId == 'watch' ||
+           actionId == 'mount-archive' ||
+           actionId == 'format-device' ||
+           actionId == 'gallery'));
+};
+
+/**
  * Processes internal tasks.
  *
  * @param {Array.<Object>} tasks The tasks.
@@ -286,7 +308,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls) {
     }.bind(this);
 
     this.checkAvailability_(function() {
-      chrome.fileBrowserPrivate.viewFiles(urls, callback);
+      util.viewFilesInBrowser(urls, callback);
     }.bind(this));
   }
 
@@ -315,11 +337,8 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
  */
 FileTasks.prototype.executeInternal_ = function(taskId, urls) {
   this.checkAvailability_(function() {
-    var taskParts = taskId.split('|');
-    if (taskParts[0] == chrome.runtime.id && taskParts[1] == 'file') {
-      // For internal tasks we do not listen to the event to avoid
-      // handling the same task instance from multiple tabs.
-      // So, we manually execute the task.
+    if (FileTasks.isInternalTask_(taskId)) {
+      var taskParts = taskId.split('|');
       this.executeInternalTask_(taskParts[2], urls);
     } else {
       chrome.fileBrowserPrivate.executeTask(taskId, urls);
@@ -446,13 +465,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
     return;
   }
 
-  if (id == 'view-pdf' || id == 'view-swf' || id == 'view-in-browser' ||
-      id == 'install-crx' || id.match(/^open-hosted-/) || id == 'watch') {
-    chrome.fileBrowserPrivate.viewFiles(urls, function(success) {
-      if (!success)
-        console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
-    });
-  }
+  console.error('Unexpected action ID: ' + id);
 };
 
 /**
