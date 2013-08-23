@@ -65,11 +65,11 @@ class JobScheduler
 
   // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
-  void GetAppList(const google_apis::GetAppListCallback& callback);
+  void GetAppList(const google_apis::AppListCallback& callback);
 
   // Adds a GetAboutResource operation to the queue.
   // |callback| must not be null.
-  void GetAboutResource(const google_apis::GetAboutResourceCallback& callback);
+  void GetAboutResource(const google_apis::AboutResourceCallback& callback);
 
   // Adds a GetAllResourceList operation to the queue.
   // |callback| must not be null.
@@ -271,10 +271,10 @@ class JobScheduler
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
-  // Callback for job finishing with a GetAboutResourceCallback.
+  // Callback for job finishing with a AboutResourceCallback.
   void OnGetAboutResourceJobDone(
       JobID job_id,
-      const google_apis::GetAboutResourceCallback& callback,
+      const google_apis::AboutResourceCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
@@ -285,10 +285,10 @@ class JobScheduler
       google_apis::GDataErrorCode error,
       const GURL& share_url);
 
-  // Callback for job finishing with a GetAppListCallback.
+  // Callback for job finishing with a AppListCallback.
   void OnGetAppListJobDone(
       JobID job_id,
-      const google_apis::GetAppListCallback& callback,
+      const google_apis::AppListCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AppList> app_list);
 

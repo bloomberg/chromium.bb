@@ -16,7 +16,7 @@ namespace {
 
 // Hard coded URLs for communication with a google drive server.
 const char kDriveV2AboutUrl[] = "/drive/v2/about";
-const char kDriveV2ApplistUrl[] = "/drive/v2/apps";
+const char kDriveV2AppsUrl[] = "/drive/v2/apps";
 const char kDriveV2ChangelistUrl[] = "/drive/v2/changes";
 const char kDriveV2FilesUrl[] = "/drive/v2/files";
 const char kDriveV2FileUrlPrefix[] = "/drive/v2/files/";
@@ -57,12 +57,12 @@ const char DriveApiUrlGenerator::kBaseUrlForProduction[] =
 const char DriveApiUrlGenerator::kBaseDownloadUrlForProduction[] =
     "https://www.googledrive.com/host/";
 
-GURL DriveApiUrlGenerator::GetAboutUrl() const {
+GURL DriveApiUrlGenerator::GetAboutGetUrl() const {
   return base_url_.Resolve(kDriveV2AboutUrl);
 }
 
-GURL DriveApiUrlGenerator::GetApplistUrl() const {
-  return base_url_.Resolve(kDriveV2ApplistUrl);
+GURL DriveApiUrlGenerator::GetAppsListUrl() const {
+  return base_url_.Resolve(kDriveV2AppsUrl);
 }
 
 GURL DriveApiUrlGenerator::GetChangelistUrl(

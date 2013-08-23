@@ -22,47 +22,6 @@ typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<FileResource> entry)>
     FileResourceCallback;
 
-
-//============================== GetAboutRequest =============================
-
-// This class performs the request for fetching About data.
-class GetAboutRequest : public GetDataRequest {
- public:
-  GetAboutRequest(RequestSender* sender,
-                  const DriveApiUrlGenerator& url_generator,
-                  const GetAboutResourceCallback& callback);
-  virtual ~GetAboutRequest();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetAboutRequest);
-};
-
-//============================= GetApplistRequest ============================
-
-// This class performs the request for fetching Applist.
-class GetApplistRequest : public GetDataRequest {
- public:
-  GetApplistRequest(RequestSender* sender,
-                    const DriveApiUrlGenerator& url_generator,
-                    const GetDataCallback& callback);
-  virtual ~GetApplistRequest();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetApplistRequest);
-};
-
 //============================ GetChangelistRequest ==========================
 
 // This class performs the request for fetching changelist.
@@ -152,6 +111,50 @@ class GetFileRequest : public GetDataRequest {
 // TODO(hidehiko): Move all the requests defined in this file into drive
 // namespace.  crbug.com/180808
 namespace drive {
+
+//============================== AboutGetRequest =============================
+
+// This class performs the request for fetching About data.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/about/get
+class AboutGetRequest : public GetDataRequest {
+ public:
+  AboutGetRequest(RequestSender* sender,
+                  const DriveApiUrlGenerator& url_generator,
+                  const AboutResourceCallback& callback);
+  virtual ~AboutGetRequest();
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(AboutGetRequest);
+};
+
+//============================= AppsListRequest ============================
+
+// This class performs the request for fetching AppList.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/apps/list
+class AppsListRequest : public GetDataRequest {
+ public:
+  AppsListRequest(RequestSender* sender,
+                  const DriveApiUrlGenerator& url_generator,
+                  const AppListCallback& callback);
+  virtual ~AppsListRequest();
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
+};
 
 //======================= ContinueGetFileListRequest =========================
 

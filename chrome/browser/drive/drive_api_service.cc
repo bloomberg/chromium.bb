@@ -23,6 +23,7 @@
 
 using content::BrowserThread;
 using google_apis::AppList;
+using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
@@ -34,10 +35,7 @@ using google_apis::FileResource;
 using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDATA_PARSE_ERROR;
 using google_apis::GDataErrorCode;
-using google_apis::GetAboutRequest;
-using google_apis::GetAboutResourceCallback;
-using google_apis::GetAppListCallback;
-using google_apis::GetApplistRequest;
+using google_apis::AboutResourceCallback;
 using google_apis::GetChangelistRequest;
 using google_apis::GetContentCallback;
 using google_apis::GetFileRequest;
@@ -56,6 +54,8 @@ using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
+using google_apis::drive::AboutGetRequest;
+using google_apis::drive::AppsListRequest;
 using google_apis::drive::ContinueGetFileListRequest;
 using google_apis::drive::CopyResourceRequest;
 using google_apis::drive::CreateDirectoryRequest;
@@ -179,31 +179,6 @@ void ParseResourceEntryAndRun(
   }
 
   callback.Run(error, entry.Pass());
-}
-
-// Parses the JSON value to AppList runs |callback| on the UI thread
-// once parsing is done.
-void ParseAppListAndRun(const google_apis::GetAppListCallback& callback,
-                        google_apis::GDataErrorCode error,
-                        scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, scoped_ptr<google_apis::AppList>());
-    return;
-  }
-
-  // Parsing AppList is cheap enough to do on UI thread.
-  scoped_ptr<google_apis::AppList> app_list =
-      google_apis::AppList::CreateFrom(*value);
-  if (!app_list) {
-    callback.Run(google_apis::GDATA_PARSE_ERROR,
-                 scoped_ptr<google_apis::AppList>());
-    return;
-  }
-
-  callback.Run(error, app_list.Pass());
 }
 
 // Parses the FileResource value to ResourceEntry for upload range request,
@@ -501,25 +476,20 @@ CancelCallback DriveAPIService::GetShareUrl(
 }
 
 CancelCallback DriveAPIService::GetAboutResource(
-    const GetAboutResourceCallback& callback) {
+    const AboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new GetAboutRequest(
-          sender_.get(),
-          url_generator_,
-          callback));
+      new AboutGetRequest(sender_.get(), url_generator_, callback));
 }
 
-CancelCallback DriveAPIService::GetAppList(const GetAppListCallback& callback) {
+CancelCallback DriveAPIService::GetAppList(const AppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new GetApplistRequest(
-      sender_.get(),
-      url_generator_,
-      base::Bind(&ParseAppListAndRun, callback)));
+  return sender_->StartRequestWithRetry(
+      new AppsListRequest(sender_.get(), url_generator_, callback));
 }
 
 CancelCallback DriveAPIService::DownloadFile(

@@ -69,41 +69,6 @@ void ParseFileResourceWithUploadRangeAndRun(
 
 }  // namespace
 
-//============================== GetAboutRequest =============================
-
-GetAboutRequest::GetAboutRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const GetAboutResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-GetAboutRequest::~GetAboutRequest() {}
-
-GURL GetAboutRequest::GetURL() const {
-  return url_generator_.GetAboutUrl();
-}
-
-//============================== GetApplistRequest ===========================
-
-GetApplistRequest::GetApplistRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const GetDataCallback& callback)
-    : GetDataRequest(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-GetApplistRequest::~GetApplistRequest() {}
-
-GURL GetApplistRequest::GetURL() const {
-  return url_generator_.GetApplistUrl();
-}
-
 //============================ GetChangelistRequest ==========================
 
 GetChangelistRequest::GetChangelistRequest(
@@ -170,6 +135,42 @@ GURL GetFileRequest::GetURL() const {
 }
 
 namespace drive {
+
+//============================== AboutGetRequest =============================
+
+AboutGetRequest::AboutGetRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const AboutResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+AboutGetRequest::~AboutGetRequest() {}
+
+GURL AboutGetRequest::GetURL() const {
+  return url_generator_.GetAboutGetUrl();
+}
+
+//============================== AppsListRequest ===========================
+
+AppsListRequest::AppsListRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const AppListCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<AppList>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+AppsListRequest::~AppsListRequest() {}
+
+GURL AppsListRequest::GetURL() const {
+  return url_generator_.GetAppsListUrl();
+}
 
 //======================= ContinueGetFileListRequest =========================
 

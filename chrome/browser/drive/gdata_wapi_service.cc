@@ -22,13 +22,15 @@
 
 using content::BrowserThread;
 using google_apis::AboutResource;
+using google_apis::AboutResourceCallback;
 using google_apis::AccountMetadata;
 using google_apis::AddResourceToDirectoryRequest;
 using google_apis::AppList;
+using google_apis::AppListCallback;
+using google_apis::AuthService;
 using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::AuthorizeAppRequest;
-using google_apis::AuthService;
 using google_apis::CancelCallback;
 using google_apis::CopyHostedDocumentRequest;
 using google_apis::CreateDirectoryRequest;
@@ -36,11 +38,9 @@ using google_apis::DeleteResourceRequest;
 using google_apis::DownloadActionCallback;
 using google_apis::DownloadFileRequest;
 using google_apis::EntryActionCallback;
-using google_apis::GDataErrorCode;
 using google_apis::GDATA_PARSE_ERROR;
-using google_apis::GetAboutResourceCallback;
+using google_apis::GDataErrorCode;
 using google_apis::GetAccountMetadataRequest;
-using google_apis::GetAppListCallback;
 using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
@@ -97,7 +97,7 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
 }
 
 void ParseAboutResourceAndRun(
-    const GetAboutResourceCallback& callback,
+    const AboutResourceCallback& callback,
     GDataErrorCode error,
     scoped_ptr<AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -113,7 +113,7 @@ void ParseAboutResourceAndRun(
 }
 
 void ParseAppListAndRun(
-    const GetAppListCallback& callback,
+    const AppListCallback& callback,
     GDataErrorCode error,
     scoped_ptr<AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -326,7 +326,7 @@ CancelCallback GDataWapiService::GetShareUrl(
 }
 
 CancelCallback GDataWapiService::GetAboutResource(
-    const GetAboutResourceCallback& callback) {
+    const AboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -338,8 +338,7 @@ CancelCallback GDataWapiService::GetAboutResource(
           false));  // Exclude installed apps.
 }
 
-CancelCallback GDataWapiService::GetAppList(
-    const GetAppListCallback& callback) {
+CancelCallback GDataWapiService::GetAppList(const AppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

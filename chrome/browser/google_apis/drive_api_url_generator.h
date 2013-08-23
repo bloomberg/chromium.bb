@@ -26,11 +26,11 @@ class DriveApiUrlGenerator {
   // The base URL for the file download server for production.
   static const char kBaseDownloadUrlForProduction[];
 
-  // Returns a URL to fetch "about" data.
-  GURL GetAboutUrl() const;
+  // Returns a URL to invoke "About: get" method.
+  GURL GetAboutGetUrl() const;
 
-  // Returns a URL to fetch "applist" data.
-  GURL GetApplistUrl() const;
+  // Returns a URL to invoke "Apps: list" method.
+  GURL GetAppsListUrl() const;
 
   // Returns a URL to fetch a list of changes.
   // include_deleted:

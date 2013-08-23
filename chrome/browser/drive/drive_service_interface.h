@@ -166,13 +166,13 @@ class DriveServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAboutResource(
-      const google_apis::GetAboutResourceCallback& callback) = 0;
+      const google_apis::AboutResourceCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAppList(
-      const google_apis::GetAppListCallback& callback) = 0;
+      const google_apis::AppListCallback& callback) = 0;
 
   // Deletes a resource identified by its |resource_id|.
   // If |etag| is not empty and did not match, the deletion fails with

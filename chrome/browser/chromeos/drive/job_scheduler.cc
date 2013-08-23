@@ -192,7 +192,7 @@ void JobScheduler::CancelAllJobs() {
 }
 
 void JobScheduler::GetAboutResource(
-    const google_apis::GetAboutResourceCallback& callback) {
+    const google_apis::AboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -208,8 +208,7 @@ void JobScheduler::GetAboutResource(
   StartJob(new_job);
 }
 
-void JobScheduler::GetAppList(
-    const google_apis::GetAppListCallback& callback) {
+void JobScheduler::GetAppList(const google_apis::AppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -904,7 +903,7 @@ void JobScheduler::OnGetResourceEntryJobDone(
 
 void JobScheduler::OnGetAboutResourceJobDone(
     JobID job_id,
-    const google_apis::GetAboutResourceCallback& callback,
+    const google_apis::AboutResourceCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -928,7 +927,7 @@ void JobScheduler::OnGetShareUrlJobDone(
 
 void JobScheduler::OnGetAppListJobDone(
     JobID job_id,
-    const google_apis::GetAppListCallback& callback,
+    const google_apis::AppListCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

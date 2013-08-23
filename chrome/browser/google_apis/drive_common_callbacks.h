@@ -30,7 +30,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // Callback used for getting AboutResource.
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AboutResource> about_resource)>
-    GetAboutResourceCallback;
+    AboutResourceCallback;
 
 // Callback used for getting ShareUrl.
 typedef base::Callback<void(GDataErrorCode error,
@@ -38,7 +38,7 @@ typedef base::Callback<void(GDataErrorCode error,
 
 // Callback used for getting AppList.
 typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<AppList> app_list)> GetAppListCallback;
+                            scoped_ptr<AppList> app_list)> AppListCallback;
 
 // Callback used for handling UploadRangeResponse.
 typedef base::Callback<void(

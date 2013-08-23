@@ -345,7 +345,7 @@ class DriveApiRequestsTest : public testing::Test {
   int64 content_length_;
 };
 
-TEST_F(DriveApiRequestsTest, GetAboutRequest_ValidJson) {
+TEST_F(DriveApiRequestsTest, AboutGetRequest_ValidJson) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "drive/about.json");
@@ -355,7 +355,7 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_ValidJson) {
 
   {
     base::RunLoop run_loop;
-    GetAboutRequest* request = new GetAboutRequest(
+    drive::AboutGetRequest* request = new drive::AboutGetRequest(
         request_sender_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
@@ -379,7 +379,7 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_ValidJson) {
   EXPECT_EQ(expected->root_folder_id(), about_resource->root_folder_id());
 }
 
-TEST_F(DriveApiRequestsTest, GetAboutRequest_InvalidJson) {
+TEST_F(DriveApiRequestsTest, AboutGetRequest_InvalidJson) {
   // Set an expected data file containing invalid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "gdata/testfile.txt");
@@ -389,7 +389,7 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_InvalidJson) {
 
   {
     base::RunLoop run_loop;
-    GetAboutRequest* request = new GetAboutRequest(
+    drive::AboutGetRequest* request = new drive::AboutGetRequest(
         request_sender_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
@@ -403,25 +403,25 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_InvalidJson) {
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
-  EXPECT_FALSE(about_resource.get());
+  EXPECT_FALSE(about_resource);
 }
 
-TEST_F(DriveApiRequestsTest, GetApplistRequest) {
+TEST_F(DriveApiRequestsTest, AppsListRequest) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "drive/applist.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result;
+  scoped_ptr<AppList> app_list;
 
   {
     base::RunLoop run_loop;
-    GetApplistRequest* request = new GetApplistRequest(
+    drive::AppsListRequest* request = new drive::AppsListRequest(
         request_sender_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
-            test_util::CreateCopyResultCallback(&error, &result)));
+            test_util::CreateCopyResultCallback(&error, &app_list)));
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -429,7 +429,7 @@ TEST_F(DriveApiRequestsTest, GetApplistRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/apps", http_request_.relative_url);
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(app_list);
 }
 
 TEST_F(DriveApiRequestsTest, GetChangelistRequest) {

@@ -26,19 +26,19 @@
 
 using content::BrowserThread;
 using google_apis::AboutResource;
+using google_apis::AboutResourceCallback;
 using google_apis::AccountMetadata;
 using google_apis::AppList;
+using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::DownloadActionCallback;
 using google_apis::EntryActionCallback;
-using google_apis::GDataErrorCode;
 using google_apis::GDATA_FILE_ERROR;
 using google_apis::GDATA_NO_CONNECTION;
 using google_apis::GDATA_OTHER_ERROR;
-using google_apis::GetAboutResourceCallback;
-using google_apis::GetAppListCallback;
+using google_apis::GDataErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceListCallback;
@@ -533,7 +533,7 @@ CancelCallback FakeDriveService::GetShareUrl(
 }
 
 CancelCallback FakeDriveService::GetAboutResource(
-    const GetAboutResourceCallback& callback) {
+    const AboutResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -563,8 +563,7 @@ CancelCallback FakeDriveService::GetAboutResource(
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::GetAppList(
-    const GetAppListCallback& callback) {
+CancelCallback FakeDriveService::GetAppList(const AppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(app_info_value_);

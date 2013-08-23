@@ -27,18 +27,18 @@ class DriveApiUrlGeneratorTest : public testing::Test {
 };
 
 // Make sure the hard-coded urls are returned.
-TEST_F(DriveApiUrlGeneratorTest, GetAboutUrl) {
+TEST_F(DriveApiUrlGeneratorTest, GetAboutGetUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/about",
-            url_generator_.GetAboutUrl().spec());
+            url_generator_.GetAboutGetUrl().spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/about",
-            test_url_generator_.GetAboutUrl().spec());
+            test_url_generator_.GetAboutGetUrl().spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetApplistUrl) {
+TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/apps",
-            url_generator_.GetApplistUrl().spec());
+            url_generator_.GetAppsListUrl().spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/apps",
-            test_url_generator_.GetApplistUrl().spec());
+            test_url_generator_.GetAppsListUrl().spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
