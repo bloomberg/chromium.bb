@@ -14,7 +14,6 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -91,9 +90,6 @@ void IterateCache(FileCache* cache,
 }
 
 }  // namespace
-
-const base::FilePath::CharType FileCache::kOldCacheMetadataDBName[] =
-    FILE_PATH_LITERAL("cache_metadata.db");
 
 FileCache::FileCache(ResourceMetadataStorage* storage,
                      const base::FilePath& cache_file_directory,
@@ -472,9 +468,7 @@ bool FileCache::Initialize() {
 
   RenameCacheFilesToNewFormat();
 
-  if (!ImportOldDB(storage_->directory_path().Append(
-          kOldCacheMetadataDBName)) &&
-      !storage_->opened_existing_db()) {
+  if (!storage_->opened_existing_db()) {
     CacheMap cache_map;
     ScanCacheDirectory(cache_file_directory_, &cache_map);
     for (CacheMap::const_iterator it = cache_map.begin();
@@ -640,33 +634,6 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
-}
-
-bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
-  if (!base::PathExists(old_db_path))  // Old DB is not there, do nothing.
-    return false;
-
-  // Copy all entries stored in the old DB.
-  bool imported = false;
-  {
-    FileCacheMetadata old_data(blocking_task_runner_.get());
-    if (old_data.Initialize(old_db_path) ==
-        FileCacheMetadata::INITIALIZE_OPENED) {
-      scoped_ptr<FileCacheMetadata::Iterator> it = old_data.GetIterator();
-      for (; !it->IsAtEnd(); it->Advance()) {
-        FileCacheEntry entry;
-        if (storage_->GetCacheEntry(it->GetKey(), &entry))
-          continue;  // Do not overwrite.
-
-        storage_->PutCacheEntry(it->GetKey(), it->GetValue());
-      }
-      imported = true;
-    }
-  }
-
-  // Delete old DB.
-  base::DeleteFile(old_db_path, true /* recursive */ );
-  return imported;
 }
 
 void FileCache::RenameCacheFilesToNewFormat() {

@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
-#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -826,10 +825,6 @@ class FileCacheTest : public testing::Test {
     ASSERT_TRUE(cache_->Initialize());
   }
 
-  static bool ImportOldDB(FileCache* cache, const base::FilePath& old_db_path) {
-    return cache->ImportOldDB(old_db_path);
-  }
-
   static void RenameCacheFilesToNewFormat(FileCache* cache) {
     cache->RenameCacheFilesToNewFormat();
   }
@@ -854,12 +849,6 @@ TEST_F(FileCacheTest, ScanCacheFile) {
   const base::FilePath metadata_directory =
       temp_dir_.path().Append(util::kMetadataDirectory);
   ASSERT_TRUE(base::DeleteFile(metadata_directory, true /* recursive */));
-
-  // Put an empty file with the same name as old DB.
-  // This file cannot be opened by ImportOldDB() and will be dismissed.
-  ASSERT_TRUE(file_util::CreateDirectory(metadata_directory));
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      metadata_directory.Append(FileCache::kOldCacheMetadataDBName), ""));
 
   // Create a new cache and initialize it.
   metadata_storage_.reset(new ResourceMetadataStorage(
@@ -917,42 +906,6 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   // Returns false when disk space cannot be freed.
   fake_free_disk_space_getter_->set_default_value(0);
   EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
-}
-
-TEST_F(FileCacheTest, ImportOldDB) {
-  const base::FilePath old_db_path = temp_dir_.path().AppendASCII("old_db.db");
-
-  const std::string key1 = "key1";
-  const std::string md5_1 = "md5_1";
-  const std::string key2 = "key2";
-  const std::string md5_2 = "md5_2";
-
-  // Set up data to be imported.
-  {
-    FileCacheMetadata old_metadata(NULL);
-    ASSERT_TRUE(old_metadata.Initialize(old_db_path));
-
-    FileCacheEntry entry;
-    entry.set_md5(md5_1);
-    old_metadata.AddOrUpdateCacheEntry(key1, entry);
-
-    entry.set_md5(md5_2);
-    old_metadata.AddOrUpdateCacheEntry(key2, entry);
-  }
-  EXPECT_TRUE(base::PathExists(old_db_path));
-
-  // Do import.
-  EXPECT_TRUE(ImportOldDB(cache_.get(), old_db_path));
-
-  // Old DB should be removed.
-  EXPECT_FALSE(base::PathExists(old_db_path));
-
-  // Data is imported correctly.
-  FileCacheEntry entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(key1, &entry));
-  EXPECT_EQ(md5_1, entry.md5());
-  EXPECT_TRUE(cache_->GetCacheEntry(key2, &entry));
-  EXPECT_EQ(md5_2, entry.md5());
 }
 
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {

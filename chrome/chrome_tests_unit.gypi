@@ -623,7 +623,6 @@
         'browser/chromeos/drive/fake_file_system_unittest.cc',
         'browser/chromeos/drive/fake_free_disk_space_getter.cc',
         'browser/chromeos/drive/fake_free_disk_space_getter.h',
-        'browser/chromeos/drive/file_cache_metadata_unittest.cc',
         'browser/chromeos/drive/file_cache_unittest.cc',
         'browser/chromeos/drive/file_change_unittest.cc',
         'browser/chromeos/drive/file_system/copy_operation_unittest.cc',

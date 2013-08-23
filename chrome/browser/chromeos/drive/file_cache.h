@@ -70,10 +70,6 @@ class FileCache {
 
   typedef ResourceMetadataStorage::CacheEntryIterator Iterator;
 
-  // Name of the cache metadata DB previously used.
-  // TODO(hashimoto): Remove this at some point.
-  static const base::FilePath::CharType kOldCacheMetadataDBName[];
-
   // |cache_file_directory| stores cached files.
   //
   // |blocking_task_runner| is used to post a task to the blocking worker
@@ -263,10 +259,6 @@ class FileCache {
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
-
-  // Imports old format DB from |old_db_path| and deletes it.
-  // TODO(hashimoto): Remove this method and FileCacheMetadata at some point.
-  bool ImportOldDB(const base::FilePath& old_db_path);
 
   // Renames cache files from old "resource_id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.

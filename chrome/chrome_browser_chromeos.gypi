@@ -234,8 +234,6 @@
         'browser/chromeos/drive/drive_url_request_job.h',
         'browser/chromeos/drive/file_cache.cc',
         'browser/chromeos/drive/file_cache.h',
-        'browser/chromeos/drive/file_cache_metadata.cc',
-        'browser/chromeos/drive/file_cache_metadata.h',
         'browser/chromeos/drive/file_change.cc',
         'browser/chromeos/drive/file_change.h',
         'browser/chromeos/drive/file_errors.cc',
