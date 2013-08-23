@@ -331,9 +331,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Forwarded from the RootView so that the widget can do any cleanup.
   void ViewHierarchyChanged(const View::ViewHierarchyChangedDetails& details);
 
-  // Performs any necessary cleanup and forwards to RootView.
-  void NotifyNativeViewHierarchyChanged(bool attached,
-                                        gfx::NativeView native_view);
+  // Called right before changing the widget's parent NativeView to do any
+  // cleanup.
+  void NotifyNativeViewHierarchyWillChange();
+
+  // Called after changing the widget's parent NativeView. Notifies the RootView
+  // about the change.
+  void NotifyNativeViewHierarchyChanged();
 
   // Returns the top level widget in a hierarchy (see is_top_level() for
   // the definition of top level widget.) Will return NULL if called

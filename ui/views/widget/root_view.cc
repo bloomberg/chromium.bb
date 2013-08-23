@@ -102,9 +102,8 @@ View* RootView::GetContentsView() {
   return child_count() > 0 ? child_at(0) : NULL;
 }
 
-void RootView::NotifyNativeViewHierarchyChanged(bool attached,
-                                                gfx::NativeView native_view) {
-  PropagateNativeViewHierarchyChanged(attached, native_view, this);
+void RootView::NotifyNativeViewHierarchyChanged() {
+  PropagateNativeViewHierarchyChanged();
 }
 
 // Input -----------------------------------------------------------------------

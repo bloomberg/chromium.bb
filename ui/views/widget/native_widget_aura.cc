@@ -1089,7 +1089,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // from their previous parent.
   for (Widget::Widgets::iterator it = widgets.begin();
       it != widgets.end(); ++it) {
-    (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
+    (*it)->NotifyNativeViewHierarchyWillChange();
   }
 
   if (new_parent) {
@@ -1114,7 +1114,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // And now, notify them that they have a brand new parent.
   for (Widget::Widgets::iterator it = widgets.begin();
       it != widgets.end(); ++it) {
-    (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
+    (*it)->NotifyNativeViewHierarchyChanged();
   }
 }
 

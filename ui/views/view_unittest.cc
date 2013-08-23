@@ -1545,98 +1545,71 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 ////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy
 ////////////////////////////////////////////////////////////////////////////////
-class TestNativeViewHierarchy : public View {
+class ToplevelWidgetObserverView : public View {
  public:
-  TestNativeViewHierarchy() {
+  ToplevelWidgetObserverView() : toplevel_(NULL) {
+  }
+  virtual ~ToplevelWidgetObserverView() {
   }
 
-  virtual void NativeViewHierarchyChanged(
-      bool attached,
-      gfx::NativeView native_view,
-      internal::RootView* root_view) OVERRIDE {
-    NotificationInfo info;
-    info.attached = attached;
-    info.native_view = native_view;
-    info.root_view = root_view;
-    notifications_.push_back(info);
-  };
-  struct NotificationInfo {
-    bool attached;
-    gfx::NativeView native_view;
-    internal::RootView* root_view;
-  };
-  static const size_t kTotalViews = 2;
-  std::vector<NotificationInfo> notifications_;
+  // View overrides:
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE {
+    if (details.is_add) {
+      toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+    } else {
+      toplevel_ = NULL;
+    }
+  }
+  virtual void NativeViewHierarchyChanged() OVERRIDE {
+    toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  }
+
+  Widget* toplevel() { return toplevel_; }
+
+ private:
+  Widget* toplevel_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWidgetObserverView);
 };
 
-class TestChangeNativeViewHierarchy {
- public:
-  explicit TestChangeNativeViewHierarchy(ViewTest *view_test) {
-    view_test_ = view_test;
-    native_host_ = new NativeViewHost();
-    host_ = new Widget;
-    Widget::InitParams params =
-        view_test->CreateParams(Widget::InitParams::TYPE_POPUP);
-    params.bounds = gfx::Rect(0, 0, 500, 300);
-    host_->Init(params);
-    host_->GetRootView()->AddChildView(native_host_);
-    for (size_t i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
-      windows_[i] = new Widget;
-      Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-      params.parent = host_->GetNativeView();
-      params.bounds = gfx::Rect(0, 0, 500, 300);
-      windows_[i]->Init(params);
-      root_views_[i] = windows_[i]->GetRootView();
-      test_views_[i] = new TestNativeViewHierarchy;
-      root_views_[i]->AddChildView(test_views_[i]);
-    }
-  }
+// Test that a view can track the current top level widget by overriding
+// View::ViewHierarchyChanged() and View::NativeViewHierarchyChanged().
+TEST_F(ViewTest, NativeViewHierarchyChanged) {
+  scoped_ptr<Widget> toplevel1(new Widget);
+  Widget::InitParams toplevel1_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  toplevel1_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  toplevel1->Init(toplevel1_params);
 
-  ~TestChangeNativeViewHierarchy() {
-    for (size_t i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
-      windows_[i]->Close();
-    }
-    host_->Close();
-    // Will close and self-delete widgets - no need to manually delete them.
-    view_test_->RunPendingMessages();
-  }
+  scoped_ptr<Widget> toplevel2(new Widget);
+  Widget::InitParams toplevel2_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  toplevel2_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  toplevel2->Init(toplevel2_params);
 
-  void CheckChangingHierarhy() {
-    size_t i;
-    for (i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
-      // TODO(georgey): use actual hierarchy changes to send notifications.
-      static_cast<internal::RootView*>(root_views_[i])->
-          NotifyNativeViewHierarchyChanged(false, host_->GetNativeView());
-      static_cast<internal::RootView*>(root_views_[i])->
-          NotifyNativeViewHierarchyChanged(true, host_->GetNativeView());
-    }
-    for (i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
-      ASSERT_EQ(static_cast<size_t>(2), test_views_[i]->notifications_.size());
-      EXPECT_FALSE(test_views_[i]->notifications_[0].attached);
-      EXPECT_EQ(host_->GetNativeView(),
-          test_views_[i]->notifications_[0].native_view);
-      EXPECT_EQ(root_views_[i], test_views_[i]->notifications_[0].root_view);
-      EXPECT_TRUE(test_views_[i]->notifications_[1].attached);
-      EXPECT_EQ(host_->GetNativeView(),
-          test_views_[i]->notifications_[1].native_view);
-      EXPECT_EQ(root_views_[i], test_views_[i]->notifications_[1].root_view);
-    }
-  }
+  Widget* child = new Widget;
+  Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
+  child_params.parent = toplevel1->GetNativeView();
+  child->Init(child_params);
 
-  NativeViewHost* native_host_;
-  Widget* host_;
-  Widget* windows_[TestNativeViewHierarchy::kTotalViews];
-  View* root_views_[TestNativeViewHierarchy::kTotalViews];
-  TestNativeViewHierarchy* test_views_[TestNativeViewHierarchy::kTotalViews];
-  ViewTest* view_test_;
-};
+  ToplevelWidgetObserverView* observer_view =
+      new ToplevelWidgetObserverView();
+  EXPECT_EQ(NULL, observer_view->toplevel());
 
-TEST_F(ViewTest, ChangeNativeViewHierarchyChangeHierarchy) {
-  // TODO(georgey): Fix the test for Linux
-#if defined(OS_WIN)
-  TestChangeNativeViewHierarchy test(this);
-  test.CheckChangingHierarhy();
-#endif
+  child->SetContentsView(observer_view);
+  EXPECT_EQ(toplevel1, observer_view->toplevel());
+
+  Widget::ReparentNativeView(child->GetNativeView(),
+                             toplevel2->GetNativeView());
+  EXPECT_EQ(toplevel2, observer_view->toplevel());
+
+  observer_view->parent()->RemoveChildView(observer_view);
+  EXPECT_EQ(NULL, observer_view->toplevel());
+
+  // Make |observer_view| |child|'s contents view again so that it gets deleted
+  // with the widget.
+  child->SetContentsView(observer_view);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

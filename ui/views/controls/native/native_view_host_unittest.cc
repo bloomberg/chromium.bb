@@ -72,33 +72,23 @@ namespace {
 // times NativeViewHierarchyChanged() is invoked.
 class NativeViewHierarchyChangedTestView : public View {
  public:
-  NativeViewHierarchyChangedTestView()
-      : attached_count_(0),
-        detached_count_(0) {
+  NativeViewHierarchyChangedTestView() : notification_count_(0) {
   }
 
-  void ResetCounts() {
-    attached_count_ = detached_count_ = 0;
+  void ResetCount() {
+    notification_count_ = 0;
   }
 
-  int attached_count() const { return attached_count_; }
-  int detached_count() const { return detached_count_; }
+  int notification_count() const { return notification_count_; }
 
   // Overriden from View:
-  virtual void NativeViewHierarchyChanged(
-      bool attached,
-      gfx::NativeView native_view,
-      internal::RootView* root_view) OVERRIDE {
-    if (attached)
-      attached_count_++;
-    else
-      detached_count_++;
-    View::NativeViewHierarchyChanged(attached, native_view, root_view);
+  virtual void NativeViewHierarchyChanged() OVERRIDE {
+    ++notification_count_;
+    View::NativeViewHierarchyChanged();
   }
 
  private:
-  int attached_count_;
-  int detached_count_;
+  int notification_count_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHierarchyChangedTestView);
 };
@@ -158,22 +148,21 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
                                               test_view,
                                               host));
 
-  EXPECT_EQ(0, test_view->attached_count());
-  EXPECT_EQ(0, test_view->detached_count());
-  test_view->ResetCounts();
+  EXPECT_EQ(0, test_view->notification_count());
+  test_view->ResetCount();
 
-  // Detach should send both an attach and detach as well as changing parent.
+  // Detaching should send a NativeViewHierarchyChanged() notification and
+  // change the parent.
   host->Detach();
-  EXPECT_EQ(1, test_view->attached_count());
-  EXPECT_EQ(1, test_view->detached_count());
+  EXPECT_EQ(1, test_view->notification_count());
   EXPECT_NE(toplevel()->GetNativeView(),
             GetNativeParent(child->GetNativeView()));
-  test_view->ResetCounts();
+  test_view->ResetCount();
 
-  // Attaching should send both an attach and detach and reset parent.
+  // Attaching should send a NativeViewHierarchyChanged() notification and
+  // reset the parent.
   host->Attach(child->GetNativeView());
-  EXPECT_EQ(1, test_view->attached_count());
-  EXPECT_EQ(1, test_view->detached_count());
+  EXPECT_EQ(1, test_view->notification_count());
   EXPECT_EQ(toplevel()->GetNativeView(),
             GetNativeParent(child->GetNativeView()));
 }

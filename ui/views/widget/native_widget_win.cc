@@ -1009,9 +1009,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // from their previous parent.
   for (Widget::Widgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    // TODO(beng): Rename this notification to NotifyNativeViewChanging()
-    // and eliminate the bool parameter.
-    (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
+    (*it)->NotifyNativeViewHierarchyWillChange();
   }
 
   ::SetParent(native_view, new_parent);
@@ -1019,7 +1017,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // And now, notify them that they have a brand new parent.
   for (Widget::Widgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
+    (*it)->NotifyNativeViewHierarchyChanged();
   }
 }
 

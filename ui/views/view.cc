@@ -177,7 +177,6 @@ View::View()
       focus_border_(FocusBorder::CreateDashedFocusBorder()),
       flip_canvas_on_paint_for_rtl_ui_(false),
       paint_to_layer_(false),
-      accelerator_registration_delayed_(false),
       accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
       next_focusable_view_(NULL),
@@ -1305,21 +1304,13 @@ void View::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
 void View::VisibilityChanged(View* starting_from, bool is_visible) {
 }
 
-void View::NativeViewHierarchyChanged(bool attached,
-                                      gfx::NativeView native_view,
-                                      internal::RootView* root_view) {
+void View::NativeViewHierarchyChanged() {
   FocusManager* focus_manager = GetFocusManager();
-  if (!accelerator_registration_delayed_ &&
-      accelerator_focus_manager_ &&
-      accelerator_focus_manager_ != focus_manager) {
+  if (accelerator_focus_manager_ != focus_manager) {
     UnregisterAccelerators(true);
-    accelerator_registration_delayed_ = true;
-  }
-  if (accelerator_registration_delayed_ && attached) {
-    if (focus_manager) {
+
+    if (focus_manager)
       RegisterPendingAccelerators();
-      accelerator_registration_delayed_ = false;
-    }
   }
 }
 
@@ -1821,14 +1812,10 @@ void View::PropagateAddNotifications(
   ViewHierarchyChangedImpl(true, details);
 }
 
-void View::PropagateNativeViewHierarchyChanged(bool attached,
-                                               gfx::NativeView native_view,
-                                               internal::RootView* root_view) {
+void View::PropagateNativeViewHierarchyChanged() {
   for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateNativeViewHierarchyChanged(attached,
-                                                           native_view,
-                                                           root_view);
-  NativeViewHierarchyChanged(attached, native_view, root_view);
+    child_at(i)->PropagateNativeViewHierarchyChanged();
+  NativeViewHierarchyChanged();
 }
 
 void View::ViewHierarchyChangedImpl(
@@ -1838,13 +1825,8 @@ void View::ViewHierarchyChangedImpl(
     if (details.is_add) {
       // If you get this registration, you are part of a subtree that has been
       // added to the view hierarchy.
-      if (GetFocusManager()) {
+      if (GetFocusManager())
         RegisterPendingAccelerators();
-      } else {
-        // Delay accelerator registration until visible as we do not have
-        // focus manager until then.
-        accelerator_registration_delayed_ = true;
-      }
     } else {
       if (details.child == this)
         UnregisterAccelerators(true);
@@ -1857,7 +1839,7 @@ void View::ViewHierarchyChangedImpl(
     if (widget)
       widget->UpdateRootLayers();
   } else if (!details.is_add && details.child == this) {
-    // Make sure the layers beloning to the subtree rooted at |child| get
+    // Make sure the layers belonging to the subtree rooted at |child| get
     // removed from layers that do not belong in the same subtree.
     OrphanLayers();
     if (use_acceleration_when_possible) {
@@ -2235,9 +2217,6 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
 
   if (GetWidget()) {
     if (accelerator_focus_manager_) {
-      // We may not have a FocusManager if the window containing us is being
-      // closed, in which case the FocusManager is being deleted so there is
-      // nothing to unregister.
       accelerator_focus_manager_->UnregisterAccelerators(this);
       accelerator_focus_manager_ = NULL;
     }

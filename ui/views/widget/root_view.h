@@ -60,8 +60,7 @@ class VIEWS_EXPORT RootView : public View,
   View* GetContentsView();
 
   // Called when parent of the host changed.
-  void NotifyNativeViewHierarchyChanged(bool attached,
-                                        gfx::NativeView native_view);
+  void NotifyNativeViewHierarchyChanged();
 
   // Input ---------------------------------------------------------------------
 
