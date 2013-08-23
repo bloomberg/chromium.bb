@@ -94,6 +94,13 @@ IoThreadClientThrottle::~IoThreadClientThrottle() {
 }
 
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
+  // TODO(sgurun): This block can be removed when crbug.com/277937 is fixed.
+  if (route_id_ < 1) {
+    // OPTIONS is used for preflighted requests which are generated internally.
+    DCHECK_EQ("OPTIONS", request_->method());
+    return;
+  }
+  DCHECK(child_id_);
   if (!MaybeDeferRequest(defer)) {
     MaybeBlockRequest();
   }
