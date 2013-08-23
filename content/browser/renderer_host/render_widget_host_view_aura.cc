@@ -1572,6 +1572,7 @@ void RenderWidgetHostViewAura::SendSoftwareFrameAck(
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
   if (frame->delegated_frame_data) {
     SwapDelegatedFrame(output_surface_id,
                        frame->delegated_frame_data.Pass(),

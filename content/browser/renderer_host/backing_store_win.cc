@@ -104,6 +104,7 @@ void BackingStoreWin::PaintToBackingStore(
     float scale_factor,
     const base::Closure& completion_callback,
     bool* scheduled_completion_callback) {
+  TRACE_EVENT0("content", "BackingStoreWin::PaintToBackingStore");
   *scheduled_completion_callback = false;
   gfx::Size size_in_pixels = gfx::ToCeiledSize(gfx::ScaleSize(
     size(), scale_factor));
@@ -155,6 +156,7 @@ void BackingStoreWin::PaintToBackingStore(
 
 bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
                                            skia::PlatformBitmap* output) {
+  TRACE_EVENT0("content", "BackingStoreWin::CopyFromBackingStore");
   // TODO(kevers): Make sure this works with HiDPI backing stores.
   if (!output->Allocate(rect.width(), rect.height(), true))
     return false;
@@ -168,6 +170,7 @@ bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
 void BackingStoreWin::ScrollBackingStore(const gfx::Vector2d& delta,
                                          const gfx::Rect& clip_rect,
                                          const gfx::Size& view_size) {
+  TRACE_EVENT0("content", "BackingStoreWin::ScrollBackingStore");
   // TODO(darin): this doesn't work if delta x() and y() are both non-zero!
   DCHECK(delta.x() == 0 || delta.y() == 0);
 

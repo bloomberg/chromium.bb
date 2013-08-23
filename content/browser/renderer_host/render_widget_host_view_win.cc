@@ -762,6 +762,7 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects,
     const ui::LatencyInfo& latency_info) {
+  TRACE_EVENT0("content", "RenderWidgetHostViewWin::DidUpdateBackingStore");
   software_latency_info_.MergeWith(latency_info);
   if (is_hidden_)
     return;
@@ -780,6 +781,7 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
   }
 
   if (!scroll_rect.IsEmpty()) {
+    TRACE_EVENT0("content", "ScrollWindowEx");
     gfx::Rect pixel_rect = ui::win::DIPToScreenRect(scroll_rect);
     // Damage might not be DIP aligned.
     pixel_rect.Inset(-1, -1);
