@@ -53,8 +53,8 @@ bool TouchSmoothScrollGestureAura::ForwardInputEvents(
     return false;
 
   RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(host);
-  double position_delta = smooth_scroll_calculator_.GetScrollDelta(now,
-      host_impl->GetSyntheticScrollMessageInterval());
+  float position_delta = synthetic_gesture_calculator_.GetDelta(now,
+      host_impl->GetSyntheticGestureMessageInterval());
 
   if (pixels_scrolled_ == 0) {
     InjectTouchEvent(location_, ui::ET_TOUCH_PRESSED, window_);

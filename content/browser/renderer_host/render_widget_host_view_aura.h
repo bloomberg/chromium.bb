@@ -227,7 +227,7 @@ class RenderWidgetHostViewAura
   virtual void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
       InputEventAckState ack_result) OVERRIDE;
-  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+  virtual SyntheticGesture* CreateSmoothScrollGesture(
       bool scroll_down,
       int pixels_to_scroll,
       int mouse_event_x,

@@ -165,7 +165,7 @@ class RenderWidgetHostViewAndroid
                               gfx::Vector2dF current_fling_velocity) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
-  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+  virtual SyntheticGesture* CreateSmoothScrollGesture(
       bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) OVERRIDE;
 

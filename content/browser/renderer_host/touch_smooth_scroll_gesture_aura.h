@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TOUCH_SMOOTH_SCROLL_GESTURE_
 
 #include "base/time/time.h"
-#include "content/browser/renderer_host/smooth_scroll_calculator.h"
-#include "content/port/browser/smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/synthetic_gesture_calculator.h"
+#include "content/port/browser/synthetic_gesture.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -16,7 +16,7 @@ class Window;
 
 namespace content {
 
-class TouchSmoothScrollGestureAura : public SmoothScrollGesture {
+class TouchSmoothScrollGestureAura : public SyntheticGesture {
  public:
   TouchSmoothScrollGestureAura(bool scroll_down,
                                int pixels_to_scroll,
@@ -35,7 +35,7 @@ class TouchSmoothScrollGestureAura : public SmoothScrollGesture {
   int pixels_scrolled_;
   gfx::Point location_;
   aura::Window* window_;
-  SmoothScrollCalculator smooth_scroll_calculator_;
+  SyntheticGestureCalculator synthetic_gesture_calculator_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSmoothScrollGestureAura);
 };

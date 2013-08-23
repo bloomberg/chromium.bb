@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SMOOTH_SCROLL_GESTURE_CONTROLLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SMOOTH_SCROLL_GESTURE_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_SYNTHETIC_GESTURE_CONTROLLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_SYNTHETIC_GESTURE_CONTROLLER_H_
 
 #include <map>
 
@@ -18,35 +18,35 @@ namespace content {
 
 class RenderWidgetHost;
 class RenderWidgetHostViewPort;
-class SmoothScrollGesture;
+class SyntheticGesture;
 
-// Controls SmoothScrollGestures, used to inject synthetic events
+// Controls SyntheticGestures, used to inject synthetic events
 // for performance test harness.
-class CONTENT_EXPORT SmoothScrollGestureController {
+class CONTENT_EXPORT SyntheticGestureController {
  public:
-  SmoothScrollGestureController();
-  ~SmoothScrollGestureController();
+  SyntheticGestureController();
+  ~SyntheticGestureController();
 
   // Initiates a synthetic event stream.
   void BeginSmoothScroll(RenderWidgetHostViewPort* view,
                          const ViewHostMsg_BeginSmoothScroll_Params& params);
 
-  base::TimeDelta GetSyntheticScrollMessageInterval() const;
+  base::TimeDelta GetSyntheticGestureMessageInterval() const;
 
  private:
   // Called periodically to advance the active scroll gesture after being
   // initiated by OnBeginSmoothScroll.
   void OnTimer();
 
-  base::RepeatingTimer<SmoothScrollGestureController> timer_;
+  base::RepeatingTimer<SyntheticGestureController> timer_;
 
   RenderWidgetHost* rwh_;
 
-  scoped_refptr<SmoothScrollGesture> pending_smooth_scroll_gesture_;
+  scoped_refptr<SyntheticGesture> pending_synthetic_gesture_;
 
-  DISALLOW_COPY_AND_ASSIGN(SmoothScrollGestureController);
+  DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SMOOTH_SCROLL_GESTURE_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_SYNTHETIC_GESTURE_CONTROLLER_H_

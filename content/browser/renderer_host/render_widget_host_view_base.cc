@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/port/browser/smooth_scroll_gesture.h"
+#include "content/port/browser/synthetic_gesture.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -501,7 +501,7 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   return true;
 }
 
-SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
+SyntheticGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
     bool scroll_down, int pixels_to_scroll, int mouse_event_x,
     int mouse_event_y) {
   return new BasicMouseWheelSmoothScrollGesture(scroll_down, pixels_to_scroll,

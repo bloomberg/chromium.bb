@@ -26,9 +26,9 @@ bool BasicMouseWheelSmoothScrollGesture::ForwardInputEvents(
   if (pixels_scrolled_ >= pixels_to_scroll_)
     return false;
 
-  double position_delta = smooth_scroll_calculator_.GetScrollDelta(
+  float position_delta = synthetic_gesture_calculator_.GetDelta(
       now,
-      RenderWidgetHostImpl::From(host)->GetSyntheticScrollMessageInterval());
+      RenderWidgetHostImpl::From(host)->GetSyntheticGestureMessageInterval());
 
 
   WebKit::WebMouseWheelEvent event;

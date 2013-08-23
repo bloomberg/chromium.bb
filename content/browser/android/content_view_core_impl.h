@@ -268,10 +268,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowDisambiguationPopup(
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
 
-  // Creates a java-side smooth scroller. Used by
+  // Creates a java-side touch gesture, e.g. used by
   // chrome.gpuBenchmarking.smoothScrollBy.
-  base::android::ScopedJavaLocalRef<jobject> CreateSmoothScroller(
-      bool scroll_down, int mouse_event_x, int mouse_event_y);
+  base::android::ScopedJavaLocalRef<jobject> CreateGenericTouchGesture(
+      int start_x, int start_y, int delta_x, int delta_y);
 
   // Notifies the java object about the external surface, requesting for one if
   // necessary.

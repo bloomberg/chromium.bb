@@ -2021,7 +2021,7 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   }
 }
 
-SmoothScrollGesture* RenderWidgetHostViewAura::CreateSmoothScrollGesture(
+SyntheticGesture* RenderWidgetHostViewAura::CreateSmoothScrollGesture(
     bool scroll_down,
     int pixels_to_scroll,
     int mouse_event_x,

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
+#include "content/browser/renderer_host/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/port/browser/smooth_scroll_gesture.h"
+#include "content/port/browser/synthetic_gesture.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +26,9 @@ namespace content {
 
 namespace {
 
-class MockSmoothScrollGesture : public SmoothScrollGesture {
+class MockSyntheticGesture : public SyntheticGesture {
  public:
-  MockSmoothScrollGesture() :
+  MockSyntheticGesture() :
       called_(0) {
   }
 
@@ -42,7 +42,7 @@ class MockSmoothScrollGesture : public SmoothScrollGesture {
   int called_;
 
  protected:
-  virtual ~MockSmoothScrollGesture() {
+  virtual ~MockSyntheticGesture() {
   }
 };
 
@@ -73,10 +73,10 @@ class TestView : public TestRenderWidgetHostView {
   virtual ~TestView() {}
 
   // TestRenderWidgetHostView implementation:
-  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+  virtual SyntheticGesture* CreateSmoothScrollGesture(
       bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) OVERRIDE {
-    mock_gesture_ = new MockSmoothScrollGesture();
+    mock_gesture_ = new MockSyntheticGesture();
     return mock_gesture_;
   }
 
@@ -84,14 +84,14 @@ class TestView : public TestRenderWidgetHostView {
     return rwh_;
   }
 
-  MockSmoothScrollGesture* mock_gesture_;
+  MockSyntheticGesture* mock_gesture_;
 };
 
-class SmoothScrollGestureControllerTest : public testing::Test {
+class SyntheticGestureControllerTest : public testing::Test {
  public:
-  SmoothScrollGestureControllerTest() : process_(NULL) {
+  SyntheticGestureControllerTest() : process_(NULL) {
   }
-  virtual ~SmoothScrollGestureControllerTest() {}
+  virtual ~SyntheticGestureControllerTest() {}
 
  protected:
   // testing::Test implementation:
@@ -131,7 +131,7 @@ class SmoothScrollGestureControllerTest : public testing::Test {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitClosure(),
         TimeDelta::FromMilliseconds(
-            controller_.GetSyntheticScrollMessageInterval().InMilliseconds() *
+            controller_.GetSyntheticGestureMessageInterval().InMilliseconds() *
             3));
     base::MessageLoop::current()->Run();
   }
@@ -147,10 +147,10 @@ class SmoothScrollGestureControllerTest : public testing::Test {
   scoped_ptr<gfx::Screen> screen_;
 #endif
 
-  SmoothScrollGestureController controller_;
+  SyntheticGestureController controller_;
 };
 
-TEST_F(SmoothScrollGestureControllerTest, Tick) {
+TEST_F(SyntheticGestureControllerTest, Tick) {
   ViewHostMsg_BeginSmoothScroll_Params params;
   params.scroll_down = true;
   params.pixels_to_scroll = 10;
@@ -168,7 +168,7 @@ TEST_F(SmoothScrollGestureControllerTest, Tick) {
   EXPECT_LT(0, current_ticks);
 
   // Ensure it won't start another smooth scroll.
-  MockSmoothScrollGesture* original_gesture = view_->mock_gesture_;
+  MockSyntheticGesture* original_gesture = view_->mock_gesture_;
   controller_.BeginSmoothScroll(view_.get(), params);
   PostQuitMessageAndRun();
   EXPECT_EQ(original_gesture, view_->mock_gesture_);

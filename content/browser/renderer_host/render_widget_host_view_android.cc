@@ -28,10 +28,10 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/generic_touch_gesture_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/surface_texture_transport_client_android.h"
-#include "content/browser/renderer_host/touch_smooth_scroll_gesture_android.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
@@ -606,14 +606,14 @@ void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
   content_view_core_->ShowDisambiguationPopup(target_rect, zoomed_bitmap);
 }
 
-SmoothScrollGesture* RenderWidgetHostViewAndroid::CreateSmoothScrollGesture(
+SyntheticGesture* RenderWidgetHostViewAndroid::CreateSmoothScrollGesture(
     bool scroll_down, int pixels_to_scroll, int mouse_event_x,
     int mouse_event_y) {
-  return new TouchSmoothScrollGestureAndroid(
-      pixels_to_scroll,
+  return new GenericTouchGestureAndroid(
       GetRenderWidgetHost(),
-      content_view_core_->CreateSmoothScroller(
-          scroll_down, mouse_event_x, mouse_event_y));
+      content_view_core_->CreateGenericTouchGesture(
+          mouse_event_x, mouse_event_y,
+          0, scroll_down ? -pixels_to_scroll : pixels_to_scroll));
 }
 
 void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {

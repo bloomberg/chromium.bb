@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_BASIC_MOUSE_WHEEL_SMOOTH_SCROLL_GESTURE_
 
 #include "base/time/time.h"
-#include "content/browser/renderer_host/smooth_scroll_calculator.h"
-#include "content/port/browser/smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/synthetic_gesture_calculator.h"
+#include "content/port/browser/synthetic_gesture.h"
 
 namespace content {
 
 class RenderWidgetHost;
 
-class BasicMouseWheelSmoothScrollGesture : public SmoothScrollGesture {
+class BasicMouseWheelSmoothScrollGesture : public SyntheticGesture {
  public:
   BasicMouseWheelSmoothScrollGesture(bool scroll_down, int pixels_to_scroll,
                                      int mouse_event_x, int mouse_event_y);
@@ -23,7 +23,7 @@ class BasicMouseWheelSmoothScrollGesture : public SmoothScrollGesture {
  private:
   virtual ~BasicMouseWheelSmoothScrollGesture();
 
-  SmoothScrollCalculator smooth_scroll_calculator_;
+  SyntheticGestureCalculator synthetic_gesture_calculator_;
 
   bool scroll_down_;
   int pixels_scrolled_;

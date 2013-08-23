@@ -176,15 +176,15 @@ class CONTENT_EXPORT RenderWidget
 
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback);
 
-  // Callback for use with BeginSmoothScroll.
-  typedef base::Callback<void()> SmoothScrollCompletionCallback;
+  // Callback for use with synthetic gestures (e.g. BeginSmoothScroll).
+  typedef base::Callback<void()> SyntheticGestureCompletionCallback;
 
   // Directs the host to begin a smooth scroll. This scroll should have the same
   // performance characteristics as a user-initiated scroll. Returns an ID of
   // the scroll gesture. |mouse_event_x| and |mouse_event_y| are expected to be
   // in local DIP coordinates.
   void BeginSmoothScroll(bool scroll_down,
-                         const SmoothScrollCompletionCallback& callback,
+                         const SyntheticGestureCompletionCallback& callback,
                          int pixels_to_scroll,
                          int mouse_event_x,
                          int mouse_event_y);
@@ -314,7 +314,7 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::Size& page_size,
                      const gfx::Size& desired_size);
   void OnRepaint(gfx::Size size_to_paint);
-  void OnSmoothScrollCompleted();
+  void OnSyntheticGestureCompleted();
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -713,8 +713,9 @@ class CONTENT_EXPORT RenderWidget
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
 
-  // State associated with the BeginSmoothScroll synthetic scrolling function.
-  SmoothScrollCompletionCallback pending_smooth_scroll_gesture_;
+  // State associated with the synthetic gestures function
+  // (e.g. BeginSmoothScroll).
+  SyntheticGestureCompletionCallback pending_synthetic_gesture_;
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;

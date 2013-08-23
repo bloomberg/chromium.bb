@@ -24,7 +24,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
+#include "content/browser/renderer_host/synthetic_gesture_controller.h"
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/event_with_latency_info.h"
@@ -78,7 +78,7 @@ class MockRenderWidgetHost;
 class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
-class SmoothScrollGestureController;
+class SyntheticGestureController;
 struct EditCommand;
 
 // This implements the RenderWidgetHost interface that is exposed to
@@ -504,7 +504,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return overscroll_controller_.get();
   }
 
-  base::TimeDelta GetSyntheticScrollMessageInterval() const;
+  base::TimeDelta GetSyntheticGestureMessageInterval() const;
 
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
@@ -900,7 +900,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  SmoothScrollGestureController smooth_scroll_gesture_controller_;
+  SyntheticGestureController synthetic_gesture_controller_;
 
   // Receives and handles all input events.
   scoped_ptr<InputRouter> input_router_;

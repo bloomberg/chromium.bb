@@ -362,8 +362,8 @@ void RenderWidgetHostImpl::SendScreenRects() {
 }
 
 base::TimeDelta
-    RenderWidgetHostImpl::GetSyntheticScrollMessageInterval() const {
-  return smooth_scroll_gesture_controller_.GetSyntheticScrollMessageInterval();
+    RenderWidgetHostImpl::GetSyntheticGestureMessageInterval() const {
+  return synthetic_gesture_controller_.GetSyntheticGestureMessageInterval();
 }
 
 void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
@@ -1675,7 +1675,7 @@ void RenderWidgetHostImpl::OnBeginSmoothScroll(
     const ViewHostMsg_BeginSmoothScroll_Params& params) {
   if (!view_)
     return;
-  smooth_scroll_gesture_controller_.BeginSmoothScroll(view_, params);
+  synthetic_gesture_controller_.BeginSmoothScroll(view_, params);
 }
 
 void RenderWidgetHostImpl::OnFocus() {

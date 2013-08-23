@@ -2387,9 +2387,9 @@ import java.util.Map;
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private SmoothScroller createSmoothScroller(boolean scrollDown, int mouseEventX,
-            int mouseEventY) {
-        return new SmoothScroller(this, scrollDown, mouseEventX, mouseEventY);
+    private GenericTouchGesture createGenericTouchGesture(int startX,
+            int startY, int deltaX, int deltaY) {
+        return new GenericTouchGesture(this, startX, startY, deltaX, deltaY);
     }
 
     @SuppressWarnings("unused")

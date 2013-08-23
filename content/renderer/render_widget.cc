@@ -386,7 +386,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnPaintAtSize)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
-    IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted, OnSmoothScrollCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_SyntheticGestureCompleted,
+                        OnSyntheticGestureCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
@@ -2015,8 +2016,8 @@ void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   }
 }
 
-void RenderWidget::OnSmoothScrollCompleted() {
-  pending_smooth_scroll_gesture_.Run();
+void RenderWidget::OnSyntheticGestureCompleted() {
+  pending_synthetic_gesture_.Run();
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
@@ -2487,7 +2488,7 @@ void RenderWidget::GetBrowserRenderingStats(BrowserRenderingStats* stats) {
 
 void RenderWidget::BeginSmoothScroll(
     bool down,
-    const SmoothScrollCompletionCallback& callback,
+    const SyntheticGestureCompletionCallback& callback,
     int pixels_to_scroll,
     int mouse_event_x,
     int mouse_event_y) {
@@ -2500,7 +2501,7 @@ void RenderWidget::BeginSmoothScroll(
   params.mouse_event_y = mouse_event_y;
 
   Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, params));
-  pending_smooth_scroll_gesture_ = callback;
+  pending_synthetic_gesture_ = callback;
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
