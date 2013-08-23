@@ -358,8 +358,11 @@ function addTargetToList(data, list, properties) {
   for (var j = 0; j < properties.length; j++) {
     if (properties[j] != 'description')
       row.appendChild(formatValue(data, properties[j]));
-    else if (data['description'])
-      description = JSON.parse(data['description']);
+    else if (data['description']) {
+      try {
+        description = JSON.parse(data['description']);
+      } catch (e) {}
+    }
   }
 
   row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
