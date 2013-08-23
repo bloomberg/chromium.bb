@@ -1651,6 +1651,7 @@
         'browser/ui/webui/fileicon_source_unittest.cc',
         'browser/ui/webui/history_ui_unittest.cc',
         'browser/ui/webui/ntp/android/partner_bookmarks_shim_unittest.cc',
+        'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
         'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
         'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',

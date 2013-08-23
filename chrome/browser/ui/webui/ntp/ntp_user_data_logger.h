@@ -43,21 +43,26 @@ class NTPUserDataLogger
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) OVERRIDE;
 
- private:
+ protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
+
+  // Returns the percent error given |events| occurrences and |errors| errors.
+  virtual size_t GetPercentError(size_t errors, size_t events) const;
+
+ private:
   friend class content::WebContentsUserData<NTPUserDataLogger>;
 
   // Total number of mouseovers for this NTP session.
-  int number_of_mouseovers_;
+  size_t number_of_mouseovers_;
 
   // Total number of attempts made to load thumbnail images for this NTP
   // session.
-  int number_of_thumbnail_attempts_;
+  size_t number_of_thumbnail_attempts_;
 
   // Total number of errors that occurred when trying to load thumbnail images
   // for this NTP session. When these errors occur a grey tile is shown instead
   // of a thumbnail image.
-  int number_of_thumbnail_errors_;
+  size_t number_of_thumbnail_errors_;
 
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;

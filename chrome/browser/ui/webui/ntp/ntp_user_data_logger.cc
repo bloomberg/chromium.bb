@@ -11,22 +11,17 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
 
-NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      number_of_mouseovers_(0),
-      number_of_thumbnail_attempts_(0),
-      number_of_thumbnail_errors_(0) {
-}
-
 NTPUserDataLogger::~NTPUserDataLogger() {}
 
 void NTPUserDataLogger::EmitThumbnailErrorRate() {
-    DCHECK_LE(number_of_thumbnail_errors_, number_of_thumbnail_attempts_);
-    int error_rate =
-        (100 * number_of_thumbnail_errors_) / number_of_thumbnail_attempts_;
-    UMA_HISTOGRAM_PERCENTAGE("NewTabPage.ThumbnailErrorRate", error_rate);
-    number_of_thumbnail_attempts_ = 0;
-    number_of_thumbnail_errors_ = 0;
+  DCHECK_LE(number_of_thumbnail_errors_, number_of_thumbnail_attempts_);
+  if (number_of_thumbnail_attempts_ != 0) {
+    UMA_HISTOGRAM_PERCENTAGE("NewTabPage.ThumbnailErrorRate",
+                             GetPercentError(number_of_thumbnail_errors_,
+                                             number_of_thumbnail_attempts_));
+  }
+  number_of_thumbnail_attempts_ = 0;
+  number_of_thumbnail_errors_ = 0;
 }
 
 void NTPUserDataLogger::EmitMouseoverCount() {
@@ -63,4 +58,15 @@ void NTPUserDataLogger::NavigationEntryCommitted(
     if (ntp_url_ != GURL(chrome::kChromeUINewTabURL))
       EmitThumbnailErrorRate();
   }
+}
+
+NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
+    : content::WebContentsObserver(contents),
+      number_of_mouseovers_(0),
+      number_of_thumbnail_attempts_(0),
+      number_of_thumbnail_errors_(0) {
+}
+
+size_t NTPUserDataLogger::GetPercentError(size_t errors, size_t events) const {
+  return (100 * errors) / events;
 }
