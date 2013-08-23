@@ -125,15 +125,17 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
     return NULL;
 
   SkBitmap bitmap;
+  // TODO: verify that the CG Context's pixels will have tight rowbytes or pass in the correct
+  // rowbytes for the case when context != NULL.
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  if (bitmap.allocPixels() != true)
-    return NULL;
 
-  void* data = NULL;
+  void* data;
   if (context) {
     data = CGBitmapContextGetData(context);
     bitmap.setPixels(data);
   } else {
+    if (!bitmap.allocPixels())
+      return NULL;
     data = bitmap.getPixels();
   }
 
