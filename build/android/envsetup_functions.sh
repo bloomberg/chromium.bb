@@ -223,16 +223,21 @@ sdk_build_init() {
   # Allow the caller to override a few environment variables. If any of them is
   # unset, we default to a sane value that's known to work. This allows for
   # experimentation with a custom SDK.
+  local sdk_defines=""
   if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
     export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
   fi
   if [[ -z "${ANDROID_SDK_VERSION}" ]]; then
     export ANDROID_SDK_VERSION=18
+  else
+    sdk_defines+=" android_sdk_version=${ANDROID_SDK_VERSION}"
   fi
   local sdk_suffix=platforms/android-${ANDROID_SDK_VERSION}
   if [[ -z "${ANDROID_SDK_ROOT}" || \
        ! -d "${ANDROID_SDK_ROOT}/${sdk_suffix}" ]]; then
     export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+  else
+    sdk_defines+=" android_sdk_root=${ANDROID_SDK_ROOT}"
   fi
   if [[ -z "${ANDROID_SDK_BUILD_TOOLS_VERSION}" ]]; then
     export ANDROID_SDK_BUILD_TOOLS_VERSION=18.0.1
@@ -248,6 +253,9 @@ sdk_build_init() {
   unset ANDROID_TOOLCHAIN
 
   common_vars_defines
+
+  DEFINES+="${sdk_defines}"
+
   common_gyp_vars
 
   if [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
