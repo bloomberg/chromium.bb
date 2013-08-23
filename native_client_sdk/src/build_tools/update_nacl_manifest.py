@@ -368,11 +368,17 @@ class VersionFinder(object):
       A tuple (version, channel, archives). The version is a string such as
       "19.0.1084.41". The channel is always 'canary'. |archives| is a list of
       archive URLs."""
+    # Canary versions that differ in the last digit shouldn't be considered
+    # different; this number is typically used to represent an experiment, e.g.
+    # using ASAN or aura.
+    def CanaryKey(version):
+      return version[:-1]
+
     # We don't ship canary on Linux, so it won't appear in self.history.
     # Instead, we can use the matching Linux trunk build for that version.
     shared_version_generator = self._FindNextSharedVersion(
         set(self.platforms) - set(('linux',)),
-        self._GetPlatformCanaryHistory)
+        self._GetPlatformCanaryHistory, CanaryKey)
     return self._DoGetMostRecentSharedVersion(shared_version_generator,
                                               allow_trunk_revisions=True)
 
@@ -499,7 +505,7 @@ class VersionFinder(object):
         yield channel, version
 
 
-  def _FindNextSharedVersion(self, platforms, generator_func):
+  def _FindNextSharedVersion(self, platforms, generator_func, key_func=None):
     """Yields versions of Chrome that exist on all given platforms, in order of
        newest to oldest.
 
@@ -511,11 +517,17 @@ class VersionFinder(object):
           ('mac', 'linux', 'win')
       generator_func: A function which takes a platform and returns a
           generator that yields (channel, version) tuples.
+      key_func: A function to convert the version into a value that should be
+          used for comparison. See python built-in sorted() or min(), for
+          an example.
     Returns:
       A generator that yields a tuple (version, channel) for each version that
       matches all platforms and the major version. The version returned is a
       string (e.g. "18.0.1025.164").
     """
+    if not key_func:
+      key_func = lambda x: x
+
     platform_generators = []
     for platform in platforms:
       platform_generators.append(generator_func(platform))
@@ -533,13 +545,19 @@ class VersionFinder(object):
               platform, JoinVersion(platform_versions[i][1])))
         logger.info('Checking versions: %s' % ', '.join(msg_info))
 
-      shared_version = min(v for c, v in platform_versions)
+      shared_version = min((v for c, v in platform_versions), key=key_func)
 
-      if all(v == shared_version for c, v in platform_versions):
+      if all(key_func(v) == key_func(shared_version)
+             for c, v in platform_versions):
+        # The real shared_version should be the real minimum version. This will
+        # be different from shared_version above only if key_func compares two
+        # versions with different values as equal.
+        min_version = min((v for c, v in platform_versions))
+
         # grab the channel from an arbitrary platform
         first_platform = platform_versions[0]
         channel = first_platform[0]
-        yield JoinVersion(shared_version), channel
+        yield JoinVersion(min_version), channel
 
         # force increment to next version for all platforms
         shared_version = None

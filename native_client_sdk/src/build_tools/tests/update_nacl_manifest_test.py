@@ -31,6 +31,7 @@ OS_CR = ('cros',)
 OS_M = ('mac',)
 OS_ML = ('mac', 'linux')
 OS_MW = ('mac', 'win')
+OS_LW = ('linux', 'win')
 OS_MLW = ('mac', 'linux', 'win')
 OS_ALL = ('all',)
 POST_STABLE = 'post_stable'
@@ -238,6 +239,7 @@ V19_0_1084_67 = '19.0.1084.67'
 V21_0_1145_0 = '21.0.1145.0'
 V21_0_1166_0 = '21.0.1166.0'
 V26_0_1386_0 = '26.0.1386.0'
+V26_0_1386_1 = '26.0.1386.1'
 VTRUNK_140819 = 'trunk.140819'
 B18_0_1025_163_MLW = MakePlatformBundle(18, 132135, V18_0_1025_163, OS_MLW)
 B18_0_1025_184_MLW = MakePlatformBundle(18, 134900, V18_0_1025_184, OS_MLW)
@@ -250,6 +252,7 @@ B21_0_1145_0_MLW = MakePlatformBundle(21, 138079, V21_0_1145_0, OS_MLW)
 B21_0_1166_0_MW = MakePlatformBundle(21, 140819, V21_0_1166_0, OS_MW)
 B26_NONE = MakePlatformBundle(26)
 B26_0_1386_0_MLW = MakePlatformBundle(26, 177362, V26_0_1386_0, OS_MLW)
+B26_0_1386_1_MLW = MakePlatformBundle(26, 177439, V26_0_1386_1, OS_MLW)
 BTRUNK_140819_MLW = MakePlatformBundle(21, 140819, VTRUNK_140819, OS_MLW)
 NON_PEPPER_BUNDLE_NOARCHIVES = MakeNonPepperBundle('foo')
 NON_PEPPER_BUNDLE_ARCHIVES = MakeNonPepperBundle('bar', with_archives=True)
@@ -700,6 +703,45 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
   def testBundleWithoutHistoryOrOnlineRaises(self):
     self.manifest = MakeManifest(B18_NONE)
     self._MakeDelegate()
+    self.assertRaises(update_nacl_manifest.UnknownLockedBundleException,
+                      self._Run, OS_MLW)
+
+  def testIgnoreLastDigitOnCanary(self):
+    # The final number in a canary build does not include any different
+    # changes, it is just a different experiment (e.g. using ASAN, or using
+    # aura). We should not compare these versions differently.
+    #
+    # Note that the version mapping will show that 31.0.1608.0 is different
+    # from 31.0.1608.1 -- this is because 31.0.1608.1 is built from the branch,
+    # not from trunk. Inspecting the branch would show that there are no
+    # changes (why would there be? No one has any reason to merge changes to a
+    # canary branch.)
+    self.manifest = MakeManifest(copy.deepcopy(BCANARY_NONE))
+    history = """win,canary,31.0.1608.1,2013-08-22 09:33:24.469760
+mac,canary,31.0.1608.0,2013-08-22 07:18:09.762600"""
+    self._AddCsvHistory(history)
+    self.version_mapping['31.0.1608.1'] = 'trunk.218914'
+    self.version_mapping['31.0.1608.0'] = 'trunk.218872'
+    my_bundle = MakePlatformBundle(31, 218872, '31.0.1608.0', OS_MLW)
+    self.files.Add(my_bundle)
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    self._AssertUploadedManifestHasBundle(my_bundle, CANARY)
+
+  def testDontIgnoreLastDigitForNonCanary(self):
+    self.manifest = MakeManifest(B26_NONE)
+    self.history.Add(OS_M, BETA, V26_0_1386_1)  # Only Mac
+    self.history.Add(OS_LW, BETA, V26_0_1386_0)  # Only Linux, Windows.
+    self.files.Add(B26_0_1386_0_MLW)
+
+    self._MakeDelegate()
+    # This raises because pepper_26 is not found in the history, and therefore
+    # "locked", but it also doesn't have an online version, therefore there is
+    # no good version number to upload.
+    #
+    # Basically we're asserting that 26.0.1386.1 != 26.0.1386.0, which would be
+    # true if it were canary.
     self.assertRaises(update_nacl_manifest.UnknownLockedBundleException,
                       self._Run, OS_MLW)
 
