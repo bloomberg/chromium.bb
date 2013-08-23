@@ -6,11 +6,6 @@
 
 namespace extensions {
 
-void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
-  // Redirect the request to a worker pool thread.
-  StartQueryInfo(callback);
-}
-
 void DisplayInfoProvider::SetInfo(
     const std::string& display_id,
     const api::system_display::DisplayProperties& info,
@@ -20,9 +15,10 @@ void DisplayInfoProvider::SetInfo(
       base::Bind(callback, false, "Not implemented"));
 }
 
-// TODO(hongbo): implement display info querying on Mac OS X.
-bool DisplayInfoProvider::QueryInfo() {
-  return false;
+void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
+    const gfx::Display& display,
+    extensions::api::system_display::DisplayUnitInfo* unit) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace extensions

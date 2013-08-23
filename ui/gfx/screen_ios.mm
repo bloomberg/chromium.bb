@@ -26,13 +26,18 @@ class ScreenIos : public gfx::Screen {
     return gfx::NativeWindow();
   }
 
-  virtual int GetNumDisplays() OVERRIDE {
+  virtual int GetNumDisplays() const OVERRIDE {
 #if TARGET_IPHONE_SIMULATOR
     // UIScreen does not reliably return correct results on the simulator.
     return 1;
 #else
     return [[UIScreen screens] count];
 #endif
+  }
+
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
   }
 
   // Returns the display nearest the specified window.

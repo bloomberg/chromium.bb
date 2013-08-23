@@ -113,8 +113,12 @@ gfx::NativeWindow TestScreen::GetWindowAtCursorScreenPoint() {
   return root_window_->GetTopWindowContainingPoint(point);
 }
 
-int TestScreen::GetNumDisplays() {
+int TestScreen::GetNumDisplays() const {
   return 1;
+}
+
+std::vector<gfx::Display> TestScreen::GetAllDisplays() const {
+  return std::vector<gfx::Display>(1, display_);
 }
 
 gfx::Display TestScreen::GetDisplayNearestWindow(

@@ -67,11 +67,6 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
 
 }  // namespace
 
-void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
-  // Redirect the request to a worker pool thread.
-  StartQueryInfo(callback);
-}
-
 void DisplayInfoProvider::SetInfo(
     const std::string& display_id,
     const api::system_display::DisplayProperties& info,
@@ -81,6 +76,7 @@ void DisplayInfoProvider::SetInfo(
       base::Bind(callback, false, "Not implemented"));
 }
 
+// TODO(hongbo): consolidate implementation using gfx::Display/gfx::Screen.
 bool DisplayInfoProvider::QueryInfo() {
   info_.clear();
 
@@ -88,6 +84,12 @@ bool DisplayInfoProvider::QueryInfo() {
         reinterpret_cast<LPARAM>(&info_)))
     return true;
   return false;
+}
+
+void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
+    const gfx::Display& display,
+    extensions::api::system_display::DisplayUnitInfo* unit) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace extensions

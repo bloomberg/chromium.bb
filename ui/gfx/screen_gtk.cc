@@ -107,11 +107,16 @@ class ScreenGtk : public gfx::Screen {
   // Returns the number of displays.
   // Mirrored displays are excluded; this method is intended to return the
   // number of distinct, usable displays.
-  virtual int GetNumDisplays() OVERRIDE {
+  virtual int GetNumDisplays() const OVERRIDE {
     // This query is kinda bogus for Linux -- do we want number of X screens?
     // The number of monitors Xinerama has?  We'll just use whatever GDK uses.
     GdkScreen* screen = gdk_screen_get_default();
     return gdk_screen_get_n_monitors(screen);
+  }
+
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
   }
 
   // Returns the display nearest the specified window.

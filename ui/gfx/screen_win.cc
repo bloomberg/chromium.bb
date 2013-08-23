@@ -55,8 +55,13 @@ gfx::NativeWindow ScreenWin::GetWindowAtCursorScreenPoint() {
   return GetNativeWindowFromHWND(window_hwnd);
 }
 
-int ScreenWin::GetNumDisplays() {
+int ScreenWin::GetNumDisplays() const {
   return GetSystemMetrics(SM_CMONITORS);
+}
+
+std::vector<gfx::Display> ScreenWin::GetAllDisplays() const {
+  NOTIMPLEMENTED();
+  return std::vector<gfx::Display>(1, GetPrimaryDisplay());
 }
 
 gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {

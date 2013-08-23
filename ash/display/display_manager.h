@@ -181,6 +181,8 @@ class ASH_EXPORT DisplayManager
   // when displays are mirrored.
   size_t GetNumDisplays() const;
 
+  const std::vector<gfx::Display>& displays() const { return displays_; }
+
   // Returns the number of connected displays. This returns 2
   // when displays are mirrored.
   size_t num_connected_displays() const { return num_connected_displays_; }

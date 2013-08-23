@@ -89,7 +89,7 @@ class ScreenMac : public gfx::Screen {
     return gfx::NativeWindow();
   }
 
-  virtual int GetNumDisplays() OVERRIDE {
+  virtual int GetNumDisplays() const OVERRIDE {
     // Don't just return the number of online displays.  It includes displays
     // that mirror other displays, which are not desired in the count.  It's
     // tempting to use the count returned by CGGetActiveDisplayList, but active
@@ -121,6 +121,11 @@ class ScreenMac : public gfx::Screen {
     }
 
     return display_count;
+  }
+
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
   }
 
   virtual gfx::Display GetDisplayNearestWindow(

@@ -35,21 +35,6 @@ bool IsValidRotationValue(int rotation) {
   return rotation == 0 || rotation == 90 || rotation == 180 || rotation == 270;
 }
 
-// Converts Rotation enum to integer.
-int RotationToDegrees(gfx::Display::Rotation rotation) {
-  switch (rotation) {
-    case gfx::Display::ROTATE_0:
-      return 0;
-    case gfx::Display::ROTATE_90:
-      return 90;
-    case gfx::Display::ROTATE_180:
-      return 180;
-    case gfx::Display::ROTATE_270:
-      return 270;
-  }
-  return 0;
-}
-
 // Converts integer integer value in degrees to Rotation enum value.
 gfx::Display::Rotation DegreesToRotation(int degrees) {
   DCHECK(IsValidRotationValue(degrees));
@@ -65,48 +50,6 @@ gfx::Display::Rotation DegreesToRotation(int degrees) {
     default:
       return gfx::Display::ROTATE_0;
   }
-}
-
-// Creates new DisplayUnitInfo struct for |display| and adds it at the end of
-// |list|.
-void AddInfoForDisplay(const gfx::Display& display,
-                       DisplayManager* display_manager,
-                       int64 primary_display_id,
-                       DisplayInfo* list) {
-  linked_ptr<extensions::api::system_display::DisplayUnitInfo> unit(
-      new extensions::api::system_display::DisplayUnitInfo());
-  const gfx::Rect& bounds = display.bounds();
-  const gfx::Rect& work_area = display.work_area();
-  const float dpi = display.device_scale_factor() * kDpi96;
-  const gfx::Insets overscan_insets =
-        display_manager->GetOverscanInsets(display.id());
-
-  unit->id = base::Int64ToString(display.id());
-  unit->name = display_manager->GetDisplayNameForId(display.id());
-  unit->is_primary = (display.id() == primary_display_id);
-  unit->is_internal = display.IsInternal();
-  unit->is_enabled = true;
-  if (display_manager->IsMirrored()) {
-    unit->mirroring_source_id =
-        base::Int64ToString(display_manager->mirrored_display().id());
-  }
-  unit->dpi_x = dpi;
-  unit->dpi_y = dpi;
-  unit->rotation = RotationToDegrees(display.rotation());
-  unit->bounds.left = bounds.x();
-  unit->bounds.top = bounds.y();
-  unit->bounds.width = bounds.width();
-  unit->bounds.height = bounds.height();
-  unit->overscan.left = overscan_insets.left();
-  unit->overscan.top = overscan_insets.top();
-  unit->overscan.right = overscan_insets.right();
-  unit->overscan.bottom = overscan_insets.bottom();
-  unit->work_area.left = work_area.x();
-  unit->work_area.top = work_area.y();
-  unit->work_area.width = work_area.width();
-  unit->work_area.height = work_area.height();
-
-  list->push_back(unit);
 }
 
 // Checks if the given point is over the radius vector described by it's end
@@ -359,7 +302,9 @@ bool SetInfoImpl(const std::string& display_id_str,
   }
 
   int64 display_id = target.id();
-  const gfx::Display& primary = ash::Shell::GetScreen()->GetPrimaryDisplay();
+  // TODO(scottmg): Native is wrong http://crbug.com/133312
+  const gfx::Display& primary =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
 
   if (!ValidateParamsForDisplay(info, target, display_manager, primary.id(),
                                 error)) {
@@ -410,14 +355,6 @@ bool SetInfoImpl(const std::string& display_id_str,
 
 }  // namespace
 
-void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
-  bool success = QueryInfo();
-
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, success));
-}
-
 void DisplayInfoProvider::SetInfo(const std::string& display_id,
                                   const DisplayProperties& info,
                                   const SetInfoCallback& callback) {
@@ -428,20 +365,28 @@ void DisplayInfoProvider::SetInfo(const std::string& display_id,
       base::Bind(callback, success, error));
 }
 
-bool DisplayInfoProvider::QueryInfo() {
-  info_.clear();
+void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
+    const gfx::Display& display,
+    extensions::api::system_display::DisplayUnitInfo* unit) {
 
-  DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
-  DCHECK(display_manager);
-
-  int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
-  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    AddInfoForDisplay(display_manager->GetDisplayAt(i), display_manager,
-                      primary_id, &info_);
+  ash::internal::DisplayManager* display_manager
+      = ash::Shell::GetInstance()->display_manager();
+  unit->name = display_manager->GetDisplayNameForId(display.id());
+  if (display_manager->IsMirrored()) {
+    unit->mirroring_source_id =
+        base::Int64ToString(display_manager->mirrored_display().id());
   }
 
-  return true;
+  const float dpi = display.device_scale_factor() * kDpi96;
+  unit->dpi_x = dpi;
+  unit->dpi_y = dpi;
+
+  const gfx::Insets overscan_insets =
+      display_manager->GetOverscanInsets(display.id());
+  unit->overscan.left = overscan_insets.left();
+  unit->overscan.top = overscan_insets.top();
+  unit->overscan.right = overscan_insets.right();
+  unit->overscan.bottom = overscan_insets.bottom();
 }
 
 }  // namespace extensions

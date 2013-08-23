@@ -5,6 +5,8 @@
 #ifndef UI_GFX_SCREEN_H_
 #define UI_GFX_SCREEN_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/display.h"
@@ -55,7 +57,10 @@ class UI_EXPORT Screen {
   // Returns the number of displays.
   // Mirrored displays are excluded; this method is intended to return the
   // number of distinct, usable displays.
-  virtual int GetNumDisplays() = 0;
+  virtual int GetNumDisplays() const = 0;
+
+  // Returns the list of displays that are currently available.
+  virtual std::vector<gfx::Display> GetAllDisplays() const = 0;
 
   // Returns the display nearest the specified window.
   virtual gfx::Display GetDisplayNearestWindow(NativeView view) const = 0;

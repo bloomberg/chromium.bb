@@ -123,8 +123,12 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
   return wm::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
 }
 
-int ScreenAsh::GetNumDisplays() {
+int ScreenAsh::GetNumDisplays() const {
   return DisplayController::GetNumDisplays();
+}
+
+std::vector<gfx::Display> ScreenAsh::GetAllDisplays() const {
+  return GetDisplayManager()->displays();
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {

@@ -11,6 +11,10 @@
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/system_display.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace extensions {
 
 typedef std::vector<linked_ptr<
@@ -64,6 +68,12 @@ class DisplayInfoProvider : public SystemInfoProvider {
   // Overriden from SystemInfoProvider.
   // The implementation is platform specific.
   virtual bool QueryInfo() OVERRIDE;
+
+  // Update the content of the |unit| obtained for |display| using
+  // platform specific method.
+  void UpdateDisplayUnitInfoForPlatform(
+      const gfx::Display& display,
+      extensions::api::system_display::DisplayUnitInfo* unit);
 
   static base::LazyInstance<scoped_refptr<DisplayInfoProvider> > provider_;
 

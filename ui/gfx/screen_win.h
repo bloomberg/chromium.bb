@@ -21,7 +21,8 @@ class UI_EXPORT ScreenWin : public gfx::Screen {
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
-  virtual int GetNumDisplays() OVERRIDE;
+  virtual int GetNumDisplays() const OVERRIDE;
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE;
   virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView window) const OVERRIDE;
   virtual gfx::Display GetDisplayNearestPoint(
