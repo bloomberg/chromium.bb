@@ -315,6 +315,24 @@ remoting.SessionConnector.prototype.getConnectionMode = function() {
 };
 
 /**
+ * Get host ID.
+ *
+ * @return {string}
+ */
+remoting.SessionConnector.prototype.getHostId = function() {
+  return this.hostId_;
+};
+
+/**
+ * Get host display name.
+ *
+ * @return {string}
+ */
+remoting.SessionConnector.prototype.getHostDisplayName = function() {
+  return this.hostDisplayName_;
+};
+
+/**
  * Continue an IT2Me connection once an access token has been obtained.
  *
  * @param {string} token An OAuth2 access token.
@@ -402,12 +420,13 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
     this.clientSession_ = null;
   }
 
-  var securityTypes = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
+  var authenticationMethods =
+     'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.hostJid_, this.clientJid_, this.hostPublicKey_, this.passPhrase_,
-      this.fetchPin_, this.fetchThirdPartyToken_, securityTypes, this.hostId_,
-      this.connectionMode_, this.hostDisplayName_, this.clientPairingId_,
-      this.clientPairedSecret_);
+      this.clientJid_, this.passPhrase_, this.fetchPin_,
+      this.fetchThirdPartyToken_, authenticationMethods, this.hostId_,
+      this.hostJid_, this.hostPublicKey_, this.connectionMode_,
+      this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);
@@ -438,10 +457,6 @@ remoting.SessionConnector.prototype.onStateChange_ =
 
     case remoting.ClientSession.State.CREATED:
       console.log('Created plugin');
-      break;
-
-    case remoting.ClientSession.State.BAD_PLUGIN_VERSION:
-      this.onError_(remoting.Error.BAD_PLUGIN_VERSION);
       break;
 
     case remoting.ClientSession.State.CONNECTING:

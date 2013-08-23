@@ -11,6 +11,8 @@ var remoting = remoting || {};
  * @enum {string} All error messages from messages.json
  */
 remoting.Error = {
+  NONE: '',
+
   // Used to signify that an operation was cancelled by the user. This should
   // not normally cause the error text to be shown to the user, so the
   // i18n-content prefix is not needed in this case.

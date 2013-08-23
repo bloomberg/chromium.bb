@@ -70,7 +70,7 @@ remoting.disconnect = function() {
   if (!remoting.clientSession) {
     return;
   }
-  if (remoting.clientSession.mode == remoting.ClientSession.Mode.IT2ME) {
+  if (remoting.clientSession.getMode() == remoting.ClientSession.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
@@ -115,7 +115,8 @@ function onClientStateChange_(oldState, newState) {
   switch (newState) {
     case remoting.ClientSession.State.CLOSED:
       console.log('Connection closed by host');
-      if (remoting.clientSession.mode == remoting.ClientSession.Mode.IT2ME) {
+      if (remoting.clientSession.getMode() ==
+          remoting.ClientSession.Mode.IT2ME) {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
       } else {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
@@ -155,7 +156,7 @@ function showConnectError_(errorTag) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
   remoting.accessCode = '';
-  var mode = remoting.clientSession ? remoting.clientSession.mode
+  var mode = remoting.clientSession ? remoting.clientSession.getMode()
                                     : remoting.connector.getConnectionMode();
   if (mode == remoting.ClientSession.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
@@ -183,7 +184,8 @@ function setConnectionInterruptedButtonsText_() {
  */
 function updateStatistics_() {
   if (!remoting.clientSession ||
-      remoting.clientSession.state != remoting.ClientSession.State.CONNECTED) {
+      remoting.clientSession.getState() !=
+      remoting.ClientSession.State.CONNECTED) {
     return;
   }
   var perfstats = remoting.clientSession.getPerfStats();
@@ -336,7 +338,7 @@ remoting.onConnected = function(clientSession) {
   remoting.clientSession.setOnStateChange(onClientStateChange_);
   setConnectionInterruptedButtonsText_();
   var connectedTo = document.getElementById('connected-to');
-  connectedTo.innerText = clientSession.hostDisplayName;
+  connectedTo.innerText = remoting.connector.getHostDisplayName();
   document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
   remoting.toolbar.center();
@@ -355,7 +357,7 @@ remoting.onConnected = function(clientSession) {
           sharedSecret: sharedSecret
         }
       };
-      remoting.HostSettings.save(clientSession.hostId, pairingInfo);
+      remoting.HostSettings.save(remoting.connector.getHostId(), pairingInfo);
       remoting.connector.updatePairingInfo(clientId, sharedSecret);
     };
     // Use the platform name as a proxy for the local computer name.

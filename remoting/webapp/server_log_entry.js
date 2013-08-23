@@ -48,10 +48,6 @@ remoting.ServerLogEntry.getValueForSessionState = function(state) {
       return 'unknown';
     case remoting.ClientSession.State.CREATED:
       return 'created';
-    case remoting.ClientSession.State.BAD_PLUGIN_VERSION:
-      return 'bad-plugin-version';
-    case remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR:
-      return 'unknown-plugin-error';
     case remoting.ClientSession.State.CONNECTING:
       return 'connecting';
     case remoting.ClientSession.State.INITIALIZING:
@@ -76,24 +72,34 @@ remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
 
 /**
  * @private
- * @param {remoting.ClientSession.ConnectionError} connectionError
+ * @param {remoting.Error} connectionError
  * @return {string}
  */
-remoting.ServerLogEntry.getValueForConnectionError =
+remoting.ServerLogEntry.getValueForError =
     function(connectionError) {
   switch(connectionError) {
-    case remoting.ClientSession.ConnectionError.NONE:
+    case remoting.Error.NONE:
       return 'none';
-    case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
+    case remoting.Error.INVALID_ACCESS_CODE:
+      return 'invalid-access-code';
+    case remoting.Error.MISSING_PLUGIN:
+      return 'missing_plugin';
+    case remoting.Error.AUTHENTICATION_FAILED:
+      return 'authentication-failed';
+    case remoting.Error.HOST_IS_OFFLINE:
       return 'host-is-offline';
-    case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
-      return 'session-rejected';
-    case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
+    case remoting.Error.INCOMPATIBLE_PROTOCOL:
       return 'incompatible-protocol';
-    case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
+    case remoting.Error.BAD_PLUGIN_VERSION:
+      return 'bad-plugin-version';
+    case remoting.Error.NETWORK_FAILURE:
       return 'network-failure';
-    case remoting.ClientSession.ConnectionError.UNKNOWN:
-      return 'unknown';
+    case remoting.Error.HOST_OVERLOAD:
+      return 'host-overload';
+    case remoting.Error.P2P_FAILURE:
+      return 'p2p-failure';
+    case remoting.Error.UNEXPECTED:
+      return 'unexpected';
     default:
       return 'unknown-' + connectionError;
   }
@@ -198,7 +204,7 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  * Makes a log entry for a change of client session state.
  *
  * @param {remoting.ClientSession.State} state
- * @param {remoting.ClientSession.ConnectionError} connectionError
+ * @param {remoting.Error} connectionError
  * @param {remoting.ClientSession.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
@@ -211,10 +217,9 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
   entry.set(remoting.ServerLogEntry.KEY_SESSION_STATE_,
             remoting.ServerLogEntry.getValueForSessionState(state));
-  if (connectionError != remoting.ClientSession.ConnectionError.NONE) {
+  if (connectionError != remoting.Error.NONE) {
     entry.set(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
-              remoting.ServerLogEntry.getValueForConnectionError(
-                  connectionError));
+              remoting.ServerLogEntry.getValueForError(connectionError));
   }
   entry.addModeField(mode);
   return entry;

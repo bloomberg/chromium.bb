@@ -20,14 +20,19 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.WcsSandboxContainer = function(sandbox) {
+  /** @private */
   this.sandbox_ = sandbox;
-  /** @type {?function(string):void} */
+  /** @type {?function(string):void}
+    * @private */
   this.onLocalJid_ = null;
-  /** @type {?function(remoting.Error):void} */
-  this.onError_ = null;
-  /** @type {?function(string):void} */
+  /** @type {function(remoting.Error):void}
+    * @private */
+  this.onError_ = function(error) {};
+  /** @type {?function(string):void}
+    * @private */
   this.onIq_ = null;
-  /** @type {Object.<number, XMLHttpRequest>} */
+  /** @type {Object.<number, XMLHttpRequest>}
+    * @private */
   this.pendingXhrs_ = {};
 
   window.addEventListener('message', this.onMessage_.bind(this), false);
@@ -52,7 +57,7 @@ remoting.WcsSandboxContainer.prototype.setOnLocalJid = function(onLocalJid) {
 };
 
 /**
- * @param {?function(remoting.Error):void} onError Callback invoked if the WCS
+ * @param {function(remoting.Error):void} onError Callback invoked if the WCS
  *     code cannot be loaded.
  * @return {void} Nothing.
  */
@@ -103,14 +108,13 @@ remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
 
     case 'onLocalJid':
       /** @type {string} */
-      var clientJid = event.data['clientJid'];
-      if (clientJid === undefined) {
-        console.error('onReady: missing client JID');
+      var localJid = event.data['localJid'];
+      if (localJid === undefined) {
+        console.error('onReady: missing localJid');
         break;
       }
-      if (this.onLocalJid_) {
-        this.onLocalJid_(clientJid);
-      }
+      if (this.onLocalJid_)
+        this.onLocalJid_(localJid);
       break;
 
     case 'onError':

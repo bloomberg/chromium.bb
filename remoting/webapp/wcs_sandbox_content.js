@@ -125,14 +125,14 @@ remoting.WcsSandboxContent.prototype.onMessage_ = function(event) {
  * Callback method to indicate that the WCS driver has loaded and provide the
  * full JID of the client.
  *
- * @param {string} clientJid The full JID of the WCS client.
+ * @param {string} localJid The full JID of the WCS client.
  * @private
  */
-remoting.WcsSandboxContent.prototype.onLocalJid_ = function(clientJid) {
+remoting.WcsSandboxContent.prototype.onLocalJid_ = function(localJid) {
   remoting.wcs.setOnIq(this.onIq_.bind(this));
   var message = {
     'command': 'onLocalJid',
-    'clientJid': clientJid
+    'localJid': localJid
   };
   this.parentWindow_.postMessage(message, '*');
 };

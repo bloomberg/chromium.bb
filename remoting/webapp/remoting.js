@@ -264,7 +264,7 @@ remoting.logExtensionInfo_ = function() {
  */
 remoting.promptClose = function() {
   if (!remoting.clientSession ||
-      remoting.clientSession.mode == remoting.ClientSession.Mode.ME2ME) {
+      remoting.clientSession.getMode() == remoting.ClientSession.Mode.ME2ME) {
     return null;
   }
   switch (remoting.currentMode) {

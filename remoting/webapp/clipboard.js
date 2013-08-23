@@ -78,10 +78,9 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
     console.log('Got invalid clipboardData.');
     return;
   }
-  if (!remoting.clientSession || !remoting.clientSession.plugin) {
+  if (!remoting.clientSession) {
     return;
   }
-  var plugin = remoting.clientSession.plugin;
   for (var i = 0; i < clipboardData.types.length; i++) {
     var type = clipboardData.types[i];
     var item = clipboardData.getData(type);
@@ -100,7 +99,8 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
         if (!this.blockOneClipboardSend_) {
           // The plugin's JSON reader emits UTF-8.
           console.log('Sending clipboard to host.');
-          plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
+          remoting.clientSession.sendClipboardItem(
+              this.ItemTypes.TEXT_UTF8_TYPE, item);
         }
         this.previousContent = item;
       }

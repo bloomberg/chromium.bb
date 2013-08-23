@@ -23,10 +23,7 @@
 var remoting = remoting || {};
 
 /**
- * @param {string} hostJid The jid of the host to connect to.
  * @param {string} clientJid The jid of the WCS client.
- * @param {string} hostPublicKey The base64 encoded version of the host's
- *     public key.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(boolean, function(string): void): void} fetchPin
  *     Called by Me2Me connections when a PIN needs to be obtained
@@ -39,44 +36,54 @@ var remoting = remoting || {};
  *     authentication methods the client should attempt to use.
  * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
  *     Mixed into authentication hashes for some authentication methods.
+ * @param {string} hostJid The jid of the host to connect to.
+ * @param {string} hostPublicKey The base64 encoded version of the host's
+ *     public key.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
- * @param {string} hostDisplayName The name of the host for display purposes.
  * @param {string} clientPairingId For paired Me2Me connections, the
  *     pairing id for this client, as issued by the host.
  * @param {string} clientPairedSecret For paired Me2Me connections, the
  *     paired secret for this client, as issued by the host.
  * @constructor
  */
-remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
-                                  fetchPin, fetchThirdPartyToken,
-                                  authenticationMethods, hostId,
-                                  mode, hostDisplayName,
+remoting.ClientSession = function(clientJid, accessCode, fetchPin,
+                                  fetchThirdPartyToken, authenticationMethods,
+                                  hostId, hostJid, hostPublicKey, mode,
                                   clientPairingId, clientPairedSecret) {
-  this.state = remoting.ClientSession.State.CREATED;
+  /** @private */
+  this.state_ = remoting.ClientSession.State.CREATED;
 
-  this.hostJid = hostJid;
-  this.clientJid = clientJid;
-  this.hostPublicKey = hostPublicKey;
+  /** @private */
+  this.clientJid_ = clientJid;
+
+  /** @private */
+  this.error_ = remoting.Error.NONE;
+
+  /** @private */
+  this.hostJid_ = hostJid;
+  /** @private */
+  this.hostPublicKey_ = hostPublicKey;
   /** @private */
   this.accessCode_ = accessCode;
   /** @private */
   this.fetchPin_ = fetchPin;
   /** @private */
   this.fetchThirdPartyToken_ = fetchThirdPartyToken;
-  this.authenticationMethods = authenticationMethods;
-  /** @type {string} */
-  this.hostId = hostId;
-  /** @type {string} */
-  this.hostDisplayName = hostDisplayName;
-  /** @type {remoting.ClientSession.Mode} */
-  this.mode = mode;
+  /** @private */
+  this.authenticationMethods_ = authenticationMethods;
+  /** @private */
+  this.hostId_ = hostId;
+  /** @private */
+  this.mode_ = mode;
   /** @private */
   this.clientPairingId_ = clientPairingId;
   /** @private */
-  this.clientPairedSecret_ = clientPairedSecret
-  this.sessionId = '';
-  /** @type {remoting.ClientPlugin} */
-  this.plugin = null;
+  this.clientPairedSecret_ = clientPairedSecret;
+  /** @private */
+  this.sessionId_ = '';
+  /** @type {remoting.ClientPlugin}
+    * @private */
+  this.plugin_ = null;
   /** @private */
   this.shrinkToFit_ = true;
   /** @private */
@@ -129,7 +136,7 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
   /** @type {HTMLElement} @private */
   this.fullScreenButton_ = document.getElementById('toggle-full-screen');
 
-  if (this.mode == remoting.ClientSession.Mode.IT2ME) {
+  if (this.mode_ == remoting.ClientSession.Mode.IT2ME) {
     // Resize-to-client is not supported for IT2Me hosts.
     this.resizeToClientButton_.hidden = true;
   } else {
@@ -166,15 +173,15 @@ remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
   if (!this.shrinkToFit_) {
     // Determine whether or not horizontal or vertical scrollbars are
     // required, taking into account their width.
-    needsVerticalScroll = window.innerHeight < this.plugin.desktopHeight;
-    needsHorizontalScroll = window.innerWidth < this.plugin.desktopWidth;
+    needsVerticalScroll = window.innerHeight < this.plugin_.desktopHeight;
+    needsHorizontalScroll = window.innerWidth < this.plugin_.desktopWidth;
     var kScrollBarWidth = 16;
     if (needsHorizontalScroll && !needsVerticalScroll) {
       needsVerticalScroll =
-          window.innerHeight - kScrollBarWidth < this.plugin.desktopHeight;
+          window.innerHeight - kScrollBarWidth < this.plugin_.desktopHeight;
     } else if (!needsHorizontalScroll && needsVerticalScroll) {
       needsHorizontalScroll =
-          window.innerWidth - kScrollBarWidth < this.plugin.desktopWidth;
+          window.innerWidth - kScrollBarWidth < this.plugin_.desktopWidth;
     }
   }
 
@@ -197,11 +204,9 @@ remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
 // no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
-  CONNECTION_CANCELED: -5,  // Connection closed (gracefully) before connecting.
-  CONNECTION_DROPPED: -4,  // Succeeded, but subsequently closed with an error.
-  CREATED: -3,
-  BAD_PLUGIN_VERSION: -2,
-  UNKNOWN_PLUGIN_ERROR: -1,
+  CONNECTION_CANCELED: -3,  // Connection closed (gracefully) before connecting.
+  CONNECTION_DROPPED: -2,  // Succeeded, but subsequently closed with an error.
+  CREATED: -1,
   UNKNOWN: 0,
   CONNECTING: 1,
   INITIALIZING: 2,
@@ -263,20 +268,6 @@ remoting.ClientSession.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
 remoting.ClientSession.KEY_SHRINK_TO_FIT = 'shrinkToFit';
 
 /**
- * The current state of the session.
- * @type {remoting.ClientSession.State}
- */
-remoting.ClientSession.prototype.state = remoting.ClientSession.State.UNKNOWN;
-
-/**
- * The last connection error. Set when state is set to FAILED.
- * @type {remoting.ClientSession.ConnectionError}
- * @private
- */
-remoting.ClientSession.prototype.error_ =
-    remoting.ClientSession.ConnectionError.NONE;
-
-/**
  * The id of the client plugin
  *
  * @const
@@ -291,7 +282,7 @@ remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
 remoting.ClientSession.Capability = {
   // When enabled this capability causes the client to send its screen
   // resolution to the host once connection has been established. See
-  // this.plugin.notifyClientResolution().
+  // this.plugin_.notifyClientResolution().
   SEND_INITIAL_RESOLUTION: 'sendInitialResolution',
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests'
 };
@@ -349,12 +340,12 @@ remoting.ClientSession.prototype.pluginGotFocus_ = function() {
  * Callback function called when the plugin element loses focus.
  */
 remoting.ClientSession.prototype.pluginLostFocus_ = function() {
-  if (this.plugin) {
+  if (this.plugin_) {
     // Release all keys to prevent them becoming 'stuck down' on the host.
-    this.plugin.releaseAllKeys();
-    if (this.plugin.element()) {
+    this.plugin_.releaseAllKeys();
+    if (this.plugin_.element()) {
       // Focus should stay on the element, not (for example) the toolbar.
-      this.plugin.element().focus();
+      this.plugin_.element().focus();
     }
   }
 };
@@ -366,8 +357,8 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container) {
-  this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
-  remoting.HostSettings.load(this.hostId,
+  this.plugin_ = this.createClientPlugin_(container, this.PLUGIN_ID);
+  remoting.HostSettings.load(this.hostId_,
                              this.onHostSettingsLoaded_.bind(this));
 };
 
@@ -397,7 +388,7 @@ remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
   }
 
   /** @param {boolean} result */
-  this.plugin.initialize(this.onPluginInitialized_.bind(this));
+  this.plugin_.initialize(this.onPluginInitialized_.bind(this));
 };
 
 /**
@@ -405,12 +396,22 @@ remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
  * @private
  */
 remoting.ClientSession.prototype.setFocusHandlers_ = function() {
-  this.plugin.element().addEventListener(
+  this.plugin_.element().addEventListener(
       'focus', this.callPluginGotFocus_, false);
-  this.plugin.element().addEventListener(
+  this.plugin_.element().addEventListener(
       'blur', this.callPluginLostFocus_, false);
-  this.plugin.element().focus();
+  this.plugin_.element().focus();
 };
+
+/**
+ * @param {remoting.Error} error
+ */
+remoting.ClientSession.prototype.resetWithError_ = function(error) {
+  this.plugin_.cleanup();
+  delete this.plugin_;
+  this.error_ = error;
+  this.setState_(remoting.ClientSession.State.FAILED);
+}
 
 /**
  * @param {boolean} initialized
@@ -418,48 +419,45 @@ remoting.ClientSession.prototype.setFocusHandlers_ = function() {
 remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   if (!initialized) {
     console.error('ERROR: remoting plugin not loaded');
-    this.plugin.cleanup();
-    delete this.plugin;
-    this.setState_(remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR);
+    this.resetWithError_(remoting.Error.MISSING_PLUGIN);
     return;
   }
 
-  if (!this.plugin.isSupportedVersion()) {
-    this.plugin.cleanup();
-    delete this.plugin;
-    this.setState_(remoting.ClientSession.State.BAD_PLUGIN_VERSION);
+  if (!this.plugin_.isSupportedVersion()) {
+    this.resetWithError_(remoting.Error.BAD_PLUGIN_VERSION);
     return;
   }
 
   // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
   // and the Ctrl-Alt-Del button only in Me2Me mode.
-  if (!this.plugin.hasFeature(remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
+  if (!this.plugin_.hasFeature(
+          remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
-  } else if (this.mode != remoting.ClientSession.Mode.ME2ME) {
+  } else if (this.mode_ != remoting.ClientSession.Mode.ME2ME) {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
   }
 
   // Apply customized key remappings if the plugin supports remapKeys.
-  if (this.plugin.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
+  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
     this.applyRemapKeys_(true);
   }
 
   /** @param {string} msg The IQ stanza to send. */
-  this.plugin.onOutgoingIqHandler = this.sendIq_.bind(this);
+  this.plugin_.onOutgoingIqHandler = this.sendIq_.bind(this);
   /** @param {string} msg The message to log. */
-  this.plugin.onDebugMessageHandler = function(msg) {
+  this.plugin_.onDebugMessageHandler = function(msg) {
     console.log('plugin: ' + msg);
   };
 
-  this.plugin.onConnectionStatusUpdateHandler =
+  this.plugin_.onConnectionStatusUpdateHandler =
       this.onConnectionStatusUpdate_.bind(this);
-  this.plugin.onConnectionReadyHandler =
+  this.plugin_.onConnectionReadyHandler =
       this.onConnectionReady_.bind(this);
-  this.plugin.onDesktopSizeUpdateHandler =
+  this.plugin_.onDesktopSizeUpdateHandler =
       this.onDesktopSizeChanged_.bind(this);
-  this.plugin.onSetCapabilitiesHandler =
+  this.plugin_.onSetCapabilitiesHandler =
       this.onSetCapabilities_.bind(this);
   this.connectPluginToWcs_();
 };
@@ -472,13 +470,13 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.removePlugin = function() {
-  if (this.plugin) {
-    this.plugin.element().removeEventListener(
+  if (this.plugin_) {
+    this.plugin_.element().removeEventListener(
         'focus', this.callPluginGotFocus_, false);
-    this.plugin.element().removeEventListener(
+    this.plugin_.element().removeEventListener(
         'blur', this.callPluginLostFocus_, false);
-    this.plugin.cleanup();
-    this.plugin = null;
+    this.plugin_.cleanup();
+    this.plugin_ = null;
   }
 
   // Delete event handlers that aren't relevent when not connected.
@@ -505,21 +503,19 @@ remoting.ClientSession.prototype.disconnect = function(isUserInitiated) {
     // The plugin won't send a state change notification, so we explicitly log
     // the fact that the connection has closed.
     this.logToServer.logClientSessionStateChange(
-        remoting.ClientSession.State.CLOSED,
-        remoting.ClientSession.ConnectionError.NONE, this.mode);
+        remoting.ClientSession.State.CLOSED, remoting.Error.NONE, this.mode_);
   }
   remoting.wcsSandbox.setOnIq(null);
   this.sendIq_(
       '<cli:iq ' +
-          'to="' + this.hostJid + '" ' +
+          'to="' + this.hostJid_ + '" ' +
           'type="set" ' +
           'id="session-terminate" ' +
           'xmlns:cli="jabber:client">' +
         '<jingle ' +
             'xmlns="urn:xmpp:jingle:1" ' +
             'action="session-terminate" ' +
-            'initiator="' + this.clientJid + '" ' +
-            'sid="' + this.sessionId + '">' +
+            'sid="' + this.sessionId_ + '">' +
           '<reason><success/></reason>' +
         '</jingle>' +
       '</cli:iq>');
@@ -527,24 +523,24 @@ remoting.ClientSession.prototype.disconnect = function(isUserInitiated) {
 };
 
 /**
- * @return {?remoting.Error} The current error code, or null if the connection
- *     is not in an error state.
+ * @return {remoting.ClientSession.Mode} The current state.
+ */
+remoting.ClientSession.prototype.getMode = function() {
+  return this.mode_;
+};
+
+/**
+ * @return {remoting.ClientSession.State} The current state.
+ */
+remoting.ClientSession.prototype.getState = function() {
+  return this.state_;
+};
+
+/**
+ * @return {remoting.Error} The current error code.
  */
 remoting.ClientSession.prototype.getError = function() {
-  switch (this.error_) {
-    case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
-      return remoting.Error.HOST_IS_OFFLINE;
-    case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
-      return remoting.Error.INVALID_ACCESS_CODE;
-    case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
-      return remoting.Error.INCOMPATIBLE_PROTOCOL;
-    case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
-      return remoting.Error.P2P_FAILURE;
-    case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
-      return remoting.Error.HOST_OVERLOAD;
-    default:
-      return null;
-  }
+  return this.error_;
 };
 
 /**
@@ -557,10 +553,10 @@ remoting.ClientSession.prototype.getError = function() {
  */
 remoting.ClientSession.prototype.sendKeyCombination_ = function(keys) {
   for (var i = 0; i < keys.length; i++) {
-    this.plugin.injectKeyEvent(keys[i], true);
+    this.plugin_.injectKeyEvent(keys[i], true);
   }
   for (var i = 0; i < keys.length; i++) {
-    this.plugin.injectKeyEvent(keys[i], false);
+    this.plugin_.injectKeyEvent(keys[i], false);
   }
 }
 
@@ -596,7 +592,7 @@ remoting.ClientSession.prototype.setRemapKeys = function(remappings) {
   // Save the new remapping setting.
   var options = {};
   options[remoting.ClientSession.KEY_REMAP_KEYS] = this.remapKeys_;
-  remoting.HostSettings.save(this.hostId, options);
+  remoting.HostSettings.save(this.hostId_, options);
 }
 
 /**
@@ -628,10 +624,10 @@ remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
     if (apply) {
       console.log('remapKey 0x' + fromKey.toString(16) +
                   '>0x' + toKey.toString(16));
-      this.plugin.remapKey(fromKey, toKey);
+      this.plugin_.remapKey(fromKey, toKey);
     } else {
       console.log('cancel remapKey 0x' + fromKey.toString(16));
-      this.plugin.remapKey(fromKey, fromKey);
+      this.plugin_.remapKey(fromKey, fromKey);
     }
   }
 }
@@ -673,7 +669,7 @@ remoting.ClientSession.prototype.onSetScreenMode_ = function(event) {
 remoting.ClientSession.prototype.setScreenMode_ =
     function(shrinkToFit, resizeToClient) {
   if (resizeToClient && !this.resizeToClient_) {
-    this.plugin.notifyClientResolution(window.innerWidth,
+    this.plugin_.notifyClientResolution(window.innerWidth,
                                        window.innerHeight,
                                        window.devicePixelRatio);
   }
@@ -685,11 +681,11 @@ remoting.ClientSession.prototype.setScreenMode_ =
   this.resizeToClient_ = resizeToClient;
   this.updateScrollbarVisibility();
 
-  if (this.hostId != '') {
+  if (this.hostId_ != '') {
     var options = {};
     options[remoting.ClientSession.KEY_SHRINK_TO_FIT] = this.shrinkToFit_;
     options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT] = this.resizeToClient_;
-    remoting.HostSettings.save(this.hostId, options);
+    remoting.HostSettings.save(this.hostId_, options);
   }
 
   this.updateDimensions();
@@ -730,7 +726,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   if (jingleNode) {
     var action = jingleNode.getAttribute('action');
     if (jingleNode.nodeName == 'jingle' && action == 'session-initiate') {
-      this.sessionId = jingleNode.getAttribute('sid');
+      this.sessionId_ = jingleNode.getAttribute('sid');
     }
   }
 
@@ -758,10 +754,8 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
-  remoting.formatIq.setJids(this.clientJid, this.hostJid);
-  /** @type {remoting.ClientPlugin} */
-  var plugin = this.plugin;
-  var forwardIq = plugin.onIncomingIq.bind(plugin);
+  remoting.formatIq.setJids(this.clientJid_, this.hostJid_);
+  var forwardIq = this.plugin_.onIncomingIq.bind(this.plugin_);
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
     // HACK: Remove 'x' prefix added to the id in sendIq_().
@@ -786,27 +780,28 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
 
   /** @type remoting.ClientSession */
   var that = this;
-  if (plugin.hasFeature(remoting.ClientPlugin.Feature.THIRD_PARTY_AUTH)) {
+  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.THIRD_PARTY_AUTH)) {
     /** @type{function(string, string, string): void} */
     var fetchThirdPartyToken = function(tokenUrl, hostPublicKey, scope) {
       that.fetchThirdPartyToken_(
           tokenUrl, hostPublicKey, scope,
-          plugin.onThirdPartyTokenFetched.bind(plugin));
+          that.plugin_.onThirdPartyTokenFetched.bind(that.plugin_));
     };
-    plugin.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
+    that.plugin_.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
   }
   if (this.accessCode_) {
     // Shared secret was already supplied before connecting (It2Me case).
     this.connectToHost_(this.accessCode_);
-  } else if (plugin.hasFeature(
+  } else if (this.plugin_.hasFeature(
       remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     // Plugin supports asynchronously asking for the PIN.
-    plugin.useAsyncPinDialog();
+    this.plugin_.useAsyncPinDialog();
     /** @param {boolean} pairingSupported */
     var fetchPin = function(pairingSupported) {
-      that.fetchPin_(pairingSupported, plugin.onPinFetched.bind(plugin));
+      that.fetchPin_(pairingSupported,
+                     that.plugin_.onPinFetched.bind(that.plugin_));
     };
-    plugin.fetchPinHandler = fetchPin;
+    this.plugin_.fetchPinHandler = fetchPin;
     this.connectToHost_('');
   } else {
     // Clients that don't support asking for a PIN asynchronously also don't
@@ -823,9 +818,9 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
  * @private
  */
 remoting.ClientSession.prototype.connectToHost_ = function(sharedSecret) {
-  this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                      sharedSecret, this.authenticationMethods, this.hostId,
-                      this.clientPairingId_, this.clientPairedSecret_);
+  this.plugin_.connect(this.hostJid_, this.hostPublicKey_, this.clientJid_,
+                       sharedSecret, this.authenticationMethods_, this.hostId_,
+                       this.clientPairingId_, this.clientPairedSecret_);
 };
 
 /**
@@ -842,12 +837,30 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     this.setFocusHandlers_();
     this.onDesktopSizeChanged_();
     if (this.resizeToClient_) {
-      this.plugin.notifyClientResolution(window.innerWidth,
+      this.plugin_.notifyClientResolution(window.innerWidth,
                                          window.innerHeight,
                                          window.devicePixelRatio);
     }
   } else if (status == remoting.ClientSession.State.FAILED) {
-    this.error_ = /** @type {remoting.ClientSession.ConnectionError} */ (error);
+    switch (error) {
+      case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
+        this.error_ = remoting.Error.HOST_IS_OFFLINE;
+        break;
+      case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
+        this.error_ = remoting.Error.INVALID_ACCESS_CODE;
+        break;
+      case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
+        this.error_ = remoting.Error.INCOMPATIBLE_PROTOCOL;
+        break;
+      case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
+        this.error_ = remoting.Error.P2P_FAILURE;
+        break;
+      case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
+        this.error_ = remoting.Error.HOST_OVERLOAD;
+        break;
+      default:
+        this.error_ = remoting.Error.UNEXPECTED;
+    }
   }
   this.setState_(/** @type {remoting.ClientSession.State} */ (status));
 };
@@ -861,9 +874,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
  */
 remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
   if (!ready) {
-    this.plugin.element().classList.add("session-client-inactive");
+    this.plugin_.element().classList.add("session-client-inactive");
   } else {
-    this.plugin.element().classList.remove("session-client-inactive");
+    this.plugin_.element().classList.remove("session-client-inactive");
   }
 };
 
@@ -884,7 +897,7 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
   this.capabilities_ = capabilities;
   if (this.hasCapability_(
       remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION)) {
-    this.plugin.notifyClientResolution(window.innerWidth,
+    this.plugin_.notifyClientResolution(window.innerWidth,
                                        window.innerHeight,
                                        window.devicePixelRatio);
   }
@@ -896,14 +909,14 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.setState_ = function(newState) {
-  var oldState = this.state;
-  this.state = newState;
-  var state = this.state;
+  var oldState = this.state_;
+  this.state_ = newState;
+  var state = this.state_;
   if (oldState == remoting.ClientSession.State.CONNECTING) {
-    if (this.state == remoting.ClientSession.State.CLOSED) {
+    if (this.state_ == remoting.ClientSession.State.CLOSED) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
-    } else if (this.state == remoting.ClientSession.State.FAILED &&
-        this.error_ == remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE &&
+    } else if (this.state_ == remoting.ClientSession.State.FAILED &&
+        this.error_ == remoting.Error.HOST_IS_OFFLINE &&
         !this.logHostOfflineErrors_) {
       // The application requested host-offline errors to be suppressed, for
       // example, because this connection attempt is using a cached host JID.
@@ -911,10 +924,10 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
     }
   } else if (oldState == remoting.ClientSession.State.CONNECTED &&
-             this.state == remoting.ClientSession.State.FAILED) {
+             this.state_ == remoting.ClientSession.State.FAILED) {
     state = remoting.ClientSession.State.CONNECTION_DROPPED;
   }
-  this.logToServer.logClientSessionStateChange(state, this.error_, this.mode);
+  this.logToServer.logClientSessionStateChange(state, this.error_, this.mode_);
   if (this.onStateChange_) {
     this.onStateChange_(oldState, newState);
   }
@@ -942,10 +955,10 @@ remoting.ClientSession.prototype.onResize = function() {
       kResizeRateLimitMs = 250;
     }
     this.notifyClientResolutionTimer_ = window.setTimeout(
-        this.plugin.notifyClientResolution.bind(this.plugin,
-                                                window.innerWidth,
-                                                window.innerHeight,
-                                                window.devicePixelRatio),
+        this.plugin_.notifyClientResolution.bind(this.plugin_,
+                                                 window.innerWidth,
+                                                 window.innerHeight,
+                                                 window.devicePixelRatio),
         kResizeRateLimitMs);
   }
 
@@ -963,8 +976,8 @@ remoting.ClientSession.prototype.onResize = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.pauseVideo = function(pause) {
-  if (this.plugin) {
-    this.plugin.pauseVideo(pause)
+  if (this.plugin_) {
+    this.plugin_.pauseVideo(pause)
   }
 }
 
@@ -975,8 +988,8 @@ remoting.ClientSession.prototype.pauseVideo = function(pause) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.pauseAudio = function(pause) {
-  if (this.plugin) {
-    this.plugin.pauseAudio(pause)
+  if (this.plugin_) {
+    this.plugin_.pauseAudio(pause)
   }
 }
 
@@ -989,10 +1002,10 @@ remoting.ClientSession.prototype.pauseAudio = function(pause) {
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
   console.log('desktop size changed: ' +
-              this.plugin.desktopWidth + 'x' +
-              this.plugin.desktopHeight +' @ ' +
-              this.plugin.desktopXDpi + 'x' +
-              this.plugin.desktopYDpi + ' DPI');
+              this.plugin_.desktopWidth + 'x' +
+              this.plugin_.desktopHeight +' @ ' +
+              this.plugin_.desktopXDpi + 'x' +
+              this.plugin_.desktopYDpi + ' DPI');
   this.updateDimensions();
   this.updateScrollbarVisibility();
 };
@@ -1004,15 +1017,15 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.updateDimensions = function() {
-  if (this.plugin.desktopWidth == 0 ||
-      this.plugin.desktopHeight == 0) {
+  if (this.plugin_.desktopWidth == 0 ||
+      this.plugin_.desktopHeight == 0) {
     return;
   }
 
   var windowWidth = window.innerWidth;
   var windowHeight = window.innerHeight;
-  var desktopWidth = this.plugin.desktopWidth;
-  var desktopHeight = this.plugin.desktopHeight;
+  var desktopWidth = this.plugin_.desktopWidth;
+  var desktopHeight = this.plugin_.desktopHeight;
 
   // When configured to display a host at its original size, we aim to display
   // it as close to its physical size as possible, without losing data:
@@ -1026,8 +1039,8 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   // an initial scale factor based on the client devicePixelRatio and host DPI.
 
   // Determine the effective device pixel ratio of the host, based on DPI.
-  var hostPixelRatioX = Math.ceil(this.plugin.desktopXDpi / 96);
-  var hostPixelRatioY = Math.ceil(this.plugin.desktopYDpi / 96);
+  var hostPixelRatioX = Math.ceil(this.plugin_.desktopXDpi / 96);
+  var hostPixelRatioY = Math.ceil(this.plugin_.desktopYDpi / 96);
   var hostPixelRatio = Math.min(hostPixelRatioX, hostPixelRatioY);
 
   // Down-scale by the smaller of the client and host ratios.
@@ -1064,14 +1077,14 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 
   // Resize the plugin if necessary.
   // TODO(wez): Handle high-DPI to high-DPI properly (crbug.com/135089).
-  this.plugin.element().width = pluginWidth;
-  this.plugin.element().height = pluginHeight;
+  this.plugin_.element().width = pluginWidth;
+  this.plugin_.element().height = pluginHeight;
 
   // Position the container.
   // Note that clientWidth/Height take into account scrollbars.
   var clientWidth = document.documentElement.clientWidth;
   var clientHeight = document.documentElement.clientHeight;
-  var parentNode = this.plugin.element().parentNode;
+  var parentNode = this.plugin_.element().parentNode;
 
   if (pluginWidth < clientWidth) {
     parentNode.style.left = (clientWidth - pluginWidth) / 2 + 'px';
@@ -1097,7 +1110,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
  * @return {remoting.ClientSession.PerfStats} The connection statistics.
  */
 remoting.ClientSession.prototype.getPerfStats = function() {
-  return this.plugin.getPerfStats();
+  return this.plugin_.getPerfStats();
 };
 
 /**
@@ -1106,7 +1119,7 @@ remoting.ClientSession.prototype.getPerfStats = function() {
  * @param {remoting.ClientSession.PerfStats} stats
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
-  this.logToServer.logStatistics(stats, this.mode);
+  this.logToServer.logStatistics(stats, this.mode_);
 };
 
 /**
@@ -1129,8 +1142,8 @@ remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
  *     client id and shared secret when they are available.
  */
 remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
-  if (this.plugin) {
-    this.plugin.requestPairing(clientName, onDone);
+  if (this.plugin_) {
+    this.plugin_.requestPairing(clientName, onDone);
   }
 };
 
@@ -1179,7 +1192,7 @@ remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
  * @private
  */
 remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
-  var plugin = this.plugin.element();
+  var plugin = this.plugin_.element();
   var style = plugin.style;
 
   /**
@@ -1220,14 +1233,14 @@ remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
   if (enable) {
     /** @type {null|function(Event):void} */
     this.onMouseMoveRef_ = this.onMouseMove_.bind(this);
-    this.plugin.element().addEventListener('mousemove', this.onMouseMoveRef_,
-                                           false);
+    this.plugin_.element().addEventListener(
+        'mousemove', this.onMouseMoveRef_, false);
   } else {
-    this.plugin.element().removeEventListener('mousemove', this.onMouseMoveRef_,
-                                              false);
+    this.plugin_.element().removeEventListener(
+        'mousemove', this.onMouseMoveRef_, false);
     this.onMouseMoveRef_ = null;
-    this.plugin.element().style.marginLeft = 0;
-    this.plugin.element().style.marginTop = 0;
+    this.plugin_.element().style.marginLeft = 0;
+    this.plugin_.element().style.marginTop = 0;
   }
 };
 
@@ -1288,3 +1301,16 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
     repeatScroll(new Date().getTime());
   }
 };
+
+/**
+ * Sends a clipboard item to the host.
+ *
+ * @param {string} mimeType The MIME type of the clipboard item.
+ * @param {string} item The clipboard item.
+ */
+remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
+  if (!this.plugin_)
+    return;
+  this.plugin_.sendClipboardItem(mimeType, item)
+};
+
