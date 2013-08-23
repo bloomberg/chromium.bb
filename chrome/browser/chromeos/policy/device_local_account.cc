@@ -53,8 +53,9 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
       NOTREACHED();
       break;
   }
-  return base::HexEncode(account_id.c_str(), account_id.size()) + "@" +
-      domain_prefix + kDeviceLocalAccountDomainSuffix;
+  return gaia::CanonicalizeEmail(
+      base::HexEncode(account_id.c_str(), account_id.size()) + "@" +
+      domain_prefix + kDeviceLocalAccountDomainSuffix);
 }
 
 bool IsDeviceLocalAccountUser(const std::string& user_id) {

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -19,6 +20,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 using content::BrowserThread;
 
@@ -27,6 +29,24 @@ namespace chromeos {
 namespace {
 
 void IgnoreResult(bool mount_success, cryptohome::MountError mount_error) {}
+
+// Converts a user id to the old non-canonicalized format. We need this
+// old user id to cleanup crypthomes from older verisons.
+// TODO(tengs): Remove this after all clients migrated to new home.
+std::string GetOldUserId(const std::string& user_id) {
+  size_t separator_pos = user_id.find('@');
+  if (separator_pos != user_id.npos && separator_pos < user_id.length() - 1) {
+    std::string username = user_id.substr(0, separator_pos);
+    std::string domain = user_id.substr(separator_pos + 1);
+    StringToUpperASCII(&username);
+    return username + "@" + domain;
+  } else {
+    LOG(ERROR) << "User id "
+        << user_id << " does not seem to be a valid format";
+    NOTREACHED();
+    return user_id;
+  }
+}
 
 }  // namespace
 
@@ -190,6 +210,12 @@ void KioskProfileLoader::StartMount() {
   // TODO(xiyuan): Remove this after all clients migrated to new home.
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       app_id_,
+      base::Bind(&IgnoreResult));
+
+  // Nuke old home that uses non-canonicalized user id.
+  // TODO(tengs): Remove this after all clients migrated to new home.
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
+      GetOldUserId(user_id_),
       base::Bind(&IgnoreResult));
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
