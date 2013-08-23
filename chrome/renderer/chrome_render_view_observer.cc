@@ -423,6 +423,7 @@ void ChromeRenderViewObserver::OnRequestThumbnailForContextNode(
     int thumbnail_min_area_pixels, gfx::Size thumbnail_max_size_pixels) {
   WebNode context_node = render_view()->GetContextMenuNode();
   SkBitmap thumbnail;
+  CHECK(!context_node.isNull());
   if (context_node.isElementNode()) {
     WebKit::WebImage image = context_node.to<WebElement>().imageContents();
     thumbnail = Downscale(image,
