@@ -11,12 +11,10 @@ import unittest
 from api_data_source import APIDataSource
 from compiled_file_system import CompiledFileSystem
 from local_file_system import LocalFileSystem
-from manifest_data_source import ManifestDataSource
 from object_store_creator import ObjectStoreCreator
 from permissions_data_source import PermissionsDataSource
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
-from test_file_system import TestFileSystem
 from test_util import DisableLogging
 from third_party.handlebar import Handlebar
 from servlet import Request
@@ -40,8 +38,6 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
     self._fake_sidenav_data_source_factory = _FakeFactory()
-    self._manifest_data_source = ManifestDataSource(
-      _FakeFactory(), LocalFileSystem.Create(), '', '')
     self._permissions_data_source = PermissionsDataSource(
       _FakeFactory(), LocalFileSystem.Create(), '', '', '')
 
@@ -80,7 +76,6 @@ class TemplateDataSourceTest(unittest.TestCase):
         compiled_fs_factory,
         reference_resolver_factory,
         self._permissions_data_source,
-        self._manifest_data_source,
         '.',
         '.',
         '',

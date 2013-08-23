@@ -2,16 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+
 class DataSource(object):
-  '''A DataSource presents data to the template system.
+  '''
+  Defines an abstraction for all DataSources.
 
-  DataSources are created with a ServerInstance. Anything in the ServerInstance
-  can be used by the DataSource to create or modify data into a form more
-  appropriate for usage by the template system.
+  DataSources must have two public methods, get and Cron. A DataSource is
+  initialized with a ServerInstance. Anything in the ServerInstance can be used
+  by the DataSource.
 
-  DataSources may not share data with other DataSources. The output of a
-  DataSource is only useful to templates. Any data that must be shared, or is
-  useful in general, should be moved into ServerInstance.
+  DataSources are used to provide templates with access to data. DataSources may
+  not access other DataSources and any logic or data that is useful to other
+  DataSources must be moved to a different class.
   '''
   def Cron(self):
     '''Must cache all files needed by |get| to persist them. Called on a live

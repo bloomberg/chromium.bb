@@ -2,21 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+'''
+Utility functions for working with the Feature abstraction. Features are grouped
+into a dictionary by name. Each Feature is guaranteed to have the following two
+keys:
+  name - a string, the name of the feature
+  platform - a list containing 'app' or 'extension', both, or neither.
+
+A Feature may have other keys from a _features.json file as well. Features with
+a whitelist are ignored as they are only useful to specific apps or extensions.
+'''
+
 from copy import deepcopy
 
 def Parse(features_json):
-  '''Standardize the raw features file json |features_json| into a more regular
-  format. Return a dictionary of features, keyed by name. Each feature is
-  guaranteed to have a 'name' attribute and a 'platforms' attribute that is a
-  list of platforms the feature is relevant to. Valid platforms are 'app' or
-  'extension'. Other optional keys may be present in each feature.
-
-  Features with a 'whitelist' are only relevant to apps or extensions on that
-  whitelist and are not included in the retured features dictionary.
+  '''Process JSON from a _features.json file, standardizing it into a dictionary
+  of Features.
   '''
   features = {}
 
-  for name, value in features_json.iteritems():
+  for name, value in deepcopy(features_json).iteritems():
     # Some feature names corrispond to a list; force a list down to a single
     # feature by removing entries that have a 'whitelist'.
     if isinstance(value, list):
@@ -43,7 +48,7 @@ def Parse(features_json):
   return features
 
 def Filtered(features, platform=None):
-  '''Create a new features dictionary from |features| that contains only items
+  '''Create a new Features dictionary from |features| that contains only items
   relevant to |platform|. Items retained are deepcopied. Returns new features
   dictionary.
   '''
@@ -59,12 +64,18 @@ def MergedWith(features, other):
   '''Merge |features| with an additional dictionary to create a new features
   dictionary. If a feature is common to both |features| and |other|, then it is
   merged using the standard dictionary update instead of being overwritten.
-  Returns the new features dictionary.
+  Returns the new Features dictionary.
   '''
   for key, value in other.iteritems():
     if key in features:
       features[key].update(value)
     else:
       features[key] = value
+
+    # Ensure the Feature schema is enforced for all added items.
+    if not 'name' in features[key]:
+      features[key]['name'] = key
+    if not 'platforms' in features[key]:
+      features[key]['platforms'] = []
 
   return features

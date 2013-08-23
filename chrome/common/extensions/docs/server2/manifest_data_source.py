@@ -4,7 +4,9 @@
 
 import json
 
-import features_utility as features
+from data_source import DataSource
+import features_utility
+from manifest_features import CreateManifestFeatures, ConvertDottedKeysToNested
 from third_party.json_schema_compiler.json_parse import Parse
 
 def _ListifyAndSortDocs(features, app_name):
@@ -94,55 +96,15 @@ def _AddLevelAnnotations(features):
   annotate('required', features)
   return features
 
-def _RestructureChildren(features):
-  '''Features whose names are of the form 'parent.child' are moved to be part
-  of the 'parent' dictionary under the key 'children'. Names are changed to
-  the 'child' section of the original name. Applied recursively so that
-  children can have children.
-  '''
-  def add_child(features, parent, child_name, value):
-    value['name'] = child_name
-    if not 'children' in features[parent]:
-      features[parent]['children'] = {}
-    features[parent]['children'][child_name] = value
-
-  def insert_children(features):
-    for name in features.keys():
-      if '.' in name:
-        value = features.pop(name)
-        parent, child_name = name.split('.', 1)
-        add_child(features, parent, child_name, value)
-
-    for value in features.values():
-      if 'children' in value:
-        insert_children(value['children'])
-
-  insert_children(features)
-  return features
-
-class ManifestDataSource(object):
+class ManifestDataSource(DataSource):
   '''Provides access to the properties in manifest features.
   '''
-  def __init__(self,
-               compiled_fs_factory,
-               file_system,
-               manifest_path,
-               features_path):
-    self._manifest_path = manifest_path
-    self._features_path = features_path
-    self._file_system = file_system
-    self._cache = compiled_fs_factory.Create(
+  def __init__(self, server_instance):
+    self._manifest_path = server_instance.manifest_json_path
+    self._features_path = server_instance.manifest_features_path
+    self._file_system = server_instance.host_file_system
+    self._cache = server_instance.compiled_host_fs_factory.Create(
         self._CreateManifestData, ManifestDataSource)
-
-  def GetFeatures(self):
-    '''Returns a dictionary of the contents of |_features_path| merged with
-    |_manifest_path|.
-    '''
-    manifest_json = Parse(self._file_system.ReadSingle(self._manifest_path))
-    manifest_features = features.Parse(
-        Parse(self._file_system.ReadSingle(self._features_path)))
-
-    return features.MergedWith(manifest_features, manifest_json)
 
   def _CreateManifestData(self, _, content):
     '''Combine the contents of |_manifest_path| and |_features_path| and filter
@@ -152,18 +114,22 @@ class ManifestDataSource(object):
     def for_templates(manifest_features, platform):
       return _AddLevelAnnotations(
           _ListifyAndSortDocs(
-              _RestructureChildren(
-                  features.Filtered(manifest_features, platform)),
+              ConvertDottedKeysToNested(
+                  features_utility.Filtered(manifest_features, platform)),
               app_name=platform.capitalize()))
 
     manifest_json = Parse(self._file_system.ReadSingle(self._manifest_path))
-    manifest_features = features.MergedWith(
-        features.Parse(Parse(content)), manifest_json)
+    manifest_features = CreateManifestFeatures(
+        features_json=Parse(content), manifest_json=manifest_json)
 
     return {
       'apps': for_templates(manifest_features, 'app'),
       'extensions': for_templates(manifest_features, 'extension')
     }
+
+  def Cron(self):
+    self._cache.GetFromFile(self._features_path)
+    self._file_system.ReadSingle(self._manifest_path)
 
   def get(self, key):
     return self._cache.GetFromFile(self._features_path)[key]

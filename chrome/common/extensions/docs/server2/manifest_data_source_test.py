@@ -7,7 +7,10 @@ from copy import deepcopy
 import json
 import unittest
 
+from compiled_file_system import CompiledFileSystem
 import manifest_data_source
+from object_store_creator import ObjectStoreCreator
+from test_file_system import TestFileSystem
 
 convert_and_annotate_docs = {
   'name': {
@@ -156,50 +159,6 @@ class ManifestDataSourceTest(unittest.TestCase):
     manifest_data_source._AddLevelAnnotations(annotated)
     self.assertEqual(expected_docs, annotated)
 
-  def testRestructureChildren(self):
-    docs = {
-      'doc1.sub2': {
-        'name': 'doc1.sub2'
-      },
-      'doc1': {
-        'name': 'doc1'
-      },
-      'doc2': {
-        'name': 'doc2'
-      },
-      'doc1.sub1.subsub1': {
-        'name': 'doc1.sub1.subsub1'
-      },
-      'doc1.sub1': {
-        'name': 'doc1.sub1'
-      }
-    }
-
-    expected_docs = {
-      'doc1': {
-        'name': 'doc1',
-        'children': {
-          'sub1': {
-            'name': 'sub1',
-            'children': {
-              'subsub1': {
-                'name' :'subsub1'
-              }
-            }
-          },
-          'sub2': {
-            'name': 'sub2'
-          }
-        }
-      },
-      'doc2': {
-        'name': 'doc2'
-      }
-    }
-
-    self.assertEqual(
-        expected_docs, manifest_data_source._RestructureChildren(docs))
-
   def testExpandedExamples(self):
     docs = {
       'doc1': {
@@ -239,6 +198,66 @@ class ManifestDataSourceTest(unittest.TestCase):
 
     self.assertEqual(
         expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'app'))
+
+  def testManifestDataSource(self):
+    file_system = TestFileSystem({
+      '_manifest_features.json': json.dumps({
+        'doc1': {
+          'extension_types': 'all'
+        },
+        'doc1.sub1': {
+          'extension_types': ['platform_app']
+        },
+        'doc2': {
+          'extension_types': ['extension']
+        }
+      }),
+      'manifest.json': json.dumps({
+        'doc1': {
+          'example': {},
+          'level': 'required'
+        },
+        'doc1.sub1': {
+          'annotations': ['important!'],
+          'level': 'recommended'
+        }
+      })
+    })
+
+    expected_app = [
+      {
+        'example': '{...}',
+        'has_example': True,
+        'level': 'required',
+        'name': 'doc1',
+        'platforms': ['app', 'extension'],
+        'children': [
+          {
+            'annotations': [
+              'Recommended',
+              'important!'
+            ],
+            'level': 'recommended',
+            'name': 'sub1',
+            'platforms': ['app'],
+            'is_last': True
+          }
+        ],
+        'is_last': True
+      }
+    ]
+
+    class FakeServerInstance(object):
+      def __init__(self):
+        self.host_file_system = file_system
+        self.compiled_host_fs_factory = CompiledFileSystem.Factory(
+            file_system, ObjectStoreCreator.ForTest())
+        self.manifest_json_path = 'manifest.json'
+        self.manifest_features_path = '_manifest_features.json'
+
+    mds = manifest_data_source.ManifestDataSource(FakeServerInstance())
+    self.maxDiff = None
+    self.assertEqual(expected_app, mds.get('apps'))
 
 if __name__ == '__main__':
   unittest.main()

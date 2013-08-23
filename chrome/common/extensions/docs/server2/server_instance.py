@@ -7,10 +7,9 @@ from api_list_data_source import APIListDataSource
 from appengine_wrappers import IsDevServer
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
-from data_source_registry import DataSourceRegistry
+from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
-from manifest_data_source import ManifestDataSource
 from host_file_system_creator import HostFileSystemCreator
 from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
@@ -97,12 +96,6 @@ class ServerInstance(object):
         self.compiled_host_fs_factory,
         svn_constants.JSON_PATH)
 
-    self.manifest_data_source = ManifestDataSource(
-        self.compiled_host_fs_factory,
-        host_file_system,
-        '/'.join((svn_constants.JSON_PATH, 'manifest.json')),
-        '/'.join((svn_constants.API_PATH, '_manifest_features.json')))
-
     self.permissions_data_source = PermissionsDataSource(
         self.compiled_host_fs_factory,
         self.host_file_system,
@@ -123,6 +116,10 @@ class ServerInstance(object):
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
     self.strings_json_path = '/'.join((svn_constants.JSON_PATH, 'strings.json'))
+    self.manifest_json_path = '/'.join(
+        (svn_constants.JSON_PATH, 'manifest.json'))
+    self.manifest_features_path = '/'.join(
+        (svn_constants.API_PATH, '_manifest_features.json'))
 
     self.template_data_source_factory = TemplateDataSource.Factory(
         self.api_data_source_factory,
@@ -132,14 +129,13 @@ class ServerInstance(object):
         self.sidenav_data_source_factory,
         self.compiled_host_fs_factory,
         self.ref_resolver_factory,
-        self.manifest_data_source,
         self.permissions_data_source,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         svn_constants.PRIVATE_TEMPLATE_PATH,
         base_path,
         # TODO(jshumway): Remove this hack after data source registry
         # transition, ServerInstance should not know about DataSourceRegistry.
-        DataSourceRegistry.AsTemplateData(self))
+        CreateDataSources(self))
 
     self.api_data_source_factory.SetTemplateDataSource(
         self.template_data_source_factory)

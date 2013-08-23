@@ -101,7 +101,8 @@ class FeaturesUtilityTest(unittest.TestCase):
         'platforms': ['extension']
       },
       'doc2': {
-        'name': 'doc2'
+        'name': 'doc2',
+        'platforms': []
       },
       'doc3': {
         'name': 'doc3',

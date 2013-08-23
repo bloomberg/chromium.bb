@@ -79,6 +79,9 @@ class CronServletTest(unittest.TestCase):
 
   def testSafeRevision(self):
     test_data = {
+      'api': {
+        '_manifest_features.json': '{}'
+      },
       'docs': {
         'examples': {
           'examples.txt': 'examples.txt contents'
@@ -99,6 +102,7 @@ class CronServletTest(unittest.TestCase):
             },
           },
           'json': {
+            'manifest.json': '{}',
             'strings.json': '{}'
           },
         }

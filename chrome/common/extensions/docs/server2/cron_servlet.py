@@ -11,7 +11,7 @@ from appengine_wrappers import (
     GetAppVersion, IsDeadlineExceededError, IsDevServer, logservice)
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
-from data_source_registry import DataSourceRegistry
+from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from file_system_util import CreateURLsFromPaths
 from github_file_system import GithubFileSystem
@@ -193,8 +193,7 @@ class CronServlet(Servlet):
           _cronlog.info(
               '%s: took %s seconds' % (title, time.time() - start_time))
 
-      for data_source in DataSourceRegistry.AsTemplateData(
-          server_instance).values():
+      for data_source in CreateDataSources(server_instance).values():
         run_cron(data_source)
 
       run_cron(server_instance.redirector)
