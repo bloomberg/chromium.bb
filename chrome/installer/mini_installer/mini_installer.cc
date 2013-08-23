@@ -751,6 +751,15 @@ bool ShouldDeleteExtractedFiles() {
 // Main function. First gets a working dir, unpacks the resources and finally
 // executes setup.exe to do the install/upgrade.
 int WMain(HMODULE module) {
+#if defined(COMPONENT_BUILD)
+  static const wchar_t kComponentBuildIncompatibleMessage[] =
+      L"mini_installer.exe is incompatible with the component build, please run"
+      L" setup.exe with the same command line instead. See"
+      L" http://crbug.com/127233#c17 for details.";
+  ::MessageBox(NULL, kComponentBuildIncompatibleMessage, NULL, MB_ICONERROR);
+  return 1;
+#endif
+
   // Always start with deleting potential leftovers from previous installations.
   // This can make the difference between success and failure.  We've seen
   // many installations out in the field fail due to out of disk space problems
