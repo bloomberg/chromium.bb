@@ -81,6 +81,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // we will first show the press state, then trigger the click.
     private boolean mShowPressIsCalled;
 
+    // This flag is used for ignoring the remaining touch events, i.e., All the events until the
+    // next ACTION_DOWN. This is automatically set to false on the next ACTION_DOWN.
+    private boolean mIgnoreRemainingTouchEvents;
+
     // TODO(klobag): this is to avoid a bug in GestureDetector. With multi-touch,
     // mAlwaysInTapRegion is not reset. So when the last finger is up, onSingleTapUp()
     // will be mistakenly fired.
@@ -767,12 +771,32 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
+     * Cancel the current touch event sequence by sending ACTION_CANCEL and ignore all the
+     * subsequent events until the next ACTION_DOWN.
+     *
+     * One example usecase is stop processing the touch events when showing context popup menu.
+     */
+    public void setIgnoreRemainingTouchEvents() {
+        onTouchEvent(obtainActionCancelMotionEvent());
+        mIgnoreRemainingTouchEvents = true;
+    }
+
+    /**
      * Handle the incoming MotionEvent.
      * @return Whether the event was handled.
      */
     boolean onTouchEvent(MotionEvent event) {
         try {
             TraceEvent.begin("onTouchEvent");
+
+            if (mIgnoreRemainingTouchEvents) {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    mIgnoreRemainingTouchEvents = false;
+                } else {
+                    return false;
+                }
+            }
+
             mLongPressDetector.cancelLongPressIfNeeded(event);
             mSnapScrollController.setSnapScrollingMode(event);
             // Notify native that scrolling has stopped whenever a down action is processed prior to

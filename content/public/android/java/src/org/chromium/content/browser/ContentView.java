@@ -338,6 +338,11 @@ public class ContentView extends FrameLayout
         mContentViewCore.getContentViewGestureHandler().setIgnoreSingleTap(value);
     }
 
+    /** @see ContentViewGestureHandler#setIgnoreRemainingTouchEvents */
+    public void setIgnoreRemainingTouchEvents() {
+        mContentViewCore.getContentViewGestureHandler().setIgnoreRemainingTouchEvents();
+    }
+
     /**
      * Modify the ContentView magnification level. The effect of calling this
      * method is exactly as after "pinch zoom".
