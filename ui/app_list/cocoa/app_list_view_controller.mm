@@ -339,6 +339,10 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
   [appsSearchBoxController_ clearSearch];
 }
 
+- (void)redoSearch {
+  [self modelTextDidChange];
+}
+
 - (void)onSigninStatusChanged {
   [appsSearchBoxController_ rebuildMenu];
   app_list::SigninDelegate* signinDelegate =

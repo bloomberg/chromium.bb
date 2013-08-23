@@ -7,11 +7,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_vector.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
 
 @class NSMenu;
-@class NSTableView;
+@class AppsSearchResultsController;
 
 namespace app_list {
 
@@ -19,8 +18,8 @@ namespace app_list {
 // and updating the NSTableView where they are displayed.
 class AppsSearchResultsModelBridge : public ui::ListModelObserver {
  public:
-  AppsSearchResultsModelBridge(AppListModel::SearchResults* results_model,
-                               NSTableView* results_table_view);
+  explicit AppsSearchResultsModelBridge(
+      AppsSearchResultsController* results_controller);
   virtual ~AppsSearchResultsModelBridge();
 
   // Returns the context menu for the item at |index| in the search results
@@ -40,8 +39,7 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
   virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
   virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
 
-  AppListModel::SearchResults* results_;   // Weak. Owned by AppListModel.
-  base::scoped_nsobject<NSTableView> table_view_;
+  AppsSearchResultsController* parent_;  // Weak. Owns us.
   ScopedVector<ItemObserver> item_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsSearchResultsModelBridge);

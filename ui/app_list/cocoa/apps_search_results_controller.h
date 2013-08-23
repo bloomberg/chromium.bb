@@ -10,20 +10,21 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_model.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace app_list {
-class AppListModel;
 class AppsSearchResultsModelBridge;
 class SearchResult;
 }
 
 @class AppsSearchResultsCell;
 
-@protocol AppsSearchResultsDelegate
+@protocol AppsSearchResultsDelegate<NSObject>
 
 - (app_list::AppListModel*)appListModel;
 - (void)openResult:(app_list::SearchResult*)result;
+- (void)redoSearch;
 
 @end
 
@@ -40,22 +41,18 @@ APP_LIST_EXPORT
   NSPoint lastMouseDownInView_;
   NSInteger hoveredRowIndex_;
   scoped_ptr<app_list::AppsSearchResultsModelBridge> bridge_;
-  id<AppsSearchResultsDelegate> delegate_;  // Weak. Owns us.
+  NSObject<AppsSearchResultsDelegate>* delegate_;  // Weak. Owns us.
 }
 
-@property(assign, nonatomic) id<AppsSearchResultsDelegate> delegate;
+@property(assign, nonatomic) NSObject<AppsSearchResultsDelegate>* delegate;
+@property(readonly, nonatomic) app_list::AppListModel::SearchResults* results;
+@property(readonly, nonatomic) NSTableView* tableView;
 
 - (id)initWithAppsSearchResultsFrameSize:(NSSize)size;
 
 // Returns true when handling Enter, to activate the highlighted search result,
 // or up/down to navigate results.
 - (BOOL)handleCommandBySelector:(SEL)command;
-
-@end
-
-@interface AppsSearchResultsController (TestingAPI)
-
-- (NSTableView*)tableView;
 
 @end
 

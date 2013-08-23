@@ -7,6 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "ui/app_list/app_list_model.h"
+#import "ui/app_list/cocoa/apps_search_results_controller.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/search_result_observer.h"
 #import "ui/base/cocoa/menu_controller.h"
@@ -19,7 +21,7 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
       : bridge_(bridge), row_in_view_(index) {
     // Cache the result, because the results array is updated before notifying
     // observers (which happens before deleting the SearchResult).
-    result_ = bridge_->results_->GetItemAt(index);
+    result_ = [bridge_->parent_ results]->GetItemAt(index);
     result_->AddObserver(this);
   }
 
@@ -44,7 +46,7 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   virtual void OnIsInstallingChanged() OVERRIDE {}
   virtual void OnPercentDownloadedChanged() OVERRIDE {}
   virtual void OnItemInstalled() OVERRIDE {}
-  virtual void OnItemUninstalled() OVERRIDE {}
+  virtual void OnItemUninstalled() OVERRIDE;
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.
@@ -55,17 +57,24 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   DISALLOW_COPY_AND_ASSIGN(ItemObserver);
 };
 
+void AppsSearchResultsModelBridge::ItemObserver::OnItemUninstalled() {
+  // Performing the search again will destroy |this|, so post a task. This also
+  // ensures that the AppSearchProvider has observed the uninstall before
+  // performing the search again, otherwise it will provide a NULL result.
+  [[bridge_->parent_ delegate] performSelector:@selector(redoSearch)
+                                    withObject:nil
+                                    afterDelay:0];
+}
+
 AppsSearchResultsModelBridge::AppsSearchResultsModelBridge(
-    AppListModel::SearchResults* results_model,
-    NSTableView* results_table_view)
-    : results_(results_model),
-      table_view_([results_table_view retain]) {
+    AppsSearchResultsController* results_controller)
+    : parent_(results_controller) {
   UpdateItemObservers();
-  results_->AddObserver(this);
+  [parent_ results]->AddObserver(this);
 }
 
 AppsSearchResultsModelBridge::~AppsSearchResultsModelBridge() {
-  results_->RemoveObserver(this);
+  [parent_ results]->RemoveObserver(this);
 }
 
 NSMenu* AppsSearchResultsModelBridge::MenuForItem(size_t index) {
@@ -75,7 +84,7 @@ NSMenu* AppsSearchResultsModelBridge::MenuForItem(size_t index) {
 
 void AppsSearchResultsModelBridge::UpdateItemObservers() {
   DCHECK(item_observers_.empty());
-  const size_t itemCount = results_->item_count();
+  const size_t itemCount = [parent_ results]->item_count();
   for (size_t i = 0 ; i < itemCount; ++i)
     item_observers_.push_back(new ItemObserver(this, i));
 }
@@ -85,27 +94,27 @@ void AppsSearchResultsModelBridge::ReloadDataForItems(
   NSIndexSet* column = [NSIndexSet indexSetWithIndex:0];
   NSIndexSet* rows =
       [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, count)];
-  [table_view_ reloadDataForRowIndexes:rows
-                         columnIndexes:column];
+  [[parent_ tableView] reloadDataForRowIndexes:rows
+                                 columnIndexes:column];
 }
 
 void AppsSearchResultsModelBridge::ListItemsAdded(
     size_t start, size_t count) {
   item_observers_.clear();
-  if (start == static_cast<size_t>([table_view_ numberOfRows]))
-    [table_view_ noteNumberOfRowsChanged];
+  if (start == static_cast<size_t>([[parent_ tableView] numberOfRows]))
+    [[parent_ tableView] noteNumberOfRowsChanged];
   else
-    [table_view_ reloadData];
+    [[parent_ tableView] reloadData];
   UpdateItemObservers();
 }
 
 void AppsSearchResultsModelBridge::ListItemsRemoved(
     size_t start, size_t count) {
   item_observers_.clear();
-  if (start == results_->item_count())
-    [table_view_ noteNumberOfRowsChanged];
+  if (start == [parent_ results]->item_count())
+    [[parent_ tableView] noteNumberOfRowsChanged];
   else
-    [table_view_ reloadData];
+    [[parent_ tableView] reloadData];
   UpdateItemObservers();
 }
 

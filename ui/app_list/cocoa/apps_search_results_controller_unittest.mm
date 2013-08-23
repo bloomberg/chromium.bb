@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_search_results_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,15 +21,18 @@
  @private
   app_list::test::AppListTestModel appListModel_;
   app_list::SearchResult* lastOpenedResult_;
+  int redoSearchCount_;
 }
 
 @property(readonly, nonatomic) app_list::SearchResult* lastOpenedResult;
+@property(readonly, nonatomic) int redoSearchCount;
 
 @end
 
 @implementation TestAppsSearchResultsDelegate
 
 @synthesize lastOpenedResult = lastOpenedResult_;
+@synthesize redoSearchCount = redoSearchCount_;
 
 - (app_list::AppListModel*)appListModel {
   return &appListModel_;
@@ -36,6 +40,10 @@
 
 - (void)openResult:(app_list::SearchResult*)result {
   lastOpenedResult_ = result;
+}
+
+- (void)redoSearch {
+  ++redoSearchCount_;
 }
 
 @end
@@ -263,6 +271,16 @@ TEST_F(AppsSearchResultsControllerTest, ContextMenus) {
   menu = [table_view menuForEvent:mouse_in_row_1];
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"Menu For: Result 1", [[menu itemAtIndex:0] title]);
+}
+
+// Test that observing a search result item uninstall performs the search again.
+TEST_F(AppsSearchResultsControllerTest, UninstallRedperformsSearch) {
+  base::MessageLoopForUI message_loop;
+  EXPECT_EQ(0, [delegate_ redoSearchCount]);
+  ModelResultAt(0)->NotifyItemUninstalled();
+  message_loop.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  message_loop.Run();
+  EXPECT_EQ(1, [delegate_ redoSearchCount]);
 }
 
 }  // namespace test

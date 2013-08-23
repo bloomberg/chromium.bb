@@ -86,6 +86,15 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   return self;
 }
 
+- (app_list::AppListModel::SearchResults*)results {
+  DCHECK([delegate_ appListModel]);
+  return [delegate_ appListModel]->results();
+}
+
+- (NSTableView*)tableView {
+  return tableView_;
+}
+
 - (void)setDelegate:(id<AppsSearchResultsDelegate>)newDelegate {
   bridge_.reset();
   delegate_ = newDelegate;
@@ -95,8 +104,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
     return;
   }
 
-  bridge_.reset(new app_list::AppsSearchResultsModelBridge(
-      appListModel->results(), tableView_));
+  bridge_.reset(new app_list::AppsSearchResultsModelBridge(self));
   [tableView_ reloadData];
 }
 
@@ -114,10 +122,6 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
     return [self moveSelectionByDelta:1];
 
   return NO;
-}
-
-- (NSTableView*)tableView {
-  return tableView_;
 }
 
 - (void)loadAndSetViewWithResultsFrameSize:(NSSize)size {
