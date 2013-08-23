@@ -73,7 +73,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
   // Implements LocationBarView::Delegate:
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;

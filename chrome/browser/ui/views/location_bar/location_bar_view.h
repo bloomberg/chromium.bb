@@ -91,7 +91,7 @@ class LocationBarView : public LocationBar,
   class Delegate {
    public:
     // Should return the current web contents.
-    virtual content::WebContents* GetWebContents() const = 0;
+    virtual content::WebContents* GetWebContents() = 0;
 
     // Returns the InstantController, or NULL if there isn't one.
     virtual InstantController* GetInstant() = 0;
@@ -268,7 +268,7 @@ class LocationBarView : public LocationBar,
   virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
 

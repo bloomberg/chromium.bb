@@ -32,7 +32,7 @@ class OmniboxEditControllerMock : public OmniboxEditController {
   MOCK_CONST_METHOD0(GetFavicon, gfx::Image());
   MOCK_CONST_METHOD0(GetTitle, string16());
   MOCK_METHOD0(GetInstant, InstantController*());
-  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD0(GetToolbarModel, ToolbarModel*());
   MOCK_CONST_METHOD0(GetToolbarModel, ToolbarModel*());
 

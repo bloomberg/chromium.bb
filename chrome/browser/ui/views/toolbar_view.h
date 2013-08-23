@@ -93,7 +93,7 @@ class ToolbarView : public views::AccessiblePaneView,
                                    const gfx::Point& point) OVERRIDE;
 
   // Overridden from LocationBarView::Delegate:
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;

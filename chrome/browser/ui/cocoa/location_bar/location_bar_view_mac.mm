@@ -353,7 +353,7 @@ int LocationBarViewMac::PageActionVisibleCount() {
   return result;
 }
 
-WebContents* LocationBarViewMac::GetWebContents() const {
+WebContents* LocationBarViewMac::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 

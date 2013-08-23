@@ -120,7 +120,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
 
@@ -163,7 +163,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   // location bar.
   class PageToolViewGtk : public ui::AnimationDelegate {
    public:
-    explicit PageToolViewGtk(const LocationBarViewGtk* parent);
+    PageToolViewGtk();
     virtual ~PageToolViewGtk();
 
     GtkWidget* widget();
@@ -202,9 +202,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
     // Explanatory text (e.g. "popup blocked").
     ui::OwnedWidgetGtk label_;
-
-    // The owning LocationBarViewGtk.
-    const LocationBarViewGtk* parent_;
 
     // When we show explanatory text, we slide it in/out.
     ui::SlideAnimation animation_;

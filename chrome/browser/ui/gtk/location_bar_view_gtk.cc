@@ -176,7 +176,7 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
                                    public BubbleDelegateGtk {
  public:
   ContentSettingImageViewGtk(ContentSettingsType content_type,
-                             const LocationBarViewGtk* parent);
+                             LocationBarViewGtk* parent);
   virtual ~ContentSettingImageViewGtk();
 
   // PageToolViewGtk
@@ -196,6 +196,9 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
   virtual void BubbleClosing(BubbleGtk* bubble,
                              bool closed_by_escape) OVERRIDE;
 
+  // The owning LocationBarViewGtk.
+  LocationBarViewGtk* parent_;
+
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   // The currently shown bubble if any.
@@ -206,8 +209,9 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
 
 ContentSettingImageViewGtk::ContentSettingImageViewGtk(
     ContentSettingsType content_type,
-    const LocationBarViewGtk* parent)
-    : PageToolViewGtk(parent),
+    LocationBarViewGtk* parent)
+    : PageToolViewGtk(),
+      parent_(parent),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
@@ -615,7 +619,7 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
                                       ui::CHROME_NAMED_URL);
 }
 
-WebContents* LocationBarViewGtk::GetWebContents() const {
+WebContents* LocationBarViewGtk::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
@@ -826,11 +830,12 @@ void LocationBarViewGtk::OnSetFocus() {
 }
 
 gfx::Image LocationBarViewGtk::GetFavicon() const {
-  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
+  return FaviconTabHelper::FromWebContents(
+      browser_->tab_strip_model()->GetActiveWebContents())->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
-  return GetWebContents()->GetTitle();
+  return browser_->tab_strip_model()->GetActiveWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewGtk::GetInstant() {
@@ -1687,14 +1692,12 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarViewGtk::PageToolViewGtk
 
-LocationBarViewGtk::PageToolViewGtk::PageToolViewGtk(
-    const LocationBarViewGtk* parent)
+LocationBarViewGtk::PageToolViewGtk::PageToolViewGtk()
     : alignment_(gtk_alignment_new(0, 0, 1, 1)),
       event_box_(gtk_event_box_new()),
       hbox_(gtk_hbox_new(FALSE, InnerPadding())),
       image_(gtk_image_new()),
       label_(gtk_label_new(NULL)),
-      parent_(parent),
       animation_(this),
       weak_factory_(this) {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_.get()), 1, 1, 0, 0);

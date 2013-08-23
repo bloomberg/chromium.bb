@@ -1107,7 +1107,7 @@ InstantController* LocationBarView::GetInstant() {
   return delegate_->GetInstant();
 }
 
-WebContents* LocationBarView::GetWebContents() const {
+WebContents* LocationBarView::GetWebContents() {
   return delegate_->GetWebContents();
 }
 

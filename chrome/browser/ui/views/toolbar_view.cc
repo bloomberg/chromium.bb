@@ -343,7 +343,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, LocationBarView::Delegate implementation:
 
-WebContents* ToolbarView::GetWebContents() const {
+WebContents* ToolbarView::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
