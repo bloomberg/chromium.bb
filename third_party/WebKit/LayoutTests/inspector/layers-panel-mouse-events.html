@@ -70,8 +70,8 @@ InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
     }
     var layer3DView = WebInspector.panel("layers")._layers3DView;
     var rootElement = layer3DView._elementForLayer(InspectorTest._layerTreeModel.root());
-    var screenOffsetX = Math.round(layer3DView._lastScale * offsetX) + 2;
-    var screenOffsetY = Math.round(layer3DView._lastScale * offsetY) + 2;
+    var screenOffsetX = Math.round(layer3DView._scale * offsetX) + 2;
+    var screenOffsetY = Math.round(layer3DView._scale * offsetY) + 2;
     InspectorTest.dispatchMouseEvent(eventType, button, rootElement, screenOffsetX, screenOffsetY);
 }
 
