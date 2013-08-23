@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -55,10 +54,6 @@ const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
 
 // The number of days after which we identify a build/install as outdated.
 const uint64 kOutdatedBuildAgeInDays = 12 * 7;
-
-// Finch Experiment strings to identify if we should check for outdated install.
-const char kOutdatedInstallCheckTrialName[] = "OutdatedInstallCheck";
-const char kOutdatedInstallCheck12WeeksGroupName[] = "12WeeksOutdatedInstall";
 
 std::string CmdLineInterval() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
@@ -322,11 +317,6 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   static bool simulate_outdated = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSimulateOutdated);
   if (!simulate_outdated) {
-    if (base::FieldTrialList::FindFullName(kOutdatedInstallCheckTrialName) !=
-            kOutdatedInstallCheck12WeeksGroupName) {
-      return false;
-    }
-
     // Also don't show the bubble if we have a brand code that is NOT organic.
     std::string brand;
     if (google_util::GetBrand(&brand) && !google_util::IsOrganic(brand))
