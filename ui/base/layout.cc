@@ -66,7 +66,8 @@ bool UseTouchOptimizedUI() {
 }
 #endif  // defined(OS_WIN)
 
-const float kScaleFactorScales[] = {1.0f, 1.0f, 1.33f, 1.4f, 1.5f, 1.8f, 2.0f};
+const float kScaleFactorScales[] = {1.0f, 1.0f, 1.25f, 1.33f, 1.4f, 1.5f, 1.8f,
+                                    2.0f};
 COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);

@@ -15,6 +15,7 @@ namespace ui {
 
 TEST(LayoutTest, GetScaleFactorScale) {
   EXPECT_FLOAT_EQ(1.0f, GetScaleFactorScale(SCALE_FACTOR_100P));
+  EXPECT_FLOAT_EQ(1.25f, GetScaleFactorScale(SCALE_FACTOR_125P));
   EXPECT_FLOAT_EQ(1.33f, GetScaleFactorScale(SCALE_FACTOR_133P));
   EXPECT_FLOAT_EQ(1.4f, GetScaleFactorScale(SCALE_FACTOR_140P));
   EXPECT_FLOAT_EQ(1.5f, GetScaleFactorScale(SCALE_FACTOR_150P));
@@ -47,8 +48,9 @@ TEST(LayoutTest, GetScaleFactorFromScaleAllSupported) {
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.1f));
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.9f));
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(1.0f));
-  EXPECT_EQ(SCALE_FACTOR_133P, GetScaleFactorFromScale(1.19f));
-  EXPECT_EQ(SCALE_FACTOR_133P, GetScaleFactorFromScale(1.21f));
+  EXPECT_EQ(SCALE_FACTOR_125P, GetScaleFactorFromScale(1.19f));
+  EXPECT_EQ(SCALE_FACTOR_125P, GetScaleFactorFromScale(1.21f));
+  EXPECT_EQ(SCALE_FACTOR_133P, GetScaleFactorFromScale(1.291f));
   EXPECT_EQ(SCALE_FACTOR_133P, GetScaleFactorFromScale(1.3f));
   EXPECT_EQ(SCALE_FACTOR_140P, GetScaleFactorFromScale(1.4f));
   EXPECT_EQ(SCALE_FACTOR_150P, GetScaleFactorFromScale(1.59f));
