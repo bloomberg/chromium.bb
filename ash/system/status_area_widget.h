@@ -41,9 +41,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // Set the visibility of system notifications.
   void SetHideSystemNotifications(bool hide);
 
-  // Returns true if it is OK to show a non system notification.
-  bool ShouldShowWebNotifications();
-
   // Called by the client when the login status changes. Caches login_status
   // and calls UpdateAfterLoginStatusChange for the system tray and the web
   // notification tray.

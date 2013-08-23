@@ -135,10 +135,6 @@ void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
     system_tray_->SetHideNotifications(hide);
 }
 
-bool StatusAreaWidget::ShouldShowWebNotifications() {
-  return !(system_tray_ && system_tray_->IsAnyBubbleVisible());
-}
-
 void StatusAreaWidget::UpdateAfterLoginStatusChange(
     user::LoginStatus login_status) {
   if (login_status_ == login_status)

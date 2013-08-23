@@ -68,11 +68,17 @@ const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 class WorkAreaObserver : public ShelfLayoutManagerObserver,
                          public ShellObserver {
  public:
-  WorkAreaObserver(message_center::MessagePopupCollection* collection,
-                   aura::RootWindow* root_window);
+  WorkAreaObserver();
   virtual ~WorkAreaObserver();
 
   void SetSystemTrayHeight(int height);
+
+  // Starts observing |shelf| and shell and sends the change to |collection|.
+  void StartObserving(message_center::MessagePopupCollection* collection,
+                      aura::RootWindow* root_window);
+
+  // Stops the observing session.
+  void StopObserving();
 
   // Overridden from ShellObserver:
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
@@ -92,22 +98,15 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
   DISALLOW_COPY_AND_ASSIGN(WorkAreaObserver);
 };
 
-WorkAreaObserver::WorkAreaObserver(
-    message_center::MessagePopupCollection* collection,
-    aura::RootWindow* root_window)
-    : collection_(collection),
-      root_window_(root_window),
+WorkAreaObserver::WorkAreaObserver()
+    : collection_(NULL),
+      root_window_(NULL),
       shelf_(NULL),
       system_tray_height_(0) {
-  DCHECK(collection_);
-  UpdateShelf();
-  Shell::GetInstance()->AddShellObserver(this);
 }
 
 WorkAreaObserver::~WorkAreaObserver() {
-  Shell::GetInstance()->RemoveShellObserver(this);
-  if (shelf_)
-    shelf_->RemoveObserver(this);
+  StopObserving();
 }
 
 void WorkAreaObserver::SetSystemTrayHeight(int height) {
@@ -115,7 +114,7 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
 
   // If the shelf is shown during auto-hide state, the distance from the edge
   // should be reduced by the height of shelf's shown height.
-  if (shelf_->visibility_state() == SHELF_AUTO_HIDE &&
+  if (shelf_ && shelf_->visibility_state() == SHELF_AUTO_HIDE &&
       shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
     system_tray_height_ -= ShelfLayoutManager::GetPreferredShelfSize() -
         ShelfLayoutManager::kAutoHideSize;
@@ -124,7 +123,30 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
   if (system_tray_height_ > 0 && ash::switches::UseAlternateShelfLayout())
     system_tray_height_ += message_center::kMarginBetweenItems;
 
+  if (!shelf_)
+    return;
+
   OnAutoHideStateChanged(shelf_->auto_hide_state());
+}
+
+void WorkAreaObserver::StartObserving(
+    message_center::MessagePopupCollection* collection,
+    aura::RootWindow* root_window) {
+  DCHECK(collection);
+  collection_ = collection;
+  root_window_ = root_window;
+  UpdateShelf();
+  Shell::GetInstance()->AddShellObserver(this);
+  if (system_tray_height_ > 0)
+    OnAutoHideStateChanged(shelf_->auto_hide_state());
+}
+
+void WorkAreaObserver::StopObserving() {
+  Shell::GetInstance()->RemoveShellObserver(this);
+  if (shelf_)
+    shelf_->RemoveObserver(this);
+  collection_ = NULL;
+  shelf_ = NULL;
 }
 
 void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
@@ -286,6 +308,7 @@ WebNotificationTray::WebNotificationTray(
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
       message_center::MessageCenter::Get()));
+  work_area_observer_.reset(new internal::WorkAreaObserver());
   OnMessageCenterTrayChanged();
 }
 
@@ -363,15 +386,12 @@ void WebNotificationTray::HideMessageCenter() {
 }
 
 void WebNotificationTray::SetSystemTrayHeight(int height) {
-  if (!work_area_observer_)
-    return;
   work_area_observer_->SetSystemTrayHeight(height);
 }
 
 bool WebNotificationTray::ShowPopups() {
   if (status_area_widget()->login_status() == user::LOGGED_IN_LOCKED ||
-      message_center_bubble() ||
-      !status_area_widget()->ShouldShowWebNotifications()) {
+      message_center_bubble()) {
     return false;
   }
 
@@ -382,14 +402,14 @@ bool WebNotificationTray::ShowPopups() {
       message_center(),
       message_center_tray_.get(),
       ash::switches::UseAlternateShelfLayout()));
-  work_area_observer_.reset(new internal::WorkAreaObserver(
-      popup_collection_.get(), GetWidget()->GetNativeView()->GetRootWindow()));
+  work_area_observer_->StartObserving(
+      popup_collection_.get(), GetWidget()->GetNativeView()->GetRootWindow());
   return true;
 }
 
 void WebNotificationTray::HidePopups() {
   popup_collection_.reset();
-  work_area_observer_.reset();
+  work_area_observer_->StopObserving();
 }
 
 // Private methods.
