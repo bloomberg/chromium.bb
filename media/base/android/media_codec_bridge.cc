@@ -85,7 +85,8 @@ MediaCodecBridge::MediaCodecBridge(const char* mime) {
 MediaCodecBridge::~MediaCodecBridge() {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
-  Java_MediaCodecBridge_release(env, j_media_codec_.obj());
+  if (j_media_codec_.obj())
+    Java_MediaCodecBridge_release(env, j_media_codec_.obj());
 }
 
 void MediaCodecBridge::StartInternal() {
@@ -236,6 +237,9 @@ bool AudioCodecBridge::Start(
     jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(AudioCodecToMimeType(codec));
+
+  if (!media_codec())
+    return false;
 
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, AudioCodecToMimeType(codec));
@@ -388,6 +392,9 @@ bool VideoCodecBridge::Start(
   JNIEnv* env = AttachCurrentThread();
   DCHECK(VideoCodecToMimeType(codec));
 
+  if (!media_codec())
+    return false;
+
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, VideoCodecToMimeType(codec));
   ScopedJavaLocalRef<jobject> j_format(
@@ -417,4 +424,3 @@ bool MediaCodecBridge::RegisterMediaCodecBridge(JNIEnv* env) {
 }
 
 }  // namespace media
-

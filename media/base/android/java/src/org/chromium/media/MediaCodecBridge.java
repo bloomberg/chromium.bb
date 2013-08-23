@@ -13,6 +13,7 @@ import android.media.MediaFormat;
 import android.view.Surface;
 import android.util.Log;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.chromium.base.CalledByNative;
@@ -79,7 +80,7 @@ class MediaCodecBridge {
         private int numBytes() { return mNumBytes; }
     }
 
-    private MediaCodecBridge(String mime) {
+    private MediaCodecBridge(String mime) throws IOException {
         mMediaCodec = MediaCodec.createDecoderByType(mime);
         mLastPresentationTimeUs = 0;
         mFlushed = true;
@@ -87,7 +88,14 @@ class MediaCodecBridge {
 
     @CalledByNative
     private static MediaCodecBridge create(String mime) {
-        return new MediaCodecBridge(mime);
+        MediaCodecBridge mediaCodecBridge = null;
+        try {
+            mediaCodecBridge = new MediaCodecBridge(mime);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to create MediaCodecBridge " + e.toString());
+        }
+
+        return mediaCodecBridge;
     }
 
     @CalledByNative
