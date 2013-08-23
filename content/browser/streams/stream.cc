@@ -23,10 +23,10 @@ namespace content {
 Stream::Stream(StreamRegistry* registry,
                StreamWriteObserver* write_observer,
                const GURL& url)
-    : data_bytes_read_(0),
-      can_add_data_(true),
+    : can_add_data_(true),
       url_(url),
       data_length_(0),
+      data_bytes_read_(0),
       last_total_buffered_bytes_(0),
       registry_(registry),
       read_observer_(NULL),
@@ -73,6 +73,7 @@ void Stream::Abort() {
   // is used for both input and output operation.
   writer_.reset();
   reader_.reset();
+  ClearBuffer();
   can_add_data_ = false;
   registry_->UnregisterStream(url());
 }
@@ -97,6 +98,9 @@ void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
 }
 
 void Stream::AddData(const char* data, size_t size) {
+  if (!writer_.get())
+    return;
+
   scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(size));
   memcpy(io_buffer->data(), data, size);
   AddData(io_buffer, size);
@@ -123,13 +127,12 @@ Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
 
   *bytes_read = 0;
   if (!data_.get()) {
-    // TODO(tyoshino): Add STREAM_ABORTED type to tell the reader that this
-    // stream is aborted.
-    if (!reader_.get())
-      return STREAM_EMPTY;
+    DCHECK(!data_length_);
+    DCHECK(!data_bytes_read_);
 
-    data_length_ = 0;
-    data_bytes_read_ = 0;
+    if (!reader_.get())
+      return STREAM_ABORTED;
+
     ByteStreamReader::StreamState state = reader_->Read(&data_, &data_length_);
     switch (state) {
       case ByteStreamReader::STREAM_HAS_DATA:
@@ -149,7 +152,7 @@ Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
   memcpy(buf->data(), data_->data() + data_bytes_read_, to_read);
   data_bytes_read_ += to_read;
   if (data_bytes_read_ >= data_length_)
-    data_ = NULL;
+    ClearBuffer();
 
   *bytes_read = to_read;
   return STREAM_HAS_DATA;
@@ -184,6 +187,12 @@ void Stream::OnSpaceAvailable() {
 void Stream::OnDataAvailable() {
   if (read_observer_)
     read_observer_->OnDataAvailable(this);
+}
+
+void Stream::ClearBuffer() {
+  data_ = NULL;
+  data_length_ = 0;
+  data_bytes_read_ = 0;
 }
 
 }  // namespace content

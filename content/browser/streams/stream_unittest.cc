@@ -65,6 +65,9 @@ class TestStreamReader : public StreamReadObserver {
         case Stream::STREAM_EMPTY:
           EXPECT_FALSE(completed_);
           return;
+        case Stream::STREAM_ABORTED:
+          EXPECT_FALSE(completed_);
+          return;
       }
       size_t old_capacity = buffer_->capacity();
       buffer_->SetCapacity(old_capacity + bytes_read);

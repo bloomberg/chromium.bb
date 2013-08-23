@@ -61,6 +61,11 @@ void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
     case Stream::STREAM_EMPTY:
       NOTREACHED();
       break;
+    case Stream::STREAM_ABORTED:
+      // Handle this as connection reset.
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_CONNECTION_RESET));
+      break;
   }
 
   // Clear the buffers before notifying the read is complete, so that it is
@@ -114,6 +119,11 @@ bool StreamURLRequestJob::ReadRawData(net::IOBuffer* buf,
       pending_buffer_ = buf;
       pending_buffer_size_ = to_read;
       SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+      return false;
+    case Stream::STREAM_ABORTED:
+      // Handle this as connection reset.
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_CONNECTION_RESET));
       return false;
   }
   NOTREACHED();
