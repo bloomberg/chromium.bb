@@ -36,6 +36,10 @@ const char kServicePlistPath[] = LAUNCH_AGENTS_DIR SERVICE_NAME ".plist";
 const char kLogFilePath[] = LOG_DIR SERVICE_NAME ".log";
 const char kLogFileConfigPath[] = LOG_CONFIG_DIR SERVICE_NAME ".conf";
 
+const char kNativeMessagingManifestPath[] =
+    "/Library/Google/Chrome/NativeMessagingHosts/"
+    "com.google.chrome.remote_desktop.json";
+
 const char kBrandedUninstallerPath[] = APPLICATIONS_DIR
     "Chrome Remote Desktop Host Uninstaller.app";
 const char kUnbrandedUninstallerPath[] = APPLICATIONS_DIR

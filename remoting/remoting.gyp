@@ -1129,6 +1129,7 @@
             'remoting_host_prefpane',
             'remoting_host_uninstaller',
             'remoting_me2me_host',
+            'remoting_native_messaging_host',
           ],
           'variables': {
             'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
@@ -1150,11 +1151,15 @@
                 '<(PRODUCT_DIR)/remoting_host_prefpane.prefPane',
                 '<(PRODUCT_DIR)/remoting_me2me_host.app',
                 '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
+                '<(PRODUCT_DIR)/remoting_native_messaging_host',
+                '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
               ],
               'generated_files_dst': [
                 'PreferencePanes/org.chromium.chromoting.prefPane',
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app',
                 'Applications/<(host_uninstaller_name).app',
+                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
+		'Config/com.google.chrome.remote_desktop.json',
               ],
               'source_files': [
                 '<@(remoting_host_installer_mac_files)',
@@ -1949,13 +1954,13 @@
           'generated_files': [
             '<@(_compiled_inputs)',
             '<(sas_dll_path)/sas.dll',
-            '<(PRODUCT_DIR)/remoting/native_messaging_manifest.json',
+            '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
             'resources/chromoting.ico',
           ],
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
             'files/sas.dll',
-            'files/native_messaging_manifest.json',
+            'files/com.google.chrome.remote_desktop.json',
             'files/chromoting.ico',
           ],
           'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
@@ -2219,7 +2224,7 @@
       'target_conditions': [
         # We cannot currently build the appsv2 version of WebApp on Windows as
         # there isn't a version of the "patch" tool available on windows. We
-        # should remove this condition when we remove the reliance on the 'patch'.
+        # should remove this condition when we remove the reliance on patch.
 
         # We define this in a 'target_conditions' section because 'plugin_path'
         # is defined in a 'conditions' section so its value is not available
@@ -2284,42 +2289,55 @@
       ],
       'variables': {
         'input': 'host/setup/native_messaging_manifest.json',
-        'output': '<(PRODUCT_DIR)/remoting/native_messaging_manifest.json',
+        'output': '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
       },
-      'conditions': [
-        [ 'OS=="win"', {
-          'variables': {
-            'native_messaging_host_path': 'remoting_host.exe',
-          },
-        }, {
-          'variables': {
-            'native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
-          },
-        }],
-      ],
-      'actions': [
-        {
-          'action_name': 'generate_manifest',
-          'inputs': [
-            '<(remoting_localize_path)',
-            '<(input)',
-          ],
-          'outputs': [
-            '<(output)',
-          ],
-          'action': [
-            'python',
-            '<(remoting_localize_path)',
-            '--define', 'NATIVE_MESSAGING_HOST_PATH=<(native_messaging_host_path)',
-            '--locale_dir', '<(webapp_locale_dir)',
-            '--template', '<(input)',
-            '--locale_output',
-            '<(output)',
-            '--encoding', 'utf-8',
-            'en',
-          ],
+      'target_conditions': [
+        ['OS == "win" or OS == "mac" or OS == "linux"', {
+          'conditions': [
+            [ 'OS == "win"', {
+              'variables': {
+                'native_messaging_host_path': 'remoting_host.exe',
+              },
+            }], [ 'OS == "mac"', {
+              'variables': {
+                'native_messaging_host_path': '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
+              },
+            }], ['OS == "linux"', {
+              'variables': {
+                'native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
+              },
+            }], ['OS != "linux" and OS != "mac" and OS != "win"', {
+              'variables': {
+                'native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
+              },
+            }],
+          ],  # conditions
+          'actions': [
+            {
+              'action_name': 'generate_manifest',
+              'inputs': [
+                '<(remoting_localize_path)',
+                '<(input)',
+              ],
+              'outputs': [
+                '<(output)',
+              ],
+              'action': [
+                'python',
+                '<(remoting_localize_path)',
+                '--define', 'NATIVE_MESSAGING_HOST_PATH=<(native_messaging_host_path)',
+                '--locale_dir', '<(webapp_locale_dir)',
+                '--template', '<(input)',
+                '--locale_output',
+                '<(output)',
+                '--encoding', 'utf-8',
+                'en',
+              ],
+            },
+          ],  # actions
         },
-      ],
+       ],
+      ],  # target_conditions
     },  # end of target 'remoting_native_messaging_manifest'
     {
       'target_name': 'remoting_resources',
