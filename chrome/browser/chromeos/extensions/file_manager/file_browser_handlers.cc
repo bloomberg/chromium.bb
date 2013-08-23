@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -461,6 +462,45 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
+// Returns true if |extension_id| and |action_id| indicate that the file
+// currently being handled should be opened with the browser. This function
+// is used to handle certain action IDs of the file manager.
+bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
+                               const std::string& action_id) {
+
+  return (extension_id == kFileManagerAppId &&
+          (action_id == "view-pdf" ||
+           action_id == "view-swf" ||
+           action_id == "view-in-browser" ||
+           action_id == "install-crx" ||
+           action_id == "open-hosted-generic" ||
+           action_id == "open-hosted-gdoc" ||
+           action_id == "open-hosted-gsheet" ||
+           action_id == "open-hosted-gslides"));
+}
+
+// Opens the files specified by |file_urls| with the browser. |profile| is
+// used for finding an active browser. Returns true on success. It's a
+// failure if no files are opened.
+bool OpenFilesWithBrowser(Profile* profile,
+                          const std::vector<FileSystemURL>& file_urls) {
+  Browser* browser = chrome::FindLastActiveWithProfile(
+      profile,
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  if (!browser)
+    return false;
+
+  int num_opened = 0;
+  for (size_t i = 0; i < file_urls.size(); ++i) {
+    const FileSystemURL& file_url = file_urls[i];
+    if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
+      const base::FilePath& file_path = file_url.path();
+      num_opened += util::OpenFileWithBrowser(browser, file_path);
+    }
+  }
+  return num_opened > 0;
+}
+
 }  // namespace
 
 bool ExecuteFileBrowserHandler(
@@ -473,6 +513,12 @@ bool ExecuteFileBrowserHandler(
   // Forbid calling undeclared handlers.
   if (!FindFileBrowserHandlerForActionId(extension, action_id))
     return false;
+
+  // Some action IDs of the file manager's file browser handlers require the
+  // files to be directly opened with the browser.
+  if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
+    return OpenFilesWithBrowser(profile, file_urls);
+  }
 
   // The executor object will be self deleted on completion.
   (new FileBrowserHandlerExecutor(

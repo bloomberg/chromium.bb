@@ -343,46 +343,15 @@ bool OpenFileWithFileHandler(Profile* profile,
   return false;
 }
 
-// Returns true if |action_id| indicates that the file currently being
-// handled should be opened with the browser (i.e. should be opened with
-// OpenFileWithBrowser()).
-bool ShouldBeOpenedWithBrowser(const std::string& action_id) {
-  return (action_id == "view-pdf" ||
-          action_id == "view-swf" ||
-          action_id == "view-in-browser" ||
-          action_id == "install-crx" ||
-          action_id == "open-hosted-generic" ||
-          action_id == "open-hosted-gdoc" ||
-          action_id == "open-hosted-gsheet" ||
-          action_id == "open-hosted-gslides");
-}
-
 // Opens the file specified by |file_path| and |url| with the file browser
 // handler specified by |handler|. Returns false if failed to open the file.
 bool OpenFileWithFileBrowserHandler(Profile* profile,
                                     const base::FilePath& file_path,
                                     const FileBrowserHandler& handler,
                                     const GURL& url) {
-  std::string extension_id = handler.extension_id();
-  std::string action_id = handler.id();
-  Browser* browser = chrome::FindLastActiveWithProfile(profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
-
-  // If there is no browsers for the profile, bail out. Return true so warning
-  // about file type not being supported is not displayed.
-  if (!browser)
-    return true;
-
-  // Some action IDs of the file manager's file browser handlers require the
-  // file to be directly opened with the browser.
-  if (extension_id == kFileManagerAppId &&
-      ShouldBeOpenedWithBrowser(action_id)) {
-    return OpenFileWithBrowser(browser, file_path);
-  }
-
-  file_tasks::TaskDescriptor task(extension_id,
+  file_tasks::TaskDescriptor task(handler.extension_id(),
                                   file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-                                  action_id);
+                                  handler.id());
   ExecuteFileTaskForUrl(profile, task, url);
   return true;
 }
@@ -391,8 +360,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
 // browser handler or file handler, preferably the default handler for the
 // type of the file), or opens the file with the browser. Returns false if
 // failed to open the file.
-bool OpenFileWithHandlerOrBrowser(Profile* profile,
-                                  const base::FilePath& file_path) {
+bool OpenFileWithHandler(Profile* profile, const base::FilePath& file_path) {
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
           profile, file_path, kFileManagerAppId, &url))
@@ -451,8 +419,8 @@ void ContinueOpenItem(Profile* profile,
     // A directory exists at |file_path|. Open it with the file manager.
     OpenFileManagerWithInternalActionId(file_path, "open");
   } else {
-    // |file_path| should be a file. Open it with a handler or the browser.
-    if (!OpenFileWithHandlerOrBrowser(profile, file_path))
+    // |file_path| should be a file. Open it with a handler.
+    if (!OpenFileWithHandler(profile, file_path))
       ShowWarningMessageBox(profile, file_path);
   }
 }
