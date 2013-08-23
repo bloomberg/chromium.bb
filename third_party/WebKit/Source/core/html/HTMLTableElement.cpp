@@ -87,7 +87,7 @@ HTMLTableSectionElement* HTMLTableElement::tHead() const
 {
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(theadTag))
-            return static_cast<HTMLTableSectionElement*>(child);
+            return toHTMLTableSectionElement(child);
     }
     return 0;
 }
@@ -108,7 +108,7 @@ HTMLTableSectionElement* HTMLTableElement::tFoot() const
 {
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(tfootTag))
-            return static_cast<HTMLTableSectionElement*>(child);
+            return toHTMLTableSectionElement(child);
     }
     return 0;
 }
@@ -180,7 +180,7 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
 {
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->hasTagName(tbodyTag))
-            return static_cast<HTMLTableSectionElement*>(child);
+            return toHTMLTableSectionElement(child);
     }
     return 0;
 }

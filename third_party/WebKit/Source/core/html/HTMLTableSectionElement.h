@@ -61,6 +61,12 @@ private:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
 };
 
+inline HTMLTableSectionElement* toHTMLTableSectionElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::tbodyTag) || node->hasTagName(HTMLNames::tfootTag) || node->hasTagName(HTMLNames::theadTag));
+    return static_cast<HTMLTableSectionElement*>(node);
+}
+
 } //namespace
 
 #endif
