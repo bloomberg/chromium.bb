@@ -50,6 +50,12 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   virtual void OnDatabaseClose() OVERRIDE;
 
  private:
+  // A type used to track pending writes to the database.  The key is an action
+  // to write; the value is the amount by which the count field should be
+  // incremented in the database.
+  typedef std::map<scoped_refptr<Action>, int, ActionComparatorExcludingTime>
+      ActionQueue;
+
   // Adds an Action to those to be written out; this is an internal method used
   // by ProcessAction and is called on the database thread.
   void QueueAction(scoped_refptr<Action> action);
@@ -78,8 +84,13 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
 
   // Tracks any pending updates to be written to the database, if write
   // batching is turned on.  Should only be accessed from the database thread.
-  // TODO(mvrable): Do in-memory aggregation as well.
-  Action::ActionVector queued_actions_;
+  ActionQueue queued_actions_;
+
+  // All queued actions must fall on the same day, so that we do not
+  // accidentally aggregate actions that should be kept separate.
+  // queued_actions_date_ is the date (timestamp at local midnight) of all the
+  // actions in queued_actions_.
+  base::Time queued_actions_date_;
 
   // The amount of time old activity log records should be kept in the
   // database.  This time is subtracted from the current time, rounded down to

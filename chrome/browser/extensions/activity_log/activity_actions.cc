@@ -231,4 +231,66 @@ std::string Action::PrintForDebug() const {
   return result;
 }
 
+bool ActionComparator::operator()(
+    const scoped_refptr<Action>& lhs,
+    const scoped_refptr<Action>& rhs) const {
+  if (lhs->time() != rhs->time())
+    return lhs->time() < rhs->time();
+  else
+    return ActionComparatorExcludingTime()(lhs, rhs);
+}
+
+bool ActionComparatorExcludingTime::operator()(
+    const scoped_refptr<Action>& lhs,
+    const scoped_refptr<Action>& rhs) const {
+  if (lhs->extension_id() != rhs->extension_id())
+    return lhs->extension_id() < rhs->extension_id();
+  if (lhs->action_type() != rhs->action_type())
+    return lhs->action_type() < rhs->action_type();
+  if (lhs->api_name() != rhs->api_name())
+    return lhs->api_name() < rhs->api_name();
+
+  // args might be null; treat a null value as less than all non-null values,
+  // including the empty string.
+  if (!lhs->args() && rhs->args())
+    return true;
+  if (lhs->args() && !rhs->args())
+    return false;
+  if (lhs->args() && rhs->args()) {
+    std::string lhs_args = ActivityLogPolicy::Util::Serialize(lhs->args());
+    std::string rhs_args = ActivityLogPolicy::Util::Serialize(rhs->args());
+    if (lhs_args != rhs_args)
+      return lhs_args < rhs_args;
+  }
+
+  // Compare URLs as strings, and treat the incognito flag as a separate field.
+  if (lhs->page_url().spec() != rhs->page_url().spec())
+    return lhs->page_url().spec() < rhs->page_url().spec();
+  if (lhs->page_incognito() != rhs->page_incognito())
+    return lhs->page_incognito() < rhs->page_incognito();
+
+  if (lhs->page_title() != rhs->page_title())
+    return lhs->page_title() < rhs->page_title();
+
+  if (lhs->arg_url().spec() != rhs->arg_url().spec())
+    return lhs->arg_url().spec() < rhs->arg_url().spec();
+  if (lhs->arg_incognito() != rhs->arg_incognito())
+    return lhs->arg_incognito() < rhs->arg_incognito();
+
+  // other is treated much like the args field.
+  if (!lhs->other() && rhs->other())
+    return true;
+  if (lhs->other() && !rhs->other())
+    return false;
+  if (lhs->other() && rhs->other()) {
+    std::string lhs_other = ActivityLogPolicy::Util::Serialize(lhs->other());
+    std::string rhs_other = ActivityLogPolicy::Util::Serialize(rhs->other());
+    if (lhs_other != rhs_other)
+      return lhs_other < rhs_other;
+  }
+
+  // All fields compare as equal if this point is reached.
+  return false;
+}
+
 }  // namespace extensions

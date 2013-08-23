@@ -40,8 +40,8 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // objects.
   typedef std::vector<scoped_refptr<Action> > ActionVector;
 
-  // Creates a new activity log Action object.  The extension_id, time, and
-  // type are immutable.  All other fields can be filled in with the
+  // Creates a new activity log Action object.  The extension_id and type
+  // fields are immutable.  All other fields can be filled in with the
   // accessors/mutators below.
   Action(const std::string& extension_id,
          const base::Time& time,
@@ -56,6 +56,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // The time the record was generated (or some approximation).
   const base::Time& time() const { return time_; }
+  void set_time(const base::Time& time) { time_ = time; }
 
   // The ActionType distinguishes different classes of actions that can be
   // logged, and determines which other fields are expected to be filled in.
@@ -121,7 +122,6 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   std::string extension_id_;
   base::Time time_;
-  api::activity_log_private::ExtensionActivity::ActivityType activity_type_;
   ActionType action_type_;
   std::string api_name_;
   scoped_ptr<ListValue> args_;
@@ -133,6 +133,22 @@ class Action : public base::RefCountedThreadSafe<Action> {
   scoped_ptr<DictionaryValue> other_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
+};
+
+// A comparator for Action class objects; this performs a lexicographic
+// comparison of the fields of the Action object (in an unspecfied order).
+// This can be used to use Action objects as keys in STL containers.
+struct ActionComparator {
+  // Evaluates the comparison lhs < rhs.
+  bool operator()(const scoped_refptr<Action>& lhs,
+                  const scoped_refptr<Action>& rhs) const;
+};
+
+// Like ActionComparator, but ignores the time field in comparisons.
+struct ActionComparatorExcludingTime {
+  // Evaluates the comparison lhs < rhs.
+  bool operator()(const scoped_refptr<Action>& lhs,
+                  const scoped_refptr<Action>& rhs) const;
 };
 
 }  // namespace extensions

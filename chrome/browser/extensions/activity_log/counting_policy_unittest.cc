@@ -43,8 +43,6 @@ class CountingPolicyTest : public testing::Test {
     profile_.reset(new TestingProfile());
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityLogTesting);
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
             (&command_line, base::FilePath(), false);
@@ -176,6 +174,21 @@ class CountingPolicyTest : public testing::Test {
     if (count > 0) {
       ASSERT_EQ(1u, actions->size());
       ASSERT_EQ(api_print, actions->at(0)->PrintForDebug());
+    } else {
+      ASSERT_EQ(0u, actions->size());
+    }
+  }
+
+  static void Arguments_CheckMergeCountAndTime(
+      int count,
+      const base::Time& time,
+      scoped_ptr<Action::ActionVector> actions) {
+    std::string api_print = base::StringPrintf(
+        "ID=punky CATEGORY=api_call API=brewster COUNT=%d", count);
+    if (count > 0) {
+      ASSERT_EQ(1u, actions->size());
+      ASSERT_EQ(api_print, actions->at(0)->PrintForDebug());
+      ASSERT_EQ(time, actions->at(0)->time());
     } else {
       ASSERT_EQ(0u, actions->size());
     }
@@ -460,6 +473,7 @@ TEST_F(CountingPolicyTest, StringTableCleaning) {
 
   // There should now be three strings ("punky", "brewster", "tabs.create") and
   // one URL in the tables.
+  policy->Flush();
   policy->ScheduleAndForget(policy,
                             &CountingPolicyTest::CheckStringTableSizes,
                             3,
@@ -472,12 +486,89 @@ TEST_F(CountingPolicyTest, StringTableCleaning) {
   policy->set_retention_time(base::TimeDelta::FromDays(2));
   policy->last_database_cleaning_time_ = base::Time();
   policy->ProcessAction(action);
+  policy->Flush();
   policy->ScheduleAndForget(policy,
                             &CountingPolicyTest::CheckStringTableSizes,
                             2,
                             0);
   WaitOnThread(BrowserThread::DB);
 
+  policy->Close();
+}
+
+// A stress test for memory- and database-based merging of actions.  Submit
+// multiple items, not in chronological order, spanning a few days.  Check that
+// items are merged properly and final timestamps are correct.
+TEST_F(CountingPolicyTest, MoreMerging) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->set_retention_time(base::TimeDelta::FromDays(14));
+
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                    base::TimeDelta::FromHours(12));
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Create an action 2 days ago, then 1 day ago, then 2 days ago.  Make sure
+  // that we end up with two merged records (one for each day), and each has
+  // the appropriate timestamp.  These merges should happen in the database
+  // since the date keeps changing.
+  base::Time time1 =
+      mock_clock->Now() - base::TimeDelta::FromDays(2) -
+      base::TimeDelta::FromMinutes(40);
+  base::Time time2 =
+      mock_clock->Now() - base::TimeDelta::FromDays(1) -
+      base::TimeDelta::FromMinutes(40);
+  base::Time time3 =
+      mock_clock->Now() - base::TimeDelta::FromDays(2) -
+      base::TimeDelta::FromMinutes(20);
+
+  scoped_refptr<Action> action =
+      new Action("punky", time1, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  action = new Action("punky", time2, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  action = new Action("punky", time3, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  CheckReadData(
+      policy,
+      "punky",
+      2,
+      base::Bind(
+          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 2, time3));
+  CheckReadData(
+      policy,
+      "punky",
+      1,
+      base::Bind(
+          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 1, time2));
+
+  // Create three actions today, where the merges should happen in memory.
+  // Again these are not chronological; timestamp time5 should win out since it
+  // is the latest.
+  base::Time time4 = mock_clock->Now() - base::TimeDelta::FromMinutes(60);
+  base::Time time5 = mock_clock->Now() - base::TimeDelta::FromMinutes(20);
+  base::Time time6 = mock_clock->Now() - base::TimeDelta::FromMinutes(40);
+
+  action = new Action("punky", time4, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  action = new Action("punky", time5, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  action = new Action("punky", time6, Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  CheckReadData(
+      policy,
+      "punky",
+      0,
+      base::Bind(
+          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 3, time5));
   policy->Close();
 }
 

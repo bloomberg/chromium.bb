@@ -57,6 +57,12 @@ ActivityLogDatabasePolicy::ActivityLogDatabasePolicy(
   ScheduleAndForget(db_, &ActivityDatabase::Init, database_path);
 }
 
+void ActivityLogDatabasePolicy::Flush() {
+  ScheduleAndForget(activity_database(),
+                    &ActivityDatabase::AdviseFlush,
+                    ActivityDatabase::kFlushImmediately);
+}
+
 sql::Connection* ActivityLogDatabasePolicy::GetDatabaseConnection() const {
   return db_->GetSqlConnection();
 }

@@ -161,6 +161,11 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   ActivityLogDatabasePolicy(Profile* profile,
                             const base::FilePath& database_name);
 
+  // Requests that in-memory state be written to the database.  This method can
+  // be called from any thread, but the database writes happen asynchronously
+  // on the database thread.
+  virtual void Flush();
+
  protected:
   // The Schedule methods dispatch the calls to the database on a
   // separate thread.
