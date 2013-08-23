@@ -3788,6 +3788,7 @@
             'platform/DecimalTest.cpp',
             'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
+            'platform/graphics/BitmapImageTest.cpp',
             'platform/graphics/FontTest.cpp',
             'platform/graphics/GraphicsContextTest.cpp',
             'platform/graphics/RoundedRectTest.cpp',

@@ -45,7 +45,7 @@ public:
     virtual IntSize size() const OVERRIDE { return m_size; }
 
     // Assume that generated content has no decoded data we need to worry about
-    virtual void destroyDecodedData() OVERRIDE { }
+    virtual void destroyDecodedData(bool) OVERRIDE { }
     virtual unsigned decodedSize() const OVERRIDE { return 0; }
 
 protected:

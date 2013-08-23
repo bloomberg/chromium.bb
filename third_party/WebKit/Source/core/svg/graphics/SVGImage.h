@@ -82,7 +82,7 @@ private:
 
     // FIXME: SVGImages are underreporting decoded sizes and will be unable
     // to prune because these functions are not implemented yet.
-    virtual void destroyDecodedData() OVERRIDE { }
+    virtual void destroyDecodedData(bool) OVERRIDE { }
     virtual unsigned decodedSize() const OVERRIDE { return 0; }
 
     // FIXME: Implement this to be less conservative.

@@ -87,6 +87,8 @@ public:
 #endif
 
 private:
+    friend class BitmapImageTest;
+
     void updateSize() const;
 
 protected:
@@ -115,10 +117,14 @@ protected:
     // Called before accessing m_frames[index]. Returns false on index out of bounds.
     bool ensureFrameIsCached(size_t index);
 
-    // Called to invalidate cached data. This is used while animating large
-    // images to keep memory footprint low. The decoder may preserve some frames
-    // to avoid redecoding the whole image on every frame.
-    virtual void destroyDecodedData() OVERRIDE;
+    // Called to invalidate cached data. When |destroyAll| is true, we wipe out
+    // the entire frame buffer cache and tell the image source to destroy
+    // everything; this is used when e.g. we want to free some room in the image
+    // cache. If |destroyAll| is false, we delete frames except the current
+    // frame; this is used while animating large images to keep memory footprint
+    // low; the decoder should preserve the current frame and may preserve some
+    // other frames to avoid redecoding the whole image on every frame.
+    virtual void destroyDecodedData(bool destroyAll) OVERRIDE;
 
     // If the image is large enough, calls destroyDecodedData().
     void destroyDecodedDataIfNecessary();

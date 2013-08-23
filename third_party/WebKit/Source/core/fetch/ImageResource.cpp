@@ -388,7 +388,7 @@ void ImageResource::destroyDecodedData()
         setDecodedSize(0);
         makePurgeable(true);
     } else if (m_image && !errorOccurred()) {
-        m_image->destroyDecodedData();
+        m_image->destroyDecodedData(true);
     }
 }
 
