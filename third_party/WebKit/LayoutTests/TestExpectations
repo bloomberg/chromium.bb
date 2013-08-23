@@ -1257,3 +1257,5 @@ crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] edi
 crbug.com/278318 [ Linux Debug Win ] http/tests/media/media-source/mediasource-play.html [ Timeout ]
 
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
+
+crbug.com/278518 [ Win7 Lion ] fast/loader/onunload-form-submit-crash.html [ Failure ]
