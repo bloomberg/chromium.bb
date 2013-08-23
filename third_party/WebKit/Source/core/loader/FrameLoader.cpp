@@ -639,7 +639,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     m_documentLoader->appendRedirect(newURL);
 
     m_client->dispatchDidNavigateWithinPage();
-    m_client->dispatchDidReceiveTitle(m_frame->document()->titleWithDirection());
+    m_client->dispatchDidReceiveTitle(m_frame->document()->title());
 
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressFinishedNotification();

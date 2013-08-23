@@ -40,7 +40,6 @@ namespace WebCore {
 
 class Frame;
 class SerializedScriptValue;
-class StringWithDirection;
 
 class HistoryController {
     WTF_MAKE_NONCOPYABLE(HistoryController);
@@ -63,7 +62,7 @@ public:
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void setCurrentItem(HistoryItem*);
-    void setCurrentItemTitle(const StringWithDirection&);
+    void setCurrentItemTitle(const String&);
     bool currentItemShouldBeReplaced() const;
 
     HistoryItem* previousItem() const { return m_previousItem.get(); }

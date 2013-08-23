@@ -48,7 +48,6 @@
 #include "core/page/PageVisibilityState.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
-#include "core/platform/text/StringWithDirection.h"
 #include "core/rendering/HitTestRequest.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
@@ -762,14 +761,11 @@ public:
     HTMLIFrameElement* seamlessParentIFrame() const;
     bool shouldDisplaySeamlesslyWithParent() const;
 
-    // Used by DOM bindings; no direction known.
-    String title() const { return m_title.string(); }
+    String title() const { return m_title; }
     void setTitle(const String&);
 
-    const StringWithDirection& titleWithDirection() const { return m_title; }
-
     Element* titleElement() const { return m_titleElement.get(); }
-    void setTitleElement(const StringWithDirection&, Element* titleElement);
+    void setTitleElement(const String& title, Element* titleElement);
     void removeTitle(Element* titleElement);
 
     String cookie(ExceptionState&) const;
@@ -1109,7 +1105,7 @@ private:
 
     virtual double timerAlignmentInterval() const;
 
-    void updateTitle(const StringWithDirection&);
+    void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
@@ -1249,8 +1245,8 @@ private:
     // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
     unsigned m_ignoreDestructiveWriteCount;
 
-    StringWithDirection m_title;
-    StringWithDirection m_rawTitle;
+    String m_title;
+    String m_rawTitle;
     bool m_titleSetExplicitly;
     RefPtr<Element> m_titleElement;
 

@@ -23,7 +23,6 @@
 #define HTMLTitleElement_h
 
 #include "core/html/HTMLElement.h"
-#include "core/platform/text/StringWithDirection.h"
 
 namespace WebCore {
 
@@ -34,24 +33,12 @@ public:
     String text() const;
     void setText(const String&);
 
-    StringWithDirection textWithDirection();
-
 private:
     HTMLTitleElement(const QualifiedName&, Document*);
-
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
-
-    void updateNonRenderStyle();
-    virtual RenderStyle* nonRendererStyle() const OVERRIDE;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual void didRecalcStyle(StyleChange) OVERRIDE;
-
-    RefPtr<RenderStyle> m_style;
 };
 
 inline bool isHTMLTitleElement(const Node* node)

@@ -65,7 +65,6 @@ class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 class SerializedScriptValue;
-class StringWithDirection;
 class SubstituteData;
 
 struct FrameLoadRequest;

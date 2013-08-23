@@ -436,11 +436,10 @@ void HistoryController::setCurrentItem(HistoryItem* item)
     m_currentItem = item;
 }
 
-void HistoryController::setCurrentItemTitle(const StringWithDirection& title)
+void HistoryController::setCurrentItemTitle(const String& title)
 {
     if (m_currentItem)
-        // FIXME: make use of title.direction() as well.
-        m_currentItem->setTitle(title.string());
+        m_currentItem->setTitle(title);
 }
 
 bool HistoryController::currentItemShouldBeReplaced() const

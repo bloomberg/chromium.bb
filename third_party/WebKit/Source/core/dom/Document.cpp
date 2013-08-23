@@ -1238,9 +1238,8 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
  *  3. Collapse internal whitespace.
  */
 template <typename CharacterType>
-static inline StringWithDirection canonicalizedTitle(Document* document, const StringWithDirection& titleWithDirection)
+static inline String canonicalizedTitle(Document* document, const String& title)
 {
-    const String& title = titleWithDirection.string();
     const CharacterType* characters = title.getCharacters<CharacterType>();
     unsigned length = title.length();
     unsigned i;
@@ -1256,7 +1255,7 @@ static inline StringWithDirection canonicalizedTitle(Document* document, const S
     }
 
     if (i == length)
-        return StringWithDirection();
+        return String();
 
     // Replace control characters with spaces, and backslashes with currency symbols, and collapse whitespace.
     bool previousCharWasWS = false;
@@ -1281,32 +1280,30 @@ static inline StringWithDirection canonicalizedTitle(Document* document, const S
     }
 
     if (!builderIndex && buffer[builderIndex] == ' ')
-        return StringWithDirection();
+        return String();
 
     buffer.shrink(builderIndex + 1);
 
     // Replace the backslashes with currency symbols if the encoding requires it.
     document->displayBufferModifiedByEncoding(buffer.characters(), buffer.length());
 
-    return StringWithDirection(String::adopt(buffer), titleWithDirection.direction());
+    return String::adopt(buffer);
 }
 
-void Document::updateTitle(const StringWithDirection& title)
+void Document::updateTitle(const String& title)
 {
     if (m_rawTitle == title)
         return;
 
     m_rawTitle = title;
 
-    StringWithDirection oldTitle = m_title;
-    if (m_rawTitle.string().isEmpty())
-        m_title = StringWithDirection();
-    else {
-        if (m_rawTitle.string().is8Bit())
-            m_title = canonicalizedTitle<LChar>(this, m_rawTitle);
-        else
-            m_title = canonicalizedTitle<UChar>(this, m_rawTitle);
-    }
+    String oldTitle = m_title;
+    if (m_rawTitle.isEmpty())
+        m_title = String();
+    else if (m_rawTitle.is8Bit())
+        m_title = canonicalizedTitle<LChar>(this, m_rawTitle);
+    else
+        m_title = canonicalizedTitle<UChar>(this, m_rawTitle);
 
     if (!m_frame || oldTitle == m_title)
         return;
@@ -1327,8 +1324,7 @@ void Document::setTitle(const String& title)
         }
     }
 
-    // The DOM API has no method of specifying direction, so assume LTR.
-    updateTitle(StringWithDirection(title, LTR));
+    updateTitle(title);
 
     if (m_titleElement) {
         ASSERT(isHTMLTitleElement(m_titleElement.get()));
@@ -1337,7 +1333,7 @@ void Document::setTitle(const String& title)
     }
 }
 
-void Document::setTitleElement(const StringWithDirection& title, Element* titleElement)
+void Document::setTitleElement(const String& title, Element* titleElement)
 {
     if (titleElement != m_titleElement) {
         if (m_titleElement || m_titleSetExplicitly)
@@ -1357,19 +1353,20 @@ void Document::removeTitle(Element* titleElement)
     m_titleElement = 0;
     m_titleSetExplicitly = false;
 
+    // FIXME: This is broken for SVG.
     // Update title based on first title element in the head, if one exists.
     if (HTMLElement* headElement = head()) {
-        for (Node* e = headElement->firstChild(); e; e = e->nextSibling()) {
-            if (isHTMLTitleElement(e)) {
-                HTMLTitleElement* titleElement = toHTMLTitleElement(e);
-                setTitleElement(titleElement->textWithDirection(), titleElement);
-                break;
-            }
+        for (Element* element = headElement->firstElementChild(); element; element = element->nextElementSibling()) {
+            if (!isHTMLTitleElement(element))
+                continue;
+            HTMLTitleElement* title = toHTMLTitleElement(element);
+            setTitleElement(title->text(), title);
+            break;
         }
     }
 
     if (!m_titleElement)
-        updateTitle(StringWithDirection());
+        updateTitle(String());
 }
 
 PageVisibilityState Document::visibilityState() const

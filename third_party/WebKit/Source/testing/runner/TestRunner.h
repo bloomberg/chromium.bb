@@ -114,7 +114,6 @@ public:
     bool shouldDumpProgressFinishedCallback() const;
     bool deferMainResourceDataLoad() const;
     bool shouldStayOnPageAfterHandlingBeforeUnload() const;
-    void setTitleTextDirection(WebKit::WebTextDirection);
     const std::set<std::string>* httpHeadersToClear() const;
     void setTopLoadingFrame(WebKit::WebFrame*, bool);
     WebKit::WebFrame* topLoadingFrame() const;
@@ -572,9 +571,6 @@ private:
 
     // Bound variable to return the name of this platform (chromium).
     CppVariant m_platformName;
-
-    // Bound variable tracking the directionality of the <title> tag.
-    CppVariant m_titleTextDirection;
 
     // Bound variable counting the number of top URLs visited.
     CppVariant m_webHistoryItemCount;

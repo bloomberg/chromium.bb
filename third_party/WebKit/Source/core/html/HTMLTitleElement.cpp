@@ -52,7 +52,7 @@ Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode*
 {
     HTMLElement::insertedInto(insertionPoint);
     if (inDocument() && !isInShadowTree())
-        document()->setTitleElement(textWithDirection(), this);
+        document()->setTitleElement(text(), this);
     return InsertionDone;
 }
 
@@ -67,49 +67,7 @@ void HTMLTitleElement::childrenChanged(bool changedByParser, Node* beforeChange,
 {
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     if (inDocument() && !isInShadowTree())
-        document()->setTitleElement(textWithDirection(), this);
-}
-
-void HTMLTitleElement::attach(const AttachContext& context)
-{
-    HTMLElement::attach(context);
-    // If after attaching nothing called styleForRenderer() on this node we
-    // manually cache the value. This happens if our parent doesn't have a
-    // renderer like <optgroup> or if it doesn't allow children like <select>.
-    if (!m_style)
-        updateNonRenderStyle();
-}
-
-void HTMLTitleElement::detach(const AttachContext& context)
-{
-    m_style.clear();
-    HTMLElement::detach(context);
-}
-
-void HTMLTitleElement::updateNonRenderStyle()
-{
-    m_style = document()->styleForElementIgnoringPendingStylesheets(this);
-}
-
-RenderStyle* HTMLTitleElement::nonRendererStyle() const
-{
-    return m_style.get();
-}
-
-PassRefPtr<RenderStyle> HTMLTitleElement::customStyleForRenderer()
-{
-    // styleForRenderer is called whenever a new style should be associated
-    // with an Element so now is a good time to update our cached style.
-    updateNonRenderStyle();
-    return m_style;
-}
-
-void HTMLTitleElement::didRecalcStyle(StyleChange)
-{
-    if (isInShadowTree())
-        return;
-
-    document()->setTitleElement(textWithDirection(), this);
+        document()->setTitleElement(text(), this);
 }
 
 String HTMLTitleElement::text() const
@@ -122,14 +80,6 @@ String HTMLTitleElement::text() const
     }
 
     return result.toString();
-}
-
-StringWithDirection HTMLTitleElement::textWithDirection()
-{
-    TextDirection direction = LTR;
-    if (m_style)
-        direction = m_style->direction();
-    return StringWithDirection(text(), direction);
 }
 
 void HTMLTitleElement::setText(const String &value)

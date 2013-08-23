@@ -1219,8 +1219,6 @@ void WebTestProxyBase::didReceiveTitle(WebFrame* frame, const WebString& title, 
 
     if (m_testInterfaces->testRunner()->shouldDumpTitleChanges())
         m_delegate->printMessage(string("TITLE CHANGED: '") + title8.data() + "'\n");
-
-    m_testInterfaces->testRunner()->setTitleTextDirection(direction);
 }
 
 void WebTestProxyBase::didChangeIcon(WebFrame* frame, WebIconURL::Type)

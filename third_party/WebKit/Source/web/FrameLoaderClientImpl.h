@@ -84,7 +84,7 @@ public:
     virtual void dispatchDidNavigateWithinPage();
     virtual void dispatchWillClose();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
+    virtual void dispatchDidReceiveTitle(const String&);
     virtual void dispatchDidChangeIcons(WebCore::IconType);
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);

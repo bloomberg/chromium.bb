@@ -299,7 +299,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 
     // Properties.
     bindProperty("globalFlag", &m_globalFlag);
-    bindProperty("titleTextDirection", &m_titleTextDirection);
     bindProperty("platformName", &m_platformName);
     bindProperty("tooltipText", &m_tooltipText);
     bindProperty("disableNotifyDone", &m_disableNotifyDone);
@@ -427,7 +426,6 @@ void TestRunner::reset()
     m_httpHeadersToClear.clear();
 
     m_globalFlag.set(false);
-    m_titleTextDirection.set("ltr");
     m_webHistoryItemCount.set(0);
     m_interceptPostMessage.set(false);
     m_platformName.set("chromium");
@@ -627,11 +625,6 @@ bool TestRunner::isPrinting() const
 bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const
 {
     return m_shouldStayOnPageAfterHandlingBeforeUnload;
-}
-
-void TestRunner::setTitleTextDirection(WebKit::WebTextDirection dir)
-{
-    m_titleTextDirection.set(dir == WebKit::WebTextDirectionLeftToRight ? "ltr" : "rtl");
 }
 
 const std::set<std::string>* TestRunner::httpHeadersToClear() const

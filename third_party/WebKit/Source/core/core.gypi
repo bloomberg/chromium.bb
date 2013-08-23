@@ -3193,7 +3193,6 @@
             'platform/text/QuotedPrintable.cpp',
             'platform/text/RegularExpression.cpp',
             'platform/text/SegmentedString.cpp',
-            'platform/text/StringWithDirection.h',
             'platform/text/SuffixTree.h',
             'platform/text/TextBoundaries.cpp',
             'platform/text/TextBreakIterator.cpp',

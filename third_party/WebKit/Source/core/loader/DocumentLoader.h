@@ -41,7 +41,6 @@
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include "core/platform/text/StringWithDirection.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
