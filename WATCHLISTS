@@ -470,6 +470,9 @@
                    '|third_party/hunspell_dictionaries/'\
                    '|webkit/tools/test_shell/mock_spellcheck'
     },
+    'streams': {
+      'filepath': 'content/browser/streams/',
+    },
     'sync': {
       'filepath': 'chrome/browser/sync/|sync/',
     },
@@ -604,7 +607,6 @@
                       'ctguil+watch@chromium.org',
                       'aboxhall+watch@chromium.org',
                       'davidbarr+watch@chromium.org',
-                      'zork+watch@chromium.org',
                       'hashimoto+watch@chromium.org',
                       'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
@@ -761,6 +763,7 @@
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp@chromium.org',
                    'rouslan+spellwatch@chromium.org'],
+    'streams': ['zork+watch@chromium.org'],
     'sync': ['haitaol+watch@chromium.org',
              'rsimha+watch@chromium.org',
              'tim+watch@chromium.org'],
