@@ -22,7 +22,8 @@ class MockBrowserPluginManager : public BrowserPluginManager {
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) OVERRIDE;
-  virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) OVERRIDE;
+  virtual void AllocateInstanceID(
+      const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }

@@ -40,7 +40,7 @@ class CONTENT_EXPORT BrowserPluginManager
 
   explicit BrowserPluginManager(RenderViewImpl* render_view);
 
-  // Creates a new BrowserPlugin object with a unique identifier.
+  // Creates a new BrowserPlugin object.
   // BrowserPlugin is responsible for associating itself with the
   // BrowserPluginManager via AddBrowserPlugin. When it is destroyed, it is
   // responsible for removing its association via RemoveBrowserPlugin.
@@ -48,7 +48,12 @@ class CONTENT_EXPORT BrowserPluginManager
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) = 0;
-  virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) = 0;
+
+  // Asynchronously requests a new browser-process-allocated instance ID.
+  // After the browser process allocates an ID, it calls back into the
+  // |browser_plugin| if it's still alive.
+  virtual void AllocateInstanceID(
+      const base::WeakPtr<BrowserPlugin>& browser_plugin) = 0;
 
   void AddBrowserPlugin(int guest_instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int guest_instance_id);

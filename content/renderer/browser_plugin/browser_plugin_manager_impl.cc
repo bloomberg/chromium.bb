@@ -30,10 +30,10 @@ BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
 }
 
 void BrowserPluginManagerImpl::AllocateInstanceID(
-    BrowserPlugin* browser_plugin) {
+    const base::WeakPtr<BrowserPlugin>& browser_plugin) {
   int request_id = ++request_id_counter_;
-  pending_allocate_guest_instance_id_requests_.AddWithID(browser_plugin,
-                                                         request_id);
+  pending_allocate_guest_instance_id_requests_.insert(
+      std::make_pair(request_id, browser_plugin));
   Send(new BrowserPluginHostMsg_AllocateInstanceID(
       browser_plugin->render_view_routing_id(), request_id));
 }
@@ -79,11 +79,15 @@ void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
     const IPC::Message& message,
     int request_id,
     int guest_instance_id) {
-  BrowserPlugin* plugin =
-    pending_allocate_guest_instance_id_requests_.Lookup(request_id);
+  InstanceIDMap::iterator it =
+      pending_allocate_guest_instance_id_requests_.find(request_id);
+  if (it == pending_allocate_guest_instance_id_requests_.end())
+    return;
+
+  const base::WeakPtr<BrowserPlugin> plugin(it->second);
   if (!plugin)
     return;
-  pending_allocate_guest_instance_id_requests_.Remove(request_id);
+  pending_allocate_guest_instance_id_requests_.erase(request_id);
   plugin->OnInstanceIDAllocated(guest_instance_id);
 }
 

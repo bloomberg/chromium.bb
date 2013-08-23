@@ -280,7 +280,8 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
     // BrowserPlugin and sending a BrowserPluginHostMsg_CreateGuest to the
     // browser process in order to create a new guest.
     if (before_first_navigation_) {
-      browser_plugin_manager()->AllocateInstanceID(this);
+      browser_plugin_manager()->AllocateInstanceID(
+          weak_ptr_factory_.GetWeakPtr());
       before_first_navigation_ = false;
     }
     return true;

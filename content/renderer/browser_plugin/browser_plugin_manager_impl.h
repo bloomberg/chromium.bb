@@ -5,11 +5,10 @@
 #ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
 
+#include <map>
+
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "ui/gfx/size.h"
-
-struct BrowserPluginMsg_UpdateRect_Params;
-class WebCursor;
 
 namespace gfx {
 class Point;
@@ -26,7 +25,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) OVERRIDE;
-  virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) OVERRIDE;
+  virtual void AllocateInstanceID(
+      const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -46,7 +46,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                                  const gfx::Point& position);
 
   int request_id_counter_;
-  IDMap<BrowserPlugin> pending_allocate_guest_instance_id_requests_;
+  typedef std::map<int, const base::WeakPtr<BrowserPlugin> > InstanceIDMap;
+  InstanceIDMap pending_allocate_guest_instance_id_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

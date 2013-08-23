@@ -28,13 +28,13 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
 }
 
 void MockBrowserPluginManager::AllocateInstanceID(
-    BrowserPlugin* browser_plugin) {
+    const base::WeakPtr<BrowserPlugin>& browser_plugin) {
   int guest_instance_id = ++guest_instance_id_counter_;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockBrowserPluginManager::AllocateInstanceIDACK,
                  this,
-                 base::Unretained(browser_plugin),
+                 browser_plugin.get(),
                  guest_instance_id));
 }
 

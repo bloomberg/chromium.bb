@@ -830,6 +830,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   observer.Wait();
 }
 
+// Remove <webview> immediately after navigating it.
+// This is a regression test for http://crbug.com/276023.
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewAfterNavigation) {
+  TestHelper("testRemoveWebviewAfterNavigation",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
   TestHelper("testResizeWebviewResizesContent",
              "DoneShimTest.PASSED",

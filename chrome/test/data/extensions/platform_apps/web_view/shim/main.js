@@ -847,6 +847,16 @@ function testRemoveWebviewOnExit() {
   document.body.appendChild(webview);
 }
 
+function testRemoveWebviewAfterNavigation() {
+  var webview = new WebView();
+  document.body.appendChild(webview);
+  webview.src = 'data:text/html,trigger navigation';
+  document.body.removeChild(webview);
+  setTimeout(function() {
+    embedder.test.succeed();
+  }, 0);
+}
+
 function testResizeWebviewResizesContent() {
   var triggerNavUrl = 'data:text/html,trigger navigation';
   var webview = new WebView();
@@ -915,6 +925,7 @@ embedder.test.testList = {
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
   'testReload': testReload,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
+  'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent
 };
 
