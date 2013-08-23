@@ -94,7 +94,8 @@ void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
 
 PrefMemberBase::Internal::Internal()
     : thread_loop_(MessageLoopProxy::current()),
-      is_managed_(false) {
+      is_managed_(false),
+      is_user_modifiable_(false) {
 }
 PrefMemberBase::Internal::~Internal() { }
 
