@@ -26,7 +26,7 @@ cr.define('extensions', function() {
       el.addEventListener('change', this.handleDisableBailoutShortcutChange_);
 
       $('kiosk-disable-bailout-confirm-button').onclick = function(e) {
-        ExtensionSettings.showOverlay($('kiosk-apps-page'));
+        extensions.ExtensionSettings.showOverlay($('kiosk-apps-page'));
         chrome.send('setDisableBailoutShortcut', [true]);
       };
       $('kiosk-disable-bailout-cancel-button').onclick = this.handleCancel;
@@ -34,7 +34,7 @@ cr.define('extensions', function() {
 
     /** Handles overlay being canceled. */
     handleCancel: function() {
-      ExtensionSettings.showOverlay($('kiosk-apps-page'));
+      extensions.ExtensionSettings.showOverlay($('kiosk-apps-page'));
       $('kiosk-disable-bailout-shortcut').checked = false;
     },
 
@@ -52,7 +52,8 @@ cr.define('extensions', function() {
       }
 
       // Otherwise, show the confirmation overlay.
-      ExtensionSettings.showOverlay($('kiosk-disable-bailout-confirm-overlay'));
+      extensions.ExtensionSettings.showOverlay($(
+          'kiosk-disable-bailout-confirm-overlay'));
       return true;
     }
   };

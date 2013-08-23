@@ -26,11 +26,11 @@ TEST_F('ExtensionSettingsWebUITest', 'testChromeSendHandled', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   // This dialog should be hidden at first.
-  assertFalse($('packExtensionOverlay').classList.contains('showing'));
+  assertFalse($('pack-extension-overlay').classList.contains('showing'));
 
   // Show the dialog, which triggers a chrome.send() for metrics purposes.
   cr.dispatchSimpleEvent($('pack-extension'), 'click');
-  assertTrue($('packExtensionOverlay').classList.contains('showing'));
+  assertTrue($('pack-extension-overlay').classList.contains('showing'));
 });
 
 /**
@@ -55,5 +55,5 @@ TEST_F('ExtensionSettingsCommandsConfigWebUITest', 'testChromeSendHandler',
     function() {
   // Just navigating to the page should trigger the chrome.send().
   assertEquals(this.browsePreload, document.location.href);
-  assertTrue($('extensionCommandsOverlay').classList.contains('showing'));
+  assertTrue($('extension-commands-overlay').classList.contains('showing'));
 });

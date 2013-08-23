@@ -284,13 +284,13 @@ html[dir=rtl] .extension-commands-config {
   display: none;
 }
 
-#dropTargetOverlay {
+#drop-target-overlay {
   color: rgb(48, 57, 66);
   font-size: 18px;
   text-align: center;
 }
 
-#dropTargetOverlay div {
+#drop-target-overlay div {
   margin: 1em;
 }
 

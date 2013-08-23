@@ -81,7 +81,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleDismiss_: function() {
-      ExtensionSettings.showOverlay(null);
+      extensions.ExtensionSettings.showOverlay(null);
     }
   };
 

@@ -71,7 +71,7 @@ void CommandHandler::UpdateCommandDataOnPage() {
   DictionaryValue results;
   GetAllCommands(&results);
   web_ui()->CallJavascriptFunction(
-      "ExtensionCommandsOverlay.returnExtensionsData", results);
+      "extensions.ExtensionCommandsOverlay.returnExtensionsData", results);
 }
 
 void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {

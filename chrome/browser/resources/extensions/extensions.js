@@ -34,7 +34,7 @@ cr.define('extensions', function() {
     doDragEnter: function() {
       chrome.send('startDrag');
       ExtensionSettings.showOverlay(null);
-      ExtensionSettings.showOverlay($('dropTargetOverlay'));
+      ExtensionSettings.showOverlay($('drop-target-overlay'));
     },
     /** @override */
     doDragLeave: function() {
@@ -146,7 +146,7 @@ cr.define('extensions', function() {
         extensions.KioskDisableBailoutConfirm.getInstance().initialize();
       }
 
-      cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
+      cr.ui.overlay.setupOverlay($('drop-target-overlay'));
       cr.ui.overlay.globalInitialization();
 
       extensions.ExtensionFocusManager.getInstance().initialize();
@@ -177,7 +177,7 @@ cr.define('extensions', function() {
      * @private
      */
     handlePackExtension_: function(e) {
-      ExtensionSettings.showOverlay($('packExtensionOverlay'));
+      ExtensionSettings.showOverlay($('pack-extension-overlay'));
       chrome.send('metricsHandler:recordAction', ['Options_PackExtension']);
     },
 
@@ -187,7 +187,7 @@ cr.define('extensions', function() {
      * @private
      */
     showExtensionCommandsConfigUi_: function(e) {
-      ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
+      ExtensionSettings.showOverlay($('extension-commands-overlay'));
       chrome.send('metricsHandler:recordAction',
                   ['Options_ExtensionCommands']);
     },
@@ -409,8 +409,6 @@ cr.define('extensions', function() {
   };
 });
 
-var ExtensionSettings = extensions.ExtensionSettings;
-
 window.addEventListener('load', function(e) {
-  ExtensionSettings.getInstance().initialize();
+  extensions.ExtensionSettings.getInstance().initialize();
 });

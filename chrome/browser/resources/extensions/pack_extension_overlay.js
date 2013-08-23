@@ -23,13 +23,13 @@ cr.define('extensions', function() {
       cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
-      $('packExtensionDismiss').addEventListener('click',
+      $('pack-extension-dismiss').addEventListener('click',
           this.handleDismiss_.bind(this));
-      $('packExtensionCommit').addEventListener('click',
+      $('pack-extension-commit').addEventListener('click',
           this.handleCommit_.bind(this));
-      $('browseExtensionDir').addEventListener('click',
+      $('browse-extension-dir').addEventListener('click',
           this.handleBrowseExtensionDir_.bind(this));
-      $('browsePrivateKey').addEventListener('click',
+      $('browse-private-key').addEventListener('click',
           this.handleBrowsePrivateKey_.bind(this));
     },
 
@@ -38,7 +38,7 @@ cr.define('extensions', function() {
      * @param {Event} e The click event.
      */
     handleDismiss_: function(e) {
-      ExtensionSettings.showOverlay(null);
+      extensions.ExtensionSettings.showOverlay(null);
     },
 
     /**
@@ -46,8 +46,8 @@ cr.define('extensions', function() {
      * @param {Event} e The click event.
      */
     handleCommit_: function(e) {
-      var extensionPath = $('extensionRootDir').value;
-      var privateKeyPath = $('extensionPrivateKey').value;
+      var extensionPath = $('extension-root-dir').value;
+      var privateKeyPath = $('extension-private-key').value;
       chrome.send('pack', [extensionPath, privateKeyPath, 0]);
     },
 
@@ -75,7 +75,7 @@ cr.define('extensions', function() {
      */
     handleBrowseExtensionDir_: function(e) {
       this.showFileDialog_('folder', 'load', function(filePath) {
-        $('extensionRootDir').value = filePath;
+        $('extension-root-dir').value = filePath;
       });
     },
 
@@ -86,7 +86,7 @@ cr.define('extensions', function() {
      */
     handleBrowsePrivateKey_: function(e) {
       this.showFileDialog_('file', 'pem', function(filePath) {
-        $('extensionPrivateKey').value = filePath;
+        $('extension-private-key').value = filePath;
       });
     },
   };
@@ -103,10 +103,10 @@ cr.define('extensions', function() {
         loadTimeData.getString('ok'),
         '',
         function() {
-          ExtensionSettings.showOverlay(null);
+          extensions.ExtensionSettings.showOverlay(null);
         },
         null);
-    ExtensionSettings.showOverlay($('alertOverlay'));
+    extensions.ExtensionSettings.showOverlay($('alertOverlay'));
   };
 
   /**
@@ -120,10 +120,10 @@ cr.define('extensions', function() {
         loadTimeData.getString('ok'),
         '',
         function() {
-          ExtensionSettings.showOverlay($('packExtensionOverlay'));
+          extensions.ExtensionSettings.showOverlay($('pack-extension-overlay'));
         },
         null);
-    ExtensionSettings.showOverlay($('alertOverlay'));
+    extensions.ExtensionSettings.showOverlay($('alertOverlay'));
   };
 
   // Export
@@ -131,6 +131,3 @@ cr.define('extensions', function() {
     PackExtensionOverlay: PackExtensionOverlay
   };
 });
-
-// Update the C++ call so this isn't necessary.
-var PackExtensionOverlay = extensions.PackExtensionOverlay;

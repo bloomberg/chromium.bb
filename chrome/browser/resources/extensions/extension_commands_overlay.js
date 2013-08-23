@@ -31,7 +31,7 @@ cr.define('extensions', function() {
       cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
-      $('extensionCommandsDismiss').addEventListener('click',
+      $('extension-commands-dismiss').addEventListener('click',
           this.handleDismiss_.bind(this));
 
       // This will request the data to show on the page and will get a response
@@ -44,7 +44,7 @@ cr.define('extensions', function() {
      * @param {Event} e The click event.
      */
     handleDismiss_: function(e) {
-      ExtensionSettings.showOverlay(null);
+      extensions.ExtensionSettings.showOverlay(null);
     },
   };
 
@@ -75,6 +75,3 @@ cr.define('extensions', function() {
     ExtensionCommandsOverlay: ExtensionCommandsOverlay
   };
 });
-
-// Update the C++ call so this isn't necessary.
-var ExtensionCommandsOverlay = extensions.ExtensionCommandsOverlay;

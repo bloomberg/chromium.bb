@@ -73,7 +73,7 @@ void PackExtensionHandler::OnPackSuccess(const base::FilePath& crx_file,
       UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(
           crx_file, pem_file))));
   web_ui()->CallJavascriptFunction(
-      "PackExtensionOverlay.showSuccessMessage", arguments);
+      "extensions.PackExtensionOverlay.showSuccessMessage", arguments);
 }
 
 void PackExtensionHandler::OnPackFailure(const std::string& error,
@@ -85,8 +85,8 @@ void PackExtensionHandler::OnPackFailure(const std::string& error,
     base::FundamentalValue overwrite_flag(ExtensionCreator::kOverwriteCRX);
 
     web_ui()->CallJavascriptFunction(
-        "ExtensionSettings.askToOverrideWarning", error_str, extension_path_str,
-            key_path_str, overwrite_flag);
+        "extensions.ExtensionSettings.askToOverrideWarning",
+        error_str, extension_path_str, key_path_str, overwrite_flag);
   } else {
     ShowAlert(error);
   }
@@ -202,7 +202,8 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
 void PackExtensionHandler::ShowAlert(const std::string& message) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(message));
-  web_ui()->CallJavascriptFunction("PackExtensionOverlay.showError", arguments);
+  web_ui()->CallJavascriptFunction(
+      "extensions.PackExtensionOverlay.showError", arguments);
 }
 
 }  // namespace extensions

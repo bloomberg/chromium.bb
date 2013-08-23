@@ -631,8 +631,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();
   results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
 
-  web_ui()->CallJavascriptFunction("ExtensionSettings.returnExtensionsData",
-                                   results);
+  web_ui()->CallJavascriptFunction(
+      "extensions.ExtensionSettings.returnExtensionsData", results);
 
   MaybeRegisterForNotifications();
 }
