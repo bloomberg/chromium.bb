@@ -256,6 +256,11 @@ void WebSettingsImpl::setAuthorAndUserStylesEnabled(bool enabled)
     m_settings->setAuthorAndUserStylesEnabled(enabled);
 }
 
+void WebSettingsImpl::setUseLegacyBackgroundSizeShorthandBehavior(bool useLegacyBackgroundSizeShorthandBehavior)
+{
+    m_settings->setUseLegacyBackgroundSizeShorthandBehavior(useLegacyBackgroundSizeShorthandBehavior);
+}
+
 void WebSettingsImpl::setUseWideViewport(bool useWideViewport)
 {
     m_settings->setUseWideViewport(useWideViewport);
