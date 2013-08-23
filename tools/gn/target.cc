@@ -70,6 +70,28 @@ Target::Target(const Settings* settings, const Label& label)
 Target::~Target() {
 }
 
+// static
+const char* Target::GetStringForOutputType(OutputType type) {
+  switch (type) {
+    case UNKNOWN:
+      return "Unknown";
+    case GROUP:
+      return "Group";
+    case EXECUTABLE:
+      return "Executable";
+    case SHARED_LIBRARY:
+      return "Shared library";
+    case STATIC_LIBRARY:
+      return "Static library";
+    case COPY_FILES:
+      return "Copy";
+    case CUSTOM:
+      return "Custom";
+    default:
+      return "";
+  }
+}
+
 Target* Target::AsTarget() {
   return this;
 }

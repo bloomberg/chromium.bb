@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/err.h"
 #include "tools/gn/pattern.h"
+#include "tools/gn/source_dir.h"
 #include "tools/gn/value.h"
 
 class FunctionCallNode;
@@ -188,6 +189,12 @@ class Scope {
   void ClearProcessingImport();
   bool IsProcessingImport() const;
 
+  // The source directory associated with this scope. This will check embedded
+  // scopes until it finds a nonempty source directory. This will default to
+  // an empty dir if no containing scope has a source dir set.
+  const SourceDir& GetSourceDir() const;
+  void set_source_dir(const SourceDir& d) { source_dir_ = d; }
+
   // Properties are opaque pointers that code can use to set state on a Scope
   // that it can retrieve later.
   //
@@ -254,6 +261,8 @@ class Scope {
 
   typedef std::set<ProgrammaticProvider*> ProviderSet;
   ProviderSet programmatic_providers_;
+
+  SourceDir source_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(Scope);
 };

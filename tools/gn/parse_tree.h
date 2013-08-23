@@ -295,7 +295,7 @@ class ListNode : public ParseNode {
   void append_item(scoped_ptr<ParseNode> s) {
     contents_.push_back(s.release());
   }
-  const std::vector<ParseNode*>& contents() const { return contents_; }
+  const std::vector<const ParseNode*>& contents() const { return contents_; }
 
  private:
   // Tokens corresponding to the [ and ].
@@ -303,7 +303,7 @@ class ListNode : public ParseNode {
   Token end_token_;
 
   // Owning pointers, use unique_ptr when we can use C++11.
-  std::vector<ParseNode*> contents_;
+  std::vector<const ParseNode*> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ListNode);
 };

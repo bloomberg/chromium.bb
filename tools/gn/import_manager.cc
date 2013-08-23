@@ -24,6 +24,7 @@ Scope* UncachedImport(const Settings* settings,
   CHECK(block);
 
   scoped_ptr<Scope> scope(new Scope(settings->base_config()));
+  scope->set_source_dir(file.GetDir());
   scope->SetProcessingImport();
   block->ExecuteBlockInScope(scope.get(), err);
   if (err->has_error())

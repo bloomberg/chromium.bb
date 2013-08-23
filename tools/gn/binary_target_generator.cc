@@ -6,6 +6,7 @@
 
 #include "tools/gn/config_values_generator.h"
 #include "tools/gn/err.h"
+#include "tools/gn/scope.h"
 
 BinaryTargetGenerator::BinaryTargetGenerator(Target* target,
                                              Scope* scope,
@@ -27,7 +28,7 @@ void BinaryTargetGenerator::DoRun() {
 
   // Config values (compiler flags, etc.) set directly on this target.
   ConfigValuesGenerator gen(&target_->config_values(), scope_,
-                            function_token_, input_directory_, err_);
+                            function_token_, scope_->GetSourceDir(), err_);
   gen.Run();
   if (err_->has_error())
     return;

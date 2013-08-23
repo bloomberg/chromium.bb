@@ -27,11 +27,17 @@ struct CompareTargetLabel {
   }
 };
 
+void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result);
+
 void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
   if (result->find(target->label()) != result->end())
     return;  // Already did this target.
   result->insert(target->label());
 
+  RecursiveCollectChildDeps(target, result);
+}
+
+void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result) {
   const std::vector<const Target*>& deps = target->deps();
   for (size_t i = 0; i < deps.size(); i++)
     RecursiveCollectDeps(deps[i], result);
@@ -78,7 +84,7 @@ void PrintDeps(const Target* target, bool display_header) {
       OutputString("\nAll recursive dependencies:\n");
 
     std::set<Label> all_deps;
-    RecursiveCollectDeps(target, &all_deps);
+    RecursiveCollectChildDeps(target, &all_deps);
     for (std::set<Label>::iterator i = all_deps.begin();
          i != all_deps.end(); ++i)
       deps.push_back(*i);
@@ -326,14 +332,13 @@ int RunDesc(const std::vector<std::string>& args) {
   Label target_toolchain = target->label().GetToolchainLabel();
 
   // Header.
-  std::string title_target =
-      "Target: " + target->label().GetUserVisibleName(false);
-  std::string title_toolchain =
-      "Toolchain: " + target_toolchain.GetUserVisibleName(false);
-  OutputString(title_target + "\n", DECORATION_YELLOW);
-  OutputString(title_toolchain + "\n", DECORATION_YELLOW);
+  OutputString("Target: ", DECORATION_YELLOW);
+  OutputString(target->label().GetUserVisibleName(false) + "\n");
+  OutputString("Type: ", DECORATION_YELLOW);
   OutputString(std::string(
-      std::max(title_target.size(), title_toolchain.size()), '=') + "\n");
+      Target::GetStringForOutputType(target->output_type())) + "\n");
+  OutputString("Toolchain: ", DECORATION_YELLOW);
+  OutputString(target_toolchain.GetUserVisibleName(false) + "\n");
 
   PrintSources(target, true);
   PrintConfigs(target, true);

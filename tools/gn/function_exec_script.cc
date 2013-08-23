@@ -279,7 +279,7 @@ Value RunExecScript(Scope* scope,
 
   const Settings* settings = scope->settings();
   const BuildSettings* build_settings = settings->build_settings();
-  const SourceDir& cur_dir = SourceDirForFunctionCall(function);
+  const SourceDir& cur_dir = scope->GetSourceDir();
 
   // Find the python script to run.
   if (!args[0].VerifyTypeIs(Value::STRING, err))

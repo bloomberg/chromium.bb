@@ -28,7 +28,8 @@ class BuildSettings {
   // Absolute path of the source root on the local system. Everything is
   // relative to this.
   const base::FilePath& root_path() const { return root_path_; }
-  void set_root_path(const base::FilePath& r) { root_path_ = r; }
+  const std::string& root_path_utf8() const { return root_path_utf8_; }
+  void SetRootPath(const base::FilePath& r);
 
   // When nonempty, specifies a parallel directory higherarchy in which to
   // search for buildfiles if they're not found in the root higherarchy. This
@@ -95,6 +96,7 @@ class BuildSettings {
 
  private:
   base::FilePath root_path_;
+  std::string root_path_utf8_;
   base::FilePath secondary_source_path_;
   base::FilePath python_path_;
 

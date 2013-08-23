@@ -4,6 +4,7 @@
 
 #include "tools/gn/value_extractors.h"
 
+#include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
 #include "tools/gn/label.h"
 #include "tools/gn/source_dir.h"
@@ -14,12 +15,16 @@ namespace {
 // This extractor rejects files with system-absolute file paths. If we need
 // that in the future, we'll have to add some flag to control this.
 struct RelativeFileConverter {
-  RelativeFileConverter(const SourceDir& current_dir_in)
-      : current_dir(current_dir_in) {}
+  RelativeFileConverter(const BuildSettings* build_settings_in,
+                        const SourceDir& current_dir_in)
+      : build_settings(build_settings_in),
+        current_dir(current_dir_in) {
+  }
   bool operator()(const Value& v, SourceFile* out, Err* err) const {
     if (!v.VerifyTypeIs(Value::STRING, err))
       return false;
-    *out = current_dir.ResolveRelativeFile(v.string_value());
+    *out = current_dir.ResolveRelativeFile(v.string_value(),
+                                           build_settings->root_path_utf8());
     if (out->is_system_absolute()) {
       *err = Err(v, "System-absolute file path.",
           "You can't list a system-absolute file path here. Please include "
@@ -29,18 +34,24 @@ struct RelativeFileConverter {
     }
     return true;
   }
+  const BuildSettings* build_settings;
   const SourceDir& current_dir;
 };
 
 struct RelativeDirConverter {
-  RelativeDirConverter(const SourceDir& current_dir_in)
-      : current_dir(current_dir_in) {}
+  RelativeDirConverter(const BuildSettings* build_settings_in,
+                       const SourceDir& current_dir_in)
+      : build_settings(build_settings_in),
+        current_dir(current_dir_in) {
+  }
   bool operator()(const Value& v, SourceDir* out, Err* err) const {
     if (!v.VerifyTypeIs(Value::STRING, err))
       return false;
-    *out = current_dir.ResolveRelativeDir(v.string_value());
+    *out = current_dir.ResolveRelativeDir(v.string_value(),
+                                          build_settings->root_path_utf8());
     return true;
   }
+  const BuildSettings* build_settings;
   const SourceDir& current_dir;
 };
 
@@ -76,20 +87,22 @@ bool ExtractListOfStringValues(const Value& value,
   return true;
 }
 
-bool ExtractListOfRelativeFiles(const Value& value,
+bool ExtractListOfRelativeFiles(const BuildSettings* build_settings,
+                                const Value& value,
                                 const SourceDir& current_dir,
                                 std::vector<SourceFile>* files,
                                 Err* err) {
   return ListValueExtractor(value, files, err,
-                            RelativeFileConverter(current_dir));
+                            RelativeFileConverter(build_settings, current_dir));
 }
 
-bool ExtractListOfRelativeDirs(const Value& value,
+bool ExtractListOfRelativeDirs(const BuildSettings* build_settings,
+                               const Value& value,
                                const SourceDir& current_dir,
                                std::vector<SourceDir>* dest,
                                Err* err) {
   return ListValueExtractor(value, dest, err,
-                            RelativeDirConverter(current_dir));
+                            RelativeDirConverter(build_settings, current_dir));
 }
 
 bool ExtractListOfLabels(const Value& value,

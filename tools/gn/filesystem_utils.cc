@@ -251,6 +251,62 @@ bool EnsureStringIsInOutputDir(const SourceDir& dir,
   return true;
 }
 
+bool IsPathAbsolute(const base::StringPiece& path) {
+  if (path.empty())
+    return false;
+
+  if (path[0] != '/') {
+#if defined(OS_WIN)
+    // Check for Windows system paths like "C:\foo".
+    if (path.size() > 2 &&
+        path[1] == ':' && (path[2] == '/' || path[2] == '\\'))
+      return true;
+#endif
+    return false;  // Doesn't begin with a slash, is relative.
+  }
+
+  if (path.size() > 1 && path[1] == '/')
+    return false;  // Double slash at the beginning means source-relative.
+
+  return true;
+}
+
+bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
+                                        const base::StringPiece& path,
+                                        std::string* dest) {
+  DCHECK(IsPathAbsolute(source_root));
+  DCHECK(IsPathAbsolute(path));
+
+  dest->clear();
+
+  if (source_root.size() > path.size())
+    return false;  // The source root is longer: the path can never be inside.
+
+#if defined(OS_WIN)
+  // Source root should be canonical on Windows.
+  DCHECK(source_root.size() > 2 && source_root[0] != '/' &&
+         source_root[1] == ':' && source_root[2] =='\\');
+#error
+#else
+  // On non-Windows this is easy. Since we know both are absolute, just do a
+  // prefix check.
+  if (path.substr(0, source_root.size()) == source_root) {
+    dest->assign("//");  // Result is source root relative.
+
+    // The base may or may not have a trailing slash, so skip all slashes from
+    // the path after our prefix match.
+    size_t first_after_slash = source_root.size();
+    while (first_after_slash < path.size() && path[first_after_slash] == '/')
+      first_after_slash++;
+
+    dest->append(&path.data()[first_after_slash],
+                 path.size() - first_after_slash);
+    return true;
+  }
+#endif
+  return false;
+}
+
 std::string InvertDir(const SourceDir& path) {
   const std::string value = path.value();
   if (value.empty())

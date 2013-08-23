@@ -56,7 +56,7 @@ Value RunSetDefaultToolchain(Scope* scope,
   if (!scope->IsProcessingDefaultBuildConfig())
     return Value();
 
-  const SourceDir& current_dir = SourceDirForFunctionCall(function);
+  const SourceDir& current_dir = scope->GetSourceDir();
   const Label& default_toolchain = ToolchainLabelForScope(scope);
 
   if (!EnsureSingleStringArg(function, args, err))

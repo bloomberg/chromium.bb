@@ -51,7 +51,7 @@ Value RunToolchain(Scope* scope,
   // Note that we don't want to use MakeLabelForScope since that will include
   // the toolchain name in the label, and toolchain labels don't themselves
   // have toolchain names.
-  const SourceDir& input_dir = SourceDirForFunctionCall(function);
+  const SourceDir& input_dir = scope->GetSourceDir();
   Label label(input_dir, args[0].string_value(), SourceDir(), std::string());
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Generating toolchain", label.GetUserVisibleName(false));

@@ -10,6 +10,7 @@
 
 #include "tools/gn/value.h"
 
+class BuildSettings;
 class Err;
 class Label;
 class SourceDir;
@@ -37,13 +38,15 @@ bool ExtractListOfStringValues(const Value& value,
                                Err* err);
 
 // Looks for a list of source files relative to a given current dir.
-bool ExtractListOfRelativeFiles(const Value& value,
+bool ExtractListOfRelativeFiles(const BuildSettings* build_settings,
+                                const Value& value,
                                 const SourceDir& current_dir,
                                 std::vector<SourceFile>* files,
                                 Err* err);
 
 // Looks for a list of source directories relative to a given current dir.
-bool ExtractListOfRelativeDirs(const Value& value,
+bool ExtractListOfRelativeDirs(const BuildSettings* build_settings,
+                               const Value& value,
                                const SourceDir& current_dir,
                                std::vector<SourceDir>* dest,
                                Err* err);

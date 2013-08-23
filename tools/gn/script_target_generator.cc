@@ -45,7 +45,7 @@ void ScriptTargetGenerator::FillScript() {
     return;
 
   target_->script_values().set_script(
-      input_directory_.ResolveRelativeFile(value->string_value()));
+      scope_->GetSourceDir().ResolveRelativeFile(value->string_value()));
 }
 
 void ScriptTargetGenerator::FillScriptArgs() {
@@ -66,7 +66,8 @@ void ScriptTargetGenerator::FillOutputs() {
     return;
 
   Target::FileList outputs;
-  if (!ExtractListOfRelativeFiles(*value, input_directory_, &outputs, err_))
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &outputs, err_))
     return;
 
   // Validate that outputs are in the output dir.

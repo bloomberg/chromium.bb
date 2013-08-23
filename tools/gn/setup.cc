@@ -202,7 +202,7 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
 
   if (scheduler_.verbose_logging())
     scheduler_.Log("Using source root", FilePathToUTF8(root_path));
-  build_settings_.set_root_path(root_path);
+  build_settings_.SetRootPath(root_path);
 
   return true;
 }

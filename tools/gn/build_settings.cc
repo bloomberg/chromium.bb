@@ -15,6 +15,11 @@ BuildSettings::BuildSettings()
 BuildSettings::~BuildSettings() {
 }
 
+void BuildSettings::SetRootPath(const base::FilePath& r) {
+  root_path_ = r;
+  root_path_utf8_ = FilePathToUTF8(root_path_);
+}
+
 void BuildSettings::SetSecondarySourcePath(const SourceDir& d) {
   secondary_source_path_ = GetFullPath(d);
 }

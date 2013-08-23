@@ -3,19 +3,28 @@
 # found in the LICENSE file.
 
 template("grit") {
+  assert(defined(source),
+         "\"source\" must be defined for the grit template $target_name")
+  assert(!defined(sources) && !defined(outputs),
+         "Neither \"sources\" nor \"outputs\" can be defined for the grit " +
+         "template $target_name")
+
   resource_ids = "$relative_source_root_dir/tools/gritsettings/resource_ids"
-  output_dir = "$relative_target_gen_dir/grit"
-  grit_info_script = "grit_info.py"
+  output_dir = "$relative_target_gen_dir"
+
+  # Note that this needs to be source-absolute since the current directory will
+  # be that of the file invoking the template, not this file.
+  grit_info_script = "$relative_source_root_dir/tools/grit/grit_info.py"
 
   grit_inputs = exec_script(grit_info_script,
     [ "--inputs", source, "-f", resource_ids], "list lines")
   grit_outputs = exec_script(grit_info_script,
-    [ "--outputs", "\"$output_dir\"", source, "-f", resource_ids ],
+    [ "--outputs", "$output_dir", source, "-f", resource_ids ],
     "list lines")
 
   custom(target_name + "_grit") {
-    script = "grit.py"
-    inputs = grit_inputs
+    script = "$relative_source_root_dir/tools/grit/grit.py"
+    data = grit_inputs  # TODO(brettw) this should be inputs or something
     outputs = grit_outputs
 
     # TODO(brettw) grit_defines.

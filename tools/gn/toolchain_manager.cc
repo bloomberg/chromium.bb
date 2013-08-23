@@ -483,6 +483,7 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
     // Nobody should be accessing settings at this point other than us since we
     // haven't marked it loaded, so we can do it outside the lock.
     Scope* base_config = info->settings.base_config();
+    base_config->set_source_dir(SourceDir("//"));
 
     info->settings.build_settings()->build_args().SetupRootScope(base_config,
         info->settings.toolchain()->args());
@@ -537,6 +538,7 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
 
     Scope our_scope(info->settings.base_config());
     ScopePerFileProvider per_file_provider(&our_scope, file_name);
+    our_scope.set_source_dir(file_name.GetDir());
 
     Err err;
     root->Execute(&our_scope, &err);

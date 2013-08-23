@@ -60,10 +60,6 @@ class TargetGenerator {
   const Token& function_token_;
   Err* err_;
 
-  // Sources are relative to this. This comes from the input file which doesn't
-  // get freed so we don't acautlly have to make a copy.
-  const SourceDir& input_directory_;
-
  private:
   void FillDependentConfigs();  // Includes all types of dependent configs.
   void FillData();

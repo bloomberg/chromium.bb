@@ -6,6 +6,7 @@
 
 #include "tools/gn/config_values.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/settings.h"
 #include "tools/gn/value.h"
 #include "tools/gn/value_extractors.h"
 
@@ -67,7 +68,8 @@ void ConfigValuesGenerator::FillIncludes() {
     return;  // No value, empty input and succeed.
 
   std::vector<SourceDir> includes;
-  if (!ExtractListOfRelativeDirs(*value, input_dir_, &includes, err_))
+  if (!ExtractListOfRelativeDirs(scope_->settings()->build_settings(),
+                                 *value, input_dir_, &includes, err_))
     return;
   config_values_->swap_in_includes(&includes);
 }

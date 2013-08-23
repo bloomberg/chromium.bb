@@ -73,6 +73,43 @@ TEST(FilesystemUtils, FindDir) {
   EXPECT_EQ("foo/bar/", FindDir(&input));
 }
 
+TEST(FilesystemUtils, IsPathAbsolute) {
+  EXPECT_TRUE(IsPathAbsolute("/foo/bar"));
+  EXPECT_TRUE(IsPathAbsolute("/"));
+  EXPECT_FALSE(IsPathAbsolute(""));
+  EXPECT_FALSE(IsPathAbsolute("//"));
+  EXPECT_FALSE(IsPathAbsolute("//foo/bar"));
+
+#if defined(OS_WIN)
+  EXPECT_TRUE(IsPathAbsolute("C:/foo"));
+  EXPECT_TRUE(IsPathAbsolute("C:/"));
+  EXPECT_TRUE(IsPathAbsolute("C:\\foo"));
+  EXPECT_TRUE(IsPathAbsolute("C:\\"));
+  EXPECT_TRUE(IsPathAbsolute("/C:/foo"));
+  EXPECT_TRUE(IsPathAbsolute("/C:\\foo"));
+#endif
+}
+
+TEST(FilesystemUtils, MakeAbsolutePathRelativeIfPossible) {
+  std::string dest;
+
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("/base", "/base/foo/", &dest));
+  EXPECT_EQ("//foo/", dest);
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("/base", "/base/foo", &dest));
+  EXPECT_EQ("//foo", dest);
+  EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("/base/", "/base/foo/",
+                                                 &dest));
+  EXPECT_EQ("//foo/", dest);
+
+  EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("/base", "/ba", &dest));
+  EXPECT_FALSE(MakeAbsolutePathRelativeIfPossible("/base", "/notbase/foo",
+                                                  &dest));
+
+#if defined(OS_WIN)
+  //EXPECT_TRUE(MakeAbsolutePathRelativeIfPossible("
+#endif
+}
+
 TEST(FilesystemUtils, InvertDir) {
   EXPECT_TRUE(InvertDir(SourceDir()) == "");
   EXPECT_TRUE(InvertDir(SourceDir("/")) == "");

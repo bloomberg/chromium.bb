@@ -40,6 +40,9 @@ class Target : public Item {
   Target(const Settings* settings, const Label& label);
   virtual ~Target();
 
+  // Returns a string naming the output type.
+  static const char* GetStringForOutputType(OutputType type);
+
   // Item overrides.
   virtual Target* AsTarget() OVERRIDE;
   virtual const Target* AsTarget() const OVERRIDE;

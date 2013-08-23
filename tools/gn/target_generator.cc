@@ -29,8 +29,7 @@ TargetGenerator::TargetGenerator(Target* target,
     : target_(target),
       scope_(scope),
       function_token_(function_token),
-      err_(err),
-      input_directory_(function_token.location().file()->dir()) {
+      err_(err) {
 }
 
 TargetGenerator::~TargetGenerator() {
@@ -70,8 +69,7 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   // The location of the target is the directory name with no slash at the end.
   // FIXME(brettw) validate name.
   const Label& toolchain_label = ToolchainLabelForScope(scope);
-  Label label(function_token.location().file()->dir(),
-              args[0].string_value(),
+  Label label(scope->GetSourceDir(), args[0].string_value(),
               toolchain_label.dir(), toolchain_label.name());
 
   if (g_scheduler->verbose_logging())
@@ -121,8 +119,8 @@ void TargetGenerator::FillSources() {
     return;
 
   Target::FileList dest_sources;
-  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_sources,
-                                  err_))
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &dest_sources, err_))
     return;
   target_->swap_in_sources(&dest_sources);
 }
@@ -146,8 +144,8 @@ void TargetGenerator::FillData() {
     return;
 
   Target::FileList dest_data;
-  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_data,
-                                  err_))
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &dest_data, err_))
     return;
   target_->swap_in_data(&dest_data);
 }
@@ -180,7 +178,7 @@ void TargetGenerator::FillGenericConfigs(
     return;
 
   std::vector<Label> labels;
-  if (!ExtractListOfLabels(*value, input_directory_,
+  if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
                            ToolchainLabelForScope(scope_), &labels, err_))
     return;
 
@@ -205,7 +203,7 @@ void TargetGenerator::FillGenericDeps(
     return;
 
   std::vector<Label> labels;
-  if (!ExtractListOfLabels(*value, input_directory_,
+  if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
                            ToolchainLabelForScope(scope_), &labels, err_))
     return;
 
@@ -228,7 +226,7 @@ void TargetGenerator::FillForwardDependentConfigs() {
     return;
 
   std::vector<Label> labels;
-  if (!ExtractListOfLabels(*value, input_directory_,
+  if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
                            ToolchainLabelForScope(scope_), &labels, err_))
     return;
 

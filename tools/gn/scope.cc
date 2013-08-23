@@ -339,6 +339,14 @@ bool Scope::IsProcessingImport() const {
   return false;
 }
 
+const SourceDir& Scope::GetSourceDir() const {
+  if (!source_dir_.is_null())
+    return source_dir_;
+  if (containing())
+    return containing()->GetSourceDir();
+  return source_dir_;
+}
+
 void Scope::SetProperty(const void* key, void* value) {
   if (!value) {
     DCHECK(properties_.find(key) != properties_.end());

@@ -28,12 +28,17 @@ void NinjaScriptTargetWriter::Run() {
   if (script_cd_to_root.empty()) {
     script_cd_to_root = ".";
   } else {
-    // Remove trailing slash
+    // Remove trailing slash.
     DCHECK(script_cd_to_root[script_cd_to_root.size() - 1] == '/');
     script_cd_to_root.resize(script_cd_to_root.size() - 1);
   }
-  std::string script_relative_to_cd =
-      script_cd_to_root + target_->script_values().script().value();
+
+  // Compute the relative script file name. The script string should start with
+  // 2 slashes, and we trim 1.
+  DCHECK(target_->script_values().script().is_source_absolute());
+  std::string script_relative_to_cd = script_cd_to_root;
+  const std::string& script_string = target_->script_values().script().value();
+  script_relative_to_cd.append(&script_string[1], script_string.size() - 1);
 
   std::string custom_rule_name = WriteRuleDefinition(script_relative_to_cd);
 
@@ -61,7 +66,7 @@ void NinjaScriptTargetWriter::Run() {
   // Collects all output files for writing below.
   std::vector<OutputFile> output_files;
 
-  if (!has_sources()) {
+  if (has_sources()) {
     // Write separate rules for each input source file.
     WriteSourceRules(custom_rule_name, common_deps, script_cd,
                      script_cd_to_root, &output_files);
@@ -96,28 +101,48 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
   // Use a unique name for the response file when there are multiple build
   // steps so that they don't stomp on each other. When there are no sources,
   // there will be only one invocation so we can use a simple name.
-  std::string rspfile = custom_rule_name;
-  if (has_sources())
-    rspfile += ".$unique_name";
-  rspfile += ".rsp";
 
-  out_ << "rule " << custom_rule_name << std::endl;
-  out_ << "  command = $pythonpath gyp-win-tool action-wrapper $arch "
-       << rspfile << " ";
-  path_output_.WriteDir(out_, target_->label().dir(),
-                        PathOutput::DIR_NO_LAST_SLASH);
-  out_ << std::endl;
-  out_ << "  description = CUSTOM " << target_label << std::endl;
-  out_ << "  restat = 1" << std::endl;
-  out_ << "  rspfile = " << rspfile << std::endl;
+  if (settings_->IsWin()) {
+    // Send through gyp-win-tool and use a response file.
+    std::string rspfile = custom_rule_name;
+    if (has_sources())
+      rspfile += ".$unique_name";
+    rspfile += ".rsp";
 
-  // The build command goes in the rsp file.
-  out_ << "  rspfile_content = $pythonpath " << script_relative_to_cd;
-  for (size_t i = 0; i < target_->script_values().args().size(); i++) {
-    const std::string& arg = target_->script_values().args()[i];
-    out_ << " ";
-    WriteArg(arg);
+    out_ << "rule " << custom_rule_name << std::endl;
+    out_ << "  command = $pythonpath gyp-win-tool action-wrapper $arch "
+         << rspfile << " ";
+    path_output_.WriteDir(out_, target_->label().dir(),
+                          PathOutput::DIR_NO_LAST_SLASH);
+    out_ << std::endl;
+    out_ << "  description = CUSTOM " << target_label << std::endl;
+    out_ << "  restat = 1" << std::endl;
+    out_ << "  rspfile = " << rspfile << std::endl;
+
+    // The build command goes in the rsp file.
+    out_ << "  rspfile_content = $pythonpath " << script_relative_to_cd;
+    for (size_t i = 0; i < target_->script_values().args().size(); i++) {
+      const std::string& arg = target_->script_values().args()[i];
+      out_ << " ";
+      WriteArg(arg);
+    }
+  } else {
+    // Posix can execute Python directly.
+    out_ << "rule " << custom_rule_name << std::endl;
+    out_ << "  command = cd ";
+    path_output_.WriteDir(out_, target_->label().dir(),
+                          PathOutput::DIR_NO_LAST_SLASH);
+    out_ << "; $pythonpath " << script_relative_to_cd;
+    for (size_t i = 0; i < target_->script_values().args().size(); i++) {
+      const std::string& arg = target_->script_values().args()[i];
+      out_ << " ";
+      WriteArg(arg);
+    }
+    out_ << std::endl;
+    out_ << "  description = CUSTOM " << target_label << std::endl;
+    out_ << "  restat = 1" << std::endl;
   }
+
   out_ << std::endl;
   return custom_rule_name;
 }
