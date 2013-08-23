@@ -103,6 +103,7 @@ private:
 
     Vector<RefPtr<PerformanceEntry> > m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
+    double m_referenceTime;
 
     RefPtr<UserTiming> m_userTiming;
 };
