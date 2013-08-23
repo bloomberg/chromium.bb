@@ -36,7 +36,7 @@ function checkTree(root, expectedEntries) {
           }));
           chrome.fileSystem.getWritableEntry(
               entries[i], chrome.test.callbackFail(
-                  'Cannot write to file in a restricted location'));
+                  'Invalid parameters'));
         }
         delete expectedEntries[entries[i].name];
       }

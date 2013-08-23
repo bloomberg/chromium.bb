@@ -61,8 +61,6 @@ const char kSecurityError[] = "Security error";
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
     "be called from a background page.";
 const char kUserCancelled[] = "User cancelled";
-const char kWritableFileRestrictedLocationError[] =
-    "Cannot write to file in a restricted location";
 const char kWritableFileErrorFormat[] = "Error opening %s";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystem.write permission";
@@ -74,19 +72,6 @@ namespace file_system = extensions::api::file_system;
 namespace ChooseEntry = file_system::ChooseEntry;
 
 namespace {
-
-const int kBlacklistedPaths[] = {
-  chrome::DIR_APP,
-  chrome::DIR_USER_DATA,
-};
-
-#if defined(OS_CHROMEOS)
-// On Chrome OS, the default downloads directory is a subdirectory of user data
-// directory, and should be whitelisted.
-const int kWhitelistedPaths[] = {
-  chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
-};
-#endif
 
 #if defined(OS_MACOSX)
 // Retrieves the localized display name for the base name of the given path.
@@ -189,10 +174,15 @@ bool GetFileSystemAndPathOfFileEntry(
       base::FilePath::FromUTF8Unsafe(filesystem_path);
   base::FilePath virtual_path = context->CreateVirtualRootPath(*filesystem_id)
       .Append(relative_path);
-  if (!context->CrackVirtualPath(virtual_path,
-                                 filesystem_id,
-                                 NULL,
-                                 file_path)) {
+  fileapi::FileSystemType type;
+  if (!context->CrackVirtualPath(
+          virtual_path, filesystem_id, &type, file_path)) {
+    *error = kInvalidParameters;
+    return false;
+  }
+
+  if (type != fileapi::kFileSystemTypeNativeForPlatformApp &&
+      type != fileapi::kFileSystemTypeDragged) {
     *error = kInvalidParameters;
     return false;
   }
@@ -215,42 +205,12 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
 }
 
 bool DoCheckWritableFile(const base::FilePath& path,
-                         const base::FilePath& extension_directory,
                          std::string* error_message) {
   // Don't allow links.
   if (base::PathExists(path) && file_util::IsLink(path)) {
     *error_message = base::StringPrintf(kWritableFileErrorFormat,
                                         path.BaseName().AsUTF8Unsafe().c_str());
     return false;
-  }
-
-  if (extension_directory == path || extension_directory.IsParent(path)) {
-    *error_message = kWritableFileRestrictedLocationError;
-    return false;
-  }
-
-  bool is_whitelisted_path = false;
-
-#if defined(OS_CHROMEOS)
-  for (size_t i = 0; i < arraysize(kWhitelistedPaths); i++) {
-    base::FilePath whitelisted_path;
-    if (PathService::Get(kWhitelistedPaths[i], &whitelisted_path) &&
-        (whitelisted_path == path || whitelisted_path.IsParent(path))) {
-      is_whitelisted_path = true;
-      break;
-    }
-  }
-#endif
-
-  if (!is_whitelisted_path) {
-    for (size_t i = 0; i < arraysize(kBlacklistedPaths); i++) {
-      base::FilePath blacklisted_path;
-      if (PathService::Get(kBlacklistedPaths[i], &blacklisted_path) &&
-          (blacklisted_path == path || blacklisted_path.IsParent(path))) {
-        *error_message = kWritableFileRestrictedLocationError;
-        return false;
-      }
-    }
   }
 
   // Create the file if it doesn't already exist.
@@ -283,11 +243,9 @@ class WritableFileChecker
   WritableFileChecker(
       const std::vector<base::FilePath>& paths,
       Profile* profile,
-      const base::FilePath& extension_path,
       const base::Closure& on_success,
       const base::Callback<void(const std::string&)>& on_failure)
       : outstanding_tasks_(1),
-        extension_path_(extension_path),
         on_success_(on_success),
         on_failure_(on_failure) {
 #if defined(OS_CHROMEOS)
@@ -339,7 +297,7 @@ class WritableFileChecker
     std::string error;
     for (std::vector<base::FilePath>::const_iterator it = paths.begin();
          it != paths.end(); ++it) {
-      if (!DoCheckWritableFile(*it, extension_path_, &error)) {
+      if (!DoCheckWritableFile(*it, &error)) {
         content::BrowserThread::PostTask(
             content::BrowserThread::UI,
             FROM_HERE,
@@ -375,7 +333,6 @@ class WritableFileChecker
 #endif
 
   int outstanding_tasks_;
-  const base::FilePath extension_path_;
   std::string error_;
   base::Closure on_success_;
   base::Callback<void(const std::string&)> on_failure_;
@@ -511,7 +468,7 @@ void FileSystemEntryFunction::CheckWritableFiles(
     const std::vector<base::FilePath>& paths) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_refptr<WritableFileChecker> helper = new WritableFileChecker(
-      paths, profile_, extension_->path(),
+      paths, profile_,
       base::Bind(
           &FileSystemEntryFunction::RegisterFileSystemsAndSendResponse,
           this, paths),
