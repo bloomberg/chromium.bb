@@ -389,7 +389,8 @@
       "dhgjflpimlbndbpamnkoepaacagejgda",
       "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
       "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
-      "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
+      "ejegoaikibpmikoejfephaneibodccma",  // G+ Photos dev
+      "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA"
     ]
   },
   "mediaPlayerPrivate": {
@@ -423,7 +424,8 @@
     "extension_types": ["platform_app"],
     "whitelist": [
       "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C", // Music Manager
-      "B8F61FD1B25DE03706DBB8906A73261E4DBB992A"  // Test
+      "B8F61FD1B25DE03706DBB8906A73261E4DBB992A", // Test
+      "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA"
     ]
   },
   "nativeMessaging": {
