@@ -119,7 +119,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
             // Calculate fps.
             List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
-            if (listFpsRange.size() == 0) {
+            if (listFpsRange == null || listFpsRange.size() == 0) {
                 Log.e(TAG, "allocate: no fps range found");
                 return false;
             }
