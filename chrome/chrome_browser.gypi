@@ -476,6 +476,8 @@
         'browser/defaults.h',
         'browser/diagnostics/diagnostics_controller.cc',
         'browser/diagnostics/diagnostics_controller.h',
+        'browser/diagnostics/diagnostics_metrics.cc',
+        'browser/diagnostics/diagnostics_metrics.h',
         'browser/diagnostics/diagnostics_model.cc',
         'browser/diagnostics/diagnostics_model.h',
         'browser/diagnostics/diagnostics_test.cc',

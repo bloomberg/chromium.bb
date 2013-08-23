@@ -20,32 +20,20 @@ enum SQLiteIntegrityOutcomeCode {
   DIAG_SQLITE_DB_CORRUPTED
 };
 
-extern const char kSQLiteIntegrityAppCacheTest[];
-extern const char kSQLiteIntegrityArchivedHistoryTest[];
-extern const char kSQLiteIntegrityCookieTest[];
-extern const char kSQLiteIntegrityDatabaseTrackerTest[];
-extern const char kSQLiteIntegrityHistoryTest[];
-extern const char kSQLiteIntegrityThumbnailsTest[];
-extern const char kSQLiteIntegrityWebTest[];
-
-#if defined(OS_CHROMEOS)
-extern const char kSQLiteIntegrityNSSCertTest[];
-extern const char kSQLiteIntegrityNSSKeyTest[];
-#endif
-
 // Factories for the database integrity tests we run in diagnostic mode.
-DiagnosticsTest* MakeSqliteWebDbTest();
+DiagnosticsTest* MakeSqliteAppCacheDbTest();
+DiagnosticsTest* MakeSqliteArchivedHistoryDbTest();
 DiagnosticsTest* MakeSqliteCookiesDbTest();
 DiagnosticsTest* MakeSqliteHistoryDbTest();
-DiagnosticsTest* MakeSqliteArchivedHistoryDbTest();
 DiagnosticsTest* MakeSqliteThumbnailsDbTest();
-DiagnosticsTest* MakeSqliteAppCacheDbTest();
-DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest();
 
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest();
 DiagnosticsTest* MakeSqliteNssKeyDbTest();
 #endif  // defined(OS_CHROMEOS)
+
+DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest();
+DiagnosticsTest* MakeSqliteWebDataDbTest();
 
 }  // namespace diagnostics
 

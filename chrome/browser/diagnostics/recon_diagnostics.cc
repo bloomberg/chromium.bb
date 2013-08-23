@@ -36,59 +36,19 @@
 
 namespace diagnostics {
 
-const char kConflictingDllsTest[] = "ConflictingDlls";
-const char kDiskSpaceTest[] = "DiskSpace";
-const char kInstallTypeTest[] = "InstallType";
-const char kJSONBookmarksTest[] = "JSONBookmarks";
-const char kJSONLocalStateTest[] = "JSONLocalState";
-const char kJSONProfileTest[] = "JSONProfile";
-const char kOperatingSystemTest[] = "OperatingSystem";
-const char kPathDictionariesTest[] = "PathDictionaries";
-const char kPathLocalStateTest[] = "PathLocalState";
-const char kPathResourcesTest[] = "PathResources";
-const char kPathUserDataTest[] = "PathUserData";
-const char kVersionTest[] = "Version";
-
 namespace {
+
+const int64 kOneKilobyte = 1024;
+const int64 kOneMegabyte = 1024 * kOneKilobyte;
 
 class InstallTypeTest;
 InstallTypeTest* g_install_type = 0;
-
-// Check that the flavor of the operating system is supported.
-class OperatingSystemTest : public DiagnosticsTest {
- public:
-  OperatingSystemTest()
-      : DiagnosticsTest(kOperatingSystemTest, "Operating System") {}
-
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-#if defined(OS_WIN)
-    base::win::Version version = base::win::GetVersion();
-    if ((version < base::win::VERSION_XP) ||
-        ((version == base::win::VERSION_XP) &&
-         (base::win::OSInfo::GetInstance()->service_pack().major < 2))) {
-      RecordFailure(DIAG_RECON_PRE_WINDOW_XP_SP2,
-                    "Must have Windows XP SP2 or later");
-      return false;
-    }
-#else
-// TODO(port): define the OS criteria for Linux and Mac.
-#endif  // defined(OS_WIN)
-    RecordSuccess(
-        base::StringPrintf("%s %s",
-                           base::SysInfo::OperatingSystemName().c_str(),
-                           base::SysInfo::OperatingSystemVersion().c_str()));
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OperatingSystemTest);
-};
 
 // Check if any conflicting DLLs are loaded.
 class ConflictingDllsTest : public DiagnosticsTest {
  public:
   ConflictingDllsTest()
-      : DiagnosticsTest(kConflictingDllsTest, "Conflicting modules") {}
+      : DiagnosticsTest(DIAGNOSTICS_CONFLICTING_DLLS_TEST) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
@@ -140,11 +100,40 @@ class ConflictingDllsTest : public DiagnosticsTest {
   DISALLOW_COPY_AND_ASSIGN(ConflictingDllsTest);
 };
 
+// Check that the disk space in the volume where the user data directory
+// normally lives is not dangerously low.
+class DiskSpaceTest : public DiagnosticsTest {
+ public:
+  DiskSpaceTest() : DiagnosticsTest(DIAGNOSTICS_DISK_SPACE_TEST) {}
+
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
+    base::FilePath data_dir;
+    if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir))
+      return false;
+    int64 disk_space = base::SysInfo::AmountOfFreeDiskSpace(data_dir);
+    if (disk_space < 0) {
+      RecordFailure(DIAG_RECON_UNABLE_TO_QUERY, "Unable to query free space");
+      return true;
+    }
+    std::string printable_size = base::Int64ToString(disk_space);
+    if (disk_space < 80 * kOneMegabyte) {
+      RecordFailure(DIAG_RECON_LOW_DISK_SPACE,
+                    "Low disk space: " + printable_size);
+      return true;
+    }
+    RecordSuccess("Free space: " + printable_size);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DiskSpaceTest);
+};
+
 // Check if it is system install or per-user install.
 class InstallTypeTest : public DiagnosticsTest {
  public:
   InstallTypeTest()
-      : DiagnosticsTest(kInstallTypeTest, "Install Type"), user_level_(false) {}
+      : DiagnosticsTest(DIAGNOSTICS_INSTALL_TYPE_TEST), user_level_(false) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
@@ -171,40 +160,110 @@ class InstallTypeTest : public DiagnosticsTest {
   DISALLOW_COPY_AND_ASSIGN(InstallTypeTest);
 };
 
-// Check the version of Chrome.
-class VersionTest : public DiagnosticsTest {
+// Checks that a given JSON file can be correctly parsed.
+class JSONTest : public DiagnosticsTest {
  public:
-  VersionTest() : DiagnosticsTest(kVersionTest, "Browser Version") {}
+  enum FileImportance {
+    NON_CRITICAL,
+    CRITICAL
+  };
+
+  JSONTest(const base::FilePath& path,
+           DiagnosticsTestId id,
+           int64 max_file_size,
+           FileImportance importance)
+      : DiagnosticsTest(id),
+        path_(path),
+        max_file_size_(max_file_size),
+        importance_(importance) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-    chrome::VersionInfo version_info;
-    if (!version_info.is_valid()) {
-      RecordFailure(DIAG_RECON_NO_VERSION, "No Version");
+    if (!base::PathExists(path_)) {
+      if (importance_ == CRITICAL) {
+        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND,
+                      "File not found",
+                      DiagnosticsModel::TEST_FAIL_CONTINUE);
+      } else {
+        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND_OK,
+                      "File not found (but that is OK)",
+                      DiagnosticsModel::TEST_OK);
+      }
       return true;
     }
-    std::string current_version = version_info.Version();
-    if (current_version.empty()) {
-      RecordFailure(DIAG_RECON_EMPTY_VERSION, "Empty Version");
+    int64 file_size;
+    if (!file_util::GetFileSize(path_, &file_size)) {
+      RecordFailure(DIAG_RECON_CANNOT_OBTAIN_FILE_SIZE,
+                    "Cannot obtain file size");
       return true;
     }
-    std::string version_modifier =
-        chrome::VersionInfo::GetVersionStringModifier();
-    if (!version_modifier.empty())
-      current_version += " " + version_modifier;
-#if defined(GOOGLE_CHROME_BUILD)
-    current_version += " GCB";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-    RecordSuccess(current_version);
+
+    if (file_size > max_file_size_) {
+      RecordFailure(DIAG_RECON_FILE_TOO_BIG, "File too big");
+      return true;
+    }
+    // Being small enough, we can process it in-memory.
+    std::string json_data;
+    if (!file_util::ReadFileToString(path_, &json_data)) {
+      RecordFailure(DIAG_RECON_UNABLE_TO_OPEN_FILE,
+                    "Could not open file. Possibly locked by another process");
+      return true;
+    }
+
+    JSONStringValueSerializer json(json_data);
+    int error_code = base::JSONReader::JSON_NO_ERROR;
+    std::string error_message;
+    scoped_ptr<Value> json_root(json.Deserialize(&error_code, &error_message));
+    if (base::JSONReader::JSON_NO_ERROR != error_code) {
+      if (error_message.empty()) {
+        error_message = "Parse error " + base::IntToString(error_code);
+      }
+      RecordFailure(DIAG_RECON_PARSE_ERROR, error_message);
+      return true;
+    }
+
+    RecordSuccess("File parsed OK");
     return true;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(VersionTest);
+  base::FilePath path_;
+  int64 max_file_size_;
+  FileImportance importance_;
+  DISALLOW_COPY_AND_ASSIGN(JSONTest);
+};
+
+// Check that the flavor of the operating system is supported.
+class OperatingSystemTest : public DiagnosticsTest {
+ public:
+  OperatingSystemTest()
+      : DiagnosticsTest(DIAGNOSTICS_OPERATING_SYSTEM_TEST) {}
+
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
+#if defined(OS_WIN)
+    base::win::Version version = base::win::GetVersion();
+    if ((version < base::win::VERSION_XP) ||
+        ((version == base::win::VERSION_XP) &&
+         (base::win::OSInfo::GetInstance()->service_pack().major < 2))) {
+      RecordFailure(DIAG_RECON_PRE_WINDOW_XP_SP2,
+                    "Must have Windows XP SP2 or later");
+      return false;
+    }
+#else
+// TODO(port): define the OS criteria for Linux and Mac.
+#endif  // defined(OS_WIN)
+    RecordSuccess(
+        base::StringPrintf("%s %s",
+                           base::SysInfo::OperatingSystemName().c_str(),
+                           base::SysInfo::OperatingSystemVersion().c_str()));
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OperatingSystemTest);
 };
 
 struct TestPathInfo {
-  const char* test_name;
-  const char* test_id;
+  DiagnosticsTestId test_id;
   int path_id;
   bool is_directory;
   bool is_optional;
@@ -212,18 +271,15 @@ struct TestPathInfo {
   int64 max_size;
 };
 
-const int64 kOneKilobyte = 1024;
-const int64 kOneMegabyte = 1024 * kOneKilobyte;
-
 const TestPathInfo kPathsToTest[] = {
-  {"User data Directory", kPathUserDataTest, chrome::DIR_USER_DATA, true, false,
-   true, 850 * kOneMegabyte},
-  {"Local state file", kPathLocalStateTest, chrome::FILE_LOCAL_STATE, false,
-   false, true, 500 * kOneKilobyte},
-  {"Dictionaries Directory", kPathDictionariesTest,
-   chrome::DIR_APP_DICTIONARIES, true, true, false, 0},
-  {"Resources file", kPathResourcesTest, chrome::FILE_RESOURCES_PACK, false,
-   false, false, 0}
+    {DIAGNOSTICS_PATH_DICTIONARIES_TEST, chrome::DIR_APP_DICTIONARIES, true,
+     true, false, 0},
+    {DIAGNOSTICS_PATH_LOCAL_STATE_TEST, chrome::FILE_LOCAL_STATE, false, false,
+     true, 500 * kOneKilobyte},
+    {DIAGNOSTICS_PATH_RESOURCES_TEST, chrome::FILE_RESOURCES_PACK, false, false,
+     false, 0},
+    {DIAGNOSTICS_PATH_USER_DATA_TEST, chrome::DIR_USER_DATA, true, false, true,
+     850 * kOneMegabyte},
 };
 
 // Check that the user's data directory exists and the paths are writable.
@@ -232,7 +288,7 @@ const TestPathInfo kPathsToTest[] = {
 class PathTest : public DiagnosticsTest {
  public:
   explicit PathTest(const TestPathInfo& path_info)
-      : DiagnosticsTest(path_info.test_id, path_info.test_name),
+      : DiagnosticsTest(path_info.test_id),
         path_info_(path_info) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
@@ -293,150 +349,50 @@ class PathTest : public DiagnosticsTest {
   DISALLOW_COPY_AND_ASSIGN(PathTest);
 };
 
-// Check that the disk space in the volume where the user data directory
-// normally lives is not dangerously low.
-class DiskSpaceTest : public DiagnosticsTest {
+// Check the version of Chrome.
+class VersionTest : public DiagnosticsTest {
  public:
-  DiskSpaceTest() : DiagnosticsTest(kDiskSpaceTest, "Disk Space") {}
+  VersionTest() : DiagnosticsTest(DIAGNOSTICS_VERSION_TEST) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-    base::FilePath data_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir))
-      return false;
-    int64 disk_space = base::SysInfo::AmountOfFreeDiskSpace(data_dir);
-    if (disk_space < 0) {
-      RecordFailure(DIAG_RECON_UNABLE_TO_QUERY, "Unable to query free space");
+    chrome::VersionInfo version_info;
+    if (!version_info.is_valid()) {
+      RecordFailure(DIAG_RECON_NO_VERSION, "No Version");
       return true;
     }
-    std::string printable_size = base::Int64ToString(disk_space);
-    if (disk_space < 80 * kOneMegabyte) {
-      RecordFailure(DIAG_RECON_LOW_DISK_SPACE,
-                    "Low disk space: " + printable_size);
+    std::string current_version = version_info.Version();
+    if (current_version.empty()) {
+      RecordFailure(DIAG_RECON_EMPTY_VERSION, "Empty Version");
       return true;
     }
-    RecordSuccess("Free space: " + printable_size);
+    std::string version_modifier =
+        chrome::VersionInfo::GetVersionStringModifier();
+    if (!version_modifier.empty())
+      current_version += " " + version_modifier;
+#if defined(GOOGLE_CHROME_BUILD)
+    current_version += " GCB";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+    RecordSuccess(current_version);
     return true;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DiskSpaceTest);
-};
-
-// Checks that a given json file can be correctly parsed.
-class JSONTest : public DiagnosticsTest {
- public:
-  enum FileImportance {
-    NON_CRITICAL,
-    CRITICAL
-  };
-
-  JSONTest(const base::FilePath& path,
-           const std::string& id,
-           const std::string& name,
-           int64 max_file_size,
-           FileImportance importance)
-      : DiagnosticsTest(id, name),
-        path_(path),
-        max_file_size_(max_file_size),
-        importance_(importance) {}
-
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-    if (!base::PathExists(path_)) {
-      if (importance_ == CRITICAL) {
-        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND,
-                      "File not found",
-                      DiagnosticsModel::TEST_FAIL_CONTINUE);
-      } else {
-        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND_OK,
-                      "File not found (but that is OK)",
-                      DiagnosticsModel::TEST_OK);
-      }
-      return true;
-    }
-    int64 file_size;
-    if (!file_util::GetFileSize(path_, &file_size)) {
-      RecordFailure(DIAG_RECON_CANNOT_OBTAIN_FILE_SIZE,
-                    "Cannot obtain file size");
-      return true;
-    }
-
-    if (file_size > max_file_size_) {
-      RecordFailure(DIAG_RECON_FILE_TOO_BIG, "File too big");
-      return true;
-    }
-    // Being small enough, we can process it in-memory.
-    std::string json_data;
-    if (!file_util::ReadFileToString(path_, &json_data)) {
-      RecordFailure(DIAG_RECON_UNABLE_TO_OPEN_FILE,
-                    "Could not open file. Possibly locked by another process");
-      return true;
-    }
-
-    JSONStringValueSerializer json(json_data);
-    int error_code = base::JSONReader::JSON_NO_ERROR;
-    std::string error_message;
-    scoped_ptr<Value> json_root(json.Deserialize(&error_code, &error_message));
-    if (base::JSONReader::JSON_NO_ERROR != error_code) {
-      if (error_message.empty()) {
-        error_message = "Parse error " + base::IntToString(error_code);
-      }
-      RecordFailure(DIAG_RECON_PARSE_ERROR, error_message);
-      return true;
-    }
-
-    RecordSuccess("File parsed OK");
-    return true;
-  }
-
- private:
-  base::FilePath path_;
-  int64 max_file_size_;
-  FileImportance importance_;
-  DISALLOW_COPY_AND_ASSIGN(JSONTest);
+  DISALLOW_COPY_AND_ASSIGN(VersionTest);
 };
 
 }  // namespace
 
-DiagnosticsTest* MakeUserDirTest() { return new PathTest(kPathsToTest[0]); }
-
-DiagnosticsTest* MakeLocalStateFileTest() {
-  return new PathTest(kPathsToTest[1]);
-}
-
-DiagnosticsTest* MakeDictonaryDirTest() {
-  return new PathTest(kPathsToTest[2]);
-}
-
-DiagnosticsTest* MakeResourcesFileTest() {
-  return new PathTest(kPathsToTest[3]);
-}
-
-DiagnosticsTest* MakeVersionTest() { return new VersionTest(); }
+DiagnosticsTest* MakeConflictingDllsTest() { return new ConflictingDllsTest(); }
 
 DiagnosticsTest* MakeDiskSpaceTest() { return new DiskSpaceTest(); }
 
-DiagnosticsTest* MakeOperatingSystemTest() { return new OperatingSystemTest(); }
-
-DiagnosticsTest* MakeConflictingDllsTest() { return new ConflictingDllsTest(); }
-
 DiagnosticsTest* MakeInstallTypeTest() { return new InstallTypeTest(); }
-
-DiagnosticsTest* MakePreferencesTest() {
-  base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
-  path = path.Append(chrome::kPreferencesFilename);
-  return new JSONTest(path,
-                      kJSONProfileTest,
-                      "Profile JSON",
-                      100 * kOneKilobyte,
-                      JSONTest::CRITICAL);
-}
 
 DiagnosticsTest* MakeBookMarksTest() {
   base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
   path = path.Append(chrome::kBookmarksFileName);
   return new JSONTest(path,
-                      kJSONBookmarksTest,
-                      "Bookmarks JSON",
+                      DIAGNOSTICS_JSON_BOOKMARKS_TEST,
                       2 * kOneMegabyte,
                       JSONTest::NON_CRITICAL);
 }
@@ -446,10 +402,37 @@ DiagnosticsTest* MakeLocalStateTest() {
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(chrome::kLocalStateFilename);
   return new JSONTest(path,
-                      kJSONLocalStateTest,
-                      "Local State JSON",
+                      DIAGNOSTICS_JSON_LOCAL_STATE_TEST,
                       50 * kOneKilobyte,
                       JSONTest::CRITICAL);
 }
+
+DiagnosticsTest* MakePreferencesTest() {
+  base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
+  path = path.Append(chrome::kPreferencesFilename);
+  return new JSONTest(path,
+                      DIAGNOSTICS_JSON_PREFERENCES_TEST,
+                      100 * kOneKilobyte,
+                      JSONTest::CRITICAL);
+}
+
+
+DiagnosticsTest* MakeOperatingSystemTest() { return new OperatingSystemTest(); }
+
+DiagnosticsTest* MakeDictonaryDirTest() {
+  return new PathTest(kPathsToTest[0]);
+}
+
+DiagnosticsTest* MakeLocalStateFileTest() {
+  return new PathTest(kPathsToTest[1]);
+}
+
+DiagnosticsTest* MakeResourcesFileTest() {
+  return new PathTest(kPathsToTest[2]);
+}
+
+DiagnosticsTest* MakeUserDirTest() { return new PathTest(kPathsToTest[3]); }
+
+DiagnosticsTest* MakeVersionTest() { return new VersionTest(); }
 
 }  // namespace diagnostics

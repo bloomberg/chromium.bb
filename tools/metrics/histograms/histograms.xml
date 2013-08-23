@@ -1349,6 +1349,401 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Diagnostics.Recovery.ConflictingDlls" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.DiskSpace" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the DiskSpace recovery step that runs
+    on recovery startups.  The recovery step attempts to guarantee the DiskSpace
+    test, which checks that the disk space in the volume where the user data
+    directory normally lives is not dangerously low, would pass on the next
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.InstallType" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.JSONBookmarks" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the JSONBookmarks recovery step that
+    runs on recovery startups. The recovery step attempts to guarantee the
+    JSONBookmarks test, which makes sure that the JSON-encoded Bookmarks file is
+    properly formed, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.JSONLocalState" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the JSONLocalState recovery step that
+    runs on recovery startups. The recovery step attempts to guarantee the
+    JSONLocalState test, which makes sure that the JSON-encoded Local State file
+    is properly formed, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.JSONPreferences" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the JSONPreferences recovery step
+    that runs on recovery startups. The recovery step attempts to guarantee the
+    JSONPreferences test, which makes sure that the JSON-encoded Preferences
+    file is properly formed, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.OperatingSystem" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.PathDictionaries"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the PathDictionaries recovery step
+    that runs on recovery startups. The recovery step attempts to guarantee the
+    PathDictionaries test, which makes sure that the path to the Dictionaries
+    directory exists and has the right permissions, would pass on the next
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.PathLocalState" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the PathLocalState recovery step that
+    runs on recovery startups. The recovery step attempts to guarantee the
+    PathLocalState test, which makes sure that the path to the Local State file
+    exists and has the right permissions, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.PathResources" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the PathResources recovery step that
+    runs on recovery startups. The recovery step attempts to guarantee the
+    PathResources test, which makes sure that the path to the Resources
+    directory exists and has the right permissions, would pass on the next
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.PathUserData" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the PathUserData recovery step that
+    runs on recovery startups. The recovery step attempts to guarantee the
+    PathUserData test, which makes sure that the path to the User Data directory
+    exists and has the right permissions, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityAppCache"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityAppCache recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityAppCache test, which checks the integrity of
+    the App Cache database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityArchivedHistory"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityArchivedHistory
+    recovery step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityArchivedHistory test, which checks the
+    integrity of the Archived History database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityCookie"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityCookie recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityCookie test, which checks the integrity of the
+    Cookie database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityDatabaseTracker"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityDatabaseTracker
+    recovery step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityDatabaseTracker test, which checks the
+    integrity of the Database Tracker database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityHistory"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityHistory recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityHistory test, which checks the integrity of the
+    History database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityNSSCert"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityNSSCert recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityNSSCert test, which checks the integrity of the
+    NSS Certificate database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityNSSKey"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityNSSKey recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityNSSKey test, which checks the integrity of the
+    NSS Key database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityThumbnails"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityThumbnails
+    recovery step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityThumbnails test, which checks the integrity of
+    the Thumbnails database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityWebData"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityWebData recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityWebData test, which checks the integrity of the
+    Web Data database, would pass on the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Recovery.Version" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.RecoveryRun" enum="DiagnosticsRecoveryRun">
+  <summary>
+    Count of the number of times diagnostics recovery is invoked or not, and how
+    it was invoked.  A sample is added to this histogram once for each startup
+    of Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.ConflictingDlls" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.DiskSpace" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the DiskSpace test
+    that runs on recovery startups.  The DiskSpace test checks that the disk
+    space in the volume where the user data directory normally lives is not
+    dangerously low.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.InstallType" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.JSONBookmarks" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the JSONBookmarks
+    test that runs on recovery startups.  The JSONBookmarks test checks to make
+    sure that the JSON encoded bookmarks file is properly formed.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.JSONLocalState" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the JSONLocalState
+    test that runs on recovery startups.  The JSONLocalState test checks to make
+    sure that the JSON encoded Local State file is properly formed.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.JSONPreferences" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the JSONPreferences
+    test that runs on recovery startups.  The JSONPreferences test checks to
+    make sure that the Preferences file is properly formed.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.OperatingSystem" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.PathDictionaries" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the PathDictionaries
+    test that runs on recovery startups.  The PathDictionaries test checks makes
+    sure that the path to the Dictionaries folder exists and has the right
+    permissions.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.PathLocalState" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the PathLocalState
+    test that runs on recovery startups.   The PathLocalState test checks makes
+    sure that the path to the Local State folder exists and has the right
+    permissions.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.PathResources" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the PathResources
+    test that runs on recovery startups.  The PathResources test checks makes
+    sure that the path to the Resources folder exists and has the right
+    permissions.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.PathUserData" enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of diagnostics for the PathUserData test
+    that runs on recovery startups. The PathUserData test checks makes sure that
+    the path to the User Data folder exists and has the right permissions.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityAppCache"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityAppCache test that
+    runs on recovery startups.  The test checks the integrity of the App Cache
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityArchivedHistory"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityArchivedHistory
+    test that runs on recovery startups.  The test checks the integrity of the
+    Archived History database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityCookie"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityCookie test that
+    runs on recovery startups.  The test checks the integrity of the Cookie
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityDatabaseTracker"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityDatabaseTracker
+    test that runs on recovery startups.  The test checks the integrity of the
+    Database Tracker database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityHistory"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityHistory test that
+    runs on recovery startups.  The test checks the integrity of the History
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityNSSCert"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityNSSCert test that
+    runs on recovery startups.  The test checks the integrity of the NSS
+    Certificate database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityNSSKey"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityNSSKey test that
+    runs on recovery startups.  The test checks the integrity of the NSS Key
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityThumbnails"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityThumbnails test
+    that runs on recovery startups.  The test checks the integrity of the
+    Thumbnails database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.SQLiteIntegrityWebData"
+    enum="DiagnosticsResult">
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityWebData test that
+    runs on recovery startups.  The test checks the integrity of the Web Data
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.Test.Version" enum="DiagnosticsResult">
+  <summary>
+    TBD - Not run automatically yet, so this is just a placeholder for future
+    metrics collection.  Any samples collected here represent users running
+    diagnostics manually.
+  </summary>
+</histogram>
+
+<histogram name="Diagnostics.TestFailures" enum="DiagnosticsTestName">
+  <summary>
+    Histogram comparing the various types of diagnostic test failures when
+    diagnostic tests are run.  Note that some types of test failures cause the
+    rest of the tests to be skipped.
+  </summary>
+</histogram>
+
 <histogram name="DisabledExtension.ExtensionWipedStatus" enum="BooleanWiped">
   <summary>Whether an extension has been wiped out.</summary>
 </histogram>
@@ -16717,6 +17112,43 @@ other types of suffix sets.
   <int value="1" label="AllowHttp"/>
   <int value="2" label="Deny"/>
   <int value="3" label="Cancel"/>
+</enum>
+
+<enum name="DiagnosticsRecoveryRun" type="int">
+  <int value="0" label="Recovery not run"/>
+  <int value="1" label="Recovery run because of crash"/>
+  <int value="2" label="Recovery run by user"/>
+</enum>
+
+<enum name="DiagnosticsResult" type="int">
+  <int value="0" label="Not run (regular startup)"/>
+  <int value="1" label="Success (crash startup)"/>
+  <int value="2" label="Failure (crash startup)"/>
+  <int value="3" label="Skipped (crash startup)"/>
+</enum>
+
+<enum name="DiagnosticsTestName" type="int">
+  <int value="0" label="Conflicting DLLs Test"/>
+  <int value="1" label="Disk Space Test"/>
+  <int value="2" label="Install Type Test"/>
+  <int value="3" label="JSON Bookmarks Test"/>
+  <int value="4" label="JSON Local State Test"/>
+  <int value="5" label="JSON Preferences Test"/>
+  <int value="6" label="Operating System Test"/>
+  <int value="7" label="Path Dictionaries Test"/>
+  <int value="8" label="Path Local State Test"/>
+  <int value="9" label="Path Resources Test"/>
+  <int value="10" label="Path User Data Test"/>
+  <int value="11" label="Version Test"/>
+  <int value="12" label="SQLite Integrity App Cache Test"/>
+  <int value="13" label="SQLite Integrity Archived History Test"/>
+  <int value="14" label="SQLite Integrity Cookie Test"/>
+  <int value="15" label="SQLite Integrity Database Tracker Test"/>
+  <int value="16" label="SQLite Integrity History Test"/>
+  <int value="17" label="SQLite Integrity Nss Cert Test"/>
+  <int value="18" label="SQLite Integrity Nss Key Test"/>
+  <int value="19" label="SQLite Integrity Thumbnails Test"/>
+  <int value="20" label="SQLite Integrity Web Data Test"/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError" type="int">

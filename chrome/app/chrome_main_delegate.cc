@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
@@ -394,9 +395,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 // No support for ANDROID yet as DiagnosticsController needs wchar support.
 // TODO(gspencer): That's not true anymore, or at least there are no w-string
 // references anymore. Not sure if that means this can be enabled on Android or
-// not though: it still uses string16. As there is no easily accessible command
-// line on Android, I'm not sure this is a big deal, at least for purposes of
-// troubleshooting with a customer.
+// not though.  As there is no easily accessible command line on Android, I'm
+// not sure this is a big deal.
 #if !defined(OS_ANDROID) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   // If we are in diagnostics mode this is the end of the line: after the
   // diagnostics are run the process will invariably exit.
@@ -430,12 +430,15 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // original command line.
   if (command_line.HasSwitch(chromeos::switches::kLoginUser) ||
       command_line.HasSwitch(switches::kDiagnosticsRecovery)) {
+
+    // The statistics subsystem needs get initialized soon enough for the
+    // statistics to be collected.  It's safe to call this more than once.
+    base::StatisticsRecorder::Initialize();
+
     CommandLine interim_command_line(command_line.GetProgram());
-    if (command_line.HasSwitch(switches::kUserDataDir)) {
-      interim_command_line.AppendSwitchPath(
-          switches::kUserDataDir,
-          command_line.GetSwitchValuePath(switches::kUserDataDir));
-    }
+    const char* kSwitchNames[] = {switches::kUserDataDir, };
+    interim_command_line.CopySwitchesFrom(
+        command_line, kSwitchNames, arraysize(kSwitchNames));
     interim_command_line.AppendSwitch(switches::kDiagnostics);
     interim_command_line.AppendSwitch(switches::kDiagnosticsRecovery);
 
@@ -473,6 +476,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
       *exit_code = recovery_exit_code;
       return true;
     }
+  } else {  // Not running diagnostics or recovery.
+    diagnostics::DiagnosticsController::GetInstance()->RecordRegularStartup();
   }
 #endif
 

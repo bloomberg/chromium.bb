@@ -51,32 +51,18 @@ enum OutcomeCodes {
   DIAG_RECON_PARSE_ERROR,
 };
 
-// Identifiers for the tests.
-extern const char kConflictingDllsTest[];
-extern const char kDiskSpaceTest[];
-extern const char kInstallTypeTest[];
-extern const char kJSONBookmarksTest[];
-extern const char kJSONLocalStateTest[];
-extern const char kJSONProfileTest[];
-extern const char kOperatingSystemTest[];
-extern const char kPathDictionariesTest[];
-extern const char kPathLocalStateTest[];
-extern const char kPathResourcesTest[];
-extern const char kPathUserDataTest[];
-extern const char kVersionTest[];
-
-DiagnosticsTest* MakeOperatingSystemTest();
-DiagnosticsTest* MakeConflictingDllsTest();
-DiagnosticsTest* MakeInstallTypeTest();
-DiagnosticsTest* MakeVersionTest();
-DiagnosticsTest* MakeUserDirTest();
-DiagnosticsTest* MakeLocalStateFileTest();
-DiagnosticsTest* MakeDictonaryDirTest();
-DiagnosticsTest* MakeResourcesFileTest();
-DiagnosticsTest* MakeDiskSpaceTest();
-DiagnosticsTest* MakePreferencesTest();
 DiagnosticsTest* MakeBookMarksTest();
+DiagnosticsTest* MakeConflictingDllsTest();
+DiagnosticsTest* MakeDictonaryDirTest();
+DiagnosticsTest* MakeDiskSpaceTest();
+DiagnosticsTest* MakeInstallTypeTest();
+DiagnosticsTest* MakeLocalStateFileTest();
 DiagnosticsTest* MakeLocalStateTest();
+DiagnosticsTest* MakeOperatingSystemTest();
+DiagnosticsTest* MakePreferencesTest();
+DiagnosticsTest* MakeResourcesFileTest();
+DiagnosticsTest* MakeUserDirTest();
+DiagnosticsTest* MakeVersionTest();
 
 }  // namespace diagnostics
 

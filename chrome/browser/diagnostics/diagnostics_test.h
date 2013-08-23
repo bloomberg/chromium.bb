@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/diagnostics/diagnostics_metrics.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
 namespace base {
@@ -26,11 +27,7 @@ namespace diagnostics {
 // 4- Optionally call observer->OnSkipped() if the test cannot be run.
 class DiagnosticsTest : public DiagnosticsModel::TestInfo {
  public:
-  // |id| is a parse-able ASCII ID string that uniquely identifies the test. It
-  // should only have letters, numbers and underscores in it (and no spaces).
-  // |title| is the human readable string that says what the objective of the
-  // test is.
-  DiagnosticsTest(const std::string& id, const std::string& title);
+  explicit DiagnosticsTest(DiagnosticsTestId id);
 
   virtual ~DiagnosticsTest();
 
@@ -65,7 +62,8 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
   static base::FilePath GetUserDefaultProfileDir();
 
   // DiagnosticsModel::TestInfo overrides
-  virtual std::string GetId() const OVERRIDE;
+  virtual int GetId() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual std::string GetTitle() const OVERRIDE;
   virtual DiagnosticsModel::TestResult GetResult() const OVERRIDE;
   virtual std::string GetAdditionalInfo() const OVERRIDE;
@@ -80,8 +78,7 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
   // makes sense for the diagnostics test.
   virtual bool RecoveryImpl(DiagnosticsModel::Observer* observer);
 
-  const std::string id_;
-  const std::string title_;
+  const DiagnosticsTestId id_;
   std::string additional_info_;
   int outcome_code_;
   DiagnosticsModel::TestResult result_;

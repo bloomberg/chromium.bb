@@ -226,7 +226,7 @@ void DiagnosticsWriter::OnTestFinished(int index, DiagnosticsModel* model) {
   const DiagnosticsModel::TestInfo& test_info = model->GetTest(index);
   bool success = (DiagnosticsModel::TEST_OK == test_info.GetResult());
   WriteResult(success,
-              test_info.GetId(),
+              test_info.GetName(),
               test_info.GetTitle(),
               test_info.GetOutcomeCode(),
               test_info.GetAdditionalInfo());

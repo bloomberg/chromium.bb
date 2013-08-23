@@ -101,7 +101,7 @@ TEST_F(DiagnosticsControllerTest, Diagnostics) {
   for (int i = 0; i < results.GetTestRunCount(); ++i) {
     const DiagnosticsModel::TestInfo& info(results.GetTest(i));
     EXPECT_EQ(DiagnosticsModel::TEST_OK, info.GetResult()) << "Test: "
-                                                           << info.GetId();
+                                                           << info.GetName();
   }
 }
 
@@ -115,8 +115,8 @@ TEST_F(DiagnosticsControllerTest, RecoverAllOK) {
   EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, results.GetTestRunCount());
   for (int i = 0; i < results.GetTestRunCount(); ++i) {
     const DiagnosticsModel::TestInfo& info(results.GetTest(i));
-    EXPECT_EQ(DiagnosticsModel::RECOVERY_OK, info.GetResult()) << "Test: "
-                                                               << info.GetId();
+    EXPECT_EQ(DiagnosticsModel::RECOVERY_OK, info.GetResult())
+        << "Test: " << info.GetName();
   }
 }
 
@@ -133,7 +133,8 @@ TEST_F(DiagnosticsControllerTest, RecoverFromNssCertDbFailure) {
   EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, results.GetTestRunCount());
 
   const DiagnosticsModel::TestInfo* info = NULL;
-  EXPECT_TRUE(results.GetTestInfo(kSQLiteIntegrityNSSCertTest, &info));
+  EXPECT_TRUE(
+      results.GetTestInfo(DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST, &info));
   EXPECT_EQ(DiagnosticsModel::TEST_FAIL_CONTINUE, info->GetResult());
   EXPECT_EQ(DIAG_SQLITE_ERROR_HANDLER_CALLED, info->GetOutcomeCode());
 
@@ -154,7 +155,8 @@ TEST_F(DiagnosticsControllerTest, RecoverFromNssKeyDbFailure) {
   EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, results.GetTestRunCount());
 
   const DiagnosticsModel::TestInfo* info = NULL;
-  EXPECT_TRUE(results.GetTestInfo(kSQLiteIntegrityNSSKeyTest, &info));
+  EXPECT_TRUE(
+      results.GetTestInfo(DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST, &info));
   EXPECT_EQ(DiagnosticsModel::TEST_FAIL_CONTINUE, info->GetResult());
   EXPECT_EQ(DIAG_SQLITE_ERROR_HANDLER_CALLED, info->GetOutcomeCode());
 

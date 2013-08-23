@@ -27,21 +27,6 @@
 
 namespace diagnostics {
 
-const char kSQLiteIntegrityAppCacheTest[] = "SQLiteIntegrityAppCache";
-const char kSQLiteIntegrityArchivedHistoryTest[] =
-    "SQLiteIntegrityArchivedHistory";
-const char kSQLiteIntegrityCookieTest[] = "SQLiteIntegrityCookie";
-const char kSQLiteIntegrityDatabaseTrackerTest[] =
-    "SQLiteIntegrityDatabaseTracker";
-const char kSQLiteIntegrityHistoryTest[] = "SQLiteIntegrityHistory";
-const char kSQLiteIntegrityThumbnailsTest[] = "SQLiteIntegrityThumbnails";
-const char kSQLiteIntegrityWebTest[] = "SQLiteIntegrityWeb";
-
-#if defined(OS_CHROMEOS)
-const char kSQLiteIntegrityNSSCertTest[] = "SQLiteIntegrityNSSCert";
-const char kSQLiteIntegrityNSSKeyTest[] = "SQLiteIntegrityNSSKey";
-#endif
-
 namespace {
 
 // Generic diagnostic test class for checking SQLite database integrity.
@@ -55,12 +40,9 @@ class SqliteIntegrityTest : public DiagnosticsTest {
   };
 
   SqliteIntegrityTest(uint32 flags,
-                      const std::string& id,
-                      const std::string& title,
+                      DiagnosticsTestId id,
                       const base::FilePath& db_path)
-      : DiagnosticsTest(id, title),
-        flags_(flags),
-        db_path_(db_path) {}
+      : DiagnosticsTest(id), flags_(flags), db_path_(db_path) {}
 
   virtual bool RecoveryImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     int outcome_code = GetOutcomeCode();
@@ -218,77 +200,70 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 
 }  // namespace
 
-DiagnosticsTest* MakeSqliteWebDbTest() {
-  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
-                                 kSQLiteIntegrityWebTest,
-                                 "Web Database",
-                                 base::FilePath(kWebDataFilename));
-}
-
-DiagnosticsTest* MakeSqliteCookiesDbTest() {
-  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
-                                 kSQLiteIntegrityCookieTest,
-                                 "Cookies Database",
-                                 base::FilePath(chrome::kCookieFilename));
-}
-
-DiagnosticsTest* MakeSqliteHistoryDbTest() {
-  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
-                                 kSQLiteIntegrityHistoryTest,
-                                 "History Database",
-                                 base::FilePath(chrome::kHistoryFilename));
-}
-
-DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(
-      SqliteIntegrityTest::NO_FLAGS_SET,
-      kSQLiteIntegrityArchivedHistoryTest,
-      "Archived History Database",
-      base::FilePath(chrome::kArchivedHistoryFilename));
-}
-
-DiagnosticsTest* MakeSqliteThumbnailsDbTest() {
-  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
-                                 kSQLiteIntegrityThumbnailsTest,
-                                 "Thumbnails Database",
-                                 base::FilePath(chrome::kThumbnailsFilename));
-}
-
 DiagnosticsTest* MakeSqliteAppCacheDbTest() {
   base::FilePath appcache_dir(content::kAppCacheDirname);
   base::FilePath appcache_db =
       appcache_dir.Append(appcache::kAppCacheDatabaseName);
   return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
-                                 kSQLiteIntegrityAppCacheTest,
-                                 "Application Cache Database",
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_APP_CACHE_TEST,
                                  appcache_db);
+}
+
+DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
+  return new SqliteIntegrityTest(
+      SqliteIntegrityTest::NO_FLAGS_SET,
+      DIAGNOSTICS_SQLITE_INTEGRITY_ARCHIVED_HISTORY_TEST,
+      base::FilePath(chrome::kArchivedHistoryFilename));
+}
+
+DiagnosticsTest* MakeSqliteCookiesDbTest() {
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_COOKIE_TEST,
+                                 base::FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest() {
   base::FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
   base::FilePath tracker_db =
       databases_dir.Append(webkit_database::kTrackerDatabaseFileName);
-  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
-                                 kSQLiteIntegrityDatabaseTrackerTest,
-                                 "Database Tracker Database",
-                                 tracker_db);
+  return new SqliteIntegrityTest(
+      SqliteIntegrityTest::NO_FLAGS_SET,
+      DIAGNOSTICS_SQLITE_INTEGRITY_DATABASE_TRACKER_TEST,
+      tracker_db);
+}
+
+DiagnosticsTest* MakeSqliteHistoryDbTest() {
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_HISTORY_TEST,
+                                 base::FilePath(chrome::kHistoryFilename));
 }
 
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest() {
   base::FilePath home_dir = file_util::GetHomeDir();
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
-                                 kSQLiteIntegrityNSSCertTest,
-                                 "NSS Certificate Database",
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
                                  home_dir.Append(chromeos::kNssCertDbPath));
 }
 
 DiagnosticsTest* MakeSqliteNssKeyDbTest() {
   base::FilePath home_dir = file_util::GetHomeDir();
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
-                                 kSQLiteIntegrityNSSKeyTest,
-                                 "NSS Key Database",
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,
                                  home_dir.Append(chromeos::kNssKeyDbPath));
 }
 #endif  // defined(OS_CHROMEOS)
-}       // namespace diagnostics
+
+DiagnosticsTest* MakeSqliteThumbnailsDbTest() {
+  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST,
+                                 base::FilePath(chrome::kThumbnailsFilename));
+}
+
+DiagnosticsTest* MakeSqliteWebDataDbTest() {
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
+                                 DIAGNOSTICS_SQLITE_INTEGRITY_WEB_DATA_TEST,
+                                 base::FilePath(kWebDataFilename));
+}
+
+}  // namespace diagnostics
