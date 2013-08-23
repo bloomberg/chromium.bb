@@ -481,12 +481,15 @@ class FastTabCloseTabStripModelObserver : public TabStripModelObserver {
 
 // Test that fast-tab-close works when closing a tab with an unload handler
 // (http://crbug.com/142458).
-IN_PROC_BROWSER_TEST_F(FastUnloadTest, UnloadHidden) {
+// Flaky on Windows bots (http://crbug.com/267597).
 #if defined(OS_WIN)
-  // Flaky on Vista and Win7+ bots (http://crbug.com/267597).
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    return;
+#define MAYBE_UnloadHidden \
+    DISABLED_UnloadHidden
+#else
+#define MAYBE_UnloadHidden \
+    UnloadHidden
 #endif
+IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_UnloadHidden) {
   NavigateToPage("no_listeners");
   NavigateToPageInNewTab("unload_sets_cookie");
   EXPECT_EQ("", GetCookies("no_listeners"));
