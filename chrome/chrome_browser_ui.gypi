@@ -163,6 +163,8 @@
         'browser/ui/app_list/search/tokenized_string_char_iterator.h',
         'browser/ui/app_list/search/tokenized_string_match.cc',
         'browser/ui/app_list/search/tokenized_string_match.h',
+        'browser/ui/app_list/search/webstore_cache.cc',
+        'browser/ui/app_list/search/webstore_cache.h',
         'browser/ui/app_list/search/webstore_installer.cc',
         'browser/ui/app_list/search/webstore_installer.h',
         'browser/ui/app_list/search/webstore_provider.cc',

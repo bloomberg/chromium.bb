@@ -110,6 +110,14 @@ void WebstoreProvider::Start(const base::string16& query) {
   }
 
   query_ = query_utf8;
+  const base::DictionaryValue* cached_result = cache_.Get(query_);
+  if (cached_result) {
+    ProcessWebstoreSearchResults(cached_result);
+    if (!webstore_search_fetched_callback_.is_null())
+      webstore_search_fetched_callback_.Run();
+    return;
+  }
+
   if (UseWebstoreSearch() && chrome::IsSuggestPrefEnabled(profile_)) {
     if (!webstore_search_) {
       webstore_search_.reset(new WebstoreSearchFetcher(
@@ -154,14 +162,15 @@ void WebstoreProvider::StartQuery() {
 void WebstoreProvider::OnWebstoreSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessWebstoreSearchResults(json.get());
+  cache_.Put(query_, json.Pass());
 
   if (!webstore_search_fetched_callback_.is_null())
     webstore_search_fetched_callback_.Run();
 }
 
 void WebstoreProvider::ProcessWebstoreSearchResults(
-    base::DictionaryValue* json) {
-  base::ListValue* result_list = NULL;
+    const base::DictionaryValue* json) {
+  const base::ListValue* result_list = NULL;
   if (!json ||
       !json->GetList(kKeyResults, &result_list) ||
       !result_list ||
@@ -173,7 +182,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
   for (ListValue::const_iterator it = result_list->begin();
        it != result_list->end();
        ++it) {
-    base::DictionaryValue* dict;
+    const base::DictionaryValue* dict;
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 

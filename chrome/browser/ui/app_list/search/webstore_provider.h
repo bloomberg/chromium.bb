@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/webstore_cache.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -47,7 +48,7 @@ class WebstoreProvider : public SearchProvider {
   void StartQuery();
 
   void OnWebstoreSearchFetched(scoped_ptr<base::DictionaryValue> json);
-  void ProcessWebstoreSearchResults(base::DictionaryValue* json);
+  void ProcessWebstoreSearchResults(const base::DictionaryValue* json);
   scoped_ptr<ChromeSearchResult> CreateResult(
       const base::DictionaryValue& dict);
 
@@ -61,6 +62,10 @@ class WebstoreProvider : public SearchProvider {
   AppListControllerDelegate* controller_;
   scoped_ptr<WebstoreSearchFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
+
+  // The cache of the search result which will be valid only in a single
+  // input session.
+  WebstoreCache cache_;
 
   // The timestamp when the last key event happened.
   base::Time last_keytyped_;

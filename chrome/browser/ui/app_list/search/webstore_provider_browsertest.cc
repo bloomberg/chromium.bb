@@ -224,5 +224,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForShortQueries) {
   EXPECT_EQ("app1 name", RunQuery("abc", kOneResult));
 }
 
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, SearchCache) {
+  EXPECT_EQ("app1 name", RunQuery("foo", kOneResult));
+
+  // No result is provided but the provider gets the result from the cache.
+  EXPECT_EQ("app1 name", RunQuery("foo", ""));
+}
+
 }  // namespace test
 }  // namespace app_list
