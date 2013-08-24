@@ -204,6 +204,7 @@ ChromotingInstance::~ChromotingInstance() {
   UnregisterLoggingInstance();
 
   // PepperView must be destroyed before the client.
+  view_weak_factory_.reset();
   view_.reset();
 
   client_.reset();
@@ -605,7 +606,9 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
                                      consumer_proxy, audio_player.Pass()));
 
   view_.reset(new PepperView(this, &context_, client_->GetFrameProducer()));
-  consumer_proxy->Attach(view_->AsWeakPtr());
+  view_weak_factory_.reset(
+      new base::WeakPtrFactory<FrameConsumer>(view_.get()));
+  consumer_proxy->Attach(view_weak_factory_->GetWeakPtr());
   if (!plugin_view_.is_null()) {
     view_->SetView(plugin_view_);
   }
@@ -641,6 +644,7 @@ void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // PepperView must be destroyed before the client.
+  view_weak_factory_.reset();
   view_.reset();
 
   LOG(INFO) << "Disconnecting from host.";

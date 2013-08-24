@@ -22,7 +22,6 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/frame_producer.h"
 #include "remoting/client/plugin/chromoting_instance.h"
-#include "remoting/client/plugin/pepper_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::Passed;
@@ -80,7 +79,8 @@ PepperView::PepperView(ChromotingInstance* instance,
     source_dpi_(SkIPoint::Make(0, 0)),
     flush_pending_(false),
     is_initialized_(false),
-    frame_received_(false) {
+    frame_received_(false),
+    callback_factory_(this) {
   InitiateDrawing();
 }
 
@@ -303,9 +303,11 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
   }
 
   // Flush the updated areas to the screen.
-  int error = graphics2d_.Flush(
-      PpCompletionCallback(base::Bind(
-          &PepperView::OnFlushDone, AsWeakPtr(), start_time, buffer)));
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&PepperView::OnFlushDone,
+                                    start_time,
+                                    buffer);
+  int error = graphics2d_.Flush(callback);
   CHECK(error == PP_OK_COMPLETIONPENDING);
   flush_pending_ = true;
 
@@ -315,9 +317,9 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
     instance_->SetDesktopShape(*buffer_shape);
 }
 
-void PepperView::OnFlushDone(base::Time paint_start,
-                             webrtc::DesktopFrame* buffer,
-                             int result) {
+void PepperView::OnFlushDone(int result,
+                             const base::Time& paint_start,
+                             webrtc::DesktopFrame* buffer) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
   DCHECK(flush_pending_);
 

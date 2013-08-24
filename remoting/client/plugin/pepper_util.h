@@ -5,35 +5,32 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PLUGIN_UTIL_H_
 #define REMOTING_CLIENT_PLUGIN_PLUGIN_UTIL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 
-#include "ppapi/cpp/completion_callback.h"
-
-struct PP_NetAddress_Private;
+namespace pp {
+class InstanceHandle;
+class NetAddress;
+}
 
 namespace talk_base {
 class SocketAddress;
-}  // namespace talk_base
+}
 
 namespace remoting {
 
-// Adapts a base::Callback to a pp::CompletionCallback, which may be passed to
-// exactly one Pepper API. If the adapted callback is not used then a copy of
-// |callback| will be leaked, including references & passed values bound to it.
-// Pepper guarantees that each completion callback is called once and only once
-// (aborted callbacks are called with PP_ABOIRTED), so there should be no leaks
-// as long as the result of this function is passed to Pepper.
-pp::CompletionCallback PpCompletionCallback(base::Callback<void(int)> callback);
-
 // Helpers to convert between different socket address representations.
-bool SocketAddressToPpAddressWithPort(const talk_base::SocketAddress& address,
-                                      PP_NetAddress_Private* pp_address,
-                                      uint16_t port);
-bool SocketAddressToPpAddress(const talk_base::SocketAddress& address,
-                              PP_NetAddress_Private* pp_address);
-bool PpAddressToSocketAddress(const PP_NetAddress_Private& pp_address,
-                              talk_base::SocketAddress* address);
+bool SocketAddressToPpNetAddressWithPort(
+    const pp::InstanceHandle& instance,
+    const talk_base::SocketAddress& address,
+    pp::NetAddress* pp_net_address,
+    uint16_t port);
+bool SocketAddressToPpNetAddress(const pp::InstanceHandle& instance,
+                                 const talk_base::SocketAddress& address,
+                                 pp::NetAddress* pp_net_address);
+void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
+                                 talk_base::SocketAddress* address);
 
 }  // namespace remoting
 

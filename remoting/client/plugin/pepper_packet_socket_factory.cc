@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
-#include "ppapi/cpp/private/net_address_private.h"
-#include "ppapi/cpp/private/udp_socket_private.h"
+#include "ppapi/cpp/net_address.h"
+#include "ppapi/cpp/udp_socket.h"
+#include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
@@ -55,10 +55,10 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   struct PendingPacket {
     PendingPacket(const void* buffer,
                   int buffer_size,
-                  const PP_NetAddress_Private& address);
+                  const pp::NetAddress& address);
 
     scoped_refptr<net::IOBufferWithSize> data;
-    PP_NetAddress_Private address;
+    pp::NetAddress address;
   };
 
   void OnBindCompleted(int error);
@@ -67,10 +67,12 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   void OnSendCompleted(int result);
 
   void DoRead();
-  void OnReadCompleted(int result);
-  void HandleReadResult(int result);
+  void OnReadCompleted(int result, pp::NetAddress address);
+  void HandleReadResult(int result, pp::NetAddress address);
 
-  pp::UDPSocketPrivate socket_;
+  pp::InstanceHandle instance_;
+
+  pp::UDPSocket socket_;
 
   State state_;
   int error_;
@@ -88,7 +90,7 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   std::list<PendingPacket> send_queue_;
   int send_queue_size_;
 
-  base::WeakPtrFactory<UdpPacketSocket> weak_factory_;
+  pp::CompletionCallbackFactory<UdpPacketSocket> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UdpPacketSocket);
 };
@@ -96,21 +98,22 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
 UdpPacketSocket::PendingPacket::PendingPacket(
     const void* buffer,
     int buffer_size,
-    const PP_NetAddress_Private& address)
+    const pp::NetAddress& address)
     : data(new net::IOBufferWithSize(buffer_size)),
       address(address) {
   memcpy(data->data(), buffer, buffer_size);
 }
 
 UdpPacketSocket::UdpPacketSocket(const pp::InstanceHandle& instance)
-    : socket_(instance),
+    : instance_(instance),
+      socket_(instance),
       state_(STATE_CLOSED),
       error_(0),
       min_port_(0),
       max_port_(0),
       send_pending_(false),
       send_queue_size_(0),
-      weak_factory_(this) {
+      callback_factory_(this) {
 }
 
 UdpPacketSocket::~UdpPacketSocket() {
@@ -128,15 +131,15 @@ bool UdpPacketSocket::Init(const talk_base::SocketAddress& local_address,
   max_port_ = max_port;
   min_port_ = min_port;
 
-  PP_NetAddress_Private pp_local_address;
-  if (!SocketAddressToPpAddressWithPort(local_address_, &pp_local_address,
-                                        min_port_)) {
+  pp::NetAddress pp_local_address;
+  if (!SocketAddressToPpNetAddressWithPort(
+          instance_, local_address_, &pp_local_address, min_port_)) {
     return false;
   }
 
-  int result = socket_.Bind(&pp_local_address, PpCompletionCallback(
-      base::Bind(&UdpPacketSocket::OnBindCompleted,
-                 weak_factory_.GetWeakPtr())));
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&UdpPacketSocket::OnBindCompleted);
+  int result = socket_.Bind(pp_local_address, callback);
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
   state_ = STATE_BINDING;
 
@@ -152,14 +155,8 @@ void UdpPacketSocket::OnBindCompleted(int result) {
   }
 
   if (result == PP_OK) {
-    PP_NetAddress_Private address;
-    if (socket_.GetBoundAddress(&address)) {
-      PpAddressToSocketAddress(address, &local_address_);
-    } else {
-      LOG(ERROR) << "Failed to get bind address for bound socket?";
-      error_ = EINVAL;
-      return;
-    }
+    pp::NetAddress address = socket_.GetBoundAddress();
+    PpNetAddressToSocketAddress(address, &local_address_);
     state_ = STATE_BOUND;
     SignalAddressReady(this, local_address_);
     DoRead();
@@ -169,12 +166,12 @@ void UdpPacketSocket::OnBindCompleted(int result) {
   if (min_port_ < max_port_) {
     // Try to bind to the next available port.
     ++min_port_;
-    PP_NetAddress_Private pp_local_address;
-    if (SocketAddressToPpAddressWithPort(local_address_, &pp_local_address,
-                                         min_port_)) {
-      int result = socket_.Bind(&pp_local_address, PpCompletionCallback(
-          base::Bind(&UdpPacketSocket::OnBindCompleted,
-                     weak_factory_.GetWeakPtr())));
+    pp::NetAddress pp_local_address;
+    if (SocketAddressToPpNetAddressWithPort(
+            instance_, local_address_, &pp_local_address, min_port_)) {
+      pp::CompletionCallback callback =
+          callback_factory_.NewCallback(&UdpPacketSocket::OnBindCompleted);
+      int result = socket_.Bind(pp_local_address, callback);
       DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
     }
   } else {
@@ -212,8 +209,8 @@ int UdpPacketSocket::SendTo(const void* data,
     return error_;
   }
 
-  PP_NetAddress_Private pp_address;
-  if (!SocketAddressToPpAddress(address, &pp_address)) {
+  pp::NetAddress pp_address;
+  if (!SocketAddressToPpNetAddress(instance_, address, &pp_address)) {
     return EINVAL;
   }
 
@@ -259,11 +256,12 @@ void UdpPacketSocket::DoSend() {
   if (send_pending_ || send_queue_.empty())
     return;
 
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&UdpPacketSocket::OnSendCompleted);
   int result = socket_.SendTo(
       send_queue_.front().data->data(), send_queue_.front().data->size(),
-      &send_queue_.front().address,
-      PpCompletionCallback(base::Bind(&UdpPacketSocket::OnSendCompleted,
-                                      weak_factory_.GetWeakPtr())));
+      send_queue_.front().address,
+      callback);
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
   send_pending_ = true;
 }
@@ -307,33 +305,26 @@ void UdpPacketSocket::OnSendCompleted(int result) {
 
 void UdpPacketSocket::DoRead() {
   receive_buffer_.resize(kReceiveBufferSize);
-  int result = socket_.RecvFrom(
-      &receive_buffer_[0], receive_buffer_.size(),
-      PpCompletionCallback(base::Bind(&UdpPacketSocket::OnReadCompleted,
-                                      weak_factory_.GetWeakPtr())));
+  pp::CompletionCallbackWithOutput<pp::NetAddress> callback =
+      callback_factory_.NewCallbackWithOutput(
+          &UdpPacketSocket::OnReadCompleted);
+  int result =
+      socket_.RecvFrom(&receive_buffer_[0], receive_buffer_.size(), callback);
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 }
 
-void UdpPacketSocket::OnReadCompleted(int result) {
-  HandleReadResult(result);
+void UdpPacketSocket::OnReadCompleted(int result, pp::NetAddress address) {
+  HandleReadResult(result, address);
   if (result > 0) {
     DoRead();
   }
 }
 
-void UdpPacketSocket::HandleReadResult(int result) {
+  void UdpPacketSocket::HandleReadResult(int result, pp::NetAddress address) {
   if (result > 0) {
-    PP_NetAddress_Private pp_address;
-    if (!socket_.GetRecvFromAddress(&pp_address)) {
-      LOG(ERROR) << "GetRecvFromAddress() failed after successfull RecvFrom().";
-      return;
-    }
-    talk_base::SocketAddress address;
-    if (!PpAddressToSocketAddress(pp_address, &address)) {
-      LOG(ERROR) << "Failed to covert address received from RecvFrom().";
-      return;
-    }
-    SignalReadPacket(this, &receive_buffer_[0], result, address);
+    talk_base::SocketAddress socket_address;
+    PpNetAddressToSocketAddress(address, &socket_address);
+    SignalReadPacket(this, &receive_buffer_[0], result, socket_address);
   } else if (result != PP_ERROR_ABORTED) {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }

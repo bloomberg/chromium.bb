@@ -59,6 +59,7 @@ class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
 class DelegatingSignalStrategy;
+class FrameConsumer;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
 class PepperTokenFetcher;
@@ -239,6 +240,7 @@ class ChromotingInstance :
   ClientContext context_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<PepperView> view_;
+  scoped_ptr<base::WeakPtrFactory<FrameConsumer> > view_weak_factory_;
   pp::View plugin_view_;
 
   // Contains the most-recently-reported desktop shape, if any.

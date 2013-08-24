@@ -10,10 +10,11 @@
 
 #include <list>
 
-#include "base/memory/weak_ptr.h"
+#include "base/compiler_specific.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/view.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/frame_consumer.h"
 
 namespace base {
@@ -30,8 +31,7 @@ class ChromotingInstance;
 class ClientContext;
 class FrameProducer;
 
-class PepperView : public FrameConsumer,
-                   public base::SupportsWeakPtr<PepperView> {
+class PepperView : public FrameConsumer {
  public:
   // Constructs a PepperView for the |instance|. The |instance|, |context|
   // and |producer| must outlive this class.
@@ -86,9 +86,9 @@ class PepperView : public FrameConsumer,
 
   // Handles completion of FlushBuffer(), triggering a new buffer to be
   // returned to FrameProducer for rendering.
-  void OnFlushDone(base::Time paint_start,
-                   webrtc::DesktopFrame* buffer,
-                   int result);
+  void OnFlushDone(int result,
+                   const base::Time& paint_start,
+                   webrtc::DesktopFrame* buffer);
 
   // Reference to the creating plugin instance. Needed for interacting with
   // pepper.  Marking explicitly as const since it must be initialized at
@@ -141,6 +141,8 @@ class PepperView : public FrameConsumer,
 
   // True after the first call to ApplyBuffer().
   bool frame_received_;
+
+  pp::CompletionCallbackFactory<PepperView> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };
