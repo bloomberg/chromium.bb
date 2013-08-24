@@ -497,7 +497,7 @@ void RenderReplaced::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += borderAndPadding;
     m_maxPreferredLogicalWidth += borderAndPadding;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 PositionWithAffinity RenderReplaced::positionForPoint(const LayoutPoint& point)

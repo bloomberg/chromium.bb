@@ -235,7 +235,7 @@ void RenderListBox::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 int RenderListBox::size() const

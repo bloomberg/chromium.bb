@@ -312,7 +312,7 @@ void RenderMenuList::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 void RenderMenuList::showPopup()

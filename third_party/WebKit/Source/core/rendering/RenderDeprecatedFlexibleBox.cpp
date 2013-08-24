@@ -247,7 +247,7 @@ void RenderDeprecatedFlexibleBox::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += borderAndPadding;
     m_maxPreferredLogicalWidth += borderAndPadding;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)

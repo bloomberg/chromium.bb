@@ -748,12 +748,17 @@ void RenderObject::checkBlockPositionedObjectsNeedLayout()
 }
 #endif
 
-void RenderObject::setPreferredLogicalWidthsDirty(bool shouldBeDirty, MarkingBehavior markParents)
+void RenderObject::setPreferredLogicalWidthsDirty(MarkingBehavior markParents)
 {
     bool alreadyDirty = preferredLogicalWidthsDirty();
-    m_bitfields.setPreferredLogicalWidthsDirty(shouldBeDirty);
-    if (shouldBeDirty && !alreadyDirty && markParents == MarkContainingBlockChain && (isText() || !style()->hasOutOfFlowPosition()))
+    m_bitfields.setPreferredLogicalWidthsDirty(true);
+    if (!alreadyDirty && markParents == MarkContainingBlockChain && (isText() || !style()->hasOutOfFlowPosition()))
         invalidateContainerPreferredLogicalWidths();
+}
+
+void RenderObject::clearPreferredLogicalWidthsDirty()
+{
+    m_bitfields.setPreferredLogicalWidthsDirty(false);
 }
 
 void RenderObject::invalidateContainerPreferredLogicalWidths()

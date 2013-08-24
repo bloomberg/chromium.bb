@@ -1107,7 +1107,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         m_lastLineLineMinWidth = currMaxWidth;
     }
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 bool RenderText::isAllCollapsibleWhitespace() const

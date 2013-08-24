@@ -87,7 +87,7 @@ void RenderSlider::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 inline SliderThumbElement* RenderSlider::sliderThumbElement() const

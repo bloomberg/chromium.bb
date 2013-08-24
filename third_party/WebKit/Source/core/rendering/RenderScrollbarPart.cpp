@@ -137,7 +137,7 @@ void RenderScrollbarPart::computePreferredLogicalWidths()
 
     m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = 0;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 void RenderScrollbarPart::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)

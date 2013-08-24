@@ -115,10 +115,10 @@ void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
 
 void RenderTableCol::clearPreferredLogicalWidthsDirtyBits()
 {
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling())
-        child->setPreferredLogicalWidthsDirty(false);
+        child->clearPreferredLogicalWidthsDirty();
 }
 
 RenderTable* RenderTableCol::table() const

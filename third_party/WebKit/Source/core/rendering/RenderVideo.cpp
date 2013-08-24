@@ -80,7 +80,7 @@ void RenderVideo::updateIntrinsicSize()
         return;
 
     setIntrinsicSize(size);
-    setPreferredLogicalWidthsDirty(true);
+    setPreferredLogicalWidthsDirty();
     setNeedsLayout();
 }
 

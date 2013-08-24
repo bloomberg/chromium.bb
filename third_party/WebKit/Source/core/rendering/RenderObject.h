@@ -625,13 +625,14 @@ public:
     void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
     void setNeedsSimplifiedNormalFlowLayout();
-    void setPreferredLogicalWidthsDirty(bool, MarkingBehavior = MarkContainingBlockChain);
+    void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainingBlockChain);
+    void clearPreferredLogicalWidthsDirty();
     void invalidateContainerPreferredLogicalWidths();
 
     void setNeedsLayoutAndPrefWidthsRecalc()
     {
         setNeedsLayout();
-        setPreferredLogicalWidthsDirty(true);
+        setPreferredLogicalWidthsDirty();
     }
 
     void setPositionState(EPosition position)

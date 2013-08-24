@@ -787,7 +787,7 @@ void RenderTable::computePreferredLogicalWidths()
 
     // FIXME: We should be adding borderAndPaddingLogicalWidth here, but m_tableLayout->computePreferredLogicalWidths already does,
     // so a bunch of tests break doing this naively.
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 RenderTableSection* RenderTable::topNonEmptySection() const

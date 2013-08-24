@@ -2449,7 +2449,7 @@ void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, R
 
     // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
     if (relayoutChildren && child->needsPreferredWidthsRecalculation())
-        child->setPreferredLogicalWidthsDirty(true, MarkOnlyThis);
+        child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 }
 
 void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope& layoutScope)
@@ -2809,7 +2809,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
 
         // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
         if (relayoutChildren && r->needsPreferredWidthsRecalculation())
-            r->setPreferredLogicalWidthsDirty(true, MarkOnlyThis);
+            r->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
         if (!r->needsLayout())
             r->markForPaginationRelayoutIfNeeded(layoutScope);
@@ -5765,7 +5765,7 @@ void RenderBlock::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += borderAndPadding;
     m_maxPreferredLogicalWidth += borderAndPadding;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 struct InlineMinMaxIterator {
@@ -5971,7 +5971,7 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                     inlineMin += childMin;
                     inlineMax += childMax;
 
-                    child->setPreferredLogicalWidthsDirty(false);
+                    child->clearPreferredLogicalWidthsDirty();
                 } else {
                     // Inline replaced elts add in their margins to their min/max values.
                     LayoutUnit margins = 0;

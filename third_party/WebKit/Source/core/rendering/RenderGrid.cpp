@@ -315,7 +315,7 @@ void RenderGrid::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth += borderAndPaddingInInlineDirection;
     m_maxPreferredLogicalWidth += borderAndPaddingInInlineDirection;
 
-    setPreferredLogicalWidthsDirty(false);
+    clearPreferredLogicalWidthsDirty();
 }
 
 LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, size_t trackIndex) const
