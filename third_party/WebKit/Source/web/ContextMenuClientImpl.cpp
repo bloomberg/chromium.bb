@@ -277,7 +277,6 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     data.hasImageContents =
         (data.mediaType == WebContextMenuData::MediaTypeImage)
         && r.image() && !(r.image()->isNull());
-    data.isImageBlocked = !data.hasImageContents;
 
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
