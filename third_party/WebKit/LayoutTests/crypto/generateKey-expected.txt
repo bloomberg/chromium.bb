@@ -6,20 +6,24 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS crypto.subtle.generateKey(aesCbc, extractable, -1) threw exception TypeError: Type error.
 PASS crypto.subtle.generateKey(aesCbc, extractable, null) threw exception TypeError: Type error.
 PASS crypto.subtle.generateKey(aesCbc, extractable, ['boo']) threw exception TypeError: Invalid keyUsages argument.
-PASS crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages) threw exception TypeError: Algorithm: AES-CBC: AesKeyGenParams: length: Missing or not a number.
+PASS crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages) threw exception TypeError: Algorithm: AES-CBC: AesKeyGenParams: length: Missing required property.
 PASS crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages) threw exception TypeError: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range.
 PASS crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages) threw exception TypeError: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range.
 PASS crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages) threw exception TypeError: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range.
 PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -3}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
 PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages) threw exception NotSupportedError: Algorithm: HMAC: HmacKeyParams: hash: Algorithm: Unrecognized algorithm name.
 PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
-PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
-PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Is not a number.
 PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
 PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: crypto}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Is not a number.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages) threw exception TypeError: Algorithm: HMAC: HmacKeyParams: length: Is not a number.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: '48'}, extractable , keyUsages) did not throw exception.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: null}, extractable , keyUsages) did not throw exception.
+PASS crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages) did not throw exception.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range.
-PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range.
-PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing or not a number.
+PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Is not a number.
+PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing required property.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.

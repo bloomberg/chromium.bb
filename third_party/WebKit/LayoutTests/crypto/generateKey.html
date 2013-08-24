@@ -39,9 +39,16 @@ shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, l
 shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -NaN}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: crypto}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages)");
+
+// The length property doesn't strictly need to be a number according to WebIDL.
+// It just has to be convertable with ToNumber().
+shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: '48'}, extractable , keyUsages)");
+shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: null}, extractable , keyUsages)");
+shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages)");
 
 // ---------------------------------------------------
 // RSASSA-PKCS1-v1_5 normalization failures (RsaKeyGenParams)

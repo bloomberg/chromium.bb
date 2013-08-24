@@ -235,23 +235,23 @@ bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8
     return true;
 }
 
-bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
+// Gets an integer according to WebIDL's [EnforceRange].
+bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
 {
     double number;
-    if (!raw.get(propertyName, number)) {
-        es.throwTypeError(context.toString(propertyName, "Missing or not a number"));
-        return false;
-    }
+    bool ok = raw.get(propertyName, number, hasProperty);
 
-    // Convert to an integer according to WebIDL's [EnforceRange].
-    if (std::isinf(number) || std::isnan(number)) {
-        es.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
+    if (!hasProperty)
+        return true;
+
+    if (!ok || std::isnan(number)) {
+        es.throwTypeError(context.toString(propertyName, "Is not a number"));
         return false;
     }
 
     number = trunc(number);
 
-    if (number < minValue || number > maxValue) {
+    if (std::isinf(number) || number < minValue || number > maxValue) {
         es.throwTypeError(context.toString(propertyName, "Outside of numeric range"));
         return false;
     }
@@ -260,17 +260,18 @@ bool getInteger(const Dictionary& raw, const char* propertyName, double& value, 
     return true;
 }
 
-bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasValue, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
+bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ExceptionContext& context, ExceptionState& es)
 {
-    double number;
-    if (!raw.get(propertyName, number)) {
-        // FIXME: If the property exists but is NOT a number, should fail.
-        hasValue = false;
-        return true;
+    bool hasProperty;
+    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, es))
+        return false;
+
+    if (!hasProperty) {
+        es.throwTypeError(context.toString(propertyName, "Missing required property"));
+        return false;
     }
 
-    hasValue = true;
-    return getInteger(raw, propertyName, value, minValue, maxValue, context, es);
+    return true;
 }
 
 bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ExceptionContext& context, ExceptionState& es)
@@ -357,7 +358,7 @@ bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithm
         return false;
 
     bool hasLength;
-    uint32_t length;
+    uint32_t length = 0;
     if (!getOptionalUint32(raw, "length", hasLength, length, context, es))
         return false;
 

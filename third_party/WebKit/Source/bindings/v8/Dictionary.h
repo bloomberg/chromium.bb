@@ -66,6 +66,7 @@ public:
 
     bool get(const String&, bool&) const;
     bool get(const String&, int32_t&) const;
+    bool get(const String&, double&, bool& hasValue) const;
     bool get(const String&, double&) const;
     bool get(const String&, String&) const;
     bool get(const String&, ScriptValue&) const;

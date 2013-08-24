@@ -142,17 +142,26 @@ bool Dictionary::get(const String& key, int32_t& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, double& value) const
+bool Dictionary::get(const String& key, double& value, bool& hasValue) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
+    if (!getKey(key, v8Value)) {
+        hasValue = false;
         return false;
+    }
 
+    hasValue = true;
     v8::Local<v8::Number> v8Number = v8Value->ToNumber();
     if (v8Number.IsEmpty())
         return false;
     value = v8Number->Value();
     return true;
+}
+
+bool Dictionary::get(const String& key, double& value) const
+{
+    bool unused;
+    return get(key, value, unused);
 }
 
 bool Dictionary::get(const String& key, String& value) const
