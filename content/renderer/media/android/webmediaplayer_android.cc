@@ -211,7 +211,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
       break;
     case LoadTypeMediaStream:
 #if defined(GOOGLE_TV)
-      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_MSE;
+      source_type_ = MediaPlayerAndroid::SOURCE_TYPE_STREAM;
 #else
       source_type_ = MediaPlayerAndroid::SOURCE_TYPE_URL;
 #endif
