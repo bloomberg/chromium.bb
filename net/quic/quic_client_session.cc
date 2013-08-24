@@ -285,6 +285,13 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeClient", error);
   }
+
+  if (error == QUIC_CONNECTION_TIMED_OUT) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
+        GetNumOpenStreams());
+  }
+
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
                               connection()->version());
   if (!callback_.is_null()) {

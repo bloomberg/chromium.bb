@@ -7611,6 +7611,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut">
+  <summary>The number of streams open when a QUIC session timed out.</summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionCloseErrorCode"
     enum="QuicErrorCodes">
   <summary>
