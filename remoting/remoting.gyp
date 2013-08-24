@@ -1857,6 +1857,8 @@
           ],
           'variables': {
             'apk_name': 'Chromoting',
+            'android_app_version_name': '<(version_full)',
+            'android_app_version_code': '<!(python ../build/util/lastchange.py --revision-only)',
             'manifest_package_name': 'org.chromium.chromoting',
             'native_lib_target': 'libremoting_client_jni',
             'java_in_dir': 'android/java',

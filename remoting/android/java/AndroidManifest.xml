@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="org.chromium.chromoting"
-        android:versionCode="11"
-        android:versionName="0.11">
+        package="org.chromium.chromoting">
     <uses-sdk android:minSdkVersion="14"
             android:targetSdkVersion="14"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
