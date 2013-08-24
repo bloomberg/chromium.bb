@@ -126,30 +126,28 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, StyleResolver* sty
     if (!queries.size())
         return true; // empty query list evaluates to true
 
-    // iterate over queries, stop if any of them eval to true (OR semantics)
+    // Iterate over queries, stop if any of them eval to true (OR semantics).
     bool result = false;
     for (size_t i = 0; i < queries.size() && !result; ++i) {
         MediaQuery* query = queries[i].get();
 
         if (mediaTypeMatch(query->mediaType())) {
-            const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();
-            // iterate through expressions, stop if any of them eval to false
-            // (AND semantics)
+            const ExpressionVector& expressions = query->expressions();
+            // Iterate through expressions, stop if any of them eval to false (AND semantics).
             size_t j = 0;
-            for (; j < exps->size(); ++j) {
-                bool exprResult = eval(exps->at(j).get());
+            for (; j < expressions.size(); ++j) {
+                bool exprResult = eval(expressions.at(j).get());
                 // FIXME: Instead of storing these on StyleResolver, we should store them locally
                 // and then any client of this method can grab at them afterwords.
-                // Alternatively we could use an explicit out-paramemter of this method.
-                if (styleResolver && exps->at(j)->isViewportDependent())
-                    styleResolver->addViewportDependentMediaQueryResult(exps->at(j).get(), exprResult);
+                // Alternatively we could use an explicit out-parameter of this method.
+                if (styleResolver && expressions.at(j)->isViewportDependent())
+                    styleResolver->addViewportDependentMediaQueryResult(expressions.at(j).get(), exprResult);
                 if (!exprResult)
                     break;
             }
 
-            // assume true if we are at the end of the list,
-            // otherwise assume false
-            result = applyRestrictor(query->restrictor(), exps->size() == j);
+            // Assume true if we are at the end of the list, otherwise assume false.
+            result = applyRestrictor(query->restrictor(), expressions.size() == j);
         } else
             result = applyRestrictor(query->restrictor(), false);
     }

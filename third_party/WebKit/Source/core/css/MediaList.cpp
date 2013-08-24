@@ -276,11 +276,11 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
         if (equalIgnoringCase(query->mediaType(), "print"))
             continue;
 
-        const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();
-        for (size_t j = 0; j < exps->size(); ++j) {
-            const MediaQueryExp* exp = exps->at(j).get();
-            if (isResolutionMediaFeature(exp->mediaFeature())) {
-                CSSValue* cssValue =  exp->value();
+        const ExpressionVector& expressions = query->expressions();
+        for (size_t j = 0; j < expressions.size(); ++j) {
+            const MediaQueryExp* expression = expressions.at(j).get();
+            if (isResolutionMediaFeature(expression->mediaFeature())) {
+                CSSValue* cssValue =  expression->value();
                 if (cssValue && cssValue->isPrimitiveValue()) {
                     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
                     if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())

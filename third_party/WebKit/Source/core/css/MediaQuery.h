@@ -37,6 +37,8 @@
 namespace WebCore {
 class MediaQueryExp;
 
+typedef Vector<OwnPtr<MediaQueryExp> > ExpressionVector;
+
 class MediaQuery {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -44,13 +46,11 @@ public:
         Only, Not, None
     };
 
-    typedef Vector<OwnPtr<MediaQueryExp> > ExpressionVector;
-
     MediaQuery(Restrictor, const String& mediaType, PassOwnPtr<ExpressionVector> exprs);
     ~MediaQuery();
 
     Restrictor restrictor() const { return m_restrictor; }
-    const Vector<OwnPtr<MediaQueryExp> >* expressions() const { return m_expressions.get(); }
+    const ExpressionVector& expressions() const { return *m_expressions; }
     String mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
     String cssText() const;

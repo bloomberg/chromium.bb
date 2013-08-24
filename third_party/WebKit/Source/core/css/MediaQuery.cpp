@@ -73,13 +73,13 @@ static bool expressionCompare(const OwnPtr<MediaQueryExp>& a, const OwnPtr<Media
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > exprs)
+MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<ExpressionVector> expressions)
     : m_restrictor(r)
     , m_mediaType(mediaType.lower())
-    , m_expressions(exprs)
+    , m_expressions(expressions)
 {
     if (!m_expressions) {
-        m_expressions = adoptPtr(new Vector<OwnPtr<MediaQueryExp> >);
+        m_expressions = adoptPtr(new ExpressionVector);
         return;
     }
 
@@ -100,7 +100,7 @@ MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<
 MediaQuery::MediaQuery(const MediaQuery& o)
     : m_restrictor(o.m_restrictor)
     , m_mediaType(o.m_mediaType)
-    , m_expressions(adoptPtr(new Vector<OwnPtr<MediaQueryExp> >(o.m_expressions->size())))
+    , m_expressions(adoptPtr(new ExpressionVector(o.m_expressions->size())))
     , m_serializationCache(o.m_serializationCache)
 {
     for (unsigned i = 0; i < m_expressions->size(); ++i)
