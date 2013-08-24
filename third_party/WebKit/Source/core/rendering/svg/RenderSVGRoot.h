@@ -85,6 +85,9 @@ private:
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
 
+    virtual void insertedIntoTree() OVERRIDE;
+    virtual void willBeRemovedFromTree() OVERRIDE;
+
     virtual const AffineTransform& localToParentTransform() const;
 
     bool fillContains(const FloatPoint&) const;

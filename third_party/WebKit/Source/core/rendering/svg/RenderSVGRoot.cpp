@@ -336,6 +336,18 @@ void RenderSVGRoot::removeChild(RenderObject* child)
     RenderReplaced::removeChild(child);
 }
 
+void RenderSVGRoot::insertedIntoTree()
+{
+    RenderReplaced::insertedIntoTree();
+    SVGResourcesCache::clientWasAddedToTree(this, style());
+}
+
+void RenderSVGRoot::willBeRemovedFromTree()
+{
+    SVGResourcesCache::clientWillBeRemovedFromTree(this);
+    RenderReplaced::willBeRemovedFromTree();
+}
+
 // RenderBox methods will expect coordinates w/o any transforms in coordinates
 // relative to our borderBox origin.  This method gives us exactly that.
 void RenderSVGRoot::buildLocalToBorderBoxTransform()
