@@ -97,6 +97,7 @@ private:
     void clickPointYGetterCallback(CppVariant*);
     void rowCountGetterCallback(CppVariant*);
     void columnCountGetterCallback(CppVariant*);
+    void isClickableGetterCallback(CppVariant*);
 
     // Bound methods.
     void allAttributesCallback(const CppArgumentList&, CppVariant*);

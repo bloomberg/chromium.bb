@@ -208,6 +208,31 @@ bool AccessibilityObject::isTextControl() const
     }
 }
 
+bool AccessibilityObject::isClickable() const
+{
+    switch (roleValue()) {
+    case ButtonRole:
+    case CheckBoxRole:
+    case ColorWellRole:
+    case ComboBoxRole:
+    case EditableTextRole:
+    case ImageMapLinkRole:
+    case LinkRole:
+    case ListBoxOptionRole:
+    case MenuButtonRole:
+    case PopUpButtonRole:
+    case RadioButtonRole:
+    case TabRole:
+    case TextAreaRole:
+    case TextFieldRole:
+    case ToggleButtonRole:
+    case WebCoreLinkRole:
+        return true;
+    default:
+        return false;
+    }
+}
+
 bool AccessibilityObject::isExpanded() const
 {
     if (equalIgnoringCase(getAttribute(aria_expandedAttr), "true"))

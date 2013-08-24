@@ -213,6 +213,8 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         return LabelRole;
     if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
+    if (node()->hasTagName(aTag) && isClickable())
+        return WebCoreLinkRole;
 
     return UnknownRole;
 }
@@ -636,6 +638,20 @@ bool AccessibilityNodeObject::isChecked() const
 
     // Otherwise it's not checked
     return false;
+}
+
+bool AccessibilityNodeObject::isClickable() const
+{
+    if (node()) {
+        if (node()->isElementNode() && toElement(node())->isDisabledFormControl())
+            return false;
+
+        // Note: we can't call node()->willRespondToMouseClickEvents() because that triggers a style recalc and can delete this.
+        if (node()->hasEventListeners(eventNames().mouseupEvent) || node()->hasEventListeners(eventNames().mousedownEvent) || node()->hasEventListeners(eventNames().clickEvent) || node()->hasEventListeners(eventNames().DOMActivateEvent))
+            return true;
+    }
+
+    return AccessibilityObject::isClickable();
 }
 
 bool AccessibilityNodeObject::isEnabled() const

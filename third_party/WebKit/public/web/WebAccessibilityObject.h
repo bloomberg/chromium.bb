@@ -98,6 +98,7 @@ public:
     WEBKIT_EXPORT bool isAriaReadOnly() const;
     WEBKIT_EXPORT bool isButtonStateMixed() const;
     WEBKIT_EXPORT bool isChecked() const;
+    WEBKIT_EXPORT bool isClickable() const;
     WEBKIT_EXPORT bool isCollapsed() const;
     WEBKIT_EXPORT bool isControl() const;
     WEBKIT_EXPORT bool isEnabled() const;

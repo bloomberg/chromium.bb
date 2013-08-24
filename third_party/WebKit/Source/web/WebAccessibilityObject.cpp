@@ -240,6 +240,14 @@ bool WebAccessibilityObject::isChecked() const
     return m_private->isChecked();
 }
 
+bool WebAccessibilityObject::isClickable() const
+{
+    if (isDetached())
+        return 0;
+
+    return m_private->isClickable();
+}
+
 bool WebAccessibilityObject::isCollapsed() const
 {
     if (isDetached())

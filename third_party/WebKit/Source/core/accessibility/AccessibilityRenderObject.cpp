@@ -448,6 +448,9 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
         return FooterRole;
 
+    if (node && node->hasTagName(aTag) && isClickable())
+        return WebCoreLinkRole;
+
     if (m_renderer->isBlockFlow())
         return GroupRole;
 

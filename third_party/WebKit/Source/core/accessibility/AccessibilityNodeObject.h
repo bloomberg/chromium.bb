@@ -124,6 +124,7 @@ protected:
 
     // Check object state.
     virtual bool isChecked() const OVERRIDE;
+    virtual bool isClickable() const OVERRIDE;
     virtual bool isEnabled() const OVERRIDE;
     virtual bool isIndeterminate() const OVERRIDE;
     virtual bool isPressed() const OVERRIDE;

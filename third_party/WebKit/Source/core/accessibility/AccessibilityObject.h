@@ -338,6 +338,7 @@ public:
 
     // Check object state.
     virtual bool isChecked() const { return false; }
+    virtual bool isClickable() const;
     virtual bool isCollapsed() const { return false; }
     virtual bool isEnabled() const { return false; }
     bool isExpanded() const;

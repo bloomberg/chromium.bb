@@ -409,6 +409,7 @@ AccessibilityUIElement::AccessibilityUIElement(const WebAccessibilityObject& obj
     bindProperty("clickPointY", &AccessibilityUIElement::clickPointYGetterCallback);
     bindProperty("rowCount", &AccessibilityUIElement::rowCountGetterCallback);
     bindProperty("columnCount", &AccessibilityUIElement::columnCountGetterCallback);
+    bindProperty("isClickable", &AccessibilityUIElement::isClickableGetterCallback);
 
     //
     // Methods
@@ -684,6 +685,11 @@ void AccessibilityUIElement::rowCountGetterCallback(CppVariant* result)
 void AccessibilityUIElement::columnCountGetterCallback(CppVariant* result)
 {
     result->set(static_cast<int32_t>(accessibilityObject().columnCount()));
+}
+
+void AccessibilityUIElement::isClickableGetterCallback(CppVariant* result)
+{
+    result->set(accessibilityObject().isClickable());
 }
 
 //
