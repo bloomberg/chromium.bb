@@ -1570,8 +1570,12 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/277077
+     */
+    @DisabledTest
     public void testDomStorageEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
