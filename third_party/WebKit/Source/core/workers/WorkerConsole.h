@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,33 +27,30 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Console_h
-#define Console_h
+#ifndef WorkerConsole_h
+#define WorkerConsole_h
 
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/ConsoleBase.h"
-#include "core/page/DOMWindowProperty.h"
-#include "wtf/Forward.h"
+#include "core/page/ConsoleTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Frame;
-class MemoryInfo;
-class Page;
 class ScriptArguments;
 
-class Console : public RefCounted<Console>, public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
+class WorkerConsole : public RefCounted<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
 public:
-    using RefCounted<Console>::ref;
-    using RefCounted<Console>::deref;
+    using RefCounted<WorkerConsole>::ref;
+    using RefCounted<WorkerConsole>::deref;
 
-    static PassRefPtr<Console> create(Frame* frame) { return adoptRef(new Console(frame)); }
-    virtual ~Console();
-
-    PassRefPtr<MemoryInfo> memory() const;
+    static PassRefPtr<WorkerConsole> create(WorkerGlobalScope* scope) { return adoptRef(new WorkerConsole(scope)); }
+    virtual ~WorkerConsole();
 
 protected:
     virtual ScriptExecutionContext* context();
@@ -62,9 +60,9 @@ protected:
     virtual bool profilerEnabled();
 
 private:
-    inline Page* page() const;
+    WorkerGlobalScope* m_scope;
 
-    explicit Console(Frame*);
+    explicit WorkerConsole(WorkerGlobalScope*);
 
     virtual void refConsole() { ref(); }
     virtual void derefConsole() { deref(); }
@@ -72,4 +70,4 @@ private:
 
 } // namespace WebCore
 
-#endif // Console_h
+#endif // WorkerConsole_h

@@ -28,7 +28,31 @@
  */
 
 [
+    CustomToV8,
+    DoNotGenerateWrap,
     NoInterfaceObject
-] interface Console : ConsoleBase {
-    readonly attribute MemoryInfo memory;
+] interface ConsoleBase {
+    [CallWith=ScriptArguments&ScriptState] void debug();
+    [CallWith=ScriptArguments&ScriptState] void error();
+    [CallWith=ScriptArguments&ScriptState] void info();
+    [CallWith=ScriptArguments&ScriptState] void log();
+    [CallWith=ScriptArguments&ScriptState] void warn();
+    [CallWith=ScriptArguments&ScriptState] void dir();
+    [CallWith=ScriptArguments&ScriptState] void dirxml();
+    [CallWith=ScriptArguments&ScriptState] void table();
+    [CallWith=ScriptArguments&ScriptState] void trace();
+    [CallWith=ScriptArguments&ScriptState, ImplementedAs=assertCondition] void assert([Default=Undefined] optional boolean condition);
+    [CallWith=ScriptArguments&ScriptState] void count();
+    [DeprecateAs=ConsoleMarkTimeline, CallWith=ScriptArguments] void markTimeline();
+
+    [CallWith=ScriptState] void profile([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void profileEnd([Default=NullString] optional DOMString title);
+
+    void time([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
+    [CallWith=ScriptState] void timeEnd([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
+    [CallWith=ScriptArguments] void timeStamp();
+    [CallWith=ScriptArguments&ScriptState] void group();
+    [CallWith=ScriptArguments&ScriptState] void groupCollapsed();
+    void groupEnd();
+    [CallWith=ScriptArguments&ScriptState] void clear();
 };

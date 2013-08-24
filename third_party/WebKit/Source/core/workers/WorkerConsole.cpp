@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,7 +28,8 @@
  */
 
 #include "config.h"
-#include "core/page/Console.h"
+
+#include "core/workers/WorkerConsole.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
@@ -36,76 +38,64 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/page/ConsoleBase.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/page/Frame.h"
-#include "core/page/MemoryInfo.h"
-#include "core/page/Page.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
-
 #include "core/platform/chromium/TraceEvent.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkerThread.h"
+
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-Console::Console(Frame* frame)
-    : DOMWindowProperty(frame)
+WorkerConsole::WorkerConsole(WorkerGlobalScope* scope)
+    : m_scope(scope)
 {
     ScriptWrappable::init(this);
 }
 
-Console::~Console()
+WorkerConsole::~WorkerConsole()
 {
 }
 
-ScriptExecutionContext* Console::context()
-{
-    if (!m_frame)
-        return 0;
-    return m_frame->document();
-}
-
-void Console::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
+void WorkerConsole::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
 {
     RefPtr<ScriptArguments> arguments = scriptArguments;
+    ScriptExecutionContext* context = this->context();
 
-    if (!m_frame)
+    if (!context)
         return;
 
     if (!acceptNoArguments && !arguments->argumentCount())
         return;
 
+    size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
+    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, stackSize));
+    const ScriptCallFrame& lastCaller = callStack->at(0);
 
     String message;
     bool gotMessage = arguments->getFirstArgumentAsString(message);
 
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, type, level, message, state, arguments);
+    InspectorInstrumentation::addMessageToConsole(context, ConsoleAPIMessageSource, type, level, message, state, arguments);
 
-    String stackTrace;
-    if (gotMessage) {
-        RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
-        if (m_frame->page()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
-            callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-            stackTrace = ConsoleBase::formatStackTraceString(message, callStack);
-        }
-        m_frame->page()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
-    }
-
+    m_scope->thread()->workerReportingProxy().postConsoleMessageToWorkerObject(ConsoleAPIMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
-
-bool Console::profilerEnabled()
+ScriptExecutionContext* WorkerConsole::context()
 {
-    return InspectorInstrumentation::profilerEnabled(m_frame->page());
+    if (!m_scope)
+        return 0;
+    return m_scope->scriptExecutionContext();
 }
 
-PassRefPtr<MemoryInfo> Console::memory() const
+bool WorkerConsole::profilerEnabled()
 {
-    // FIXME: Because we create a new object here each time,
-    // console.memory !== console.memory, which seems wrong.
-    return MemoryInfo::create(m_frame);
+    return InspectorInstrumentation::profilerEnabled(m_scope);
 }
+
+// FIXME: add memory getter
 
 } // namespace WebCore
+

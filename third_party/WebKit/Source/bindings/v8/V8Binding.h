@@ -577,6 +577,7 @@ namespace WebCore {
     ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context>);
 
     DOMWindow* activeDOMWindow();
+    ScriptExecutionContext* activeScriptExecutionContext();
     DOMWindow* firstDOMWindow();
     Document* currentDocument();
 

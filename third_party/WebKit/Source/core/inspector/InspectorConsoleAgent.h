@@ -80,8 +80,8 @@ public:
 
     Vector<unsigned> consoleMessageArgumentCounts();
 
-    void startConsoleTiming(Frame*, const String& title);
-    void stopConsoleTiming(Frame*, const String& title, PassRefPtr<ScriptCallStack>);
+    void startConsoleTiming(ScriptExecutionContext*, const String& title);
+    void stopConsoleTiming(ScriptExecutionContext*, const String& title, PassRefPtr<ScriptCallStack>);
     void consoleCount(ScriptState*, PassRefPtr<ScriptArguments>);
 
     void frameWindowDiscarded(DOMWindow*);

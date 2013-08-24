@@ -175,12 +175,12 @@ public:
     bool willEvaluateScript(Frame*, const String&, int);
     void didEvaluateScript();
 
-    void consoleTimeStamp(Frame*, PassRefPtr<ScriptArguments>);
+    void consoleTimeStamp(ScriptExecutionContext*, PassRefPtr<ScriptArguments>);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
 
-    void startConsoleTiming(Frame*, const String&);
-    void stopConsoleTiming(Frame*, const String&, PassRefPtr<ScriptCallStack>);
+    void startConsoleTiming(ScriptExecutionContext*, const String&);
+    void stopConsoleTiming(ScriptExecutionContext*, const String&, PassRefPtr<ScriptCallStack>);
 
     void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);

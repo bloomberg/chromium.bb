@@ -191,7 +191,7 @@ Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
     return result;
 }
 
-void InspectorConsoleAgent::startConsoleTiming(Frame*, const String& title)
+void InspectorConsoleAgent::startConsoleTiming(ScriptExecutionContext*, const String& title)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -201,7 +201,7 @@ void InspectorConsoleAgent::startConsoleTiming(Frame*, const String& title)
     m_times.add(title, monotonicallyIncreasingTime());
 }
 
-void InspectorConsoleAgent::stopConsoleTiming(Frame*, const String& title, PassRefPtr<ScriptCallStack> callStack)
+void InspectorConsoleAgent::stopConsoleTiming(ScriptExecutionContext*, const String& title, PassRefPtr<ScriptCallStack> callStack)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions

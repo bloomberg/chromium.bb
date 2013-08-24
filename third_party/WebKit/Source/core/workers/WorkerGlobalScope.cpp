@@ -169,6 +169,13 @@ void WorkerGlobalScope::close()
     postTask(CloseWorkerGlobalScopeTask::create());
 }
 
+WorkerConsole* WorkerGlobalScope::console()
+{
+    if (!m_console)
+        m_console = WorkerConsole::create(this);
+    return m_console.get();
+}
+
 WorkerNavigator* WorkerGlobalScope::navigator() const
 {
     if (!m_navigator)

@@ -1,0 +1,16 @@
+CONSOLE MESSAGE: line 2: log
+CONSOLE MESSAGE: line 3: function
+CONSOLE MESSAGE: line 4: function log() { [native code] }
+CONSOLE MESSAGE: line 5: error
+CONSOLE MESSAGE: line 6: warn
+CONSOLE MESSAGE: line 7: info
+CONSOLE MESSAGE: line 8: debug
+This tests that 'console.log' and friends function correctly from workers.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

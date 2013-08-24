@@ -36,9 +36,9 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/ConsoleBase.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Page.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -75,37 +75,25 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (!page)
         return;
 
+    // TODO(slightlyoff): investigate why this doesn't work:
+    //  ScriptExecutionContext* context = scriptState->scriptExecutionContext();
+    ScriptExecutionContext* context = static_cast<ScriptExecutionContext*>(this->page()->mainFrame()->document());
+    if (!context)
+        return;
+
     if (callStack)
-        InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, callStack, requestIdentifier);
+        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, callStack, requestIdentifier);
     else
-        InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, url, lineNumber, columnNumber, state, requestIdentifier);
+        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, url, lineNumber, columnNumber, state, requestIdentifier);
 
     if (source == CSSMessageSource)
         return;
 
     String stackTrace;
     if (page->chrome().client().shouldReportDetailedMessageForSource(url) && callStack)
-        stackTrace = formatStackTraceString(message, callStack);
+        stackTrace = ConsoleBase::formatStackTraceString(message, callStack);
 
     page->chrome().client().addMessageToConsole(source, level, message, lineNumber, url, stackTrace);
-}
-
-String PageConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
-{
-    StringBuilder stackTrace;
-    for (size_t i = 0; i < callStack->size(); ++i) {
-        const ScriptCallFrame& frame = callStack->at(i);
-        stackTrace.append("\n    at " + (frame.functionName().length() ? frame.functionName() : "(anonymous function)"));
-        stackTrace.append(" (");
-        stackTrace.append(frame.sourceURL());
-        stackTrace.append(':');
-        stackTrace.append(String::number(frame.lineNumber()));
-        stackTrace.append(':');
-        stackTrace.append(String::number(frame.columnNumber()));
-        stackTrace.append(')');
-    }
-
-    return stackTrace.toString();
 }
 
 void PageConsole::mute()

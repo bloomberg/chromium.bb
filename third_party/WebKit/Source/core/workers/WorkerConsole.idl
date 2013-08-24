@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,50 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Console_h
-#define Console_h
-
-#include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/page/ConsoleBase.h"
-#include "core/page/DOMWindowProperty.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-
-namespace WebCore {
-
-class Frame;
-class MemoryInfo;
-class Page;
-class ScriptArguments;
-
-class Console : public RefCounted<Console>, public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
-public:
-    using RefCounted<Console>::ref;
-    using RefCounted<Console>::deref;
-
-    static PassRefPtr<Console> create(Frame* frame) { return adoptRef(new Console(frame)); }
-    virtual ~Console();
-
-    PassRefPtr<MemoryInfo> memory() const;
-
-protected:
-    virtual ScriptExecutionContext* context();
-
-    virtual void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
-
-    virtual bool profilerEnabled();
-
-private:
-    inline Page* page() const;
-
-    explicit Console(Frame*);
-
-    virtual void refConsole() { ref(); }
-    virtual void derefConsole() { deref(); }
+[
+    NoInterfaceObject
+] interface WorkerConsole : ConsoleBase {
 };
-
-} // namespace WebCore
-
-#endif // Console_h

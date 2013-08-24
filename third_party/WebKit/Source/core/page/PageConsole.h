@@ -50,7 +50,6 @@ public:
     void addMessage(MessageSource, MessageLevel, const String& message);
     void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
-    static String formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack>);
 
     static void mute();
     static void unmute();

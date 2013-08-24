@@ -551,22 +551,23 @@ void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLo
     didFinishLoadingResource(identifier, true, 0, loader->frame());
 }
 
-void InspectorTimelineAgent::consoleTimeStamp(Frame* frame, PassRefPtr<ScriptArguments> arguments)
+void InspectorTimelineAgent::consoleTimeStamp(ScriptExecutionContext* context, PassRefPtr<ScriptArguments> arguments)
 {
     String message;
     arguments->getFirstArgumentAsString(message);
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frame);
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::startConsoleTiming(Frame* frame, const String& message)
+void InspectorTimelineAgent::startConsoleTiming(ScriptExecutionContext* context, const String& message)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frame);
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::stopConsoleTiming(Frame* frame, const String& message, PassRefPtr<ScriptCallStack>)
+void InspectorTimelineAgent::stopConsoleTiming(ScriptExecutionContext* context, const String& message, PassRefPtr<ScriptCallStack> stack)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frame);
+    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frameForScriptExecutionContext(context));
 }
+
 
 void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
 {

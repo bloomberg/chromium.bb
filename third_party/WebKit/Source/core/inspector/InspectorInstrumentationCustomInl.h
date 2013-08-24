@@ -45,6 +45,13 @@ bool canvasAgentEnabled(ScriptExecutionContext*);
 bool consoleAgentEnabled(ScriptExecutionContext*);
 bool timelineAgentEnabled(ScriptExecutionContext*);
 
+inline bool profilerEnabled(WorkerGlobalScope* scope)
+{
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerGlobalScope(scope))
+        return profilerEnabledImpl(instrumentingAgents);
+    return false;
+}
+
 inline bool profilerEnabled(Page* page)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))

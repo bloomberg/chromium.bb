@@ -34,6 +34,7 @@
 #include "core/dom/EventTarget.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
@@ -50,6 +51,7 @@ namespace WebCore {
     class ExceptionState;
     class ScheduledAction;
     class WorkerClients;
+    class WorkerConsole;
     class WorkerInspectorController;
     class WorkerLocation;
     class WorkerNavigator;
@@ -83,6 +85,7 @@ namespace WebCore {
 
         // WorkerGlobalScope
         WorkerGlobalScope* self() { return this; }
+        WorkerConsole* console();
         WorkerLocation* location() const;
         void close();
 
@@ -101,6 +104,7 @@ namespace WebCore {
         WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
         // These methods are used for GC marking. See JSWorkerGlobalScope::visitChildrenVirtual(SlotVisitor&) in
         // JSWorkerGlobalScopeCustom.cpp.
+        WorkerConsole* optionalConsole() const { return m_console.get(); }
         WorkerNavigator* optionalNavigator() const { return m_navigator.get(); }
         WorkerLocation* optionalLocation() const { return m_location.get(); }
 
@@ -157,6 +161,7 @@ namespace WebCore {
         KURL m_url;
         String m_userAgent;
 
+        mutable RefPtr<WorkerConsole> m_console;
         mutable RefPtr<WorkerLocation> m_location;
         mutable RefPtr<WorkerNavigator> m_navigator;
 
