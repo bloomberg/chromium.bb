@@ -204,7 +204,6 @@ namespace WebCore {
         bool isPostOrRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
         bool shouldContinueForResponse() const;
-        void stopLoadingForPolicyChange();
 
         typedef Timer<DocumentLoader> DocumentLoaderTimer;
 

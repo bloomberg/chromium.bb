@@ -472,7 +472,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     appendRedirect(newRequest.url());
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
     if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckStandard))
-        stopLoadingForPolicyChange();
+        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 
 static bool canShowMIMEType(const String& mimeType, Page* page)
@@ -558,7 +558,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 
     if (!shouldContinueForResponse()) {
         InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
-        stopLoadingForPolicyChange();
+        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
         return;
     }
 
@@ -575,13 +575,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
                 cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
         }
     }
-}
-
-void DocumentLoader::stopLoadingForPolicyChange()
-{
-    ResourceError error = frameLoader()->client()->interruptedForPolicyChangeError(m_request);
-    error.setIsCancellation(true);
-    cancelMainResourceLoad(error);
 }
 
 void DocumentLoader::ensureWriter()

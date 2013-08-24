@@ -93,15 +93,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-// Domain for internal error codes.
-static const char internalErrorDomain[] = "WebKit";
-
-// An internal error code.  Used to note a policy change error resulting from
-// dispatchDecidePolicyForMIMEType not passing the PolicyUse option.
-enum {
-    PolicyChangeError = -10000,
-};
-
 FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
     : m_webFrame(frame)
 {
@@ -396,17 +387,6 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad()
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
     const ResourceError& error)
 {
-
-    // If a policy change occured, then we do not want to inform the plugin
-    // delegate.  See http://b/907789 for details.  FIXME: This means the
-    // plugin won't receive NPP_URLNotify, which seems like it could result in
-    // a memory leak in the plugin!!
-    if (error.domain() == internalErrorDomain
-        && error.errorCode() == PolicyChangeError) {
-        m_webFrame->didFail(ResourceError::cancelledError(error.failingURL()), true);
-        return;
-    }
-
     OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver();
     m_webFrame->didFail(error, true);
     if (observer)
@@ -555,13 +535,6 @@ void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
 {
     if (m_webFrame->client())
         m_webFrame->client()->didDispatchPingLoader(m_webFrame, url);
-}
-
-ResourceError FrameLoaderClientImpl::interruptedForPolicyChangeError(
-    const ResourceRequest& request)
-{
-    return ResourceError(internalErrorDomain, PolicyChangeError,
-                         request.url().string(), String());
 }
 
 PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
