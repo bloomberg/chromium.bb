@@ -761,6 +761,9 @@ int ChromeMainDelegate::RunProcess(
 
 #if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
     { switches::kNaClLoaderProcess,  NaClMain },
+#else
+    { "<invalid>", NULL },  // To avoid constant array of size 0
+                            // when DISABLE_NACL and CHROME_MULTIPLE_DLL_CHILD
 #endif  // DISABLE_NACL
   };
 
