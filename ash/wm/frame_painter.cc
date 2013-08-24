@@ -13,6 +13,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -63,13 +63,6 @@ const SkColor kMaximizedWindowTitleTextColor = SK_ColorWHITE;
 const int kHeaderContentSeparatorSize = 1;
 // Color of header bottom edge line.
 const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(128, 128, 128);
-// Space between close button and right edge of window.
-const int kCloseButtonOffsetX = 0;
-// Space between close button and top edge of window.
-const int kCloseButtonOffsetY = 0;
-// The size and close buttons are designed to slightly overlap in order
-// to do fancy hover highlighting.
-const int kSizeButtonOffsetX = -1;
 // In the pre-Ash era the web content area had a frame along the left edge, so
 // user-generated theme images for the new tab page assume they are shifted
 // right relative to the header.  Now that we have removed the left edge frame
@@ -215,10 +208,8 @@ int FramePainter::kSoloWindowOpacity = 77;  // 0.3
 FramePainter::FramePainter()
     : frame_(NULL),
       window_icon_(NULL),
-      size_button_(NULL),
-      close_button_(NULL),
+      caption_button_container_(NULL),
       window_(NULL),
-      button_separator_(NULL),
       top_left_corner_(NULL),
       top_edge_(NULL),
       top_right_corner_(NULL),
@@ -229,8 +220,7 @@ FramePainter::FramePainter()
       previous_opacity_(0),
       crossfade_theme_frame_id_(0),
       crossfade_theme_frame_overlay_id_(0),
-      crossfade_opacity_(0),
-      size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {}
+      crossfade_opacity_(0) {}
 
 FramePainter::~FramePainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
@@ -239,25 +229,19 @@ FramePainter::~FramePainter() {
   }
 }
 
-void FramePainter::Init(views::Widget* frame,
-                        views::View* window_icon,
-                        views::ImageButton* size_button,
-                        views::ImageButton* close_button,
-                        SizeButtonBehavior behavior) {
+void FramePainter::Init(
+    views::Widget* frame,
+    views::View* window_icon,
+    FrameCaptionButtonContainerView* caption_button_container) {
   DCHECK(frame);
   // window_icon may be NULL.
-  DCHECK(size_button);
-  DCHECK(close_button);
+  DCHECK(caption_button_container);
   frame_ = frame;
   window_icon_ = window_icon;
-  size_button_ = size_button;
-  close_button_ = close_button;
-  size_button_behavior_ = behavior;
+  caption_button_container_ = caption_button_container;
 
   // Window frame image parts.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button_separator_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR).ToImageSkia();
   top_left_corner_ =
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT).ToImageSkia();
   top_edge_ =
@@ -353,13 +337,15 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   if (client_component != HTNOWHERE)
     return client_component;
 
-  // Then see if the point is within any of the window controls.
-  if (close_button_->visible() &&
-      close_button_->GetMirroredBounds().Contains(point))
-    return HTCLOSE;
-  if (size_button_->visible() &&
-      size_button_->GetMirroredBounds().Contains(point))
-    return HTMAXBUTTON;
+  if (caption_button_container_->visible()) {
+    gfx::Point point_in_caption_button_container(point);
+    views::View::ConvertPointToTarget(view, caption_button_container_,
+        &point_in_caption_button_container);
+    client_component = caption_button_container_->NonClientHitTest(
+        point_in_caption_button_container);
+    if (client_component != HTNOWHERE)
+      return client_component;
+  }
 
   // Caption is a safe default.
   return HTCAPTION;
@@ -373,8 +359,7 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
   // Ensure we have enough space for the window icon and buttons.  We allow
   // the title string to collapse to zero width.
   int title_width = GetTitleOffsetX() +
-      size_button_->width() + kSizeButtonOffsetX +
-      close_button_->width() + kCloseButtonOffsetX;
+      caption_button_container_->GetMinimumSize().width();
   if (title_width > min_size.width())
     min_size.set_width(title_width);
   return min_size;
@@ -385,11 +370,7 @@ gfx::Size FramePainter::GetMaximumSize(views::NonClientFrameView* view) {
 }
 
 int FramePainter::GetRightInset() const {
-  gfx::Size close_size = close_button_->GetPreferredSize();
-  gfx::Size size_button_size = size_button_->GetPreferredSize();
-  int inset = close_size.width() + kCloseButtonOffsetX +
-      size_button_size.width() + kSizeButtonOffsetX;
-  return inset;
+  return caption_button_container_->GetPreferredSize().width();
 }
 
 int FramePainter::GetThemeBackgroundXInset() const {
@@ -504,14 +485,6 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
   previous_opacity_ = opacity;
 
-  // Separator between the maximize and close buttons.  It overlaps the left
-  // edge of the close button.
-  gfx::Rect divider(close_button_->x(), close_button_->y(),
-                    button_separator_->width(), close_button_->height());
-  canvas->DrawImageInt(*button_separator_,
-                       view->GetMirroredXForRect(divider),
-                       close_button_->y());
-
   // We don't need the extra lightness in the edges when we're at the top edge
   // of the screen or when the header's corners are not rounded.
   //
@@ -595,72 +568,24 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
 
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool shorter_layout) {
-  // The new assets only make sense if the window is actually maximized or
-  // fullscreen.
-  if (shorter_layout &&
-      (frame_->IsMaximized() || frame_->IsFullscreen()) &&
-      GetTrackedByWorkspace(frame_->GetNativeWindow())) {
-    SetButtonImages(close_button_,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
-    // The chat window cannot be restored but only minimized.
-    if (size_button_behavior_ == SIZE_BUTTON_MINIMIZES) {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
-    } else {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-    }
-  } else if (shorter_layout) {
-    SetButtonImages(close_button_,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-    // The chat window cannot be restored but only minimized.
-    if (size_button_behavior_ == SIZE_BUTTON_MINIMIZES) {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
-                      IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
-    } else {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-    }
-  } else {
-    SetButtonImages(close_button_,
-                    IDR_AURA_WINDOW_CLOSE,
-                    IDR_AURA_WINDOW_CLOSE_H,
-                    IDR_AURA_WINDOW_CLOSE_P);
-    SetButtonImages(size_button_,
-                    IDR_AURA_WINDOW_MAXIMIZE,
-                    IDR_AURA_WINDOW_MAXIMIZE_H,
-                    IDR_AURA_WINDOW_MAXIMIZE_P);
-  }
+  caption_button_container_->set_header_style(shorter_layout ?
+      FrameCaptionButtonContainerView::HEADER_STYLE_SHORT :
+      FrameCaptionButtonContainerView::HEADER_STYLE_TALL);
+  caption_button_container_->Layout();
 
-  gfx::Size close_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(
-      view->width() - close_size.width() - kCloseButtonOffsetX,
-      kCloseButtonOffsetY,
-      close_size.width(),
-      close_size.height());
-
-  gfx::Size size_button_size = size_button_->GetPreferredSize();
-  size_button_->SetBounds(
-      close_button_->x() - size_button_size.width() - kSizeButtonOffsetX,
-      close_button_->y(),
-      size_button_size.width(),
-      size_button_size.height());
+  gfx::Size caption_button_container_size =
+      caption_button_container_->GetPreferredSize();
+  caption_button_container_->SetBounds(
+      view->width() - caption_button_container_size.width(),
+      0,
+      caption_button_container_size.width(),
+      caption_button_container_size.height());
 
   if (window_icon_) {
-    // Vertically center the window icon with respect to the close button.
-    int icon_offset_y = GetCloseButtonCenterY() - window_icon_->height() / 2;
+    // Vertically center the window icon with respect to the caption button
+    // container.
+    int icon_offset_y =
+        GetCaptionButtonContainerCenterY() - window_icon_->height() / 2;
     window_icon_->SetBounds(kIconOffsetX, icon_offset_y, kIconSize, kIconSize);
   }
 }
@@ -774,27 +699,15 @@ void FramePainter::AnimationProgressed(const ui::Animation* animation) {
 ///////////////////////////////////////////////////////////////////////////////
 // FramePainter, private:
 
-void FramePainter::SetButtonImages(views::ImageButton* button,
-                                   int normal_image_id,
-                                   int hot_image_id,
-                                   int pushed_image_id) {
-  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
-  button->SetImage(views::CustomButton::STATE_NORMAL,
-                   theme_provider->GetImageSkiaNamed(normal_image_id));
-  button->SetImage(views::CustomButton::STATE_HOVERED,
-                   theme_provider->GetImageSkiaNamed(hot_image_id));
-  button->SetImage(views::CustomButton::STATE_PRESSED,
-                   theme_provider->GetImageSkiaNamed(pushed_image_id));
-}
-
 int FramePainter::GetTitleOffsetX() const {
   return window_icon_ ?
       window_icon_->bounds().right() + kTitleIconOffsetX :
       kTitleNoIconOffsetX;
 }
 
-int FramePainter::GetCloseButtonCenterY() const {
-  return close_button_->y() + close_button_->height() / 2;
+int FramePainter::GetCaptionButtonContainerCenterY() const {
+  return caption_button_container_->y() +
+      caption_button_container_->height() / 2;
 }
 
 int FramePainter::GetHeaderCornerRadius() const {
@@ -908,14 +821,14 @@ void FramePainter::SchedulePaintForHeader() {
 
 gfx::Rect FramePainter::GetTitleBounds(const gfx::Font& title_font) {
   int title_x = GetTitleOffsetX();
-  // Center the text with respect to the close button. This way it adapts to
-  // the caption height and aligns exactly with the window icon. Don't use
-  // |window_icon_| for this computation as it may be NULL.
-  int title_y = GetCloseButtonCenterY() - title_font.GetHeight() / 2;
+  // Center the text with respect to the caption button container. This way it
+  // adapts to the caption button height and aligns exactly with the window
+  // icon. Don't use |window_icon_| for this computation as it may be NULL.
+  int title_y = GetCaptionButtonContainerCenterY() - title_font.GetHeight() / 2;
   return gfx::Rect(
       title_x,
       std::max(0, title_y),
-      std::max(0, size_button_->x() - kTitleLogoSpacing - title_x),
+      std::max(0, caption_button_container_->x() - kTitleLogoSpacing - title_x),
       title_font.GetHeight());
 }
 

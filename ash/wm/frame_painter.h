@@ -29,13 +29,13 @@ namespace ui {
 class SlideAnimation;
 }
 namespace views {
-class ImageButton;
 class NonClientFrameView;
 class View;
 class Widget;
 }
 
 namespace ash {
+class FrameCaptionButtonContainerView;
 
 // Helper class for painting window frames.  Exists to share code between
 // various implementations of views::NonClientFrameView.  Canonical source of
@@ -70,9 +70,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // |frame| and buttons are used for layout and are not owned.
   void Init(views::Widget* frame,
             views::View* window_icon,
-            views::ImageButton* size_button,
-            views::ImageButton* close_button,
-            SizeButtonBehavior behavior);
+            FrameCaptionButtonContainerView* caption_button_container);
 
   // Updates the solo-window transparent header appearance for all windows
   // using frame painters in |root_window|.
@@ -162,17 +160,12 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest,
                            NoCrashShutdownWithAlwaysOnTopWindow);
 
-  // Sets the images for a button based on IDs from the |frame_| theme provider.
-  void SetButtonImages(views::ImageButton* button,
-                       int normal_image_id,
-                       int hot_image_id,
-                       int pushed_image_id);
-
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
 
-  // Returns the vertical center of the close button in window coordinates.
-  int GetCloseButtonCenterY() const;
+  // Returns the vertical center of the caption button container in window
+  // coordinates.
+  int GetCaptionButtonContainerCenterY() const;
 
   // Returns the opacity value used to paint the header.
   // |theme_frame_overlay_id| is 0 if no overlay image is used.
@@ -215,12 +208,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Not owned
   views::Widget* frame_;
   views::View* window_icon_;  // May be NULL.
-  views::ImageButton* size_button_;
-  views::ImageButton* close_button_;
+  FrameCaptionButtonContainerView* caption_button_container_;
   aura::Window* window_;
 
   // Window frame header/caption parts.
-  const gfx::ImageSkia* button_separator_;
   const gfx::ImageSkia* top_left_corner_;
   const gfx::ImageSkia* top_edge_;
   const gfx::ImageSkia* top_right_corner_;
@@ -239,8 +230,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   gfx::Rect header_frame_bounds_;
   scoped_ptr<ui::SlideAnimation> crossfade_animation_;
-
-  SizeButtonBehavior size_button_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(FramePainter);
 };

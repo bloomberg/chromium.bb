@@ -4,21 +4,15 @@
 
 #include "ash/wm/custom_frame_view_ash.h"
 
-#include "ash/shell_delegate.h"
 #include "ash/wm/frame_painter.h"
-#include "ash/wm/workspace/frame_maximize_button.h"
+#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "grit/ash_resources.h"
-#include "grit/ui_strings.h"  // Accessibility names
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -43,8 +37,7 @@ const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 // CustomFrameViewAsh, public:
 CustomFrameViewAsh::CustomFrameViewAsh()
     : frame_(NULL),
-      maximize_button_(NULL),
-      close_button_(NULL),
+      caption_button_container_(NULL),
       frame_painter_(new ash::FramePainter) {
 }
 
@@ -54,19 +47,17 @@ CustomFrameViewAsh::~CustomFrameViewAsh() {
 void CustomFrameViewAsh::Init(views::Widget* frame) {
   frame_ = frame;
 
-  maximize_button_ = new FrameMaximizeButton(this, this);
-  maximize_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  AddChildView(maximize_button_);
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-  AddChildView(close_button_);
+  // Unfortunately, there is no views::WidgetDelegate::CanMinimize(). Assume
+  // that the window frame can be minimized if it can be maximized.
+  FrameCaptionButtonContainerView::MinimizeAllowed minimize_allowed =
+      frame_->widget_delegate()->CanMaximize() ?
+          FrameCaptionButtonContainerView::MINIMIZE_ALLOWED :
+          FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED;
+  caption_button_container_ = new FrameCaptionButtonContainerView(this, frame,
+      minimize_allowed);
+  AddChildView(caption_button_container_);
 
-  maximize_button_->SetVisible(frame_->widget_delegate()->CanMaximize());
-
-  frame_painter_->Init(frame_, NULL, maximize_button_, close_button_,
-                       FramePainter::SIZE_BUTTON_MAXIMIZES);
+  frame_painter_->Init(frame_, NULL, caption_button_container_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +85,7 @@ void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void CustomFrameViewAsh::ResetWindowControls() {
-  maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
+  caption_button_container_->ResetWindowControls();
 }
 
 void CustomFrameViewAsh::UpdateWindowIcon() {
@@ -161,39 +152,6 @@ gfx::Size CustomFrameViewAsh::GetMaximumSize() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener overrides:
-void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> slow_duration_mode;
-  if (event.IsShiftDown()) {
-    slow_duration_mode.reset(new ui::ScopedAnimationDurationScaleMode(
-        ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
-  }
-
-  ash::UserMetricsAction action =
-      ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
-
-  if (sender == maximize_button_) {
-    // The maximize button may move out from under the cursor.
-    ResetWindowControls();
-    if (frame_->IsMaximized()) {
-      action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
-      frame_->Restore();
-    } else {
-      frame_->Maximize();
-    }
-    // |this| may be deleted - some windows delete their frames on maximize.
-  } else if (sender == close_button_) {
-    action = ash::UMA_WINDOW_CLOSE_BUTTON_CLICK;
-    frame_->Close();
-  } else {
-    return;
-  }
-
-  ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(action);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, private:
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
@@ -202,7 +160,7 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
 
   // Reserve enough space to see the buttons, including any offset from top and
   // reserving space for the separator line.
-  return close_button_->bounds().bottom() +
+  return caption_button_container_->bounds().bottom() +
       frame_painter_->HeaderContentSeparatorSize();
 }
 

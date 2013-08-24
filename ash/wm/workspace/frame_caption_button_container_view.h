@@ -6,6 +6,7 @@
 #define ASH_WM_WORKSPACE_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -25,12 +26,34 @@ class ASH_EXPORT FrameCaptionButtonContainerView
  public:
   static const char kViewClassName[];
 
+  // Whether the frame can be minimized (either via the maximize/restore button
+  // or via a dedicated button).
+  enum MinimizeAllowed {
+    MINIMIZE_ALLOWED,
+    MINIMIZE_DISALLOWED
+  };
+  enum HeaderStyle {
+    // Dialogs, panels, packaged apps, tabbed maximized/fullscreen browser
+    // windows.
+    HEADER_STYLE_SHORT,
+
+    // Restored tabbed browser windows, popups for browser windows, restored
+    // hosted app windows, popups for hosted app windows.
+    HEADER_STYLE_TALL,
+
+    // AppNonClientFrameViewAsh.
+    HEADER_STYLE_MAXIMIZED_HOSTED_APP
+  };
+
   // |frame_view| and |frame| are the NonClientFrameView and the views::Widget
   // that the caption buttons act on.
+  // |minimize_allowed| indicates whether the frame can be minimized (either via
+  // the maximize/restore button or via a dedicated button).
   // TODO(pkotwicz): Remove the |frame_view| parameter once FrameMaximizeButton
   // is refactored to take in a views::Widget instead.
   FrameCaptionButtonContainerView(views::NonClientFrameView* frame_view,
-                                  views::Widget* frame);
+                                  views::Widget* frame,
+                                  MinimizeAllowed minimize_allowed);
   virtual ~FrameCaptionButtonContainerView();
 
   // For testing.
@@ -38,6 +61,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
    public:
     explicit TestApi(FrameCaptionButtonContainerView* container_view)
         : container_view_(container_view) {
+    }
+
+    views::ImageButton* minimize_button() const {
+      return container_view_->minimize_button_;
     }
 
     views::ImageButton* size_button() const {
@@ -57,10 +84,21 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
 
+  // Determines the window HT* code for the caption button at |point|. Returns
+  // HTNOWHERE if |point| is not over any of the caption buttons. |point| must
+  // be in the coordinates of the FrameCaptionButtonContainerView.
+  int NonClientHitTest(const gfx::Point& point) const;
+
+  // Sets the header style.
+  void set_header_style(HeaderStyle header_style) {
+    header_style_ = header_style;
+  }
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Sets the images for a button based on the given ids.
@@ -76,7 +114,14 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // The widget that the buttons act on.
   views::Widget* frame_;
 
-  // The buttons.
+  // The close button separator.
+  gfx::ImageSkia button_separator_;
+
+  HeaderStyle header_style_;
+
+  // The buttons. At most one of |minimize_button_| and |size_button_| is
+  // visible.
+  views::ImageButton* minimize_button_;
   views::ImageButton* size_button_;
   views::ImageButton* close_button_;
 

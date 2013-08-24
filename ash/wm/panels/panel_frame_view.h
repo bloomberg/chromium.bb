@@ -19,10 +19,10 @@ class ImageView;
 
 namespace ash {
 
+class FrameCaptionButtonContainerView;
 class FramePainter;
 
-class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
-                                  public views::ButtonListener {
+class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -57,16 +57,11 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
   // Child View class describing the panel's title bar behavior
   // and buttons, owned by the view hierarchy
   scoped_ptr<FramePainter> frame_painter_;
   views::Widget* frame_;
-  views::ImageButton* close_button_;
-  views::ImageButton* minimize_button_;
+  FrameCaptionButtonContainerView* caption_button_container_;
   views::ImageView* window_icon_;
   gfx::Rect client_view_bounds_;
   const gfx::Font title_font_;

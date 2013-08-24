@@ -6,6 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -17,7 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
@@ -123,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
     waiter->Wait();
   }
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->size_button_->visible());
-  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
@@ -160,8 +159,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   immersive_mode_controller->StartRevealForTest(true);
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->size_button_->visible());
-  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 
@@ -182,8 +180,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   immersive_mode_controller->StartRevealForTest(true);
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->size_button_->visible());
-  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 
@@ -191,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   // be in the lightbar style.
   immersive_mode_controller->SetMouseHoveredForTest(false);
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_FALSE(frame_view->size_button_->visible());
-  EXPECT_FALSE(frame_view->close_button_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
   EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
 
@@ -202,7 +198,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Exiting immersive mode makes controls and frame visible again.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_TRUE(frame_view->size_button_->visible());
-  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 }
