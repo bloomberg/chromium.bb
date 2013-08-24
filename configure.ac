@@ -424,8 +424,10 @@ if test "x$have_lcms" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LCMS, [test "x$have_lcms" = xyes])
 
-AC_PATH_PROG([wayland_scanner], [wayland-scanner],
-	     [AC_MSG_ERROR("wayland-scanner is needed to compile weston")])
+AC_PATH_PROG([wayland_scanner], [wayland-scanner])
+if test x$wayland_scanner = x; then
+	AC_MSG_ERROR([wayland-scanner is needed to compile weston])
+fi
 
 AC_CONFIG_FILES([Makefile
 		 shared/Makefile
