@@ -49,7 +49,8 @@ class APP_LIST_EXPORT AppListItemModel {
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
 
-  // Returns the context menu model for this item.
+  // Returns the context menu model for this item, or NULL if there is currently
+  // no menu for the item (e.g. during install).
   // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
 

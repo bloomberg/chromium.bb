@@ -31,8 +31,12 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
 
   NSMenu* GetContextMenu() {
     if (!context_menu_controller_) {
+      ui::MenuModel* menu_model = result_->GetContextMenuModel();
+      if (!menu_model)
+        return nil;
+
       context_menu_controller_.reset(
-          [[MenuController alloc] initWithModel:result_->GetContextMenuModel()
+          [[MenuController alloc] initWithModel:menu_model
                          useWithPopUpButtonCell:NO]);
     }
     return [context_menu_controller_ menu];

@@ -122,17 +122,27 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
 class AppListItemWithMenu : public AppListItemModel {
  public:
-  AppListItemWithMenu(const std::string& title) : menu_model_(NULL) {
+  AppListItemWithMenu(const std::string& title)
+      : menu_model_(NULL),
+        menu_ready_(true) {
     SetTitle(title);
     menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
   }
 
+  void SetMenuReadyForTesting(bool ready) {
+    menu_ready_ = ready;
+  }
+
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+    if (!menu_ready_)
+      return NULL;
+
     return &menu_model_;
   }
 
  private:
   ui::SimpleMenuModel menu_model_;
+  bool menu_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemWithMenu);
 };
@@ -891,8 +901,9 @@ TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
 }
 
 TEST_F(AppsGridControllerTest, ContextMenus) {
+  AppListItemWithMenu* item_two_model = new AppListItemWithMenu("Item Two");
   model()->apps()->AddAt(0, new AppListItemWithMenu("Item One"));
-  model()->apps()->AddAt(1, new AppListItemWithMenu("Item Two"));
+  model()->apps()->AddAt(1, item_two_model);
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
 
   NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:0];
@@ -903,6 +914,12 @@ TEST_F(AppsGridControllerTest, ContextMenus) {
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"Menu For: Item One", [[menu itemAtIndex:0] title]);
 
+  // Test a context menu request while the item is still installing.
+  item_two_model->SetMenuReadyForTesting(false);
+  menu = [page menuForEvent:mouse_at_cell_1];
+  EXPECT_EQ(nil, menu);
+
+  item_two_model->SetMenuReadyForTesting(true);
   menu = [page menuForEvent:mouse_at_cell_1];
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"Menu For: Item Two", [[menu itemAtIndex:0] title]);
