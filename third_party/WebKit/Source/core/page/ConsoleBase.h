@@ -71,19 +71,17 @@ public:
     void groupCollapsed(ScriptState*, PassRefPtr<ScriptArguments>);
     void groupEnd();
 
-    static String formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack>);
-
 protected:
     virtual ~ConsoleBase();
-
     virtual ScriptExecutionContext* context() = 0;
-
-    virtual void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false) = 0;
-
+    virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) = 0;
     virtual bool profilerEnabled() = 0;
+
 private:
     virtual void refConsole() = 0;
     virtual void derefConsole() = 0;
+
+    void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
 };
 
 } // namespace WebCore

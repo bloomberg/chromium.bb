@@ -43,6 +43,7 @@
 #include "core/page/Frame.h"
 #include "core/page/MemoryInfo.h"
 #include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -67,34 +68,15 @@ ScriptExecutionContext* Console::context()
     return m_frame->document();
 }
 
-void Console::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
+void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
-    RefPtr<ScriptArguments> arguments = scriptArguments;
-
-    if (!m_frame)
-        return;
-
-    if (!acceptNoArguments && !arguments->argumentCount())
-        return;
-
-
-    String message;
-    bool gotMessage = arguments->getFirstArgumentAsString(message);
-
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, type, level, message, state, arguments);
-
     String stackTrace;
-    if (gotMessage) {
-        RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
-        if (m_frame->page()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
-            callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-            stackTrace = ConsoleBase::formatStackTraceString(message, callStack);
-        }
-        m_frame->page()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
+    if (m_frame->page()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
+        RefPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+        stackTrace = PageConsole::formatStackTraceString(message, fullStack);
     }
-
+    m_frame->page()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
 }
-
 
 bool Console::profilerEnabled()
 {

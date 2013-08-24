@@ -60,26 +60,9 @@ WorkerConsole::~WorkerConsole()
 {
 }
 
-void WorkerConsole::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
+void WorkerConsole::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
-    RefPtr<ScriptArguments> arguments = scriptArguments;
-    ScriptExecutionContext* context = this->context();
-
-    if (!context)
-        return;
-
-    if (!acceptNoArguments && !arguments->argumentCount())
-        return;
-
-    size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, stackSize));
     const ScriptCallFrame& lastCaller = callStack->at(0);
-
-    String message;
-    bool gotMessage = arguments->getFirstArgumentAsString(message);
-
-    InspectorInstrumentation::addMessageToConsole(context, ConsoleAPIMessageSource, type, level, message, state, arguments);
-
     m_scope->thread()->workerReportingProxy().postConsoleMessageToWorkerObject(ConsoleAPIMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 

@@ -40,31 +40,12 @@
 #include "core/page/ConsoleTypes.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 ConsoleBase::~ConsoleBase()
 {
-}
-
-String ConsoleBase::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
-{
-    StringBuilder stackTrace;
-    for (size_t i = 0; i < callStack->size(); ++i) {
-        const ScriptCallFrame& frame = callStack->at(i);
-        stackTrace.append("\n    at " + (frame.functionName().length() ? frame.functionName() : "(anonymous function)"));
-        stackTrace.append(" (");
-        stackTrace.append(frame.sourceURL());
-        stackTrace.append(':');
-        stackTrace.append(String::number(frame.lineNumber()));
-        stackTrace.append(':');
-        stackTrace.append(String::number(frame.columnNumber()));
-        stackTrace.append(')');
-    }
-
-    return stackTrace.toString();
 }
 
 void ConsoleBase::debug(ScriptState* state, PassRefPtr<ScriptArguments> arguments)
@@ -205,6 +186,26 @@ void ConsoleBase::groupCollapsed(ScriptState* state, PassRefPtr<ScriptArguments>
 void ConsoleBase::groupEnd()
 {
     InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), 0);
+}
+
+void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
+{
+    if (!context())
+        return;
+
+    RefPtr<ScriptArguments> arguments = scriptArguments;
+    if (!acceptNoArguments && !arguments->argumentCount())
+        return;
+
+    size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
+    RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, stackSize));
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+
+    String message;
+    bool gotStringMessage = arguments->getFirstArgumentAsString(message);
+    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, type, level, message, state, arguments);
+    if (gotStringMessage)
+        reportMessageToClient(level, message, callStack);
 }
 
 } // namespace WebCore

@@ -56,15 +56,12 @@ public:
 
 protected:
     virtual ScriptExecutionContext* context();
-
-    virtual void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
-
+    virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
     virtual bool profilerEnabled();
 
 private:
-    inline Page* page() const;
-
     explicit Console(Frame*);
+    inline Page* page() const;
 
     virtual void refConsole() { ref(); }
     virtual void derefConsole() { deref(); }
