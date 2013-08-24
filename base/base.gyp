@@ -453,6 +453,7 @@
         'async_socket_io_handler_unittest.cc',
         'at_exit_unittest.cc',
         'atomicops_unittest.cc',
+        'barrier_closure_unittest.cc',
         'base64_unittest.cc',
         'bind_helpers_unittest.cc',
         'bind_unittest.cc',

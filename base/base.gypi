@@ -78,6 +78,8 @@
           'atomicops_internals_x86_gcc.cc',
           'atomicops_internals_x86_gcc.h',
           'atomicops_internals_x86_msvc.h',
+          'barrier_closure.cc',
+          'barrier_closure.h',
           'base_export.h',
           'base_paths.cc',
           'base_paths.h',
