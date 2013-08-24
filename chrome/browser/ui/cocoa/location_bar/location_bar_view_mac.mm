@@ -238,7 +238,10 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   UpdateMicSearchDecorationVisibility();
-  omnibox_view_->Update(contents);
+  if (contents)
+    omnibox_view_->OnTabChanged(contents);
+  else
+    omnibox_view_->Update();
   OnChanged();
 }
 

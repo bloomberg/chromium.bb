@@ -494,7 +494,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
   animation_offset_ = offset;
 }
 
-void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
+void LocationBarView::Update(const WebContents* contents) {
   mic_search_view_->SetVisible(
       !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
@@ -517,7 +517,10 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   if (star_view_)
     star_view_->SetVisible(star_enabled);
 
-  location_entry_->Update(tab_for_state_restoring);
+  if (contents)
+    location_entry_->OnTabChanged(contents);
+  else
+    location_entry_->Update();
 
   OnChanged();
 }

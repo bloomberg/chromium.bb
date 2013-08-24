@@ -589,47 +589,26 @@ void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
           State(selection, saved_selection_for_focus_change_)));
 }
 
-void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
-  const bool visibly_changed_permanent_text = model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true));
-
-  const ToolbarModel::SecurityLevel security_level =
-      controller()->GetToolbarModel()->GetSecurityLevel(false);
-  const bool changed_security_level = (security_level != security_level_);
-
-  // Bail early when no visible state will actually change (prevents an
-  // unnecessary ScopedFreeze, and thus UpdateWindow()).
-  if (!changed_security_level && !visibly_changed_permanent_text &&
-      !tab_for_state_restoring)
-    return;
-
-  // Update our local state as desired.  We set security_level_ here so it will
-  // already be correct before we get to any RevertAll()s below and use it.
-  security_level_ = security_level;
-
-  // When we're switching to a new tab, restore its state, if any.
+void OmniboxViewWin::OnTabChanged(const content::WebContents* web_contents) {
   ScopedFreeze freeze(this, GetTextObjectModel());
-  if (tab_for_state_restoring) {
-    // Make sure we reset our own state first.  The new tab may not have any
-    // saved state, or it may not have had input in progress, in which case we
-    // won't overwrite all our local state.
-    RevertAll();
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
 
-    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
-        tab_for_state_restoring->GetUserData(&kAutocompleteEditStateKey));
-    if (state) {
-      model()->RestoreState(state->model_state);
+  const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
+      web_contents->GetUserData(&kAutocompleteEditStateKey));
+  model()->RestoreState(state ? &state->model_state : NULL);
+  if (state) {
+    SetSelectionRange(state->view_state.selection);
+    saved_selection_for_focus_change_ =
+        state->view_state.saved_selection_for_focus_change;
+  }
+}
 
-      // Restore user's selection.  We do this after restoring the user_text
-      // above so we're selecting in the correct string.
-      SetSelectionRange(state->view_state.selection);
-      saved_selection_for_focus_change_ =
-          state->view_state.saved_selection_for_focus_change;
-    }
-  } else if (visibly_changed_permanent_text) {
-    // Not switching tabs, just updating the permanent text.  (In the case where
-    // we _were_ switching tabs, the RevertAll() above already drew the new
-    // permanent text.)
+void OmniboxViewWin::Update() {
+  const ToolbarModel::SecurityLevel old_security_level = security_level_;
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  if (model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true))) {
+    ScopedFreeze freeze(this, GetTextObjectModel());
 
     // Tweak: if the user had all the text selected, select all the new text.
     // This makes one particular case better: the user clicks in the box to
@@ -652,8 +631,7 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
     // things when the omnibox isn't focused to begin with.
     if (was_select_all && model()->has_focus())
       SelectAll(sel.cpMin > sel.cpMax);
-  } else if (changed_security_level) {
-    // Only the security style changed, nothing else.  Redraw our text using it.
+  } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
 }

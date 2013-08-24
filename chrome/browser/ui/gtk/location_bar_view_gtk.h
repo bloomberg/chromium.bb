@@ -90,9 +90,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   GtkWidget* GetPageActionWidget(ExtensionAction* page_action);
 
   // Updates the location bar.  We also reset the bar's permanent text and
-  // security style, and, if |tab_for_state_restoring| is non-NULL, also
-  // restore saved state that the tab holds.
-  void Update(const content::WebContents* tab_for_state_restoring);
+  // security style, and, if |contents| is non-NULL, also restore saved state
+  // that the tab holds.
+  void Update(const content::WebContents* contents);
 
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);

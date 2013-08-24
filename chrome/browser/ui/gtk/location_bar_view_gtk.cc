@@ -666,7 +666,10 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
-  location_entry_->Update(contents);
+  if (contents)
+    location_entry_->OnTabChanged(contents);
+  else
+    location_entry_->Update();
   // The security level (background color) could have changed, etc.
   if (theme_service_->UsingNativeTheme()) {
     // In GTK mode, we need our parent to redraw, as it draws the text entry

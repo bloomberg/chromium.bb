@@ -161,9 +161,9 @@ class LocationBarView : public LocationBar,
                    ColorKind kind) const;
 
   // Updates the location bar.  We also reset the bar's permanent text and
-  // security style, and, if |tab_for_state_restoring| is non-NULL, also restore
-  // saved state that the tab holds.
-  void Update(const content::WebContents* tab_for_state_restoring);
+  // security style, and, if |contents| is non-NULL, also restore saved state
+  // that the tab holds.
+  void Update(const content::WebContents* contents);
 
   // Returns corresponding profile.
   Profile* profile() const { return profile_; }

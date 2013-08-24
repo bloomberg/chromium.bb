@@ -183,40 +183,30 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
   StoreStateToTab(tab, state);
 }
 
-void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
-  // TODO(shess): It seems like if the tab is non-NULL, then this code
-  // shouldn't need to be called at all.  When coded that way, I find
-  // that the field isn't always updated correctly.  Figure out why
-  // this is.  Maybe this method should be refactored into more
-  // specific cases.
-  bool user_visible = model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true));
-
-  if (tab_for_state_restoring) {
-    RevertAll();
-
-    const OmniboxViewMacState* state = GetStateFromTab(tab_for_state_restoring);
-    if (state) {
-      // Should restore the user's text via SetUserText().
-      model()->RestoreState(state->model_state);
-
-      // Restore focus and selection if they were present when the tab
-      // was switched away.
-      if (state->has_focus) {
-        // TODO(shess): Unfortunately, there is no safe way to update
-        // this because TabStripController -selectTabWithContents:* is
-        // also messing with focus.  Both parties need to agree to
-        // store existing state before anyone tries to setup the new
-        // state.  Anyhow, it would look something like this.
+void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
+  const OmniboxViewMacState* state = GetStateFromTab(web_contents);
+  model()->RestoreState(state ? &state->model_state : NULL);
+  // Restore focus and selection if they were present when the tab
+  // was switched away.
+  if (state && state->has_focus) {
+    // TODO(shess): Unfortunately, there is no safe way to update
+    // this because TabStripController -selectTabWithContents:* is
+    // also messing with focus.  Both parties need to agree to
+    // store existing state before anyone tries to setup the new
+    // state.  Anyhow, it would look something like this.
 #if 0
-        [[field_ window] makeFirstResponder:field_];
-        [[field_ currentEditor] setSelectedRange:state->selection];
+    [[field_ window] makeFirstResponder:field_];
+    [[field_ currentEditor] setSelectedRange:state->selection];
 #endif
-      }
-    }
-  } else if (user_visible) {
+  }
+}
+
+void OmniboxViewMac::Update() {
+  if (model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true))) {
     // Restore everything to the baseline look.
     RevertAll();
+
     // TODO(shess): Figure out how this case is used, to make sure
     // we're getting the selection and popup right.
   } else {

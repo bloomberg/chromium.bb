@@ -63,10 +63,11 @@ class OmniboxView {
   // that it can be restored during a later call to Update().
   virtual void SaveStateToTab(content::WebContents* tab) = 0;
 
-  // Called when any LocationBarView state changes. If
-  // |tab_for_state_restoring| is non-NULL, it points to a WebContents whose
-  // state we should restore.
-  virtual void Update(const content::WebContents* tab_for_state_restoring) = 0;
+  // Called when the window's active tab changes.
+  virtual void OnTabChanged(const content::WebContents* web_contents) = 0;
+
+  // Called when any relevant state changes other than changing tabs.
+  virtual void Update() = 0;
 
   // Asks the browser to load the specified match's |destination_url|, which
   // is assumed to be one of the popup entries, using the supplied disposition

@@ -104,10 +104,10 @@ class LocationBarViewMac : public LocationBar,
   // redrawn and laid out if necessary.
   void OnDecorationsChanged();
 
-  // Updates the location bar.  Resets the bar's permanent text and security
-  // style, and if |tab| is non-NULL, restores saved state from the tab (for tab
-  // switching).
-  void Update(const content::WebContents* tab);
+  // Updates the location bar.  We also reset the bar's permanent text and
+  // security style, and, if |contents| is non-NULL, also restore saved state
+  // that the tab holds.
+  void Update(const content::WebContents* contents);
 
   // Layout the various decorations which live in the field.
   void Layout();

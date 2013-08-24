@@ -215,18 +215,25 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
                focus_source_);
 }
 
-void OmniboxEditModel::RestoreState(const State& state) {
-  SetFocusState(state.focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
-  focus_source_ = state.focus_source;
+void OmniboxEditModel::RestoreState(const State* state) {
+  // We need to update the permanent text correctly and revert the view
+  // regardless of whether there is saved state.
+  permanent_text_ = controller_->GetToolbarModel()->GetText(true);
+  view_->RevertAll();
+  if (!state)
+    return;
+
+  SetFocusState(state->focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
+  focus_source_ = state->focus_source;
   // Restore any user editing.
-  if (state.user_input_in_progress) {
+  if (state->user_input_in_progress) {
     // NOTE: Be sure and set keyword-related state BEFORE invoking
     // DisplayTextFromUserText(), as its result depends upon this state.
-    keyword_ = state.keyword;
-    is_keyword_hint_ = state.is_keyword_hint;
-    view_->SetUserText(state.user_text,
-        DisplayTextFromUserText(state.user_text), false);
-    view_->SetGrayTextAutocompletion(state.gray_text);
+    keyword_ = state->keyword;
+    is_keyword_hint_ = state->is_keyword_hint;
+    view_->SetUserText(state->user_text,
+        DisplayTextFromUserText(state->user_text), false);
+    view_->SetGrayTextAutocompletion(state->gray_text);
   }
 }
 
@@ -886,7 +893,7 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // stopped.  If the user presses Escape while stopped, we clear it.
   if (delegate_->CurrentPageExists() && !delegate_->IsLoading()) {
     delegate_->GetNavigationController().DiscardNonCommittedEntries();
-    view_->Update(NULL);
+    view_->Update();
   }
 
   // If the user wasn't editing, but merely had focus in the edit, allow <esc>

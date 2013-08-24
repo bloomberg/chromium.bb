@@ -69,8 +69,8 @@ class OmniboxViewGtk : public OmniboxView,
 
   // OmniboxView:
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
-  virtual void Update(
-      const content::WebContents* tab_for_state_restoring) OVERRIDE;
+  virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;
+  virtual void Update() OVERRIDE;
   virtual string16 GetText() const OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos,

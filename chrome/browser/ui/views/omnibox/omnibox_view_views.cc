@@ -364,31 +364,24 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   tab->SetUserData(OmniboxState::kKey, new OmniboxState(state, selection));
 }
 
-void OmniboxViewViews::Update(const content::WebContents* contents) {
-  // NOTE: We're getting the URL text here from the ToolbarModel.
-  bool visibly_changed_permanent_text = model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true));
-  ToolbarModel::SecurityLevel security_level =
-        controller()->GetToolbarModel()->GetSecurityLevel(false);
-  bool changed_security_level = (security_level != security_level_);
-  security_level_ = security_level;
+void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
 
-  if (contents) {
-    RevertAll();
-    const OmniboxState* state = static_cast<OmniboxState*>(
-        contents->GetUserData(&OmniboxState::kKey));
-    if (state) {
-      // Restore the saved state and selection.
-      model()->RestoreState(state->model_state);
-      SelectSelectionModel(state->selection_model);
-      // TODO(msw|oshima): Consider saving/restoring edit history.
-      ClearEditHistory();
-    }
-  } else if (visibly_changed_permanent_text) {
-    // Not switching tabs, just updating the permanent text.  (In the case where
-    // we _were_ switching tabs, the RevertAll() above already drew the new
-    // permanent text.)
+  const OmniboxState* state = static_cast<OmniboxState*>(
+      web_contents->GetUserData(&OmniboxState::kKey));
+  model()->RestoreState(state ? &state->model_state : NULL);
+  if (state)
+    SelectSelectionModel(state->selection_model);
 
+  // TODO(msw|oshima): Consider saving/restoring edit history.
+  ClearEditHistory();
+}
+
+void OmniboxViewViews::Update() {
+  const ToolbarModel::SecurityLevel old_security_level = security_level_;
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  if (model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true))) {
     // Tweak: if the user had all the text selected, select all the new text.
     // This makes one particular case better: the user clicks in the box to
     // change it right before the permanent URL is changed.  Since the new URL
@@ -409,7 +402,7 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
     // things when the omnibox isn't focused to begin with.
     if (was_select_all && model()->has_focus())
       SelectAll(range.is_reversed());
-  } else if (changed_security_level) {
+  } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
 }

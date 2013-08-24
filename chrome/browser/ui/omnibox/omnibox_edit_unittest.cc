@@ -25,7 +25,8 @@ class TestingOmniboxView : public OmniboxView {
       : OmniboxView(NULL, controller, NULL) {}
 
   virtual void SaveStateToTab(WebContents* tab) OVERRIDE {}
-  virtual void Update(const WebContents* tab_for_state_restoring) OVERRIDE {}
+  virtual void OnTabChanged(const WebContents* web_contents) OVERRIDE {}
+  virtual void Update() OVERRIDE {}
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,

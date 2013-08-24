@@ -99,8 +99,9 @@ class OmniboxEditModel {
   // the internal state appropriately.
   const State GetStateForTabSwitch();
 
-  // Restores local state from the saved |state|.
-  void RestoreState(const State& state);
+  // Resets the tab state, then restores local state from the saved |state|.
+  // |state| may be NULL if there is no saved state.
+  void RestoreState(const State* state);
 
   // Returns the match for the current text. If the user has not edited the text
   // this is the match corresponding to the permanent text. Returns the

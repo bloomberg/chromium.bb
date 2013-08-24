@@ -450,36 +450,30 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
       new AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
-void OmniboxViewGtk::Update(const WebContents* contents) {
-  // NOTE: We're getting the URL text here from the ToolbarModel.
-  bool visibly_changed_permanent_text = model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true));
+void OmniboxViewGtk::OnTabChanged(const WebContents* web_contents) {
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  selected_text_.clear();
 
-  ToolbarModel::SecurityLevel security_level =
-        controller()->GetToolbarModel()->GetSecurityLevel(false);
-  bool changed_security_level = (security_level != security_level_);
-  security_level_ = security_level;
-
-  if (contents) {
-    selected_text_.clear();
-    RevertAll();
-    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
-        contents->GetUserData(&kAutocompleteEditStateKey));
-    if (state) {
-      model()->RestoreState(state->model_state);
-
-      // Move the marks for the cursor and the other end of the selection to
-      // the previously-saved offsets (but preserve PRIMARY).
-      StartUpdatingHighlightedText();
-      SetSelectedRange(state->view_state.selection_range);
-      FinishUpdatingHighlightedText();
-    }
-  } else if (visibly_changed_permanent_text) {
-    RevertAll();
-    // TODO(deanm): There should be code to restore select all here.
-  } else if (changed_security_level) {
-    EmphasizeURLComponents();
+  const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
+      web_contents->GetUserData(&kAutocompleteEditStateKey));
+  model()->RestoreState(state ? &state->model_state : NULL);
+  if (state) {
+    // Move the marks for the cursor and the other end of the selection to the
+    // previously-saved offsets (but preserve PRIMARY).
+    StartUpdatingHighlightedText();
+    SetSelectedRange(state->view_state.selection_range);
+    FinishUpdatingHighlightedText();
   }
+}
+
+void OmniboxViewGtk::Update() {
+  const ToolbarModel::SecurityLevel old_security_level = security_level_;
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  if (model()->UpdatePermanentText(
+      controller()->GetToolbarModel()->GetText(true)))
+    RevertAll();
+  else if (old_security_level != security_level_)
+    EmphasizeURLComponents();
 }
 
 string16 OmniboxViewGtk::GetText() const {
