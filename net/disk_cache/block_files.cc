@@ -687,7 +687,7 @@ void BlockFiles::GetFileStats(int index, int* used_count, int* load) {
 
 base::FilePath BlockFiles::Name(int index) {
   // The file format allows for 256 files.
-  DCHECK(index < 256 || index >= 0);
+  DCHECK(index < 256 && index >= 0);
   std::string tmp = base::StringPrintf("%s%d", kBlockName, index);
   return path_.AppendASCII(tmp);
 }
