@@ -45,6 +45,7 @@
 #include "core/editing/markup.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -846,12 +847,12 @@ TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) con
 
 TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) const
 {
-    if (isHTMLTextFormControlElement(this)) {
-        HTMLTextFormControlElement* textElement = toHTMLTextFormControlElement(const_cast<HTMLElement*>(this));
+    if (hasTagName(inputTag)) {
+        HTMLInputElement* inputElement = toHTMLInputElement(const_cast<HTMLElement*>(this));
         bool hasStrongDirectionality;
-        Unicode::Direction textDirection = textElement->value().defaultWritingDirection(&hasStrongDirectionality);
+        Unicode::Direction textDirection = inputElement->value().defaultWritingDirection(&hasStrongDirectionality);
         if (strongDirectionalityTextNode)
-            *strongDirectionalityTextNode = hasStrongDirectionality ? textElement : 0;
+            *strongDirectionalityTextNode = hasStrongDirectionality ? inputElement : 0;
         return (textDirection == Unicode::LeftToRight) ? LTR : RTL;
     }
 

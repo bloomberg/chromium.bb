@@ -1112,6 +1112,10 @@ bdo {
     unicode-bidi: bidi-override;
 }
 
+textarea[dir=auto] {
+    unicode-bidi: -webkit-plaintext;
+}
+
 /* page */
 
 @page {
