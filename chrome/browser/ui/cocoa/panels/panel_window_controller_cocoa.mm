@@ -831,8 +831,18 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
     if ([contentView superview])
       [contentView removeFromSuperview];
   } else {
-    if (![contentView superview])
+    if (![contentView superview]) {
       [[[self window] contentView] addSubview:contentView];
+
+      // When the web contents view is put back, we need to tell its render
+      // widget host view to accept focus.
+      content::RenderWidgetHostView* rwhv =
+          webContents->GetRenderWidgetHostView();
+      if (rwhv) {
+        [[self window] makeFirstResponder:rwhv->GetNativeView()];
+        rwhv->SetActive([[self window] isMainWindow]);
+      }
+    }
   }
 }
 
