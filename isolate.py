@@ -38,6 +38,8 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import tools
+
 
 __version__ = '0.1'
 
@@ -1945,7 +1947,7 @@ def CMDhashtable(parser, args):
   if args:
     parser.error('Unsupported argument: %s' % args)
 
-  with run_isolated.Profiler('GenerateHashtable'):
+  with tools.Profiler('GenerateHashtable'):
     success = False
     try:
       complete_state = load_complete_state(
@@ -2140,7 +2142,7 @@ def CMDrun(parser, args):
   if options.outdir and is_url(options.outdir):
     raise ExecutionError('Can\'t use url for --outdir with mode run')
 
-  cmd = trace_inputs.fix_python_path(cmd)
+  cmd = tools.fix_python_path(cmd)
   try:
     root_dir = complete_state.root_dir
     if not options.outdir:
@@ -2203,7 +2205,7 @@ def CMDtrace(parser, args):
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
-  cmd = trace_inputs.fix_python_path(cmd)
+  cmd = tools.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
       unicode(complete_state.root_dir),
       complete_state.saved_state.relative_cwd))
@@ -2318,14 +2320,14 @@ def parse_variable_option(options):
   options.variables = dict((k, try_make_int(v)) for k, v in options.variables)
 
 
-class OptionParserIsolate(trace_inputs.OptionParserWithLogging):
+class OptionParserIsolate(tools.OptionParserWithLogging):
   """Adds automatic --isolate, --isolated, --out and --variable handling."""
   # Set it to False if it is not required, e.g. it can be passed on but do not
   # fail if not given.
   require_isolated = True
 
   def __init__(self, **kwargs):
-    trace_inputs.OptionParserWithLogging.__init__(
+    tools.OptionParserWithLogging.__init__(
         self,
         verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
         **kwargs)
@@ -2353,7 +2355,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithLogging):
 
     On Windows, / and \ are often mixed together in a path.
     """
-    options, args = trace_inputs.OptionParserWithLogging.parse_args(
+    options, args = tools.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
@@ -2394,6 +2396,6 @@ def main(argv):
 
 if __name__ == '__main__':
   fix_encoding.fix_encoding()
-  trace_inputs.disable_buffering()
+  tools.disable_buffering()
   colorama.init()
   sys.exit(main(sys.argv[1:]))

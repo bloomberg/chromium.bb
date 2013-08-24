@@ -15,13 +15,13 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if not ROOT_DIR in sys.path:
   sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
 import run_test_cases
+from utils import tools
 
 
 def main():
   """CLI frontend to validate arguments."""
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]')
 
@@ -32,7 +32,7 @@ def main():
   if not args:
     parser.error('Please provide the executable to run')
 
-  cmd = run_isolated.fix_python_path(args)
+  cmd = tools.fix_python_path(args)
   try:
     tests = run_test_cases.chromium_list_test_cases(
         cmd,

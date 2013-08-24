@@ -366,7 +366,7 @@ class RunTestCasesSlow(unittest.TestCase):
         executable, cwd, test_cases, jobs, timeout, clusters, retries,
         run_all, max_failures, no_cr, gtest_output, result_file, verbose):
       self.assertEqual(
-          run_test_cases.run_isolated.fix_python_path([exe]), executable)
+          run_test_cases.tools.fix_python_path([exe]), executable)
       self.assertEqual(os.getcwd(), cwd)
       # They are in reverse order due to test shuffling.
       self.assertEqual(['Foo.Bar1', 'Foo.Bar/3'], test_cases)

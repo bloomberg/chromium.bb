@@ -32,7 +32,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 # Name of the optional package with all dependencies.
 DEPENDENCIES_ZIP = os.path.join(BASE_DIR, 'run_isolated.zip')
 
-# When running in isolated environment, run_isolated is in zipped package.
+# When running in isolated environment, dependencies is in zipped package.
 if os.path.exists(DEPENDENCIES_ZIP):
   sys.path.insert(0, DEPENDENCIES_ZIP)
 else:
@@ -41,8 +41,8 @@ else:
     sys.path.insert(0, ROOT_DIR)
 
 
-import run_isolated
 from utils import threading_utils
+from utils import tools
 
 
 # These are known to influence the way the output is generated.
@@ -1459,9 +1459,9 @@ def run_test_cases(
   return int(bool(fail) or decider.stopped or bool(missing))
 
 
-class OptionParserWithLogging(run_isolated.OptionParserWithLogging):
+class OptionParserWithLogging(tools.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    run_isolated.OptionParserWithLogging.__init__(
+    tools.OptionParserWithLogging.__init__(
         self,
         log_file=os.environ.get('RUN_TEST_CASES_LOG_FILE', ''),
         **kwargs)
@@ -1677,12 +1677,12 @@ def process_args(argv):
 
   if options.run_all and options.max_failures is not None:
     parser.error('Use only one of --run-all or --max-failures')
-  return parser, options, run_isolated.fix_python_path(args)
+  return parser, options, tools.fix_python_path(args)
 
 
 def main(argv):
   """CLI frontend to validate arguments."""
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser, options, cmd = process_args(argv)
 
   if options.gtest_list_tests:

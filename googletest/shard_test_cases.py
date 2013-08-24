@@ -18,11 +18,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if not ROOT_DIR in sys.path:
   sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
+from utils import tools
 
 
 def main():
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser(usage='%prog <options> [gtest]')
   parser.disable_interspersed_args()
   parser.add_option(
@@ -39,7 +39,7 @@ def main():
   env = os.environ.copy()
   env['GTEST_TOTAL_SHARDS'] = str(options.shards)
   env['GTEST_SHARD_INDEX'] = str(options.index)
-  return subprocess.call(run_isolated.fix_python_path(args), env=env)
+  return subprocess.call(tools.fix_python_path(args), env=env)
 
 
 if __name__ == '__main__':

@@ -14,13 +14,12 @@ import sys
 import time
 import urllib
 
-#from common import find_depot_tools  # pylint: disable=W0611
-#
-## From the depot tools
-#import fix_encoding
+from third_party.depot_tools import fix_encoding
 
 import run_isolated
+
 from utils import threading_utils
+from utils import tools
 
 
 # The default time to wait for a shard to finish running.
@@ -138,7 +137,7 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
 
 
 def parse_args():
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options] test_name',
       description=sys.modules[__name__].__doc__)
@@ -192,5 +191,5 @@ def main():
 
 
 if __name__ == '__main__':
-  #fix_encoding.fix_encoding()
+  fix_encoding.fix_encoding()
   sys.exit(main())

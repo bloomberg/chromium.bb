@@ -18,7 +18,9 @@ import urllib
 import zlib
 
 import run_isolated
+
 from utils import threading_utils
+from utils import tools
 
 
 # The minimum size of files to upload directly to the blobstore.
@@ -355,7 +357,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
 
 def main(args):
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options] <file1..fileN> or - to read from stdin',
       description=sys.modules[__name__].__doc__)
@@ -395,7 +397,7 @@ def main(args):
       )
       for f in files)
 
-  with run_isolated.Profiler('Archive'):
+  with tools.Profiler('Archive'):
     return upload_sha1_tree(
         base_url=options.remote,
         indir=os.getcwd(),

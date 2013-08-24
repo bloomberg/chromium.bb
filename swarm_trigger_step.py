@@ -20,6 +20,8 @@ import time
 import urllib
 
 import run_isolated
+
+from utils import tools
 from utils import zip_package
 
 
@@ -245,7 +247,7 @@ def process_manifest(
 
 
 def main(argv):
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog [options]', description=sys.modules[__name__].__doc__)
   parser.add_option('-w', '--working_dir', default='swarm_tests',

@@ -21,7 +21,7 @@ import zlib
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
+from utils import tools
 
 
 def zip_file(compressor_constructor, compression_level, filename):
@@ -29,7 +29,7 @@ def zip_file(compressor_constructor, compression_level, filename):
   compressor = compressor_constructor(compression_level)
   with open(filename, 'rb') as f:
     while True:
-      chunk = f.read(run_isolated.ZIPPED_FILE_CHUNK)
+      chunk = f.read(16 * 1024)
       if not chunk:
         break
       compressed_size += len(compressor.compress(f.read()))
@@ -69,7 +69,7 @@ def tree_files(root_dir):
 
 
 def main():
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser()
   parser.add_option('-s', '--isolated', help='.isolated file to profile with.')
   parser.add_option('--largest_files', type='int',

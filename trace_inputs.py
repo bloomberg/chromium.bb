@@ -25,7 +25,6 @@ import getpass
 import glob
 import json
 import logging
-import optparse
 import os
 import re
 import stat
@@ -40,6 +39,8 @@ import weakref
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
+
+from utils import tools
 
 ## OS-specific imports
 
@@ -471,39 +472,6 @@ if sys.platform != 'win32':  # All non-Windows OSes.
         break
       index += 1
     return relfile, None, None
-
-
-class Unbuffered(object):
-  """Disable buffering on a file object."""
-  def __init__(self, stream):
-    self.stream = stream
-
-  def write(self, data):
-    self.stream.write(data)
-    if '\n' in data:
-      self.stream.flush()
-
-  def __getattr__(self, attr):
-    return getattr(self.stream, attr)
-
-
-def disable_buffering():
-  """Makes this process and child processes stdout unbuffered."""
-  if not os.environ.get('PYTHONUNBUFFERED'):
-    # Since sys.stdout is a C++ object, it's impossible to do
-    # sys.stdout.write = lambda...
-    sys.stdout = Unbuffered(sys.stdout)
-    os.environ['PYTHONUNBUFFERED'] = 'x'
-
-
-def fix_python_path(cmd):
-  """Returns the fixed command line to call the right python executable."""
-  out = cmd[:]
-  if out[0] == 'python':
-    out[0] = sys.executable
-  elif out[0].endswith('.py'):
-    out.insert(0, sys.executable)
-  return out
 
 
 def gen_blacklist(regexes):
@@ -2629,7 +2597,7 @@ class Dtrace(ApiBase):
       # that needs to be traced.
       # Yummy.
       child = subprocess.Popen(
-          child_cmd + fix_python_path(cmd),
+          child_cmd + tools.fix_python_path(cmd),
           stdin=subprocess.PIPE,
           stdout=stdout,
           stderr=stderr,
@@ -3310,7 +3278,7 @@ class LogmanTrace(ApiBase):
         tracename,
       ]
       child = subprocess.Popen(
-          child_cmd + fix_python_path(cmd),
+          child_cmd + tools.fix_python_path(cmd),
           cwd=cwd,
           stdin=subprocess.PIPE,
           stdout=stdout,
@@ -3637,7 +3605,7 @@ def trace(logfile, cmd, cwd, api, output):
   - api: a tracing api instance.
   - output: if True, returns output, otherwise prints it at the console.
   """
-  cmd = fix_python_path(cmd)
+  cmd = tools.fix_python_path(cmd)
   api.clean_trace(logfile)
   with api.get_tracer(logfile) as tracer:
     return tracer.trace(cmd, cwd, 'default', output)
@@ -3757,29 +3725,16 @@ def CMDread(parser, args):
   return 0
 
 
-class OptionParserWithLogging(optparse.OptionParser):
-  """Adds --verbose option."""
-  def __init__(self, verbose=0, **kwargs):
-    optparse.OptionParser.__init__(self, **kwargs)
-    self.add_option(
-        '-v', '--verbose',
-        action='count',
-        default=verbose,
-        help='Use multiple times to increase verbosity')
-
-  def parse_args(self, *args, **kwargs):
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
-    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    logging.basicConfig(
-        level=levels[min(len(levels)-1, options.verbose)],
-        format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
-    return options, args
-
-
-class OptionParserTraceInputs(OptionParserWithLogging):
+class OptionParserTraceInputs(tools.OptionParserWithLogging):
   """Adds automatic --log handling."""
+
+  # Disable --log-file options since both --log and --log-file options are
+  # confusing.
+  # TODO(vadimsh): Rename --log-file or --log to something else.
+  enable_log_file = False
+
   def __init__(self, **kwargs):
-    OptionParserWithLogging.__init__(self, **kwargs)
+    tools.OptionParserWithLogging.__init__(self, **kwargs)
     self.add_option(
         '-l', '--log', help='Log file to generate or read, required')
 
@@ -3788,7 +3743,7 @@ class OptionParserTraceInputs(OptionParserWithLogging):
 
     On Windows, / and \ are often mixed together in a path.
     """
-    options, args = OptionParserWithLogging.parse_args(
+    options, args = tools.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')
@@ -3810,6 +3765,6 @@ def main(argv):
 
 if __name__ == '__main__':
   fix_encoding.fix_encoding()
-  disable_buffering()
+  tools.disable_buffering()
   colorama.init()
   sys.exit(main(sys.argv[1:]))

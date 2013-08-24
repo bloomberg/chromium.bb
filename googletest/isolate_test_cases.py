@@ -22,10 +22,11 @@ if not ROOT_DIR in sys.path:
   sys.path.insert(0, ROOT_DIR)
 
 import isolate
-import run_isolated
 import run_test_cases
 import trace_inputs
 import trace_test_cases
+
+from utils import tools
 
 
 def isolate_test_cases(
@@ -106,7 +107,7 @@ def test_xvfb(command, rel_dir):
       prefix = command[index:index+2]
       prefix[0] = os.path.normpath(os.path.join(rel_dir, prefix[0]))
       prefix[1] = os.path.normpath(os.path.join(rel_dir, prefix[1]))
-      cmd = run_isolated.fix_python_path(prefix + sys.argv)
+      cmd = tools.fix_python_path(prefix + sys.argv)
       sys.exit(subprocess.call(cmd))
 
 
@@ -123,7 +124,7 @@ def safely_load_isolated(parser, options):
   command = config.saved_state.command
   test_cases = []
   if command:
-    command = run_isolated.fix_python_path(command)
+    command = tools.fix_python_path(command)
     test_xvfb(command, reldir)
     test_cases = parser.process_gtest_options(command, reldir, options)
   return config, command, test_cases
@@ -131,7 +132,7 @@ def safely_load_isolated(parser, options):
 
 def main():
   """CLI frontend to validate arguments."""
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> --isolated <.isolated>')
   parser.format_description = lambda *_: parser.description

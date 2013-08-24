@@ -16,6 +16,7 @@ import sys
 import tempfile
 
 import run_isolated
+from utils import tools
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -98,7 +99,7 @@ def doall(isolate, isolated, swarm_server, cad_server, slave_os, verbose):
 
 
 def main():
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = optparse.OptionParser(
       usage='%prog <options>',
       description=sys.modules[__name__].__doc__)

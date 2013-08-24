@@ -24,9 +24,8 @@ if not ROOT_DIR in sys.path:
 
 import isolate
 import isolate_test_cases
-import run_isolated
 import run_test_cases
-
+from utils import tools
 
 
 def with_tempfile(function):
@@ -217,7 +216,7 @@ def fix_all(isolated, all_test_cases, trace_blacklist, verbosity):
 
 
 def main():
-  run_isolated.disable_buffering()
+  tools.disable_buffering()
   parser = run_test_cases.OptionParserTestCases(
       usage='%prog <options> -s <something.isolated>')
   isolate.add_trace_option(parser)

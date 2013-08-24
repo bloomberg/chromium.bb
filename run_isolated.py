@@ -15,9 +15,7 @@ import hashlib
 import httplib
 import itertools
 import json
-import locale
 import logging
-import logging.handlers
 import math
 import optparse
 import os
@@ -38,20 +36,19 @@ import urllib2
 import urlparse
 import zlib
 
+from third_party.rietveld import upload
+from third_party.depot_tools import fix_encoding
+
 from utils import lru
 from utils import threading_utils
+from utils import tools
 from utils import zip_package
 
-# Try to import 'upload' module used by AppEngineService for authentication.
-# If it is not there, app engine authentication support will be disabled.
-try:
-  from third_party.rietveld import upload
-  # Hack out upload logging.info()
-  upload.logging = logging.getLogger('upload')
-  # Mac pylint choke on this line.
-  upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
-except ImportError:
-  upload = None
+
+# Hack out upload logging.info()
+upload.logging = logging.getLogger('upload')
+# Mac pylint choke on this line.
+upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
 # Absolute path to this file (can be None if running from zip on Mac).
@@ -158,69 +155,6 @@ def get_as_zip_package(executable=True):
 def get_flavor():
   """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
   return FLAVOR_MAPPING.get(sys.platform, 'linux')
-
-
-def fix_default_encoding():
-  """Forces utf8 solidly on all platforms.
-
-  By default python execution environment is lazy and defaults to ascii
-  encoding.
-
-  http://uucode.com/blog/2007/03/23/shut-up-you-dummy-7-bit-python/
-  """
-  if sys.getdefaultencoding() == 'utf-8':
-    return False
-
-  # Regenerate setdefaultencoding.
-  reload(sys)
-  # Module 'sys' has no 'setdefaultencoding' member
-  # pylint: disable=E1101
-  sys.setdefaultencoding('utf-8')
-  for attr in dir(locale):
-    if attr[0:3] != 'LC_':
-      continue
-    aref = getattr(locale, attr)
-    try:
-      locale.setlocale(aref, '')
-    except locale.Error:
-      continue
-    try:
-      lang = locale.getlocale(aref)[0]
-    except (TypeError, ValueError):
-      continue
-    if lang:
-      try:
-        locale.setlocale(aref, (lang, 'UTF-8'))
-      except locale.Error:
-        os.environ[attr] = lang + '.UTF-8'
-  try:
-    locale.setlocale(locale.LC_ALL, '')
-  except locale.Error:
-    pass
-  return True
-
-
-class Unbuffered(object):
-  """Disable buffering on a file object."""
-  def __init__(self, stream):
-    self.stream = stream
-
-  def write(self, data):
-    self.stream.write(data)
-    if '\n' in data:
-      self.stream.flush()
-
-  def __getattr__(self, attr):
-    return getattr(self.stream, attr)
-
-
-def disable_buffering():
-  """Makes this process and child processes stdout unbuffered."""
-  if not os.environ.get('PYTHONUNBUFFERED'):
-    # Since sys.stdout is a C++ object, it's impossible to do
-    # sys.stdout.write = lambda...
-    sys.stdout = Unbuffered(sys.stdout)
-    os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
 def os_link(source, link_name):
@@ -435,16 +369,6 @@ def load_isolated(content, os_flavor=None):
       raise ConfigError('Unknown key %s' % key)
 
   return data
-
-
-def fix_python_path(cmd):
-  """Returns the fixed command line to call the right python executable."""
-  out = cmd[:]
-  if out[0] == 'python':
-    out[0] = sys.executable
-  elif out[0].endswith('.py'):
-    out.insert(0, sys.executable)
-  return out
 
 
 def url_open(url, **kwargs):
@@ -905,21 +829,6 @@ def valid_file(filepath, size):
   return True
 
 
-class Profiler(object):
-  def __init__(self, name):
-    self.name = name
-    self.start_time = None
-
-  def __enter__(self):
-    self.start_time = time.time()
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    time_taken = time.time() - self.start_time
-    logging.info('Profiling: Section %s took %3.3f seconds',
-                 self.name, time_taken)
-
-
 class Remote(object):
   """Priority based worker queue to fetch or upload files from a
   content-address server. Any function may be given as the fetcher/upload,
@@ -1141,7 +1050,7 @@ class Cache(object):
     self._removed = []
     self._free_disk = 0
 
-    with Profiler('Setup'):
+    with tools.Profiler('Setup'):
       if not os.path.isdir(self.cache_dir):
         os.makedirs(self.cache_dir)
 
@@ -1189,7 +1098,7 @@ class Cache(object):
     return self
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
-    with Profiler('CleanupTrimming'):
+    with tools.Profiler('CleanupTrimming'):
       self.trim()
 
     logging.info(
@@ -1532,7 +1441,7 @@ def setup_commands(base_directory, cwd, cmd):
 
   # Ensure paths are correctly separated on windows.
   cmd[0] = cmd[0].replace('/', os.path.sep)
-  cmd = fix_python_path(cmd)
+  cmd = tools.fix_python_path(cmd)
 
   return cwd, cmd
 
@@ -1556,14 +1465,14 @@ def download_test_data(isolated_hash, target_directory, remote):
   no_cache = NoCache(target_directory, Remote(remote))
 
   # Download all the isolated files.
-  with Profiler('GetIsolateds') as _prof:
+  with tools.Profiler('GetIsolateds'):
     settings.load(no_cache, isolated_hash)
 
   if not settings.command:
     print >> sys.stderr, 'No command to run'
     return 1
 
-  with Profiler('GetRest') as _prof:
+  with tools.Profiler('GetRest'):
     create_directories(target_directory, settings.files)
     create_links(target_directory, settings.files.iteritems())
 
@@ -1617,7 +1526,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
-      with Profiler('GetIsolateds') as _prof:
+      with tools.Profiler('GetIsolateds'):
         # Optionally support local files.
         if not RE_IS_SHA1.match(isolated_hash):
           # Adds it in the cache. While not strictly necessary, this simplifies
@@ -1631,7 +1540,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
         print >> sys.stderr, 'No command to run'
         return 1
 
-      with Profiler('GetRest') as _prof:
+      with tools.Profiler('GetRest'):
         create_directories(outdir, settings.files)
         create_links(outdir, settings.files.iteritems())
         remaining = generate_remaining_files(settings.files.iteritems())
@@ -1672,7 +1581,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
       env.setdefault('RUN_TEST_CASES_LOG_FILE',
                      os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
       try:
-        with Profiler('RunTest') as _prof:
+        with tools.Profiler('RunTest'):
           return subprocess.call(cmd, cwd=cwd, env=env)
       except OSError:
         print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
@@ -1681,54 +1590,9 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
       rmtree(outdir)
 
 
-class OptionParserWithLogging(optparse.OptionParser):
-  """Adds --verbose option."""
-  def __init__(self, verbose=0, log_file=None, **kwargs):
-    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
-    optparse.OptionParser.__init__(self, **kwargs)
-    self.add_option(
-        '-v', '--verbose',
-        action='count',
-        default=verbose,
-        help='Use multiple times to increase verbosity')
-    self.add_option(
-        '-l', '--log_file',
-        default=log_file,
-        help='The name of the file to store rotating log details.')
-
-  def parse_args(self, *args, **kwargs):
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
-    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    level = levels[min(len(levels) - 1, options.verbose)]
-
-    logging_console = logging.StreamHandler()
-    logging_console.setFormatter(logging.Formatter(
-        '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
-    logging_console.setLevel(level)
-    logging.getLogger().setLevel(level)
-    logging.getLogger().addHandler(logging_console)
-
-    if options.log_file:
-      # This is necessary otherwise attached handler will miss the messages.
-      logging.getLogger().setLevel(logging.DEBUG)
-
-      logging_rotating_file = logging.handlers.RotatingFileHandler(
-          options.log_file,
-          maxBytes=10 * 1024 * 1024,
-          backupCount=5,
-          encoding='utf-8')
-      # log files are always at DEBUG level.
-      logging_rotating_file.setLevel(logging.DEBUG)
-      logging_rotating_file.setFormatter(logging.Formatter(
-          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
-      logging.getLogger().addHandler(logging_rotating_file)
-
-    return options, args
-
-
 def main():
-  disable_buffering()
-  parser = OptionParserWithLogging(
+  tools.disable_buffering()
+  parser = tools.OptionParserWithLogging(
       usage='%prog <options>', log_file=RUN_ISOLATED_LOG_FILE)
 
   group = optparse.OptionGroup(parser, 'Download')
@@ -1812,5 +1676,5 @@ def main():
 
 if __name__ == '__main__':
   # Ensure that we are always running with the correct encoding.
-  fix_default_encoding()
+  fix_encoding.fix_encoding()
   sys.exit(main())
