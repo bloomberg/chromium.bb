@@ -448,6 +448,8 @@
         '<(libjingle_source)/talk/p2p/base/transportchannelimpl.h',
         '<(libjingle_source)/talk/p2p/base/transportchannelproxy.cc',
         '<(libjingle_source)/talk/p2p/base/transportchannelproxy.h',
+        '<(libjingle_source)/talk/p2p/base/transportdescription.cc',
+        '<(libjingle_source)/talk/p2p/base/transportdescription.h',
         '<(libjingle_source)/talk/p2p/base/transportdescriptionfactory.cc',
         '<(libjingle_source)/talk/p2p/base/transportdescriptionfactory.h',
         '<(libjingle_source)/talk/p2p/base/turnport.cc',

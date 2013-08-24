@@ -38,6 +38,17 @@ class MockTransportChannel : public cricket::TransportChannel {
   MOCK_METHOD2(SetOption, int(talk_base::Socket::Option opt, int value));
   MOCK_METHOD0(GetError, int());
   MOCK_CONST_METHOD0(GetIceRole, cricket::IceRole());
+  MOCK_METHOD1(GetStats, bool(cricket::ConnectionInfos* infos));
+  MOCK_CONST_METHOD0(IsDtlsActive, bool());
+  MOCK_CONST_METHOD1(GetSslRole, bool(talk_base::SSLRole* role));
+  MOCK_METHOD1(SetSrtpCiphers, bool(const std::vector<std::string>& ciphers));
+  MOCK_METHOD1(GetSrtpCipher, bool(std::string* cipher));
+  MOCK_METHOD6(ExportKeyingMaterial, bool(const std::string& label,
+                                          const uint8* context,
+                                          size_t context_len,
+                                          bool use_context,
+                                          uint8* result,
+                                          size_t result_len));
 };
 
 class TransportChannelSocketAdapterTest : public testing::Test {
