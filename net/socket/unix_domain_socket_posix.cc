@@ -48,7 +48,7 @@ bool GetPeerIds(int socket, uid_t* user_id, gid_t* group_id) {
 }  // namespace
 
 // static
-UnixDomainSocket::AuthCallback NoAuthentication() {
+UnixDomainSocket::AuthCallback UnixDomainSocket::NoAuthentication() {
   return base::Bind(NoAuthenticationCallback);
 }
 
