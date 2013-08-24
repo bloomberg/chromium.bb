@@ -17,21 +17,34 @@ if env.Bit('bitcode'):
   else:
     env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wn,--build-id'])
 
-nexe = env.ComponentProgram('minidump_test', 'minidump_test.c',
-                            EXTRA_LIBS=['minidump_generator'])
+env['COMPONENT_STATIC'] = not env.Bit('nacl_glibc')
+env.ComponentLibrary('minidump_test_lib', 'minidump_test_lib.c')
+nexe = env.ComponentProgram(
+    'minidump_test', 'minidump_test.c',
+    EXTRA_LIBS=['minidump_test_lib', 'minidump_generator',
+                '${NONIRT_LIBS}', '${EXCEPTION_LIBS}', '${PTHREAD_LIBS}'])
 
-# Note that this doesn't check the crash dump that is produced yet.
-# TODO(mseaborn): Test that Breakpad can extract a stack backtrace.
-output_dump_file = env.File('minidump.dmp')
-node = env.CommandSelLdrTestNacl(
-    'minidump_test.out', nexe, [output_dump_file.abspath],
-    declares_exit_status=True,
-    sel_ldr_flags=['-e', # Enable exception handling for catching crash
-                   '-a', # Enable file access for writing minidump file
-                   ])
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'exception_tests', 'nonpexe_tests'],
-                       'run_minidump_test',
-                       # Nexe build IDs are not available under the
-                       # sandboxed PNaCl translator.
-                       is_broken=env.Bit('use_sandboxed_translator'))
+for crash_in_lib in [0, 1]:
+  for modules_live in [0, 1]:
+    name = 'minidump'
+    if crash_in_lib:
+      name += '_crash_in_lib'
+    if modules_live:
+      name += '_modules_live'
+    name += '_test'
+    # Note that this doesn't check the crash dump that is produced yet.
+    # TODO(mseaborn): Test that Breakpad can extract a stack backtrace.
+    output_dump_file = env.File(name + '.dmp')
+    node = env.CommandSelLdrTestNacl(
+        name + '.out', nexe,
+        [output_dump_file.abspath, str(crash_in_lib), str(modules_live)],
+        declares_exit_status=True,
+        sel_ldr_flags=['-e', # Enable exception handling for catching crash
+                       '-a', # Enable file access for writing minidump file
+                      ])
+    env.AddNodeToTestSuite(node,
+                           ['small_tests', 'exception_tests', 'nonpexe_tests'],
+                           'run_' + name,
+                           # Nexe build IDs are not available under the
+                           # sandboxed PNaCl translator.
+                           is_broken=env.Bit('use_sandboxed_translator'))

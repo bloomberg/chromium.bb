@@ -10,6 +10,7 @@
 
 #include "native_client/src/include/nacl/nacl_minidump.h"
 #include "native_client/src/untrusted/minidump_generator/build_id.h"
+#include "native_client/tests/untrusted_minidump/minidump_test_lib.h"
 
 
 const char *g_minidump_filename;
@@ -35,32 +36,47 @@ void crash(void) {
 
 /* Use some nested function calls to test stack backtracing. */
 __attribute__((noinline))
-void crash_wrapper1(void) {
-  crash();
+void crash_wrapper1(int crash_in_lib) {
+  if (crash_in_lib) {
+    lib_crash();
+  } else {
+    crash();
+  }
 }
 
 __attribute__((noinline))
-void crash_wrapper2(void) {
-  crash_wrapper1();
+void crash_wrapper2(int crash_in_lib) {
+  crash_wrapper1(crash_in_lib);
 }
 
-int main(int argc, char **argv) {
-  assert(argc == 2);
-  g_minidump_filename = argv[1];
-
+static void test_nacl_get_build_id(void) {
   const char *id_data;
   size_t id_size;
   int got_build_id = nacl_get_build_id(&id_data, &id_size);
   assert(got_build_id);
   assert(id_data != NULL);
   assert(id_size == 20);  /* ld uses SHA1 hash by default. */
+}
+
+int main(int argc, char **argv) {
+  assert(argc == 4);
+  g_minidump_filename = argv[1];
+  int crash_in_lib = atoi(argv[2]);
+  int modules_live = atoi(argv[3]);
+
+  test_nacl_get_build_id();
 
   nacl_minidump_set_callback(crash_callback);
   nacl_minidump_set_module_name("minidump_test.nexe");
   nacl_minidump_register_crash_handler();
+  nacl_minidump_snapshot_module_list();
+  if (!modules_live) {
+    /* Verify that the module list can be cleared. */
+    nacl_minidump_clear_module_list();
+  }
 
   /* Cause crash. */
-  crash_wrapper2();
+  crash_wrapper2(crash_in_lib);
 
   /* Should not reach here. */
   return 1;

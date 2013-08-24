@@ -111,3 +111,12 @@ int nacl_get_build_id(const char **data, size_t *size) {
   fprintf(stderr, "Build ID not found: unexpected ELFCLASS\n");
   return 0;
 }
+
+int nacl_get_build_id_from_notes(
+    const void *notes, size_t notes_size,
+    const char **data, size_t *size) {
+  const Elf32_Nhdr *start = reinterpret_cast<const Elf32_Nhdr *>(notes);
+  const Elf32_Nhdr *end = reinterpret_cast<const Elf32_Nhdr *>(
+      reinterpret_cast<const char *>(notes) + notes_size);
+  return GetBuildIdFromNotes(start, end, data, size);
+}

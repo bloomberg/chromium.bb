@@ -6,6 +6,14 @@
 
 #include <assert.h>
 #include <errno.h>
+#if defined(__GLIBC__)
+# define DYNAMIC_LOADING_SUPPORT 1
+#else
+# define DYNAMIC_LOADING_SUPPORT 0
+#endif
+#if DYNAMIC_LOADING_SUPPORT
+# include <link.h>
+#endif
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -18,7 +26,9 @@
 #include <algorithm>
 
 #include "breakpad/src/google_breakpad/common/minidump_format.h"
-#include "native_client/src/include/elf_constants.h"
+#if !DYNAMIC_LOADING_SUPPORT
+# include "native_client/src/include/elf_constants.h"
+#endif
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl/nacl_minidump.h"
 #include "native_client/src/untrusted/minidump_generator/build_id.h"
@@ -33,7 +43,7 @@ extern char __etext[];  // End of code segment
 extern void *__libc_stack_end;
 #endif
 
-class MinidumpFileWriter;
+class MinidumpAllocator;
 
 // Restrict how much of the stack we dump to reduce upload size and to
 // avoid dynamic allocation.
@@ -52,25 +62,32 @@ static const char *g_module_name = "main.nexe";
 static MDGUID g_module_build_id;
 static int g_module_build_id_set;
 static nacl_minidump_callback_t g_callback_func;
-static MinidumpFileWriter *g_minidump_writer;
+static MinidumpAllocator *g_minidump_writer;
 static int g_handling_exception = 0;
 
-
-class MinidumpFileWriter {
+class MinidumpAllocator {
   char *buf_;
   uint32_t buf_size_;
   uint32_t offset_;
 
  public:
-  MinidumpFileWriter() : buf_(NULL), buf_size_(0), offset_(0) {
-    void *mapping = mmap(NULL, kMinidumpBufferSize, PROT_READ | PROT_WRITE,
+  explicit MinidumpAllocator(uint32_t size) :
+      buf_(NULL), buf_size_(0), offset_(0) {
+    void *mapping = mmap(NULL, size, PROT_READ | PROT_WRITE,
                          MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (mapping == MAP_FAILED) {
-      perror("minidump: Failed to preallocate memory");
+      perror("minidump: Failed to allocate memory");
       return;
     }
     buf_ = (char *) mapping;
-    buf_size_ = kMinidumpBufferSize;
+    buf_size_ = size;
+  }
+
+  ~MinidumpAllocator() {
+    if (buf_ != NULL) {
+      int result = munmap(buf_, buf_size_);
+      assert(result == 0);
+    }
   }
 
   bool AllocateSpace(size_t size, char **ptr, uint32_t *position) {
@@ -83,9 +100,46 @@ class MinidumpFileWriter {
     return true;
   }
 
+  void *Alloc(size_t size) {
+    char *ptr;
+    uint32_t position;
+    if (!AllocateSpace(size, &ptr, &position))
+      return NULL;
+    return ptr;
+  }
+
+  char *StrDup(const char *str) {
+    size_t size;
+    char *str_copy;
+    size = strlen(str) + 1;
+    str_copy = reinterpret_cast<char *>(Alloc(size));
+    if (str_copy == NULL)
+      return NULL;
+    memcpy(str_copy, str, size);
+    return str_copy;
+  }
+
   char *data() { return buf_; }
   size_t size() { return offset_; }
 };
+
+#if DYNAMIC_LOADING_SUPPORT
+
+// Limit the number of modules to capture and their name length.
+static const size_t kLimitModuleListSize = 64 * 1024;
+
+struct ModuleEntry {
+  struct ModuleEntry *next;
+  char *name;
+  MDGUID build_id;
+  uintptr_t code_segment_start;
+  uintptr_t code_segment_size;
+};
+
+static MinidumpAllocator *g_module_snapshot;
+static MinidumpAllocator *g_module_snapshot_workspace;
+
+#endif
 
 // TypedMDRVA represents a minidump object chunk.  This interface is
 // based on the TypedMDRVA class in the Breakpad codebase.  Breakpad's
@@ -93,13 +147,13 @@ class MinidumpFileWriter {
 // implementation constructs the minidump file in memory.
 template<typename MDType>
 class TypedMDRVA {
-  MinidumpFileWriter *writer_;
+  MinidumpAllocator *writer_;
   char *ptr_;
   uint32_t position_;
   size_t size_;
 
  public:
-  explicit TypedMDRVA(MinidumpFileWriter *writer) :
+  explicit TypedMDRVA(MinidumpAllocator *writer) :
       writer_(writer),
       ptr_(NULL),
       position_(0),
@@ -140,7 +194,7 @@ class TypedMDRVA {
 };
 
 
-static void ConvertRegisters(MinidumpFileWriter *minidump_writer,
+static void ConvertRegisters(MinidumpAllocator *minidump_writer,
                              struct NaClExceptionContext *context,
                              MDRawThread *thread) {
   NaClExceptionPortableContext *pcontext =
@@ -229,7 +283,7 @@ static void ConvertRegisters(MinidumpFileWriter *minidump_writer,
 #undef COPY_REG
 }
 
-static MDMemoryDescriptor SnapshotMemory(MinidumpFileWriter *minidump_writer,
+static MDMemoryDescriptor SnapshotMemory(MinidumpAllocator *minidump_writer,
                                          uintptr_t start, size_t size) {
   TypedMDRVA<uint8_t> mem_copy(minidump_writer);
   MDMemoryDescriptor desc = {0};
@@ -264,7 +318,7 @@ static bool GetStackEnd(void **stack_end) {
 #endif
 }
 
-static void WriteThreadList(MinidumpFileWriter *minidump_writer,
+static void WriteThreadList(MinidumpAllocator *minidump_writer,
                             MDRawDirectory *dirent,
                             struct NaClExceptionContext *context) {
   // This records only the thread that crashed.
@@ -310,7 +364,7 @@ static int MinidumpArchFromElfMachine(int e_machine) {
   }
 }
 
-static void WriteSystemInfo(MinidumpFileWriter *minidump_writer,
+static void WriteSystemInfo(MinidumpAllocator *minidump_writer,
                             MDRawDirectory *dirent,
                             struct NaClExceptionContext *context) {
   TypedMDRVA<MDRawSystemInfo> sysinfo(minidump_writer);
@@ -323,7 +377,7 @@ static void WriteSystemInfo(MinidumpFileWriter *minidump_writer,
   dirent->location = sysinfo.location();
 }
 
-static uint32_t WriteString(MinidumpFileWriter *minidump_writer,
+static uint32_t WriteString(MinidumpAllocator *minidump_writer,
                             const char *string) {
   int string_length = strlen(string);
   TypedMDRVA<uint32_t> obj(minidump_writer);
@@ -336,39 +390,159 @@ static uint32_t WriteString(MinidumpFileWriter *minidump_writer,
   return obj.position();
 }
 
-static void WriteModuleList(MinidumpFileWriter *minidump_writer,
+#if DYNAMIC_LOADING_SUPPORT
+static int CaptureModulesCallback(
+    struct dl_phdr_info *info, size_t size, void *data) {
+  MinidumpAllocator *modules_arena = reinterpret_cast<MinidumpAllocator *>(
+      data);
+  ModuleEntry **modules = reinterpret_cast<ModuleEntry **>(
+      modules_arena->data());
+
+  ModuleEntry *module = reinterpret_cast<ModuleEntry *>(
+      modules_arena->Alloc(sizeof(ModuleEntry)));
+  if (module == NULL) {
+    return 1;
+  }
+
+  if (strlen(info->dlpi_name) > 0) {
+    module->name = modules_arena->StrDup(info->dlpi_name);
+  } else {
+    module->name = modules_arena->StrDup(g_module_name);
+  }
+  if (module->name == NULL)
+    return 1;
+
+  // Blank these out in case we don't find values for them.
+  module->code_segment_start = 0;
+  module->code_segment_size = 0;
+  memset(&module->build_id, 0, sizeof(module->build_id));
+
+  bool found_code = false;
+  bool found_build_id = false;
+
+  for (int i = 0; i < info->dlpi_phnum; ++i) {
+    if (!found_build_id && info->dlpi_phdr[i].p_type == PT_NOTE) {
+      const char *data_ptr;
+      size_t size;
+      const void *addr = reinterpret_cast<const void *>(
+          info->dlpi_addr + info->dlpi_phdr[i].p_vaddr);
+      if (!nacl_get_build_id_from_notes(
+              addr, info->dlpi_phdr[i].p_memsz, &data_ptr, &size)) {
+        continue;
+      }
+      // Truncate the ID if necessary.  The minidump format uses a 16
+      // byte ID, whereas ELF build IDs are typically 20-byte SHA1
+      // hashes.
+      memcpy(&module->build_id, data_ptr,
+             std::min(size, sizeof(module->build_id)));
+      found_build_id = true;
+    } else if (!found_code &&
+               (info->dlpi_phdr[i].p_type == PT_LOAD ||
+               (info->dlpi_phdr[i].p_flags & PROT_EXEC) != 0)) {
+      module->code_segment_start = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
+      module->code_segment_size = info->dlpi_phdr[i].p_memsz;
+      found_code = true;
+    }
+  }
+
+  // The entry for runnable-ld.so doesn't report a PT_LOAD segment.
+  // Don't emit it, as breakpad is confused by zero length modules.
+  if (found_code) {
+    module->next = *modules;
+    *modules = module;
+  }
+
+  return 0;
+}
+
+static void CaptureModules(MinidumpAllocator *modules_arena) {
+  // Allocate space for the pointer to the head of the module list
+  // so that it will be at modules_arena.data().
+  ModuleEntry **head = reinterpret_cast<ModuleEntry **>(
+      modules_arena->Alloc(sizeof(ModuleEntry *)));
+  *head = NULL;
+
+  dl_iterate_phdr(CaptureModulesCallback, modules_arena);
+
+  // TODO(bradnelson): Convert this to a test once we have the plumbing to
+  // post-process the minidumps in a test.
+  // There should be at least one module.
+  assert(*head != NULL);
+}
+#endif
+
+static void WriteModuleList(MinidumpAllocator *minidump_writer,
                             MDRawDirectory *dirent) {
-  // This assumes static linking and reports a single module.
-  // TODO(mseaborn): Extend this to handle dynamic linking and use
-  // dl_iterate_phdr() to report loaded libraries.
   // TODO(mseaborn): Report the IRT's build ID here too, once the IRT
   // provides an interface for querying it.
   TypedMDRVA<uint32_t> module_list(minidump_writer);
+
+#if DYNAMIC_LOADING_SUPPORT
+  MinidumpAllocator *modules_arena = __sync_lock_test_and_set(
+      &g_module_snapshot, NULL);
+  if (modules_arena == NULL) {
+    modules_arena = g_module_snapshot_workspace;
+    CaptureModules(modules_arena);
+  }
+  // NOTE: Consciously leaking modules_arena. We are crashing and about to
+  // shut down anyhow. Attempting to free it can only produce more volatility.
+  ModuleEntry **modules = reinterpret_cast<ModuleEntry **>(
+      modules_arena->data());
+  int module_count = 0;
+  for (ModuleEntry *module = *modules; module; module = module->next) {
+    ++module_count;
+  }
+#else
   int module_count = 1;
-  if (!module_list.AllocateObjectAndArray(module_count, MD_MODULE_SIZE))
+#endif
+  if (!module_list.AllocateObjectAndArray(module_count, MD_MODULE_SIZE)) {
     return;
+  }
   *module_list.get() = module_count;
 
+#if DYNAMIC_LOADING_SUPPORT
+  int index = 0;
+  for (ModuleEntry *module = *modules; module; module = module->next) {
+    TypedMDRVA<MDCVInfoPDB70> cv(minidump_writer);
+    size_t name_size = strlen(module->name) + 1;
+    if (!cv.AllocateObjectAndArray(name_size, sizeof(char))) {
+      return;
+    }
+    cv.get()->cv_signature = MD_CVINFOPDB70_SIGNATURE;
+    cv.get()->signature = module->build_id;
+    memcpy(cv.get()->pdb_file_name, module->name, name_size);
+
+    MDRawModule dst_module = {0};
+    dst_module.base_of_image = module->code_segment_start;
+    dst_module.size_of_image = module->code_segment_size;
+    dst_module.module_name_rva = WriteString(minidump_writer, module->name);
+    dst_module.cv_record = cv.location();
+    module_list.CopyIndexAfterObject(index++, &dst_module, MD_MODULE_SIZE);
+  }
+#else
   TypedMDRVA<MDCVInfoPDB70> cv(minidump_writer);
-  int name_length = strlen(g_module_name);
-  if (!cv.AllocateObjectAndArray(name_length + 1, sizeof(char)))
+  size_t name_size = strlen(g_module_name) + 1;
+  if (!cv.AllocateObjectAndArray(name_size, sizeof(char))) {
     return;
+  }
   cv.get()->cv_signature = MD_CVINFOPDB70_SIGNATURE;
   cv.get()->signature = g_module_build_id;
-  memcpy(cv.get()->pdb_file_name, g_module_name, name_length + 1);
+  memcpy(cv.get()->pdb_file_name, g_module_name, name_size);
 
-  MDRawModule module = {0};
-  module.base_of_image = (uintptr_t) &__executable_start;
-  module.size_of_image = (uintptr_t) &__etext - (uintptr_t) &__executable_start;
-  module.module_name_rva = WriteString(minidump_writer, g_module_name);
-  module.cv_record = cv.location();
-  module_list.CopyIndexAfterObject(0, &module, MD_MODULE_SIZE);
+  MDRawModule dst_module = {0};
+  dst_module.base_of_image = (uintptr_t) &__executable_start;
+  dst_module.size_of_image = (uintptr_t) &__etext -
+                             (uintptr_t) &__executable_start;
+  dst_module.module_name_rva = WriteString(minidump_writer, g_module_name);
+  dst_module.cv_record = cv.location();
+  module_list.CopyIndexAfterObject(0, &dst_module, MD_MODULE_SIZE);
+#endif
 
   dirent->stream_type = MD_MODULE_LIST_STREAM;
   dirent->location = module_list.location();
 }
 
-static void WriteMinidump(MinidumpFileWriter *minidump_writer,
+static void WriteMinidump(MinidumpAllocator *minidump_writer,
                           struct NaClExceptionContext *context) {
   const int kNumWriters = 3;
   TypedMDRVA<MDRawHeader> header(minidump_writer);
@@ -405,7 +579,7 @@ static void CrashHandler(struct NaClExceptionContext *context) {
       sleep(9999);
   }
 
-  MinidumpFileWriter *minidump_writer = g_minidump_writer;
+  MinidumpAllocator *minidump_writer = g_minidump_writer;
   WriteMinidump(minidump_writer, context);
 
   if (g_callback_func)
@@ -439,7 +613,10 @@ void nacl_minidump_register_crash_handler(void) {
     }
   }
 
-  g_minidump_writer = new MinidumpFileWriter();
+#if DYNAMIC_LOADING_SUPPORT
+  g_module_snapshot_workspace = new MinidumpAllocator(kLimitModuleListSize);
+#endif
+  g_minidump_writer = new MinidumpAllocator(kMinidumpBufferSize);
 }
 
 void nacl_minidump_set_callback(nacl_minidump_callback_t callback) {
@@ -455,4 +632,24 @@ void nacl_minidump_set_module_build_id(
   assert(sizeof(g_module_build_id) == NACL_MINIDUMP_BUILD_ID_SIZE);
   memcpy(&g_module_build_id, data, NACL_MINIDUMP_BUILD_ID_SIZE);
   g_module_build_id_set = 1;
+}
+
+void nacl_minidump_snapshot_module_list(void) {
+#if DYNAMIC_LOADING_SUPPORT
+  MinidumpAllocator *modules_arena = new MinidumpAllocator(
+      kLimitModuleListSize);
+  CaptureModules(modules_arena);
+  modules_arena = __sync_lock_test_and_set(&g_module_snapshot, modules_arena);
+  if (modules_arena != NULL)
+    delete modules_arena;
+#endif
+}
+
+void nacl_minidump_clear_module_list(void) {
+#if DYNAMIC_LOADING_SUPPORT
+  MinidumpAllocator *modules_arena = __sync_lock_test_and_set(
+      &g_module_snapshot, NULL);
+  if (modules_arena != NULL)
+    delete modules_arena;
+#endif
 }

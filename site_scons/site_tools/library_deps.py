@@ -82,10 +82,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'untrusted_crash_dump': [
         'nacl_exception',
         ],
-    'minidump_generator': [
-        'nacl_exception',
-        'pthread',
-        ],
     'irt_support_private': [
         'srpc',
         'platform',

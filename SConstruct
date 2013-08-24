@@ -3064,7 +3064,6 @@ irt_only_tests = [
     'tests/random/nacl.scons',
     'tests/sbrk/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
-    'tests/untrusted_minidump/nacl.scons',
     ]
 
 # These are tests that are worthwhile to run in both IRT and non-IRT variants.
@@ -3160,6 +3159,7 @@ irt_variant_tests = [
     # adding tests to nacl_irt_test_env.
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/untrusted_crash_dump/nacl.scons',
+    'tests/untrusted_minidump/nacl.scons',
 ]
 
 # These are tests that are NOT worthwhile to run in an IRT variant.
