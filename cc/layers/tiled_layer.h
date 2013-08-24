@@ -68,7 +68,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   bool SkipsDraw() const { return skips_draw_; }
 
   // Virtual for testing
-  virtual PrioritizedResourceManager* ResourceManager() const;
+  virtual PrioritizedResourceManager* ResourceManager();
   const LayerTilingData* TilerForTesting() const { return tiler_.get(); }
   const PrioritizedResource* ResourceAtForTesting(int i, int j) const;
 

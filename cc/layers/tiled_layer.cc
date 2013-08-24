@@ -237,7 +237,7 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
 
 bool TiledLayer::BlocksPendingCommit() const { return true; }
 
-PrioritizedResourceManager* TiledLayer::ResourceManager() const {
+PrioritizedResourceManager* TiledLayer::ResourceManager() {
   if (!layer_tree_host())
     return NULL;
   return layer_tree_host()->contents_texture_manager();

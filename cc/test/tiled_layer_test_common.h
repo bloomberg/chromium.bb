@@ -112,7 +112,7 @@ class FakeTiledLayer : public TiledLayer {
   virtual void SetTexturePriorities(
       const PriorityCalculator& priority_calculator) OVERRIDE;
 
-  virtual PrioritizedResourceManager* ResourceManager() const OVERRIDE;
+  virtual PrioritizedResourceManager* ResourceManager() OVERRIDE;
   FakeLayerUpdater* fake_layer_updater() { return fake_updater_.get(); }
   gfx::RectF update_rect() { return update_rect_; }
 

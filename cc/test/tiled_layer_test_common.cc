@@ -109,7 +109,7 @@ void FakeTiledLayer::SetTexturePriorities(
   }
 }
 
-PrioritizedResourceManager* FakeTiledLayer::ResourceManager() const {
+PrioritizedResourceManager* FakeTiledLayer::ResourceManager() {
   return resource_manager_;
 }
 

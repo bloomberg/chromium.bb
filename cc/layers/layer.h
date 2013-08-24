@@ -354,7 +354,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds);
 
-  LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
+  LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
+  const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // Set the priority of all desired textures in this layer.
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc) {}
