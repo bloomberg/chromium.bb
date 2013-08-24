@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/perftimer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/perftimer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"

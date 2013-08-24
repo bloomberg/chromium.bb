@@ -8,9 +8,9 @@
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/perftimer.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
+#include "base/test/perftimer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

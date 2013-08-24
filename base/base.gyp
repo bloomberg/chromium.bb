@@ -865,7 +865,6 @@
         }],
       ],
       'sources': [
-        'perftimer.cc',
         'test/expectations/expectation.cc',
         'test/expectations/expectation.h',
         'test/expectations/parser.cc',
@@ -885,6 +884,7 @@
         'test/null_task_runner.h',
         'test/perf_test_suite.cc',
         'test/perf_test_suite.h',
+        'test/perftimer.cc',
         'test/power_monitor_test_base.cc',
         'test/power_monitor_test_base.h',
         'test/scoped_locale.cc',
@@ -935,9 +935,9 @@
         'test/thread_test_helper.h',
         'test/trace_event_analyzer.cc',
         'test/trace_event_analyzer.h',
-        'test/unit_test_launcher_ios.cc',
         'test/unit_test_launcher.cc',
         'test/unit_test_launcher.h',
+        'test/unit_test_launcher_ios.cc',
         'test/values_test_util.cc',
         'test/values_test_util.h',
       ],
@@ -963,7 +963,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'perftimer.cc',
+        'test/perftimer.cc',
         'test/run_all_perftests.cc',
       ],
       'direct_dependent_settings': {

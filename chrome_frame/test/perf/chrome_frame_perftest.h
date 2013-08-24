@@ -4,7 +4,7 @@
 #ifndef CHROME_FRAME_TEST_PERF_CHROME_FRAME_PERFTEST_H_
 #define CHROME_FRAME_TEST_PERF_CHROME_FRAME_PERFTEST_H_
 #include <atlbase.h>
-#include "base/perftimer.h"
+#include "base/test/perftimer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SimpleModule : public CAtlExeModuleT<SimpleModule> {

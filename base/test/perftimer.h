@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PERFTIMER_H_
-#define BASE_PERFTIMER_H_
+#ifndef BASE_TEST_PERFTIMER_H_
+#define BASE_TEST_PERFTIMER_H_
 
 #include <string>
 
@@ -82,4 +82,4 @@ class PerfTimeLogger {
   PerfTimer timer_;
 };
 
-#endif  // BASE_PERFTIMER_H_
+#endif  // BASE_TEST_PERFTIMER_H_

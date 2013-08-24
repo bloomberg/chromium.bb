@@ -4,8 +4,8 @@
 
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
 
-#include "base/perftimer.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/perftimer.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"

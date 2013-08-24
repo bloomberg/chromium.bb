@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/perftimer.h"
+#include "base/test/perftimer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -18,8 +18,8 @@
 #include "webkit/third_party/WebCore/platform/CString.h"
 
 #define KURL WebKitKURL
-#include "KURL.h"
 #include "KURL.cpp"
+#include "KURL.h"
 #pragma warning(pop)
 
 TEST(URLParse, FullURL) {
@@ -45,7 +45,7 @@ int typical_url2_len = static_cast<int>(strlen(typical_url2));
 const char typical_url3[] = "http://store.apple.com/1-800-MY-APPLE/WebObjects/AppleStore.woa/wa/RSLID?nnmm=browse&mco=578E9744&node=home/desktop/mac_pro";
 int typical_url3_len = static_cast<int>(strlen(typical_url3));
 
-}
+}  // namespace
 
 TEST(URLParse, TypicalURLParse) {
   url_parse::Parsed parsed1;

@@ -4,8 +4,6 @@
 
 static_library("test_support_base") {
   sources = [
-    # TODO(brettw) move this file to this directory.
-    "../perftimer.cc",
     "expectations/expectation.cc",
     "expectations/expectation.h",
     "expectations/parser.cc",
@@ -23,6 +21,7 @@ static_library("test_support_base") {
     "null_task_runner.h",
     "perf_test_suite.cc",
     "perf_test_suite.h",
+    "perftimer.cc",
     "scoped_locale.cc",
     "scoped_locale.h",
     "scoped_path_override.cc",
@@ -108,8 +107,7 @@ config("perf_test_config") {
 
 static_library("test_support_perf") {
   sources = [
-    # TODO(brettw) move this file to this directory.
-    "../perftimer.cc",
+    "perftimer.cc",
     "run_all_perftests.cc",
   ]
   deps = [

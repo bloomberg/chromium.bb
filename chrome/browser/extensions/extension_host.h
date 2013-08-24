@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/perftimer.h"
+#include "base/test/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/perftimer.h"
+#include "base/test/perftimer.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
