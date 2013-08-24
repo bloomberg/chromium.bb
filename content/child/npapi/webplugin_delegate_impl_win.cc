@@ -321,7 +321,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
     if (current_wnd_proc == DummyWindowProc) {
       SetWindowLongPtr(dummy_window_for_activation_,
                        GWLP_WNDPROC,
-                       reinterpret_cast<LONG>(old_dummy_window_proc_));
+                       reinterpret_cast<LONG_PTR>(old_dummy_window_proc_));
     }
     ::DestroyWindow(dummy_window_for_activation_);
   }
@@ -516,8 +516,9 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
 
   // Calling SetWindowLongPtrA here makes the window proc ASCII, which is
   // required by at least the Shockwave Director plug-in.
-  SetWindowLongPtrA(
-      windowed_handle_, GWLP_WNDPROC, reinterpret_cast<LONG>(DefWindowProcA));
+  SetWindowLongPtrA(windowed_handle_,
+                    GWLP_WNDPROC,
+                    reinterpret_cast<LONG_PTR>(DefWindowProcA));
 
   return true;
 }
@@ -530,7 +531,7 @@ void WebPluginDelegateImpl::WindowedDestroyWindow() {
     if (current_wnd_proc == NativeWndProc) {
       SetWindowLongPtr(windowed_handle_,
                        GWLP_WNDPROC,
-                       reinterpret_cast<LONG>(plugin_wnd_proc_));
+                       reinterpret_cast<LONG_PTR>(plugin_wnd_proc_));
     }
 
     plugin_->WillDestroyWindow(windowed_handle_);
@@ -716,7 +717,7 @@ BOOL CALLBACK EnumFlashWindows(HWND window, LPARAM arg) {
   if (current_wnd_proc != wnd_proc) {
     WNDPROC old_flash_proc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
         window, GWLP_WNDPROC,
-        reinterpret_cast<LONG>(wnd_proc)));
+        reinterpret_cast<LONG_PTR>(wnd_proc)));
     DCHECK(old_flash_proc);
     g_window_handle_proc_map.Get()[window] = old_flash_proc;
   }
@@ -751,7 +752,7 @@ bool WebPluginDelegateImpl::CreateDummyWindowForActivation() {
   DCHECK(result == TRUE) << "SetProp failed, last error = " << GetLastError();
   old_dummy_window_proc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
       dummy_window_for_activation_, GWLP_WNDPROC,
-      reinterpret_cast<LONG>(DummyWindowProc)));
+      reinterpret_cast<LONG_PTR>(DummyWindowProc)));
 
   // Flash creates background windows which use excessive CPU in our
   // environment; we wrap these windows and throttle them so that they don't
@@ -843,8 +844,10 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
   WNDPROC current_wnd_proc = reinterpret_cast<WNDPROC>(
         GetWindowLongPtr(windowed_handle_, GWLP_WNDPROC));
   if (current_wnd_proc != NativeWndProc) {
-    plugin_wnd_proc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
-        windowed_handle_, GWLP_WNDPROC, reinterpret_cast<LONG>(NativeWndProc)));
+    plugin_wnd_proc_ = reinterpret_cast<WNDPROC>(
+        SetWindowLongPtr(windowed_handle_,
+                         GWLP_WNDPROC,
+                         reinterpret_cast<LONG_PTR>(NativeWndProc)));
   }
 }
 
