@@ -120,10 +120,12 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
     std::string api_print =
-        "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"]";
+        "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] "
+        "PAGE_TITLE=\"Page Title\" ARG_URL=http://www.arg-url.com/";
     std::string dom_print =
         "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-        "PAGE_URL=http://www.google.com/";
+        "PAGE_URL=http://www.google.com/ PAGE_TITLE=\"Page Title\" "
+        "ARG_URL=http://www.arg-url.com/";
     ASSERT_EQ(2, static_cast<int>(actions->size()));
     ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
     ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
@@ -263,18 +265,23 @@ TEST_F(FullStreamUIPolicyTest, GetTodaysActions) {
                  Action::ACTION_API_CALL,
                  "brewster");
   action->mutable_args()->AppendString("woof");
+  action->set_arg_url(GURL("http://www.arg-url.com"));
+  action->set_page_title("Page Title");
   policy->ProcessAction(action);
 
   action =
       new Action("punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
   action->mutable_args()->AppendString("vamoose");
   action->set_page_url(GURL("http://www.google.com"));
+  action->set_arg_url(GURL("http://www.arg-url.com"));
+  action->set_page_title("Page Title");
   policy->ProcessAction(action);
 
   action = new Action(
       "scoobydoo", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
   action->mutable_args()->AppendString("vamoose");
   action->set_page_url(GURL("http://www.google.com"));
+  action->set_arg_url(GURL("http://www.arg-url.com"));
   policy->ProcessAction(action);
 
   CheckReadData(

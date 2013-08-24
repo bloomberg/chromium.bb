@@ -97,9 +97,9 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
     if (!action.page_title().empty()) {
       statement.BindString(6, action.page_title());
     }
-    std::string arg_url_string = action.SerializePageUrl();
+    std::string arg_url_string = action.SerializeArgUrl();
     if (!arg_url_string.empty()) {
-      statement.BindString(5, arg_url_string);
+      statement.BindString(7, arg_url_string);
     }
     if (action.other()) {
       statement.BindString(8, Util::Serialize(action.other()));
