@@ -535,7 +535,15 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     }
   }
 
-  if (launch_mode >= ECHUIM_SYSTEM_LAUNCHER) {
+  // According to 'developing metro style enabled desktop browser' document
+  // ECHUIM_SYSTEM_LAUNCHER – Start menu launch (includes Tile activation,
+  // typing a URL into the search box in Start, etc.)
+  // In non aura world we apparently used ECHUIM_SYSTEM_LAUNCHER to mean
+  // launch on desktop. For Aura we are changing ECHUIM_SYSTEM to mean
+  // immersive mode.
+  if (launch_mode == ECHUIM_SYSTEM_LAUNCHER)
+    launch_mode = ECHUIM_IMMERSIVE;
+  else if (launch_mode > ECHUIM_SYSTEM_LAUNCHER) {
     // At the end if launch mode is not proper apply heuristics.
     launch_mode = base::win::IsTouchEnabledDevice() ?
                           ECHUIM_IMMERSIVE : ECHUIM_DESKTOP;
