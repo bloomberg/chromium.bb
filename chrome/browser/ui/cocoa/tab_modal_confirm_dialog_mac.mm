@@ -112,8 +112,13 @@ void TabModalConfirmDialogMac::CloseDialog() {
 
 void TabModalConfirmDialogMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
+  // If this method should mistakenly be called during Delegate::Close(),
+  // prevent a double-delete by moving delegate_ to a stack variable.
+  if (!delegate_)
+    return;
+  scoped_ptr<TabModalConfirmDialogDelegate> delegate(delegate_.Pass());
   // Provide a disposition in case the dialog was closed without accepting or
   // cancelling.
-  delegate_->Close();
+  delegate->Close();
   delete this;
 }

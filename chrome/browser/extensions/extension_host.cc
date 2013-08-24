@@ -44,6 +44,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -286,6 +287,34 @@ void ExtensionHost::Close() {
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
 }
+
+#if !defined(OS_ANDROID)
+web_modal::WebContentsModalDialogHost*
+ExtensionHost::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::NativeView ExtensionHost::GetHostView() const {
+  return view_ ? view_->native_view() : NULL;
+}
+
+gfx::Point ExtensionHost::GetDialogPosition(const gfx::Size& size) {
+  if (!GetVisibleWebContents())
+    return gfx::Point();
+  gfx::Rect bounds = GetVisibleWebContents()->GetView()->GetViewBounds();
+  return gfx::Point(
+      std::max(0, (bounds.width() - size.width()) / 2),
+      std::max(0, (bounds.height() - size.height()) / 2));
+}
+
+void ExtensionHost::AddObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+}
+
+void ExtensionHost::RemoveObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+}
+#endif
 
 void ExtensionHost::Observe(int type,
                             const content::NotificationSource& source,

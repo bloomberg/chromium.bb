@@ -18,6 +18,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -3468,6 +3469,45 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
 // TODO(benjhayden) Test that the shelf is shown for download() both with and
 // without a WebContents.
+
+void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
+  prompt->InvokeActionForTesting(DownloadDangerPrompt::ACCEPT);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_AcceptDanger) {
+  // Download a file that will be marked dangerous; click the browser action
+  // button; the browser action poup will call acceptDanger(); when the
+  // DownloadDangerPrompt is created, pretend that the user clicks the Accept
+  // button; wait until the download completes.
+  LoadExtension("downloads_split");
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      "[{\"url\": \"data:,\", \"filename\": \"dangerous.swf\"}]"));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName, base::StringPrintf(
+      "[{\"id\": %d, "
+      "  \"danger\": {"
+      "    \"previous\": \"safe\","
+      "    \"current\": \"file\"}}]",
+      result_id)));
+  ASSERT_TRUE(item->IsDangerous());
+  ScopedCancellingItem canceller(item);
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
+          GetCurrentManager(), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
+  DownloadsAcceptDangerFunction::OnPromptCreatedCallback callback =
+      base::Bind(&OnDangerPromptCreated);
+  DownloadsAcceptDangerFunction::OnPromptCreatedForTesting(
+      &callback);
+  BrowserActionTestUtil(browser()).Press(0);
+  observer->WaitForFinished();
+}
 
 class DownloadsApiTest : public ExtensionApiTest {
  public:

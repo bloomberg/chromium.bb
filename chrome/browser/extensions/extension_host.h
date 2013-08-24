@@ -31,6 +31,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #endif
 
 class Browser;
@@ -53,6 +54,7 @@ class WindowController;
 class ExtensionHost : public content::WebContentsDelegate,
 #if !defined(OS_ANDROID)
                       public ChromeWebModalDialogManagerDelegate,
+                      public web_modal::WebContentsModalDialogHost,
 #endif
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
@@ -196,6 +198,20 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Closes this host (results in deletion).
   void Close();
+
+#if !defined(OS_ANDROID)
+  // ChromeWebModalDialogManagerDelegate
+  virtual web_modal::WebContentsModalDialogHost*
+      GetWebContentsModalDialogHost() OVERRIDE;
+
+  // web_modal::WebContentsModalDialogHost
+  virtual gfx::NativeView GetHostView() const OVERRIDE;
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
+  virtual void AddObserver(
+      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      web_modal::WebContentsModalDialogHostObserver* observer) OVERRIDE;
+#endif
 
   // ExtensionFunctionDispatcher::Delegate
   virtual WindowController* GetExtensionWindowController() const OVERRIDE;

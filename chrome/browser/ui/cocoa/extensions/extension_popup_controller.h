@@ -51,6 +51,10 @@ class ExtensionHost;
   // Whether the popup has a devtools window attached to it.
   BOOL beingInspected_;
 
+  // There's an extra windowDidResignKey: notification right after a
+  // ConstrainedWindow closes that should be ignored.
+  BOOL ignoreWindowDidResignKey_;
+
   // The size once the ExtensionView has loaded.
   NSSize pendingSize_;
 }

@@ -1245,6 +1245,9 @@ DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction() {}
 
 DownloadsAcceptDangerFunction::~DownloadsAcceptDangerFunction() {}
 
+DownloadsAcceptDangerFunction::OnPromptCreatedCallback*
+    DownloadsAcceptDangerFunction::on_prompt_created_ = NULL;
+
 bool DownloadsAcceptDangerFunction::RunImpl() {
   scoped_ptr<downloads::AcceptDanger::Params> params(
       downloads::AcceptDanger::Params::Create(*args_));
@@ -1262,13 +1265,15 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
   RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
   // DownloadDangerPrompt displays a modal dialog using native widgets that the
   // user must either accept or cancel. It cannot be scripted.
-  DownloadDangerPrompt::Create(
+  DownloadDangerPrompt* prompt = DownloadDangerPrompt::Create(
       download_item,
       web_contents,
       true,
       base::Bind(&DownloadsAcceptDangerFunction::DangerPromptCallback,
                  this, params->download_id));
   // DownloadDangerPrompt deletes itself
+  if (on_prompt_created_ && !on_prompt_created_->is_null())
+    on_prompt_created_->Run(prompt);
   return true;
 }
 

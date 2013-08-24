@@ -191,6 +191,12 @@ class DownloadsRemoveFileFunction : public AsyncExtensionFunction,
 
 class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
  public:
+  typedef base::Callback<void(DownloadDangerPrompt*)> OnPromptCreatedCallback;
+  static void OnPromptCreatedForTesting(
+      OnPromptCreatedCallback* callback) {
+    on_prompt_created_ = callback;
+  }
+
   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
   DownloadsAcceptDangerFunction();
   virtual bool RunImpl() OVERRIDE;
@@ -201,6 +207,7 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
                             DownloadDangerPrompt::Action action);
 
  private:
+  static OnPromptCreatedCallback* on_prompt_created_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 

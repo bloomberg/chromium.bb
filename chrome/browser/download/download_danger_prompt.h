@@ -43,9 +43,6 @@ class DownloadDangerPrompt {
       bool show_context,
       const OnDone& done);
 
- protected:
-  friend class DownloadDangerPromptTest;
-
   // Only to be used by tests. Subclasses must override to manually call the
   // respective button click handler.
   virtual void InvokeActionForTesting(Action action) = 0;
