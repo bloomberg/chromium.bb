@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -78,6 +79,11 @@ class WindowSelectorTest : public test::AshTestBase {
         IsSelecting();
   }
 
+  aura::Window* GetFocusedWindow() {
+    return aura::client::GetFocusClient(
+        Shell::GetActiveRootWindow())->GetFocusedWindow();
+  }
+
  private:
   aura::test::TestWindowDelegate wd;
 
@@ -93,15 +99,19 @@ TEST_F(WindowSelectorTest, Basic) {
   wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+  EXPECT_EQ(window2.get(), GetFocusedWindow());
 
-  // In overview mode the windows should no longer overlap.
+  // In overview mode the windows should no longer overlap and focus should
+  // be removed from the window.
   ToggleOverview();
+  EXPECT_EQ(NULL, GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
+  EXPECT_EQ(window1.get(), GetFocusedWindow());
 }
 
 // Tests entering overview mode with three windows and cycling through them.
@@ -125,6 +135,23 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+}
+
+// Tests that exiting overview mode without selecting a window restores focus
+// to the previously focused window.
+TEST_F(WindowSelectorTest, CancelRestoresFocus) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window(CreateWindow(bounds));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), GetFocusedWindow());
+
+  // In overview mode, focus should be removed.
+  ToggleOverview();
+  EXPECT_EQ(NULL, GetFocusedWindow());
+
+  // If canceling overview mode, focus should be restored.
+  ToggleOverview();
+  EXPECT_EQ(window.get(), GetFocusedWindow());
 }
 
 // Tests that overview mode is exited if the last remaining window is destroyed.
