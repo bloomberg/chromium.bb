@@ -233,6 +233,14 @@
   INTERNAL_TRACE_EVENT_ADD_SCOPED( \
       category_group, name, arg1_name, arg1_val, arg2_name, arg2_val)
 
+// Records events like TRACE_EVENT2 but uses |memory_tag| for memory tracing.
+// Use this where |name| is too generic to accurately aggregate allocations.
+#define TRACE_EVENT_WITH_MEMORY_TAG2( \
+    category, name, memory_tag, arg1_name, arg1_val, arg2_name, arg2_val) \
+  INTERNAL_TRACE_MEMORY(category, memory_tag) \
+  INTERNAL_TRACE_EVENT_ADD_SCOPED( \
+      category, name, arg1_name, arg1_val, arg2_name, arg2_val)
+
 // UNSHIPPED_TRACE_EVENT* are like TRACE_EVENT* except that they are not
 // included in official builds.
 
