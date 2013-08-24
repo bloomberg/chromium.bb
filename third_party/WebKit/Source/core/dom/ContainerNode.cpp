@@ -48,7 +48,7 @@ namespace WebCore {
 
 static void dispatchChildInsertionEvents(Node*);
 static void dispatchChildRemovalEvents(Node*);
-static void updateTreeAfterInsertion(ContainerNode*, Node*, AttachBehavior);
+static void updateTreeAfterInsertion(ContainerNode*, Node*);
 
 typedef pair<NodeCallback, RefPtr<Node> > CallbackInfo;
 typedef Vector<CallbackInfo> NodeCallbackQueue;
@@ -214,7 +214,7 @@ static inline bool checkReplaceChild(ContainerNode* newParent, Node* newChild, N
     return checkAcceptChild(newParent, newChild, oldChild, es);
 }
 
-void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es, AttachBehavior attachBehavior)
+void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es)
 {
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
@@ -224,7 +224,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
-        appendChild(newChild, es, attachBehavior);
+        appendChild(newChild, es);
         return;
     }
 
@@ -273,7 +273,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
         insertBeforeCommon(next.get(), child);
 
-        updateTreeAfterInsertion(this, child, attachBehavior);
+        updateTreeAfterInsertion(this, child);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -329,7 +329,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 }
 
-void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es, AttachBehavior attachBehavior)
+void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
 {
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
@@ -407,7 +407,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
                 appendChildToContainer(child, this);
         }
 
-        updateTreeAfterInsertion(this, child, attachBehavior);
+        updateTreeAfterInsertion(this, child);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -587,7 +587,7 @@ void ContainerNode::removeChildren()
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es, AttachBehavior attachBehavior)
+void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
 {
     RefPtr<ContainerNode> protect(this);
 
@@ -635,7 +635,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es, A
             appendChildToContainer(child, this);
         }
 
-        updateTreeAfterInsertion(this, child, attachBehavior);
+        updateTreeAfterInsertion(this, child);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -1015,7 +1015,7 @@ static void dispatchChildRemovalEvents(Node* child)
     }
 }
 
-static void updateTreeAfterInsertion(ContainerNode* parent, Node* child, AttachBehavior attachBehavior)
+static void updateTreeAfterInsertion(ContainerNode* parent, Node* child)
 {
     ASSERT(parent->refCount());
     ASSERT(child->refCount());
@@ -1028,12 +1028,8 @@ static void updateTreeAfterInsertion(ContainerNode* parent, Node* child, AttachB
 
     // FIXME: Attachment should be the first operation in this function, but some code
     // (for example, HTMLFormControlElement's autofocus support) requires this ordering.
-    if (parent->attached() && !child->attached() && child->parentNode() == parent) {
-        if (attachBehavior == AttachLazily)
-            child->lazyAttach();
-        else
-            child->attach();
-    }
+    if (parent->attached() && !child->attached() && child->parentNode() == parent)
+        child->lazyAttach();
 
     dispatchChildInsertionEvents(child);
 }

@@ -30,6 +30,11 @@ namespace WebCore {
 
 class ExceptionState;
 
+enum AttachBehavior {
+    DeprecatedAttachNow,
+    AttachLazily,
+};
+
 class CharacterData : public Node {
 public:
     void atomize();

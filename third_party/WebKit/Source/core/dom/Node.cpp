@@ -515,18 +515,18 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
-void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es, AttachBehavior attachBehavior)
+void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es)
 {
     if (isContainerNode())
-        toContainerNode(this)->insertBefore(newChild, refChild, es, attachBehavior);
+        toContainerNode(this)->insertBefore(newChild, refChild, es);
     else
         es.throwDOMException(HierarchyRequestError);
 }
 
-void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es, AttachBehavior attachBehavior)
+void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
 {
     if (isContainerNode())
-        toContainerNode(this)->replaceChild(newChild, oldChild, es, attachBehavior);
+        toContainerNode(this)->replaceChild(newChild, oldChild, es);
     else
         es.throwDOMException(HierarchyRequestError);
 }
@@ -539,10 +539,10 @@ void Node::removeChild(Node* oldChild, ExceptionState& es)
         es.throwDOMException(NotFoundError);
 }
 
-void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es, AttachBehavior attachBehavior)
+void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
 {
     if (isContainerNode())
-        toContainerNode(this)->appendChild(newChild, es, attachBehavior);
+        toContainerNode(this)->appendChild(newChild, es);
     else
         es.throwDOMException(HierarchyRequestError);
 }
