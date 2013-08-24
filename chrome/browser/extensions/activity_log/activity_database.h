@@ -189,6 +189,7 @@ class ActivityDatabase {
   sql::Connection db_;
   bool valid_db_;
   bool batch_mode_;
+  base::TimeDelta batching_period_;
   base::RepeatingTimer<ActivityDatabase> timer_;
   bool already_closed_;
   bool did_init_;

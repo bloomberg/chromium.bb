@@ -99,12 +99,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   ASSERT_TRUE(activity_log->IsLogEnabled());
-
-  scoped_refptr<Action> action = new Action(kExtensionId,
-                                            base::Time::Now(),
-                                            Action::ACTION_API_CALL,
-                                            "tabs.testMethod");
-  activity_log->LogAction(action);
 }
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {

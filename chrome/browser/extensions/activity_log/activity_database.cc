@@ -31,11 +31,15 @@ namespace extensions {
 ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
     : delegate_(delegate),
       valid_db_(false),
+      batch_mode_(true),
       already_closed_(false),
       did_init_(false) {
-  // We don't batch commits when in testing mode.
-  batch_mode_ = !(CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableExtensionActivityLogTesting));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionActivityLogTesting)) {
+    batching_period_ = base::TimeDelta::FromSeconds(10);
+  } else {
+    batching_period_ = base::TimeDelta::FromMinutes(2);
+  }
 }
 
 ActivityDatabase::~ActivityDatabase() {}
@@ -81,7 +85,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
   valid_db_ = true;
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMinutes(2),
+               batching_period_,
                this,
                &ActivityDatabase::RecordBatchedActions);
 }
@@ -110,7 +114,7 @@ void ActivityDatabase::RecordBatchedActions() {
 void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
   if (batch_mode && !batch_mode_) {
     timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMinutes(2),
+                 batching_period_,
                  this,
                  &ActivityDatabase::RecordBatchedActions);
   } else if (!batch_mode && batch_mode_) {
