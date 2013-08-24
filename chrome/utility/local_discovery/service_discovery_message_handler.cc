@@ -135,10 +135,11 @@ void SendServiceUpdated(uint64 id, ServiceWatcher::UpdateType update,
 }
 
 void SendLocalDomainResolved(uint64 id, bool success,
-                             const net::IPAddressNumber& address) {
+                             const net::IPAddressNumber& address_ipv4,
+                             const net::IPAddressNumber& address_ipv6) {
   content::UtilityThread::Get()->Send(
       new LocalDiscoveryHostMsg_LocalDomainResolverCallback(
-          id, success, address));
+          id, success, address_ipv4, address_ipv6));
 }
 
 }  // namespace
@@ -381,10 +382,13 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
 void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
     uint64 id,
     bool success,
-    const net::IPAddressNumber& address) {
+    const net::IPAddressNumber& address_ipv4,
+    const net::IPAddressNumber& address_ipv6) {
   DCHECK(service_discovery_client_);
   utility_task_runner_->PostTask(FROM_HERE, base::Bind(&SendLocalDomainResolved,
-                                                       id, success, address));
+                                                       id, success,
+                                                       address_ipv4,
+                                                       address_ipv6));
 }
 
 

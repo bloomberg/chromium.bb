@@ -92,7 +92,8 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
                           const ServiceDescription& description);
   void OnLocalDomainResolverCallback(uint64 id,
                                      bool success,
-                                     const net::IPAddressNumber& address);
+                                     const net::IPAddressNumber& address_ipv4,
+                                     const net::IPAddressNumber& address_ipv6);
 
 
   // Runs watcher callback on owning thread.
@@ -106,7 +107,8 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   // Runs local domain resolver callback on owning thread.
   void RunLocalDomainResolverCallback(uint64 id,
                                       bool success,
-                                      const net::IPAddressNumber& address);
+                                      const net::IPAddressNumber& address_ipv4,
+                                      const net::IPAddressNumber& address_ipv6);
 
 
   base::WeakPtr<content::UtilityProcessHost> utility_host_;

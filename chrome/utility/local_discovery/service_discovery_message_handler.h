@@ -87,7 +87,8 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   // Is called by LocalDomainResolver as callback.
   void OnLocalDomainResolved(uint64 id,
                              bool success,
-                             const net::IPAddressNumber& address);
+                             const net::IPAddressNumber& address_ipv4,
+                             const net::IPAddressNumber& address_ipv6);
 
   ServiceWatchers service_watchers_;
   ServiceResolvers service_resolvers_;

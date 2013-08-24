@@ -55,7 +55,9 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
 
     virtual void Start() OVERRIDE;
    private:
-    void ResolveComplete(bool success, const net::IPAddressNumber& address);
+    void ResolveComplete(bool success,
+                         const net::IPAddressNumber& address_ipv4,
+                         const net::IPAddressNumber& address_ipv6);
 
     std::string name_;
     scoped_ptr<LocalDomainResolver> resolver_;

@@ -73,12 +73,17 @@ class LocalDomainResolverTest : public testing::Test {
     mdns_client_.StartListening();
   }
 
-  void AddressCallback(bool resolved, const net::IPAddressNumber& address) {
-    if (address == net::IPAddressNumber()) {
-      AddressCallbackInternal(resolved, "");
-    } else {
-      AddressCallbackInternal(resolved, net::IPAddressToString(address));
-    }
+  std::string IPAddressToStringWithEmpty(const net::IPAddressNumber& address) {
+    if (address.empty()) return "";
+    return net::IPAddressToString(address);
+  }
+
+  void AddressCallback(bool resolved,
+                       const net::IPAddressNumber& address_ipv4,
+                       const net::IPAddressNumber& address_ipv6) {
+      AddressCallbackInternal(resolved,
+                              IPAddressToStringWithEmpty(address_ipv4),
+                              IPAddressToStringWithEmpty(address_ipv6));
   }
 
   void RunFor(base::TimeDelta time_period) {
@@ -92,8 +97,10 @@ class LocalDomainResolverTest : public testing::Test {
     callback.Cancel();
   }
 
-  MOCK_METHOD2(AddressCallbackInternal,
-               void(bool resolved, std::string address));
+  MOCK_METHOD3(AddressCallbackInternal,
+               void(bool resolved,
+                    std::string address_ipv4,
+                    std::string address_ipv6));
 
   net::MockMDnsSocketFactory* socket_factory_;
   net::MDnsClientImpl mdns_client_;
@@ -111,7 +118,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainA) {
 
   resolver.Start();
 
-  EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4"));
+  EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4", ""));
 
   socket_factory_->SimulateReceive(
       kSamplePacketA, sizeof(kSamplePacketA));
@@ -128,13 +135,13 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
 
   resolver.Start();
 
-  EXPECT_CALL(*this, AddressCallbackInternal(true, "a::1:2:3:4"));
+  EXPECT_CALL(*this, AddressCallbackInternal(true, "", "a::1:2:3:4"));
 
   socket_factory_->SimulateReceive(
       kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
 }
 
-TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
+TEST_F(LocalDomainResolverTest, ResolveDomainAnyOneAvailable) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
@@ -145,10 +152,33 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
 
   resolver.Start();
 
-  EXPECT_CALL(*this, AddressCallbackInternal(true, "a::1:2:3:4"));
+  socket_factory_->SimulateReceive(
+      kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
+
+  EXPECT_CALL(*this, AddressCallbackInternal(true, "", "a::1:2:3:4"));
+
+  RunFor(base::TimeDelta::FromMilliseconds(150));
+}
+
+
+TEST_F(LocalDomainResolverTest, ResolveDomainAnyBothAvailable) {
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+      base::Bind(&LocalDomainResolverTest::AddressCallback,
+                 base::Unretained(this)), &mdns_client_);
+
+  EXPECT_CALL(*socket_factory_, OnSendTo(_))
+      .Times(4);  // Twice per query
+
+  resolver.Start();
+
+  EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4", "a::1:2:3:4"));
 
   socket_factory_->SimulateReceive(
       kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
+
+  socket_factory_->SimulateReceive(
+      kSamplePacketA, sizeof(kSamplePacketA));
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
@@ -162,7 +192,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
 
   resolver.Start();
 
-  EXPECT_CALL(*this, AddressCallbackInternal(false, ""));
+  EXPECT_CALL(*this, AddressCallbackInternal(false, "", ""));
 
   RunFor(base::TimeDelta::FromSeconds(4));
 }

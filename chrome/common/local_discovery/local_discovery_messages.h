@@ -80,8 +80,9 @@ IPC_MESSAGE_CONTROL3(
     local_discovery::ServiceDescription /* description */)
 
 // Notifies browser process about local domain resolution results.
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL4(
     LocalDiscoveryHostMsg_LocalDomainResolverCallback,
     uint64 /* id */,
     bool /* success */,
-    net::IPAddressNumber /* ip_address */)
+    net::IPAddressNumber /* ip_address_ipv4 */,
+    net::IPAddressNumber /* ip_address_ipv6 */)

@@ -74,11 +74,19 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start() {
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
-    bool success, const net::IPAddressNumber& address) {
+    bool success,
+    const net::IPAddressNumber& address_ipv4,
+    const net::IPAddressNumber& address_ipv6) {
   if (!success) {
     callback_.Run(scoped_ptr<PrivetHTTPClient>());
     return;
   }
+
+  net::IPAddressNumber address = address_ipv4;
+  if (address.empty())
+    address = address_ipv6;
+
+  DCHECK(!address.empty());
 
   net::HostPortPair new_address = net::HostPortPair(
       IPAddressToHostString(address), hostport_.port());

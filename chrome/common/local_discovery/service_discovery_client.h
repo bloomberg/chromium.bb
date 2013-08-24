@@ -94,7 +94,9 @@ class ServiceResolver {
 
 class LocalDomainResolver {
  public:
-  typedef base::Callback<void(bool, const net::IPAddressNumber&)>
+  typedef base::Callback<void(bool /*success*/,
+                              const net::IPAddressNumber& /*address_ipv4*/,
+                              const net::IPAddressNumber& /*address_ipv6*/)>
       IPAddressCallback;
 
   virtual ~LocalDomainResolver() {}

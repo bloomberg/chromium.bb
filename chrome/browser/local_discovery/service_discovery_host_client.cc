@@ -293,12 +293,13 @@ void ServiceDiscoveryHostClient::OnResolverCallback(
 void ServiceDiscoveryHostClient::OnLocalDomainResolverCallback(
     uint64 id,
     bool success,
-    const net::IPAddressNumber& ip_address) {
+    const net::IPAddressNumber& ip_address_ipv4,
+    const net::IPAddressNumber& ip_address_ipv6) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   callback_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::RunLocalDomainResolverCallback,
-                 this, id, success, ip_address));
+                 this, id, success, ip_address_ipv4, ip_address_ipv6));
 }
 
 void ServiceDiscoveryHostClient::RunWatcherCallback(
@@ -324,11 +325,12 @@ void ServiceDiscoveryHostClient::RunResolverCallback(
 void ServiceDiscoveryHostClient::RunLocalDomainResolverCallback(
     uint64 id,
     bool success,
-    const net::IPAddressNumber& ip_address) {
+    const net::IPAddressNumber& ip_address_ipv4,
+    const net::IPAddressNumber& ip_address_ipv6) {
   DCHECK(CalledOnValidThread());
   DomainResolverCallbacks::iterator it = domain_resolver_callbacks_.find(id);
   if (it != domain_resolver_callbacks_.end() && !it->second.is_null())
-    it->second.Run(success, ip_address);
+    it->second.Run(success, ip_address_ipv4, ip_address_ipv6);
 }
 
 ServiceDiscoveryHostClientFactory::ServiceDiscoveryHostClientFactory()
