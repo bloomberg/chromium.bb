@@ -81,6 +81,10 @@
     return stats;
   };
 
+  GpuBenchmarkingRenderingStats.prototype.isUsingGpuBenchmarking = function() {
+    return true;
+  }
+
   GpuBenchmarkingRenderingStats.prototype.getRenderingStats_ = function() {
     var stats = chrome.gpuBenchmarking.renderingStats();
     stats.totalTimeInSeconds = getTimeMs() / 1000;
@@ -130,6 +134,10 @@
         this.frameTimes_[0]) / 1000;
     return endValues;
   };
+
+  RafRenderingStats.prototype.isUsingGpuBenchmarking = function() {
+    return false;
+  }
 
   RafRenderingStats.prototype.recordFrameTime_ = function(timestamp) {
     if (!this.recording_)

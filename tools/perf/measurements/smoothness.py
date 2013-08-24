@@ -35,6 +35,7 @@ class Smoothness(page_measurement.PageMeasurement):
     return hasattr(page, 'smoothness')
 
   def WillRunAction(self, page, tab, action):
+    tab.browser.StartTracing('webkit,cc,benchmark', 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     self._metrics = smoothness.SmoothnessMetrics(tab)
@@ -48,6 +49,16 @@ class Smoothness(page_measurement.PageMeasurement):
       tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     if not action.CanBeBound():
       self._metrics.Stop()
+    tab.browser.StopTracing()
+
+  def FindTimelineMarker(self, timeline):
+    events = [s for
+              s in timeline.GetAllEventsOfName(
+                  smoothness.TIMELINE_MARKER)
+              if s.parent_slice == None]
+    if len(events) != 1:
+      raise LookupError, 'timeline marker not found'
+    return events[0]
 
   def MeasurePage(self, page, tab, results):
     rendering_stats_deltas = self._metrics.deltas
@@ -59,7 +70,11 @@ class Smoothness(page_measurement.PageMeasurement):
 
     smoothness.CalcFirstPaintTimeResults(results, tab)
 
-    benchmark_stats = GpuRenderingStats(rendering_stats_deltas)
+    timeline = tab.browser.GetTraceResultAndReset().AsTimelineModel()
+    timeline_marker = self.FindTimelineMarker(timeline)
+    benchmark_stats = GpuRenderingStats(timeline_marker,
+                                        rendering_stats_deltas,
+                                        self._metrics.is_using_gpu_benchmarking)
     smoothness.CalcResults(benchmark_stats, results)
 
     if self.options.report_all_results:

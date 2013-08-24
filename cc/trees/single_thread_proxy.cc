@@ -221,6 +221,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
     stats_instrumentation->AddCommit(duration);
+    stats_instrumentation->IssueTraceEventForMainThreadStats();
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
   layer_tree_host_->CommitComplete();

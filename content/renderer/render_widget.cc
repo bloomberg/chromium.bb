@@ -239,6 +239,11 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
+
+  legacy_software_mode_stats_ = cc::RenderingStatsInstrumentation::Create();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuBenchmarking))
+    legacy_software_mode_stats_->set_record_rendering_stats(true);
 }
 
 RenderWidget::~RenderWidget() {
@@ -966,9 +971,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   TRACE_EVENT2("renderer", "PaintRect",
                "width", rect.width(), "height", rect.height());
 
-  const bool kEnableGpuBenchmarking =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuBenchmarking);
   canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
@@ -1027,34 +1029,24 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // WebKit and filling the background (which can be slow) and just painting
     // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
     // required.
-    base::TimeTicks paint_begin_ticks;
-    if (kEnableGpuBenchmarking)
-      paint_begin_ticks = base::TimeTicks::HighResNow();
-
     SkAutoCanvasRestore auto_restore(canvas, true);
     canvas->scale(device_scale_factor_, device_scale_factor_);
     optimized_instance->Paint(canvas, optimized_copy_location, rect);
     canvas->restore();
-    if (kEnableGpuBenchmarking) {
-      base::TimeDelta paint_time =
-          base::TimeTicks::HighResNow() - paint_begin_ticks;
-      if (!is_accelerated_compositing_active_)
-        software_stats_.main_stats.paint_time += paint_time;
-    }
 #endif
   } else {
     // Normal painting case.
-    base::TimeTicks paint_begin_ticks;
-    if (kEnableGpuBenchmarking)
-      paint_begin_ticks = base::TimeTicks::HighResNow();
+    base::TimeTicks start_time;
+    if (!is_accelerated_compositing_active_)
+      start_time = legacy_software_mode_stats_->StartRecording();
 
     webwidget_->paint(canvas, rect);
 
-    if (kEnableGpuBenchmarking) {
+    if (!is_accelerated_compositing_active_) {
       base::TimeDelta paint_time =
-          base::TimeTicks::HighResNow() - paint_begin_ticks;
-      if (!is_accelerated_compositing_active_)
-        software_stats_.main_stats.paint_time += paint_time;
+          legacy_software_mode_stats_->EndRecording(start_time);
+      int64 painted_pixel_count = rect.width() * rect.height();
+      legacy_software_mode_stats_->AddPaint(paint_time, painted_pixel_count);
     }
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
@@ -1063,11 +1055,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
   PaintDebugBorder(rect, canvas);
   canvas->restore();
-
-  if (kEnableGpuBenchmarking) {
-    int64 num_pixels_processed = rect.width() * rect.height();
-    software_stats_.main_stats.painted_pixel_count += num_pixels_processed;
-  }
 }
 
 void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
@@ -1273,8 +1260,10 @@ void RenderWidget::DoDeferredUpdate() {
   last_do_deferred_update_time_ = frame_begin_ticks;
 
   if (!is_accelerated_compositing_active_) {
-    software_stats_.main_stats.animation_frame_count++;
-    software_stats_.main_stats.screen_frame_count++;
+    legacy_software_mode_stats_->IncrementAnimationFrameCount();
+    legacy_software_mode_stats_->IncrementScreenFrameCount(1, true);
+    legacy_software_mode_stats_->IssueTraceEventForMainThreadStats();
+    legacy_software_mode_stats_->AccumulateAndClearMainThreadStats();
   }
 
   // OK, save the pending update to a local since painting may cause more
@@ -2455,14 +2444,8 @@ void RenderWidget::GetRenderingStats(
   if (compositor_)
     compositor_->GetRenderingStats(&stats.rendering_stats);
 
-  stats.rendering_stats.main_stats.animation_frame_count +=
-      software_stats_.main_stats.animation_frame_count;
-  stats.rendering_stats.main_stats.screen_frame_count +=
-      software_stats_.main_stats.screen_frame_count;
-  stats.rendering_stats.main_stats.paint_time +=
-      software_stats_.main_stats.paint_time;
-  stats.rendering_stats.main_stats.painted_pixel_count +=
-      software_stats_.main_stats.painted_pixel_count;
+  stats.rendering_stats.Add(
+      legacy_software_mode_stats_->GetRenderingStats());
 }
 
 bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {

@@ -30,11 +30,20 @@ class CC_EXPORT RenderingStatsInstrumentation {
   RenderingStats GetRenderingStats();
 
   // Add current main thread rendering stats to accumulator and
-  // clear current stats
+  // clear current stats.
   void AccumulateAndClearMainThreadStats();
   // Add current impl thread rendering stats to accumulator and
-  // clear current stats
+  // clear current stats.
   void AccumulateAndClearImplThreadStats();
+
+  // Issue trace event for current main thread rendering stats.
+  void IssueTraceEventForMainThreadStats() {
+    main_stats_.IssueTraceEvent();
+  }
+  // Issue trace event for current impl thread rendering stats.
+  void IssueTraceEventForImplThreadStats() {
+    impl_stats_.IssueTraceEvent();
+  }
 
   // Read and write access to the record_rendering_stats_ flag is not locked to
   // improve performance. The flag is commonly turned off and hardly changes
@@ -49,7 +58,7 @@ class CC_EXPORT RenderingStatsInstrumentation {
   base::TimeDelta EndRecording(base::TimeTicks start_time) const;
 
   void IncrementAnimationFrameCount();
-  void IncrementScreenFrameCount(int64 count);
+  void IncrementScreenFrameCount(int64 count, bool main_thread);
   void IncrementDroppedFrameCount(int64 count);
 
   void AddCommit(base::TimeDelta duration);

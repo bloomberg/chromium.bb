@@ -44,6 +44,7 @@ struct CC_EXPORT MainThreadRenderingStats {
   base::TimeDelta image_gathering_time;
 
   MainThreadRenderingStats();
+  void IssueTraceEvent() const;
   scoped_ptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const MainThreadRenderingStats& other);
 };
@@ -70,6 +71,7 @@ struct CC_EXPORT ImplThreadRenderingStats {
   base::TimeDelta tile_analysis_time;
 
   ImplThreadRenderingStats();
+  void IssueTraceEvent() const;
   scoped_ptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const ImplThreadRenderingStats& other);
 };

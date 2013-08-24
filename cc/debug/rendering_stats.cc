@@ -75,6 +75,13 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                         impl_stats.tile_analysis_time.InSecondsF());
 }
 
+void MainThreadRenderingStats::IssueTraceEvent() const {
+  TRACE_EVENT_INSTANT1("benchmark",
+                       "MainThreadRenderingStats::IssueTraceEvent",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "data", AsTraceableData());
+}
+
 scoped_ptr<base::debug::ConvertableToTraceFormat>
 MainThreadRenderingStats::AsTraceableData() const {
   scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
@@ -96,7 +103,16 @@ MainThreadRenderingStats::AsTraceableData() const {
                           recorded_pixel_count);
   record_data->SetInteger("image_gathering_count",
                           image_gathering_count);
+  record_data->SetDouble("image_gathering_time",
+                         image_gathering_time.InSecondsF());
   return TracedValue::FromValue(record_data.release());
+}
+
+void ImplThreadRenderingStats::IssueTraceEvent() const {
+  TRACE_EVENT_INSTANT1("benchmark",
+                       "ImplThreadRenderingStats::IssueTraceEvent",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "data", AsTraceableData());
 }
 
 scoped_ptr<base::debug::ConvertableToTraceFormat>

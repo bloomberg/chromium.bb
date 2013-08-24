@@ -817,7 +817,7 @@ void ThreadProxy::BeginFrameOnMainThread(
   // point of view, but asynchronously performed on the impl thread,
   // coordinated by the Scheduler.
   {
-    TRACE_EVENT_BEGIN0("cc", "ThreadProxy::BeginFrameOnMainThread::commit");
+    TRACE_EVENT0("cc", "ThreadProxy::BeginFrameOnMainThread::commit");
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
@@ -837,9 +837,7 @@ void ThreadProxy::BeginFrameOnMainThread(
 
     base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
     stats_instrumentation->AddCommit(duration);
-    TRACE_EVENT_END1("cc", "ThreadProxy::BeginFrameOnMainThread::commit",
-                     "data", stats_instrumentation->
-                     GetMainThreadRenderingStats().AsTraceableData());
+    stats_instrumentation->IssueTraceEventForMainThreadStats();
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
 

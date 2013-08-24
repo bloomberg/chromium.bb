@@ -1227,14 +1227,13 @@ static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {
 
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
-  TRACE_EVENT_BEGIN0("cc", "LayerTreeHostImpl::DrawLayers");
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
 
   if (frame->has_no_damage) {
     TRACE_EVENT0("cc", "EarlyOut_NoDamage");
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
-    TRACE_EVENT_END0("cc", "LayerTreeHostImpl::DrawLayers");
     return;
   }
 
@@ -1243,7 +1242,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   int old_dropped_frame_count = fps_counter_->dropped_frame_count();
   fps_counter_->SaveTimeStamp(frame_begin_time);
 
-  rendering_stats_instrumentation_->IncrementScreenFrameCount(1);
+  bool on_main_thread = false;
+  rendering_stats_instrumentation_->IncrementScreenFrameCount(
+      1, on_main_thread);
   rendering_stats_instrumentation_->IncrementDroppedFrameCount(
       fps_counter_->dropped_frame_count() - old_dropped_frame_count);
 
@@ -1309,9 +1310,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         DidDrawDamagedArea();
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
-  TRACE_EVENT_END1("cc", "LayerTreeHostImpl::DrawLayers",
-                   "data", rendering_stats_instrumentation_->
-                   GetImplThreadRenderingStats().AsTraceableData());
+
+  rendering_stats_instrumentation_->IssueTraceEventForImplThreadStats();
   rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
 }
 

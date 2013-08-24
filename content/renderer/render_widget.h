@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -693,7 +693,8 @@ class CONTENT_EXPORT RenderWidget
   bool has_disable_gpu_vsync_switch_;
   base::TimeTicks last_do_deferred_update_time_;
 
-  cc::RenderingStats software_stats_;
+  // Stats for legacy software mode
+  scoped_ptr<cc::RenderingStatsInstrumentation> legacy_software_mode_stats_;
 
   // UpdateRect parameters for the current compositing pass. This is used to
   // pass state between DoDeferredUpdate and OnSwapBuffersPosted.

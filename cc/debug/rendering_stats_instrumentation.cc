@@ -59,12 +59,16 @@ void RenderingStatsInstrumentation::IncrementAnimationFrameCount() {
   main_stats_.animation_frame_count++;
 }
 
-void RenderingStatsInstrumentation::IncrementScreenFrameCount(int64 count) {
+void RenderingStatsInstrumentation::IncrementScreenFrameCount(
+    int64 count, bool main_thread) {
   if (!record_rendering_stats_)
     return;
 
   base::AutoLock scoped_lock(lock_);
-  impl_stats_.screen_frame_count += count;
+  if (main_thread)
+    main_stats_.screen_frame_count += count;
+  else
+    impl_stats_.screen_frame_count += count;
 }
 
 void RenderingStatsInstrumentation::IncrementDroppedFrameCount(int64 count) {
