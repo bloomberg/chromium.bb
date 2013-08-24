@@ -1240,7 +1240,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   DCHECK(!frame->render_passes.empty());
 
   int old_dropped_frame_count = fps_counter_->dropped_frame_count();
-  fps_counter_->SaveTimeStamp(frame_begin_time);
+  fps_counter_->SaveTimeStamp(frame_begin_time,
+                              !output_surface_->context_provider());
 
   bool on_main_thread = false;
   rendering_stats_instrumentation_->IncrementScreenFrameCount(

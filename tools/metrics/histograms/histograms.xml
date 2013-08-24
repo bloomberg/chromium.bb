@@ -12853,6 +12853,15 @@ other types of suffix sets.
   <summary>Time to capture a renderer snapshot.</summary>
 </histogram>
 
+<histogram name="Renderer4.SoftwareCompositorThreadImplDrawDelay"
+    units="milliseconds">
+  <summary>
+    Time between frames when the software renderer is being used, as measured on
+    the compositor thread. This is collected once per frame while it is being
+    drawn to the screen in the compositor.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.SoftwareDoDeferredUpdateDelay">
   <summary>Time between frames when the page is not GPU accelerated.</summary>
 </histogram>
