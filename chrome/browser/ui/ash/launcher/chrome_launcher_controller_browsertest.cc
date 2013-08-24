@@ -10,6 +10,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
 #include "ash/launcher/launcher_view.h"
@@ -170,6 +171,17 @@ class LauncherPlatformAppBrowserTest
   DISALLOW_COPY_AND_ASSIGN(LauncherPlatformAppBrowserTest);
 };
 
+enum RipOffCommand {
+  // Drag the item off the shelf and let the mouse go.
+  RIP_OFF_ITEM,
+  // Drag the item off the shelf, move the mouse back and then let go.
+  RIP_OFF_ITEM_AND_RETURN,
+  // Drag the item off the shelf and then issue a cancel command.
+  RIP_OFF_ITEM_AND_CANCEL,
+  // Drag the item off the shelf and do not release the mouse.
+  RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE,
+};
+
 class LauncherAppBrowserTest : public ExtensionBrowserTest {
  protected:
   LauncherAppBrowserTest() : launcher_(NULL), model_(NULL), controller_(NULL) {
@@ -235,6 +247,10 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     return item.id;
   }
 
+  void RemoveShortcut(ash::LauncherID id) {
+    controller_->Unpin(id);
+  }
+
   // Activate the launcher item with the given |id|.
   void ActivateLauncherItem(int id) {
     launcher_->ActivateLauncherItem(id);
@@ -243,6 +259,40 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
   ash::LauncherID PinFakeApp(const std::string& name) {
     return controller_->CreateAppShortcutLauncherItem(
         name, model_->item_count());
+  }
+
+  // Get the index of an item which has the given type.
+  int GetIndexOfLauncherItemType(ash::LauncherItemType type) {
+    for (int i = 0; i < model_->item_count(); i++) {
+      if (model_->items()[i].type == type)
+        return i;
+    }
+    return -1;
+  }
+
+  // Try to rip off |item_index|.
+  void RipOffItemIndex(int index,
+                       aura::test::EventGenerator* generator,
+                       ash::test::LauncherViewTestAPI* test,
+                       RipOffCommand command) {
+    ash::internal::LauncherButton* button = test->GetButton(index);
+    gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
+    gfx::Point rip_off_point(0, 0);
+    generator->MoveMouseTo(start_point.x(), start_point.y());
+    base::MessageLoop::current()->RunUntilIdle();
+    generator->PressLeftButton();
+    base::MessageLoop::current()->RunUntilIdle();
+    generator->MoveMouseTo(rip_off_point.x(), rip_off_point.y());
+    base::MessageLoop::current()->RunUntilIdle();
+    if (command == RIP_OFF_ITEM_AND_RETURN) {
+      generator->MoveMouseTo(start_point.x(), start_point.y());
+      base::MessageLoop::current()->RunUntilIdle();
+    } else if (command == RIP_OFF_ITEM_AND_CANCEL) {
+      // This triggers an internal cancel. Using VKEY_ESCAPE was too unreliable.
+      button->OnMouseCaptureLost();
+    }
+    if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE)
+      generator->ReleaseLeftButton();
   }
 
   ash::Launcher* launcher_;
@@ -1268,8 +1318,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
 }
 
 // Test that we can launch a platform app panel and get a running item.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
-    LaunchPanelWindow) {
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPanelWindow) {
   int item_count = launcher_model()->item_count();
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   ShellWindow::CreateParams params;
@@ -1537,6 +1586,68 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
 }
 
+// Do tests for removal of items from the shelf by dragging.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
+  // Set the command line option to enable the new functionality.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDragOffShelf);
+  aura::test::EventGenerator generator(
+      ash::Shell::GetPrimaryRootWindow(), gfx::Point());
+  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+
+  // Create a known application and check that we have 3 items in the launcher.
+  CreateShortcut("app1");
+  EXPECT_EQ(3, model_->item_count());
+
+  // Test #1: Ripping out the browser item should not change anything.
+  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
+  EXPECT_LE(0, browser_index);
+  RipOffItemIndex(browser_index, &generator, &test, RIP_OFF_ITEM);
+  // => It should not have been removed and the location should be unchanged.
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(browser_index,
+            GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT));
+
+  // Test #2: Ripping out the application and canceling the operation should
+  // not change anything.
+  int app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  EXPECT_LE(0, app_index);
+  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_CANCEL);
+  // => It should not have been removed and the location should be unchanged.
+  ASSERT_EQ(3, model_->item_count());
+  EXPECT_EQ(app_index, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+
+  // Test #3: Ripping out the application and moving it back in should not
+  // change anything.
+  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_RETURN);
+  // => It should not have been removed and the location should be unchanged.
+  ASSERT_EQ(3, model_->item_count());
+  // Through the operation the index might have changed.
+  app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+
+  // Test #4: Ripping out the application should remove the item.
+  RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
+  // => It should not have been removed and the location should be unchanged.
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(-1, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+
+  // Test #5: Uninstalling an application while it is being ripped off should
+  // not crash.
+  ash::LauncherID app_id = CreateShortcut("app2");
+  int app2_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  EXPECT_EQ(3, model_->item_count());  // And it remains that way.
+  RipOffItemIndex(app2_index,
+                  &generator,
+                  &test,
+                  RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE);
+  RemoveShortcut(app_id);
+  EXPECT_EQ(2, model_->item_count());  // The item should now be gone.
+  generator.ReleaseLeftButton();
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, model_->item_count());  // And it remains that way.
+  EXPECT_EQ(-1, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+}
+
 // Check that clicking on an app launcher item launches a new browser.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
@@ -1658,7 +1769,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OverflowBubble) {
   EXPECT_TRUE(launcher_->IsShowingOverflowBubble());
 
   // Unpin first pinned app and there should be no crash.
-  controller_->UnpinAppsWithID(std::string("fake_app_0"));
+  controller_->UnpinAppWithID(std::string("fake_app_0"));
 
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_FALSE(launcher_->IsShowingOverflowBubble());

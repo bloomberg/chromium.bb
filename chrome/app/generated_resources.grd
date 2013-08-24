@@ -5312,6 +5312,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION">
           Use the alternative shelf layout.
         </message>
+        <message name="IDS_FLAGS_DRAG_OFF_SHELF_NAME">
+          Dragging off items from shelf to unpin
+        </message>
+        <message name="IDS_FLAGS_DRAG_OFF_SHELF_DESCRIPTION">
+          Enable to allow items to be dragged off the shelf to unpin them.
+        </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now
         </message>

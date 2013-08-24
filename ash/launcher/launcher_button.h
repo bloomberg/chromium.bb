@@ -61,6 +61,9 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   virtual void ShowContextMenu(const gfx::Point& p,
                                ui::MenuSourceType source_type) OVERRIDE;
 
+  // View override - needed by unit test.
+  virtual void OnMouseCaptureLost() OVERRIDE;
+
  protected:
   LauncherButton(views::ButtonListener* listener,
                  LauncherButtonHost* host,
@@ -91,7 +94,6 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   // View overrides:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;

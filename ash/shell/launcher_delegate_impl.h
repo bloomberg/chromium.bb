@@ -40,9 +40,10 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
+  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
-  virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
+  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

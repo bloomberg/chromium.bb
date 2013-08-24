@@ -7,6 +7,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
 #include "ash/wm/window_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
@@ -131,6 +132,10 @@ LauncherID TestLauncherDelegate::GetLauncherIDForAppID(
   return 0;
 }
 
+const std::string& TestLauncherDelegate::GetAppIDForLauncherID(LauncherID id) {
+  return EmptyString();
+}
+
 void TestLauncherDelegate::PinAppWithID(const std::string& app_id) {
 }
 
@@ -138,7 +143,7 @@ bool TestLauncherDelegate::IsAppPinned(const std::string& app_id) {
   return false;
 }
 
-void TestLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
+void TestLauncherDelegate::UnpinAppWithID(const std::string& app_id) {
 }
 
 }  // namespace test

@@ -588,7 +588,7 @@ ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
   return 0;
 }
 
-std::string ChromeLauncherController::GetAppIDForLauncherID(
+const std::string& ChromeLauncherController::GetAppIDForLauncherID(
     ash::LauncherID id) {
   CHECK(HasItemController(id));
   return id_to_item_controller_map_[id]->app_id();
@@ -597,7 +597,6 @@ std::string ChromeLauncherController::GetAppIDForLauncherID(
 void ChromeLauncherController::SetAppImage(const std::string& id,
                                            const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.
-
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
@@ -670,9 +669,9 @@ void ChromeLauncherController::SetLaunchType(
       id_to_item_controller_map_[id]->app_id(), launch_type);
 }
 
-void ChromeLauncherController::UnpinAppsWithID(const std::string& app_id) {
+void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
   if (CanPin())
-    DoUnpinAppsWithID(app_id);
+    DoUnpinAppWithID(app_id);
   else
     NOTREACHED();
 }
@@ -1033,7 +1032,7 @@ void ChromeLauncherController::Observe(
 
       if (IsAppPinned(id)) {
         if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
-          DoUnpinAppsWithID(id);
+          DoUnpinAppWithID(id);
           app_icon_loader_->ClearImage(id);
         } else {
           app_icon_loader_->UpdateImage(id);
@@ -1319,14 +1318,10 @@ void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
   }
 }
 
-void ChromeLauncherController::DoUnpinAppsWithID(const std::string& app_id) {
-  for (IDToItemControllerMap::iterator i = id_to_item_controller_map_.begin();
-       i != id_to_item_controller_map_.end(); ) {
-    IDToItemControllerMap::iterator current(i);
-    ++i;
-    if (current->second->app_id() == app_id && IsPinned(current->first))
-      Unpin(current->first);
-  }
+void ChromeLauncherController::DoUnpinAppWithID(const std::string& app_id) {
+  ash::LauncherID launcher_id = GetLauncherIDForAppID(app_id);
+  if (launcher_id && IsPinned(launcher_id))
+    Unpin(launcher_id);
 }
 
 void ChromeLauncherController::UpdateAppLaunchersFromPref() {

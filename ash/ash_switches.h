@@ -42,6 +42,7 @@ ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
+ASH_EXPORT extern const char kAshEnableDragOffShelf[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
@@ -69,6 +70,9 @@ ASH_EXPORT extern const char kHideShelfAlignmentMenu[];
 
 // Returns true if the alternate shelf layout should be used.
 ASH_EXPORT bool UseAlternateShelfLayout();
+
+// Returns true if items can be dragged off the shelf to unpin.
+ASH_EXPORT bool UseDragOffShelf();
 
 // Returns true if side shelf alignment is enabled.
 ASH_EXPORT bool ShowShelfAlignmentMenu();

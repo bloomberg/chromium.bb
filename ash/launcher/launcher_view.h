@@ -171,6 +171,13 @@ class ASH_EXPORT LauncherView : public views::View,
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const ui::LocatedEvent& event);
 
+  // Handles ripping off an item from the shelf. Returns true when the item got
+  // removed.
+  bool HandleRipOffDrag(const ui::LocatedEvent& event);
+
+  // Finalize the rip off dragging by either |cancel| the action or validating.
+  void FinalizeRipOffDrag(bool cancel);
+
   // Returns true if |typea| and |typeb| should be in the same drag range.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
 
@@ -276,6 +283,10 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns true if a tooltip should be shown for |view|.
   bool ShouldShowTooltipForView(const views::View* view) const;
 
+  // Get the distance from the given |coordinate| to the closest point on this
+  // launcher/shelf.
+  int CalculateShelfDistance(const gfx::Point& coordinate) const;
+
   // The model; owned by Launcher.
   LauncherModel* model_;
 
@@ -371,6 +382,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // The view which gets replaced by our drag icon proxy.
   views::View* drag_replaced_view_;
+
+  // True when the icon was dragged off the shelf.
+  bool dragged_off_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

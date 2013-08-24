@@ -32,7 +32,7 @@ void AppListControllerDelegateAsh::PinApp(const std::string& extension_id) {
 }
 
 void AppListControllerDelegateAsh::UnpinApp(const std::string& extension_id) {
-  ChromeLauncherController::instance()->UnpinAppsWithID(extension_id);
+  ChromeLauncherController::instance()->UnpinAppWithID(extension_id);
 }
 
 bool AppListControllerDelegateAsh::CanPin() {

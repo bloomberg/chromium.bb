@@ -98,6 +98,12 @@ const SkColor kCaptionItemForegroundColor = SK_ColorBLACK;
 // The maximum allowable length of a menu line of an application menu in pixels.
 const int kMaximumAppMenuItemLength = 350;
 
+// The distance of the cursor from the outer rim of the shelf before it
+// separates / re-inserts. Note that the rip off distance is bigger then the
+// re-insertion distance to avoid "flickering" between the two states.
+const int kRipOffDistance = 48;
+const int kReinsertDistance = 32;
+
 namespace {
 
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
@@ -401,7 +407,8 @@ LauncherView::LauncherView(LauncherModel* model,
       closing_event_time_(base::TimeDelta()),
       got_deleted_(NULL),
       drag_and_drop_item_pinned_(false),
-      drag_and_drop_launcher_id_(0) {
+      drag_and_drop_launcher_id_(0),
+      dragged_off_shelf_(false) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -670,7 +677,7 @@ void LauncherView::EndDrag(bool cancel) {
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel)
-    delegate_->UnpinAppsWithID(drag_and_drop_app_id_);
+    delegate_->UnpinAppWithID(drag_and_drop_app_id_);
   else if (drag_and_drop_view)
     drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
 
@@ -987,20 +994,28 @@ void LauncherView::PrepareForDrag(Pointer pointer,
 }
 
 void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
-  // TODO: I don't think this works correctly with RTL.
-  gfx::Point drag_point(event.location());
-  views::View::ConvertPointToTarget(drag_view_, this, &drag_point);
+  // Due to a syncing operation the application might have been removed.
+  // Bail if it is gone.
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
-
-  // If the item is no longer draggable, bail out.
   if (current_index == -1 ||
       !delegate_->IsDraggable(model_->items()[current_index])) {
     CancelDrag(-1);
     return;
   }
+
+  // If this is not a drag and drop host operation, check if the item got
+  // ripped off the shelf - if it did we are done.
+  if (!drag_and_drop_launcher_id_ && ash::switches::UseDragOffShelf()) {
+    if (HandleRipOffDrag(event))
+      return;
+    // The rip off handler could have changed the location of the item.
+    current_index = view_model_->GetIndexOfView(drag_view_);
+  }
+
+  // TODO: I don't think this works correctly with RTL.
+  gfx::Point drag_point(event.location());
+  views::View::ConvertPointToTarget(drag_view_, this, &drag_point);
 
   // Constrain the location to the range of valid indices for the type.
   std::pair<int, int> indices(GetDragRange(current_index));
@@ -1012,6 +1027,7 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
       last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   if (shelf->IsHorizontalAlignment()) {
     x = std::max(view_model_->ideal_bounds(indices.first).x(),
                      drag_point.x() - drag_offset_);
@@ -1048,6 +1064,91 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   // |view_model_| update.
   model_->Move(current_index, target_index);
   bounds_animator_->StopAnimatingView(drag_view_);
+}
+
+bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
+  // Determine the distance to the shelf.
+  int delta = CalculateShelfDistance(event.root_location());
+  int current_index = view_model_->GetIndexOfView(drag_view_);
+  DCHECK_NE(-1, current_index);
+  // To avoid ugly forwards and backwards flipping we use different constants
+  // for ripping off / re-inserting the items.
+  if (dragged_off_shelf_) {
+    // If the re-insertion distance is undercut we insert the item back into
+    // the shelf. Note that the reinsertion value is slightly smaller then the
+    // rip off distance to avoid flickering.
+    if (delta < kReinsertDistance) {
+      // Destroy our proxy view item.
+      // TODO(skuhne): Do it!
+      // Re-insert the item and return simply false since the caller will handle
+      // the move as in any normal case.
+      dragged_off_shelf_ = false;
+      drag_view_->layer()->SetOpacity(1.0f);
+      return false;
+    }
+    // Move our proxy view item.
+    // TODO(skuhne): Do it!
+    return true;
+  }
+  // Check if we are too far away from the shelf to enter the ripped off state.
+  if (delta > kRipOffDistance) {
+    // Create a proxy view item which can be moved anywhere.
+    // TODO(skuhne): Do it!
+    // Move the item to the end of the launcher and hide it.
+    drag_view_->layer()->SetOpacity(0.0f);
+    model_->Move(current_index, model_->item_count() - 1);
+    AnimateToIdealBounds();
+    dragged_off_shelf_ = true;
+    return true;
+  }
+  return false;
+}
+
+void LauncherView::FinalizeRipOffDrag(bool cancel) {
+  if (!dragged_off_shelf_)
+    return;
+  // Make sure we do not come in here again.
+  dragged_off_shelf_ = false;
+
+  // Coming here we should always have a |drag_view_|.
+  DCHECK(drag_view_);
+  int current_index = view_model_->GetIndexOfView(drag_view_);
+  // If the view isn't part of the model anymore, a sync operation must have
+  // removed it. In that case we shouldn't change the model and only delete the
+  // proxy image.
+  if (current_index == -1) {
+    // TODO(skuhne): Destroy the proxy immediately.
+  } else {
+    // Items which cannot be dragged off will be handled as a cancel.
+    if (!cancel) {
+      // Make sure we do not try to remove un-removable items like items which
+      // were not pinned or have to be always there.
+      LauncherItemType type = model_->items()[current_index].type;
+      std::string app_id =
+          delegate_->GetAppIDForLauncherID(model_->items()[current_index].id);
+      if (type == TYPE_APP_LIST ||
+          type == TYPE_BROWSER_SHORTCUT ||
+          !delegate_->IsAppPinned(app_id)) {
+        cancel = true;
+      } else {
+        // Make sure the item stays invisible upon removal.
+        drag_view_->SetVisible(false);
+        delegate_->UnpinAppWithID(app_id);
+      }
+    }
+    if (cancel) {
+      // TODO(skuhne): This is not correct since it shows the animation from
+      // the outer rim towards the old location instead of the animation from
+      // the proxy towards the original location.
+      if (!cancelling_drag_model_changed_) {
+        // When a cancelling drag model is happening, the view model is diverged
+        // from the menu model and movements / animations should not be done.
+        model_->Move(current_index, start_drag_index_);
+        AnimateToIdealBounds();
+      }
+      drag_view_->layer()->SetOpacity(1.0f);
+    }
+  }
 }
 
 bool LauncherView::SameDragType(LauncherItemType typea,
@@ -1168,6 +1269,7 @@ bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
 }
 
 int LauncherView::CancelDrag(int modified_index) {
+  FinalizeRipOffDrag(true);
   if (!drag_view_)
     return modified_index;
   bool was_dragging = dragging();
@@ -1425,6 +1527,7 @@ void LauncherView::PointerReleasedOnButton(views::View* view,
   if (canceled) {
     CancelDrag(-1);
   } else if (drag_pointer_ == pointer) {
+    FinalizeRipOffDrag(false);
     drag_pointer_ = NONE;
     AnimateToIdealBounds();
   }
@@ -1714,6 +1817,29 @@ bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
     return false;
   const LauncherItem* item = LauncherItemForView(view);
   return (!item || delegate_->ShouldShowTooltip(*item));
+}
+
+int LauncherView::CalculateShelfDistance(const gfx::Point& coordinate) const {
+  ShelfWidget* shelf = RootWindowController::ForLauncher(
+      GetWidget()->GetNativeView())->shelf();
+  ash::ShelfAlignment align = shelf->GetAlignment();
+  const gfx::Rect bounds = GetBoundsInScreen();
+  int distance = 0;
+  switch (align) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+      distance = bounds.y() - coordinate.y();
+      break;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      distance = coordinate.x() - bounds.right();
+      break;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      distance = bounds.x() - coordinate.x();
+      break;
+    case ash::SHELF_ALIGNMENT_TOP:
+      distance = coordinate.y() - bounds.bottom();
+      break;
+  }
+  return distance > 0 ? distance : 0;
 }
 
 }  // namespace internal

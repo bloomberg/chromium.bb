@@ -851,7 +851,7 @@ TEST_F(ChromeLauncherControllerTest, CheckAlreadyPinnedLockApps) {
   EXPECT_FALSE(
       launcher_controller_->IsWindowedAppInLauncher(extension1_->id()));
 
-  launcher_controller_->UnpinAppsWithID(extension1_->id());
+  launcher_controller_->UnpinAppWithID(extension1_->id());
 
   EXPECT_EQ(2, model_->item_count());
 }
@@ -881,7 +881,7 @@ TEST_F(ChromeLauncherControllerTest, CheckPinnedAppsStayAfterUnlock) {
   EXPECT_FALSE(
       launcher_controller_->IsWindowedAppInLauncher(extension1_->id()));
 
-  launcher_controller_->UnpinAppsWithID(extension1_->id());
+  launcher_controller_->UnpinAppWithID(extension1_->id());
 
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_->items()[1].type);
@@ -925,7 +925,7 @@ TEST_F(ChromeLauncherControllerTest, CheckLockPinUnlockUnpin) {
   EXPECT_FALSE(
       launcher_controller_->IsWindowedAppInLauncher(extension1_->id()));
 
-  launcher_controller_->UnpinAppsWithID(extension1_->id());
+  launcher_controller_->UnpinAppWithID(extension1_->id());
 
   EXPECT_EQ(2, model_->item_count());
 }
@@ -1525,6 +1525,6 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned("0"));
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[app_index].type);
 
-  launcher_controller_->UnpinAppsWithID("1");
+  launcher_controller_->UnpinAppWithID("1");
   ASSERT_EQ(initial_size, model_->items().size());
 }

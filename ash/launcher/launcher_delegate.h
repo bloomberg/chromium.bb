@@ -95,6 +95,9 @@ class ASH_EXPORT LauncherDelegate {
   // Get the launcher ID from an application ID.
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;
 
+  // Get the application ID for a given launcher ID.
+  virtual const std::string& GetAppIDForLauncherID(LauncherID id) = 0;
+
   // Pins an app with |app_id| to launcher. A running instance will get pinned.
   // In case there is no running instance a new launcher item is created and
   // pinned.
@@ -103,9 +106,8 @@ class ASH_EXPORT LauncherDelegate {
   // Check if the app with |app_id_| is pinned to the launcher.
   virtual bool IsAppPinned(const std::string& app_id) = 0;
 
-  // Unpins any app item(s) whose id is |app_id|. The new launcher will collect
-  // all items under one item, the old launcher might have multiple items.
-  virtual void UnpinAppsWithID(const std::string& app_id) = 0;
+  // Unpins app item with |app_id|.
+  virtual void UnpinAppWithID(const std::string& app_id) = 0;
 };
 
 }  // namespace ash

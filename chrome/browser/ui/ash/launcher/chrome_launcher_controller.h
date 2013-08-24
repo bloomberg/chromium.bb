@@ -195,8 +195,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Returns the id of the app for the specified tab.
   std::string GetAppID(content::WebContents* tab);
 
-  std::string GetAppIDForLauncherID(ash::LauncherID id);
-
   // Set the image for a specific launcher item (e.g. when set by the app).
   void SetLauncherItemImage(ash::LauncherID launcher_id,
                             const gfx::ImageSkia& image);
@@ -282,9 +280,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
   virtual ash::LauncherID GetLauncherIDForAppID(
       const std::string& app_id) OVERRIDE;
+  virtual const std::string& GetAppIDForLauncherID(ash::LauncherID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
-  virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
+  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -408,7 +407,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
   void DoPinAppWithID(const std::string& app_id);
-  void DoUnpinAppsWithID(const std::string& app_id);
+  void DoUnpinAppWithID(const std::string& app_id);
 
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
