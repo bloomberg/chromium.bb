@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
@@ -81,7 +83,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
     : delegate_(delegate),
       model_(model),
       search_box_view_(NULL),
-      contents_view_(NULL) {
+      contents_view_(NULL),
+      weak_ptr_factory_(this) {
   // Starts icon loading early.
   PreloadIcons(pagination_model, parent);
 
@@ -228,7 +231,13 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
 }
 
 void AppListMainView::OnResultUninstalled(SearchResult* result) {
-  QueryChanged(search_box_view_);
+  // Resubmit the query via a posted task so that all observers for the
+  // uninstall notification are notified.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppListMainView::QueryChanged,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 search_box_view_));
 }
 
 }  // namespace app_list
