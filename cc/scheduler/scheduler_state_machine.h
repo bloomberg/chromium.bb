@@ -36,6 +36,15 @@ class CC_EXPORT SchedulerStateMachine {
   // settings must be valid for the lifetime of this class.
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
 
+  enum OutputSurfaceState {
+    OUTPUT_SURFACE_ACTIVE,
+    OUTPUT_SURFACE_LOST,
+    OUTPUT_SURFACE_CREATING,
+    OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT,
+    OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION,
+  };
+  static const char* OutputSurfaceStateToString(OutputSurfaceState state);
+
   enum CommitState {
     COMMIT_STATE_IDLE,
     COMMIT_STATE_FRAME_IN_PROGRESS,
@@ -51,13 +60,6 @@ class CC_EXPORT SchedulerStateMachine {
     LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD,
   };
   static const char* TextureStateToString(TextureState state);
-
-  enum OutputSurfaceState {
-    OUTPUT_SURFACE_ACTIVE,
-    OUTPUT_SURFACE_LOST,
-    OUTPUT_SURFACE_CREATING,
-  };
-  static const char* OutputSurfaceStateToString(OutputSurfaceState state);
 
   bool CommitPending() const {
     return commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
@@ -175,19 +177,22 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldAttemptTreeActivation() const;
   bool ShouldAcquireLayerTexturesForMainThread() const;
   bool ShouldUpdateVisibleTiles() const;
+  bool ShouldSendBeginFrameToMainThread() const;
 
   bool HasDrawnThisFrame() const;
   bool HasAttemptedTreeActivationThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
+  bool HasSentBeginFrameToMainThreadThisFrame() const;
 
   void HandleCommitInternal(bool commit_was_aborted);
   void UpdateStateOnDraw(bool did_swap);
 
   const SchedulerSettings settings_;
 
+  OutputSurfaceState output_surface_state_;
   CommitState commit_state_;
-  int commit_count_;
 
+  int commit_count_;
   int current_frame_number_;
   int last_frame_number_where_begin_frame_sent_to_main_thread_;
   int last_frame_number_where_draw_was_called_;
@@ -199,7 +204,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool swap_used_incomplete_tile_;
   bool needs_forced_redraw_;
   bool needs_forced_redraw_after_next_commit_;
-  bool needs_redraw_after_next_commit_;
   bool needs_commit_;
   bool needs_forced_commit_;
   bool expect_immediate_begin_frame_for_main_thread_;
@@ -212,7 +216,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool has_pending_tree_;
   bool draw_if_possible_failed_;
   TextureState texture_state_;
-  OutputSurfaceState output_surface_state_;
   bool did_create_and_initialize_first_output_surface_;
 
  private:

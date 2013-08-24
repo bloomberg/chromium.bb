@@ -29,6 +29,17 @@
 namespace cc {
 namespace {
 
+void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler) {
+  scheduler->DidCreateAndInitializeOutputSurface();
+  scheduler->SetNeedsCommit();
+  scheduler->FinishCommit();
+  // Go through the motions to draw the commit.
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  // We need another BeginFrame so scheduler calls SetNeedsBeginFrame(false).
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+}
+
 class FakeSchedulerClient : public SchedulerClient {
  public:
   FakeSchedulerClient()
@@ -159,10 +170,10 @@ TEST(SchedulerTest, RequestCommit) {
   scheduler->SetCanDraw(true);
 
   EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
 
   // SetNeedsCommit should begin the frame.
+  client.Reset();
   scheduler->SetNeedsCommit();
   EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
@@ -171,8 +182,7 @@ TEST(SchedulerTest, RequestCommit) {
 
   // FinishCommit should commit
   scheduler->FinishCommit();
-  EXPECT_ACTION("ScheduledActionCommit", client, 0, 2);
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
 
@@ -193,8 +203,8 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
   scheduler->SetCanDraw(true);
 
   EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
   client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   // SetNedsCommit should begin the frame.
   scheduler->SetNeedsCommit();
@@ -204,24 +214,21 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
 
   // Now SetNeedsCommit again. Calling here means we need a second frame.
   scheduler->SetNeedsCommit();
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 0, 1);
-  client.Reset();
 
-  // Since another commit is needed, FinishCommit should commit,
-  // then begin another frame.
+  // Finish the commit for the first frame.
   scheduler->FinishCommit();
-  EXPECT_ACTION("ScheduledActionCommit", client, 0, 2);
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
   client.Reset();
 
-  // Tick should draw but then begin another frame.
+  // Tick should draw but then begin another frame for the second commit.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_TRUE(client.needs_begin_frame());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
   client.Reset();
 
-  // Go back to quiescent state and verify we no longer request BeginFrames.
+  // Finish the second commit to go back to quiescent state and verify we no
+  // longer request BeginFrames.
   scheduler->FinishCommit();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_FALSE(client.needs_begin_frame());
@@ -236,8 +243,8 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
   scheduler->SetCanDraw(true);
   EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
 
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
   client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
@@ -300,18 +307,15 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   scheduler->SetCanDraw(true);
 
   EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
 
+  client.Reset();
   scheduler->SetNeedsCommit();
   scheduler->SetMainThreadNeedsLayerTextures();
-  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 4);
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 4);
-  EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
-                client,
-                2,
-                4);
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 3, 4);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 3);
+  EXPECT_ACTION(
+      "ScheduledActionAcquireLayerTexturesForMainThread", client, 2, 3);
   client.Reset();
 
   // Although the compositor cannot draw because textures are locked by main
@@ -425,7 +429,8 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+  client.Reset();
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -451,7 +456,8 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+  client.Reset();
 
   client.SetDrawWillHappen(false);
 
@@ -486,14 +492,19 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 }
 
-class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
+class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
  public:
+  SchedulerClientThatSetNeedsCommitInsideDraw()
+      : set_needs_commit_on_next_draw_(false) {}
+
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {}
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     // Only SetNeedsCommit the first time this is called
-    if (!num_draws_)
+    if (set_needs_commit_on_next_draw_) {
       scheduler_->SetNeedsCommit();
+      set_needs_commit_on_next_draw_ = false;
+    }
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 
@@ -506,24 +517,31 @@ class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
   virtual void ScheduledActionCommit() OVERRIDE {}
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {}
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
+
+  void SetNeedsCommitOnNextDraw() { set_needs_commit_on_next_draw_ = true; }
+
+ private:
+  bool set_needs_commit_on_next_draw_;
 };
 
 // Tests for the scheduler infinite-looping on SetNeedsCommit requests that
 // happen inside a ScheduledActionDrawAndSwap
 TEST(SchedulerTest, RequestCommitInsideDraw) {
-  SchedulerClientThatsetNeedsCommitInsideDraw client;
+  SchedulerClientThatSetNeedsCommitInsideDraw client;
   SchedulerSettings default_scheduler_settings;
   Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+  client.Reset();
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_EQ(0, client.num_draws());
   EXPECT_TRUE(client.needs_begin_frame());
 
+  client.SetNeedsCommitOnNextDraw();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
@@ -545,7 +563,8 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+  client.Reset();
 
   client.SetDrawWillHappen(false);
 
@@ -581,13 +600,14 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 }
 
 TEST(SchedulerTest, NoSwapWhenDrawFails) {
-  SchedulerClientThatsetNeedsCommitInsideDraw client;
+  SchedulerClientThatSetNeedsCommitInsideDraw client;
   SchedulerSettings default_scheduler_settings;
   Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+  client.Reset();
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -595,6 +615,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
   EXPECT_EQ(0, client.num_draws());
 
   // Draw successfully, this starts a new frame.
+  client.SetNeedsCommitOnNextDraw();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
 
@@ -604,6 +625,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
 
   // Fail to draw, this should not start a frame.
   client.SetDrawWillHappen(false);
+  client.SetNeedsCommitOnNextDraw();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
 }

@@ -13,6 +13,7 @@ namespace cc {
 
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
+      output_surface_state_(OUTPUT_SURFACE_LOST),
       commit_state_(COMMIT_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
@@ -26,7 +27,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       swap_used_incomplete_tile_(false),
       needs_forced_redraw_(false),
       needs_forced_redraw_after_next_commit_(false),
-      needs_redraw_after_next_commit_(false),
       needs_commit_(false),
       needs_forced_commit_(false),
       expect_immediate_begin_frame_for_main_thread_(false),
@@ -38,8 +38,25 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       has_pending_tree_(false),
       draw_if_possible_failed_(false),
       texture_state_(LAYER_TEXTURE_STATE_UNLOCKED),
-      output_surface_state_(OUTPUT_SURFACE_LOST),
       did_create_and_initialize_first_output_surface_(false) {}
+
+const char* SchedulerStateMachine::OutputSurfaceStateToString(
+    OutputSurfaceState state) {
+  switch (state) {
+    case OUTPUT_SURFACE_ACTIVE:
+      return "OUTPUT_SURFACE_ACTIVE";
+    case OUTPUT_SURFACE_LOST:
+      return "OUTPUT_SURFACE_LOST";
+    case OUTPUT_SURFACE_CREATING:
+      return "OUTPUT_SURFACE_CREATING";
+    case OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT:
+      return "OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT";
+    case OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION:
+      return "OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION";
+  }
+  NOTREACHED();
+  return "???";
+}
 
 const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
   switch (state) {
@@ -66,20 +83,6 @@ const char* SchedulerStateMachine::TextureStateToString(TextureState state) {
       return "LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD";
     case LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD:
       return "LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD";
-  }
-  NOTREACHED();
-  return "???";
-}
-
-const char* SchedulerStateMachine::OutputSurfaceStateToString(
-    OutputSurfaceState state) {
-  switch (state) {
-    case OUTPUT_SURFACE_ACTIVE:
-      return "OUTPUT_SURFACE_ACTIVE";
-    case OUTPUT_SURFACE_LOST:
-      return "OUTPUT_SURFACE_LOST";
-    case OUTPUT_SURFACE_CREATING:
-      return "OUTPUT_SURFACE_CREATING";
   }
   NOTREACHED();
   return "???";
@@ -175,8 +178,6 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetBoolean("needs_forced_redraw", needs_forced_redraw_);
   minor_state->SetBoolean("needs_forced_redraw_after_next_commit",
                           needs_forced_redraw_after_next_commit_);
-  minor_state->SetBoolean("needs_redraw_after_next_commit",
-                          needs_redraw_after_next_commit_);
   minor_state->SetBoolean("needs_commit", needs_commit_);
   minor_state->SetBoolean("needs_forced_commit", needs_forced_commit_);
   minor_state->SetBoolean("expect_immediate_begin_frame_for_main_thread",
@@ -210,19 +211,46 @@ bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
          last_frame_number_where_update_visible_tiles_was_called_;
 }
 
+bool SchedulerStateMachine::HasSentBeginFrameToMainThreadThisFrame() const {
+  return current_frame_number_ ==
+         last_frame_number_where_begin_frame_sent_to_main_thread_;
+}
+
 void SchedulerStateMachine::HandleCommitInternal(bool commit_was_aborted) {
   commit_count_++;
 
-  if (commit_was_aborted) {
-    commit_state_ = COMMIT_STATE_IDLE;
-  } else if (expect_immediate_begin_frame_for_main_thread_) {
+  // If we are impl-side-painting but the commit was aborted, then we behave
+  // mostly as if we are not impl-side-painting since there is no pending tree.
+  bool commit_results_in_pending_tree =
+      settings_.impl_side_painting && !commit_was_aborted;
+
+  // Update the commit state.
+  if (expect_immediate_begin_frame_for_main_thread_)
     commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
-  } else {
+  else if (!commit_was_aborted)
     commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
+  else
+    commit_state_ = COMMIT_STATE_IDLE;
+
+  // Update the output surface state.
+  DCHECK_NE(output_surface_state_,
+            OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION);
+  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
+    if (commit_results_in_pending_tree) {
+      output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION;
+    } else {
+      output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+      needs_redraw_ = true;
+    }
   }
 
-  if (!settings_.impl_side_painting && !commit_was_aborted)
-    needs_redraw_ = true;
+  // if we don't have to wait for activation, update needs_redraw now.
+  if (!commit_results_in_pending_tree) {
+    if (!commit_was_aborted)
+      needs_redraw_ = true;
+    if (expect_immediate_begin_frame_for_main_thread_)
+      needs_redraw_ = true;
+  }
 
   // This post-commit work is common to both completed and aborted commits.
   if (draw_if_possible_failed_)
@@ -232,14 +260,10 @@ void SchedulerStateMachine::HandleCommitInternal(bool commit_was_aborted) {
     needs_forced_redraw_after_next_commit_ = false;
     needs_forced_redraw_ = true;
   }
-  if (needs_redraw_after_next_commit_) {
-    needs_redraw_after_next_commit_ = false;
-    needs_redraw_ = true;
-  }
 
   // If we are planing to draw with the new commit, lock the layer textures for
   // use on the impl thread. Otherwise, leave them unlocked.
-  if (!commit_was_aborted || needs_redraw_ || needs_forced_redraw_)
+  if (commit_results_in_pending_tree || needs_redraw_ || needs_forced_redraw_)
     texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
   else
     texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
@@ -299,6 +323,42 @@ bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
          swap_used_incomplete_tile_;
 }
 
+bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
+  if (!needs_commit_)
+    return false;
+
+  // Only send BeginFrame to the main thread when idle.
+  if (commit_state_ != COMMIT_STATE_IDLE)
+    return false;
+
+  // We can't accept a commit if we have a pending tree.
+  if (has_pending_tree_)
+    return false;
+
+  // We want to start the first commit after we get a new output surface ASAP.
+  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
+    return true;
+
+  // We want to start forced commits ASAP.
+  if (needs_forced_commit_)
+    return true;
+
+  // After this point, we only start a commit once per frame.
+  if (HasSentBeginFrameToMainThreadThisFrame())
+    return false;
+
+  // We do not need commits if we are not visible, unless there's a
+  // request for a forced commit.
+  if (!visible_)
+    return false;
+
+  // We shouldn't normally accept commits if there isn't an OutputSurface.
+  if (!HasInitializedOutputSurface())
+    return false;
+
+  return true;
+}
+
 bool SchedulerStateMachine::ShouldAcquireLayerTexturesForMainThread() const {
   if (!main_thread_needs_layer_textures_)
     return false;
@@ -334,16 +394,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
         return needs_forced_redraw_ ? ACTION_DRAW_FORCED
                                     : ACTION_DRAW_IF_POSSIBLE;
       }
-      bool can_commit_this_frame =
-          visible_ &&
-          current_frame_number_ >
-              last_frame_number_where_begin_frame_sent_to_main_thread_;
-      if (needs_commit_ && ((can_commit_this_frame &&
-                             output_surface_state_ == OUTPUT_SURFACE_ACTIVE) ||
-                            needs_forced_commit_))
-        // TODO(enne): Should probably drop the active tree on force commit.
-        return has_pending_tree_ ? ACTION_NONE
-                                 : ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
+      if (ShouldSendBeginFrameToMainThread())
+        return ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
       return ACTION_NONE;
     }
     case COMMIT_STATE_FRAME_IN_PROGRESS:
@@ -406,7 +458,8 @@ void SchedulerStateMachine::UpdateState(Action action) {
 
     case ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
       DCHECK(!has_pending_tree_);
-      if (!needs_forced_commit_) {
+      if (!needs_forced_commit_ &&
+          output_surface_state_ != OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
         DCHECK(visible_);
         DCHECK_GT(current_frame_number_,
                   last_frame_number_where_begin_frame_sent_to_main_thread_);
@@ -478,6 +531,14 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
 }
 
 bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
+  // TODO(brianderson): Remove this hack once the Scheduler controls activation,
+  // otherwise we can get stuck in OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION.
+  // It lies that we actually need to draw, but we won't actually draw
+  // if we can't. This will cause WebView to potentially have corruption
+  // in the first few frames, but this workaround is being removed soon.
+  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
+    return true;
+
   // If we can't draw, don't tick until we are notified that we can draw again.
   if (!can_draw_)
     return false;
@@ -488,8 +549,7 @@ bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
   if (visible_ && swap_used_incomplete_tile_)
     return true;
 
-  return needs_redraw_ && visible_ &&
-         output_surface_state_ == OUTPUT_SURFACE_ACTIVE;
+  return needs_redraw_ && visible_ && HasInitializedOutputSurface();
 }
 
 bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
@@ -577,9 +637,17 @@ void SchedulerStateMachine::DidLoseOutputSurface() {
       output_surface_state_ == OUTPUT_SURFACE_CREATING)
     return;
   output_surface_state_ = OUTPUT_SURFACE_LOST;
+  needs_redraw_ = false;
 }
 
 void SchedulerStateMachine::SetHasPendingTree(bool has_pending_tree) {
+  if (has_pending_tree_ && !has_pending_tree) {
+    // There is a new active tree.
+    if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
+      output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+
+    needs_redraw_ = true;
+  }
   has_pending_tree_ = has_pending_tree;
 }
 
@@ -587,23 +655,29 @@ void SchedulerStateMachine::SetCanDraw(bool can) { can_draw_ = can; }
 
 void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
   DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_CREATING);
-  output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+  output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT;
 
   if (did_create_and_initialize_first_output_surface_) {
     // TODO(boliu): See if we can remove this when impl-side painting is always
     // on. Does anything on the main thread need to update after recreate?
     needs_commit_ = true;
-    // If anything has requested a redraw, we don't want to actually draw
-    // when the output surface is restored until things have a chance to
-    // sort themselves out with a commit.
-    needs_redraw_ = false;
   }
-  needs_redraw_after_next_commit_ = true;
   did_create_and_initialize_first_output_surface_ = true;
 }
 
 bool SchedulerStateMachine::HasInitializedOutputSurface() const {
-  return output_surface_state_ == OUTPUT_SURFACE_ACTIVE;
+  switch (output_surface_state_) {
+    case OUTPUT_SURFACE_LOST:
+    case OUTPUT_SURFACE_CREATING:
+      return false;
+
+    case OUTPUT_SURFACE_ACTIVE:
+    case OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT:
+    case OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION:
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 void SchedulerStateMachine::SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(
