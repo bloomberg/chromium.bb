@@ -997,6 +997,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebCoreLogChannels,
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableHTMLImports,
+    switches::kEnableInputModeAttribute,
     switches::kTraceToConsole,
     switches::kEnableDeviceMotion,
 #if defined(OS_ANDROID)

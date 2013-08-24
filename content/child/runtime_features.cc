@@ -138,6 +138,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableOverlayScrollbars))
     WebRuntimeFeatures::enableOverlayScrollbars(true);
+
+  if (command_line.HasSwitch(switches::kEnableInputModeAttribute))
+    WebRuntimeFeatures::enableInputModeAttribute(true);
 }
 
 }  // namespace content

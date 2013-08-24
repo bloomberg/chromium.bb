@@ -127,6 +127,7 @@ extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
 extern const char kEnableHTMLImports[];
 CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
+extern const char kEnableInputModeAttribute[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableMonitorProfile[];
