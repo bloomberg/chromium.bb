@@ -157,7 +157,7 @@ def InstallApk(options, test, print_step=False):
 
 
 def RunInstrumentationSuite(options, test, flunk_on_failure=True,
-                            python_only=False):
+                            python_only=False, official_build=False):
   """Manages an invocation of test_runner.py for instrumentation tests.
 
   Args:
@@ -165,6 +165,7 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
     test: An I_TEST namedtuple
     flunk_on_failure: Flunk the step if tests fail.
     Python: Run only host driven Python tests.
+    official_build: Run official-build tests.
   """
   bb_annotations.PrintNamedStep('%s_instrumentation_tests' % test.name.lower())
 
@@ -190,6 +191,10 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
     args.extend(test.extra_flags)
   if python_only:
     args.append('-p')
+  if official_build:
+    # The option needs to be assigned 'True' as it does not have an action
+    # associated with it.
+    args.append('--official-build')
 
   RunCmd(['build/android/test_runner.py', 'instrumentation'] + args,
          flunk_on_failure=flunk_on_failure)
