@@ -63,10 +63,6 @@ ASH_EXPORT bool GetWindowAlwaysRestoresToRestoreBounds(
 ASH_EXPORT void SetTrackedByWorkspace(aura::Window* window, bool value);
 ASH_EXPORT bool GetTrackedByWorkspace(const aura::Window* window);
 
-// Sets the default value for whether windows persist across all workspaces.
-// The default is false.
-ASH_EXPORT void SetDefaultPersistsAcrossAllWorkspaces(bool value);
-
 // Sets/Gets the RootWindowController for |root_window|.
 ASH_EXPORT void SetRootWindowController(
     aura::RootWindow* root_window,
