@@ -78,6 +78,7 @@
     'variables': {
       'variables': {
         'proguard_preprocess%': 0,
+        'emma_never_instrument%': 0,
       },
       'conditions': [
         ['proguard_preprocess == 1', {
@@ -85,16 +86,15 @@
         }, {
           'javac_jar_path': '<(jar_path)'
         }],
+        ['chromium_code != 0 and emma_coverage != 0 and emma_never_instrument == 0', {
+          'emma_instrument': 1,
+        }, {
+          'emma_instrument': 0,
+        }],
       ],
     },
+    'emma_instrument': '<(emma_instrument)',
     'javac_jar_path': '<(javac_jar_path)',
-    'conditions': [
-      ['chromium_code != 0 and emma_coverage != 0', {
-        'emma_instrument': 1,
-      }, {
-        'emma_instrument': 0,
-      }],
-    ],
   },
   # This all_dependent_settings is used for java targets only. This will add the
   # jar path to the classpath of dependent java targets.

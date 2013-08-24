@@ -7,6 +7,7 @@
     # This library should build cleanly with the extra warnings turned on
     # for Chromium.
     'chromium_code': 1,
+    'emma_never_instrument': 1,
   },
   'targets': [
     # The C++ files generated from the cache invalidation protocol buffers.
