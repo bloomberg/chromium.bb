@@ -63,14 +63,7 @@ bool MessageCenterTrayBridge::ShowMessageCenter() {
   if (tray_controller_)
     return false;
 
-  // Post a task to open the window, because in
-  // MessageCenterTray::ShowMessageCenterBubble, the unread count gets set to
-  // 0 after it calls this delegate. In order show the window at the correct
-  // position after the unread count is updated, opening the window must be
-  // performed after the return of this method.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&MessageCenterTrayBridge::OpenTrayWindow,
-                 weak_ptr_factory_.GetWeakPtr()));
+  OpenTrayWindow();
   return true;
 }
 
