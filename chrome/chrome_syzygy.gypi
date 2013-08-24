@@ -58,7 +58,7 @@
             '<(dest_dir)/<(dll_name).dll.pdb',
             '<(dest_dir)/asan_rtl.dll',
             '<(dest_dir)/asan_rtl.dll.pdb',
-            '<(dest_dir)/win-syzyasan-filter.txt.json',
+            '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
           ],
           'action': [
             'python',
@@ -68,6 +68,8 @@
             '--input_symbol', '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
             '--filter',
             '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
+            '--output-filter-file',
+            '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
             '--destination_dir', '<(dest_dir)',
           ],
         },

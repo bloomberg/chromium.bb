@@ -42,12 +42,11 @@ def _Shell(*cmd, **kw):
   return stdout, stderr
 
 
-def _CompileFilter(syzygy_dir, executable, symbol, dst_dir, filter_file):
+def _CompileFilter(syzygy_dir, executable, symbol, filter_file,
+                   output_filter_file):
   """Compiles the provided filter writing the compiled filter file to
-  dst_dir. Returns the absolute path of the compiled filter.
+  output_filter_file.
   """
-  output_filter_file = os.path.abspath(os.path.join(
-      dst_dir, os.path.basename(filter_file) + '.json'))
   cmd = [os.path.abspath(os.path.join(syzygy_dir, _GENFILTER_EXE)),
          '--action=compile',
          '--input-image=%s' % executable,
@@ -59,7 +58,7 @@ def _CompileFilter(syzygy_dir, executable, symbol, dst_dir, filter_file):
   _Shell(*cmd)
   if not os.path.exists(output_filter_file):
     raise RuntimeError('Compiled filter file missing: %s' % output_filter_file)
-  return output_filter_file
+  return
 
 
 def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
@@ -114,13 +113,12 @@ def main(options):
     os.makedirs(options.destination_dir)
 
   # Compile the filter if one was provided.
-  filter_file = None
   if options.filter:
-    filter_file = _CompileFilter(options.syzygy_dir,
-                                 options.input_executable,
-                                 options.input_symbol,
-                                 options.destination_dir,
-                                 options.filter)
+    _CompileFilter(options.syzygy_dir,
+                   options.input_executable,
+                   options.input_symbol,
+                   options.filter,
+                   options.output_filter_file)
 
   # Instruments the binaries into the destination directory.
   _InstrumentBinary(options.syzygy_dir,
@@ -128,7 +126,7 @@ def main(options):
                     options.input_executable,
                     options.input_symbol,
                     options.destination_dir,
-                    filter_file)
+                    options.output_filter_file)
 
   # Copy the agent DLL and PDB to the destination directory.
   _CopyAgentDLL(options.agent_dll, options.destination_dir);
@@ -152,6 +150,9 @@ def _ParseOptions():
   option_parser.add_option('--filter',
       help='An optional filter. This will be compiled and passed to the '
            'instrumentation executable.')
+  option_parser.add_option('--output-filter-file',
+      help='The path where the compiled filter will be written. This is '
+           'required if --filter is specified.')
   options, args = option_parser.parse_args()
 
   if not options.mode:
@@ -162,6 +163,8 @@ def _ParseOptions():
     option_parser.error('You must provide an input symbol file.')
   if not options.destination_dir:
     option_parser.error('You must provide a destination directory.')
+  if options.filter and not options.output_filter_file:
+    option_parser.error('You must provide a filter output file.')
 
   if not options.agent_dll:
     if not options.mode in _DEFAULT_AGENT_DLLS:
