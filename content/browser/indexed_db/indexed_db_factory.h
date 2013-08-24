@@ -65,7 +65,7 @@ class CONTENT_EXPORT IndexedDBFactory
  private:
   typedef std::map<IndexedDBDatabase::Identifier,
                    scoped_refptr<IndexedDBDatabase> > IndexedDBDatabaseMap;
-  IndexedDBDatabaseMap database_backend_map_;
+  IndexedDBDatabaseMap database_map_;
 
   typedef std::map<std::string, base::WeakPtr<IndexedDBBackingStore> >
       IndexedDBBackingStoreMap;

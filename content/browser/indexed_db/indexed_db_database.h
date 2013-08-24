@@ -52,7 +52,7 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   static scoped_refptr<IndexedDBDatabase> Create(
       const string16& name,
-      IndexedDBBackingStore* database,
+      IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
       const Identifier& unique_identifier);
   scoped_refptr<IndexedDBBackingStore> BackingStore() const;
@@ -236,7 +236,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   friend class base::RefCounted<IndexedDBDatabase>;
 
   IndexedDBDatabase(const string16& name,
-                    IndexedDBBackingStore* database,
+                    IndexedDBBackingStore* backing_store,
                     IndexedDBFactory* factory,
                     const Identifier& unique_identifier);
   ~IndexedDBDatabase();

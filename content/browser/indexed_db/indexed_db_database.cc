@@ -116,14 +116,14 @@ class IndexedDBDatabase::PendingDeleteCall {
 
 scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
     const string16& name,
-    IndexedDBBackingStore* database,
+    IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
     const Identifier& unique_identifier) {
-  scoped_refptr<IndexedDBDatabase> backend =
-      new IndexedDBDatabase(name, database, factory, unique_identifier);
-  if (!backend->OpenInternal())
+  scoped_refptr<IndexedDBDatabase> database =
+      new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
+  if (!database->OpenInternal())
     return 0;
-  return backend;
+  return database;
 }
 
 namespace {

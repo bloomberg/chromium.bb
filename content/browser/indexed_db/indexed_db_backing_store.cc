@@ -348,11 +348,10 @@ WARN_UNUSED_RESULT static bool GetMaxObjectStoreId(
 
 class DefaultLevelDBFactory : public LevelDBFactory {
  public:
-  virtual leveldb::Status OpenLevelDB(
-      const base::FilePath& file_name,
-      const LevelDBComparator* comparator,
-      scoped_ptr<LevelDBDatabase>* db,
-      bool* is_disk_full) OVERRIDE {
+  virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
+                                      const LevelDBComparator* comparator,
+                                      scoped_ptr<LevelDBDatabase>* db,
+                                      bool* is_disk_full) OVERRIDE {
     return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
   }
   virtual bool DestroyLevelDB(const base::FilePath& file_name) OVERRIDE {
@@ -968,10 +967,10 @@ bool IndexedDBBackingStore::GetObjectStores(
 
     it->Next();
     if (!CheckObjectStoreAndMetaDataType(
-            it.get(),
-            stop_key,
-            object_store_id,
-            ObjectStoreMetaDataKey::AUTO_INCREMENT)) {
+             it.get(),
+             stop_key,
+             object_store_id,
+             ObjectStoreMetaDataKey::AUTO_INCREMENT)) {
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
@@ -993,20 +992,20 @@ bool IndexedDBBackingStore::GetObjectStores(
 
     it->Next();  // Last version.
     if (!CheckObjectStoreAndMetaDataType(
-            it.get(),
-            stop_key,
-            object_store_id,
-            ObjectStoreMetaDataKey::LAST_VERSION)) {
+             it.get(),
+             stop_key,
+             object_store_id,
+             ObjectStoreMetaDataKey::LAST_VERSION)) {
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
 
     it->Next();  // Maximum index id allocated.
     if (!CheckObjectStoreAndMetaDataType(
-            it.get(),
-            stop_key,
-            object_store_id,
-            ObjectStoreMetaDataKey::MAX_INDEX_ID)) {
+             it.get(),
+             stop_key,
+             object_store_id,
+             ObjectStoreMetaDataKey::MAX_INDEX_ID)) {
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
@@ -1542,7 +1541,7 @@ bool IndexedDBBackingStore::GetIndexes(
 
     it->Next();  // unique flag
     if (!CheckIndexAndMetaDataKey(
-            it.get(), stop_key, index_id, IndexMetaDataKey::UNIQUE)) {
+             it.get(), stop_key, index_id, IndexMetaDataKey::UNIQUE)) {
       INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
       break;
     }
@@ -1555,7 +1554,7 @@ bool IndexedDBBackingStore::GetIndexes(
 
     it->Next();  // key_path
     if (!CheckIndexAndMetaDataKey(
-            it.get(), stop_key, index_id, IndexMetaDataKey::KEY_PATH)) {
+             it.get(), stop_key, index_id, IndexMetaDataKey::KEY_PATH)) {
       INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
       break;
     }
@@ -1623,7 +1622,7 @@ bool IndexedDBBackingStore::CreateIndex(
   LevelDBTransaction* leveldb_transaction =
       IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
   if (!SetMaxIndexId(
-          leveldb_transaction, database_id, object_store_id, index_id))
+           leveldb_transaction, database_id, object_store_id, index_id))
     return false;
 
   const std::string name_key = IndexMetaDataKey::Encode(
@@ -2402,8 +2401,9 @@ bool ObjectStoreCursorOptions(
       cursor_options->high_open = true;  // Not included.
     } else {
       // We need a key that exists.
-      if (!FindGreatestKeyLessThanOrEqual(
-              transaction, cursor_options->high_key, &cursor_options->high_key))
+      if (!FindGreatestKeyLessThanOrEqual(transaction,
+                                          cursor_options->high_key,
+                                          &cursor_options->high_key))
         return false;
       cursor_options->high_open = false;
     }
@@ -2416,7 +2416,7 @@ bool ObjectStoreCursorOptions(
       // For reverse cursors, we need a key that exists.
       std::string found_high_key;
       if (!FindGreatestKeyLessThanOrEqual(
-              transaction, cursor_options->high_key, &found_high_key))
+               transaction, cursor_options->high_key, &found_high_key))
         return false;
 
       // If the target key should not be included, but we end up with a smaller
@@ -2472,8 +2472,9 @@ bool IndexCursorOptions(
     cursor_options->high_open = false;  // Included.
 
     if (!cursor_options->forward) {  // We need a key that exists.
-      if (!FindGreatestKeyLessThanOrEqual(
-              transaction, cursor_options->high_key, &cursor_options->high_key))
+      if (!FindGreatestKeyLessThanOrEqual(transaction,
+                                          cursor_options->high_key,
+                                          &cursor_options->high_key))
         return false;
       cursor_options->high_open = false;
     }
@@ -2485,7 +2486,7 @@ bool IndexCursorOptions(
     std::string found_high_key;
     // Seek to the *last* key in the set of non-unique keys
     if (!FindGreatestKeyLessThanOrEqual(
-            transaction, cursor_options->high_key, &found_high_key))
+             transaction, cursor_options->high_key, &found_high_key))
       return false;
 
     // If the target key should not be included, but we end up with a smaller

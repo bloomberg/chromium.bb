@@ -121,9 +121,9 @@ static int CheckFreeSpace(const char* const type,
         base::HistogramBase::kUmaTargetedHistogramFlag)->Add(1 /*sample*/);
     return -1;
   }
-  int clamped_disk_space_k_bytes =
-      free_disk_space_in_k_bytes > INT_MAX ? INT_MAX
-                                           : free_disk_space_in_k_bytes;
+  int clamped_disk_space_k_bytes = free_disk_space_in_k_bytes > INT_MAX
+                                       ? INT_MAX
+                                       : free_disk_space_in_k_bytes;
   const uint64 histogram_max = static_cast<uint64>(1e9);
   COMPILE_ASSERT(histogram_max <= INT_MAX, histogram_max_too_big);
   base::Histogram::FactoryGet(name,
@@ -268,11 +268,10 @@ static void HistogramLevelDBError(const std::string& histogram_name,
     ParseAndHistogramCorruptionDetails(histogram_name, s);
 }
 
-leveldb::Status LevelDBDatabase::Open(
-    const base::FilePath& file_name,
-    const LevelDBComparator* comparator,
-    scoped_ptr<LevelDBDatabase>* result,
-    bool* is_disk_full) {
+leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
+                                      const LevelDBComparator* comparator,
+                                      scoped_ptr<LevelDBDatabase>* result,
+                                      bool* is_disk_full) {
   scoped_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
 
