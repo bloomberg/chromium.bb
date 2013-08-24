@@ -218,8 +218,6 @@ bool MessageCenterNotificationManager::UpdateNotification(
       // Now pass a copy to message center.
       scoped_ptr<message_center::Notification> message_center_notification(
           make_scoped_ptr(new message_center::Notification(notification)));
-      message_center_notification->set_extension_id(
-          new_notification->GetExtensionId());
       message_center_->UpdateNotification(old_id,
                                           message_center_notification.Pass());
 
@@ -232,47 +230,6 @@ bool MessageCenterNotificationManager::UpdateNotification(
 
 ////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Delegate
-
-void MessageCenterNotificationManager::DisableExtension(
-    const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  if (!profile_notification)
-    return;
-
-  std::string extension_id = profile_notification->GetExtensionId();
-  DCHECK(!extension_id.empty());  // or UI should not have enabled the command.
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(
-          profile_notification->profile());
-  message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, extension_id);
-  service->SetNotifierEnabled(notifier_id, false);
-}
-
-void MessageCenterNotificationManager::DisableNotificationsFromSource(
-    const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  if (!profile_notification)
-    return;
-
-  // UI should not have enabled the command if there is no valid source.
-  DCHECK(profile_notification->notification().origin_url().is_valid());
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(
-          profile_notification->profile());
-  if (profile_notification->notification().origin_url().scheme() ==
-      chrome::kChromeUIScheme) {
-    const std::string name =
-        profile_notification->notification().origin_url().host();
-    message_center::NotifierId notifier_id(
-        message_center::ParseSystemComponentName(name));
-    service->SetNotifierEnabled(notifier_id, false);
-  } else {
-    service->DenyPermission(profile_notification->notification().origin_url());
-  }
-}
 
 void MessageCenterNotificationManager::ShowSettings(
     const std::string& notification_id) {
@@ -541,8 +498,6 @@ void MessageCenterNotificationManager::AddProfileNotification(
   // Create the copy for message center, and ensure the extension ID is correct.
   scoped_ptr<message_center::Notification> message_center_notification(
       new message_center::Notification(notification));
-  message_center_notification->set_extension_id(
-      profile_notification->GetExtensionId());
   message_center_->AddNotification(message_center_notification.Pass());
 
   profile_notification->StartDownloads();

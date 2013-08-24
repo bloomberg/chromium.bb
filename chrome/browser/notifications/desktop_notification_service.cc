@@ -48,6 +48,10 @@
 #include "ui/message_center/notifier_settings.h"
 #include "ui/webui/web_ui_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/system_notifier.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -566,9 +570,15 @@ bool DesktopNotificationService::IsNotifierEnabled(
     case NotifierId::WEB_PAGE:
       return GetContentSetting(notifier_id.url) == CONTENT_SETTING_ALLOW;
     case NotifierId::SYSTEM_COMPONENT:
+#if defined(OS_CHROMEOS)
       return disabled_system_component_ids_.find(
-          message_center::ToString(notifier_id.system_component_type)) ==
-          disabled_system_component_ids_.end();
+          ash::SystemComponentTypeToString(
+              static_cast<ash::AshSystemComponentNotifierType>(
+                  notifier_id.system_component_type)))
+          == disabled_system_component_ids_.end();
+#else
+      return false;
+#endif
     case NotifierId::SYNCED_NOTIFICATION_SERVICE:
       return enabled_sync_notifier_ids_.find(notifier_id.id) !=
           enabled_sync_notifier_ids_.end();
@@ -593,10 +603,15 @@ void DesktopNotificationService::SetNotifierEnabled(
       id.reset(new base::StringValue(notifier_id.id));
       break;
     case NotifierId::SYSTEM_COMPONENT:
+#if defined(OS_CHROMEOS)
       pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
       add_new_item = !enabled;
-      id.reset(new base::StringValue(
-          message_center::ToString(notifier_id.system_component_type)));
+      id.reset(new base::StringValue(ash::SystemComponentTypeToString(
+          static_cast<ash::AshSystemComponentNotifierType>(
+              notifier_id.system_component_type))));
+#else
+      return;
+#endif
       break;
     case NotifierId::SYNCED_NOTIFICATION_SERVICE:
       pref_name = prefs::kMessageCenterEnabledSyncNotifierIds;

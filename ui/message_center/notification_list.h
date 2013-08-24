@@ -67,8 +67,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void RemoveAllNotifications();
 
-  Notifications GetNotificationsBySource(const std::string& id);
-  Notifications GetNotificationsByExtension(const std::string& id);
+  Notifications GetNotificationsByNotifierId(const NotifierId& notifier_id);
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationIcon(const std::string& notification_id,

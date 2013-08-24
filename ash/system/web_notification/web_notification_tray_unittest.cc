@@ -112,7 +112,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         ASCIIToUTF16("Notification message body."),
         gfx::Image(),
         ASCIIToUTF16("www.test.org"),
-        "" /* extension id */,
+        message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->AddNotification(notification.Pass());
@@ -128,7 +128,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         ASCIIToUTF16("Updated message body."),
         gfx::Image(),
         ASCIIToUTF16("www.test.org"),
-        "" /* extension id */,
+        message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->UpdateNotification(old_id, notification.Pass());

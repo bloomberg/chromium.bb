@@ -60,6 +60,7 @@ class Notification : public message_center::Notification {
       const string16& body,
       const gfx::Image& icon,
       WebKit::WebTextDirection dir,
+      const message_center::NotifierId& notifier_id,
       const string16& display_source,
       const string16& replace_id,
       const message_center::RichNotificationData& rich_notification_data,

@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/managed/tray_locally_managed_user.h"
 
 #include "ash/system/chromeos/label_tray_view.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/user/login_status.h"
@@ -82,7 +83,7 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
       base::string16() /* body is empty */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
       base::string16() /* display_source */,
-      std::string() /* extension_id */,
+      message_center::NotifierId(NOTIFIER_LOCALLY_MANAGED_USER),
       message_center::RichNotificationData(),
       NULL /* no delegate */));
   notification->SetSystemPriority();

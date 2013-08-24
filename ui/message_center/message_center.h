@@ -49,13 +49,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
    public:
     virtual ~Delegate();
 
-    // Request to disable the extension associated with |notification_id|.
-    virtual void DisableExtension(const std::string& notification_id) = 0;
-
-    // Request to disable notifications from the source of |notification_id|.
-    virtual void DisableNotificationsFromSource(
-        const std::string& notification_id) = 0;
-
     // Request to show the notification settings (|notification_id| is used
     // to identify the requesting browser context).
     virtual void ShowSettings(const std::string& notification_id) = 0;
@@ -115,12 +108,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // and settings.
   // Searches through the notifications and disables any that match the
   // extension id given.
-  virtual void DisableNotificationsByExtension(const std::string& id) = 0;
-
-  // Disables all notifications that match the given url by querying the
-  // delegate and also by matching display_source.
-  // TODO(dewittj): Is display_source matching necessary?
-  virtual void DisableNotificationsByUrl(const std::string& url) = 0;
+  virtual void DisableNotificationsByNotifier(
+      const NotifierId& notifier_id) = 0;
 
   // TODO(mukai): settings can be in another class?
   // Shows the settings for a web notification (profile is identified by the

@@ -71,7 +71,7 @@ class MessageCenterTrayTest : public testing::Test {
                          ASCIIToUTF16("Notification message body."),
                          gfx::Image(),
                          ASCIIToUTF16("www.test.org"),
-                         "" /* extension id */,
+                         NotifierId(),
                          message_center::RichNotificationData(),
                          NULL /* delegate */));
     message_center_->AddNotification(notification.Pass());
@@ -171,7 +171,7 @@ TEST_F(MessageCenterTrayTest, MessageCenterReopenPopupsForSystemPriority) {
                        ASCIIToUTF16("Notification message body."),
                        gfx::Image(),
                        ASCIIToUTF16("www.test.org"),
-                       "" /* extension id */,
+                       NotifierId(),
                        message_center::RichNotificationData(),
                        NULL /* delegate */));
   notification->SetSystemPriority();

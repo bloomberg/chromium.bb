@@ -4,6 +4,7 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
+#include "ash/system/system_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,7 +68,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       base::string16(),  // message
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16(),  // display_source
-      std::string(),  // extension_id
+      message_center::NotifierId(NOTIFIER_DISPLAY_ERROR),
       message_center::RichNotificationData(),
       new DisplayErrorNotificationDelegate()));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());

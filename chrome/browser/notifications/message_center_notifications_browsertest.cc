@@ -140,6 +140,9 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                         ASCIIToUTF16("message"),
                         gfx::Image(),
                         WebKit::WebTextDirectionDefault,
+                        message_center::NotifierId(
+                            message_center::NotifierId::APPLICATION,
+                            "extension_id"),
                         UTF8ToUTF16("chrome-test://testing/"),
                         UTF8ToUTF16("REPLACE-ME"),
                         data,

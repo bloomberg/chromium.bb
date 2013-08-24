@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -224,7 +225,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification() {
       timeout_message,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
-      std::string() /* extension_id */,
+      message_center::NotifierId(NOTIFIER_DISPLAY_RESOLUTION_CHANGE),
       data,
       new ResolutionChangeNotificationDelegate(
           this, change_info_->timeout_count > 0)));

@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,7 +63,7 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
       base::string16() /* body is blank */,
       resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
-      std::string() /* extension_id */,
+      message_center::NotifierId(NOTIFIER_SCREEN_CAPTURE),
       data,
       new tray::ScreenNotificationDelegate(this)));
   notification->SetSystemPriority();

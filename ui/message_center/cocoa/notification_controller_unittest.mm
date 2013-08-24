@@ -105,7 +105,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           ASCIIToUTF16("Jonathan and 5 others"),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
   notification->set_icon(gfx::Image([TestIcon() retain]));
@@ -135,7 +135,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
                        "entire thing?"),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
   base::scoped_nsobject<MCNotificationController> controller(
@@ -156,7 +156,7 @@ TEST_F(NotificationControllerTest, Close) {
           string16(),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
   MockMessageCenter message_center;
@@ -183,7 +183,7 @@ TEST_F(NotificationControllerTest, Update) {
                        "default bounds."),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
   base::scoped_nsobject<MCNotificationController> controller(
@@ -219,7 +219,7 @@ TEST_F(NotificationControllerTest, Buttons) {
           string16(),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           optional,
           NULL));
   MockMessageCenter message_center;
@@ -244,7 +244,7 @@ TEST_F(NotificationControllerTest, Image) {
           string16(),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
   NSImage* image = [NSImage imageNamed:NSImageNameFolder];
@@ -281,7 +281,7 @@ TEST_F(NotificationControllerTest, List) {
           UTF8ToUTF16("Notification Message - should be hidden"),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           optional,
           NULL));
 

@@ -51,7 +51,7 @@ TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
           ASCIIToUTF16("This is a simple test."),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           data,
           NULL));
   center_->AddNotification(notification.Pass());

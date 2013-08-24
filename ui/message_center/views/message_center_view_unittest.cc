@@ -133,7 +133,7 @@ void MessageCenterViewTest::SetUp() {
                             UTF8ToUTF16("message"),
                             gfx::Image(),
                             UTF8ToUTF16("display source"),
-                            std::string("extension id"),
+                            NotifierId(NotifierId::APPLICATION, "extension_id"),
                             message_center::RichNotificationData(),
                             NULL);
 

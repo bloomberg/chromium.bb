@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -226,6 +227,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
           base::string16() /* title */,
           message,
           icon,
+          ash::NOTIFIER_NETWORK,
           base::Bind(&NotificationClicked,
                      default_network->path(), info_url)));
 

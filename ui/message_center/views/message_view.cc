@@ -35,8 +35,7 @@ const int kShadowBlur = 4;
 
 // Menu constants
 const int kTogglePermissionCommand = 0;
-const int kToggleExtensionCommand = 1;
-const int kShowSettingsCommand = 2;
+const int kShowSettingsCommand = 1;
 
 // ControlButtons are ImageButtons whose image can be padded within the button.
 // This allows the creation of buttons like the notification close and expand
@@ -170,7 +169,7 @@ class MenuModel : public ui::SimpleMenuModel,
             message_center::MessageCenterTray* tray,
             const std::string& notification_id,
             const string16& display_source,
-            const std::string& extension_id);
+            const message_center::NotifierId& notifier_id);
   virtual ~MenuModel();
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -186,6 +185,7 @@ class MenuModel : public ui::SimpleMenuModel,
   message_center::MessageCenter* message_center_;  // Weak reference.
   message_center::MessageCenterTray* tray_;  // Weak reference.
   std::string notification_id_;
+  message_center::NotifierId notifier_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuModel);
 };
@@ -194,19 +194,16 @@ MenuModel::MenuModel(message_center::MessageCenter* message_center,
                      message_center::MessageCenterTray* tray,
                      const std::string& notification_id,
                      const string16& display_source,
-                     const std::string& extension_id)
+                     const message_center::NotifierId& notifier_id)
     : ui::SimpleMenuModel(this),
       message_center_(message_center),
       tray_(tray),
-      notification_id_(notification_id) {
+      notification_id_(notification_id),
+      notifier_id_(notifier_id) {
   // Add 'disable notifications' menu item.
-  if (!extension_id.empty() && !display_source.empty()) {
-    AddItem(kToggleExtensionCommand,
-            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE,
-                                       display_source));
-  } else if (!display_source.empty()) {
+  if (!display_source.empty()) {
     AddItem(kTogglePermissionCommand,
-            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,
+            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
                                        display_source));
   }
   // Add settings menu item.
@@ -236,11 +233,8 @@ bool MenuModel::GetAcceleratorForCommandId(int command_id,
 
 void MenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case kToggleExtensionCommand:
-      message_center_->DisableNotificationsByExtension(notification_id_);
-      break;
     case kTogglePermissionCommand:
-      message_center_->DisableNotificationsByUrl(notification_id_);
+      message_center_->DisableNotificationsByNotifier(notifier_id_);
       break;
     case kShowSettingsCommand:
       // |tray_| may be NULL in tests.
@@ -276,7 +270,7 @@ class MessageViewContextMenuController : public views::ContextMenuController {
   MessageCenterTray* tray_;  // Weak reference.
   std::string notification_id_;
   string16 display_source_;
-  std::string extension_id_;
+  NotifierId notifier_id_;
 };
 
 MessageViewContextMenuController::MessageViewContextMenuController(
@@ -287,7 +281,7 @@ MessageViewContextMenuController::MessageViewContextMenuController(
       tray_(tray),
       notification_id_(notification.id()),
       display_source_(notification.display_source()),
-      extension_id_(notification.extension_id()) {
+      notifier_id_(notification.notifier_id()) {
 }
 
 MessageViewContextMenuController::~MessageViewContextMenuController() {
@@ -298,7 +292,7 @@ void MessageViewContextMenuController::ShowContextMenuForView(
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
   MenuModel menu_model(message_center_, tray_, notification_id_,
-                       display_source_, extension_id_);
+                       display_source_, notifier_id_);
   if (menu_model.GetItemCount() == 0)
     return;
 

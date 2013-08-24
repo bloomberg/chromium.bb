@@ -23,7 +23,7 @@ TEST_F(PopupControllerTest, Creation) {
           ASCIIToUTF16("Jonathan and 5 others"),
           gfx::Image(),
           string16(),
-          std::string(),
+          message_center::NotifierId(),
           message_center::RichNotificationData(),
           NULL));
 

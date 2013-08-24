@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
@@ -382,6 +383,7 @@ void ShowMobileSetup(const std::string& service_path) {
                                        UTF8ToUTF16(cellular->name())),
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
+            ash::NOTIFIER_NETWORK,
             base::Bind(&ash::network_connect::ShowNetworkSettings,
                        service_path)));
     return;

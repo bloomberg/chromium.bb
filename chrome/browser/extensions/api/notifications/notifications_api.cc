@@ -331,6 +331,9 @@ bool NotificationsApiFunction::CreateNotification(
                             message,
                             icon,
                             WebKit::WebTextDirectionDefault,
+                            message_center::NotifierId(
+                                message_center::NotifierId::APPLICATION,
+                                extension_->id()),
                             UTF8ToUTF16(extension_->name()),
                             UTF8ToUTF16(api_delegate->id()),
                             optional_fields,

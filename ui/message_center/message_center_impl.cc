@@ -374,27 +374,16 @@ void MessageCenterImpl::SetNotificationButtonIcon(
   }
 }
 
-void MessageCenterImpl::DisableNotificationsByExtension(
-    const std::string& id) {
-  if (delegate_)
-    delegate_->DisableExtension(id);
-
-  NotificationList::Notifications notifications =
-      notification_list_->GetNotificationsByExtension(id);
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end();) {
-    std::string id = (*iter)->id();
-    iter++;
-    RemoveNotification(id, false);
+void MessageCenterImpl::DisableNotificationsByNotifier(
+    const NotifierId& notifier_id) {
+  if (settings_provider_) {
+    // TODO(mukai): SetNotifierEnabled can just accept notifier_id?
+    Notifier notifier(notifier_id, base::string16(), true);
+    settings_provider_->SetNotifierEnabled(notifier, false);
   }
-}
-
-void MessageCenterImpl::DisableNotificationsByUrl(const std::string& id) {
-  if (delegate_)
-    delegate_->DisableNotificationsFromSource(id);
 
   NotificationList::Notifications notifications =
-      notification_list_->GetNotificationsBySource(id);
+      notification_list_->GetNotificationsByNotifierId(notifier_id);
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end();) {
     std::string id = (*iter)->id();

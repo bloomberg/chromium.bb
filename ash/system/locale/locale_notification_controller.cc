@@ -5,6 +5,7 @@
 #include "ash/system/locale/locale_notification_controller.h"
 
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "grit/ash_resources.h"
@@ -116,7 +117,7 @@ void LocaleNotificationController::OnLocaleChanged(
       base::string16()  /* message */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
       base::string16()  /* display_source */,
-      std::string()  /* extension_id */,
+      message_center::NotifierId(NOTIFIER_LOCALE),
       optional,
       new LocaleNotificationDelegate(delegate)));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());

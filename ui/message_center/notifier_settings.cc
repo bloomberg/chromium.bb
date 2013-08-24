@@ -11,15 +11,26 @@ NotifierId::NotifierId(NotifierType type,
                        const std::string& id)
     : type(type),
       id(id),
-      system_component_type(NONE) {
+      system_component_type(-1) {
   DCHECK(type == APPLICATION || type == SYNCED_NOTIFICATION_SERVICE);
+  DCHECK(!id.empty());
 }
 
 NotifierId::NotifierId(const GURL& url)
-    : type(WEB_PAGE), url(url), system_component_type(NONE) {}
+    : type(WEB_PAGE),
+      url(url),
+      system_component_type(-1) {}
 
-NotifierId::NotifierId(SystemComponentNotifierType system_component_type)
-    : type(SYSTEM_COMPONENT), system_component_type(system_component_type) {}
+NotifierId::NotifierId(int type)
+    : type(SYSTEM_COMPONENT),
+      system_component_type(type) {
+  DCHECK_LE(0, system_component_type);
+}
+
+NotifierId::NotifierId()
+    : type(SYSTEM_COMPONENT),
+      system_component_type(-1) {
+}
 
 bool NotifierId::operator==(const NotifierId& other) const {
   if (type != other.type)
@@ -58,23 +69,4 @@ NotifierGroup::NotifierGroup(const gfx::Image& icon,
 
 NotifierGroup::~NotifierGroup() {}
 
-std::string ToString(NotifierId::SystemComponentNotifierType type) {
-  switch (type) {
-    case NotifierId::SCREENSHOT:
-      return "screenshot";
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
-NotifierId::SystemComponentNotifierType
-ParseSystemComponentName(const std::string& name) {
-  if (name == "screenshot") {
-    return NotifierId::SCREENSHOT;
-  } else {
-    NOTREACHED();
-    return NotifierId::NONE;
-  }
-}
 }  // namespace message_center

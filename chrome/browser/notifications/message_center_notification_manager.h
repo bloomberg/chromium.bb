@@ -58,9 +58,6 @@ class MessageCenterNotificationManager
                                   Profile* profile) OVERRIDE;
 
   // MessageCenter::Delegate
-  virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
-  virtual void DisableNotificationsFromSource(
-      const std::string& notification_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
 
   // MessageCenterObserver

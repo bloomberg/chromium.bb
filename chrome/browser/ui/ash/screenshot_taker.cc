@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/i18n/time_formatting.h"
@@ -398,9 +399,8 @@ Notification* ScreenshotTaker::CreateNotification(
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);
   return new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(kNotificationOriginUrl),
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_SCREENSHOT_NOTIFICATION_ICON),
       l10n_util::GetStringUTF16(
           success ?
           IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS :
@@ -409,9 +409,13 @@ Notification* ScreenshotTaker::CreateNotification(
           success ?
           IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS :
           IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL),
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_SCREENSHOT_NOTIFICATION_ICON),
       WebKit::WebTextDirectionDefault,
+      message_center::NotifierId(ash::NOTIFIER_SCREENSHOT),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,
+      message_center::RichNotificationData(),
       new ScreenshotTakerNotificationDelegate(success, screenshot_path));
 }
 
@@ -430,7 +434,7 @@ void ScreenshotTaker::ShowNotification(
   DesktopNotificationService* const service =
       DesktopNotificationServiceFactory::GetForProfile(GetProfile());
   if (service->IsNotifierEnabled(
-          message_center::NotifierId(message_center::NotifierId::SCREENSHOT))) {
+          message_center::NotifierId(ash::NOTIFIER_SCREENSHOT))) {
     scoped_ptr<Notification> notification(
         CreateNotification(screenshot_result, screenshot_path));
     g_browser_process->notification_ui_manager()->Add(*notification,

@@ -51,7 +51,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      " be displayed"),
         gfx::Image(),
         string16(),
-        std::string(),
+        message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -63,7 +63,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         ASCIIToUTF16("This is the second notification."),
         gfx::Image(),
         string16(),
-        std::string(),
+        message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -79,7 +79,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      "set the screen size too small."),
         gfx::Image(),
         string16(),
-        std::string(),
+        message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -134,7 +134,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -183,7 +183,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       optional,
       NULL));
   center_->AddNotification(notification.Pass());
@@ -221,7 +221,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
               " be displayed"),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -243,7 +243,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
               "long notification."),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());
@@ -287,7 +287,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
               "longer body"),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -316,7 +316,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
                    " be displayed"),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -349,7 +349,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
       ASCIIToUTF16("New message."),
       gfx::Image(),
       string16(),
-      std::string(),
+      message_center::NotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());

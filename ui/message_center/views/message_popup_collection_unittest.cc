@@ -83,7 +83,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
                          UTF8ToUTF16("test message"),
                          gfx::Image(),
                          string16() /* display_source */,
-                         "" /* extension_id */,
+                         NotifierId(),
                          message_center::RichNotificationData(),
                          NULL /* delegate */));
     MessageCenter::Get()->AddNotification(notification.Pass());

@@ -286,6 +286,8 @@
         'system/status_area_widget.h',
         'system/status_area_widget_delegate.cc',
         'system/status_area_widget_delegate.h',
+        'system/system_notifier.cc',
+        'system/system_notifier.h',
         'system/tray/actionable_view.cc',
         'system/tray/actionable_view.h',
         'system/tray/fixed_sized_image_view.cc',

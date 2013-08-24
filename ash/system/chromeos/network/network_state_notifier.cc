@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -60,7 +61,12 @@ void ShowErrorNotification(const std::string& notification_id,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
-          notification_id, title, message, icon, callback));
+          notification_id,
+          title,
+          message,
+          icon,
+          ash::NOTIFIER_NETWORK_ERROR,
+          callback));
 }
 
 void ConfigureNetwork(const std::string& service_path) {
@@ -182,6 +188,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      UTF8ToUTF16((cellular->name()))),
           icon,
+          NOTIFIER_NETWORK,
           base::Bind(&ash::network_connect::ShowNetworkSettings,
                      cellular->path())));
 }

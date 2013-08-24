@@ -114,33 +114,12 @@ void NotificationList::RemoveAllNotifications() {
   unread_count_ = 0;
 }
 
-NotificationList::Notifications NotificationList::GetNotificationsBySource(
-    const std::string& id) {
+NotificationList::Notifications NotificationList::GetNotificationsByNotifierId(
+        const NotifierId& notifier_id) {
   Notifications notifications;
-  Notifications::iterator source_iter = GetNotification(id);
-  if (source_iter == notifications_.end())
-    return notifications;
-
-  string16 display_source = (*source_iter)->display_source();
   for (Notifications::iterator iter = notifications_.begin();
        iter != notifications_.end(); ++iter) {
-    if ((*iter)->display_source() == display_source)
-      notifications.insert(*iter);
-  }
-  return notifications;
-}
-
-NotificationList::Notifications NotificationList::GetNotificationsByExtension(
-        const std::string& id) {
-  Notifications notifications;
-  Notifications::iterator source_iter = GetNotification(id);
-  if (source_iter == notifications_.end())
-    return notifications;
-
-  std::string extension_id = (*source_iter)->extension_id();
-  for (Notifications::iterator iter = notifications_.begin();
-       iter != notifications_.end(); ++iter) {
-    if ((*iter)->extension_id() == extension_id)
+    if ((*iter)->notifier_id() == notifier_id)
       notifications.insert(*iter);
   }
   return notifications;

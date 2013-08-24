@@ -48,7 +48,7 @@ Notification::Notification(NotificationType type,
                            const string16& message,
                            const gfx::Image& icon,
                            const string16& display_source,
-                           const std::string& extension_id,
+                           const NotifierId& notifier_id,
                            const RichNotificationData& optional_fields,
                            NotificationDelegate* delegate)
     : type_(type),
@@ -57,7 +57,7 @@ Notification::Notification(NotificationType type,
       message_(message),
       icon_(icon),
       display_source_(display_source),
-      extension_id_(extension_id),
+      notifier_id_(notifier_id),
       serial_number_(g_next_serial_number_++),
       optional_fields_(optional_fields),
       shown_as_popup_(false),
@@ -72,7 +72,7 @@ Notification::Notification(const Notification& other)
       message_(other.message_),
       icon_(other.icon_),
       display_source_(other.display_source_),
-      extension_id_(other.extension_id_),
+      notifier_id_(other.notifier_id_),
       serial_number_(other.serial_number_),
       optional_fields_(other.optional_fields_),
       shown_as_popup_(other.shown_as_popup_),
@@ -87,7 +87,7 @@ Notification& Notification::operator=(const Notification& other) {
   message_ = other.message_;
   icon_ = other.icon_;
   display_source_ = other.display_source_;
-  extension_id_ = other.extension_id_;
+  notifier_id_ = other.notifier_id_;
   serial_number_ = other.serial_number_;
   optional_fields_ = other.optional_fields_;
   shown_as_popup_ = other.shown_as_popup_;
@@ -126,6 +126,7 @@ scoped_ptr<Notification> Notification::CreateSystemNotification(
     const base::string16& title,
     const base::string16& message,
     const gfx::Image& icon,
+    int system_component_id,
     const base::Closure& click_callback) {
   scoped_ptr<Notification> notification(
       new Notification(
@@ -135,7 +136,7 @@ scoped_ptr<Notification> Notification::CreateSystemNotification(
           message,
           icon,
           base::string16()  /* display_source */,
-          std::string()  /* extension_id */,
+          NotifierId(system_component_id),
           RichNotificationData(),
           new HandleNotificationClickedDelegate(click_callback)));
   notification->SetSystemPriority();

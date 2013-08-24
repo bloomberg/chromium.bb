@@ -33,19 +33,17 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
     SYNCED_NOTIFICATION_SERVICE,
   };
 
-  enum SystemComponentNotifierType {
-    NONE,
-    SCREENSHOT,
-  };
-
   // Constructor for APPLICATION and SYNCED_NOTIFICATION_SERVICE type.
   NotifierId(NotifierType type, const std::string& id);
 
   // Constructor for WEB_PAGE type.
   explicit NotifierId(const GURL& url);
 
-  // Constructor for SYSTEM_COMPONENT type.
-  explicit NotifierId(SystemComponentNotifierType type);
+  // Constructor for system component types. The type should be positive.
+  explicit NotifierId(int type);
+
+  // The default constructor which doesn't specify the notifier. Used for tests.
+  NotifierId();
 
   bool operator==(const NotifierId& other) const;
 
@@ -58,8 +56,9 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
   // The URL pattern of the notifer.
   GURL url;
 
-  // The type of system component notifier.
-  SystemComponentNotifierType system_component_type;
+  // The type of system component notifier, usually used in ash. -1 if it's not
+  // the system component. See also: ash/system/system_notifier.h
+  int system_component_type;
 };
 
 // The struct to hold the information of notifiers. The information will be
@@ -107,11 +106,6 @@ struct MESSAGE_CENTER_EXPORT NotifierGroup {
  private:
   DISALLOW_COPY_AND_ASSIGN(NotifierGroup);
 };
-
-MESSAGE_CENTER_EXPORT std::string ToString(
-    NotifierId::SystemComponentNotifierType type);
-MESSAGE_CENTER_EXPORT NotifierId::SystemComponentNotifierType
-    ParseSystemComponentName(const std::string& name);
 
 // An observer class implemented by the view of the NotifierSettings to get
 // notified when the controller has changed data.

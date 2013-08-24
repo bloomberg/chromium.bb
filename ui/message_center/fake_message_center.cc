@@ -83,10 +83,8 @@ void FakeMessageCenter::SetNotificationButtonIcon(
     const gfx::Image& image) {
 }
 
-void FakeMessageCenter::DisableNotificationsByExtension(const std::string& id) {
-}
-
-void FakeMessageCenter::DisableNotificationsByUrl(const std::string& id) {
+void FakeMessageCenter::DisableNotificationsByNotifier(
+    const NotifierId& notifier_id) {
 }
 
 void FakeMessageCenter::ShowNotificationSettings(const std::string& id) {

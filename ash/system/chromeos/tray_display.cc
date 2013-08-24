@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -398,7 +399,7 @@ void TrayDisplay::CreateOrUpdateNotification(
       additional_message,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16(),  // display_source
-      "",  // extension_id
+      message_center::NotifierId(NOTIFIER_DISPLAY),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettings,

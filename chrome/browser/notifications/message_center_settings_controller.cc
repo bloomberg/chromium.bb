@@ -35,6 +35,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_style.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/system_notifier.h"
+#endif
+
 using message_center::Notifier;
 using message_center::NotifierId;
 
@@ -258,7 +262,7 @@ void MessageCenterSettingsController::GetNotifierList(
 #if defined(OS_CHROMEOS)
   const string16 screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
-  NotifierId screenshot_notifier_id(NotifierId::SCREENSHOT);
+  NotifierId screenshot_notifier_id(ash::NOTIFIER_SCREENSHOT);
   Notifier* const screenshot_notifier = new Notifier(
       screenshot_notifier_id,
       screenshot_name,

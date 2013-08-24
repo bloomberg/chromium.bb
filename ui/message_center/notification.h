@@ -15,6 +15,7 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
 
@@ -56,7 +57,7 @@ class MESSAGE_CENTER_EXPORT Notification {
                const string16& message,
                const gfx::Image& icon,
                const string16& display_source,
-               const std::string& extension_id,
+               const NotifierId& notifier_id,
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
 
@@ -81,10 +82,8 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   // A display string for the source of the notification.
   const string16& display_source() const { return display_source_; }
-  const std::string& extension_id() const { return extension_id_; }
-  void set_extension_id(const std::string& extension_id) {
-    extension_id_ = extension_id;
-  }
+
+  const NotifierId& notifier_id() const { return notifier_id_; }
 
   // Begin unpacked values from optional_fields.
   int priority() const { return optional_fields_.priority; }
@@ -174,6 +173,7 @@ class MESSAGE_CENTER_EXPORT Notification {
       const base::string16& title,
       const base::string16& message,
       const gfx::Image& icon,
+      int system_component_id,
       const base::Closure& click_callback);
 
  protected:
@@ -192,7 +192,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   string16 display_source_;
 
  private:
-  std::string extension_id_;
+  NotifierId notifier_id_;
   unsigned serial_number_;
   RichNotificationData optional_fields_;
   bool shown_as_popup_;  // True if this has been shown as a popup.
