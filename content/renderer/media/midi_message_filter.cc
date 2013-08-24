@@ -137,10 +137,7 @@ void MIDIMessageFilter::HandleSessionStarted(
           UTF8ToUTF16(outputs[i].version));
     }
   }
-  // TODO(toyoshim): Reports device initialization failure to JavaScript as
-  // "NotSupportedError" or something when |success| is false.
-  // http://crbug.com/260315
-  client->didStartSession();
+  client->didStartSession(success);
 }
 
 WebKit::WebMIDIAccessorClient*
