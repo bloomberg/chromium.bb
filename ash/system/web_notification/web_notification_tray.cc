@@ -420,37 +420,6 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
         status_area_widget()->system_tray()->HasNotificationBubble());
 }
 
-void WebNotificationTray::ShowQuietModeMenu(const ui::Event& event) {
-  base::AutoReset<bool> reset(&should_block_shelf_auto_hide_, true);
-  scoped_ptr<ui::MenuModel> menu_model(
-      message_center_tray_->CreateQuietModeMenu());
-  quiet_mode_menu_runner_.reset(new views::MenuRunner(menu_model.get()));
-  gfx::Point point;
-  views::View::ConvertPointToScreen(this, &point);
-  if (quiet_mode_menu_runner_->RunMenuAt(
-      GetWidget(),
-      NULL,
-      gfx::Rect(point, bounds().size()),
-      views::MenuItemView::BUBBLE_ABOVE,
-      ui::GetMenuSourceTypeForEvent(event),
-      views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
-    return;
-
-  quiet_mode_menu_runner_.reset();
-  GetShelfLayoutManager()->UpdateAutoHideState();
-}
-
-bool WebNotificationTray::ShouldShowQuietModeMenu(const ui::Event& event) {
-  // TODO(mukai): Add keyboard event handler.
-  if (!event.IsMouseEvent())
-    return false;
-
-  const ui::MouseEvent* mouse_event =
-      static_cast<const ui::MouseEvent*>(&event);
-
-  return mouse_event->IsRightMouseButton();
-}
-
 void WebNotificationTray::UpdateAfterLoginStatusChange(
     user::LoginStatus login_status) {
   if (login_status == user::LOGGED_IN_LOCKED) {
@@ -518,11 +487,6 @@ void WebNotificationTray::HideBubbleWithView(
 }
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
-  if (ShouldShowQuietModeMenu(event)) {
-    ShowQuietModeMenu(event);
-    return true;
-  }
-
   if (message_center_bubble())
     message_center_tray_->HideMessageCenterBubble();
   else

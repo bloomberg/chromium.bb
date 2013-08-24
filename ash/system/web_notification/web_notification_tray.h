@@ -154,7 +154,6 @@ class ASH_EXPORT WebNotificationTray
   scoped_ptr<message_center::MessageCenterTray> message_center_tray_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
-  scoped_ptr<views::MenuRunner> quiet_mode_menu_runner_;
   internal::WebNotificationButton* button_;
 
   bool show_message_center_on_unlock_;
