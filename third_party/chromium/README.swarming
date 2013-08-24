@@ -1,0 +1,10 @@
+Name: python26_polyfill.py
+URL: src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/common/python26_polyfill.py
+Revision: 208578
+License: BSD
+
+Description:
+Adds OrderedDict class to collections module on Python 2.6
+
+Local Modifications:
+None.
