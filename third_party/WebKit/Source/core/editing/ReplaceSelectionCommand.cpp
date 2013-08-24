@@ -229,7 +229,7 @@ void ReplacementFragment::removeNode(PassRefPtr<Node> node)
     if (!parent)
         return;
 
-    parent->removeChild(node.get(), ASSERT_NO_EXCEPTION);
+    parent->removeChild(node.get());
 }
 
 void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
@@ -241,15 +241,15 @@ void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
     if (!parent)
         return;
 
-    parent->insertBefore(node, refNode, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    parent->insertBefore(node, refNode);
 }
 
 PassRefPtr<Element> ReplacementFragment::insertFragmentForTestRendering(Node* rootEditableElement)
 {
     RefPtr<Element> holder = createDefaultParagraphElement(m_document.get());
 
-    holder->appendChild(m_fragment, ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
-    rootEditableElement->appendChild(holder.get(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+    holder->appendChild(m_fragment);
+    rootEditableElement->appendChild(holder.get());
     m_document->updateLayoutIgnorePendingStylesheets();
 
     return holder.release();
@@ -261,8 +261,8 @@ void ReplacementFragment::restoreAndRemoveTestRenderingNodesToFragment(Element* 
         return;
 
     while (RefPtr<Node> node = holder->firstChild()) {
-        holder->removeChild(node.get(), ASSERT_NO_EXCEPTION);
-        m_fragment->appendChild(node.get(), ASSERT_NO_EXCEPTION, DeprecatedAttachNow);
+        holder->removeChild(node.get());
+        m_fragment->appendChild(node.get());
     }
 
     removeNode(holder);
