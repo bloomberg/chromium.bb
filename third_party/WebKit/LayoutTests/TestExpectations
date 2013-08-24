@@ -651,15 +651,6 @@ webkit.org/b/87175 [ Win Linux ] fast/regions/overflow-in-uniform-regions.html [
 # See http://crbug.com/244285 for the crash instance.
 webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Timeout Crash ]
 
-# Shadow DOM for replaced elements is not rendered correctly yet.
-webkit.org/b/90860 fast/dom/shadow/shadowdom-for-object-complex-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/90860 fast/dom/shadow/shadowdom-for-object-without-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91487 fast/dom/shadow/shadowdom-for-select-complex-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91487 fast/dom/shadow/shadowdom-for-select-without-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91488 fast/dom/shadow/shadowdom-for-output-only-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-complex-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-only-shadow.html [ ImageOnlyFailure ]
-
 # a:enabled and area:enabled are not correctly implemented yet.
 webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-anchor.html [ ImageOnlyFailure ]
 webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ ImageOnlyFailure ]
@@ -711,8 +702,6 @@ crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
-
-webkit.org/b/95588 [ Mac ] fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
 
 # Failing due to sub-pixel layout.
 webkit.org/b/95136 fast/css/sticky/sticky-left-percentage.html [ ImageOnlyFailure ]

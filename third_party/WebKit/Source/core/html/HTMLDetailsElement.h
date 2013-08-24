@@ -38,7 +38,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool supportsShadowElementForUserAgentShadow() const OVERRIDE { return false; }
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
 
     bool m_isOpen;

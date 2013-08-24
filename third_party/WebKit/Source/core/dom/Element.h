@@ -447,7 +447,6 @@ public:
 
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
-    virtual bool supportsShadowElementForUserAgentShadow() const;
     virtual const AtomicString& shadowPseudoId() const { return !part().isEmpty() ? part() : pseudo(); }
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);

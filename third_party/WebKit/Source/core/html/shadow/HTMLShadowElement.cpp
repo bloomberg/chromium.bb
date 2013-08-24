@@ -70,22 +70,15 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     return older;
 }
 
-static inline Element* hostForOldestAuthorShadowRoot(ShadowRoot* root)
-{
-    return root && root->isOldestAuthorShadowRoot() ? root->host() : 0;
-}
-
-bool HTMLShadowElement::shouldSelect() const
-{
-    Element* host = hostForOldestAuthorShadowRoot(containingShadowRoot());
-    return !host || host->supportsShadowElementForUserAgentShadow();
-}
-
 Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument() && !shouldSelect()) {
-        String message = String::format("<shadow> doesn't work for %s element host.", containingShadowRoot()->host()->nodeName().utf8().data());
-        document()->addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+    if (insertionPoint->inDocument()) {
+        // Warn if trying to reproject between user agent and author shadows.
+        ShadowRoot* root = containingShadowRoot();
+        if (root && root->olderShadowRoot() && root->type() != root->olderShadowRoot()->type()) {
+            String message = String::format("<shadow> doesn't work for %s element host.", root->host()->tagName().utf8().data());
+            document()->addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+        }
     }
     return InsertionPoint::insertedInto(insertionPoint);
 }

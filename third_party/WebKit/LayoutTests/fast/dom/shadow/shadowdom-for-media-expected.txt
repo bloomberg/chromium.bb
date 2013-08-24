@@ -1,3 +1,5 @@
+CONSOLE MESSAGE: <shadow> doesn't work for VIDEO element host.
+CONSOLE MESSAGE: <shadow> doesn't work for VIDEO element host.
  
 PASS shadowRootForVideoWithControls is youngerShadowRootForVideoWithControls
 PASS shadowRootForVideoWithControls is not oldestShadowRootForVideoWithControls

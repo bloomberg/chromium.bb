@@ -1636,11 +1636,6 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
     return shadowRoot;
 }
 
-bool Element::supportsShadowElementForUserAgentShadow() const
-{
-    return true;
-}
-
 bool Element::childTypeAllowed(NodeType type) const
 {
     switch (type) {

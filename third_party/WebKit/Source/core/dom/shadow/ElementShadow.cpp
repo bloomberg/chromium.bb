@@ -234,13 +234,15 @@ void ElementShadow::distribute()
         HTMLShadowElement* shadowElement = activeShadowInsertionPoints[i - 1];
         ShadowRoot* root = shadowElement->containingShadowRoot();
         ASSERT(root);
-        if (!shadowElement->shouldSelect()) {
-            if (root->olderShadowRoot())
-                root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
-        } else if (root->olderShadowRoot()) {
+        if (root->olderShadowRoot() && root->olderShadowRoot()->type() == root->type()) {
+            // Only allow reprojecting older shadow roots between the same type to
+            // disallow reprojecting UA elements into author shadows.
             distributeNodeChildrenTo(shadowElement, root->olderShadowRoot());
             root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
-        } else {
+        } else if (!root->olderShadowRoot()) {
+            // There's assumed to always be a UA shadow that selects all nodes.
+            // We don't actually add it, instead we just distribute the pool to the
+            // <shadow> in the oldest shadow root.
             distributeSelectionsTo(shadowElement, pool, distributed);
         }
         if (ElementShadow* shadow = shadowOfParentForDistribution(shadowElement))

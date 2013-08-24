@@ -43,7 +43,6 @@ public:
     virtual ~HTMLShadowElement();
 
     ShadowRoot* olderShadowRoot();
-    bool shouldSelect() const;
 
 private:
     HTMLShadowElement(const QualifiedName&, Document*);
