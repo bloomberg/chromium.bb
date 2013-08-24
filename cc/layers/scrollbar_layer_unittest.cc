@@ -252,7 +252,6 @@ TEST(ScrollbarLayerTest, ThumbRect) {
 TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   LayerTreeSettings layer_tree_settings;
   layer_tree_settings.solid_color_scrollbars = true;
-  layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(layer_tree_settings);
 
@@ -314,7 +313,6 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   LayerTreeSettings layer_tree_settings;
   layer_tree_settings.solid_color_scrollbars = true;
-  layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(layer_tree_settings);
 

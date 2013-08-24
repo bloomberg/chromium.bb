@@ -109,16 +109,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   if (layer_tree_host() &&
       layer_tree_host()->settings().solid_color_scrollbars) {
-    int thickness_override =
-        layer_tree_host()->settings().solid_color_scrollbar_thickness_dip;
-    if (thickness_override != -1) {
-      scrollbar_layer->SetThumbThickness(thickness_override);
-    } else {
-      if (Orientation() == HORIZONTAL)
-        scrollbar_layer->SetThumbThickness(bounds().height());
-      else
-        scrollbar_layer->SetThumbThickness(bounds().width());
-    }
+    scrollbar_layer->SetThumbThickness(scrollbar_->ThumbThickness());
   } else {
     scrollbar_layer->SetThumbThickness(thumb_thickness_);
   }

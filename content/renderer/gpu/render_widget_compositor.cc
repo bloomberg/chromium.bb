@@ -272,7 +272,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(switches::kHideScrollbars)
           ? SK_ColorTRANSPARENT
           : SkColorSetARGB(128, 128, 128, 128);
-  settings.solid_color_scrollbar_thickness_dip = 3;
   settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
@@ -282,7 +281,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.use_linear_fade_scrollbar_animator = true;
     settings.solid_color_scrollbars = true;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-    settings.solid_color_scrollbar_thickness_dip = 3;
   }
 #endif
 
