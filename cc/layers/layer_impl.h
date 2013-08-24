@@ -343,6 +343,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetScrollOffsetDelegate(
       LayerScrollOffsetDelegate* scroll_offset_delegate);
   void SetScrollOffset(gfx::Vector2d scroll_offset);
+  void SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
+                               gfx::Vector2dF scroll_delta);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
 
   void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);

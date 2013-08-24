@@ -856,7 +856,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
 
   layer->SetScrollable(scrollable_);
-  layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
 
   LayerImpl* scroll_parent = NULL;
@@ -890,6 +889,17 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetClipChildren(clip_children);
   }
 
+  // Adjust the scroll delta to be just the scrolls that have happened since
+  // the begin frame was sent.  This happens for impl-side painting
+  // in LayerImpl::ApplyScrollDeltasSinceBeginFrame in a separate tree walk.
+  if (layer->layer_tree_impl()->settings().impl_side_painting) {
+    layer->SetScrollOffset(scroll_offset_);
+  } else {
+    layer->SetScrollOffsetAndDelta(
+        scroll_offset_, layer->ScrollDelta() - layer->sent_scroll_delta());
+    layer->SetSentScrollDelta(gfx::Vector2d());
+  }
+
   // Wrap the copy_requests_ in a PostTask to the main thread.
   ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;
   for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
@@ -916,14 +926,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // union) any update changes that have occurred on the main thread.
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);
-
-  // Adjust the scroll delta to be just the scrolls that have happened since
-  // the begin frame was sent.  This happens for impl-side painting
-  // in LayerImpl::ApplyScrollDeltasSinceBeginFrame in a separate tree walk.
-  if (!layer->layer_tree_impl()->settings().impl_side_painting) {
-    layer->SetScrollDelta(layer->ScrollDelta() - layer->sent_scroll_delta());
-    layer->SetSentScrollDelta(gfx::Vector2d());
-  }
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
 

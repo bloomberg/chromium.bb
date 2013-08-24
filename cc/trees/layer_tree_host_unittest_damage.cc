@@ -286,13 +286,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
-class LayerTreeHostDamageTestScrollbarDoesDamage
-    : public LayerTreeHostDamageTest {
-  virtual void BeginTest() OVERRIDE {
-    did_swaps_ = 0;
-    PostSetNeedsCommitToMainThread();
-  }
-
+class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(400, 400));
@@ -318,6 +312,17 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     EXPECT_FALSE(content_rect.Intersects(scrollbar_rect));
 
     LayerTreeHostDamageTest::SetupTree();
+  }
+
+ private:
+  FakeContentLayerClient client_;
+};
+
+class LayerTreeHostDamageTestScrollbarDoesDamage
+    : public LayerTreeHostScrollbarDamageTest {
+  virtual void BeginTest() OVERRIDE {
+    did_swaps_ = 0;
+    PostSetNeedsCommitToMainThread();
   }
 
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -359,17 +364,14 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     switch (did_swaps_) {
       case 1:
         // Test that modifying the position of the content layer (not
-        // scrolling) won't damage the scrollbar. Do this before the other
-        // tests, as they can cause commits that will later damage the
-        // scrollbar. http://crbug.com/276657
+        // scrolling) won't damage the scrollbar.
         scroll_layer->SetPosition(gfx::Point(1, 1));
         scroll_layer->SetScrollOffset(scroll_layer->scroll_offset());
         host_impl->SetNeedsRedraw();
         break;
       case 2:
-        host_impl->ScrollBegin(gfx::Point(1, 1), InputHandler::Wheel);
-        EXPECT_TRUE(host_impl->ScrollBy(gfx::Point(),
-                                        gfx::Vector2dF(10.0, 10.0)));
+        scroll_layer->ScrollBy(gfx::Vector2dF(10.f, 10.f));
+        host_impl->SetNeedsRedraw();
         break;
       case 3:
         scroll_layer->SetMaxScrollOffset(gfx::Vector2d(60, 100));
@@ -379,15 +381,88 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   }
 
   virtual void AfterTest() OVERRIDE {
-    // Extra commits may happen and cause swaps: http://crbug.com/276657
-    EXPECT_LE(4, did_swaps_);
+    EXPECT_EQ(4, did_swaps_);
   }
 
-  FakeContentLayerClient client_;
   int did_swaps_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarDoesDamage);
+
+class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
+    : public LayerTreeHostScrollbarDamageTest {
+  virtual void BeginTest() OVERRIDE {
+    did_swaps_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+    RenderSurfaceImpl* root_surface =
+        host_impl->active_tree()->root_layer()->render_surface();
+    gfx::RectF root_damage =
+        root_surface->damage_tracker()->current_damage_rect();
+    root_damage.Intersect(root_surface->content_rect());
+    int frame = host_impl->active_tree()->source_frame_number();
+    switch (did_swaps_) {
+      case 0:
+        // The first frame has damage, so we should draw and swap.
+        EXPECT_EQ(0, frame);
+        break;
+      case 1:
+        // The second frame has scrolled, so the scrollbar should be damaged.
+        EXPECT_EQ(0, frame);
+        EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
+        break;
+      case 2:
+        // The third frame (after the commit) has no changes, so it shouldn't.
+        EXPECT_EQ(1, frame);
+        EXPECT_FALSE(root_damage.Intersects(gfx::Rect(300, 300, 10, 100)));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    return result;
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ++did_swaps_;
+    EXPECT_TRUE(result);
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    LayerImpl* scroll_layer = root->children()[0];
+    switch (did_swaps_) {
+      case 1:
+        // Scroll on the thread.  This should damage the scrollbar for the
+        // next draw on the thread.
+        scroll_layer->ScrollBy(gfx::Vector2dF(10.f, 10.f));
+        host_impl->SetNeedsRedraw();
+        break;
+      case 2:
+        // Forcibly send the scroll to the main thread.
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        // First swap after second commit.
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(3, did_swaps_);
+  }
+
+  int did_swaps_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarCommitDoesNoDamage);
 
 }  // namespace
 }  // namespace cc
