@@ -86,15 +86,20 @@ chrome.test.getConfig(function(config) {
         });
       },
 
-      // Non-pure object (like DOM nodes) will get converted as best they can.
-      function executeCallbackDOMObjShouldSucceed() {
-        var scriptDetails = {};
-        scriptDetails.code = 'var a = document.getElementById("testDiv"); a;';
-        chrome.tabs.executeScript(tabId, scriptDetails, function(scriptVal) {
-          chrome.tabs.get(tabId, chrome.test.callbackPass(function(tab) {
-            // Test passes as long as the DOM node was converted in some form
-            // and is not null
-            chrome.test.assertTrue(scriptVal[0] != null);
+      // DOM objects (nodes, properties, etc) should not get converted. We
+      // could try to convert them the best they can but it's undefined what
+      // that means.
+      function executeCallbackDOMObjShouldSucceedAndReturnNull() {
+        [ 'document',
+          'document.getElementById("testDiv")',
+          'new XMLHttpRequest()',
+          'document.location',
+          'navigator',
+        ].forEach(function(expr) {
+          chrome.tabs.executeScript(tabId,
+                                    {code: 'var obj = ' + expr + '; obj'},
+                                    chrome.test.callbackPass(function(result) {
+            chrome.test.assertEq([null], result, 'Failed for ' + expr);
           }));
         });
       },
@@ -149,18 +154,6 @@ chrome.test.getConfig(function(config) {
           }));
         });
       },
-
-      function executeCallbackInputShouldSucceed() {
-        var scriptDetails = {};
-        scriptDetails.code = 'var a = document.getElementById("testInput"); a;';
-        chrome.tabs.executeScript(tabId, scriptDetails, function(scriptVal) {
-          chrome.tabs.get(tabId, chrome.test.callbackPass(function(tab) {
-            // Test passes as long as the input element was converted in some
-            // form and is not null
-            chrome.test.assertTrue(scriptVal[0] != null);
-          }));
-        });
-      }
     ]);
   });
   chrome.tabs.create({ url: testUrl });

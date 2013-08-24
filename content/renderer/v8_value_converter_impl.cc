@@ -382,6 +382,19 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       return out;
   }
 
+  // Don't consider DOM objects. This check matches isHostObject() in Blink's
+  // bindings/v8/V8Binding.h used in structured cloning. It reads:
+  //
+  // If the object has any internal fields, then we won't be able to serialize
+  // or deserialize them; conveniently, this is also a quick way to detect DOM
+  // wrapper objects, because the mechanism for these relies on data stored in
+  // these fields.
+  //
+  // NOTE: check this after |strategy_| so that callers have a chance to
+  // do something else, such as convert to the node's name rather than NULL.
+  if (val->InternalFieldCount())
+    return NULL;
+
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());
 
