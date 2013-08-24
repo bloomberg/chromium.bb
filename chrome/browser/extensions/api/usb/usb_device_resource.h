@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "content/public/browser/browser_thread.h"
 
 class UsbDeviceHandle;
 
@@ -35,6 +36,9 @@ class UsbDeviceResource : public ApiResource {
   scoped_refptr<UsbDeviceHandle> device() {
     return device_;
   }
+
+  static const content::BrowserThread::ID kThreadId =
+      content::BrowserThread::FILE;
 
  private:
   friend class ApiResourceManager<UsbDeviceResource>;
