@@ -1506,6 +1506,10 @@ void RenderLayerCompositor::updateRootLayerPosition()
         const IntRect& documentRect = m_renderView->documentRect();
         m_rootContentLayer->setSize(documentRect.size());
         m_rootContentLayer->setPosition(documentRect.location());
+#if ENABLE(RUBBER_BANDING)
+        if (m_layerForOverhangShadow)
+            ScrollbarTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
+#endif
     }
     if (m_containerLayer) {
         FrameView* frameView = m_renderView->frameView();
@@ -2127,7 +2131,7 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 #if ENABLE(RUBBER_BANDING)
     } else if (graphicsLayer == layerForOverhangAreas()) {
         ScrollView* view = m_renderView->frameView();
-        view->calculateAndPaintOverhangAreas(&context, clip);
+        view->calculateAndPaintOverhangBackground(&context, clip);
 #endif
     }
 }
@@ -2230,7 +2234,7 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
 }
 
 #if ENABLE(RUBBER_BANDING)
-bool RenderLayerCompositor::requiresOverhangAreasLayer() const
+bool RenderLayerCompositor::requiresOverhangLayers() const
 {
     // We don't want a layer if this is a subframe.
     if (!isMainFrame())
@@ -2248,7 +2252,7 @@ bool RenderLayerCompositor::requiresOverhangAreasLayer() const
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if ENABLE(RUBBER_BANDING)
-    if (requiresOverhangAreasLayer()) {
+    if (requiresOverhangLayers()) {
         if (!m_layerForOverhangAreas) {
             m_layerForOverhangAreas = GraphicsLayer::create(graphicsLayerFactory(), this);
             m_layerForOverhangAreas->setDrawsContent(false);
@@ -2258,9 +2262,21 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             // so insert it below the clip layer.
             m_overflowControlsHostLayer->addChildBelow(m_layerForOverhangAreas.get(), m_containerLayer.get());
         }
-    } else if (m_layerForOverhangAreas) {
-        m_layerForOverhangAreas->removeFromParent();
-        m_layerForOverhangAreas = nullptr;
+        if (!m_layerForOverhangShadow) {
+            m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
+            ScrollbarTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
+            ScrollbarTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
+            m_scrollLayer->addChild(m_layerForOverhangShadow.get());
+        }
+    } else {
+        if (m_layerForOverhangAreas) {
+            m_layerForOverhangAreas->removeFromParent();
+            m_layerForOverhangAreas = nullptr;
+        }
+        if (m_layerForOverhangShadow) {
+            m_layerForOverhangShadow->removeFromParent();
+            m_layerForOverhangShadow = nullptr;
+        }
     }
 #endif
 
@@ -2368,6 +2384,10 @@ void RenderLayerCompositor::destroyRootLayer()
     if (m_layerForOverhangAreas) {
         m_layerForOverhangAreas->removeFromParent();
         m_layerForOverhangAreas = nullptr;
+    }
+    if (m_layerForOverhangShadow) {
+        m_layerForOverhangShadow->removeFromParent();
+        m_layerForOverhangShadow = nullptr;
     }
 #endif
 
@@ -2668,6 +2688,8 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
 #if ENABLE(RUBBER_BANDING)
     } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
         name = "Overhang Areas Layer";
+    } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
+        name = "Overhang Areas Shadow";
 #endif
     } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
         name = "Overflow Controls Host Layer";

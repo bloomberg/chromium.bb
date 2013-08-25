@@ -293,7 +293,7 @@ IntRect ScrollbarTheme::thumbRect(ScrollbarThemeClient* scrollbar)
     return thumbRect;
 }
 
-void ScrollbarTheme::paintOverhangAreas(ScrollView*, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+void ScrollbarTheme::paintOverhangBackground(ScrollView*, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     context->setFillColor(Color::white);
     if (!horizontalOverhangRect.isEmpty())

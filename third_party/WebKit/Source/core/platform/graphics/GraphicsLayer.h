@@ -48,6 +48,7 @@
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
+#include "public/platform/WebNinePatchLayer.h"
 #include "public/platform/WebSolidColorLayer.h"
 
 namespace WebKit {
@@ -205,6 +206,7 @@ public:
     enum ContentsLayerPurpose {
         NoContentsLayer = 0,
         ContentsLayerForImage,
+        ContentsLayerForNinePatch,
         ContentsLayerForVideo,
         ContentsLayerForCanvas,
     };
@@ -348,6 +350,7 @@ public:
 
     // Layer contents
     void setContentsToImage(Image*);
+    void setContentsToNinePatch(Image*, const IntRect& aperture);
     bool shouldDirectlyCompositeImage(Image*) const { return true; }
     void setContentsToMedia(WebKit::WebLayer*); // video or plug-in
     // Pass an invalid color to remove the contents layer.
@@ -524,6 +527,7 @@ protected:
 
     OwnPtr<WebKit::WebContentLayer> m_layer;
     OwnPtr<WebKit::WebImageLayer> m_imageLayer;
+    OwnPtr<WebKit::WebNinePatchLayer> m_ninePatchLayer;
     OwnPtr<WebKit::WebSolidColorLayer> m_contentsSolidColorLayer;
     WebKit::WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the

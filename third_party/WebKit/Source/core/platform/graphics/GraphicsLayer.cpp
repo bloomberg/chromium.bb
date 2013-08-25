@@ -605,6 +605,7 @@ void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
 
             // The old contents layer will be removed via updateChildList.
             m_contentsLayer = 0;
+            m_contentsLayerId = 0;
         }
     }
 
@@ -1079,6 +1080,22 @@ void GraphicsLayer::setContentsToImage(Image* image)
 
     if (childrenChanged)
         updateChildList();
+}
+
+void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture)
+{
+    if (m_ninePatchLayer) {
+        unregisterContentsLayer(m_ninePatchLayer->layer());
+        m_ninePatchLayer.clear();
+    }
+    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : 0;
+    if (nativeImage) {
+        m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
+        m_ninePatchLayer->setBitmap(nativeImage->bitmap(), aperture);
+        m_ninePatchLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
+        registerContentsLayer(m_ninePatchLayer->layer());
+    }
+    setContentsTo(ContentsLayerForNinePatch, m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
 }
 
 void GraphicsLayer::setContentsToCanvas(WebLayer* layer)

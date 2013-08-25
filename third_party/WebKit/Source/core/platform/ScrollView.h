@@ -262,6 +262,7 @@ public:
     virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const OVERRIDE;
 
     void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
+    void calculateAndPaintOverhangBackground(GraphicsContext*, const IntRect& dirtyRect);
 
     virtual bool isScrollView() const OVERRIDE { return true; }
 

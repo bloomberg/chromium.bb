@@ -1019,7 +1019,8 @@ void ScrollView::updateOverhangAreas()
 
 void ScrollView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
-    ScrollbarTheme::theme()->paintOverhangAreas(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+    ScrollbarTheme::theme()->paintOverhangBackground(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+    ScrollbarTheme::theme()->paintOverhangShadows(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 void ScrollView::calculateAndPaintOverhangAreas(GraphicsContext* context, const IntRect& dirtyRect)
@@ -1030,6 +1031,16 @@ void ScrollView::calculateAndPaintOverhangAreas(GraphicsContext* context, const 
 
     if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
         paintOverhangAreas(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+}
+
+void ScrollView::calculateAndPaintOverhangBackground(GraphicsContext* context, const IntRect& dirtyRect)
+{
+    IntRect horizontalOverhangRect;
+    IntRect verticalOverhangRect;
+    calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
+
+    if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
+        ScrollbarTheme::theme()->paintOverhangBackground(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 bool ScrollView::isPointInScrollbarCorner(const IntPoint& windowPoint)
