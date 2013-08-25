@@ -241,7 +241,7 @@ void SimpleFontData::platformInit()
         // Measure the actual character "x", since it's possible for it to extend below the baseline, and we need the
         // reported x-height to only include the portion of the glyph that is above the baseline.
         GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
-        NSGlyph xGlyph = glyphPageZero ? glyphPageZero->glyphDataForCharacter('x').glyph : 0;
+        NSGlyph xGlyph = glyphPageZero ? glyphPageZero->glyphForCharacter('x') : 0;
         if (xGlyph)
             xHeight = -CGRectGetMinY(platformBoundsForGlyph(xGlyph));
         else

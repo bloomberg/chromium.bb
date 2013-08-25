@@ -91,7 +91,7 @@ void SimpleFontData::initCharWidths()
     // Treat the width of a '0' as the avgCharWidth.
     if (m_avgCharWidth <= 0.f && glyphPageZero) {
         static const UChar32 digitZeroChar = '0';
-        Glyph digitZeroGlyph = glyphPageZero->glyphDataForCharacter(digitZeroChar).glyph;
+        Glyph digitZeroGlyph = glyphPageZero->glyphForCharacter(digitZeroChar);
         if (digitZeroGlyph)
             m_avgCharWidth = widthForGlyph(digitZeroGlyph);
     }
@@ -120,15 +120,15 @@ void SimpleFontData::platformGlyphInit()
         return;
     }
 
-    m_zeroWidthSpaceGlyph = glyphPageZero->glyphDataForCharacter(0).glyph;
+    m_zeroWidthSpaceGlyph = glyphPageZero->glyphForCharacter(0);
 
     // Nasty hack to determine if we should round or ceil space widths.
     // If the font is monospace or fake monospace we ceil to ensure that
     // every character and the space are the same width.  Otherwise we round.
-    m_spaceGlyph = glyphPageZero->glyphDataForCharacter(' ').glyph;
+    m_spaceGlyph = glyphPageZero->glyphForCharacter(' ');
     float width = widthForGlyph(m_spaceGlyph);
     m_spaceWidth = width;
-    m_zeroGlyph = glyphPageZero->glyphDataForCharacter('0').glyph;
+    m_zeroGlyph = glyphPageZero->glyphForCharacter('0');
     m_fontMetrics.setZeroWidth(widthForGlyph(m_zeroGlyph));
     determinePitch();
     m_adjustedSpaceWidth = m_treatAsFixedPitch ? ceilf(width) : roundf(width);

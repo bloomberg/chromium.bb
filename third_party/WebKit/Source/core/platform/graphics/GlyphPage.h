@@ -114,6 +114,11 @@ public:
         return GlyphData(glyph, glyph ? m_fontDataForAllGlyphs : 0);
     }
 
+    ALWAYS_INLINE Glyph glyphForCharacter(UChar32 c) const
+    {
+        return glyphAt(indexForCharacter(c));
+    }
+
     ALWAYS_INLINE Glyph glyphAt(unsigned index) const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(index < size);
