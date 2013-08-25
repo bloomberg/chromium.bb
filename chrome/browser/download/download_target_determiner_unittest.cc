@@ -15,7 +15,6 @@
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_determiner.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"

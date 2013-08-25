@@ -14,7 +14,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/user_script_listener.h"

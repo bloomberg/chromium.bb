@@ -1,29 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/drag_download_item.h"
 
 #include <string>
 
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/point.h"
-#include "url/gurl.h"
-
-#if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
-#endif
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/custom_drag.h"
-#endif  // defined(TOOLKIT_GTK)
+#include "url/gurl.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/base/dragdrop/drag_source_win.h"
@@ -36,17 +29,11 @@
 #include "ui/aura/window.h"
 #endif
 
-namespace download_util {
-
-using content::DownloadItem;
-
-#if defined(TOOLKIT_VIEWS)
-// Download dragging
-void DragDownload(const DownloadItem* download,
-                  gfx::Image* icon,
-                  gfx::NativeView view) {
+void DragDownloadItem(const content::DownloadItem* download,
+                      gfx::Image* icon,
+                      gfx::NativeView view) {
   DCHECK(download);
-  DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
+  DCHECK_EQ(content::DownloadItem::COMPLETE, download->GetState());
 
   // Set up our OLE machinery
   ui::OSExchangeData data;
@@ -91,7 +78,9 @@ void DragDownload(const DownloadItem* download,
   // Run the drag and drop loop
   DWORD effects;
   DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
-             drag_source.get(), DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
+             drag_source.get(),
+             DROPEFFECT_COPY | DROPEFFECT_LINK,
+             &effects);
 #endif
 
 #else
@@ -108,12 +97,3 @@ void DragDownload(const DownloadItem* download,
                  ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 #endif  // TOOLKIT_GTK
 }
-#elif defined(USE_X11)
-void DragDownload(const DownloadItem* download,
-                  gfx::Image* icon,
-                  gfx::NativeView view) {
-  DownloadItemDrag::BeginDrag(download, icon);
-}
-#endif  // USE_X11
-
-}  // namespace download_util

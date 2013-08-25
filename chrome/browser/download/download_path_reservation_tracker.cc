@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"

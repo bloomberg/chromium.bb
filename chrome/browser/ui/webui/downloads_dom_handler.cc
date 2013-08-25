@@ -31,7 +31,7 @@
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -405,7 +405,7 @@ void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    download_util::DragDownload(file, icon, view);
+    DragDownloadItem(file, icon, view);
   }
 }
 

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_SHOW_ALL_CELL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/download/download_util.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 // The cell of the "Show All" button on the download shelf.

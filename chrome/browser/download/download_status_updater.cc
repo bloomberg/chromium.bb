@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/download_util.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/linux_ui/linux_ui.h"

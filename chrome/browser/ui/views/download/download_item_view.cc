@@ -20,7 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -416,8 +416,8 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
           download()->GetTargetFilePath(), IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
-        download_util::DragDownload(download(), icon,
-                                    widget ? widget->GetNativeView() : NULL);
+        DragDownloadItem(
+            download(), icon, widget ? widget->GetNativeView() : NULL);
       }
     }
   } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {

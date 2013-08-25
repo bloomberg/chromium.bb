@@ -12,7 +12,6 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"

@@ -27,7 +27,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_target_determiner.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
