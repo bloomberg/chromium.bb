@@ -289,15 +289,13 @@ base::FilePath DatabaseTracker::GetFullDBFilePath(
   if (!LazyInit())
     return base::FilePath();
 
-  int64 id = databases_table_->GetDatabaseID(
-      origin_identifier, database_name);
+  int64 id = databases_table_->GetDatabaseID(origin_identifier, database_name);
   if (id < 0)
     return base::FilePath();
 
-  base::FilePath file_name = base::FilePath::FromWStringHack(
-      UTF8ToWide(base::Int64ToString(id)));
-  return db_dir_.Append(base::FilePath::FromWStringHack(
-      UTF16ToWide(GetOriginDirectory(origin_identifier)))).Append(file_name);
+  return db_dir_.Append(base::FilePath::FromUTF16Unsafe(
+      GetOriginDirectory(origin_identifier))).AppendASCII(
+          base::Int64ToString(id));
 }
 
 bool DatabaseTracker::GetOriginInfo(const std::string& origin_identifier,

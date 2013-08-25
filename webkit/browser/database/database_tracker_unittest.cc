@@ -220,12 +220,12 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0,
                             &database_size);
 
-    EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
-        base::FilePath::FromWStringHack(UTF16ToWide(
-            tracker->GetOriginDirectory(kOrigin1))))));
-    EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
-        base::FilePath::FromWStringHack(UTF16ToWide(
-            tracker->GetOriginDirectory(kOrigin2))))));
+    EXPECT_TRUE(file_util::CreateDirectory(
+        tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
+            tracker->GetOriginDirectory(kOrigin1)))));
+    EXPECT_TRUE(file_util::CreateDirectory(
+        tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
+            tracker->GetOriginDirectory(kOrigin2)))));
     EXPECT_EQ(1, file_util::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
     EXPECT_EQ(2, file_util::WriteFile(
@@ -255,9 +255,9 @@ class DatabaseTracker_TestHelper_Test {
     // Recreate db1.
     tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                             &database_size);
-    EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
-        base::FilePath::FromWStringHack(UTF16ToWide(
-            tracker->GetOriginDirectory(kOrigin1))))));
+    EXPECT_TRUE(file_util::CreateDirectory(
+        tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
+            tracker->GetOriginDirectory(kOrigin1)))));
     EXPECT_EQ(1, file_util::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
     tracker->DatabaseModified(kOrigin1, kDB1);
@@ -348,12 +348,12 @@ class DatabaseTracker_TestHelper_Test {
 
     // Write some data to each file and check that the listeners are
     // called with the appropriate values.
-    EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
-        base::FilePath::FromWStringHack(UTF16ToWide(
-            tracker->GetOriginDirectory(kOrigin1))))));
-    EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
-        base::FilePath::FromWStringHack(UTF16ToWide(
-            tracker->GetOriginDirectory(kOrigin2))))));
+    EXPECT_TRUE(file_util::CreateDirectory(
+        tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
+            tracker->GetOriginDirectory(kOrigin1)))));
+    EXPECT_TRUE(file_util::CreateDirectory(
+        tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
+            tracker->GetOriginDirectory(kOrigin2)))));
     EXPECT_EQ(1, file_util::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
     EXPECT_EQ(2, file_util::WriteFile(
