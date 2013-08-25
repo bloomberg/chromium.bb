@@ -28,6 +28,9 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#else
+#include "base/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #endif
 
 using content::RenderViewHost;
@@ -551,6 +554,16 @@ void FullscreenController::ToggleFullscreenModeInternal(
   // starts we're not yet fullscreen, so let the initial toggle go through.
   if (chrome::IsRunningInAppMode() && window_->IsFullscreen())
     return;
+
+#if !defined(OS_MACOSX)
+  // Do not enter fullscreen mode if disallowed by pref. This prevents the user
+  // from manually entering fullscreen mode and also disables kiosk mode on
+  // desktop platforms.
+  if (enter_fullscreen &&
+      !profile_->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed)) {
+    return;
+  }
+#endif
 
   if (enter_fullscreen)
     EnterFullscreenModeInternal(option);

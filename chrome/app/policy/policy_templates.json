@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 239
+#   For your editing convenience: highest ID currently used: 240
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4241,6 +4241,28 @@
       If you set this policy, users cannot change or override it.
 
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.''',
+    },
+    {
+      'name': 'FullscreenAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:31-', 'chrome.linux:31-', 'chrome_os:31-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 240,
+      'caption': '''Allow fullscreen mode''',
+      'desc': '''Allow fullscreen mode.
+
+      This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> UI is hidden and only web content is visible.
+
+      If this policy is set to true or not not configured, the user, apps and extensions with appropriate permissions can enter fullscreen mode.
+
+      If this policy is set to false, neither the user nor any apps or extensions can enter fullscreen mode.
+
+      On all platforms except <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, kiosk mode is unvailable when fullscreen mode is disabled.''',
     },
     {
       'name': 'PowerManagement',

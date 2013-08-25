@@ -60,6 +60,18 @@ using content::WebContents;
 
 namespace {
 
+enum WindowState {
+  // Not in fullscreen mode.
+  WINDOW_STATE_NOT_FULLSCREEN,
+
+  // Fullscreen mode, occupying the whole screen.
+  WINDOW_STATE_FULLSCREEN,
+
+  // Fullscreen mode for metro snap, occupying the full height and 20% of
+  // the screen width.
+  WINDOW_STATE_METRO_SNAP,
+};
+
 // Returns |true| if entry has an internal chrome:// URL, |false| otherwise.
 bool HasInternalURL(const NavigationEntry* entry) {
   if (!entry)
@@ -197,6 +209,12 @@ BrowserCommandController::BrowserCommandController(
       prefs::kPrintingEnabled,
       base::Bind(&BrowserCommandController::UpdatePrintingState,
                  base::Unretained(this)));
+#if !defined(OS_MACOSX)
+  profile_pref_registrar_.Add(
+      prefs::kFullscreenAllowed,
+      base::Bind(&BrowserCommandController::UpdateCommandsForFullscreenMode,
+                 base::Unretained(this)));
+#endif
   pref_signin_allowed_.Init(
       prefs::kSigninAllowed,
       profile()->GetOriginalProfile()->GetPrefs(),
@@ -286,16 +304,7 @@ void BrowserCommandController::ContentRestrictionsChanged() {
 }
 
 void BrowserCommandController::FullscreenStateChanged() {
-  FullScreenMode fullscreen_mode = FULLSCREEN_DISABLED;
-  if (window()->IsFullscreen()) {
-#if defined(OS_WIN)
-    fullscreen_mode = window()->IsInMetroSnapMode() ? FULLSCREEN_METRO_SNAP :
-                                                      FULLSCREEN_NORMAL;
-#else
-    fullscreen_mode = FULLSCREEN_NORMAL;
-#endif
-  }
-  UpdateCommandsForFullscreenMode(fullscreen_mode);
+  UpdateCommandsForFullscreenMode();
 }
 
 void BrowserCommandController::PrintingStateChanged() {
@@ -936,7 +945,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
 
   // Initialize other commands whose state changes based on fullscreen mode.
-  UpdateCommandsForFullscreenMode(FULLSCREEN_DISABLED);
+  UpdateCommandsForFullscreenMode();
 
   UpdateCommandsForContentRestrictionState();
 
@@ -1087,11 +1096,18 @@ void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
   UpdateOpenFileState(&command_updater_);
 }
 
-void BrowserCommandController::UpdateCommandsForFullscreenMode(
-    FullScreenMode fullscreen_mode) {
+void BrowserCommandController::UpdateCommandsForFullscreenMode() {
+  WindowState window_state = WINDOW_STATE_NOT_FULLSCREEN;
+  if (window() && window()->IsFullscreen()) {
+    window_state = WINDOW_STATE_FULLSCREEN;
+#if defined(OS_WIN)
+    if (window()->IsInMetroSnapMode())
+      window_state = WINDOW_STATE_METRO_SNAP;
+#endif
+  }
   bool show_main_ui = IsShowingMainUI();
-  bool main_not_fullscreen = show_main_ui &&
-                             (fullscreen_mode == FULLSCREEN_DISABLED);
+  bool main_not_fullscreen =
+      show_main_ui && window_state == WINDOW_STATE_NOT_FULLSCREEN;
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
@@ -1099,7 +1115,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
   // Window management commands
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_AS_TAB,
-      !browser_->is_type_tabbed() && fullscreen_mode == FULLSCREEN_DISABLED);
+      !browser_->is_type_tabbed() &&
+          window_state == WINDOW_STATE_NOT_FULLSCREEN);
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
@@ -1138,13 +1155,19 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
 #endif
 
   // Disable explicit fullscreen toggling when in metro snap mode.
-  bool fullscreen_enabled = fullscreen_mode != FULLSCREEN_METRO_SNAP;
+  bool fullscreen_enabled = window_state != WINDOW_STATE_METRO_SNAP;
 #if defined(OS_MACOSX)
   // The Mac implementation doesn't support switching to fullscreen while
   // a tab modal dialog is displayed.
   int tab_index = chrome::IndexOfFirstBlockedTab(browser_->tab_strip_model());
   bool has_blocked_tab = tab_index != browser_->tab_strip_model()->count();
   fullscreen_enabled &= !has_blocked_tab;
+#else
+  if (window_state == WINDOW_STATE_NOT_FULLSCREEN &&
+      !profile()->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed)) {
+    // Disable toggling into fullscreen mode if disallowed by pref.
+    fullscreen_enabled = false;
+  }
 #endif
 
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);

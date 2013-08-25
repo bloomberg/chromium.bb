@@ -37,6 +37,11 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
+#if !defined(OS_MACOSX)
+#include "apps/pref_names.h"
+#include "base/prefs/pref_service.h"
+#endif
+
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
@@ -494,6 +499,16 @@ void ShellWindow::NavigationStateChanged(
 
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                              bool enter_fullscreen) {
+#if !defined(OS_MACOSX)
+  // Do not enter fullscreen mode if disallowed by pref.
+  // TODO(bartfab): Add a test once it becomes possible to simulate a user
+  // gesture. http://crbug.com/174178
+  if (enter_fullscreen &&
+      !profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed)) {
+    return;
+  }
+#endif
+
   if (!IsExtensionWithPermissionOrSuggestInConsole(
       APIPermission::kFullscreen,
       extension_,

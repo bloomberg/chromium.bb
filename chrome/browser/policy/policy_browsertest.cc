@@ -1794,6 +1794,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   CheckURLIsBlocked(browser(), file_path2.c_str());
 }
 
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowed) {
+  PolicyMap policies;
+  policies.Set(key::kFullscreenAllowed,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false), NULL);
+  UpdateProviderPolicy(policies);
+
+  BrowserWindow* browser_window = browser()->window();
+  ASSERT_TRUE(browser_window);
+
+  EXPECT_FALSE(browser_window->IsFullscreen());
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_FALSE(browser_window->IsFullscreen());
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
   int screenshot_count = CountScreenshots();

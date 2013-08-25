@@ -40,9 +40,13 @@
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -359,6 +363,62 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
     EXPECT_EQ(GURL(kStartupURLs[i]),
               tabs->GetWebContentsAt(i)->GetVisibleURL());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  // This observes the display name becoming available as this indicates
+  // device-local account policy is fully loaded, which is a prerequisite for
+  // successful login.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_USER_LIST_CHANGED,
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
+
+  // Wait for the login UI to be ready.
+  chromeos::LoginDisplayHostImpl* host =
+      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host());
+  ASSERT_TRUE(host);
+  chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+  ASSERT_TRUE(oobe_ui);
+  base::RunLoop run_loop;
+  const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
+  if (!oobe_ui_ready)
+    run_loop.Run();
+
+  // Ensure that the browser stays alive, even though no windows are opened
+  // during session start.
+  chrome::StartKeepAlive();
+
+  // Start login into the device-local account.
+  host->StartSignInScreen();
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  ASSERT_TRUE(controller);
+  controller->LoginAsPublicAccount(user_id_1_);
+
+  // Wait for the session to start.
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
+                                        base::Bind(IsSessionStarted)).Wait();
+
+  // Open a browser window.
+  chrome::NewEmptyWindow(ProfileManager::GetDefaultProfile(),
+                         chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list =
+    BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  EXPECT_EQ(1U, browser_list->size());
+  Browser* browser = browser_list->get(0);
+  ASSERT_TRUE(browser);
+  BrowserWindow* browser_window = browser->window();
+  ASSERT_TRUE(browser_window);
+  chrome::EndKeepAlive();
+
+  // Verify that an attempt to enter fullscreen mode is denied.
+  EXPECT_FALSE(browser_window->IsFullscreen());
+  chrome::ToggleFullscreenMode(browser);
+  EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
 class TermsOfServiceTest : public DeviceLocalAccountTest,

@@ -38,6 +38,12 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+#if !defined(OS_MACOSX)
+  registry->RegisterBooleanPref(
+      prefs::kAppFullscreenAllowed, true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
+
   // Indicates whether app shortcuts have been created.
   registry->RegisterBooleanPref(
       prefs::kShortcutsHaveBeenCreated, false,

@@ -1305,6 +1305,11 @@ const char kExtensionsPref[] = "extensions.settings";
 // loaded.
 const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
 
+// Boolean pref that determines whether the user can enter fullscreen mode.
+// Disabling fullscreen mode also makes kiosk mode unavailable on desktop
+// platforms.
+extern const char kFullscreenAllowed[] = "fullscreen.allowed";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

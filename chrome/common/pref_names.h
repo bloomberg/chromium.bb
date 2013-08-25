@@ -446,6 +446,8 @@ extern const char kMessageCenterEnabledSyncNotifierIds[];
 extern const char kExtensionsPref[];
 extern const char kExtensionsLastChromeVersion[];
 
+extern const char kFullscreenAllowed[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

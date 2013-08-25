@@ -191,6 +191,12 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kHideWebStoreIcon,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if !defined(OS_MACOSX)
+  registry->RegisterBooleanPref(
+      prefs::kFullscreenAllowed,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
 
 void RegisterAppPrefs(const std::string& app_name, Profile* profile) {

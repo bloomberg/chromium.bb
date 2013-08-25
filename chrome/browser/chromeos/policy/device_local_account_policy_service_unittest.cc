@@ -75,6 +75,11 @@ class DeviceLocalAccountPolicyServiceTest
                              POLICY_SCOPE_USER,
                              Value::CreateBooleanValue(true),
                              NULL);
+    expected_policy_map_.Set(key::kFullscreenAllowed,
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             Value::CreateBooleanValue(false),
+                             NULL);
     scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
     allowed_extension_types->AppendString("hosted_app");
     expected_policy_map_.Set(key::kExtensionAllowedTypes,

@@ -1908,6 +1908,15 @@
   "ManagedBookmarks": {
   },
 
+  "FullscreenAllowed": {
+    "os": ["win", "linux", "chromeos"],
+    "test_policy": { "FullscreenAllowed": false },
+    "pref_mappings": [
+      { "pref": "fullscreen.allowed" },
+      { "pref": "apps.fullscreen.allowed" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

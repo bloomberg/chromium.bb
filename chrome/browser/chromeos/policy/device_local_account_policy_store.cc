@@ -101,6 +101,13 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
                   POLICY_SCOPE_USER,
                   Value::CreateBooleanValue(true),
                   NULL);
+  // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
+  // shelf cannot be hidden by entering fullscreen mode.
+  policy_map_.Set(key::kFullscreenAllowed,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  Value::CreateBooleanValue(false),
+                  NULL);
   // Restrict device-local accounts to hosted apps for now (i.e. no extensions,
   // packaged apps etc.) for security/privacy reasons (i.e. we'd like to
   // prevent the admin from stealing private information from random people).

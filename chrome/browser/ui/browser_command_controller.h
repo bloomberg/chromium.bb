@@ -79,18 +79,6 @@ class BrowserCommandController : public CommandUpdaterDelegate,
  private:
   class InterstitialObserver;
 
-  enum FullScreenMode {
-    // Not in fullscreen mode.
-    FULLSCREEN_DISABLED,
-
-    // Fullscreen mode, occupying the whole screen.
-    FULLSCREEN_NORMAL,
-
-    // Fullscreen mode for metro snap, occupying the full height and 20% of
-    // the screen width.
-    FULLSCREEN_METRO_SNAP,
-  };
-
   // Overridden from CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(
       int id,
@@ -151,7 +139,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   // Update commands whose state depends on the type of fullscreen mode the
   // window is in.
-  void UpdateCommandsForFullscreenMode(FullScreenMode fullscreen_mode);
+  void UpdateCommandsForFullscreenMode();
 
   // Update commands whose state depends on whether multiple profiles are
   // allowed.

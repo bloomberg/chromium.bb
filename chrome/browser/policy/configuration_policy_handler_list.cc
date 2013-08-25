@@ -27,6 +27,10 @@
 #include "chrome/browser/policy/configuration_policy_handler_android.h"
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_MACOSX)
+#include "apps/pref_names.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -345,6 +349,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSupervisedUserCreationEnabled,
     prefs::kManagedUserCreationAllowed,
     Value::TYPE_BOOLEAN },
+
+#if !defined(OS_MACOSX)
+  { key::kFullscreenAllowed,
+    prefs::kFullscreenAllowed,
+    Value::TYPE_BOOLEAN },
+  { key::kFullscreenAllowed,
+    apps::prefs::kAppFullscreenAllowed,
+    Value::TYPE_BOOLEAN },
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

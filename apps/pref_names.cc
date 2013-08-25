@@ -8,6 +8,10 @@ namespace apps {
 
 namespace prefs {
 
+// A boolean that tracks whether apps are allowed to enter fullscreen mode.
+extern const char kAppFullscreenAllowed[] =
+    "apps.fullscreen.allowed";
+
 // A boolean that tracks whether the user has ever enabled the app launcher.
 const char kAppLauncherHasBeenEnabled[] =
     "apps.app_launcher.has_been_enabled";
