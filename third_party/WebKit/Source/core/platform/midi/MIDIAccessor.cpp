@@ -81,11 +81,6 @@ void MIDIAccessor::didStartSession(bool success)
     m_client->didStartSession(success);
 }
 
-void MIDIAccessor::didStartSession()
-{
-    m_client->didStartSession(true);
-}
-
 void MIDIAccessor::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
     m_client->didReceiveMIDIData(portIndex, data, length, timeStamp);

@@ -42,9 +42,6 @@ public:
 
     virtual void didStartSession(bool success) = 0;
 
-    // FIXME: Remove deprecated API once chromium switch over to new one.
-    virtual void didStartSession() = 0;
-
     // |timeStamp| is in milliseconds according to the Web MIDI API.
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
 

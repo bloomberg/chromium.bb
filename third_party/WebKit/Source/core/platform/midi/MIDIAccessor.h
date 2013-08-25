@@ -55,9 +55,6 @@ public:
     virtual void didStartSession(bool success) OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
-    // FIXME: Remove deprecated API once chromium switch over to new one.
-    virtual void didStartSession() OVERRIDE;
-
 private:
     explicit MIDIAccessor(MIDIAccessorClient*);
 
