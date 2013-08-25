@@ -9,7 +9,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "ui/base/range/range.h"
 
-
 namespace content {
 
 TEST(SiteIsolationPolicyTest, IsBlockableScheme) {
@@ -89,6 +88,9 @@ TEST(SiteIsolationPolicyTest, SniffForHTML) {
                                                  arraysize(non_html_data)));
   EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(comment_js_data,
                                                  arraysize(comment_js_data)));
+
+  // Basic bounds check.
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForHTML(html_data, 0));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForXML) {
@@ -98,6 +100,9 @@ TEST(SiteIsolationPolicyTest, SniffForXML) {
   EXPECT_TRUE(SiteIsolationPolicy::SniffForXML(xml_data, arraysize(xml_data)));
   EXPECT_FALSE(
       SiteIsolationPolicy::SniffForXML(non_xml_data, arraysize(non_xml_data)));
+
+  // Basic bounds check.
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForXML(xml_data, 0));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForJSON) {
@@ -111,15 +116,22 @@ TEST(SiteIsolationPolicyTest, SniffForJSON) {
                                                  arraysize(non_json_data0)));
   EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(non_json_data1,
                                                  arraysize(non_json_data1)));
+
+  // Basic bounds check.
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJSON(json_data, 0));
 }
 
 TEST(SiteIsolationPolicyTest, SniffForJS) {
+  const char basic_js_data[] = "var a = 4";
   const char js_data[] = "\t\t\r\n var a = 4";
   const char json_data[] = "\t\t\r\n   { \"name\" : \"chrome\", ";
 
   EXPECT_TRUE(SiteIsolationPolicy::SniffForJS(js_data, arraysize(js_data)));
   EXPECT_FALSE(
       SiteIsolationPolicy::SniffForJS(json_data, arraysize(json_data)));
+
+  // Basic bounds check.
+  EXPECT_FALSE(SiteIsolationPolicy::SniffForJS(basic_js_data, 0));
 }
 
 }  // namespace content

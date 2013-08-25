@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -414,19 +415,21 @@ bool SiteIsolationPolicy::SniffForHTML(const char* data, size_t length) {
 
   // "<!--" is specially treated since web JS can use "<!--" "-->" pair for
   // comments.
-  const char* comment_begins[] = {"<!--" };
+  static const char* comment_begins[] = {"<!--"};
 
   if (MatchesSignature(
           data, length, comment_begins, arraysize(comment_begins))) {
     // Search for --> and do SniffForHTML after that. If we can find the
     // comment's end, we start HTML sniffing from there again.
-    const char end_comment[] = "-->";
-    const size_t end_comment_size = strlen(end_comment);
+    static const char end_comment[] = "-->";
+    base::StringPiece data_as_stringpiece(data, length);
 
-    for (size_t i = 0; i <= length - end_comment_size; ++i) {
-      if (!strncmp(data + i, end_comment, end_comment_size)) {
-        size_t skipped = i + end_comment_size;
-        return SniffForHTML(data + skipped, length - skipped);
+    size_t offset = data_as_stringpiece.find(end_comment);
+    if (offset != base::StringPiece::npos) {
+      size_t new_start_offset = offset + strlen(end_comment);
+      if (new_start_offset < length) {
+        return SniffForHTML(data + new_start_offset,
+                            length - new_start_offset);
       }
     }
   }
@@ -539,11 +542,8 @@ bool SiteIsolationPolicy::SniffForJS(const char* data, size_t length) {
   // gathered.
 
   // Search for "var " for JS detection.
-  for (size_t i = 0; i < length - 3; ++i) {
-    if (strncmp(data + i, "var ", 4) == 0)
-      return true;
-  }
-  return false;
+  return base::StringPiece(data, length).find("var ") !=
+    base::StringPiece::npos;
 }
 
 SiteIsolationPolicy::RequestIdToMetaDataMap*
