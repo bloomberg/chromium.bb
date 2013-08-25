@@ -283,6 +283,17 @@ void DialogClientView::ViewHierarchyChanged(
   }
 }
 
+void DialogClientView::NativeViewHierarchyChanged() {
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager_ != focus_manager) {
+    if (focus_manager_)
+      focus_manager_->RemoveFocusChangeListener(this);
+    focus_manager_ = focus_manager;
+    if (focus_manager_)
+      focus_manager_->AddFocusChangeListener(this);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, ButtonListener implementation:
 

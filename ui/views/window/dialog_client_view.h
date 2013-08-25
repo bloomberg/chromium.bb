@@ -62,6 +62,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+  virtual void NativeViewHierarchyChanged() OVERRIDE;
 
   // ButtonListener implementation:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
@@ -84,6 +85,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   virtual void ChildVisibilityChanged(View* child) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DialogClientViewTest, FocusManager);
+
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
   // Create a dialog button of the appropriate type.
