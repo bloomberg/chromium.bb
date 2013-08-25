@@ -1019,6 +1019,7 @@
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/transport_security_persister_unittest.cc',
         'browser/net/url_info_unittest.cc',
+        'browser/network_time/navigation_time_helper_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/message_center_notifications_unittest_win.cc',
         'browser/notifications/message_center_settings_controller_unittest.cc',

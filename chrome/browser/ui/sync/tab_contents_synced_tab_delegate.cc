@@ -101,6 +101,10 @@ bool TabContentsSyncedTabDelegate::IsPinned() const {
 
 bool TabContentsSyncedTabDelegate::HasWebContents() const { return true; }
 
+content::WebContents* TabContentsSyncedTabDelegate::GetWebContents() const {
+  return web_contents_;
+}
+
 int TabContentsSyncedTabDelegate::GetSyncId() const {
   return sync_session_id_;
 }

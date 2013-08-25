@@ -1209,6 +1209,8 @@
         'browser/net/transport_security_persister.h',
         'browser/net/url_info.cc',
         'browser/net/url_info.h',
+        'browser/network_time/navigation_time_helper.cc',
+        'browser/network_time/navigation_time_helper.h',
         'browser/notifications/balloon.cc',
         'browser/notifications/balloon.h',
         'browser/notifications/balloon_collection.cc',

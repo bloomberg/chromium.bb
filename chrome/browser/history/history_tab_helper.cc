@@ -8,6 +8,9 @@
 
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/network_time/navigation_time_helper.h"
+#endif
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -96,13 +99,21 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   if (!params.should_update_history)
     return;
 
+#if !defined(OS_ANDROID)
+  base::Time navigation_time =
+      NavigationTimeHelper::FromWebContents(web_contents())->GetNavigationTime(
+          details.entry);
+#else
+  base::Time navigation_time = details.entry->GetTimestamp();
+#endif
+
   // Most of the time, the displayURL matches the loaded URL, but for about:
   // URLs, we use a data: URL as the real value.  We actually want to save the
   // about: URL to the history db and keep the data: URL hidden. This is what
   // the WebContents' URL getter does.
   const history::HistoryAddPageArgs& add_page_args =
       CreateHistoryAddPageArgs(
-          web_contents()->GetURL(), details.entry->GetTimestamp(),
+          web_contents()->GetURL(), navigation_time,
           details.did_replace_entry, params);
 
   prerender::PrerenderManager* prerender_manager =

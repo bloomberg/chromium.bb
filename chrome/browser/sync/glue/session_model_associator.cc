@@ -17,6 +17,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/network_time/navigation_time_helper.h"
+#endif
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -503,6 +506,15 @@ void SessionModelAssociator::SetSessionTabFromDelegate(
                                  tab_delegate.GetEntryCount());
   bool is_managed = tab_delegate.ProfileIsManaged();
   session_tab->navigations.clear();
+
+#if !defined(OS_ANDROID)
+  // For getting navigation time in network time.
+  NavigationTimeHelper* nav_time_helper =
+      tab_delegate.HasWebContents() ?
+          NavigationTimeHelper::FromWebContents(tab_delegate.GetWebContents()) :
+          NULL;
+#endif
+
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
         tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
@@ -510,8 +522,17 @@ void SessionModelAssociator::SetSessionTabFromDelegate(
     if (!entry->GetVirtualURL().is_valid())
       continue;
 
+    scoped_ptr<content::NavigationEntry> network_time_entry(
+        content::NavigationEntry::Create(*entry));
+#if !defined(OS_ANDROID)
+    if (nav_time_helper) {
+      network_time_entry->SetTimestamp(
+          nav_time_helper->GetNavigationTime(entry));
+    }
+#endif
+
     session_tab->navigations.push_back(
-        SerializedNavigationEntry::FromNavigationEntry(i, *entry));
+        SerializedNavigationEntry::FromNavigationEntry(i, *network_time_entry));
     if (is_managed) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);
@@ -526,6 +547,7 @@ void SessionModelAssociator::SetSessionTabFromDelegate(
       session_tab->navigations.push_back(
           SerializedNavigationEntry::FromNavigationEntry(
               i + offset, *blocked_navigations[i]));
+      // Blocked navigations already use network navigation time.
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_BLOCKED);
       // TODO(bauerb): Add categories
