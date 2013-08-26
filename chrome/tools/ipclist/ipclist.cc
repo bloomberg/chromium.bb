@@ -19,7 +19,7 @@ struct msginfo {
   int in_count;
   int out_count;
 
-  bool operator< (const msginfo other) const {
+  bool operator< (const msginfo& other) const {
     return id < other.id;
   }
 };
