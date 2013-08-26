@@ -135,11 +135,13 @@ class DevToolsWindow : private content::NotificationObserver,
                                 const GURL& frontend_url,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,
-                                bool shared_worker_frontend);
+                                bool shared_worker_frontend,
+                                bool external_frontend);
   static GURL GetDevToolsURL(Profile* profile,
                              const GURL& base_url,
                              DevToolsDockSide dock_side,
-                             bool shared_worker_frontend);
+                             bool shared_worker_frontend,
+                             bool external_frontend);
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
   static DevToolsDockSide GetDockSideFromPrefs(Profile* profile);

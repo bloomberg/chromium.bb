@@ -328,7 +328,8 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true);
+  return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true,
+                false);
 }
 
 // static
@@ -360,7 +361,7 @@ void DevToolsWindow::OpenExternalFrontend(
   DevToolsWindow* window = FindDevToolsWindow(agent_host);
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
-                    DEVTOOLS_DOCK_SIDE_UNDOCKED, false);
+                    DEVTOOLS_DOCK_SIDE_UNDOCKED, false, true);
     content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host, window->frontend_host_.get());
   }
@@ -381,7 +382,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
-    window = Create(profile, GURL(), inspected_rvh, dock_side, false);
+    window = Create(profile, GURL(), inspected_rvh, dock_side, false, false);
     manager->RegisterDevToolsClientHostFor(agent.get(),
                                            window->frontend_host_.get());
     do_open = true;
@@ -590,10 +591,12 @@ DevToolsWindow* DevToolsWindow::Create(
     const GURL& frontend_url,
     content::RenderViewHost* inspected_rvh,
     DevToolsDockSide dock_side,
-    bool shared_worker_frontend) {
+    bool shared_worker_frontend,
+    bool external_frontend) {
   // Create WebContents with devtools.
   GURL url(GetDevToolsURL(profile, frontend_url, dock_side,
-                          shared_worker_frontend));
+                          shared_worker_frontend,
+                          external_frontend));
   return new DevToolsWindow(profile, url, inspected_rvh, dock_side);
 }
 
@@ -601,7 +604,8 @@ DevToolsWindow* DevToolsWindow::Create(
 GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const GURL& base_url,
                                     DevToolsDockSide dock_side,
-                                    bool shared_worker_frontend) {
+                                    bool shared_worker_frontend,
+                                    bool external_frontend) {
   std::string frontend_url(
       base_url.is_empty() ? chrome::kChromeUIDevToolsURL : base_url.spec());
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
@@ -616,6 +620,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)));
   if (shared_worker_frontend)
     url_string += "&isSharedWorker=true";
+  if (external_frontend)
+    url_string += "&remoteFrontend=true";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
