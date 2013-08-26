@@ -247,9 +247,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-
   // reported source for the error; this can point to a page or a script,
-  // and can be external (e.g., "http://www.google.com"), extension-related
-  // (e.g., "chrome-extension://<extension_id>/background.js"), or internal
-  // (e.g., "event_bindings" or "schemaUtils").
+  // and can be external or internal.
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const;
 };

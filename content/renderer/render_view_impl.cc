@@ -2391,12 +2391,6 @@ bool RenderViewImpl::shouldReportDetailedMessageForSource(
 
 void RenderViewImpl::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
-    unsigned source_line) {
-  didAddMessageToConsole(message, source_name, source_line, WebString());
-}
-
-void RenderViewImpl::didAddMessageToConsole(
-    const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line, const WebString& stack_trace) {
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {

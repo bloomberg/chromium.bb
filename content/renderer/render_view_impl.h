@@ -448,16 +448,11 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual bool shouldReportDetailedMessageForSource(
       const WebKit::WebString& source);
-  // TODO(rdevlin.cronin): Remove this version once
-  // https://codereview.chromium.org/18822004/ lands.
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,
-      unsigned source_line);
-  virtual void didAddMessageToConsole(
-      const WebKit::WebConsoleMessage& message,
-      const WebKit::WebString& source_name,
-      unsigned source_line, const WebKit::WebString& stack_trace);
+      unsigned source_line,
+      const WebKit::WebString& stack_trace);
   virtual void printPage(WebKit::WebFrame* frame);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual bool enumerateChosenDirectory(
