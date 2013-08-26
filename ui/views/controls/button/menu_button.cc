@@ -18,6 +18,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/mouse_constants.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,7 +33,6 @@ static const int kDefaultMenuOffsetY = -4;
 
 // static
 const char MenuButton::kViewClassName[] = "MenuButton";
-const int64 MenuButton::kMinimumTimeBetweenButtonClicks = 100;
 const int MenuButton::kMenuMarkerPaddingLeft = 3;
 const int MenuButton::kMenuMarkerPaddingRight = -1;
 
@@ -182,10 +182,8 @@ bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
         HitTestPoint(event.location()) &&
         GetDragOperations(event.location()) == ui::DragDropTypes::DRAG_NONE) {
       TimeDelta delta = Time::Now() - menu_closed_time_;
-      int64 delta_in_milliseconds = delta.InMilliseconds();
-      if (delta_in_milliseconds > kMinimumTimeBetweenButtonClicks) {
+      if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
         return Activate();
-      }
     }
   }
   return true;

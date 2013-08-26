@@ -137,7 +137,7 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
 
   // Only used for testing.
-  static void TurnOffContextMenuSelectionHoldForTest();
+  static void TurnOffMenuSelectionHoldForTest();
 
  private:
   friend class internal::MenuRunnerImpl;
@@ -573,6 +573,10 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
 
   // Time when the menu is first shown.
   base::TimeTicks menu_start_time_;
+
+  // If a mouse press triggered this menu, this will have its location (in
+  // screen coordinates). Otherwise this will be (0, 0).
+  gfx::Point menu_start_mouse_press_loc_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

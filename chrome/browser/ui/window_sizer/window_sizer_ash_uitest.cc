@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   // Don't shutdown when closing the last browser window.
   chrome::StartKeepAlive();
 
-  views::MenuController::TurnOffContextMenuSelectionHoldForTest();
+  views::MenuController::TurnOffMenuSelectionHoldForTest();
 
   ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
 

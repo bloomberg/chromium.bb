@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
@@ -41,7 +42,6 @@ class BubbleBorder;
 class Checkbox;
 class Combobox;
 class FocusManager;
-class ImageButton;
 class ImageView;
 class Label;
 class LabelButton;
@@ -73,7 +73,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
                             public views::ComboboxListener,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::MenuButtonListener {
  public:
   explicit AutofillDialogViews(AutofillDialogViewDelegate* delegate);
   virtual ~AutofillDialogViews();
@@ -169,6 +170,10 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void StyledLabelLinkClicked(const ui::Range& range, int event_flags)
       OVERRIDE;
 
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
+
  private:
   // A class that creates and manages a widget for error messages.
   class ErrorBubble : public views::WidgetObserver {
@@ -204,6 +209,7 @@ class AutofillDialogViews : public AutofillDialogView,
   // switch accounts.
   class AccountChooser : public views::View,
                          public views::LinkListener,
+                         public views::MenuButtonListener,
                          public base::SupportsWeakPtr<AccountChooser> {
    public:
     explicit AccountChooser(AutofillDialogViewDelegate* delegate);
@@ -212,22 +218,19 @@ class AutofillDialogViews : public AutofillDialogView,
     // Updates the view based on the state that |delegate_| reports.
     void Update();
 
-    // views::View implementation.
-    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-    virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-
     // views::LinkListener implementation.
     virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+    // views::MenuButtonListener implementation.
+    virtual void OnMenuButtonClicked(views::View* source,
+                                     const gfx::Point& point) OVERRIDE;
 
    private:
     // The icon for the currently in-use account.
     views::ImageView* image_;
 
-    // The label for the currently in-use account.
-    views::Label* label_;
-
-    // The drop arrow.
-    views::ImageView* arrow_;
+    // The button for showing a menu to change the currently in-use account.
+    views::MenuButton* menu_button_;
 
     // The sign in link.
     views::Link* link_;
@@ -379,6 +382,24 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(SectionContainer);
   };
 
+  class SuggestedButton : public views::MenuButton {
+   public:
+    explicit SuggestedButton(views::MenuButtonListener* listener);
+    virtual ~SuggestedButton();
+
+    // views::MenuButton implementation.
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+    virtual const char* GetClassName() const OVERRIDE;
+    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+   private:
+    // Returns the corred resource ID (i.e. IDR_*) for the current |state()|.
+    int ResourceIDForState() const;
+
+    DISALLOW_COPY_AND_ASSIGN(SuggestedButton);
+  };
+
   // A view that contains a suggestion (such as a known address) and a link to
   // edit the suggestion.
   class SuggestionView : public views::View {
@@ -456,7 +477,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // visible IFF |manual_input| is not visible.
     SuggestionView* suggested_info;
     // The view that allows selecting other data suggestions.
-    views::ImageButton* suggested_button;
+    SuggestedButton* suggested_button;
   };
 
   // Area for displaying that status of various steps in an Autocheckout flow.

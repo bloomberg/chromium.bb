@@ -314,6 +314,8 @@
         'metrics.h',
         'metrics_aura.cc',
         'metrics_win.cc',
+        'mouse_constants.cc',
+        'mouse_constants.h',
         'mouse_watcher.cc',
         'mouse_watcher.h',
         'mouse_watcher_view_host.cc',

@@ -19,11 +19,11 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/color_constants.h"
-#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/mouse_constants.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -100,7 +100,7 @@ bool NativeComboboxViews::OnMousePressed(const ui::MouseEvent& mouse_event) {
   combobox_->RequestFocus();
   const base::TimeDelta delta = base::Time::Now() - closed_time_;
   if (mouse_event.IsLeftMouseButton() &&
-      (delta.InMilliseconds() > MenuButton::kMinimumTimeBetweenButtonClicks)) {
+      delta.InMilliseconds() > kMinimumMsBetweenButtonClicks) {
     UpdateFromModel();
     ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
   }

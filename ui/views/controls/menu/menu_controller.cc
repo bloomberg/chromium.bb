@@ -21,13 +21,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
+#include "ui/views/controls/menu/menu_host_root_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/mouse_constants.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
@@ -68,11 +71,16 @@ namespace {
 // When showing context menu on mouse down, the user might accidentally select
 // the menu item on the subsequent mouse up. To prevent this, we add the
 // following delay before the user is able to select an item.
-static int context_menu_selection_hold_time_ms = 200;
+static int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
 
 // The spacing offset for the bubble tip.
 const int kBubbleTipSizeLeftRight = 12;
 const int kBubbleTipSizeTopBottom = 11;
+
+// The maximum distance (in DIPS) that the mouse can be moved before it should
+// trigger a mouse menu item activation (regardless of how long the menu has
+// been showing).
+const float kMaximumLengthMovedToActivate = 4.0f;
 
 // Returns true if the mnemonic of |menu| matches key.
 bool MatchesMnemonic(MenuItemView* menu, char16 key) {
@@ -268,7 +276,7 @@ struct MenuController::SelectByCharDetails {
 MenuController::State::State()
     : item(NULL),
       submenu_open(false),
-      anchor(views::MenuItemView::TOPLEFT),
+      anchor(MenuItemView::TOPLEFT),
       context_menu(false) {}
 
 MenuController::State::~State() {}
@@ -295,12 +303,26 @@ MenuItemView* MenuController::Run(Widget* parent,
   drag_in_progress_ = false;
   closing_event_time_ = base::TimeDelta();
   menu_start_time_ = base::TimeTicks::Now();
+  menu_start_mouse_press_loc_ = gfx::Point();
 
   // If we are shown on mouse press, we will eat the subsequent mouse down and
   // the parent widget will not be able to reset its state (it might have mouse
   // capture from the mouse down). So we clear its state here.
-  if (parent && parent->GetRootView())
-    parent->GetRootView()->SetMouseHandler(NULL);
+  if (parent) {
+    View* root_view = parent->GetRootView();
+    if (root_view) {
+      root_view->SetMouseHandler(NULL);
+      const ui::Event* event =
+          static_cast<internal::RootView*>(root_view)->current_event();
+      if (event && event->type() == ui::ET_MOUSE_PRESSED) {
+        gfx::Point screen_loc(
+            static_cast<const ui::MouseEvent*>(event)->location());
+        View::ConvertPointToScreen(
+            static_cast<View*>(event->target()), &screen_loc);
+        menu_start_mouse_press_loc_ = screen_loc;
+      }
+    }
+  }
 
   bool nested_menu = showing_;
   if (showing_) {
@@ -485,9 +507,9 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     // If it is from an empty menu, use parent context menu instead of that.
     if (menu == NULL &&
         part.submenu->child_count() == 1 &&
-        part.submenu->child_at(0)->id()
-           == views::MenuItemView::kEmptyMenuItemViewID)
+        part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
+    }
 
     if (menu != NULL && ShowContextMenu(menu, source, event,
                                         ui::MENU_SOURCE_MOUSE))
@@ -504,6 +526,19 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       SendMouseReleaseToActiveView(source, event);
       return;
     }
+    // If a mouse release was received quickly after showing.
+    base::TimeDelta time_shown = base::TimeTicks::Now() - menu_start_time_;
+    if (time_shown.InMilliseconds() < menu_selection_hold_time_ms) {
+      // And it wasn't far from the mouse press location.
+      gfx::Point screen_loc(event.location());
+      View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+      gfx::Vector2d moved = screen_loc - menu_start_mouse_press_loc_;
+      if (moved.Length() < kMaximumLengthMovedToActivate) {
+        // Ignore the mouse release as it was likely this menu was shown under
+        // the mouse and the action was just a normal click.
+        return;
+      }
+    }
     if (part.menu->GetDelegate()->ShouldExecuteCommandWithoutClosingMenu(
             part.menu->GetCommand(), event)) {
       part.menu->GetDelegate()->ExecuteCommand(part.menu->GetCommand(),
@@ -512,11 +547,11 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
     if (!part.menu->NonIconChildViewsCount() &&
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
-      int64 time_since_menu_start =
-          (base::TimeTicks::Now() - menu_start_time_).InMilliseconds();
+      base::TimeDelta shown_time = base::TimeTicks::Now() - menu_start_time_;
       if (!state_.context_menu || !View::ShouldShowContextMenuOnMousePress() ||
-          time_since_menu_start > context_menu_selection_hold_time_ms)
+          shown_time.InMilliseconds() > menu_selection_hold_time_ms) {
         Accept(part.menu, event.flags());
+      }
       return;
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
@@ -740,7 +775,7 @@ void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
     gfx::Point point = GetScreen()->GetCursorScreenPoint();
     const SubmenuView* root_submenu =
         submenu->GetMenuItem()->GetRootMenuItem()->GetSubmenu();
-    views::View::ConvertPointFromScreen(
+    View::ConvertPointFromScreen(
         root_submenu->GetWidget()->GetRootView(), &point);
     HandleMouseLocation(submenu, point);
   }
@@ -753,8 +788,8 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
 }
 
 // static
-void MenuController::TurnOffContextMenuSelectionHoldForTest() {
-  context_menu_selection_hold_time_ms = -1;
+void MenuController::TurnOffMenuSelectionHoldForTest() {
+  menu_selection_hold_time_ms = -1;
 }
 
 void MenuController::SetSelection(MenuItemView* menu_item,
@@ -914,7 +949,7 @@ void MenuController::StartDrag(SubmenuView* source,
   View::ConvertPointToTarget(NULL, item, &press_loc);
   gfx::Point widget_loc(press_loc);
   View::ConvertPointToWidget(item, &widget_loc);
-  scoped_ptr<gfx::Canvas> canvas(views::GetCanvasForDragImage(
+  scoped_ptr<gfx::Canvas> canvas(GetCanvasForDragImage(
       source->GetWidget(), gfx::Size(item->width(), item->height())));
   item->PaintButton(canvas.get(), MenuItemView::PB_FOR_DRAG);
 
@@ -2079,8 +2114,8 @@ void MenuController::RepostEvent(SubmenuView* source,
 
     if (submenu->GetWidget()->GetNativeView() &&
         GetWindowThreadProcessId(
-            views::HWNDForNativeView(submenu->GetWidget()->GetNativeView()),
-            NULL) != GetWindowThreadProcessId(window, NULL)) {
+            HWNDForNativeView(submenu->GetWidget()->GetNativeView()), NULL) !=
+                GetWindowThreadProcessId(window, NULL)) {
       // Even though we have mouse capture, windows generates a mouse event
       // if the other window is in a separate thread. Don't generate an event in
       // this case else the target window can get double events leading to bad
@@ -2232,9 +2267,8 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
   View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                              &target_loc);
   View::ConvertPointToTarget(NULL, active_mouse_view_, &target_loc);
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                           target_loc, target_loc,
-                           event.flags());
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc, target_loc,
+                               event.flags());
   // Reset the active_mouse_view_ before sending mouse released. That way if it
   // calls back to us, we aren't in a weird state.
   View* active_view = active_mouse_view_;
