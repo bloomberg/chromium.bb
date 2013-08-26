@@ -24,11 +24,14 @@ GSUTIL=/b/build/scripts/slave/gsutil
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out/* tools/toolchain \
+echo @@@BUILD_STEP clobber_toolchain@@@
+rm -rf scons-out tools/BUILD/* tools/out/* tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/mac_x86
+
+echo @@@BUILD_STEP clean_sources@@@
+tools/update_all_repos_to_latest.sh
 
 # glibc_download.sh can return three return codes:
 #  0 - glibc is successfully downloaded and installed

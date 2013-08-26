@@ -26,12 +26,15 @@ export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
 export ac_cv_func_mmap_fixed_mapped=yes
 
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
+echo @@@BUILD_STEP clobber_toolchain@@@
+rm -rf scons-out tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* "${this_toolchain}" .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/win_x86
 ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
+
+echo @@@BUILD_STEP clean_sources@@@
+tools/update_all_repos_to_latest.sh
 
 # glibc_download.sh can return three return codes:
 #  0 - glibc is successfully downloaded and installed

@@ -33,7 +33,10 @@ cd tools
 export INSIDE_TOOLCHAIN=1
 
 echo @@@BUILD_STEP clobber_toolchain@@@
-rm -rf ../scons-out sdk-out sdk ../toolchain/*_newlib SRC/* BUILD/*
+rm -rf ../scons-out sdk-out sdk ../toolchain/*_newlib BUILD/*
+
+echo @@@BUILD_STEP clean_sources@@@
+./update_all_repos_to_latest.sh
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
 echo @@@BUILD_STEP setup source@@@
