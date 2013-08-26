@@ -83,7 +83,9 @@
 #include "wtf/FastMalloc.h"
 #include "wtf/SpinLock.h"
 
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #include <stdlib.h>
+#endif
 
 namespace WTF {
 
@@ -192,7 +194,9 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-    return malloc(size);
+    void* result = malloc(size);
+    RELEASE_ASSERT(result);
+    return result;
 #else
     size_t index = size >> kBucketShift;
     ASSERT(index < kNumBuckets);
@@ -242,7 +246,9 @@ ALWAYS_INLINE size_t partitionAllocRoundup(size_t size)
 ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-    return malloc(size);
+    void* result = malloc(size);
+    RELEASE_ASSERT(result);
+    return result;
 #else
     if (LIKELY(size <= kMaxAllocation)) {
         size = partitionAllocRoundup(size);
