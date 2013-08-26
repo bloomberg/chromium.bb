@@ -19,9 +19,9 @@ hr {
 /* Override the visual style of tabs. */
 
 #tabs-header-container {
-  margin: 0 auto;
+  margin: 0 20px;
   position: relative;
-  width: 720px;
+  width: calc(100% - 40px);
 }
 
 #tabs {
@@ -77,10 +77,15 @@ tabpanel {
 /* Header */
 
 #header {
-  border-bottom: 1px solid #d1d1d1;
   border-top: 1px solid #d1d1d1;
   height: 58px;
   width: 100%;
+}
+
+#header-bottom-separator {
+  border-bottom: 1px solid #d1d1d1;
+  margin: 0 20px;
+  width: calc(100% - 40px);
 }
 
 #developer-controls {
@@ -110,7 +115,7 @@ tabpanel {
   font-size: 13px;
   height: 18px;
   position: absolute;
-  right: 16px;
+  right: 0;
   top: 15px;
   width: 220px;
 }
@@ -213,13 +218,12 @@ html[dir='rtl'] .load-unpacked {
 #extensions-tab {
   height: 100%;
   overflow-y: scroll;
-  width: 720px;
 }
 
 .packed-list,
 .unpacked-list {
-  margin: 0 auto;
-  width: 720px;
+  margin: 0 20px;
+  width: calc(100% - 40px);
 }
 
 .loading #no-extensions,
@@ -285,6 +289,10 @@ html[dir='rtl'] .extension-list-item {
  */
 .inactive-extension .extension-title {
   color: inherit;
+}
+
+.extension-title-container {
+  margin-bottom: 5px;
 }
 
 .extension-version {
@@ -393,7 +401,7 @@ html[dir='rtl'] .enable-control {
 }
 
 .extension-details-summary {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .extension-details-all {
