@@ -152,7 +152,8 @@ void RemoveFakeCredentials(
 // Creates a Shill property dictionary from the given arguments. The resulting
 // dictionary will be sent to Shill by the caller. Depending on the profile
 // type, |policy| is interpreted as the user or device policy and |settings| as
-// the user or shared settings.
+// the user or shared settings. |policy| or |settings| can be NULL, but not
+// both.
 scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     const NetworkProfile& profile,
     const std::string& guid,
@@ -341,6 +342,13 @@ class ManagedNetworkConfigurationHandlerImpl::PolicyApplicator
   // Sends Shill the command to delete profile entry |entry| from |profile_|.
   void DeleteEntry(const std::string& entry);
 
+  // Creates a Shill configuration from the given parameters and sends them to
+  // Shill. |user_settings| can be NULL if none exist.
+  void CreateAndWriteNewShillConfiguration(
+      const std::string& guid,
+      const base::DictionaryValue& policy,
+      const base::DictionaryValue* user_settings);
+
   // Creates new entries for all remaining policies, i.e. for which not matching
   // entry was found.
   virtual ~PolicyApplicator();
@@ -392,7 +400,6 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
   std::string profile_path;
   shill_properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
                                                  &profile_path);
-  LOG(ERROR) << "Profile: " << profile_path;
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
@@ -934,14 +941,7 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::GetEntryCallback(
           ui_data ? ui_data->user_settings() : NULL;
 
       // Write the new configuration.
-      scoped_ptr<base::DictionaryValue> shill_dictionary =
-          CreateShillConfiguration(
-              profile_, new_guid, new_policy, user_settings);
-      handler_->network_configuration_handler()->CreateConfiguration(
-          *shill_dictionary,
-          base::Bind(&ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied,
-                     handler_),
-          base::Bind(&LogErrorWithDict, FROM_HERE));
+      CreateAndWriteNewShillConfiguration(new_guid, *new_policy, user_settings);
       remaining_policies_.erase(new_guid);
     }
   } else if (was_managed) {
@@ -962,11 +962,25 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::GetEntryCallback(
 
 void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::DeleteEntry(
     const std::string& entry) {
-  DBusThreadManager::Get()->GetShillProfileClient()
-      ->DeleteEntry(dbus::ObjectPath(profile_.path),
-                    entry,
-                    base::Bind(&base::DoNothing),
-                    base::Bind(&LogErrorMessage, FROM_HERE));
+  DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
+      dbus::ObjectPath(profile_.path),
+      entry,
+      base::Bind(&base::DoNothing),
+      base::Bind(&LogErrorMessage, FROM_HERE));
+}
+
+void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::
+    CreateAndWriteNewShillConfiguration(
+        const std::string& guid,
+        const base::DictionaryValue& policy,
+        const base::DictionaryValue* user_settings) {
+  scoped_ptr<base::DictionaryValue> shill_dictionary =
+      CreateShillConfiguration(profile_, guid, &policy, user_settings);
+  handler_->network_configuration_handler()->CreateConfiguration(
+      *shill_dictionary,
+      base::Bind(&ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied,
+                 handler_),
+      base::Bind(&LogErrorWithDict, FROM_HERE));
 }
 
 ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
@@ -1001,14 +1015,8 @@ ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
     VLOG(1) << "Creating new configuration managed by policy " << *it
             << " in profile " << profile_.ToDebugString() << ".";
 
-    scoped_ptr<base::DictionaryValue> shill_dictionary =
-        CreateShillConfiguration(
-            profile_, *it, policy, NULL /* no user settings */);
-    handler_->network_configuration_handler()->CreateConfiguration(
-        *shill_dictionary,
-        base::Bind(&ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied,
-                   handler_),
-        base::Bind(&LogErrorWithDict, FROM_HERE));
+    CreateAndWriteNewShillConfiguration(
+        *it, *policy, NULL /* no user settings */);
   }
 }
 
