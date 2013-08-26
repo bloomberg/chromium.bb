@@ -439,7 +439,6 @@ extern const char kUseMockKeychain[];
 #if defined(OS_WIN)
 extern const char kForceImmersive[];
 extern const char kForceDesktop[];
-extern const char kOverlappedRead[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kWaitForMutex[];

@@ -27,10 +27,6 @@
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
 
-#if defined(OS_WIN)
-#include "net/socket/tcp_client_socket_win.h"
-#endif  // defined(OS_WIN)
-
 namespace chrome {
 
 namespace {
@@ -118,31 +114,6 @@ void SetupCacheSensitivityAnalysisFieldTrial() {
   // TODO(gavinp,rvargas): Re-add 400 group to field trial if results justify.
 }
 
-void WindowsOverlappedTCPReadsFieldTrial(
-    const CommandLine& parsed_command_line) {
-#if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kOverlappedRead)) {
-    std::string option =
-        parsed_command_line.GetSwitchValueASCII(switches::kOverlappedRead);
-    if (LowerCaseEqualsASCII(option, "off"))
-      net::TCPClientSocketWin::DisableOverlappedReads();
-  } else {
-    const base::FieldTrial::Probability kDivisor = 2;  // 1 in 2 chance
-    const base::FieldTrial::Probability kOverlappedReadProbability = 1;
-    scoped_refptr<base::FieldTrial> overlapped_reads_trial(
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "OverlappedReadImpact", kDivisor, "OverlappedReadEnabled",
-            2013, 6, 1, base::FieldTrial::SESSION_RANDOMIZED, NULL));
-    int overlapped_reads_disabled_group =
-        overlapped_reads_trial->AppendGroup("OverlappedReadDisabled",
-                                            kOverlappedReadProbability);
-    int assigned_group = overlapped_reads_trial->group();
-    if (assigned_group == overlapped_reads_disabled_group)
-      net::TCPClientSocketWin::DisableOverlappedReads();
-  }
-#endif
-}
-
 void SetupLowLatencyFlashAudioFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
@@ -166,7 +137,6 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
   SetupInfiniteCacheFieldTrial();
   SetupCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
-  WindowsOverlappedTCPReadsFieldTrial(parsed_command_line);
   SetupAppLauncherFieldTrial(local_state);
   SetupLowLatencyFlashAudioFieldTrial();
 }

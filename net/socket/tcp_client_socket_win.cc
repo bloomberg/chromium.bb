@@ -182,16 +182,6 @@ class TCPClientSocketWin::Core : public base::RefCounted<Core> {
   // The TCPClientSocketWin is going away.
   void Detach() { socket_ = NULL; }
 
-  // Throttle the read size based on our current slow start state.
-  // Returns the throttled read size.
-  int ThrottleReadSize(int size) {
-    if (slow_start_throttle_ < kMaxSlowStartThrottle) {
-      size = std::min(size, slow_start_throttle_);
-      slow_start_throttle_ *= 2;
-    }
-    return size;
-  }
-
   // The separate OVERLAPPED variables for asynchronous operation.
   // |read_overlapped_| is used for both Connect() and Read().
   // |write_overlapped_| is only used for Write();
@@ -204,9 +194,6 @@ class TCPClientSocketWin::Core : public base::RefCounted<Core> {
   int read_buffer_length_;
   int write_buffer_length_;
 
-  // Remember the state of g_disable_overlapped_reads for the duration of the
-  // socket based on what it was when the socket was created.
-  bool disable_overlapped_reads_;
   bool non_blocking_reads_initialized_;
 
  private:
@@ -251,13 +238,6 @@ class TCPClientSocketWin::Core : public base::RefCounted<Core> {
   // |write_watcher_| watches for events from Write();
   base::win::ObjectWatcher write_watcher_;
 
-  // When doing reads from the socket, we try to mirror TCP's slow start.
-  // We do this because otherwise the async IO subsystem artifically delays
-  // returning data to the application.
-  static const int kInitialSlowStartThrottle = 1 * 1024;
-  static const int kMaxSlowStartThrottle = 32 * kInitialSlowStartThrottle;
-  int slow_start_throttle_;
-
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -265,12 +245,10 @@ TCPClientSocketWin::Core::Core(
     TCPClientSocketWin* socket)
     : read_buffer_length_(0),
       write_buffer_length_(0),
-      disable_overlapped_reads_(g_disable_overlapped_reads),
       non_blocking_reads_initialized_(false),
       socket_(socket),
       reader_(this),
-      writer_(this),
-      slow_start_throttle_(kInitialSlowStartThrottle) {
+      writer_(this) {
   memset(&read_overlapped_, 0, sizeof(read_overlapped_));
   memset(&write_overlapped_, 0, sizeof(write_overlapped_));
 
@@ -307,13 +285,10 @@ void TCPClientSocketWin::Core::ReadDelegate::OnObjectSignaled(
     HANDLE object) {
   DCHECK_EQ(object, core_->read_overlapped_.hEvent);
   if (core_->socket_) {
-    if (core_->socket_->waiting_connect()) {
+    if (core_->socket_->waiting_connect())
       core_->socket_->DidCompleteConnect();
-    } else if (core_->disable_overlapped_reads_) {
+    else
       core_->socket_->DidSignalRead();
-    } else {
-      core_->socket_->DidCompleteRead();
-    }
   }
 
   core_->Release();
@@ -788,10 +763,6 @@ bool TCPClientSocketWin::SetNoDelay(bool no_delay) {
   return DisableNagle(socket_, no_delay);
 }
 
-void TCPClientSocketWin::DisableOverlappedReads() {
-  g_disable_overlapped_reads = true;
-}
-
 void TCPClientSocketWin::LogConnectCompletion(int net_error) {
   if (net_error == OK)
     UpdateConnectionTypeHistograms(CONNECTION_ANY);
@@ -822,64 +793,30 @@ void TCPClientSocketWin::LogConnectCompletion(int net_error) {
 
 int TCPClientSocketWin::DoRead(IOBuffer* buf, int buf_len,
                                const CompletionCallback& callback) {
-  if (core_->disable_overlapped_reads_) {
-    if (!core_->non_blocking_reads_initialized_) {
-      WSAEventSelect(socket_, core_->read_overlapped_.hEvent,
-                     FD_READ | FD_CLOSE);
-      core_->non_blocking_reads_initialized_ = true;
-    }
-    int rv = recv(socket_, buf->data(), buf_len, 0);
-    if (rv == SOCKET_ERROR) {
-      int os_error = WSAGetLastError();
-      if (os_error != WSAEWOULDBLOCK) {
-        int net_error = MapSystemError(os_error);
-        net_log_.AddEvent(NetLog::TYPE_SOCKET_READ_ERROR,
-            CreateNetLogSocketErrorCallback(net_error, os_error));
-        return net_error;
-      }
-    } else {
-      base::StatsCounter read_bytes("tcp.read_bytes");
-      if (rv > 0) {
-        use_history_.set_was_used_to_convey_data();
-        read_bytes.Add(rv);
-      }
-      net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
-                                    buf->data());
-      return rv;
+  if (!core_->non_blocking_reads_initialized_) {
+    WSAEventSelect(socket_, core_->read_overlapped_.hEvent,
+                   FD_READ | FD_CLOSE);
+    core_->non_blocking_reads_initialized_ = true;
+  }
+  int rv = recv(socket_, buf->data(), buf_len, 0);
+  if (rv == SOCKET_ERROR) {
+    int os_error = WSAGetLastError();
+    if (os_error != WSAEWOULDBLOCK) {
+      int net_error = MapSystemError(os_error);
+      net_log_.AddEvent(
+          NetLog::TYPE_SOCKET_READ_ERROR,
+          CreateNetLogSocketErrorCallback(net_error, os_error));
+      return net_error;
     }
   } else {
-    buf_len = core_->ThrottleReadSize(buf_len);
-
-    WSABUF read_buffer;
-    read_buffer.len = buf_len;
-    read_buffer.buf = buf->data();
-
-    // TODO(wtc): Remove the assertion after enough testing.
-    AssertEventNotSignaled(core_->read_overlapped_.hEvent);
-    DWORD num;
-    DWORD flags = 0;
-    int rv = WSARecv(socket_, &read_buffer, 1, &num, &flags,
-                     &core_->read_overlapped_, NULL);
-    if (rv == 0) {
-      if (ResetEventIfSignaled(core_->read_overlapped_.hEvent)) {
-        base::StatsCounter read_bytes("tcp.read_bytes");
-        if (num > 0) {
-          use_history_.set_was_used_to_convey_data();
-          read_bytes.Add(num);
-        }
-        net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, num,
-                                      buf->data());
-        return static_cast<int>(num);
-      }
-    } else {
-      int os_error = WSAGetLastError();
-      if (os_error != WSA_IO_PENDING) {
-        int net_error = MapSystemError(os_error);
-        net_log_.AddEvent(NetLog::TYPE_SOCKET_READ_ERROR,
-            CreateNetLogSocketErrorCallback(net_error, os_error));
-        return net_error;
-      }
+    base::StatsCounter read_bytes("tcp.read_bytes");
+    if (rv > 0) {
+      use_history_.set_was_used_to_convey_data();
+      read_bytes.Add(rv);
     }
+    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
+                                  buf->data());
+    return rv;
   }
 
   waiting_read_ = true;
@@ -904,7 +841,7 @@ void TCPClientSocketWin::DoWriteCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!write_callback_.is_null());
 
-  // since Run may result in Write being called, clear write_callback_ up front.
+  // Since Run may result in Write being called, clear write_callback_ up front.
   CompletionCallback c = write_callback_;
   write_callback_.Reset();
   c.Run(rv);
@@ -936,33 +873,6 @@ void TCPClientSocketWin::DidCompleteConnect() {
     LogConnectCompletion(rv);
     DoReadCallback(rv);
   }
-}
-
-void TCPClientSocketWin::DidCompleteRead() {
-  DCHECK(waiting_read_);
-  DWORD num_bytes, flags;
-  BOOL ok = WSAGetOverlappedResult(socket_, &core_->read_overlapped_,
-                                   &num_bytes, FALSE, &flags);
-  waiting_read_ = false;
-  int rv;
-  if (ok) {
-    base::StatsCounter read_bytes("tcp.read_bytes");
-    read_bytes.Add(num_bytes);
-    if (num_bytes > 0)
-      use_history_.set_was_used_to_convey_data();
-    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,
-                                  num_bytes, core_->read_iobuffer_->data());
-    rv = static_cast<int>(num_bytes);
-  } else {
-    int os_error = WSAGetLastError();
-    rv = MapSystemError(os_error);
-    net_log_.AddEvent(NetLog::TYPE_SOCKET_READ_ERROR,
-                      CreateNetLogSocketErrorCallback(rv, os_error));
-  }
-  WSAResetEvent(core_->read_overlapped_.hEvent);
-  core_->read_iobuffer_ = NULL;
-  core_->read_buffer_length_ = 0;
-  DoReadCallback(rv);
 }
 
 void TCPClientSocketWin::DidCompleteWrite() {

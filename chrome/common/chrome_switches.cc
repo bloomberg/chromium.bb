@@ -1565,12 +1565,6 @@ const char kForceImmersive[]                = "force-immersive";
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceDesktop[]                  = "force-desktop";
 
-// Allows for disabling the overlapped I/O for TCP reads.
-// Possible values are "on" or "off".
-// The default is "on" which matches the existing behavior.
-// "off" switches to use non-blocking reads and WSAEventSelect.
-const char kOverlappedRead[]                = "overlapped-reads";
-
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]              = "relaunch-shortcut";
 
