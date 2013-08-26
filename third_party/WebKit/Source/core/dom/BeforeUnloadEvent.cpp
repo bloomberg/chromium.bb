@@ -1,9 +1,8 @@
-/*
+/**
  * Copyright (C) 2001 Peter Kelly (pmk@post.com)
  * Copyright (C) 2001 Tobias Anton (anton@stud.fbi.fh-darmstadt.de)
  * Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2003, 2005, 2006 Apple Computer, Inc.
- * Copyright (C) 2013 Samsung Electronics.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,16 +30,20 @@ namespace WebCore {
 BeforeUnloadEvent::BeforeUnloadEvent()
     : Event(eventNames().beforeunloadEvent, false, true)
 {
-    ScriptWrappable::init(this);
 }
 
 BeforeUnloadEvent::~BeforeUnloadEvent()
 {
 }
 
-bool BeforeUnloadEvent::isBeforeUnloadEvent() const
+bool BeforeUnloadEvent::storesResultAsString() const
 {
     return true;
+}
+
+void BeforeUnloadEvent::storeResult(const String& s)
+{
+    m_result = s;
 }
 
 } // namespace WebCore
