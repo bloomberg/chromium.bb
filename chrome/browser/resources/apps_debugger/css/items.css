@@ -384,6 +384,7 @@ html[dir='rtl'] .enable-control {
   display: inline-block;
 }
 
+.extension-warnings,
 .install-warnings {
   background: pink;
   border-radius: 3px;
@@ -391,12 +392,19 @@ html[dir='rtl'] .enable-control {
   padding: 2px 5px;
 }
 
+.extension-warnings a,
 .install-warnings a {
   -webkit-margin-start: 0;
 }
 
+.extension-warnings ul,
 .install-warnings ul {
   margin: 0;
+}
+
+.extension-warnings li,
+.install-warnings li {
+  word-wrap: break-word;
 }
 
 .extension-details-summary {
