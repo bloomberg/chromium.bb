@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
