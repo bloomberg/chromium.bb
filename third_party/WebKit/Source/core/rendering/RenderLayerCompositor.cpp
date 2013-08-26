@@ -413,7 +413,13 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::computeCompositingRequirements");
             OverlapMap overlapTestRequestMap;
-            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform);
+
+            // FIXME: Passing these unclippedDescendants down and keeping track
+            // of them dynamically, we are requiring a full tree walk. This
+            // should be removed as soon as proper overlap testing based on
+            // scrolling and animation bounds is implemented (crbug.com/252472).
+            Vector<RenderLayer*> unclippedDescendants;
+            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform, unclippedDescendants);
         }
         needHierarchyUpdate |= layersChanged;
     }
@@ -769,7 +775,7 @@ void RenderLayerCompositor::addToOverlapMapRecursive(OverlapMap& overlapMap, Ren
 //      must be compositing so that its contents render over that child.
 //      This implies that its positive z-index children must also be compositing.
 //
-void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer* layer, OverlapMap* overlapMap, CompositingState& compositingState, bool& layersChanged, bool& descendantHas3DTransform)
+void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer* layer, OverlapMap* overlapMap, CompositingState& compositingState, bool& layersChanged, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants)
 {
     layer->updateLayerListsIfNeeded();
 
@@ -801,6 +807,31 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // If overlap testing is used, this reason will be overridden. If overlap testing is not
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = compositingState.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
+
+    if (rootRenderLayer()->compositorDrivenAcceleratedScrollingEnabled()) {
+        Vector<size_t> unclippedDescendantsToRemove;
+        for (size_t i = 0; i < unclippedDescendants.size(); i++) {
+            RenderLayer* unclippedDescendant = unclippedDescendants.at(i);
+            // If we've reached the containing block of one of the unclipped
+            // descendants, that element is no longer relevant to whether or not we
+            // should opt in. Unfortunately we can't easily remove from the list
+            // while we're iterating, so we have to store it for later removal.
+            if (unclippedDescendant->renderer()->containingBlock() == layer->renderer()) {
+                unclippedDescendantsToRemove.append(i);
+                continue;
+            }
+            if (layer->scrollsWithRespectTo(unclippedDescendant))
+                reasonsToComposite |= CompositingReasonAssumedOverlap;
+        }
+
+        // Remove irrelevant unclipped descendants in reverse order so our stored
+        // indices remain valid.
+        for (size_t i = 0; i < unclippedDescendantsToRemove.size(); i++)
+            unclippedDescendants.remove(unclippedDescendantsToRemove.at(unclippedDescendantsToRemove.size() - i - 1));
+
+        if (reasonsToComposite & CompositingReasonOutOfFlowClipping)
+            unclippedDescendants.append(layer);
+    }
 
     bool haveComputedBounds = false;
     IntRect absBounds;
@@ -853,7 +884,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = negZOrderList->at(i);
-                computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform);
+                computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
 
                 // If we have to make a layer for this child, make one now so we can have a contents layer
                 // (since we need to ensure that the -ve z-order child renders underneath our contents).
@@ -884,7 +915,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
-            computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform);
+            computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
         }
     }
 
@@ -893,7 +924,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = posZOrderList->at(i);
-                computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform);
+                computeCompositingRequirements(layer, curLayer, overlapMap, childState, layersChanged, anyDescendantHas3DTransform, unclippedDescendants);
             }
         }
     }

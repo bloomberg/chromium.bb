@@ -440,6 +440,11 @@ void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool ena
     m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
 }
 
+void WebSettingsImpl::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled)
+{
+    m_settings->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
+}
+
 void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForFixedRootBackgroundEnabled(enabled);

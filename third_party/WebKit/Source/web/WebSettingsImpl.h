@@ -56,6 +56,7 @@ public:
     virtual void setAcceleratedCompositingForFiltersEnabled(bool);
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool);
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool);
+    virtual void setCompositorDrivenAcceleratedScrollingEnabled(bool);
     virtual void setAcceleratedCompositingForTransitionEnabled(bool);
     virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool);
     virtual void setAcceleratedCompositingForPluginsEnabled(bool);
