@@ -69,6 +69,7 @@ def GetArchiveType(filename):
   assert(magic in [AR_MAGIC, THIN_MAGIC])
 
   # Find a regular file or symbol table
+  empty_file = True
   found_type = ''
   strtab_data = ''
   while not found_type:
@@ -77,6 +78,8 @@ def GetArchiveType(filename):
       break
     elif member.error:
       driver_log.Log.Fatal("%s: %s", filename, member.error)
+
+    empty_file = False
 
     if member.is_regular_file:
       if not magic == THIN_MAGIC:
@@ -102,7 +105,10 @@ def GetArchiveType(filename):
       data = fp.read(member.size)
       continue
 
-  if not found_type:
+  if empty_file:
+    # Empty archives are treated as bitcode ones.
+    found_type = 'archive-bc'
+  elif not found_type:
     driver_log.Log.Fatal("%s: Unable to determine archive type", filename)
 
   fp.close()
