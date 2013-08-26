@@ -127,13 +127,11 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
         ASSERT(m_demux);
         for (size_t i = framesToDecode.size(); i > 0; --i) {
             size_t frameIndex = framesToDecode[i - 1];
+            if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(frameIndex))
+                return 0;
             WebPIterator webpFrame;
             if (!WebPDemuxGetFrame(m_demux, frameIndex + 1, &webpFrame))
                 return 0;
-            if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(webpFrame, frameIndex)) {
-                WebPDemuxReleaseIterator(&webpFrame);
-                return 0;
-            }
             PlatformInstrumentation::willDecodeImage("WEBP");
             decode(webpFrame.fragment.bytes, webpFrame.fragment.size, false, frameIndex);
             PlatformInstrumentation::didDecodeImage();
@@ -247,36 +245,34 @@ bool WEBPImageDecoder::updateDemuxer()
             ASSERT(animatedFrame.complete == 1);
             m_frameBufferCache[i].setDuration(animatedFrame.duration);
             m_frameBufferCache[i].setDisposalMethod(animatedFrame.dispose_method == WEBP_MUX_DISPOSE_BACKGROUND ? ImageFrame::DisposeOverwriteBgcolor : ImageFrame::DisposeKeep);
+            m_frameBufferCache[i].setAlphaBlendSource(animatedFrame.blend_method == WEBP_MUX_BLEND ? ImageFrame::BlendAtopPreviousFrame : ImageFrame::BlendAtopBgcolor);
+            IntRect frameRect(animatedFrame.x_offset, animatedFrame.y_offset, animatedFrame.width, animatedFrame.height);
+            // Make sure the frameRect doesn't extend outside the buffer.
+            if (frameRect.maxX() > size().width())
+                frameRect.setWidth(size().width() - animatedFrame.x_offset);
+            if (frameRect.maxY() > size().height())
+                frameRect.setHeight(size().height() - animatedFrame.y_offset);
+            m_frameBufferCache[i].setOriginalFrameRect(frameRect);
+            m_frameBufferCache[i].setRequiredPreviousFrameIndex(findRequiredPreviousFrame(i, !animatedFrame.has_alpha));
             WebPDemuxReleaseIterator(&animatedFrame);
-            m_frameBufferCache[i].setRequiredPreviousFrameIndex(findRequiredPreviousFrame(i));
         }
     }
 
     return true;
 }
 
-bool WEBPImageDecoder::initFrameBuffer(const WebPIterator& frame, size_t frameIndex)
+bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
 {
     ImageFrame& buffer = m_frameBufferCache[frameIndex];
     if (buffer.status() != ImageFrame::FrameEmpty) // Already initialized.
         return true;
-
-    // Initialize the frame rect in our buffer.
-    IntRect frameRect(frame.x_offset, frame.y_offset, frame.width, frame.height);
-
-    // Make sure the frameRect doesn't extend outside the buffer.
-    if (frameRect.maxX() > size().width())
-        frameRect.setWidth(size().width() - frame.x_offset);
-    if (frameRect.maxY() > size().height())
-        frameRect.setHeight(size().height() - frame.y_offset);
-    buffer.setOriginalFrameRect(frameRect);
 
     const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
     if (requiredPreviousFrameIndex == notFound) {
         // This frame doesn't rely on any previous data.
         if (!buffer.setSize(size().width(), size().height()))
             return setFailed();
-        m_frameBackgroundHasAlpha = !frameRect.contains(IntRect(IntPoint(), size()));
+        m_frameBackgroundHasAlpha = !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
     } else {
         const ImageFrame& prevBuffer = m_frameBufferCache[requiredPreviousFrameIndex];
         ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
@@ -415,15 +411,15 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
 
     // During the decoding of current frame, we may have set some pixels to be transparent (i.e. alpha < 255).
     // However, the value of each of these pixels should have been determined by blending it against the value
-    // of that pixel in the previous frame. So, we correct these pixels based on disposal method of the previous
-    // frame and the previous frame buffer.
+    // of that pixel in the previous frame if alpha blend source was 'BlendAtopPreviousFrame'. So, we correct these
+    // pixels based on disposal method of the previous frame and the previous frame buffer.
     // FIXME: This could be avoided if libwebp decoder had an API that used the previous required frame
     // to do the alpha-blending by itself.
-    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex) {
+    if ((m_formatFlags & ANIMATION_FLAG) && frameIndex && buffer.alphaBlendSource() == ImageFrame::BlendAtopPreviousFrame && buffer.requiredPreviousFrameIndex() != notFound) {
         ImageFrame& prevBuffer = m_frameBufferCache[frameIndex - 1];
-        ImageFrame::FrameDisposalMethod prevMethod = prevBuffer.disposalMethod();
-        if (prevMethod == ImageFrame::DisposeKeep) { // Restore transparent pixels to pixels in previous canvas.
-            ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
+        ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
+        ImageFrame::DisposalMethod prevDisposalMethod = prevBuffer.disposalMethod();
+        if (prevDisposalMethod == ImageFrame::DisposeKeep) { // Restore transparent pixels to pixels in previous canvas.
             for (int y = m_decodedHeight; y < decodedHeight; ++y) {
                 const int canvasY = top + y;
                 for (int x = 0; x < width; ++x) {
@@ -437,9 +433,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
                     }
                 }
             }
-        } else if (prevMethod == ImageFrame::DisposeOverwriteBgcolor && buffer.requiredPreviousFrameIndex() != notFound) {
-            // Note: if the requiredPreviousFrameIndex is |notFound|, there's nothing to do.
-            ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
+        } else if (prevDisposalMethod == ImageFrame::DisposeOverwriteBgcolor) {
             const IntRect& prevRect = prevBuffer.originalFrameRect();
             // We need to restore transparent pixels to as they were just after initFrame() call. That is:
             //   * Transparent if it belongs to prevRect <-- This is a no-op.

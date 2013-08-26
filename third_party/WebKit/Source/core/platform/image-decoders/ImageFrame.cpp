@@ -39,6 +39,7 @@ ImageFrame::ImageFrame()
     , m_status(FrameEmpty)
     , m_duration(0)
     , m_disposalMethod(DisposeNotSpecified)
+    , m_alphaBlendSource(BlendAtopPreviousFrame)
     , m_premultiplyAlpha(true)
     , m_requiredPreviousFrameIndex(notFound)
 #if !ASSERT_DISABLED
@@ -61,6 +62,7 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     setStatus(other.status());
     setDuration(other.duration());
     setDisposalMethod(other.disposalMethod());
+    setAlphaBlendSource(other.alphaBlendSource());
     setPremultiplyAlpha(other.premultiplyAlpha());
     // Be sure that this is called after we've called setStatus(), since we
     // look at our status to know what to do with the alpha value.
@@ -136,7 +138,7 @@ void ImageFrame::setHasAlpha(bool alpha)
     m_bitmap->bitmap().setIsOpaque(isOpaque);
 }
 
-void ImageFrame::setStatus(FrameStatus status)
+void ImageFrame::setStatus(Status status)
 {
     m_status = status;
     if (m_status == FrameComplete) {

@@ -297,7 +297,7 @@ void GIFImageDecoder::parse(GIFParseQuery query)
         ImageFrame& buffer = m_frameBufferCache[i];
         const GIFFrameContext* frameContext = m_reader->frameContext(i);
         buffer.setPremultiplyAlpha(m_premultiplyAlpha);
-        buffer.setRequiredPreviousFrameIndex(findRequiredPreviousFrame(i));
+        buffer.setRequiredPreviousFrameIndex(findRequiredPreviousFrame(i, false));
         buffer.setDuration(frameContext->delayTime());
         buffer.setDisposalMethod(frameContext->disposalMethod());
 

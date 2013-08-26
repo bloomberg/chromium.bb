@@ -72,7 +72,7 @@ public:
         m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this));
         m_decodersDestroyed = 0;
         m_frameBufferRequestCount = 0;
-        m_frameStatus = ImageFrame::FrameEmpty;
+        m_status = ImageFrame::FrameEmpty;
     }
 
     virtual void TearDown()
@@ -90,10 +90,10 @@ public:
         ++m_frameBufferRequestCount;
     }
 
-    virtual ImageFrame::FrameStatus frameStatus()
+    virtual ImageFrame::Status status()
     {
-        ImageFrame::FrameStatus currentStatus = m_frameStatus;
-        m_frameStatus = m_nextFrameStatus;
+        ImageFrame::Status currentStatus = m_status;
+        m_status = m_nextFrameStatus;
         return currentStatus;
     }
 
@@ -116,15 +116,15 @@ protected:
         m_generator->setData(m_data, false);
     }
 
-    void setFrameStatus(ImageFrame::FrameStatus status)  { m_frameStatus = m_nextFrameStatus = status; }
-    void setNextFrameStatus(ImageFrame::FrameStatus status)  { m_nextFrameStatus = status; }
+    void setFrameStatus(ImageFrame::Status status)  { m_status = m_nextFrameStatus = status; }
+    void setNextFrameStatus(ImageFrame::Status status)  { m_nextFrameStatus = status; }
 
     RefPtr<SharedBuffer> m_data;
     RefPtr<ImageFrameGenerator> m_generator;
     int m_decodersDestroyed;
     int m_frameBufferRequestCount;
-    ImageFrame::FrameStatus m_frameStatus;
-    ImageFrame::FrameStatus m_nextFrameStatus;
+    ImageFrame::Status m_status;
+    ImageFrame::Status m_nextFrameStatus;
 };
 
 PassOwnPtr<ImageDecoder> MockImageDecoderFactory::create()

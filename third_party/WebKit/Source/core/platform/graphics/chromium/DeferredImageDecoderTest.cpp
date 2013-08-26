@@ -83,7 +83,7 @@ public:
         m_frameBufferRequestCount = 0;
         m_frameCount = 1;
         m_repetitionCount = cAnimationNone;
-        m_frameStatus = ImageFrame::FrameComplete;
+        m_status = ImageFrame::FrameComplete;
         m_frameDuration = 0;
     }
 
@@ -112,9 +112,9 @@ public:
         return m_repetitionCount;
     }
 
-    virtual ImageFrame::FrameStatus frameStatus()
+    virtual ImageFrame::Status status()
     {
-        return m_frameStatus;
+        return m_status;
     }
 
     virtual float frameDuration() const
@@ -132,7 +132,7 @@ protected:
     RefPtr<SharedBuffer> m_data;
     size_t m_frameCount;
     int m_repetitionCount;
-    ImageFrame::FrameStatus m_frameStatus;
+    ImageFrame::Status m_status;
     float m_frameDuration;
 };
 
@@ -224,14 +224,14 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 
 TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
 {
-    m_frameStatus = ImageFrame::FramePartial;
+    m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(m_data.get(), false);
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     ImageFrame* frame = m_lazyDecoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FramePartial, frame->status());
     EXPECT_TRUE(m_actualDecoder);
 
-    m_frameStatus = ImageFrame::FrameComplete;
+    m_status = ImageFrame::FrameComplete;
     m_lazyDecoder->setData(m_data.get(), true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
@@ -245,7 +245,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_repetitionCount = 10;
     m_frameCount = 1;
     m_frameDuration = 10;
-    m_frameStatus = ImageFrame::FramePartial;
+    m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(m_data.get(), false);
     EXPECT_EQ(ImageFrame::FramePartial, m_lazyDecoder->frameBufferAtIndex(0)->status());
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
@@ -254,7 +254,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
 
     m_frameCount = 2;
     m_frameDuration = 20;
-    m_frameStatus = ImageFrame::FrameComplete;
+    m_status = ImageFrame::FrameComplete;
     m_lazyDecoder->setData(m_data.get(), false);
     EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());
     EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(1)->status());
@@ -267,7 +267,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
 
     m_frameCount = 3;
     m_frameDuration = 30;
-    m_frameStatus = ImageFrame::FrameComplete;
+    m_status = ImageFrame::FrameComplete;
     m_lazyDecoder->setData(m_data.get(), true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());

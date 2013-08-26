@@ -152,13 +152,18 @@ void ImageDecoder::clearFrameBuffer(size_t frameIndex)
     m_frameBufferCache[frameIndex].clearPixelData();
 }
 
-size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex)
+size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque)
 {
     ASSERT(frameIndex <= m_frameBufferCache.size());
     if (!frameIndex) {
         // The first frame doesn't rely on any previous data.
         return notFound;
     }
+
+    const ImageFrame* currBuffer = &m_frameBufferCache[frameIndex];
+    if ((frameRectIsOpaque || currBuffer->alphaBlendSource() == ImageFrame::BlendAtopBgcolor)
+        && currBuffer->originalFrameRect().contains(IntRect(IntPoint(), size())))
+        return notFound;
 
     // The starting state for this frame depends on the previous frame's
     // disposal method.

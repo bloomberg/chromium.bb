@@ -63,7 +63,7 @@ public:
         ASSERT_TRUE(false);
     }
 
-    virtual ImageFrame::FrameStatus frameStatus()
+    virtual ImageFrame::Status status()
     {
         return ImageFrame::FramePartial;
     }

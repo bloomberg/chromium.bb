@@ -34,7 +34,7 @@ class MockImageDecoderClient {
 public:
     virtual void decoderBeingDestroyed() = 0;
     virtual void frameBufferRequested() = 0;
-    virtual ImageFrame::FrameStatus frameStatus() = 0;
+    virtual ImageFrame::Status status() = 0;
     virtual size_t frameCount() = 0;
     virtual int repetitionCount() const = 0;
     virtual float frameDuration() const = 0;
@@ -83,13 +83,13 @@ public:
     {
         m_client->frameBufferRequested();
 
-        m_frameBufferCache[0].setStatus(m_client->frameStatus());
+        m_frameBufferCache[0].setStatus(m_client->status());
         return &m_frameBufferCache[0];
     }
 
     virtual bool frameIsCompleteAtIndex(size_t) const
     {
-        return m_client->frameStatus() == ImageFrame::FrameComplete;
+        return m_client->status() == ImageFrame::FrameComplete;
     }
 
     virtual float frameDurationAtIndex(size_t) const

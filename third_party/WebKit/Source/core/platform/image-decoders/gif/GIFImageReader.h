@@ -228,8 +228,8 @@ public:
     unsigned height() const { return m_height; }
     size_t transparentPixel() const { return m_transparentPixel; }
     void setTransparentPixel(size_t pixel) { m_transparentPixel = pixel; }
-    WebCore::ImageFrame::FrameDisposalMethod disposalMethod() const { return m_disposalMethod; }
-    void setDisposalMethod(WebCore::ImageFrame::FrameDisposalMethod method) { m_disposalMethod = method; }
+    WebCore::ImageFrame::DisposalMethod disposalMethod() const { return m_disposalMethod; }
+    void setDisposalMethod(WebCore::ImageFrame::DisposalMethod disposalMethod) { m_disposalMethod = disposalMethod; }
     unsigned delayTime() const { return m_delayTime; }
     void setDelayTime(unsigned delay) { m_delayTime = delay; }
     bool isComplete() const { return m_isComplete; }
@@ -259,7 +259,7 @@ private:
     unsigned m_width;
     unsigned m_height;
     size_t m_transparentPixel; // Index of transparent pixel. Value is notFound if there is no transparent pixel.
-    WebCore::ImageFrame::FrameDisposalMethod m_disposalMethod; // Restore to background, leave in place, etc.
+    WebCore::ImageFrame::DisposalMethod m_disposalMethod; // Restore to background, leave in place, etc.
     int m_dataSize;
 
     bool m_progressiveDisplay; // If true, do Haeberli interlace hack.

@@ -53,16 +53,32 @@ namespace WebCore {
     // decoders write a single frame into.
     class ImageFrame {
     public:
-        enum FrameStatus { FrameEmpty, FramePartial, FrameComplete };
-        enum FrameDisposalMethod {
+        enum Status { FrameEmpty, FramePartial, FrameComplete };
+        enum DisposalMethod {
             // If you change the numeric values of these, make sure you audit
             // all users, as some users may cast raw values to/from these
             // constants.
-            DisposeNotSpecified,      // Leave frame in framebuffer
-            DisposeKeep,              // Leave frame in framebuffer
-            DisposeOverwriteBgcolor,  // Clear frame to transparent
-            DisposeOverwritePrevious  // Clear frame to previous framebuffer
-                                      // contents
+            DisposeNotSpecified, // Leave frame in framebuffer
+            DisposeKeep, // Leave frame in framebuffer
+            DisposeOverwriteBgcolor, // Clear frame to fully transparent
+            DisposeOverwritePrevious // Clear frame to previous framebuffer contents
+        };
+        // Indicates how non-opaque pixels in the current frame rectangle
+        // are blended with those in the previous frame.
+        // Notes:
+        // * GIF always uses 'BlendAtopPreviousFrame'.
+        // * WebP also uses the 'BlendAtopBgcolor' option. This is useful for
+        //   cases where one wants to transform a few opaque pixels of the
+        //   previous frame into non-opaque pixels in the current frame.
+        enum AlphaBlendSource {
+            // Blend non-opaque pixels atop the corresponding pixels in the
+            // initial buffer state (i.e. any previous frame buffer after having
+            // been properly disposed).
+            BlendAtopPreviousFrame,
+
+            // Blend non-opaque pixels against fully transparent (i.e. simply
+            // overwrite the corresponding pixels).
+            BlendAtopBgcolor,
         };
         typedef uint32_t PixelData;
 
@@ -111,9 +127,10 @@ namespace WebCore {
 
         bool hasAlpha() const;
         const IntRect& originalFrameRect() const { return m_originalFrameRect; }
-        FrameStatus status() const { return m_status; }
+        Status status() const { return m_status; }
         unsigned duration() const { return m_duration; }
-        FrameDisposalMethod disposalMethod() const { return m_disposalMethod; }
+        DisposalMethod disposalMethod() const { return m_disposalMethod; }
+        AlphaBlendSource alphaBlendSource() const { return m_alphaBlendSource; }
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
         SkBitmap::Allocator* allocator() const { return m_allocator; }
         const SkBitmap& getSkBitmap() const { return m_bitmap->bitmap(); }
@@ -128,9 +145,10 @@ namespace WebCore {
 #endif
         void setHasAlpha(bool alpha);
         void setOriginalFrameRect(const IntRect& r) { m_originalFrameRect = r; }
-        void setStatus(FrameStatus status);
+        void setStatus(Status);
         void setDuration(unsigned duration) { m_duration = duration; }
-        void setDisposalMethod(FrameDisposalMethod method) { m_disposalMethod = method; }
+        void setDisposalMethod(DisposalMethod disposalMethod) { m_disposalMethod = disposalMethod; }
+        void setAlphaBlendSource(AlphaBlendSource alphaBlendSource) { m_alphaBlendSource = alphaBlendSource; }
         void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
         void setMemoryAllocator(SkBitmap::Allocator* allocator) { m_allocator = allocator; }
         void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = NativeImageSkia::create(bitmap); }
@@ -196,9 +214,10 @@ namespace WebCore {
         // This will always just be the entire buffer except for GIF or WebP
         // frames whose original rect was smaller than the overall image size.
         IntRect m_originalFrameRect;
-        FrameStatus m_status;
+        Status m_status;
         unsigned m_duration;
-        FrameDisposalMethod m_disposalMethod;
+        DisposalMethod m_disposalMethod;
+        AlphaBlendSource m_alphaBlendSource;
         bool m_premultiplyAlpha;
 
         // The frame that must be decoded before this frame can be decoded.
@@ -383,14 +402,16 @@ namespace WebCore {
             if (m_frameBufferCache.isEmpty()) {
                 m_frameBufferCache.resize(1);
                 m_frameBufferCache[0].setRequiredPreviousFrameIndex(
-                    findRequiredPreviousFrame(0));
+                    findRequiredPreviousFrame(0, false));
             }
             m_frameBufferCache[0].setMemoryAllocator(allocator);
         }
 
     protected:
         // Calculates the most recent frame whose image data may be needed in
-        // order to decode frame |frameIndex|, based on frame disposal methods.
+        // order to decode frame |frameIndex|, based on frame disposal methods
+        // and |frameRectIsOpaque|, where |frameRectIsOpaque| signifies whether
+        // the rectangle of frame at |frameIndex| is known to be opaque.
         // If no previous frame's data is required, returns WTF::notFound.
         //
         // This function requires that the previous frame's
@@ -404,7 +425,7 @@ namespace WebCore {
         // Image formats which do not use more than one frame do not need to
         // worry about this; see comments on
         // ImageFrame::m_requiredPreviousFrameIndex.
-        size_t findRequiredPreviousFrame(size_t frameIndex);
+        size_t findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque);
 
         virtual void clearFrameBuffer(size_t frameIndex);
 

@@ -69,7 +69,7 @@ private:
 #endif
 
     bool updateDemuxer();
-    bool initFrameBuffer(const WebPIterator&, size_t frameIndex);
+    bool initFrameBuffer(size_t frameIndex);
     void applyPostProcessing(size_t frameIndex);
     virtual void clearFrameBuffer(size_t frameIndex) OVERRIDE;
 
