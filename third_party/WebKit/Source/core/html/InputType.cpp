@@ -28,12 +28,8 @@
 #include "config.h"
 #include "core/html/InputType.h"
 
-#include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ScopedEventQueue.h"
@@ -48,7 +44,6 @@
 #include "core/html/FileInputType.h"
 #include "core/html/FormController.h"
 #include "core/html/FormDataList.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HiddenInputType.h"
 #include "core/html/ImageInputType.h"
@@ -69,15 +64,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
-#include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/TextBreakIterator.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTheme.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
-#include <limits>
 
 namespace WebCore {
 
@@ -311,12 +300,6 @@ double InputType::maximum() const
     return createStepRange(RejectAny).maximum().toDouble();
 }
 
-bool InputType::sizeShouldIncludeDecoration(int, int& preferredSize) const
-{
-    preferredSize = element()->size();
-    return false;
-}
-
 bool InputType::isInRange(const String& value) const
 {
     if (!isSteppable())
@@ -415,65 +398,9 @@ String InputType::validationMessage() const
     return emptyString();
 }
 
-void InputType::handleClickEvent(MouseEvent*)
-{
-}
-
-void InputType::handleMouseDownEvent(MouseEvent*)
-{
-}
-
-void InputType::handleDOMActivateEvent(Event*)
-{
-}
-
-void InputType::handleKeydownEvent(KeyboardEvent*)
-{
-}
-
-void InputType::handleKeypressEvent(KeyboardEvent*)
-{
-}
-
-void InputType::handleKeyupEvent(KeyboardEvent*)
-{
-}
-
-void InputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
-{
-}
-
-void InputType::handleTouchEvent(TouchEvent*)
-{
-}
-
-void InputType::forwardEvent(Event*)
-{
-}
-
 bool InputType::shouldSubmitImplicitly(Event* event)
 {
     return event->isKeyboardEvent() && event->type() == eventNames().keypressEvent && toKeyboardEvent(event)->charCode() == '\r';
-}
-
-PassRefPtr<HTMLFormElement> InputType::formForSubmission() const
-{
-    return element()->form();
-}
-
-RenderObject* InputType::createRenderer(RenderStyle* style) const
-{
-    return RenderObject::createObject(element(), style);
-}
-
-PassRefPtr<RenderStyle> InputType::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
-{
-    return originalStyle;
-}
-
-void InputType::blur()
-{
-    element()->defaultBlur();
 }
 
 void InputType::createShadowSubtree()
@@ -560,14 +487,6 @@ bool InputType::shouldUseInputMethod() const
     return false;
 }
 
-void InputType::handleFocusEvent(Element*, FocusDirection)
-{
-}
-
-void InputType::handleBlurEvent()
-{
-}
-
 void InputType::enableSecureTextInput()
 {
 }
@@ -581,10 +500,6 @@ void InputType::accessKeyAction(bool)
     element()->focus(false);
 }
 
-void InputType::attach()
-{
-}
-
 void InputType::detach()
 {
 }
@@ -593,28 +508,12 @@ void InputType::countUsage()
 {
 }
 
-void InputType::altAttributeChanged()
-{
-}
-
-void InputType::srcAttributeChanged()
-{
-}
-
 bool InputType::shouldRespectAlignAttribute()
 {
     return false;
 }
 
-void InputType::minOrMaxAttributeChanged()
-{
-}
-
 void InputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
-{
-}
-
-void InputType::stepAttributeChanged()
 {
 }
 
@@ -694,15 +593,6 @@ void InputType::setValue(const String& sanitizedValue, bool valueChanged, TextFi
 bool InputType::canSetValue(const String&)
 {
     return true;
-}
-
-PassOwnPtr<ClickHandlingState> InputType::willDispatchClick()
-{
-    return nullptr;
-}
-
-void InputType::didDispatchClick(Event*, const ClickHandlingState&)
-{
 }
 
 String InputType::localizeValue(const String& proposedValue) const
@@ -877,46 +767,8 @@ bool InputType::supportsReadOnly() const
     return false;
 }
 
-void InputType::updateInnerTextValue()
-{
-}
-
 void InputType::updatePlaceholderText()
 {
-}
-
-void InputType::attributeChanged()
-{
-}
-
-void InputType::multipleAttributeChanged()
-{
-}
-
-void InputType::disabledAttributeChanged()
-{
-}
-
-void InputType::readonlyAttributeChanged()
-{
-}
-
-void InputType::requiredAttributeChanged()
-{
-}
-
-void InputType::valueAttributeChanged()
-{
-}
-
-void InputType::subtreeHasChanged()
-{
-    ASSERT_NOT_REACHED();
-}
-
-bool InputType::hasTouchEventHandler() const
-{
-    return false;
 }
 
 String InputType::defaultToolTip() const
@@ -924,18 +776,10 @@ String InputType::defaultToolTip() const
     return String();
 }
 
-void InputType::listAttributeTargetChanged()
-{
-}
-
 Decimal InputType::findClosestTickMarkValue(const Decimal&)
 {
     ASSERT_NOT_REACHED();
     return Decimal::nan();
-}
-
-void InputType::updateClearButtonVisibility()
-{
 }
 
 bool InputType::supportsIndeterminateAppearance() const

@@ -34,47 +34,26 @@
 #define InputType_h
 
 #include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/InputTypeUI.h"
 #include "core/html/StepRange.h"
 #include "core/page/UseCounter.h"
-#include "wtf/FastAllocBase.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class BeforeTextInsertedEvent;
 class Chrome;
-class Color;
 class DateComponents;
 class DragData;
-class Event;
 class ExceptionState;
 class FileList;
 class FormDataList;
 class HTMLElement;
-class HTMLFormElement;
-class HTMLInputElement;
-class KeyboardEvent;
-class MouseEvent;
 class Node;
-class RenderObject;
-class RenderStyle;
-class TouchEvent;
-
-struct ClickHandlingState {
-    WTF_MAKE_FAST_ALLOCATED;
-
-public:
-    bool checked;
-    bool indeterminate;
-    RefPtr<HTMLInputElement> checkedRadioButton;
-};
 
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
-class InputType {
+// FIXME: InputType should not inherit InputTypeUI. It's conceptually wrong.
+class InputType : public InputTypeUI {
     WTF_MAKE_NONCOPYABLE(InputType);
     WTF_MAKE_FAST_ALLOCATED;
 
@@ -160,7 +139,6 @@ public:
     virtual Decimal defaultValueForStepUp() const;
     double minimum() const;
     double maximum() const;
-    virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     bool stepMismatch(const String&) const;
     virtual bool getAllowedValueStep(Decimal*) const;
     virtual StepRange createStepRange(AnyStepHandling) const;
@@ -176,36 +154,13 @@ public:
     // This function must be called only by HTMLInputElement::sanitizeValue().
     virtual String sanitizeValue(const String&) const;
 
-    // Event handlers
-
-    virtual void handleClickEvent(MouseEvent*);
-    virtual void handleMouseDownEvent(MouseEvent*);
-    virtual PassOwnPtr<ClickHandlingState> willDispatchClick();
-    virtual void didDispatchClick(Event*, const ClickHandlingState&);
-    virtual void handleDOMActivateEvent(Event*);
-    virtual void handleKeydownEvent(KeyboardEvent*);
-    virtual void handleKeypressEvent(KeyboardEvent*);
-    virtual void handleKeyupEvent(KeyboardEvent*);
-    virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
-    virtual void handleTouchEvent(TouchEvent*);
-    virtual void forwardEvent(Event*);
-    // Helpers for event handlers.
-    virtual bool shouldSubmitImplicitly(Event*);
-    virtual PassRefPtr<HTMLFormElement> formForSubmission() const;
-    virtual bool hasCustomFocusLogic() const;
     virtual bool isKeyboardFocusable() const;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldUseInputMethod() const;
     virtual void enableSecureTextInput();
     virtual void disableSecureTextInput();
-    virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection);
-    virtual void handleBlurEvent();
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool canBeSuccessfulSubmitButton();
-    virtual void subtreeHasChanged();
-    virtual bool hasTouchEventHandler() const;
-
-    virtual void blur();
 
     // Shadow tree handling
 
@@ -221,16 +176,9 @@ public:
     // Miscellaneous functions
 
     virtual bool rendererIsNeeded();
-    virtual RenderObject* createRenderer(RenderStyle*) const;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
-    virtual void attach();
     virtual void detach();
     virtual void countUsage();
-    virtual void minOrMaxAttributeChanged();
     virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
-    virtual void stepAttributeChanged();
-    virtual void altAttributeChanged();
-    virtual void srcAttributeChanged();
     virtual bool shouldRespectAlignAttribute();
     virtual FileList* files();
     virtual void setFiles(PassRefPtr<FileList>);
@@ -252,18 +200,9 @@ public:
     virtual bool shouldRespectHeightAndWidthAttributes();
     virtual bool supportsPlaceholder() const;
     virtual bool supportsReadOnly() const;
-    virtual void updateInnerTextValue();
     virtual void updatePlaceholderText();
-    virtual void attributeChanged();
-    virtual void multipleAttributeChanged();
-    virtual void disabledAttributeChanged();
-    virtual void readonlyAttributeChanged();
-    virtual void requiredAttributeChanged();
-    virtual void valueAttributeChanged();
     virtual String defaultToolTip() const;
-    virtual void listAttributeTargetChanged();
     virtual Decimal findClosestTickMarkValue(const Decimal&);
-    virtual void updateClearButtonVisibility();
 
     // Parses the specified string for the type, and return
     // the Decimal value for the parsing result if the parsing
@@ -295,9 +234,12 @@ public:
 
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
+    // InputTypeUI override
+    virtual bool shouldSubmitImplicitly(Event*) OVERRIDE;
+    virtual bool hasCustomFocusLogic() const OVERRIDE;
+
 protected:
-    InputType(HTMLInputElement* element) : m_element(element) { }
-    HTMLInputElement* element() const { return m_element; }
+    InputType(HTMLInputElement* element) : InputTypeUI(element) { }
     Chrome* chrome() const;
     Decimal parseToNumberOrNaN(const String&) const;
     void observeFeatureIfVisible(UseCounter::Feature) const;
@@ -305,9 +247,6 @@ protected:
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
     void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
-
-    // Raw pointer because the HTMLInputElement object owns this InputType object.
-    HTMLInputElement* m_element;
 };
 
 } // namespace WebCore

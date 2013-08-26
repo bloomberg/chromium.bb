@@ -33,31 +33,22 @@
 #ifndef InputTypeUI_h
 #define InputTypeUI_h
 
-#include "core/html/HTMLTextFormControlElement.h"
-#include "core/html/StepRange.h"
-#include "core/page/UseCounter.h"
+#include "core/page/FocusDirection.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class BeforeTextInsertedEvent;
-class Chrome;
-class Color;
-class DateComponents;
-class DragData;
+class Element;
 class Event;
-class ExceptionState;
-class FileList;
-class FormDataList;
-class HTMLElement;
 class HTMLFormElement;
 class HTMLInputElement;
 class KeyboardEvent;
 class MouseEvent;
-class Node;
 class RenderObject;
 class RenderStyle;
 class TouchEvent;
@@ -71,112 +62,18 @@ public:
     RefPtr<HTMLInputElement> checkedRadioButton;
 };
 
-// An InputType object represents the type-specific part of an HTMLInputElement.
-// Do not expose instances of InputType and classes derived from it to classes
+// An InputTypeUI object represents the UI-specific part of an HTMLInputElement.
+// Do not expose instances of InputTypeUI and classes derived from it to classes
 // other than HTMLInputElement.
+// FIXME: Rename InputTypeUI to InputTypeView.
 class InputTypeUI {
     WTF_MAKE_NONCOPYABLE(InputTypeUI);
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    static PassOwnPtr<InputTypeUI> create(HTMLInputElement*, const AtomicString&);
-    static PassOwnPtr<InputTypeUI> createText(HTMLInputElement*);
     virtual ~InputTypeUI();
 
-    static bool themeSupportsDataListUI(InputTypeUI*);
-
-    virtual const AtomicString& formControlType() const = 0;
-    virtual bool canChangeFromAnotherType() const;
-
-    // Type query functions
-
-    // Any time we are using one of these functions it's best to refactor
-    // to add a virtual function to allow the input type object to do the
-    // work instead, or at least make a query function that asks a higher
-    // level question. These functions make the HTMLInputElement class
-    // inflexible because it's harder to add new input types if there is
-    // scattered code with special cases for various types.
-
-    virtual bool isCheckbox() const;
-    virtual bool isColorControl() const;
-    virtual bool isDateField() const;
-    virtual bool isDateTimeLocalField() const;
-    virtual bool isEmailField() const;
-    virtual bool isFileUpload() const;
-    virtual bool isHiddenType() const;
-    virtual bool isImageButton() const;
-    virtual bool supportLabels() const;
-    virtual bool isMonthField() const;
-    virtual bool isNumberField() const;
-    virtual bool isPasswordField() const;
-    virtual bool isRadioButton() const;
-    virtual bool isRangeControl() const;
-    virtual bool isSearchField() const;
-    virtual bool isSubmitButton() const;
-    virtual bool isTelephoneField() const;
-    virtual bool isTextButton() const;
-    virtual bool isTextField() const;
-    virtual bool isTextType() const;
-    virtual bool isTimeField() const;
-    virtual bool isURLField() const;
-    virtual bool isWeekField() const;
-
-    // Form value functions
-
-    virtual bool shouldSaveAndRestoreFormControlState() const;
-    virtual FormControlState saveFormControlState() const;
-    virtual void restoreFormControlState(const FormControlState&);
-    virtual bool isFormDataAppendable() const;
-    virtual bool appendFormData(FormDataList&, bool multipart) const;
-
-    // DOM property functions
-
-    virtual bool getTypeSpecificValue(String&); // Checked first, before internal storage or the value attribute.
-    virtual String fallbackValue() const; // Checked last, if both internal storage and value attribute are missing.
-    virtual String defaultValue() const; // Checked after even fallbackValue, only when the valueWithDefault function is called.
-    virtual double valueAsDate() const;
-    virtual void setValueAsDate(double, ExceptionState&) const;
-    virtual double valueAsDouble() const;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const;
-
-    // Validation functions
-    virtual String validationMessage() const;
-    virtual bool supportsValidation() const;
-    virtual bool typeMismatchFor(const String&) const;
-    // Type check for the current input value. We do nothing for some types
-    // though typeMismatchFor() does something for them because of value
-    // sanitization.
-    virtual bool typeMismatch() const;
-    virtual bool supportsRequired() const;
-    virtual bool valueMissing(const String&) const;
-    virtual bool hasBadInput() const;
-    virtual bool patternMismatch(const String&) const;
-    bool rangeUnderflow(const String&) const;
-    bool rangeOverflow(const String&) const;
-    bool isInRange(const String&) const;
-    bool isOutOfRange(const String&) const;
-    virtual Decimal defaultValueForStepUp() const;
-    double minimum() const;
-    double maximum() const;
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
-    bool stepMismatch(const String&) const;
-    virtual bool getAllowedValueStep(Decimal*) const;
-    virtual StepRange createStepRange(AnyStepHandling) const;
-    virtual void stepUp(int, ExceptionState&);
-    virtual void stepUpFromRenderer(int);
-    virtual String badInputText() const;
-    virtual String typeMismatchText() const;
-    virtual String valueMissingText() const;
-    virtual bool canSetStringValue() const;
-    virtual String localizeValue(const String&) const;
-    virtual String visibleValue() const;
-    // Returing the null string means "use the default value."
-    // This function must be called only by HTMLInputElement::sanitizeValue().
-    virtual String sanitizeValue(const String&) const;
-
-    // Event handlers
-
     virtual void handleClickEvent(MouseEvent*);
     virtual void handleMouseDownEvent(MouseEvent*);
     virtual PassOwnPtr<ClickHandlingState> willDispatchClick();
@@ -188,123 +85,36 @@ public:
     virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
     virtual void handleTouchEvent(TouchEvent*);
     virtual void forwardEvent(Event*);
-    // Helpers for event handlers.
     virtual bool shouldSubmitImplicitly(Event*);
     virtual PassRefPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
-    virtual bool isKeyboardFocusable() const;
-    virtual bool shouldShowFocusRingOnMouseFocus() const;
-    virtual bool shouldUseInputMethod() const;
-    virtual void enableSecureTextInput();
-    virtual void disableSecureTextInput();
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection);
     virtual void handleBlurEvent();
-    virtual void accessKeyAction(bool sendMouseEvents);
-    virtual bool canBeSuccessfulSubmitButton();
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;
-
     virtual void blur();
-
-    // Shadow tree handling
-
-    virtual void createShadowSubtree();
-    virtual void destroyShadowSubtree();
-
-    virtual HTMLElement* containerElement() const { return 0; }
-    virtual HTMLElement* innerBlockElement() const { return 0; }
-    virtual HTMLElement* innerTextElement() const { return 0; }
-    virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
-    virtual HTMLElement* placeholderElement() const;
-
-    // Miscellaneous functions
-
-    virtual bool rendererIsNeeded();
     virtual RenderObject* createRenderer(RenderStyle*) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void attach();
-    virtual void detach();
-    virtual void countUsage();
     virtual void minOrMaxAttributeChanged();
-    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
     virtual void stepAttributeChanged();
     virtual void altAttributeChanged();
     virtual void srcAttributeChanged();
-    virtual bool shouldRespectAlignAttribute();
-    virtual FileList* files();
-    virtual void setFiles(PassRefPtr<FileList>);
-    // Should return true if the given DragData has more than one dropped files.
-    virtual bool receiveDroppedFiles(const DragData*);
-    virtual String droppedFileSystemId();
-    // Should return true if the corresponding renderer for a type can display a suggested value.
-    virtual bool canSetSuggestedValue();
-    virtual bool shouldSendChangeEventAfterCheckedChanged();
-    virtual bool canSetValue(const String&);
-    virtual bool storesValueSeparateFromAttribute();
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior);
-    virtual bool shouldResetOnDocumentActivation();
-    virtual bool shouldRespectListAttribute();
-    virtual bool shouldRespectSpeechAttribute();
-    virtual bool isEnumeratable();
-    virtual bool isCheckable();
-    virtual bool isSteppable() const;
-    virtual bool shouldRespectHeightAndWidthAttributes();
-    virtual bool supportsPlaceholder() const;
-    virtual bool supportsReadOnly() const;
     virtual void updateInnerTextValue();
-    virtual void updatePlaceholderText();
     virtual void attributeChanged();
     virtual void multipleAttributeChanged();
     virtual void disabledAttributeChanged();
     virtual void readonlyAttributeChanged();
     virtual void requiredAttributeChanged();
     virtual void valueAttributeChanged();
-    virtual String defaultToolTip() const;
     virtual void listAttributeTargetChanged();
-    virtual Decimal findClosestTickMarkValue(const Decimal&);
     virtual void updateClearButtonVisibility();
-
-    // Parses the specified string for the type, and return
-    // the Decimal value for the parsing result if the parsing
-    // succeeds; Returns defaultValue otherwise. This function can
-    // return NaN or Infinity only if defaultValue is NaN or Infinity.
-    virtual Decimal parseToNumber(const String&, const Decimal& defaultValue) const;
-
-    // Parses the specified string for this InputTypeUI, and returns true if it
-    // is successfully parsed. An instance pointed by the DateComponents*
-    // parameter will have parsed values and be modified even if the parsing
-    // fails. The DateComponents* parameter may be 0.
-    virtual bool parseToDateComponents(const String&, DateComponents*) const;
-
-    // Create a string representation of the specified Decimal value for the
-    // input type. If NaN or Infinity is specified, this returns an empty
-    // string. This should not be called for types without valueAsNumber.
-    virtual String serialize(const Decimal&) const;
-
-    virtual bool supportsIndeterminateAppearance() const;
-
-    virtual bool supportsInputModeAttribute() const;
-
-    virtual bool supportsSelectionAPI() const;
-
-    // Gets width and height of the input element if the type of the
-    // element is image. It returns 0 if the element is not image type.
-    virtual unsigned height() const;
-    virtual unsigned width() const;
-
-    void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
 protected:
     InputTypeUI(HTMLInputElement* element) : m_element(element) { }
     HTMLInputElement* element() const { return m_element; }
-    Chrome* chrome() const;
-    Decimal parseToNumberOrNaN(const String&) const;
-    void observeFeatureIfVisible(UseCounter::Feature) const;
 
 private:
-    // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
-    void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
-
     // Raw pointer because the HTMLInputElement object owns this InputTypeUI object.
     HTMLInputElement* m_element;
 };
