@@ -690,4 +690,9 @@ void WebSettingsImpl::setPinchVirtualViewportEnabled(bool enabled)
     m_settings->setPinchVirtualViewportEnabled(enabled);
 }
 
+void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
+{
+    m_settings->setUseSolidColorScrollbars(enabled);
+}
+
 } // namespace WebKit

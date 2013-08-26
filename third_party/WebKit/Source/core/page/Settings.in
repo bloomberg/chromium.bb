@@ -138,3 +138,4 @@ touchEditingEnabled initial=false
 
 experimentalWebSocketEnabled initial=false
 pinchVirtualViewportEnabled initial=false
+useSolidColorScrollbars initial=false

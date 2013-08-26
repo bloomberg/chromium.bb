@@ -160,6 +160,7 @@ public:
     virtual void setUserStyleSheetLocation(const WebURL&);
     virtual void setUsesEncodingDetector(bool);
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool);
+    virtual void setUseSolidColorScrollbars(bool);
     virtual void setUseWideViewport(bool);
     virtual void setValidationMessageTimerMagnification(int);
     virtual void setViewportEnabled(bool);
