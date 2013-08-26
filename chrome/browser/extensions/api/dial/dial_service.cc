@@ -126,8 +126,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
     finish_delay_(TimeDelta::FromMilliseconds((kDialMaxRequests - 1) *
                                               kDialRequestIntervalMillis) +
                   TimeDelta::FromSeconds(kDialResponseTimeoutSecs)),
-    request_interval_(TimeDelta::FromMilliseconds(kDialRequestIntervalMillis))
- {
+    request_interval_(TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)) {
   IPAddressNumber address;
   bool result = net::ParseIPLiteralToNumber(kDialRequestAddress, &address);
   DCHECK(result);
