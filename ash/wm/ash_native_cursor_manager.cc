@@ -79,13 +79,24 @@ void AshNativeCursorManager::SetCursor(
     SetCursorOnAllRootWindows(new_cursor);
 }
 
+void AshNativeCursorManager::SetCursorSet(
+    ui::CursorSetType cursor_set,
+    views::corewm::NativeCursorManagerDelegate* delegate) {
+  image_cursors_->SetCursorSet(cursor_set);
+  delegate->CommitCursorSet(cursor_set);
+
+  // Sets the cursor to reflect the scale change immediately.
+  if (delegate->GetCurrentVisibility())
+    SetCursor(delegate->GetCurrentCursor(), delegate);
+}
+
 void AshNativeCursorManager::SetScale(
     float scale,
     views::corewm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetScale(scale);
   delegate->CommitScale(scale);
 
-  // Sets the cursor to refrect the scale change imidiately.
+  // Sets the cursor to reflect the scale change immediately.
   SetCursor(delegate->GetCurrentCursor(), delegate);
 }
 

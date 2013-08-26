@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/views/corewm/native_cursor_manager_delegate.h"
@@ -45,6 +46,8 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void SetScale(float scale) OVERRIDE;
   virtual float GetCurrentScale() const OVERRIDE;
+  virtual void SetCursorSet(ui::CursorSetType cursor_set) OVERRIDE;
+  virtual ui::CursorSetType GetCurrentCursorSet() const OVERRIDE;
   virtual void EnableMouseEvents() OVERRIDE;
   virtual void DisableMouseEvents() OVERRIDE;
   virtual bool IsMouseEventsEnabled() const OVERRIDE;
@@ -65,6 +68,7 @@ class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
   virtual void CommitCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void CommitVisibility(bool visible) OVERRIDE;
   virtual void CommitScale(float scale) OVERRIDE;
+  virtual void CommitCursorSet(ui::CursorSetType cursor_set) OVERRIDE;
   virtual void CommitMouseEventsEnabled(bool enabled) OVERRIDE;
 
   scoped_ptr<NativeCursorManager> delegate_;

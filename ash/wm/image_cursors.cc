@@ -56,7 +56,7 @@ const int kAnimatedCursorIds[] = {
   ui::kCursorProgress
 };
 
-ImageCursors::ImageCursors() : scale_(1.f) {
+ImageCursors::ImageCursors() : scale_(1.f), cursor_set_(ui::CURSOR_SET_NORMAL) {
 }
 
 ImageCursors::~ImageCursors() {
@@ -97,7 +97,8 @@ void ImageCursors::ReloadCursors() {
   for (size_t i = 0; i < arraysize(kImageCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success = ui::GetCursorDataFor(kImageCursorIds[i],
+    bool success = ui::GetCursorDataFor(cursor_set_,
+                                        kImageCursorIds[i],
                                         device_scale_factor,
                                         &resource_id,
                                         &hot_point);
@@ -107,7 +108,8 @@ void ImageCursors::ReloadCursors() {
   for (size_t i = 0; i < arraysize(kAnimatedCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success = ui::GetAnimatedCursorDataFor(kAnimatedCursorIds[i],
+    bool success = ui::GetAnimatedCursorDataFor(cursor_set_,
+                                                kAnimatedCursorIds[i],
                                                 device_scale_factor,
                                                 &resource_id,
                                                 &hot_point);
@@ -131,6 +133,16 @@ void ImageCursors::SetScale(float scale) {
     cursor_loader_->set_scale(scale);
     ReloadCursors();
   }
+}
+
+void ImageCursors::SetCursorSet(ui::CursorSetType cursor_set) {
+  if (cursor_set_ == cursor_set)
+    return;
+
+  cursor_set_ = cursor_set;
+
+  if (cursor_loader_.get())
+    ReloadCursors();
 }
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {

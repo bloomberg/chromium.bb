@@ -262,6 +262,7 @@ void MirrorWindowController::SetMirroredCursor(gfx::NativeCursor cursor) {
   current_cursor_rotation_ = display.rotation();
   int resource_id;
   bool success = ui::GetCursorDataFor(
+      ui::CURSOR_SET_NORMAL,  // Not support custom cursor set.
       current_cursor_type_,
       display.device_scale_factor(),
       &resource_id,

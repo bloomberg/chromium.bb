@@ -6,6 +6,7 @@
 #define ASH_TEST_CURSOR_MANAGER_TEST_API_H_
 
 #include "base/basictypes.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -28,6 +29,7 @@ class CursorManagerTestApi {
   ~CursorManagerTestApi();
 
   float GetCurrentScale() const;
+  ui::CursorSetType GetCurrentCursorSet() const;
   gfx::NativeCursor GetCurrentCursor() const;
   gfx::Display GetDisplay() const;
 

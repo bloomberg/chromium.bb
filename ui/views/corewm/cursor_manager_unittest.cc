@@ -38,6 +38,12 @@ class TestingCursorManager : public views::corewm::NativeCursorManager {
     delegate->CommitMouseEventsEnabled(enabled);
   }
 
+  virtual void SetCursorSet(
+      ui::CursorSetType cursor_set,
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    delegate->CommitCursorSet(cursor_set);
+  }
+
   virtual void SetScale(
       float scale,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
@@ -184,6 +190,19 @@ TEST_F(CursorManagerTest, EnableDisableMouseEvents) {
   cursor_manager_.LockCursor();
   cursor_manager_.UnlockCursor();
   EXPECT_FALSE(cursor_manager_.IsMouseEventsEnabled());
+}
+
+TEST_F(CursorManagerTest, SetCursorSet) {
+  EXPECT_EQ(ui::CURSOR_SET_NORMAL, cursor_manager_.GetCurrentCursorSet());
+
+  cursor_manager_.SetCursorSet(ui::CURSOR_SET_NORMAL);
+  EXPECT_EQ(ui::CURSOR_SET_NORMAL, cursor_manager_.GetCurrentCursorSet());
+
+  cursor_manager_.SetCursorSet(ui::CURSOR_SET_LARGE);
+  EXPECT_EQ(ui::CURSOR_SET_LARGE, cursor_manager_.GetCurrentCursorSet());
+
+  cursor_manager_.SetCursorSet(ui::CURSOR_SET_NORMAL);
+  EXPECT_EQ(ui::CURSOR_SET_NORMAL, cursor_manager_.GetCurrentCursorSet());
 }
 
 TEST_F(CursorManagerTest, SetScale) {

@@ -36,6 +36,9 @@ void TestCursorClient::HideCursor() {
                     OnCursorVisibilityChanged(false));
 }
 
+void TestCursorClient::SetCursorSet(ui::CursorSetType cursor_set) {
+}
+
 void TestCursorClient::SetScale(float scale) {
 }
 

@@ -5,7 +5,6 @@
 #include "ui/base/cursor/cursors_aura.h"
 
 #include "grit/ui_resources.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/point.h"
 
@@ -24,7 +23,15 @@ struct CursorData {
   HotPoint hot_2x;
 };
 
-const CursorData kImageCursors[] = {
+struct CursorSet {
+  const CursorSetType id;
+  const CursorData* cursors;
+  const int length;
+  const CursorData* animated_cursors;
+  const int animated_length;
+};
+
+const CursorData kNormalCursors[] = {
   {ui::kCursorNull, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
   {ui::kCursorPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
   {ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
@@ -72,6 +79,24 @@ const CursorData kAnimatedCursors[] = {
   {ui::kCursorProgress, IDR_THROBBER, {7, 7}, {14, 14}},
 };
 
+const CursorSet kCursorSets[] = {
+  {
+    CURSOR_SET_NORMAL,
+    kNormalCursors, arraysize(kNormalCursors),
+    kAnimatedCursors, arraysize(kAnimatedCursors)
+  },
+  // TODO)yoshiki): Add Large cursor set. crbug.com/247254
+};
+
+const CursorSet* GetCursorSetByType(CursorSetType cursor_set_id) {
+  for (size_t i = 0; i < arraysize(kCursorSets); ++i) {
+    if (kCursorSets[i].id == cursor_set_id)
+      return &kCursorSets[i];
+  }
+
+  return NULL;
+}
+
 bool SearchTable(const CursorData* table,
                  size_t table_length,
                  int id,
@@ -96,19 +121,45 @@ bool SearchTable(const CursorData* table,
 
 }  // namespace
 
-bool GetCursorDataFor(int id,
+bool GetCursorDataFor(CursorSetType cursor_set_id,
+                      int id,
                       float scale_factor,
                       int* resource_id,
                       gfx::Point* point) {
-  return SearchTable(kImageCursors, arraysize(kImageCursors),
+  const CursorSet* cursor_set = GetCursorSetByType(cursor_set_id);
+  if (cursor_set &&
+      SearchTable(cursor_set->cursors,
+                  cursor_set->length,
+                  id, scale_factor, resource_id, point)) {
+      return true;
+  }
+
+  // Falls back to the default cursor set.
+  cursor_set = GetCursorSetByType(ui::CURSOR_SET_NORMAL);
+  DCHECK(cursor_set);
+  return SearchTable(cursor_set->cursors,
+                     cursor_set->length,
                      id, scale_factor, resource_id, point);
 }
 
-bool GetAnimatedCursorDataFor(int id,
+bool GetAnimatedCursorDataFor(CursorSetType cursor_set_id,
+                              int id,
                               float scale_factor,
                               int* resource_id,
                               gfx::Point* point) {
-  return SearchTable(kAnimatedCursors, arraysize(kAnimatedCursors),
+  const CursorSet* cursor_set = GetCursorSetByType(cursor_set_id);
+  if (cursor_set &&
+      SearchTable(cursor_set->animated_cursors,
+                  cursor_set->animated_length,
+                  id, scale_factor, resource_id, point)) {
+    return true;
+  }
+
+  // Falls back to the default cursor set.
+  cursor_set = GetCursorSetByType(ui::CURSOR_SET_NORMAL);
+  DCHECK(cursor_set);
+  return SearchTable(cursor_set->animated_cursors,
+                     cursor_set->animated_length,
                      id, scale_factor, resource_id, point);
 }
 

@@ -23,6 +23,7 @@ class CursorState {
       : cursor_(ui::kCursorNone),
         visible_(true),
         scale_(1.f),
+        cursor_set_(ui::CURSOR_SET_NORMAL),
         mouse_events_enabled_(true),
         visible_on_mouse_events_enabled_(true) {
   }
@@ -40,6 +41,11 @@ class CursorState {
   float scale() const { return scale_; }
   void set_scale(float scale) {
     scale_ = scale;
+  }
+
+  ui::CursorSetType cursor_set() const { return cursor_set_; }
+  void set_cursor_set(ui::CursorSetType cursor_set) {
+    cursor_set_ = cursor_set;
   }
 
   bool mouse_events_enabled() const { return mouse_events_enabled_; }
@@ -61,6 +67,7 @@ class CursorState {
   gfx::NativeCursor cursor_;
   bool visible_;
   float scale_;
+  ui::CursorSetType cursor_set_;
   bool mouse_events_enabled_;
 
   // The visibility to set when mouse events are enabled.
@@ -119,8 +126,18 @@ void CursorManager::SetScale(float scale) {
     delegate_->SetScale(state_on_unlock_->scale(), this);
 }
 
+void CursorManager::SetCursorSet(ui::CursorSetType cursor_set) {
+  state_on_unlock_->set_cursor_set(cursor_set);
+  if (GetCurrentCursorSet() != state_on_unlock_->cursor_set())
+    delegate_->SetCursorSet(state_on_unlock_->cursor_set(), this);
+}
+
 float CursorManager::GetCurrentScale() const {
   return current_state_->scale();
+}
+
+ui::CursorSetType CursorManager::GetCurrentCursorSet() const {
+  return current_state_->cursor_set();
 }
 
 void CursorManager::EnableMouseEvents() {
@@ -210,6 +227,10 @@ void CursorManager::CommitVisibility(bool visible) {
 
 void CursorManager::CommitScale(float scale) {
   current_state_->set_scale(scale);
+}
+
+void CursorManager::CommitCursorSet(ui::CursorSetType cursor_set) {
+  current_state_->set_cursor_set(cursor_set);
 }
 
 void CursorManager::CommitMouseEventsEnabled(bool enabled) {

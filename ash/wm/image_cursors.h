@@ -40,6 +40,9 @@ class ASH_EXPORT ImageCursors {
   // Sets the scale of the mouse cursor icon.
   void SetScale(float scale);
 
+  // Sets the type of the mouse cursor icon.
+  void SetCursorSet(ui::CursorSetType cursor_set);
+
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);
 
@@ -49,6 +52,7 @@ class ASH_EXPORT ImageCursors {
 
   scoped_ptr<ui::CursorLoader> cursor_loader_;
   float scale_;
+  ui::CursorSetType cursor_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };

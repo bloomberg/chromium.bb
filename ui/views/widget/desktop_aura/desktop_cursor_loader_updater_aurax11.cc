@@ -35,8 +35,12 @@ void LoadImageCursors(float device_scale_factor, ui::CursorLoader* loader) {
   int resource_id;
   gfx::Point point;
   for (size_t i = 0; i < arraysize(kImageCursorIds); ++i) {
-    bool success = ui::GetCursorDataFor(kImageCursorIds[i], device_scale_factor,
-                                        &resource_id, &point);
+    bool success = ui::GetCursorDataFor(
+        ui::CURSOR_SET_NORMAL,  // Not support custom cursor set.
+        kImageCursorIds[i],
+        device_scale_factor,
+        &resource_id,
+        &point);
     DCHECK(success);
     loader->LoadImageCursor(kImageCursorIds[i], resource_id, point);
   }

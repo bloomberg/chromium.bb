@@ -68,6 +68,11 @@ void DesktopNativeCursorManager::SetVisibility(
   root_window_->OnCursorVisibilityChanged(visible);
 }
 
+void DesktopNativeCursorManager::SetCursorSet(
+    ui::CursorSetType cursor_set,
+    views::corewm::NativeCursorManagerDelegate* delegate) {
+  NOTIMPLEMENTED();
+}
 
 void DesktopNativeCursorManager::SetScale(
     float scale,

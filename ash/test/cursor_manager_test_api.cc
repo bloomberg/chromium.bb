@@ -27,6 +27,11 @@ float CursorManagerTestApi::GetCurrentScale() const {
       cursor_manager_)->GetCurrentScale();
 }
 
+ui::CursorSetType CursorManagerTestApi::GetCurrentCursorSet() const {
+  return static_cast<views::corewm::NativeCursorManagerDelegate*>(
+      cursor_manager_)->GetCurrentCursorSet();
+}
+
 gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
   return static_cast<views::corewm::NativeCursorManagerDelegate*>(
       cursor_manager_)->GetCurrentCursor();
