@@ -105,6 +105,14 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
 
     loader_process = content::StartSandboxedProcess(this, cmd_line);
     if (loader_process) {
+      // Note: PROCESS_DUP_HANDLE is necessary here, because:
+      // 1) The current process is the broker, which is the loader's parent.
+      // 2) The browser is not the loader's parent, and so only gets the
+      //    access rights we confer here.
+      // 3) The browser calls DuplicateHandle to set up communications with
+      //    the loader.
+      // 4) The target process handle to DuplicateHandle needs to have
+      //    PROCESS_DUP_HANDLE access rights.
       DuplicateHandle(::GetCurrentProcess(), loader_process,
           browser_handle_, &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
