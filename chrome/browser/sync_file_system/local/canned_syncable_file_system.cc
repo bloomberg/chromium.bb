@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 
+#include <algorithm>
 #include <iterator>
 
 #include "base/bind.h"
@@ -601,7 +602,7 @@ void CannedSyncableFileSystem::DoVerifyFile(
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->CreateSnapshotFile(
       url,
-      base::Bind(&OnCreateSnapshotFileAndVerifyData,expected_data, callback));
+      base::Bind(&OnCreateSnapshotFileAndVerifyData, expected_data, callback));
 }
 
 void CannedSyncableFileSystem::DoGetMetadataAndPlatformPath(

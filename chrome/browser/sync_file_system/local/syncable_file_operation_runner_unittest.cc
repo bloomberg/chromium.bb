@@ -142,6 +142,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
 
   MockBlobURLRequestContext url_request_context_;
 
+ private:
   base::WeakPtrFactory<SyncableFileOperationRunnerTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileOperationRunnerTest);

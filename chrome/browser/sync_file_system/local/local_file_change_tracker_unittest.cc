@@ -102,8 +102,9 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::MessageLoop message_loop_;
-
   CannedSyncableFileSystem file_system_;
+
+ private:
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTrackerTest);

@@ -94,8 +94,9 @@ class SyncableFileSystemTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-
   CannedSyncableFileSystem file_system_;
+
+ private:
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
   base::WeakPtrFactory<SyncableFileSystemTest> weak_factory_;

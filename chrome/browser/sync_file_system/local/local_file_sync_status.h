@@ -73,7 +73,7 @@ class LocalFileSyncStatus
   void RemoveObserver(Observer* observer);
 
  private:
-  typedef std::map<fileapi::FileSystemURL,int64,
+  typedef std::map<fileapi::FileSystemURL, int64,
                    fileapi::FileSystemURL::Comparator> URLCountMap;
 
   bool IsChildOrParentWriting(const fileapi::FileSystemURL& url) const;
