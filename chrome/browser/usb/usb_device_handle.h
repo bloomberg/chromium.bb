@@ -28,7 +28,7 @@ typedef libusb_transfer* PlatformUsbTransferHandle;
 class UsbContext;
 class UsbConfigDescriptor;
 class UsbDevice;
-class UsbInterface;
+class UsbInterfaceDescriptor;
 
 namespace base {
   class MessageLoopProxy;
@@ -119,7 +119,8 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   // This constructor is called by UsbDevice.
   UsbDeviceHandle(scoped_refptr<UsbContext> context,
-                  UsbDevice* device, PlatformUsbDeviceHandle handle);
+                  UsbDevice* device, PlatformUsbDeviceHandle handle,
+                  scoped_refptr<UsbConfigDescriptor> interfaces);
 
   // This constructor variant is for use in testing only.
   UsbDeviceHandle();

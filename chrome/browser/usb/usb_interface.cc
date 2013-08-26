@@ -85,63 +85,63 @@ int UsbEndpointDescriptor::GetPollingInterval() const {
   return descriptor_->bInterval;
 }
 
-UsbInterfaceDescriptor::UsbInterfaceDescriptor(
+UsbInterfaceAltSettingDescriptor::UsbInterfaceAltSettingDescriptor(
     scoped_refptr<const UsbConfigDescriptor> config,
     PlatformUsbInterfaceDescriptor descriptor)
     : config_(config), descriptor_(descriptor) {
 }
 
-UsbInterfaceDescriptor::~UsbInterfaceDescriptor() {}
+UsbInterfaceAltSettingDescriptor::~UsbInterfaceAltSettingDescriptor() {}
 
-size_t UsbInterfaceDescriptor::GetNumEndpoints() const {
+size_t UsbInterfaceAltSettingDescriptor::GetNumEndpoints() const {
   return descriptor_->bNumEndpoints;
 }
 
 scoped_refptr<const UsbEndpointDescriptor>
-    UsbInterfaceDescriptor::GetEndpoint(size_t index) const {
-  return make_scoped_refptr(new UsbEndpointDescriptor(config_,
-      &descriptor_->endpoint[index]));
+    UsbInterfaceAltSettingDescriptor::GetEndpoint(size_t index) const {
+  return new UsbEndpointDescriptor(config_, &descriptor_->endpoint[index]);
 }
 
-int UsbInterfaceDescriptor::GetInterfaceNumber() const {
+int UsbInterfaceAltSettingDescriptor::GetInterfaceNumber() const {
   return descriptor_->bInterfaceNumber;
 }
 
-int UsbInterfaceDescriptor::GetAlternateSetting() const {
+int UsbInterfaceAltSettingDescriptor::GetAlternateSetting() const {
   return descriptor_->bAlternateSetting;
 }
 
-int UsbInterfaceDescriptor::GetInterfaceClass() const {
+int UsbInterfaceAltSettingDescriptor::GetInterfaceClass() const {
   return descriptor_->bInterfaceClass;
 }
 
-int UsbInterfaceDescriptor::GetInterfaceSubclass() const {
+int UsbInterfaceAltSettingDescriptor::GetInterfaceSubclass() const {
   return descriptor_->bInterfaceSubClass;
 }
 
-int UsbInterfaceDescriptor::GetInterfaceProtocol() const {
+int UsbInterfaceAltSettingDescriptor::GetInterfaceProtocol() const {
   return descriptor_->bInterfaceProtocol;
 }
 
-UsbInterface::UsbInterface(scoped_refptr<const UsbConfigDescriptor> config,
+UsbInterfaceDescriptor::UsbInterfaceDescriptor(
+    scoped_refptr<const UsbConfigDescriptor> config,
     PlatformUsbInterface usbInterface)
     : config_(config), interface_(usbInterface) {
 }
 
-UsbInterface::~UsbInterface() {}
+UsbInterfaceDescriptor::~UsbInterfaceDescriptor() {}
 
-size_t UsbInterface::GetNumAltSettings() const {
+size_t UsbInterfaceDescriptor::GetNumAltSettings() const {
   return interface_->num_altsetting;
 }
 
-scoped_refptr<const UsbInterfaceDescriptor>
-    UsbInterface::GetAltSetting(size_t index) const {
-  return make_scoped_refptr(new UsbInterfaceDescriptor(config_,
-      &interface_->altsetting[index]));
+scoped_refptr<const UsbInterfaceAltSettingDescriptor>
+    UsbInterfaceDescriptor::GetAltSetting(size_t index) const {
+  return new UsbInterfaceAltSettingDescriptor(config_,
+                                              &interface_->altsetting[index]);
 }
 
-UsbConfigDescriptor::UsbConfigDescriptor()
-    : config_(NULL) {
+UsbConfigDescriptor::UsbConfigDescriptor(PlatformUsbConfigDescriptor config)
+    : config_(config) {
 }
 
 UsbConfigDescriptor::~UsbConfigDescriptor() {
@@ -151,16 +151,11 @@ UsbConfigDescriptor::~UsbConfigDescriptor() {
   }
 }
 
-void UsbConfigDescriptor::Reset(PlatformUsbConfigDescriptor config) {
-  config_ = config;
-}
-
 size_t UsbConfigDescriptor::GetNumInterfaces() const {
   return config_->bNumInterfaces;
 }
 
-scoped_refptr<const UsbInterface>
+scoped_refptr<const UsbInterfaceDescriptor>
     UsbConfigDescriptor::GetInterface(size_t index) const {
-  return make_scoped_refptr(new UsbInterface(make_scoped_refptr(this),
-          &config_->interface[index]));
+  return new UsbInterfaceDescriptor(this, &config_->interface[index]);
 }

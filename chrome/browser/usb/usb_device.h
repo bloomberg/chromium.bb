@@ -42,7 +42,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Lists the interfaces provided by the device and fills the given
   // UsbConfigDescriptor.
   // Blocking method. Must be called on FILE thread.
-  virtual bool ListInterfaces(UsbConfigDescriptor* config);
+  virtual scoped_refptr<UsbConfigDescriptor> ListInterfaces();
 
  protected:
   friend class UsbService;

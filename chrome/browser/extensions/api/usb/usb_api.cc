@@ -489,10 +489,10 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
     return;
   }
 
-  config_ = new UsbConfigDescriptor();
-  bool success = resource->device()->device()->ListInterfaces(config_.get());
+  scoped_refptr<UsbConfigDescriptor> config =
+      resource->device()->device()->ListInterfaces();
 
-  if (!success) {
+  if (!config) {
     SetError(kErrorCannotListInterfaces);
     AsyncWorkCompleted();
     return;
@@ -500,16 +500,17 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
 
   result_.reset(new base::ListValue());
 
-  for (size_t i = 0, numInterfaces = config_->GetNumInterfaces();
-      i < numInterfaces; ++i) {
-    scoped_refptr<const UsbInterface> usbInterface(config_->GetInterface(i));
-    for (size_t j = 0, numDescriptors = usbInterface->GetNumAltSettings();
-            j < numDescriptors; ++j) {
-      scoped_refptr<const UsbInterfaceDescriptor> descriptor
-          = usbInterface->GetAltSetting(j);
+  for (size_t i = 0, num_interfaces = config->GetNumInterfaces();
+      i < num_interfaces; ++i) {
+    scoped_refptr<const UsbInterfaceDescriptor>
+        usb_interface(config->GetInterface(i));
+    for (size_t j = 0, num_descriptors = usb_interface->GetNumAltSettings();
+            j < num_descriptors; ++j) {
+      scoped_refptr<const UsbInterfaceAltSettingDescriptor> descriptor
+          = usb_interface->GetAltSetting(j);
       std::vector<linked_ptr<EndpointDescriptor> > endpoints;
-      for (size_t k = 0, numEndpoints = descriptor->GetNumEndpoints();
-          k < numEndpoints; k++) {
+      for (size_t k = 0, num_endpoints = descriptor->GetNumEndpoints();
+          k < num_endpoints; k++) {
         scoped_refptr<const UsbEndpointDescriptor> endpoint
             = descriptor->GetEndpoint(k);
         linked_ptr<EndpointDescriptor> endpoint_desc(new EndpointDescriptor());

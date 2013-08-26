@@ -178,12 +178,15 @@ UsbDeviceHandle::Transfer::~Transfer() {}
 UsbDeviceHandle::UsbDeviceHandle(
     scoped_refptr<UsbContext> context,
     UsbDevice* device,
-    PlatformUsbDeviceHandle handle)
-    : device_(device), handle_(handle), context_(context) {
+    PlatformUsbDeviceHandle handle,
+    scoped_refptr<UsbConfigDescriptor> interfaces)
+    : device_(device),
+      handle_(handle),
+      interfaces_(interfaces),
+      context_(context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(handle) << "Cannot create device with NULL handle.";
-  interfaces_ = new UsbConfigDescriptor();
-  device->ListInterfaces(interfaces_.get());
+  DCHECK(interfaces_) << "Unabled to list interfaces";
 }
 
 UsbDeviceHandle::UsbDeviceHandle() : device_(NULL), handle_(NULL) {
@@ -524,7 +527,7 @@ void UsbDeviceHandle::RefreshEndpointMap() {
   endpoint_map_.clear();
   for (ClaimedInterfaceMap::iterator it = claimed_interfaces_.begin();
       it != claimed_interfaces_.end(); ++it) {
-    scoped_refptr<const UsbInterfaceDescriptor> interface_desc =
+    scoped_refptr<const UsbInterfaceAltSettingDescriptor> interface_desc =
         interfaces_->GetInterface(it->first)->GetAltSetting(
             it->second->alternate_setting());
     for (size_t i = 0; i < interface_desc->GetNumEndpoints(); i++) {

@@ -50,8 +50,11 @@ scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
   PlatformUsbDeviceHandle handle;
   int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {
+    scoped_refptr<UsbConfigDescriptor> interfaces = ListInterfaces();
+    if (!interfaces)
+      return NULL;
     scoped_refptr<UsbDeviceHandle> device_handle =
-        new UsbDeviceHandle(context_, this, handle);
+        new UsbDeviceHandle(context_, this, handle, interfaces);
     handles_.push_back(device_handle);
     return device_handle;
   }
@@ -73,16 +76,16 @@ bool UsbDevice::Close(scoped_refptr<UsbDeviceHandle> handle) {
   return false;
 }
 
-bool UsbDevice::ListInterfaces(UsbConfigDescriptor* config) {
+scoped_refptr<UsbConfigDescriptor> UsbDevice::ListInterfaces() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   PlatformUsbConfigDescriptor platform_config;
   const int list_result =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
   if (list_result == 0)
-    config->Reset(platform_config);
+    return new UsbConfigDescriptor(platform_config);
 
-  return list_result == 0;
+  return NULL;
 }
 
 void UsbDevice::OnDisconnect() {

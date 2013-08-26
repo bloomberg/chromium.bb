@@ -80,7 +80,7 @@ class MockUsbDevice : public UsbDevice {
     return false;
   }
 
-  MOCK_METHOD1(ListInterfaces, bool(UsbConfigDescriptor* config));
+  MOCK_METHOD0(ListInterfaces, scoped_refptr<UsbConfigDescriptor>());
 
  private:
   MockUsbDeviceHandle* mock_handle_;
@@ -118,8 +118,8 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
-  EXPECT_CALL(*mock_device_.get(), ListInterfaces(_))
-      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_device_.get(), ListInterfaces())
+      .WillOnce(Return(scoped_refptr<UsbConfigDescriptor>()));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/list_interfaces"));
 }

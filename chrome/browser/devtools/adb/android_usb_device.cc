@@ -48,12 +48,12 @@ base::LazyInstance<AndroidUsbDevices>::Leaky g_devices =
 scoped_refptr<AndroidUsbDevice> ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
     scoped_refptr<UsbDeviceHandle> usb_device,
-    const UsbInterface* interface) {
+    scoped_refptr<const UsbInterfaceDescriptor> interface) {
   if (interface->GetNumAltSettings() == 0)
     return NULL;
 
-  scoped_refptr<const UsbInterfaceDescriptor> idesc =
-      interface->GetAltSetting(0).get();
+  scoped_refptr<const UsbInterfaceAltSettingDescriptor> idesc =
+      interface->GetAltSetting(0);
 
   if (idesc->GetInterfaceClass() != kAdbClass ||
       idesc->GetInterfaceSubclass() != kAdbSubclass ||
@@ -68,7 +68,7 @@ scoped_refptr<AndroidUsbDevice> ClaimInterface(
 
   for (size_t i = 0; i < idesc->GetNumEndpoints(); ++i) {
     scoped_refptr<const UsbEndpointDescriptor> edesc =
-        idesc->GetEndpoint(i).get();
+        idesc->GetEndpoint(i);
     if (edesc->GetTransferType() != USB_TRANSFER_BULK)
       continue;
     if (edesc->GetDirection() == USB_DIRECTION_INBOUND)
@@ -187,9 +187,8 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
     if (ContainsKey(claimed_devices, it->get()))
       continue;
 
-    scoped_refptr<UsbConfigDescriptor> config = new UsbConfigDescriptor();
-    bool success = (*it)->ListInterfaces(config.get());
-    if (!success)
+    scoped_refptr<UsbConfigDescriptor> config = (*it)->ListInterfaces();
+    if (!config)
       continue;
 
     scoped_refptr<UsbDeviceHandle> usb_device = (*it)->Open();

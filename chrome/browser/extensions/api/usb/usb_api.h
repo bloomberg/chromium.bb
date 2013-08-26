@@ -105,7 +105,6 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
                               extensions::api::usb::UsageType* output);
 
   scoped_ptr<base::ListValue> result_;
-  scoped_refptr<UsbConfigDescriptor> config_;
   scoped_ptr<extensions::api::usb::ListInterfaces::Params> parameters_;
 };
 

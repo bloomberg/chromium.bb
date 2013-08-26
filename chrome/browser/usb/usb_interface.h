@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_USB_USB_INTERFACE_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 struct libusb_config_descriptor;
 struct libusb_endpoint_descriptor;
@@ -17,8 +16,6 @@ typedef libusb_config_descriptor* PlatformUsbConfigDescriptor;
 typedef const libusb_endpoint_descriptor* PlatformUsbEndpointDescriptor;
 typedef const libusb_interface* PlatformUsbInterface;
 typedef const libusb_interface_descriptor* PlatformUsbInterfaceDescriptor;
-
-class UsbDeviceHandle;
 
 enum UsbTransferType {
   USB_TRANSFER_CONTROL = 0,
@@ -45,13 +42,14 @@ enum UsbUsageType {
   USB_USAGE_EXPLICIT_FEEDBACK
 };
 
+class UsbDevice;
 class UsbConfigDescriptor;
+class UsbInterfaceDescriptor;
+class UsbInterfaceAltSettingDescriptor;
 
-class UsbEndpointDescriptor : public base::RefCounted<UsbEndpointDescriptor> {
+class UsbEndpointDescriptor
+    : public base::RefCounted<const UsbEndpointDescriptor> {
  public:
-  UsbEndpointDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
-      PlatformUsbEndpointDescriptor descriptor);
-
   int GetAddress() const;
   UsbEndpointDirection GetDirection() const;
   int GetMaximumPacketSize() const;
@@ -61,22 +59,25 @@ class UsbEndpointDescriptor : public base::RefCounted<UsbEndpointDescriptor> {
   int GetPollingInterval() const;
 
  private:
-  friend class base::RefCounted<UsbEndpointDescriptor>;
+  friend class base::RefCounted<const UsbEndpointDescriptor>;
+  friend class UsbInterfaceAltSettingDescriptor;
+
+  UsbEndpointDescriptor(
+      scoped_refptr<const UsbConfigDescriptor> config,
+      PlatformUsbEndpointDescriptor descriptor);
   ~UsbEndpointDescriptor();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
   PlatformUsbEndpointDescriptor descriptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbEndpointDescriptor);
 };
 
-class UsbInterfaceDescriptor
-    : public base::RefCounted<UsbInterfaceDescriptor> {
+class UsbInterfaceAltSettingDescriptor
+    : public base::RefCounted<const UsbInterfaceAltSettingDescriptor> {
  public:
-  UsbInterfaceDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
-      PlatformUsbInterfaceDescriptor descriptor);
-
   size_t GetNumEndpoints() const;
-  scoped_refptr<const UsbEndpointDescriptor>
-      GetEndpoint(size_t index) const;
+  scoped_refptr<const UsbEndpointDescriptor> GetEndpoint(size_t index) const;
 
   int GetInterfaceNumber() const;
   int GetAlternateSetting() const;
@@ -85,46 +86,56 @@ class UsbInterfaceDescriptor
   int GetInterfaceProtocol() const;
 
  private:
-  friend class base::RefCounted<UsbInterfaceDescriptor>;
-  ~UsbInterfaceDescriptor();
+  friend class base::RefCounted<const UsbInterfaceAltSettingDescriptor>;
+  friend class UsbInterfaceDescriptor;
+
+  UsbInterfaceAltSettingDescriptor(
+      scoped_refptr<const UsbConfigDescriptor> config,
+      PlatformUsbInterfaceDescriptor descriptor);
+  ~UsbInterfaceAltSettingDescriptor();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
   PlatformUsbInterfaceDescriptor descriptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbInterfaceAltSettingDescriptor);
 };
 
-class UsbInterface : public base::RefCounted<UsbInterface> {
+class UsbInterfaceDescriptor
+    : public base::RefCounted<const UsbInterfaceDescriptor> {
  public:
-  UsbInterface(scoped_refptr<const UsbConfigDescriptor> config,
-      PlatformUsbInterface usbInterface);
-
   size_t GetNumAltSettings() const;
-  scoped_refptr<const UsbInterfaceDescriptor>
-      GetAltSetting(size_t index) const;
+  scoped_refptr<const UsbInterfaceAltSettingDescriptor> GetAltSetting(
+      size_t index) const;
 
  private:
-  friend class base::RefCounted<UsbInterface>;
-  ~UsbInterface();
+  friend class base::RefCounted<const UsbInterfaceDescriptor>;
+  friend class UsbConfigDescriptor;
+
+  UsbInterfaceDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
+               PlatformUsbInterface usbInterface);
+  ~UsbInterfaceDescriptor();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
   PlatformUsbInterface interface_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbInterfaceDescriptor);
 };
 
 class UsbConfigDescriptor : public base::RefCounted<UsbConfigDescriptor> {
  public:
-  UsbConfigDescriptor();
-
-  void Reset(PlatformUsbConfigDescriptor config);
-
   size_t GetNumInterfaces() const;
-
-  scoped_refptr<const UsbInterface>
-      GetInterface(size_t index) const;
+  scoped_refptr<const UsbInterfaceDescriptor> GetInterface(size_t index) const;
 
  private:
   friend class base::RefCounted<UsbConfigDescriptor>;
+  friend class UsbDevice;
+
+  explicit UsbConfigDescriptor(PlatformUsbConfigDescriptor config);
   ~UsbConfigDescriptor();
 
   PlatformUsbConfigDescriptor config_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbConfigDescriptor);
 };
 
 #endif  // CHROME_BROWSER_USB_USB_INTERFACE_H_
