@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -75,6 +76,11 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   // called on the IO thread. This function must be called on the UI thread.
   void SetPolicyCertVerifier(PolicyCertVerifier* cert_verifier);
 
+  // Returns a callback that should be called if a policy installed certificate
+  // was trusted for the associated profile. The closure can be safely used (on
+  // the UI thread) even after this Connector is destructed.
+  base::Closure GetPolicyCertTrustedCallback();
+
   // Sets |certs| to the list of Web trusted server and CA certificates from the
   // last received ONC user policy.
   void GetWebTrustedCertificates(net::CertificateList* certs) const;
@@ -89,10 +95,9 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(OS_CHROMEOS)
+  void SetUsedPolicyCertificatesOnce();
   void InitializeDeviceLocalAccountPolicyProvider(const std::string& username);
 #endif
-
-  Profile* profile_;
 
 #if defined(OS_CHROMEOS)
   // Some of the user policy configuration affects browser global state, and
@@ -104,13 +109,16 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 
   scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
   scoped_ptr<UserNetworkConfigurationUpdater> network_configuration_updater_;
+
+  base::WeakPtrFactory<ProfilePolicyConnector> weak_ptr_factory_;
 #endif
+
+  Profile* profile_;
 
 #if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<ManagedModePolicyProvider> managed_mode_policy_provider_;
 #endif
 
-  base::WeakPtrFactory<ProfilePolicyConnector> weak_ptr_factory_;
 #endif  // ENABLE_CONFIGURATION_POLICY
 
   scoped_ptr<PolicyService> policy_service_;

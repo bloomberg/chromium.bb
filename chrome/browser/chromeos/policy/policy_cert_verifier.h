@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,10 +28,10 @@ class PolicyCertVerifier : public net::CertVerifier,
                            public net::CertTrustAnchorProvider {
  public:
   // This object must be created on the UI thread. It's member functions and
-  // destructor must be called on the IO thread. |profile| is a handle to the
-  // Profile whose request context makes use of this Verifier. The handle is
-  // only used on the UI thread, if it's still valid.
-  explicit PolicyCertVerifier(void* profile);
+  // destructor must be called on the IO thread. |anchor_used_callback| is
+  // called on the IO thread everytime a certificate from the additional trust
+  // anchors (set with SetTrustAnchors) is used.
+  explicit PolicyCertVerifier(const base::Closure& anchor_used_callback);
   virtual ~PolicyCertVerifier();
 
   void InitializeOnIOThread();
@@ -55,7 +56,7 @@ class PolicyCertVerifier : public net::CertVerifier,
 
  private:
   net::CertificateList trust_anchors_;
-  void* profile_;
+  base::Closure anchor_used_callback_;
   scoped_ptr<CertVerifier> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyCertVerifier);

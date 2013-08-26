@@ -39,11 +39,12 @@
 namespace policy {
 
 ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
-    : profile_(profile),
+    :
 #if defined(OS_CHROMEOS)
       is_primary_user_(false),
+      weak_ptr_factory_(this),
 #endif
-      weak_ptr_factory_(this) {}
+      profile_(profile) {}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
@@ -153,6 +154,11 @@ void ProfilePolicyConnector::SetPolicyCertVerifier(
     network_configuration_updater_->SetPolicyCertVerifier(cert_verifier);
 }
 
+base::Closure ProfilePolicyConnector::GetPolicyCertTrustedCallback() {
+  return base::Bind(&ProfilePolicyConnector::SetUsedPolicyCertificatesOnce,
+                    weak_ptr_factory_.GetWeakPtr());
+}
+
 void ProfilePolicyConnector::GetWebTrustedCertificates(
     net::CertificateList* certs) const {
   certs->clear();
@@ -170,6 +176,10 @@ bool ProfilePolicyConnector::UsedPolicyCertificates() {
 }
 
 #if defined(OS_CHROMEOS)
+void ProfilePolicyConnector::SetUsedPolicyCertificatesOnce() {
+  profile_->GetPrefs()->SetBoolean(prefs::kUsedPolicyCertificatesOnce, true);
+}
+
 void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
     const std::string& username) {
   BrowserPolicyConnector* connector =

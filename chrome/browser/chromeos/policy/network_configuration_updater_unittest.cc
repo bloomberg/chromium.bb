@@ -247,7 +247,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   // Certificates with the "Web" trust flag set should not be forwarded to the
   // trust provider.
-  policy::PolicyCertVerifier cert_verifier(NULL /* no profile */);
+  policy::PolicyCertVerifier cert_verifier((
+      base::Closure() /* no policy cert trusted callback */));
   updater->SetPolicyCertVerifier(&cert_verifier);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(cert_verifier.GetAdditionalTrustAnchors().empty());
@@ -276,7 +277,8 @@ TEST_F(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
 
   // Certificates with the "Web" trust flag set should be forwarded to the
   // trust provider.
-  policy::PolicyCertVerifier cert_verifier(NULL /* no profile */);
+  policy::PolicyCertVerifier cert_verifier((
+      base::Closure() /* no policy cert trusted callback */));
   updater->SetPolicyCertVerifier(&cert_verifier);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, cert_verifier.GetAdditionalTrustAnchors().size());

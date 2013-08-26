@@ -6,11 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_proc.h"
@@ -20,38 +16,33 @@ namespace policy {
 
 namespace {
 
-void TaintProfile(void* profile_ptr) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  Profile* profile = reinterpret_cast<Profile*>(profile_ptr);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+void MaybeSignalAnchorUse(int error,
+                          const base::Closure& anchor_used_callback,
+                          const net::CertVerifyResult& verify_result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (error != net::OK || !verify_result.is_issued_by_additional_trust_anchor ||
+      anchor_used_callback.is_null()) {
     return;
-  profile->GetPrefs()->SetBoolean(prefs::kUsedPolicyCertificatesOnce, true);
-}
-
-void MaybeTaintProfile(const net::CertVerifyResult& verify_result,
-                       void* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (verify_result.is_issued_by_additional_trust_anchor) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&TaintProfile, profile));
   }
+  anchor_used_callback.Run();
 }
 
-void CallbackWrapper(void* profile,
-                     const net::CertVerifyResult* verify_result,
-                     const net::CompletionCallback& original_callback,
-                     int error) {
+void CompleteAndSignalAnchorUse(
+    const base::Closure& anchor_used_callback,
+    const net::CompletionCallback& completion_callback,
+    const net::CertVerifyResult* verify_result,
+    int error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (error == net::OK)
-    MaybeTaintProfile(*verify_result, profile);
-  if (!original_callback.is_null())
-    original_callback.Run(error);
+  MaybeSignalAnchorUse(error, anchor_used_callback, *verify_result);
+  if (!completion_callback.is_null())
+    completion_callback.Run(error);
 }
 
 }  // namespace
 
-PolicyCertVerifier::PolicyCertVerifier(void* profile)
-    : profile_(profile) {
+PolicyCertVerifier::PolicyCertVerifier(
+    const base::Closure& anchor_used_callback)
+    : anchor_used_callback_(anchor_used_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -79,22 +70,25 @@ void PolicyCertVerifier::SetTrustAnchors(
   trust_anchors_ = trust_anchors;
 }
 
-int PolicyCertVerifier::Verify(net::X509Certificate* cert,
-                               const std::string& hostname,
-                               int flags,
-                               net::CRLSet* crl_set,
-                               net::CertVerifyResult* verify_result,
-                               const net::CompletionCallback& callback,
-                               RequestHandle* out_req,
-                               const net::BoundNetLog& net_log) {
+int PolicyCertVerifier::Verify(
+    net::X509Certificate* cert,
+    const std::string& hostname,
+    int flags,
+    net::CRLSet* crl_set,
+    net::CertVerifyResult* verify_result,
+    const net::CompletionCallback& completion_callback,
+    RequestHandle* out_req,
+    const net::BoundNetLog& net_log) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(delegate_);
   net::CompletionCallback wrapped_callback =
-      base::Bind(&CallbackWrapper, profile_, verify_result, callback);
+      base::Bind(&CompleteAndSignalAnchorUse,
+                 anchor_used_callback_,
+                 completion_callback,
+                 verify_result);
   int error = delegate_->Verify(cert, hostname, flags, crl_set, verify_result,
                                 wrapped_callback, out_req, net_log);
-  if (error == net::OK)
-    MaybeTaintProfile(*verify_result, profile_);
+  MaybeSignalAnchorUse(error, anchor_used_callback_, *verify_result);
   return error;
 }
 

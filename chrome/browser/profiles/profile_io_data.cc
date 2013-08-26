@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -222,6 +223,22 @@ class DebugDevToolsInterceptor
 };
 #endif  // defined(DEBUG_DEVTOOLS)
 
+#if defined(OS_CHROMEOS)
+scoped_ptr<policy::PolicyCertVerifier> CreatePolicyCertVerifier(
+    Profile* profile) {
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+  base::Closure policy_cert_trusted_callback =
+      base::Bind(base::IgnoreResult(&content::BrowserThread::PostTask),
+                 content::BrowserThread::UI,
+                 FROM_HERE,
+                 connector->GetPolicyCertTrustedCallback());
+  scoped_ptr<policy::PolicyCertVerifier> cert_verifier(
+      new policy::PolicyCertVerifier(policy_cert_trusted_callback));
+  connector->SetPolicyCertVerifier(cert_verifier.get());
+  return cert_verifier.Pass();
+}
+#endif
 }  // namespace
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
@@ -278,9 +295,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       managed_user_service->GetURLFilterForIOThread();
 #endif
 #if defined(OS_CHROMEOS)
-  params->cert_verifier.reset(new policy::PolicyCertVerifier(profile));
-  policy::ProfilePolicyConnectorFactory::GetForProfile(profile)
-      ->SetPolicyCertVerifier(params->cert_verifier.get());
+  params->cert_verifier = CreatePolicyCertVerifier(profile);
 #endif
 
   params->profile = profile;
