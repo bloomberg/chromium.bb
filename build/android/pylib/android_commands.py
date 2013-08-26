@@ -835,8 +835,8 @@ class AndroidCommands(object):
     # only a single file is given as the base name given in device_path may
     # differ from that in host_path.
     def HostToDevicePath(host_file_path):
-      return os.path.join(os.path.dirname(device_path), os.path.relpath(
-          host_file_path, os.path.dirname(os.path.normpath(host_path))))
+      return os.path.join(device_path, os.path.relpath(
+          host_file_path, os.path.normpath(host_path)))
 
     device_hashes = [h.hash for h in device_hash_tuples]
     return [(t.path, HostToDevicePath(t.path) if os.path.isdir(host_path) else
