@@ -4,10 +4,25 @@
 
 /* This file contains styles specific to Android and iOS. */
 
+html {
+  height: 100%;
+}
+
 body {
   color: rgb(76, 76, 76);
+  height: 100%;
   margin: 0;
   margin-bottom: 46px;
+}
+
+.page {
+  height: 100%;
+}
+
+#scrolling-container {
+  -webkit-overflow-scrolling: touch;
+  height: -webkit-calc(100% - 46px);
+  overflow-y: auto;
 }
 
 h1 {

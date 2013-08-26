@@ -69,72 +69,74 @@
 </if>
 
 <div id="history-page" class="page">
-  <header>
-    <h1 i18n-content="history"></h1>
-    <div id="search-form" class="search-field-container">
-      <input type="search" id="search-field" required>
-      <input type="submit" id="search-button" i18n-values="value:searchButton">
-    </div>
-    <div id="filter-controls" hidden>
-      <button id="range-today" i18n-content="rangeToday" disabled></button>
-      <button id="range-previous" i18n-values="alt:rangePrevious" disabled>
-      </button>
-      <button id="range-next" i18n-values="alt:rangeNext" disabled>
-      </button>
-      <div id="display-filter-controls">
-        <div class="display-filter-button">
-          <label for="timeframe-filter-all">
-            <input id="timeframe-filter-all" type="radio"
-                name="timeframe-filter" value="0" checked>
-            <span i18n-content="rangeAllTime" class="first-button-component">
-            </span>
-          </label>
-        </div>
-        <div class="display-filter-button">
-          <label for="timeframe-filter-week">
-            <input id="timeframe-filter-week" type="radio"
-                name="timeframe-filter" value="1">
-            <span i18n-content="rangeWeek"></span>
-          </label>
-        </div>
-        <div class="display-filter-button">
-          <label for="timeframe-filter-month">
-            <input id="timeframe-filter-month" type="radio"
-                name="timeframe-filter" value="2">
-            <span i18n-content="rangeMonth" class="last-button-component">
-            </span>
-          </label>
+  <div id="scrolling-container">
+    <header>
+      <h1 i18n-content="history"></h1>
+      <div id="search-form" class="search-field-container">
+        <input type="search" id="search-field" required>
+        <input type="submit" id="search-button" i18n-values="value:searchButton">
+      </div>
+      <div id="filter-controls" hidden>
+        <button id="range-today" i18n-content="rangeToday" disabled></button>
+        <button id="range-previous" i18n-values="alt:rangePrevious" disabled>
+        </button>
+        <button id="range-next" i18n-values="alt:rangeNext" disabled>
+        </button>
+        <div id="display-filter-controls">
+          <div class="display-filter-button">
+            <label for="timeframe-filter-all">
+              <input id="timeframe-filter-all" type="radio"
+                  name="timeframe-filter" value="0" checked>
+              <span i18n-content="rangeAllTime" class="first-button-component">
+              </span>
+            </label>
+          </div>
+          <div class="display-filter-button">
+            <label for="timeframe-filter-week">
+              <input id="timeframe-filter-week" type="radio"
+                  name="timeframe-filter" value="1">
+              <span i18n-content="rangeWeek"></span>
+            </label>
+          </div>
+          <div class="display-filter-button">
+            <label for="timeframe-filter-month">
+              <input id="timeframe-filter-month" type="radio"
+                  name="timeframe-filter" value="2">
+              <span i18n-content="rangeMonth" class="last-button-component">
+              </span>
+            </label>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 <if expr="not is_android">
-  <div id="other-devices" class="other-devices"></div>
+    <div id="other-devices" class="other-devices"></div>
 </if>
-  <div id="top-container">
-    <div id="editing-controls">
-      <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
-      <button id="remove-selected" disabled="disabled"
-          i18n-content="removeSelected"></button>
+    <div id="top-container">
+      <div id="editing-controls">
+        <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
+        <button id="remove-selected" disabled="disabled"
+            i18n-content="removeSelected"></button>
+      </div>
+      <div id="notification-bar" hidden></div>
     </div>
-    <div id="notification-bar" hidden></div>
-  </div>
 
-  <div id="results-display"></div>
-  <div id="loading-spinner" hidden>
-    <span id="loading">
-      <div id="spinner" class="inline-spinner"></div>
-      <span i18n-content="loading"></span>
-    </span>
-  </div>
-  <div id="results-pagination">
-    <button id="newest-button" class="link-button" i18n-content="newest"
-        hidden>
-    </button>
-    <button id="newer-button" class="link-button" i18n-content="newer" hidden>
-    </button>
-    <button id="older-button" class="link-button" i18n-content="older" hidden>
-    </button>
+    <div id="results-display"></div>
+    <div id="loading-spinner" hidden>
+      <span id="loading">
+        <div id="spinner" class="inline-spinner"></div>
+        <span i18n-content="loading"></span>
+      </span>
+    </div>
+    <div id="results-pagination">
+      <button id="newest-button" class="link-button" i18n-content="newest"
+          hidden>
+      </button>
+      <button id="newer-button" class="link-button" i18n-content="newer" hidden>
+      </button>
+      <button id="older-button" class="link-button" i18n-content="older" hidden>
+      </button>
+    </div>
   </div>
 </div>
 
