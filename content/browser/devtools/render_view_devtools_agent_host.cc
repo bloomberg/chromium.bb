@@ -319,6 +319,10 @@ bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
                         OnClearBrowserCookies)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 handled = false; OnSwapCompositorFrame())
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_CompositorSurfaceBuffersSwapped,
+                                handled = false; OnSwapCompositorFrame())
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
