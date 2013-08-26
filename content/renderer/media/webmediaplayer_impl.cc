@@ -923,8 +923,7 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
 
 void WebMediaPlayerImpl::OnNeedKey(const std::string& session_id,
                                    const std::string& type,
-                                   scoped_ptr<uint8[]> init_data,
-                                   int init_data_size) {
+                                   const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // Do not fire NeedKey event if encrypted media is not enabled.
@@ -937,10 +936,11 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& session_id,
   if (init_data_type_.empty())
     init_data_type_ = type;
 
+  const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
   GetClient()->keyNeeded(WebString(),
                          WebString::fromUTF8(session_id),
-                         init_data.get(),
-                         init_data_size);
+                         init_data_ptr,
+                         init_data.size());
 }
 
 scoped_ptr<media::TextTrack>

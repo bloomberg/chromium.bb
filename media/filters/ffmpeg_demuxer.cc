@@ -287,7 +287,7 @@ base::TimeDelta FFmpegDemuxerStream::ConvertStreamTimestamp(
 FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     DataSource* data_source,
-    const FFmpegNeedKeyCB& need_key_cb,
+    const NeedKeyCB& need_key_cb,
     const scoped_refptr<MediaLog>& media_log)
     : host_(NULL),
       message_loop_(message_loop),
@@ -812,10 +812,9 @@ void FFmpegDemuxer::StreamHasEnded() {
 
 void FFmpegDemuxer::FireNeedKey(const std::string& init_data_type,
                                 const std::string& encryption_key_id) {
-  int key_id_size = encryption_key_id.size();
-  scoped_ptr<uint8[]> key_id_local(new uint8[key_id_size]);
-  memcpy(key_id_local.get(), encryption_key_id.data(), key_id_size);
-  need_key_cb_.Run(init_data_type, key_id_local.Pass(), key_id_size);
+  std::vector<uint8> key_id_local(encryption_key_id.begin(),
+                                  encryption_key_id.end());
+  need_key_cb_.Run(init_data_type, key_id_local);
 }
 
 void FFmpegDemuxer::NotifyCapacityAvailable() {

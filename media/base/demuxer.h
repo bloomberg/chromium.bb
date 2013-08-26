@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DEMUXER_H_
 #define MEDIA_BASE_DEMUXER_H_
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
@@ -29,6 +31,12 @@ class MEDIA_EXPORT DemuxerHost : public DataSourceHost {
 
 class MEDIA_EXPORT Demuxer {
  public:
+  // A new potentially encrypted stream has been parsed.
+  // First parameter - The type of initialization data.
+  // Second parameter - The initialization data associated with the stream.
+  typedef base::Callback<void(const std::string& type,
+                              const std::vector<uint8>& init_data)> NeedKeyCB;
+
   Demuxer();
   virtual ~Demuxer();
 

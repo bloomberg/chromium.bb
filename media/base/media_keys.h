@@ -82,8 +82,7 @@ typedef base::Callback<void(const std::string& session_id,
 
 typedef base::Callback<void(const std::string& session_id,
                             const std::string& type,
-                            scoped_ptr<uint8[]> init_data,
-                            int init_data_size)> NeedKeyCB;
+                            const std::vector<uint8>& init_data)> NeedKeyCB;
 
 }  // namespace media
 

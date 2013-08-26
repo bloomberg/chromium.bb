@@ -86,7 +86,7 @@ class FakeEncryptedMedia {
 
     virtual void NeedKey(const std::string& session_id,
                          const std::string& type,
-                         scoped_ptr<uint8[]> init_data, int init_data_length,
+                         const std::vector<uint8>& init_data,
                          AesDecryptor* decryptor) = 0;
   };
 
@@ -123,9 +123,8 @@ class FakeEncryptedMedia {
 
   void NeedKey(const std::string& session_id,
                const std::string& type,
-               scoped_ptr<uint8[]> init_data, int init_data_length) {
-    app_->NeedKey(session_id, type, init_data.Pass(), init_data_length,
-                  &decryptor_);
+               const std::vector<uint8>& init_data) {
+    app_->NeedKey(session_id, type, init_data, &decryptor_);
   }
 
  private:
@@ -151,7 +150,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   virtual void NeedKey(const std::string& session_id,
                        const std::string& type,
-                       scoped_ptr<uint8[]> init_data, int init_data_length,
+                       const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
     current_session_id_ = session_id;
 
@@ -165,8 +164,8 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // Clear Key really needs the key ID in |init_data|. For WebM, they are the
     // same, but this is not the case for ISO CENC. Therefore, provide the
     // correct key ID.
-    const uint8* key_id = init_data.get();
-    int key_id_length = init_data_length;
+    const uint8* key_id = init_data.empty() ? NULL : &init_data[0];
+    size_t key_id_length = init_data.size();
     if (type == kMP4AudioType || type == kMP4VideoType) {
       key_id = kKeyId;
       key_id_length = arraysize(kKeyId);
@@ -197,7 +196,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
 
   virtual void NeedKey(const std::string& session_id,
                        const std::string& type,
-                       scoped_ptr<uint8[]> init_data, int init_data_length,
+                       const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
   }
 };
@@ -298,11 +297,10 @@ class MockMediaSource {
   }
 
   void DemuxerNeedKey(const std::string& type,
-                      scoped_ptr<uint8[]> init_data, int init_data_size) {
-    DCHECK(init_data.get());
-    DCHECK_GT(init_data_size, 0);
+                      const std::vector<uint8>& init_data) {
+    DCHECK(!init_data.empty());
     CHECK(!need_key_cb_.is_null());
-    need_key_cb_.Run(std::string(), type, init_data.Pass(), init_data_size);
+    need_key_cb_.Run(std::string(), type, init_data);
   }
 
   scoped_ptr<TextTrack> OnTextTrack(TextKind kind,

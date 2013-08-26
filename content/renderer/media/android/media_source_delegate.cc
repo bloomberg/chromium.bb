@@ -738,13 +738,12 @@ void MediaSourceDelegate::OnDemuxerOpened() {
 
 void MediaSourceDelegate::OnNeedKey(const std::string& session_id,
                                     const std::string& type,
-                                    scoped_ptr<uint8[]> init_data,
-                                    int init_data_size) {
+                                    const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   if (need_key_cb_.is_null())
     return;
 
-  need_key_cb_.Run(session_id, type, init_data.Pass(), init_data_size);
+  need_key_cb_.Run(session_id, type, init_data);
 }
 
 scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(

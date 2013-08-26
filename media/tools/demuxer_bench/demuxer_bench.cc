@@ -48,8 +48,8 @@ void QuitLoopWithStatus(base::MessageLoop* message_loop,
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
-static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
-             int init_data_size) {
+static void NeedKey(const std::string& type,
+                    const std::vector<uint8>& init_data) {
   LOG(INFO) << "File is encrypted.";
 }
 
@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
   media::FileDataSource data_source;
   CHECK(data_source.Initialize(file_path));
 
-  media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
+  media::Demuxer::NeedKeyCB need_key_cb = base::Bind(&NeedKey);
   media::FFmpegDemuxer demuxer(message_loop.message_loop_proxy(),
                                &data_source,
                                need_key_cb,

@@ -73,9 +73,8 @@ class MEDIA_EXPORT StreamParser {
   // First parameter - The type of the initialization data associated with the
   //                   stream.
   // Second parameter - The initialization data associated with the stream.
-  // Third parameter - Number of bytes of the initialization data.
   typedef base::Callback<void(const std::string&,
-                              scoped_ptr<uint8[]>, int)> NeedKeyCB;
+                              const std::vector<uint8>&)> NeedKeyCB;
 
   // Initialize the parser with necessary callbacks. Must be called before any
   // data is passed to Parse(). |init_cb| will be called once enough data has

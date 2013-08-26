@@ -44,14 +44,6 @@ struct AVStream;
 
 namespace media {
 
-// A new potentially encrypted stream has been parsed.
-// First parameter - The type of initialization data.
-// Second parameter - The initialization data associated with the stream.
-// Third parameter - Number of bytes of the initialization data.
-typedef base::Callback<void(const std::string& type,
-                            scoped_ptr<uint8[]> init_data,
-                            int init_data_size)> FFmpegNeedKeyCB;
-
 class MediaLog;
 class FFmpegDemuxer;
 class FFmpegGlue;
@@ -138,7 +130,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  public:
   FFmpegDemuxer(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                 DataSource* data_source,
-                const FFmpegNeedKeyCB& need_key_cb,
+                const NeedKeyCB& need_key_cb,
                 const scoped_refptr<MediaLog>& media_log);
   virtual ~FFmpegDemuxer();
 
@@ -250,7 +242,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   BlockingUrlProtocol url_protocol_;
   scoped_ptr<FFmpegGlue> glue_;
 
-  const FFmpegNeedKeyCB need_key_cb_;
+  const NeedKeyCB need_key_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);
 };

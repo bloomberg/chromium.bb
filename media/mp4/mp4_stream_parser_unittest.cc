@@ -94,11 +94,10 @@ class MP4StreamParserTest : public testing::Test {
   }
 
   void KeyNeededF(const std::string& type,
-                  scoped_ptr<uint8[]> init_data, int init_data_size) {
-    DVLOG(1) << "KeyNeededF: " << init_data_size;
+                  const std::vector<uint8>& init_data) {
+    DVLOG(1) << "KeyNeededF: " << init_data.size();
     EXPECT_EQ(kMp4InitDataType, type);
-    EXPECT_TRUE(init_data.get());
-    EXPECT_GT(init_data_size, 0);
+    EXPECT_FALSE(init_data.empty());
   }
 
   scoped_ptr<TextTrack> AddTextTrackF(

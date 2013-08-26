@@ -196,8 +196,7 @@ class WebMediaPlayerImpl
                     const std::string& default_url);
   void OnNeedKey(const std::string& type,
                  const std::string& session_id,
-                 scoped_ptr<uint8[]> init_data,
-                 int init_data_size);
+                 const std::vector<uint8>& init_data);
   scoped_ptr<media::TextTrack> OnTextTrack(media::TextKind kind,
                                            const std::string& label,
                                            const std::string& language);

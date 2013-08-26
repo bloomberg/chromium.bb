@@ -54,8 +54,8 @@ void TimestampExtractor(uint64* timestamp_ms,
   loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
-static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
-             int init_data_size) {
+static void NeedKey(const std::string& type,
+                    const std::vector<uint8>& init_data) {
   LOG(INFO) << "File is encrypted.";
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
   DemuxerHostImpl host;
   base::MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
-  media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
+  media::Demuxer::NeedKeyCB need_key_cb = base::Bind(&NeedKey);
   scoped_ptr<media::FFmpegDemuxer> demuxer(
       new media::FFmpegDemuxer(loop.message_loop_proxy(),
                                file_data_source.get(),

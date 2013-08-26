@@ -103,8 +103,8 @@ class PipelineIntegrationTestBase {
   void OnStatusCallback(PipelineStatus status);
   PipelineStatusCB QuitOnStatusCB(PipelineStatus expected_status);
   void DemuxerNeedKeyCB(const std::string& type,
-                        scoped_ptr<uint8[]> init_data, int init_data_size);
-  void set_need_key_cb(const NeedKeyCB& need_key_cb) {
+                        const std::vector<uint8>& init_data);
+    void set_need_key_cb(const NeedKeyCB& need_key_cb) {
     need_key_cb_ = need_key_cb;
   }
 

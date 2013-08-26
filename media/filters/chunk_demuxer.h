@@ -34,10 +34,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
     kReachedIdLimit,  // Reached ID limit. We can't handle any more IDs.
   };
 
-  typedef base::Callback<void(const std::string& type,
-                              scoped_ptr<uint8[]> init_data,
-                              int init_data_size)> NeedKeyCB;
-
   // |open_cb| Run when Initialize() is called to signal that the demuxer
   //   is ready to receive media data via AppenData().
   // |need_key_cb| Run when the demuxer determines that an encryption key is

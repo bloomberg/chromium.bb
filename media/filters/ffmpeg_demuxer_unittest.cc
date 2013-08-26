@@ -81,7 +81,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
     CreateDataSource(name);
 
-    media::FFmpegNeedKeyCB need_key_cb =
+    Demuxer::NeedKeyCB need_key_cb =
         base::Bind(&FFmpegDemuxerTest::NeedKeyCB, base::Unretained(this));
     demuxer_.reset(new FFmpegDemuxer(message_loop_.message_loop_proxy(),
                                      data_source_.get(),
@@ -136,8 +136,9 @@ class FFmpegDemuxerTest : public testing::Test {
   MOCK_METHOD3(NeedKeyCBMock, void(const std::string& type,
                                    const uint8* init_data, int init_data_size));
   void NeedKeyCB(const std::string& type,
-                 scoped_ptr<uint8[]> init_data, int init_data_size) {
-    NeedKeyCBMock(type, init_data.get(), init_data_size);
+                 const std::vector<uint8>& init_data) {
+    const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
+    NeedKeyCBMock(type, init_data_ptr, init_data.size());
   }
 
   // Accessor to demuxer internals.

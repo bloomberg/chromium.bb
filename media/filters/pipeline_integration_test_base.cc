@@ -65,12 +65,10 @@ PipelineStatusCB PipelineIntegrationTestBase::QuitOnStatusCB(
 
 void PipelineIntegrationTestBase::DemuxerNeedKeyCB(
     const std::string& type,
-    scoped_ptr<uint8[]> init_data,
-    int init_data_size) {
-  DCHECK(init_data.get());
-  DCHECK_GT(init_data_size, 0);
+    const std::vector<uint8>& init_data) {
+  DCHECK(!init_data.empty());
   CHECK(!need_key_cb_.is_null());
-  need_key_cb_.Run(std::string(), type, init_data.Pass(), init_data_size);
+  need_key_cb_.Run(std::string(), type, init_data);
 }
 
 void PipelineIntegrationTestBase::OnEnded() {
@@ -212,7 +210,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   CHECK(file_data_source->Initialize(file_path));
   data_source_.reset(file_data_source);
 
-  media::FFmpegNeedKeyCB need_key_cb = base::Bind(
+  Demuxer::NeedKeyCB need_key_cb = base::Bind(
       &PipelineIntegrationTestBase::DemuxerNeedKeyCB, base::Unretained(this));
   scoped_ptr<Demuxer> demuxer(
       new FFmpegDemuxer(message_loop_.message_loop_proxy(),
