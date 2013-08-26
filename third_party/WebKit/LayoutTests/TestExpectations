@@ -680,6 +680,21 @@ webkit.org/b/91183 http/tests/w3c/webperf/approved/HighResolutionTime/test_cross
 # Flakes also on the V8 waterfall on Win7.
 Bug(senorblanco) [ Win ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
+Bug(vollick) compositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+Bug(vollick) compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+Bug(vollick) compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(vollick) compositing/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+
+Bug(vollick) virtual/gpu/compositedscrolling/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+Bug(vollick) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+Bug(vollick) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(vollick) virtual/gpu/compositedscrolling/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+
+Bug(vollick) virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+
 # Fails since creation in 122663
 webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 
