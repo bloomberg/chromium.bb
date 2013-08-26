@@ -284,6 +284,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 #if ENABLE_NOTIFICATIONS
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
     bindMethod("simulateLegacyWebNotificationClick", &TestRunner::simulateLegacyWebNotificationClick);
+    bindMethod("cancelAllActiveNotifications", &TestRunner::cancelAllActiveNotifications);
 #endif
     bindMethod("addMockSpeechInputResult", &TestRunner::addMockSpeechInputResult);
     bindMethod("setMockSpeechInputDumpRect", &TestRunner::setMockSpeechInputDumpRect);
@@ -1865,6 +1866,12 @@ void TestRunner::simulateLegacyWebNotificationClick(const CppArgumentList& argum
         return;
     }
     result->set(m_notificationPresenter->simulateClick(WebString::fromUTF8(arguments[0].toString())));
+}
+
+void TestRunner::cancelAllActiveNotifications(const CppArgumentList& arguments, CppVariant* result)
+{
+    m_notificationPresenter->cancelAllActiveNotifications();
+    result->set(true);
 }
 #endif
 

@@ -90,6 +90,14 @@ bool NotificationPresenter::simulateClick(const WebString& title)
     return true;
 }
 
+void NotificationPresenter::cancelAllActiveNotifications()
+{
+    while (!m_activeNotifications.empty()) {
+        const WebNotification& notification = m_activeNotifications.begin()->second;
+        cancel(notification);
+    }
+}
+
 // The output from all these methods matches what DumpRenderTree produces.
 bool NotificationPresenter::show(const WebNotification& notification)
 {

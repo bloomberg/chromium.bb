@@ -473,6 +473,8 @@ private:
     void grantWebNotificationPermission(const CppArgumentList&, CppVariant*);
     // Simulates a click on a desktop notification.
     void simulateLegacyWebNotificationClick(const CppArgumentList&, CppVariant*);
+    // Cancel all active desktop notifications.
+    void cancelAllActiveNotifications(const CppArgumentList& arguments, CppVariant* result);
 #endif
 
     // Speech input related functions.

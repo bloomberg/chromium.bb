@@ -55,6 +55,9 @@ public:
     // Called by the TestRunner to simulate a user clicking on a notification.
     bool simulateClick(const WebKit::WebString& notificationIdentifier);
 
+    // Called by the TestRunner to cancel all active notications.
+    void cancelAllActiveNotifications();
+
     // WebKit::WebNotificationPresenter interface
     virtual bool show(const WebKit::WebNotification&);
     virtual void cancel(const WebKit::WebNotification&);
