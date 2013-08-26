@@ -602,6 +602,8 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
         code = VKEY_LMENU;
     else if ("rightAlt" == codeStr)
         code = VKEY_RMENU;
+    else if ("numLock" == codeStr)
+        code = VKEY_NUMLOCK;
     else {
         // Compare the input string with the function-key names defined by the
         // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key

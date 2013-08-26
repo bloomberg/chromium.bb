@@ -68,7 +68,6 @@ static int getLocationModifier(WPARAM wparam, LPARAM lparam)
         if (!((lparam >> 16) & KF_EXTENDED))
             modifier = WebInputEvent::IsKeyPad;
         break;
-    case VK_NUMLOCK:
     case VK_NUMPAD0:
     case VK_NUMPAD1:
     case VK_NUMPAD2:

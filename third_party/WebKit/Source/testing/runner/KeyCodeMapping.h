@@ -50,6 +50,7 @@ enum {
     VKEY_DELETE   = 0x2E,
     VKEY_APPS     = 0x5D,
     VKEY_F1       = 0x70,
+    VKEY_NUMLOCK  = 0x90,
     VKEY_LSHIFT   = 0xA0,
     VKEY_RSHIFT   = 0xA1,
     VKEY_LCONTROL = 0xA2,

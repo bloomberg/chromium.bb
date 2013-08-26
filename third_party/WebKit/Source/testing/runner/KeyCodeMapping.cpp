@@ -234,6 +234,8 @@ int NativeKeyCodeForWindowsKeyCode(int keysym)
         return 64;
     case VKEY_RMENU:
         return 108;
+    case VKEY_NUMLOCK:
+        return 77;
 
     default:
         return 0;
