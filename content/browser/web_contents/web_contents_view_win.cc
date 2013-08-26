@@ -246,6 +246,7 @@ void WebContentsViewWin::SetOverscrollControllerEnabled(bool enabled) {
 void WebContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {
   if (delegate_)
     delegate_->ShowContextMenu(params);
+  // WARNING: this may have been deleted.
 }
 
 void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
