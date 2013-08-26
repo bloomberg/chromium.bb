@@ -563,12 +563,16 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, PRE_WindowCloseFinishesUnload) {
   chrome::CloseWindow(browser());
   window_observer.Wait();
 }
-IN_PROC_BROWSER_TEST_F(FastUnloadTest, WindowCloseFinishesUnload) {
+
+// Flaky on Windows bots (http://crbug.com/279267).
 #if defined(OS_WIN)
-  // Flaky on Win7+ bots (http://crbug.com/267597).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    return;
+#define MAYBE_WindowCloseFinishesUnload \
+    DISABLED_WindowCloseFinishesUnload
+#else
+#define MAYBE_WindowCloseFinishesUnload \
+    WindowCloseFinishesUnload
 #endif
+IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_WindowCloseFinishesUnload) {
   // Check for cookie set in unload during PRE_ test.
   NavigateToPage("no_listeners");
   EXPECT_EQ("unloaded=ohyeah", GetCookies("no_listeners"));
