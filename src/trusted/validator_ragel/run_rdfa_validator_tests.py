@@ -74,7 +74,10 @@ def RunRdfaValidator(options, data):
   data += (-len(data) % BUNDLE_SIZE) * '\x90'
   assert len(data) % BUNDLE_SIZE == 0
 
-  tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+  # TODO(shcherbina): get rid of custom prefix once
+  # https://code.google.com/p/nativeclient/issues/detail?id=3631
+  # is actually fixed.
+  tmp = tempfile.NamedTemporaryFile(prefix='tmprdfa_', mode='wb', delete=False)
   try:
     tmp.write(CreateElfContent(options.bits, data))
     tmp.close()

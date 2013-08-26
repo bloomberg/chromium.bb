@@ -19,7 +19,11 @@ class RdfaTestRunner(test_format.TestRunner):
     arch = {32: '-Mi386', 64: '-Mx86-64'}[options.bits]
     data = ''.join(test_format.ParseHex(sections['hex']))
 
-    tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+    # TODO(shcherbina): get rid of custom prefix once
+    # https://code.google.com/p/nativeclient/issues/detail?id=3631
+    # is actually fixed.
+    tmp = tempfile.NamedTemporaryFile(
+        prefix='tmprdfa_', mode='wb', delete=False)
     try:
       tmp.write(data)
       tmp.close()
