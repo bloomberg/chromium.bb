@@ -11,8 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/graphics_2d_dev.h"
-#include "ppapi/cpp/dev/view_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
@@ -104,8 +102,7 @@ void PepperView::SetView(const pp::View& view) {
 
   pp::Rect pp_size = view.GetRect();
   SkISize new_dips_size = SkISize::Make(pp_size.width(), pp_size.height());
-  pp::ViewDev view_dev(view);
-  float new_dips_to_device_scale = view_dev.GetDeviceScale();
+  float new_dips_to_device_scale = view.GetDeviceScale();
 
   if (dips_size_ != new_dips_size ||
       dips_to_device_scale_ != new_dips_to_device_scale) {
@@ -135,8 +132,7 @@ void PepperView::SetView(const pp::View& view) {
     graphics2d_ = pp::Graphics2D(instance_, pp_size, false);
 
     // Specify the scale from our coordinates to DIPs.
-    pp::Graphics2D_Dev graphics2d_dev(graphics2d_);
-    graphics2d_dev.SetScale(1.0f / dips_to_view_scale_);
+    graphics2d_.SetScale(1.0f / dips_to_view_scale_);
 
     bool result = instance_->BindGraphics(graphics2d_);
 

@@ -16,18 +16,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/cpp/var.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkSize.h"
-
-// Windows defines 'PostMessage', so we have to undef it before we
-// include instance_private.h
-#if defined(PostMessage)
-#undef PostMessage
-#endif
-
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/var.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
@@ -43,6 +33,9 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class DictionaryValue;
