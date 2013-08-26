@@ -8350,5 +8350,561 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
             surface_child->visible_content_rect().ToString());
 }
 
+TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
+  // Ensure that a transform between the layer and its render surface is not a
+  // problem. Constructs the following layer tree.
+  //
+  //   root (a render surface)
+  //     + render_surface
+  //       + clip_parent (scaled)
+  //         + intervening_clipping_layer
+  //           + clip_child
+  //
+  // The render surface should be resized correctly and the clip child should
+  // inherit the right clip rect.
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> render_surface = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(render_surface);
+  render_surface->AddChild(clip_parent);
+  clip_parent->AddChild(intervening);
+  intervening->AddChild(clip_child);
+
+  clip_child->SetClipParent(clip_parent.get());
+
+  intervening->SetMasksToBounds(true);
+  clip_parent->SetMasksToBounds(true);
+
+  render_surface->SetForceRenderSurface(true);
+
+  gfx::Transform scale_transform;
+  scale_transform.Scale(2, 2);
+
+  gfx::Transform identity_transform;
+
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(render_surface.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(clip_parent.get(),
+                               scale_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(intervening.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(10, 10),
+                               false);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  ASSERT_TRUE(root->render_surface());
+  ASSERT_TRUE(render_surface->render_surface());
+
+  // Ensure that we've inherited our clip parent's clip and weren't affected
+  // by the intervening clip layer.
+  ASSERT_EQ(gfx::Rect(1, 1, 20, 20).ToString(),
+            clip_parent->clip_rect().ToString());
+  ASSERT_EQ(clip_parent->clip_rect().ToString(),
+            clip_child->clip_rect().ToString());
+  ASSERT_EQ(gfx::Rect(3, 3, 10, 10).ToString(),
+            intervening->clip_rect().ToString());
+
+  // Ensure that the render surface reports a content rect that has been grown
+  // to accomodate for the clip child.
+  ASSERT_EQ(gfx::Rect(5, 5, 16, 16).ToString(),
+            render_surface->render_surface()->content_rect().ToString());
+
+  // The above check implies the two below, but they nicely demonstrate that
+  // we've grown, despite the intervening layer's clip.
+  ASSERT_TRUE(clip_parent->clip_rect().Contains(
+      render_surface->render_surface()->content_rect()));
+  ASSERT_FALSE(intervening->clip_rect().Contains(
+      render_surface->render_surface()->content_rect()));
+}
+
+TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
+  // Ensure that intervening render surfaces are not a problem in the basic
+  // case. In the following tree, both render surfaces should be resized to
+  // accomodate for the clip child, despite an intervening clip.
+  //
+  //   root (a render surface)
+  //    + clip_parent (masks to bounds)
+  //      + render_surface1 (sets opacity)
+  //        + intervening (masks to bounds)
+  //          + render_surface2 (also sets opacity)
+  //            + clip_child
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(clip_parent);
+  clip_parent->AddChild(render_surface1);
+  render_surface1->AddChild(intervening);
+  intervening->AddChild(render_surface2);
+  render_surface2->AddChild(clip_child);
+
+  clip_child->SetClipParent(clip_parent.get());
+
+  intervening->SetMasksToBounds(true);
+  clip_parent->SetMasksToBounds(true);
+
+  render_surface1->SetForceRenderSurface(true);
+  render_surface2->SetForceRenderSurface(true);
+
+  gfx::Transform translation_transform;
+  translation_transform.Translate(2, 2);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(clip_parent.get(),
+                               translation_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(40, 40),
+                               false);
+  SetLayerPropertiesForTesting(render_surface1.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(intervening.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(render_surface2.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(-10.f, -10.f),
+                               gfx::Size(60, 60),
+                               false);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_TRUE(render_surface1->render_surface());
+  EXPECT_TRUE(render_surface2->render_surface());
+
+  // Since the render surfaces could have expanded, they should not clip (their
+  // bounds would no longer be reliable). We should resort to layer clipping
+  // in this case.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            render_surface1->render_surface()->clip_rect().ToString());
+  EXPECT_FALSE(render_surface1->render_surface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            render_surface2->render_surface()->clip_rect().ToString());
+  EXPECT_FALSE(render_surface2->render_surface()->is_clipped());
+
+  // NB: clip rects are in target space.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            render_surface1->clip_rect().ToString());
+  EXPECT_TRUE(render_surface1->is_clipped());
+
+  // This value is inherited from the clipping ancestor layer, 'intervening'.
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
+            render_surface2->clip_rect().ToString());
+  EXPECT_TRUE(render_surface2->is_clipped());
+
+  // The content rects of both render surfaces should both have expanded to
+  // contain the clip child.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            render_surface1->render_surface()->content_rect().ToString());
+  EXPECT_EQ(gfx::Rect(-1, -1, 40, 40).ToString(),
+            render_surface2->render_surface()->content_rect().ToString());
+
+  // The clip child should have inherited the clip parent's clip (projected to
+  // the right space, of course), and should have the correctly sized visible
+  // content rect.
+  EXPECT_EQ(gfx::Rect(-1, -1, 40, 40).ToString(),
+            clip_child->clip_rect().ToString());
+  EXPECT_EQ(gfx::Rect(9, 9, 40, 40).ToString(),
+            clip_child->visible_content_rect().ToString());
+  EXPECT_TRUE(clip_child->is_clipped());
+}
+
+TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
+  // Ensure that intervening render surfaces are not a problem, even if there
+  // is a scroll involved. Note, we do _not_ have to consider any other sort
+  // of transform.
+  //
+  //   root (a render surface)
+  //    + clip_parent (masks to bounds)
+  //      + render_surface1 (sets opacity)
+  //        + intervening (masks to bounds AND scrolls)
+  //          + render_surface2 (also sets opacity)
+  //            + clip_child
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(clip_parent);
+  clip_parent->AddChild(render_surface1);
+  render_surface1->AddChild(intervening);
+  intervening->AddChild(render_surface2);
+  render_surface2->AddChild(clip_child);
+
+  clip_child->SetClipParent(clip_parent.get());
+
+  intervening->SetMasksToBounds(true);
+  clip_parent->SetMasksToBounds(true);
+  intervening->SetScrollable(true);
+  intervening->SetMaxScrollOffset(gfx::Vector2d(50, 50));
+  intervening->SetScrollOffset(gfx::Vector2d(3, 3));
+
+  render_surface1->SetForceRenderSurface(true);
+  render_surface2->SetForceRenderSurface(true);
+
+  gfx::Transform translation_transform;
+  translation_transform.Translate(2, 2);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(clip_parent.get(),
+                               translation_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(40, 40),
+                               false);
+  SetLayerPropertiesForTesting(render_surface1.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(intervening.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(1.f, 1.f),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(render_surface2.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(-10.f, -10.f),
+                               gfx::Size(60, 60),
+                               false);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_TRUE(render_surface1->render_surface());
+  EXPECT_TRUE(render_surface2->render_surface());
+
+  // Since the render surfaces could have expanded, they should not clip (their
+  // bounds would no longer be reliable). We should resort to layer clipping
+  // in this case.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            render_surface1->render_surface()->clip_rect().ToString());
+  EXPECT_FALSE(render_surface1->render_surface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            render_surface2->render_surface()->clip_rect().ToString());
+  EXPECT_FALSE(render_surface2->render_surface()->is_clipped());
+
+  // NB: clip rects are in target space.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            render_surface1->clip_rect().ToString());
+  EXPECT_TRUE(render_surface1->is_clipped());
+
+  // This value is inherited from the clipping ancestor layer, 'intervening'.
+  EXPECT_EQ(gfx::Rect(2, 2, 3, 3).ToString(),
+            render_surface2->clip_rect().ToString());
+  EXPECT_TRUE(render_surface2->is_clipped());
+
+  // The content rects of both render surfaces should both have expanded to
+  // contain the clip child.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            render_surface1->render_surface()->content_rect().ToString());
+  EXPECT_EQ(gfx::Rect(2, 2, 40, 40).ToString(),
+            render_surface2->render_surface()->content_rect().ToString());
+
+  // The clip child should have inherited the clip parent's clip (projected to
+  // the right space, of course), and should have the correctly sized visible
+  // content rect.
+  EXPECT_EQ(gfx::Rect(2, 2, 40, 40).ToString(),
+            clip_child->clip_rect().ToString());
+  EXPECT_EQ(gfx::Rect(12, 12, 40, 40).ToString(),
+            clip_child->visible_content_rect().ToString());
+  EXPECT_TRUE(clip_child->is_clipped());
+}
+
+TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
+  // Ensures that descendants of the clip child inherit the correct clip.
+  //
+  //   root (a render surface)
+  //    + clip_parent (masks to bounds)
+  //      + intervening (masks to bounds)
+  //        + clip_child
+  //          + child
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<Layer> clip_child = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(clip_parent);
+  clip_parent->AddChild(intervening);
+  intervening->AddChild(clip_child);
+  clip_child->AddChild(child);
+
+  clip_child->SetClipParent(clip_parent.get());
+
+  intervening->SetMasksToBounds(true);
+  clip_parent->SetMasksToBounds(true);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(clip_parent.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               false);
+  SetLayerPropertiesForTesting(intervening.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(60, 60),
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(60, 60),
+                               false);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+
+  // Neither the clip child nor its descendant should have inherited the clip
+  // from |intervening|.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            clip_child->clip_rect().ToString());
+  EXPECT_TRUE(clip_child->is_clipped());
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 40).ToString(),
+            child->visible_content_rect().ToString());
+  EXPECT_TRUE(child->is_clipped());
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       SurfacesShouldBeUnaffectedByNonDescendantClipChildren) {
+  // Ensures that non-descendant clip children in the tree do not affect
+  // render surfaces.
+  //
+  //   root (a render surface)
+  //    + clip_parent (masks to bounds)
+  //      + render_surface1
+  //        + clip_child
+  //      + render_surface2
+  //        + non_clip_child
+  //
+  // In this example render_surface2 should be unaffected by clip_child.
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> clip_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> non_clip_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(clip_parent);
+  clip_parent->AddChild(render_surface1);
+  render_surface1->AddChild(clip_child);
+  clip_parent->AddChild(render_surface2);
+  render_surface2->AddChild(non_clip_child);
+
+  clip_child->SetClipParent(clip_parent.get());
+
+  clip_parent->SetMasksToBounds(true);
+  render_surface1->SetMasksToBounds(true);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(15, 15),
+                               false);
+  SetLayerPropertiesForTesting(clip_parent.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(render_surface1.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(5, 5),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(render_surface2.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(5, 5),
+                               false);
+  SetLayerPropertiesForTesting(clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(-1, 1),
+                               gfx::Size(10, 10),
+                               false);
+  SetLayerPropertiesForTesting(non_clip_child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(5, 5),
+                               false);
+
+  render_surface1->SetForceRenderSurface(true);
+  render_surface2->SetForceRenderSurface(true);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_TRUE(render_surface1->render_surface());
+  EXPECT_TRUE(render_surface2->render_surface());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
+            render_surface1->clip_rect().ToString());
+  EXPECT_TRUE(render_surface1->is_clipped());
+
+  // The render surface should not clip (it has unclipped descendants), instead
+  // it should rely on layer clipping.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(),
+            render_surface1->render_surface()->clip_rect().ToString());
+  EXPECT_FALSE(render_surface1->render_surface()->is_clipped());
+
+  // That said, it should have grown to accomodate the unclipped descendant.
+  EXPECT_EQ(gfx::Rect(-1, 1, 6, 4).ToString(),
+            render_surface1->render_surface()->content_rect().ToString());
+
+  // This render surface should clip. It has no unclipped descendants.
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
+            render_surface2->clip_rect().ToString());
+  EXPECT_TRUE(render_surface2->render_surface()->is_clipped());
+
+  // It also shouldn't have grown to accomodate the clip child.
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
+            render_surface2->render_surface()->content_rect().ToString());
+
+  // Sanity check our num_unclipped_descendants values.
+  EXPECT_EQ(1, render_surface1->num_unclipped_descendants());
+  EXPECT_EQ(0, render_surface2->num_unclipped_descendants());
+}
+
 }  // namespace
 }  // namespace cc

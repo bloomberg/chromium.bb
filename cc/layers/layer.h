@@ -236,6 +236,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   RenderSurface* render_surface() const {
     return draw_properties_.render_surface.get();
   }
+  int num_unclipped_descendants() const {
+    return draw_properties_.num_unclipped_descendants;
+  }
 
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }

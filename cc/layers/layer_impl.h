@@ -317,6 +317,9 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   RenderSurfaceImpl* render_surface() const {
     return draw_properties_.render_surface.get();
   }
+  int num_unclipped_descendants() const {
+    return draw_properties_.num_unclipped_descendants;
+  }
 
   // The client should be responsible for setting bounds, content bounds and
   // contents scale to appropriate values. LayerImpl doesn't calculate any of

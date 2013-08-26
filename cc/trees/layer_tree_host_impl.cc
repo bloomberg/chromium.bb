@@ -1815,6 +1815,12 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
   input_handler_client_ = client;
 }
 
+static LayerImpl* NextScrollLayer(LayerImpl* layer) {
+  if (LayerImpl* scroll_parent = layer->scroll_parent())
+    return scroll_parent;
+  return layer->parent();
+}
+
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     gfx::Point viewport_point, InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
@@ -1838,7 +1844,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   // Walk up the hierarchy and look for a scrollable layer.
   LayerImpl* potentially_scrolling_layer_impl = 0;
-  for (; layer_impl; layer_impl = layer_impl->parent()) {
+  for (; layer_impl; layer_impl = NextScrollLayer(layer_impl)) {
     // The content layer can also block attempts to scroll outside the main
     // thread.
     ScrollStatus status = layer_impl->TryScroll(device_viewport_point, type);

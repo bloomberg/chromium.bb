@@ -421,6 +421,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         if (render_target() == this) {
           DCHECK(!is_clipped());
           DCHECK(render_surface());
+          DCHECK_EQ(0, num_unclipped_descendants());
           output_shared_quad_state->clip_rect = MathUtil::MapClippedRect(
               delegated_frame_to_target_transform,
               output_shared_quad_state->clip_rect);

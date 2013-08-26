@@ -140,6 +140,9 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
   if (scroll_parent_ == parent)
     return;
 
+  // Having both a scroll parent and a scroll offset delegate is unsupported.
+  DCHECK(!scroll_offset_delegate_);
+
   if (scroll_parent_)
     scroll_parent_->RemoveScrollChild(this);
 
@@ -988,6 +991,8 @@ void LayerImpl::UpdateScrollbarPositions() {
 
 void LayerImpl::SetScrollOffsetDelegate(
     LayerScrollOffsetDelegate* scroll_offset_delegate) {
+  // Having both a scroll parent and a scroll offset delegate is unsupported.
+  DCHECK(!scroll_parent_);
   if (!scroll_offset_delegate && scroll_offset_delegate_) {
     scroll_delta_ =
         scroll_offset_delegate_->GetTotalScrollOffset() - scroll_offset_;
