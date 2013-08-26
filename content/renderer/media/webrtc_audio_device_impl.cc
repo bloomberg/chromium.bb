@@ -64,7 +64,9 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
   int total_delay_ms = 0;
   {
     base::AutoLock auto_lock(lock_);
-    if (!recording_)
+    // Return immediately when not recording or |channels| is empty.
+    // See crbug.com/274017: renderer crash dereferencing invalid channels[0].
+    if (!recording_ || channels.empty())
       return 0;
 
     // Store the reported audio delay locally.
