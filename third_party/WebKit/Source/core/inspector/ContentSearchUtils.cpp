@@ -31,6 +31,7 @@
 #include "core/inspector/ContentSearchUtils.h"
 
 #include "core/platform/text/RegularExpression.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ static const char regexSpecialCharacters[] = "[](){}+-*.,?\\^$|";
 
 static String createSearchRegexSource(const String& text)
 {
-    String result;
+    StringBuilder result;
     String specials(regexSpecialCharacters);
 
     for (unsigned i = 0; i < text.length(); i++) {
@@ -53,7 +54,7 @@ static String createSearchRegexSource(const String& text)
         result.append(text[i]);
     }
 
-    return result;
+    return result.toString();
 }
 
 static Vector<pair<int, String> > getRegularExpressionMatchesByLines(const RegularExpression* regex, const String& text)

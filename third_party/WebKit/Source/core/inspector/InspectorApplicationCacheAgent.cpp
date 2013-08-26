@@ -35,6 +35,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Frame.h"
 #include "core/platform/network/NetworkStateNotifier.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -179,26 +180,26 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::ApplicationCacheRes
 
 PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApplicationCacheAgent::buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo& resourceInfo)
 {
-    String types;
+    StringBuilder builder;
     if (resourceInfo.m_isMaster)
-        types.append("Master ");
+        builder.append("Master ");
 
     if (resourceInfo.m_isManifest)
-        types.append("Manifest ");
+        builder.append("Manifest ");
 
     if (resourceInfo.m_isFallback)
-        types.append("Fallback ");
+        builder.append("Fallback ");
 
     if (resourceInfo.m_isForeign)
-        types.append("Foreign ");
+        builder.append("Foreign ");
 
     if (resourceInfo.m_isExplicit)
-        types.append("Explicit ");
+        builder.append("Explicit ");
 
     RefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> value = TypeBuilder::ApplicationCache::ApplicationCacheResource::create()
         .setUrl(resourceInfo.m_resource.string())
         .setSize(static_cast<int>(resourceInfo.m_size))
-        .setType(types);
+        .setType(builder.toString());
     return value;
 }
 

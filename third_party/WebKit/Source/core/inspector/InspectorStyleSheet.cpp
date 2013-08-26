@@ -822,6 +822,8 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty) const
 {
     String value = m_style->getPropertyValue(shorthandProperty);
     if (value.isEmpty()) {
+        StringBuilder builder;
+
         for (unsigned i = 0; i < m_style->length(); ++i) {
             String individualProperty = m_style->item(i);
             if (m_style->getPropertyShorthand(individualProperty) != shorthandProperty)
@@ -831,10 +833,12 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty) const
             String individualValue = m_style->getPropertyValue(individualProperty);
             if (individualValue == "initial")
                 continue;
-            if (value.length())
-                value.append(" ");
-            value.append(individualValue);
+            if (!builder.isEmpty())
+                builder.append(" ");
+            builder.append(individualValue);
         }
+
+        return builder.toString();
     }
     return value;
 }
