@@ -32,7 +32,7 @@ typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
 // Callback for Iterate().
-typedef base::Callback<void(const std::string& resource_id,
+typedef base::Callback<void(const std::string& id,
                             const FileCacheEntry& cache_entry)>
     CacheIterateCallback;
 
@@ -90,18 +90,17 @@ class FileCache {
   // Can be called on any thread.
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
 
-  // Gets the cache entry for file corresponding to |resource_id| and runs
+  // Gets the cache entry for file corresponding to |id| and runs
   // |callback| with true and the entry found if entry exists in cache map.
   // Otherwise, runs |callback| with false.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void GetCacheEntryOnUIThread(const std::string& resource_id,
+  void GetCacheEntryOnUIThread(const std::string& id,
                                const GetCacheEntryCallback& callback);
 
-  // Gets the cache entry by the given resource ID.
+  // Gets the cache entry by the given ID.
   // See also GetCacheEntryOnUIThread().
-  bool GetCacheEntry(const std::string& resource_id,
-                     FileCacheEntry* entry);
+  bool GetCacheEntry(const std::string& id, FileCacheEntry* entry);
 
   // Runs Iterate() with |iteration_callback| on |blocking_task_runner_| and
   // runs |completion_callback| upon completion.
@@ -122,28 +121,27 @@ class FileCache {
   // the result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void GetFileOnUIThread(const std::string& resource_id,
+  void GetFileOnUIThread(const std::string& id,
                          const GetFileFromCacheCallback& callback);
 
-  // Checks if file corresponding to |resource_id| exists in cache, and returns
+  // Checks if file corresponding to |id| exists in cache, and returns
   // FILE_ERROR_OK with |cache_file_path| storing the path to the file.
   // |cache_file_path| must not be null.
-  FileError GetFile(const std::string& resource_id,
-                    base::FilePath* cache_file_path);
+  FileError GetFile(const std::string& id, base::FilePath* cache_file_path);
 
   // Runs Store() on |blocking_task_runner_|, and calls |callback| with
   // the result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void StoreOnUIThread(const std::string& resource_id,
+  void StoreOnUIThread(const std::string& id,
                        const std::string& md5,
                        const base::FilePath& source_path,
                        FileOperationType file_operation_type,
                        const FileOperationCallback& callback);
 
   // Stores |source_path| as a cache of the remote content of the file
-  // with |resource_id| and |md5|.
-  FileError Store(const std::string& resource_Id,
+  // with |id| and |md5|.
+  FileError Store(const std::string& id,
                   const std::string& md5,
                   const base::FilePath& source_path,
                   FileOperationType file_operation_type);
@@ -152,27 +150,27 @@ class FileCache {
   // asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void PinOnUIThread(const std::string& resource_id,
+  void PinOnUIThread(const std::string& id,
                      const FileOperationCallback& callback);
 
   // Pins the specified entry.
-  FileError Pin(const std::string& resource_id);
+  FileError Pin(const std::string& id);
 
   // Runs Unpin() on |blocking_task_runner_|, and calls |callback| with the
   // result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void UnpinOnUIThread(const std::string& resource_id,
+  void UnpinOnUIThread(const std::string& id,
                        const FileOperationCallback& callback);
 
   // Unpins the specified entry.
-  FileError Unpin(const std::string& resource_id);
+  FileError Unpin(const std::string& id);
 
-  // Sets the state of the cache entry corresponding to |resource_id| as
+  // Sets the state of the cache entry corresponding to |id| as
   // mounted.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void MarkAsMountedOnUIThread(const std::string& resource_id,
+  void MarkAsMountedOnUIThread(const std::string& id,
                                const GetFileFromCacheCallback& callback);
 
   // Set the state of the cache entry corresponding to file_path as unmounted.
@@ -185,25 +183,24 @@ class FileCache {
   // result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void MarkDirtyOnUIThread(const std::string& resource_id,
+  void MarkDirtyOnUIThread(const std::string& id,
                            const FileOperationCallback& callback);
 
   // Marks the specified entry dirty.
-  FileError MarkDirty(const std::string& resource_id);
+  FileError MarkDirty(const std::string& id);
 
   // Clears dirty state of the specified entry and updates its MD5.
-  FileError ClearDirty(const std::string& resource_id,
-                       const std::string& md5);
+  FileError ClearDirty(const std::string& id, const std::string& md5);
 
   // Runs Remove() on |blocking_task_runner_| and runs |callback| with the
   // result.
   // Must be called on the UI thread.
-  void RemoveOnUIThread(const std::string& resource_id,
+  void RemoveOnUIThread(const std::string& id,
                         const FileOperationCallback& callback);
 
   // Removes the specified cache entry and delete cache files if available.
   // Synchronous version of RemoveOnUIThread().
-  FileError Remove(const std::string& resource_id);
+  FileError Remove(const std::string& id);
 
   // Does the following:
   // - remove all the files in the cache directory.
@@ -229,7 +226,7 @@ class FileCache {
   // Returns absolute path of the file if it were cached or to be cached.
   //
   // Can be called on any thread.
-  base::FilePath GetCacheFilePath(const std::string& resource_id) const;
+  base::FilePath GetCacheFilePath(const std::string& id) const;
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
@@ -241,13 +238,13 @@ class FileCache {
   // Used to implement Store and StoreLocallyModifiedOnUIThread.
   // TODO(hidehiko): Merge this method with Store(), after
   // StoreLocallyModifiedOnUIThread is removed.
-  FileError StoreInternal(const std::string& resource_id,
+  FileError StoreInternal(const std::string& id,
                           const std::string& md5,
                           const base::FilePath& source_path,
                           FileOperationType file_operation_type);
 
   // Used to implement MarkAsMountedOnUIThread.
-  FileError MarkAsMounted(const std::string& resource_id,
+  FileError MarkAsMounted(const std::string& id,
                           base::FilePath* cache_file_path);
 
   // Used to implement MarkAsUnmountedOnUIThread.
@@ -260,7 +257,7 @@ class FileCache {
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
-  // Renames cache files from old "resource_id.md5" format to the new format.
+  // Renames cache files from old "id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.
   void RenameCacheFilesToNewFormat();
 
@@ -272,7 +269,7 @@ class FileCache {
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 
-  // Resource IDs of files marked mounted.
+  // IDs of files marked mounted.
   std::set<std::string> mounted_files_;
 
   // Note: This should remain the last member so it'll be destroyed and

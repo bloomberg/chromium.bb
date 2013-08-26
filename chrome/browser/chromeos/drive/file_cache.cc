@@ -28,8 +28,8 @@ namespace {
 
 typedef std::map<std::string, FileCacheEntry> CacheMap;
 
-// Returns resource ID extracted from the path.
-std::string GetResourceIdFromPath(const base::FilePath& path) {
+// Returns ID extracted from the path.
+std::string GetIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
 }
 
@@ -41,7 +41,7 @@ void ScanCacheDirectory(const base::FilePath& directory_path,
                                   base::FileEnumerator::FILES);
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    std::string resource_id = GetResourceIdFromPath(current);
+    std::string id = GetIdFromPath(current);
 
     // Calculate MD5.
     std::string md5 = util::GetMd5Digest(current);
@@ -54,7 +54,7 @@ void ScanCacheDirectory(const base::FilePath& directory_path,
     cache_entry.set_is_present(true);
 
     // Create and insert new entry into cache map.
-    cache_map->insert(std::make_pair(resource_id, cache_entry));
+    cache_map->insert(std::make_pair(id, cache_entry));
   }
 }
 
@@ -110,10 +110,9 @@ FileCache::~FileCache() {
   AssertOnSequencedWorkerPool();
 }
 
-base::FilePath FileCache::GetCacheFilePath(
-    const std::string& resource_id) const {
+base::FilePath FileCache::GetCacheFilePath(const std::string& id) const {
   return cache_file_directory_.Append(
-      base::FilePath::FromUTF8Unsafe(util::EscapeCacheFileName(resource_id)));
+      base::FilePath::FromUTF8Unsafe(util::EscapeCacheFileName(id)));
 }
 
 void FileCache::AssertOnSequencedWorkerPool() {
@@ -125,7 +124,7 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_file_directory_.IsParent(path);
 }
 
-void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
+void FileCache::GetCacheEntryOnUIThread(const std::string& id,
                                         const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -136,17 +135,16 @@ void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
       FROM_HERE,
       base::Bind(&FileCache::GetCacheEntry,
                  base::Unretained(this),
-                 resource_id,
+                 id,
                  cache_entry),
       base::Bind(
           &RunGetCacheEntryCallback, callback, base::Owned(cache_entry)));
 }
 
-bool FileCache::GetCacheEntry(const std::string& resource_id,
-                              FileCacheEntry* entry) {
+bool FileCache::GetCacheEntry(const std::string& id, FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
-  return storage_->GetCacheEntry(resource_id, entry);
+  return storage_->GetCacheEntry(id, entry);
 }
 
 void FileCache::IterateOnUIThread(
@@ -198,8 +196,8 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   FileCacheEntry entry;
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    std::string resource_id = GetResourceIdFromPath(current);
-    if (!storage_->GetCacheEntry(resource_id, &entry))
+    std::string id = GetIdFromPath(current);
+    if (!storage_->GetCacheEntry(id, &entry))
       base::DeleteFile(current, false /* recursive */);
   }
 
@@ -207,7 +205,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   return HasEnoughSpaceFor(num_bytes, cache_file_directory_);
 }
 
-void FileCache::GetFileOnUIThread(const std::string& resource_id,
+void FileCache::GetFileOnUIThread(const std::string& id,
                                   const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -217,28 +215,28 @@ void FileCache::GetFileOnUIThread(const std::string& resource_id,
                                    FROM_HERE,
                                    base::Bind(&FileCache::GetFile,
                                               base::Unretained(this),
-                                              resource_id,
+                                              id,
                                               cache_file_path),
                                    base::Bind(&RunGetFileFromCacheCallback,
                                               callback,
                                               base::Owned(cache_file_path)));
 }
 
-FileError FileCache::GetFile(const std::string& resource_id,
+FileError FileCache::GetFile(const std::string& id,
                              base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(cache_file_path);
 
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!storage_->GetCacheEntry(id, &cache_entry) ||
       !cache_entry.is_present())
     return FILE_ERROR_NOT_FOUND;
 
-  *cache_file_path = GetCacheFilePath(resource_id);
+  *cache_file_path = GetCacheFilePath(id);
   return FILE_ERROR_OK;
 }
 
-void FileCache::StoreOnUIThread(const std::string& resource_id,
+void FileCache::StoreOnUIThread(const std::string& id,
                                 const std::string& md5,
                                 const base::FilePath& source_path,
                                 FileOperationType file_operation_type,
@@ -250,22 +248,22 @@ void FileCache::StoreOnUIThread(const std::string& resource_id,
                                    FROM_HERE,
                                    base::Bind(&FileCache::Store,
                                               base::Unretained(this),
-                                              resource_id,
+                                              id,
                                               md5,
                                               source_path,
                                               file_operation_type),
                                    callback);
 }
 
-FileError FileCache::Store(const std::string& resource_id,
+FileError FileCache::Store(const std::string& id,
                            const std::string& md5,
                            const base::FilePath& source_path,
                            FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
-  return StoreInternal(resource_id, md5, source_path, file_operation_type);
+  return StoreInternal(id, md5, source_path, file_operation_type);
 }
 
-void FileCache::PinOnUIThread(const std::string& resource_id,
+void FileCache::PinOnUIThread(const std::string& id,
                               const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -273,21 +271,21 @@ void FileCache::PinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Pin, base::Unretained(this), resource_id),
+      base::Bind(&FileCache::Pin, base::Unretained(this), id),
       callback);
 }
 
-FileError FileCache::Pin(const std::string& resource_id) {
+FileError FileCache::Pin(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
   FileCacheEntry cache_entry;
-  storage_->GetCacheEntry(resource_id, &cache_entry);
+  storage_->GetCacheEntry(id, &cache_entry);
   cache_entry.set_is_pinned(true);
-  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+  return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-void FileCache::UnpinOnUIThread(const std::string& resource_id,
+void FileCache::UnpinOnUIThread(const std::string& id,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -295,26 +293,26 @@ void FileCache::UnpinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Unpin, base::Unretained(this), resource_id),
+      base::Bind(&FileCache::Unpin, base::Unretained(this), id),
       callback);
 }
 
-FileError FileCache::Unpin(const std::string& resource_id) {
+FileError FileCache::Unpin(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
   // Now that file operations have completed, update metadata.
   if (cache_entry.is_present()) {
     cache_entry.set_is_pinned(false);
-    if (!storage_->PutCacheEntry(resource_id, cache_entry))
+    if (!storage_->PutCacheEntry(id, cache_entry))
       return FILE_ERROR_FAILED;
   } else {
     // Remove the existing entry if we are unpinning a non-present file.
-    if  (!storage_->RemoveCacheEntry(resource_id))
+    if  (!storage_->RemoveCacheEntry(id))
       return FILE_ERROR_FAILED;
   }
 
@@ -325,7 +323,7 @@ FileError FileCache::Unpin(const std::string& resource_id) {
 }
 
 void FileCache::MarkAsMountedOnUIThread(
-    const std::string& resource_id,
+    const std::string& id,
     const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -336,7 +334,7 @@ void FileCache::MarkAsMountedOnUIThread(
       FROM_HERE,
       base::Bind(&FileCache::MarkAsMounted,
                  base::Unretained(this),
-                 resource_id,
+                 id,
                  cache_file_path),
       base::Bind(
           RunGetFileFromCacheCallback, callback, base::Owned(cache_file_path)));
@@ -356,7 +354,7 @@ void FileCache::MarkAsUnmountedOnUIThread(
       callback);
 }
 
-void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
+void FileCache::MarkDirtyOnUIThread(const std::string& id,
                                     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -364,20 +362,19 @@ void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::MarkDirty, base::Unretained(this), resource_id),
+      base::Bind(&FileCache::MarkDirty, base::Unretained(this), id),
       callback);
 }
 
-FileError FileCache::MarkDirty(const std::string& resource_id) {
+FileError FileCache::MarkDirty(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!storage_->GetCacheEntry(id, &cache_entry) ||
       !cache_entry.is_present()) {
-    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: "
-                 << resource_id;
+    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: " << id;
     return FILE_ERROR_NOT_FOUND;
   }
 
@@ -385,39 +382,37 @@ FileError FileCache::MarkDirty(const std::string& resource_id) {
     return FILE_ERROR_OK;
 
   cache_entry.set_is_dirty(true);
-  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+  return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-FileError FileCache::ClearDirty(const std::string& resource_id,
-                                const std::string& md5) {
+FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!storage_->GetCacheEntry(id, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
-                 << resource_id;
+                 << id;
     return FILE_ERROR_NOT_FOUND;
   }
 
   // If a file is not dirty (it should have been marked dirty via
   // MarkDirtyInCache), clearing its dirty state is an invalid operation.
   if (!cache_entry.is_dirty()) {
-    LOG(WARNING) << "Can't clear dirty state of a non-dirty file: "
-                 << resource_id;
+    LOG(WARNING) << "Can't clear dirty state of a non-dirty file: " << id;
     return FILE_ERROR_INVALID_OPERATION;
   }
 
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(false);
-  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+  return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-void FileCache::RemoveOnUIThread(const std::string& resource_id,
+void FileCache::RemoveOnUIThread(const std::string& id,
                                  const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -425,31 +420,30 @@ void FileCache::RemoveOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Remove, base::Unretained(this), resource_id),
+      base::Bind(&FileCache::Remove, base::Unretained(this), id),
       callback);
 }
 
-FileError FileCache::Remove(const std::string& resource_id) {
+FileError FileCache::Remove(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
   FileCacheEntry cache_entry;
 
   // If entry doesn't exist, nothing to do.
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(id, &cache_entry))
     return FILE_ERROR_OK;
 
   // Cannot delete a mounted file.
-  if (mounted_files_.count(resource_id))
+  if (mounted_files_.count(id))
     return FILE_ERROR_IN_USE;
 
   // Delete the file.
-  base::FilePath path = GetCacheFilePath(resource_id);
+  base::FilePath path = GetCacheFilePath(id);
   if (!base::DeleteFile(path, false /* recursive */))
     return FILE_ERROR_FAILED;
 
   // Now that all file operations have completed, remove from metadata.
-  return storage_->RemoveCacheEntry(resource_id) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
+  return storage_->RemoveCacheEntry(id) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 void FileCache::ClearAllOnUIThread(const ClearAllCallback& callback) {
@@ -498,7 +492,7 @@ void FileCache::DestroyOnBlockingPool() {
   delete this;
 }
 
-FileError FileCache::StoreInternal(const std::string& resource_id,
+FileError FileCache::StoreInternal(const std::string& id,
                                    const std::string& md5,
                                    const base::FilePath& source_path,
                                    FileOperationType file_operation_type) {
@@ -515,13 +509,13 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   FileCacheEntry cache_entry;
-  storage_->GetCacheEntry(resource_id, &cache_entry);
+  storage_->GetCacheEntry(id, &cache_entry);
 
   // If file is dirty or mounted, return error.
-  if (cache_entry.is_dirty() || mounted_files_.count(resource_id))
+  if (cache_entry.is_dirty() || mounted_files_.count(id))
     return FILE_ERROR_IN_USE;
 
-  base::FilePath dest_path = GetCacheFilePath(resource_id);
+  base::FilePath dest_path = GetCacheFilePath(id);
   bool success = false;
   switch (file_operation_type) {
     case FILE_OPERATION_MOVE:
@@ -546,25 +540,25 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
   cache_entry.set_md5(md5);
   cache_entry.set_is_present(true);
   cache_entry.set_is_dirty(false);
-  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+  return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-FileError FileCache::MarkAsMounted(const std::string& resource_id,
+FileError FileCache::MarkAsMounted(const std::string& id,
                                    base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(cache_file_path);
 
-  // Get cache entry associated with the resource_id and md5
+  // Get cache entry associated with the id and md5
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (mounted_files_.count(resource_id))
+  if (mounted_files_.count(id))
     return FILE_ERROR_INVALID_OPERATION;
 
   // Ensure the file is readable to cros_disks. See crbug.com/236994.
-  base::FilePath path = GetCacheFilePath(resource_id);
+  base::FilePath path = GetCacheFilePath(id);
   if (!file_util::SetPosixFilePermissions(
           path,
           file_util::FILE_PERMISSION_READ_BY_USER |
@@ -573,7 +567,7 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
           file_util::FILE_PERMISSION_READ_BY_OTHERS))
     return FILE_ERROR_FAILED;
 
-  mounted_files_.insert(resource_id);
+  mounted_files_.insert(id);
 
   *cache_file_path = path;
   return FILE_ERROR_OK;
@@ -583,14 +577,14 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(IsUnderFileCacheDirectory(file_path));
 
-  std::string resource_id = GetResourceIdFromPath(file_path);
+  std::string id = GetIdFromPath(file_path);
 
-  // Get cache entry associated with the resource_id and md5
+  // Get cache entry associated with the id and md5
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  std::set<std::string>::iterator it = mounted_files_.find(resource_id);
+  std::set<std::string>::iterator it = mounted_files_.find(id);
   if (it == mounted_files_.end())
     return FILE_ERROR_INVALID_OPERATION;
 
