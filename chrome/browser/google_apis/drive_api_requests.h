@@ -82,16 +82,29 @@ class GetFilelistRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(GetFilelistRequest);
 };
 
-//=============================== GetFileRequest =============================
+// This namespace is introduced to avoid class name confliction between
+// the requests for Drive API v2 and GData WAPI for transition.
+// And, when the migration is done and GData WAPI's code is cleaned up,
+// classes inside this namespace should be moved to the google_apis namespace.
+// TODO(hidehiko): Move all the requests defined in this file into drive
+// namespace.  crbug.com/180808
+namespace drive {
+
+//=============================== FilesGetRequest =============================
 
 // This class performs the request for fetching a file.
-class GetFileRequest : public GetDataRequest {
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/get
+class FilesGetRequest : public GetDataRequest {
  public:
-  GetFileRequest(RequestSender* sender,
-                 const DriveApiUrlGenerator& url_generator,
-                 const std::string& file_id,
-                 const FileResourceCallback& callback);
-  virtual ~GetFileRequest();
+  FilesGetRequest(RequestSender* sender,
+                  const DriveApiUrlGenerator& url_generator,
+                  const FileResourceCallback& callback);
+  virtual ~FilesGetRequest();
+
+  // Required parameter.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
 
  protected:
   // Overridden from GetDataRequest.
@@ -101,16 +114,8 @@ class GetFileRequest : public GetDataRequest {
   const DriveApiUrlGenerator url_generator_;
   std::string file_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetFileRequest);
+  DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
-
-// This namespace is introduced to avoid class name confliction between
-// the requests for Drive API v2 and GData WAPI for transition.
-// And, when the migration is done and GData WAPI's code is cleaned up,
-// classes inside this namespace should be moved to the google_apis namespace.
-// TODO(hidehiko): Move all the requests defined in this file into drive
-// namespace.  crbug.com/180808
-namespace drive {
 
 //============================== AboutGetRequest =============================
 

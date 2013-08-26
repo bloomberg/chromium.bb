@@ -38,7 +38,6 @@ using google_apis::GDataErrorCode;
 using google_apis::AboutResourceCallback;
 using google_apis::GetChangelistRequest;
 using google_apis::GetContentCallback;
-using google_apis::GetFileRequest;
 using google_apis::GetFilelistRequest;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
@@ -61,6 +60,7 @@ using google_apis::drive::CopyResourceRequest;
 using google_apis::drive::CreateDirectoryRequest;
 using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
+using google_apis::drive::FilesGetRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
@@ -156,9 +156,9 @@ void ParseResourceListOnBlockingPoolAndRun(
       base::Bind(&DidParseResourceListOnBlockingPool, callback));
 }
 
-// Parses the FileResource value to ResourceEntry and runs |callback| on the
+// Converts the FileResource value to ResourceEntry and runs |callback| on the
 // UI thread.
-void ParseResourceEntryAndRun(
+void ConvertFileEntryToResourceEntryAndRun(
     const GetResourceEntryCallback& callback,
     GDataErrorCode error,
     scoped_ptr<FileResource> value) {
@@ -448,11 +448,11 @@ CancelCallback DriveAPIService::GetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new GetFileRequest(
-      sender_.get(),
-      url_generator_,
-      resource_id,
-      base::Bind(&ParseResourceEntryAndRun, callback)));
+  FilesGetRequest* request = new FilesGetRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_file_id(resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetShareUrl(
@@ -539,7 +539,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
           url_generator_,
           parent_resource_id,
           directory_title,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::CopyResource(
@@ -557,7 +557,7 @@ CancelCallback DriveAPIService::CopyResource(
           resource_id,
           parent_resource_id,
           new_title,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::CopyHostedDocument(
@@ -574,7 +574,7 @@ CancelCallback DriveAPIService::CopyHostedDocument(
           resource_id,
           std::string(),  // parent_resource_id.
           new_title,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::MoveResource(
@@ -592,7 +592,7 @@ CancelCallback DriveAPIService::MoveResource(
           resource_id,
           parent_resource_id,
           new_title,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::RenameResource(
@@ -629,7 +629,7 @@ CancelCallback DriveAPIService::TouchResource(
           resource_id,
           modified_date,
           last_viewed_by_me_date,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::AddResourceToDirectory(
@@ -750,11 +750,11 @@ CancelCallback DriveAPIService::AuthorizeApp(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new GetFileRequest(
-      sender_.get(),
-      url_generator_,
-      resource_id,
-      base::Bind(&ExtractOpenUrlAndRun, app_id, callback)));
+  FilesGetRequest* request = new FilesGetRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
+  request->set_file_id(resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 bool DriveAPIService::HasAccessToken() const {

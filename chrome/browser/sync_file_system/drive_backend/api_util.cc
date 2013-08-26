@@ -613,7 +613,7 @@ void APIUtil::DeleteFile(const std::string& resource_id,
 GURL APIUtil::ResourceIdToResourceLink(const std::string& resource_id) const {
   return IsDriveAPIDisabled()
       ? wapi_url_generator_.GenerateEditUrl(resource_id)
-      : drive_api_url_generator_.GetFileUrl(resource_id);
+      : drive_api_url_generator_.GetFilesGetUrl(resource_id);
 }
 
 void APIUtil::EnsureSyncRootIsNotInMyDrive(

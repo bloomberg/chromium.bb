@@ -114,27 +114,26 @@ GURL GetFilelistRequest::GetURL() const {
   return url_generator_.GetFilelistUrl(search_string_, max_results_);
 }
 
-//=============================== GetFileRequest =============================
 
-GetFileRequest::GetFileRequest(
+namespace drive {
+
+//=============================== FilesGetRequest =============================
+
+FilesGetRequest::FilesGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const std::string& file_id,
     const FileResourceCallback& callback)
     : GetDataRequest(sender,
                      base::Bind(&ParseJsonAndRun<FileResource>, callback)),
-      url_generator_(url_generator),
-      file_id_(file_id) {
+      url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
-GetFileRequest::~GetFileRequest() {}
+FilesGetRequest::~FilesGetRequest() {}
 
-GURL GetFileRequest::GetURL() const {
-  return url_generator_.GetFileUrl(file_id_);
+GURL FilesGetRequest::GetURL() const {
+  return url_generator_.GetFilesGetUrl(file_id_);
 }
-
-namespace drive {
 
 //============================== AboutGetRequest =============================
 
@@ -375,7 +374,11 @@ std::vector<std::string> MoveResourceRequest::GetExtraRequestHeaders() const {
 }
 
 GURL MoveResourceRequest::GetURL() const {
-  return url_generator_.GetFileUrl(resource_id_);
+  // TODO(hidehiko): This temporarily shares the URL with "Files: get" method.
+  // After the refactoring, this class will be merged with TouchResourceRequest
+  // into FilesPatchRequest. Then, url_generator_ will have the method
+  // for the new class.
+  return url_generator_.GetFilesGetUrl(resource_id_);
 }
 
 bool MoveResourceRequest::GetContentData(std::string* upload_content_type,

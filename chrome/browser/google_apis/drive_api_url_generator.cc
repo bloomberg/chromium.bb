@@ -97,7 +97,7 @@ GURL DriveApiUrlGenerator::GetFilelistUrl(
       net::AppendOrReplaceQueryParameter(url, "q", search_string);
 }
 
-GURL DriveApiUrlGenerator::GetFileUrl(const std::string& file_id) const {
+GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
 }
 
