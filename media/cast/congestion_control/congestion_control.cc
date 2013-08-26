@@ -28,7 +28,8 @@ CongestionControl::CongestionControl(float congestion_control_back_off,
       max_bitrate_configured_(max_bitrate_configured),
       min_bitrate_configured_(min_bitrate_configured),
       bitrate_(start_bitrate),
-      testing_clock_(NULL) {
+      default_tick_clock_(new base::DefaultTickClock()),
+      clock_(default_tick_clock_.get()) {
   DCHECK_GT(congestion_control_back_off, 0.0f) << "Invalid config";
   DCHECK_LT(congestion_control_back_off, 1.0f) << "Invalid config";
   DCHECK_GE(max_bitrate_configured, min_bitrate_configured) << "Invalid config";
@@ -37,8 +38,7 @@ CongestionControl::CongestionControl(float congestion_control_back_off,
 }
 
 bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
-  base::TimeTicks now = testing_clock_ ?
-      testing_clock_->NowTicks() : base::TimeTicks::Now();
+  base::TimeTicks now = clock_->NowTicks();
 
   // First feedback?
   if (time_last_increase_.is_null()) {
@@ -79,8 +79,7 @@ bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
 }
 
 bool CongestionControl::OnNack(base::TimeDelta rtt, uint32* new_bitrate) {
-  base::TimeTicks now = testing_clock_ ?
-      testing_clock_->NowTicks() : base::TimeTicks::Now();
+  base::TimeTicks now = clock_->NowTicks();
 
   // First feedback?
   if (time_last_decrease_.is_null()) {

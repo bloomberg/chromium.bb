@@ -27,7 +27,7 @@ class CongestionControlTest : public ::testing::Test {
                             kStartBitrate) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    congestion_control_.set_testing_clock(&testing_clock_);
+    congestion_control_.set_clock(&testing_clock_);
   }
 
   base::SimpleTestTickClock testing_clock_;

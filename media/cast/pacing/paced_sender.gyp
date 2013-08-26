@@ -5,20 +5,19 @@
 {
   'targets': [
     {
-      'target_name': 'congestion_control',
+      'target_name': 'paced_sender',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
       ],
       'sources': [
-        'congestion_control.h',
-        'congestion_control.cc',
-      ], # source
+        'paced_sender.h',
+        'paced_sender.cc',
+      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
       ],
-  },
-  ],
+    },
+  ], # targets
 }
-

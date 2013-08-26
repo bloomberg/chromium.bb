@@ -18,10 +18,10 @@
 #        'cast_sender_impl.h',
       ], # source
       'dependencies': [
-#        '<(DEPTH)/media/cast/pacing/paced_sender.gyp:*',
-#        'audio_sender',
+#       'audio_sender',
         'congestion_control',
-#        'video_sender',
+        'pacing/paced_sender.gyp:*',
+#       'video_sender',
       ], # dependencies
     },
   ],

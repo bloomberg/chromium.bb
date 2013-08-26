@@ -53,6 +53,7 @@
           ],
           'sources': [
             'congestion_control/congestion_control_unittest.cc',
+            'pacing/paced_sender_unittest.cc',
           ], # source
         },
       ],  # targets
