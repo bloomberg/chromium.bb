@@ -1,5 +1,3 @@
-per-file managed_network_configuration_handler.*=gspencer@chromium.org
-per-file managed_network_configuration_handler.*=pneubeck@chromium.org
-
-per-file onc_utils.*=gspencer@chromium.org
-per-file onc_utils.*=pneubeck@chromium.org
+per-file onc_utils*=gspencer@chromium.org
+per-file onc_utils*=pneubeck@chromium.org
+per-file proxy_config_handler*=pneubeck@chromium.org
