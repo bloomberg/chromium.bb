@@ -2911,6 +2911,21 @@
         },
       ],
     }],
+    ['OS == "android" or OS == "linux"', {
+      'targets': [
+        {
+          'target_name': 'disk_cache_memory_test',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'tools/disk_cache_memory_test/disk_cache_memory_test.cc',
+          ],
+        },
+      ],
+    }],
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
