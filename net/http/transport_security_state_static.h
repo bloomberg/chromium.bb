@@ -415,12 +415,12 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, true, "\004code\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {16, true, "\012googlecode\003com", false, kGooglePins, DOMAIN_GOOGLECODE_COM },
   {15, true, "\002dl\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
+  {26, true, "\011translate\012googleapis\003com", true, kGooglePins, DOMAIN_GOOGLEAPIS_COM },
   {23, true, "\005chart\004apis\006google\003com", false, kGooglePins, DOMAIN_GOOGLE_COM },
   {11, true, "\005ytimg\003com", false, kGooglePins, DOMAIN_YTIMG_COM },
   {23, true, "\021googleusercontent\003com", false, kGooglePins, DOMAIN_GOOGLEUSERCONTENT_COM },
   {13, true, "\007youtube\003com", false, kGooglePins, DOMAIN_YOUTUBE_COM },
   {16, true, "\012googleapis\003com", false, kGooglePins, DOMAIN_GOOGLEAPIS_COM },
-  {26, true, "\011translate\012googleapis\003com", true, kGooglePins, DOMAIN_GOOGLEAPIS_COM },
   {22, true, "\020googleadservices\003com", false, kGooglePins, DOMAIN_GOOGLEADSERVICES_COM },
   {13, true, "\007appspot\003com", false, kGooglePins, DOMAIN_APPSPOT_COM },
   {23, true, "\021googlesyndication\003com", false, kGooglePins, DOMAIN_GOOGLESYNDICATION_COM },
@@ -836,6 +836,8 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {10, true, "\005haste\002ch", true, kNoPins, DOMAIN_NOT_PINNED },
   {12, true, "\007mudcrab\002us", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\010mediacru\002sh", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\010lolicore\002ch", true, kNoPins, DOMAIN_NOT_PINNED },
+  {16, true, "\007cloudns\003com\002au", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
