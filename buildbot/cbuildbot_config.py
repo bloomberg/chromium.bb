@@ -1246,6 +1246,7 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
