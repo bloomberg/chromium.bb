@@ -118,6 +118,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
 
   FileSystemType mount_type() const { return mount_type_; }
 
+  // Returns the formatted URL of this instance.
+  GURL ToGURL() const;
+
   std::string DebugString() const;
 
   // Returns true if this URL is a strict parent of the |child|.

@@ -135,6 +135,20 @@ FileSystemURL::FileSystemURL(const GURL& origin,
 
 FileSystemURL::~FileSystemURL() {}
 
+GURL FileSystemURL::ToGURL() const {
+  if (!is_valid_)
+    return GURL();
+
+  std::string url = GetFileSystemRootURI(origin_, mount_type_).spec();
+  if (url.empty())
+    return GURL();
+
+  url.append(virtual_path_.AsUTF8Unsafe());
+
+  // Build nested GURL.
+  return GURL(url);
+}
+
 std::string FileSystemURL::DebugString() const {
   if (!is_valid_)
     return "invalid filesystem: URL";

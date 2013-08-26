@@ -156,6 +156,23 @@ TEST(FileSystemURLTest, IsParent) {
       CreateFileSystemURL(root3 + child)));
 }
 
+TEST(FileSystemURLTest, ToGURL) {
+  EXPECT_TRUE(FileSystemURL().ToGURL().is_empty());
+  const char* kTestURL[] = {
+    "filesystem:http://chromium.org/persistent/directory/file0",
+    "filesystem:http://chromium.org/temporary/directory/file1",
+    "filesystem:http://chromium.org/isolated/directory/file2",
+    "filesystem:http://chromium.org/external/directory/file2",
+    "filesystem:http://chromium.org/test/directory/file3",
+  };
+
+  for (size_t i = 0; i < arraysize(kTestURL); ++i) {
+    EXPECT_EQ(
+        kTestURL[i],
+        FileSystemURL::CreateForTest(GURL(kTestURL[i])).ToGURL().spec());
+  }
+}
+
 TEST(FileSystemURLTest, DebugString) {
   const GURL kOrigin("http://example.com");
   const base::FilePath kPath(FPL("dir/file"));
