@@ -72,6 +72,21 @@ class CopyOperation {
       const FileOperationCallback& callback);
 
  private:
+  // Part of Copy(). Called after prepartion is done.
+  void CopyAfterPrepare(const base::FilePath& src_file_path,
+                        const base::FilePath& dest_file_path,
+                        const FileOperationCallback& callback,
+                        ResourceEntry* src_entry,
+                        std::string* parent_resource_id,
+                        FileError error);
+
+  // Part of Copy(). Called after the file content is downloaded.
+  void CopyAfterDownload(const base::FilePath& dest_file_path,
+                         const FileOperationCallback& callback,
+                         FileError error,
+                         const base::FilePath& local_file_path,
+                         scoped_ptr<ResourceEntry> entry);
+
   // Part of TransferFileFromLocalToRemote(). Called after preparation is done.
   // |resource_id| is available only if the file is JSON GDoc file.
   void TransferFileFromLocalToRemoteAfterPrepare(
@@ -79,6 +94,25 @@ class CopyOperation {
       const base::FilePath& remote_dest_path,
       const FileOperationCallback& callback,
       std::string* resource_id,
+      FileError error);
+
+  // Copies resource with |resource_id| into the directory |parent_resource_id|
+  // with renaming it to |new_title|.
+  void CopyResourceOnServer(const std::string& resource_id,
+                            const std::string& parent_resource_id,
+                            const std::string& new_title,
+                            const FileOperationCallback& callback);
+
+  // Part of CopyResourceOnServer. Called after server side copy is done.
+  void CopyResourceOnServerAfterServerCopy(
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+
+  // Part of CopyResourceOnServer. Called after local state update is done.
+  void CopyResourceOnServerAfterUpdateLocalState(
+      const FileOperationCallback& callback,
+      base::FilePath* file_path,
       FileError error);
 
   // Creates an empty file on the server at |remote_dest_path| to ensure
@@ -139,27 +173,6 @@ class CopyOperation {
                                   const FileOperationCallback& callback,
                                   FileError error,
                                   const base::FilePath& file_path);
-
-  // Part of Copy(). Called after GetResourceEntryPairByPaths() is complete.
-  void CopyAfterGetResourceEntryPair(const base::FilePath& dest_file_path,
-                                     const FileOperationCallback& callback,
-                                     scoped_ptr<EntryInfoPairResult> result);
-
-  // Callback for handling resource copy on the server.
-  // |callback| must not be null.
-  void OnCopyResourceCompleted(
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
-  // Invoked upon completion of GetFileByPath initiated by Copy. If
-  // GetFileByPath reports no error, calls TransferRegularFile to transfer
-  // |local_file_path| to |remote_dest_file_path|.
-  void OnGetFileCompleteForCopy(const base::FilePath& remote_dest_file_path,
-                                const FileOperationCallback& callback,
-                                FileError error,
-                                const base::FilePath& local_file_path,
-                                scoped_ptr<ResourceEntry> entry);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

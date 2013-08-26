@@ -27,11 +27,52 @@ namespace file_system {
 
 namespace {
 
+FileError PrepareCopy(internal::ResourceMetadata* metadata,
+                      const base::FilePath& src_path,
+                      const base::FilePath& dest_path,
+                      ResourceEntry* src_entry,
+                      std::string* parent_resource_id) {
+  FileError error = metadata->GetResourceEntryByPath(src_path, src_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  ResourceEntry parent_entry;
+  error = metadata->GetResourceEntryByPath(dest_path.DirName(), &parent_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  if (!parent_entry.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
+
+  // Drive File System doesn't support recursive copy.
+  if (src_entry->file_info().is_directory())
+    return FILE_ERROR_INVALID_OPERATION;
+
+  *parent_resource_id = parent_entry.resource_id();
+  return FILE_ERROR_OK;
+}
+
 int64 GetFileSize(const base::FilePath& file_path) {
   int64 file_size;
   if (!file_util::GetFileSize(file_path, &file_size))
     return -1;
   return file_size;
+}
+
+// Stores the copied entry and returns its path.
+FileError UpdateLocalStateForCopyResourceOnServer(
+    internal::ResourceMetadata* metadata,
+    const ResourceEntry& entry,
+    base::FilePath* file_path) {
+  FileError error = metadata->AddEntry(entry);
+  // Depending on timing, the metadata may have inserted via change list
+  // already. So, FILE_ERROR_EXISTS is not an error.
+  if (error == FILE_ERROR_EXISTS)
+    error = FILE_ERROR_OK;
+
+  if (error == FILE_ERROR_OK)
+    *file_path = metadata->GetFilePath(entry.resource_id());
+  return error;
 }
 
 // Stores the file at |local_file_path| to the cache as a content of entry at
@@ -86,16 +127,6 @@ FileError PrepareTransferFileFromLocalToRemote(
   return FILE_ERROR_OK;
 }
 
-FileError AddEntryToLocalMetadata(internal::ResourceMetadata* metadata,
-                                  const ResourceEntry& entry) {
-  FileError error = metadata->AddEntry(entry);
-  // Depending on timing, the metadata may have inserted via change list
-  // already. So, FILE_ERROR_EXISTS is not an error.
-  if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
-  return error;
-}
-
 }  // namespace
 
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
@@ -137,16 +168,93 @@ CopyOperation::~CopyOperation() {
 void CopyOperation::Copy(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
                          const FileOperationCallback& callback) {
-  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata_->GetResourceEntryPairByPathsOnUIThread(
-      src_file_path,
-      dest_file_path.DirName(),
-      base::Bind(&CopyOperation::CopyAfterGetResourceEntryPair,
+  ResourceEntry* src_entry = new ResourceEntry;
+  std::string* parent_resource_id = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&PrepareCopy,
+                 metadata_, src_file_path, dest_file_path,
+                 src_entry, parent_resource_id),
+      base::Bind(&CopyOperation::CopyAfterPrepare,
                  weak_ptr_factory_.GetWeakPtr(),
-                 dest_file_path,
-                 callback));
+                 src_file_path, dest_file_path, callback,
+                 base::Owned(src_entry), base::Owned(parent_resource_id)));
+}
+
+void CopyOperation::CopyAfterPrepare(
+    const base::FilePath& src_file_path,
+    const base::FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    ResourceEntry* src_entry,
+    std::string* parent_resource_id,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  // If Drive API v2 is enabled, we can copy resources on server side.
+  if (util::IsDriveV2ApiEnabled()) {
+    base::FilePath new_title = dest_file_path.BaseName();
+    if (src_entry->file_specific_info().is_hosted_document()) {
+      // Drop the document extension, which should not be in the title.
+      // TODO(yoshiki): Remove this code with crbug.com/223304.
+      new_title = new_title.RemoveExtension();
+    }
+
+    CopyResourceOnServer(
+        src_entry->resource_id(), *parent_resource_id,
+        new_title.AsUTF8Unsafe(), callback);
+    return;
+  }
+
+  // Here after GData WAPI's code.
+  if (src_entry->file_specific_info().is_hosted_document()) {
+    // For hosted documents, GData WAPI copies it on server.
+    CopyHostedDocumentToDirectory(
+        // Drop the document extension, which should not be in the title.
+        // TODO(yoshiki): Remove this code with crbug.com/223304.
+        dest_file_path.RemoveExtension(),
+        src_entry->resource_id(),
+        callback);
+    return;
+  }
+
+  // For regular files, download the content, and then re-upload.
+  // Note that upload is done later by SyncClient.
+  download_operation_->EnsureFileDownloadedByPath(
+      src_file_path,
+      ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(),
+      google_apis::GetContentCallback(),
+      base::Bind(&CopyOperation::CopyAfterDownload,
+                 weak_ptr_factory_.GetWeakPtr(), dest_file_path, callback));
+}
+
+void CopyOperation::CopyAfterDownload(
+    const base::FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    FileError error,
+    const base::FilePath& local_file_path,
+    scoped_ptr<ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  // This callback is only triggered for a regular file via Copy().
+  DCHECK(entry && !entry->file_specific_info().is_hosted_document());
+  ScheduleTransferRegularFile(local_file_path, dest_file_path, callback);
 }
 
 void CopyOperation::TransferFileFromLocalToRemote(
@@ -206,6 +314,70 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
       remote_dest_path.RemoveExtension(),
       canonicalized_resource_id,
       callback);
+}
+
+void CopyOperation::CopyResourceOnServer(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_title,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scheduler_->CopyResource(
+      resource_id, parent_resource_id, new_title,
+      base::Bind(&CopyOperation::CopyResourceOnServerAfterServerCopy,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void CopyOperation::CopyResourceOnServerAfterServerCopy(
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  DCHECK(resource_entry);
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
+    callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
+
+  // The copy on the server side is completed successfully. Update the local
+  // metadata.
+  base::FilePath* file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&UpdateLocalStateForCopyResourceOnServer,
+                 metadata_, entry, file_path),
+      base::Bind(&CopyOperation::CopyResourceOnServerAfterUpdateLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(file_path)));
+}
+
+void CopyOperation::CopyResourceOnServerAfterUpdateLocalState(
+    const FileOperationCallback& callback,
+    base::FilePath* file_path,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == FILE_ERROR_OK)
+    observer_->OnDirectoryChangedByOperation(file_path->DirName());
+  callback.Run(error);
 }
 
 void CopyOperation::ScheduleTransferRegularFile(
@@ -388,129 +560,6 @@ void CopyOperation::MoveEntryFromRootDirectory(
             file_path.DirName().value()) << file_path.value();
 
   move_operation_->Move(file_path, dest_path, callback);
-}
-
-void CopyOperation::CopyAfterGetResourceEntryPair(
-    const base::FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(result.get());
-
-  if (result->first.error != FILE_ERROR_OK) {
-    callback.Run(result->first.error);
-    return;
-  } else if (result->second.error != FILE_ERROR_OK) {
-    callback.Run(result->second.error);
-    return;
-  }
-
-  scoped_ptr<ResourceEntry> src_file_proto = result->first.entry.Pass();
-  scoped_ptr<ResourceEntry> dest_parent_proto = result->second.entry.Pass();
-
-  if (!dest_parent_proto->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  } else if (src_file_proto->file_info().is_directory()) {
-    // TODO(kochi): Implement copy for directories. In the interim,
-    // we handle recursive directory copy in the file manager.
-    // crbug.com/141596
-    callback.Run(FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
-
-  // If Drive API v2 is enabled, we can copy resources on server side.
-  if (util::IsDriveV2ApiEnabled()) {
-    base::FilePath new_title = dest_file_path.BaseName();
-    if (src_file_proto->file_specific_info().is_hosted_document()) {
-      // Drop the document extension, which should not be in the title.
-      // TODO(yoshiki): Remove this code with crbug.com/223304.
-      new_title = new_title.RemoveExtension();
-    }
-
-    scheduler_->CopyResource(
-        src_file_proto->resource_id(),
-        dest_parent_proto->resource_id(),
-        new_title.value(),
-        base::Bind(&CopyOperation::OnCopyResourceCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-    return;
-  }
-
-
-  if (src_file_proto->file_specific_info().is_hosted_document()) {
-    CopyHostedDocumentToDirectory(
-        // Drop the document extension, which should not be in the title.
-        // TODO(yoshiki): Remove this code with crbug.com/223304.
-        dest_file_path.RemoveExtension(),
-        src_file_proto->resource_id(),
-        callback);
-    return;
-  }
-
-  const base::FilePath& src_file_path = result->first.path;
-  download_operation_->EnsureFileDownloadedByPath(
-      src_file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      base::Bind(&CopyOperation::OnGetFileCompleteForCopy,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dest_file_path,
-                 callback));
-}
-
-void CopyOperation::OnCopyResourceCompleted(
-    const FileOperationCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(resource_entry);
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
-
-  // The copy on the server side is completed successfully. Update the local
-  // metadata.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&AddEntryToLocalMetadata, metadata_, entry),
-      callback);
-}
-
-void CopyOperation::OnGetFileCompleteForCopy(
-    const base::FilePath& remote_dest_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  // This callback is only triggered for a regular file via Copy().
-  DCHECK(entry && !entry->file_specific_info().is_hosted_document());
-  ScheduleTransferRegularFile(local_file_path, remote_dest_path, callback);
 }
 
 }  // namespace file_system
