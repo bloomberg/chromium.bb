@@ -5,6 +5,11 @@
 <script>
     description("This tests that document.createEvent is hooked up for all Event interfaces (and alternatives) and creates the right instance.")
 
+    // AnimationEvent
+    shouldBeTrue("document.createEvent('AnimationEvent') instanceof window.AnimationEvent");
+    shouldBeTrue("document.createEvent('AnimationEvent') instanceof window.Event");
+    shouldBeTrue("document.createEvent('AnimationEvent').constructor === window.AnimationEvent");
+
     // Event
     shouldBeTrue("document.createEvent('Event') instanceof window.Event");
     shouldBeTrue("document.createEvent('Event').constructor === window.Event");

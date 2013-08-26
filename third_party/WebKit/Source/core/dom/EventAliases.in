@@ -1,4 +1,5 @@
 # Aliases
+AnimationEvent ImplementedAs=WebKitAnimationEvent, EnabledAtRuntime=cssAnimationUnprefixedEnabled
 Events ImplementedAs=Event
 HTMLEvents ImplementedAs=Event
 KeyboardEvents ImplementedAs=KeyboardEvent

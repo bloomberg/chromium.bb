@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/page/animation/AnimationController.h"
 
-#include "core/dom/AnimationEvent.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/TransitionEvent.h"
+#include "core/dom/WebKitAnimationEvent.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -196,7 +196,7 @@ void AnimationControllerPrivate::fireEventsAndUpdateStyle()
         if (it->eventType == eventNames().transitionendEvent)
             element->dispatchEvent(TransitionEvent::create(it->eventType, it->name, it->elapsedTime, PseudoElement::pseudoElementNameForEvents(element->pseudoId())));
         else
-            element->dispatchEvent(AnimationEvent::create(it->eventType, it->name, it->elapsedTime));
+            element->dispatchEvent(WebKitAnimationEvent::create(it->eventType, it->name, it->elapsedTime));
     }
 
     // call setChanged on all the elements

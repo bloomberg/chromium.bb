@@ -1725,8 +1725,6 @@
         ],
         'webcore_dom_files': [
             'dom/ActiveDOMObject.cpp',
-            'dom/AnimationEvent.cpp',
-            'dom/AnimationEvent.h',
             'dom/Attr.cpp',
             'dom/AutocompleteErrorEvent.h',
             'dom/BeforeLoadEvent.h',
@@ -2013,6 +2011,8 @@
             'dom/ViewportArguments.h',
             'dom/VisitedLinkState.cpp',
             'dom/VisitedLinkState.h',
+            'dom/WebKitAnimationEvent.cpp',
+            'dom/WebKitAnimationEvent.h',
             'dom/WheelEvent.cpp',
             'dom/WheelEvent.h',
             'dom/WindowEventContext.cpp',

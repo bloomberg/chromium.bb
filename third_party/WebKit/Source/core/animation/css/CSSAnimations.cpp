@@ -35,9 +35,9 @@
 #include "core/animation/KeyframeAnimationEffect.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/AnimationEvent.h"
 #include "core/dom/Element.h"
 #include "core/dom/EventNames.h"
+#include "core/dom/WebKitAnimationEvent.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "wtf/HashSet.h"
@@ -232,7 +232,7 @@ void CSSAnimations::cancel()
 void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, AtomicString& eventName, double elapsedTime)
 {
     if (m_target->document()->hasListenerType(listenerType))
-        m_target->document()->timeline()->addEventToDispatch(m_target, AnimationEvent::create(eventName, m_name, elapsedTime));
+        m_target->document()->timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
 }
 
 void CSSAnimations::EventDelegate::onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase currentPhase, double previousIteration, double currentIteration)

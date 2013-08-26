@@ -23,51 +23,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEvent_h
-#define AnimationEvent_h
+#include "config.h"
+#include "core/dom/WebKitAnimationEvent.h"
 
-#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 
-struct AnimationEventInit : public EventInit {
-    AnimationEventInit();
+WebKitAnimationEventInit::WebKitAnimationEventInit()
+    : animationName()
+    , elapsedTime(0.0)
+{
+}
 
-    String animationName;
-    double elapsedTime;
-};
+WebKitAnimationEvent::WebKitAnimationEvent()
+    : m_elapsedTime(0.0)
+{
+    ScriptWrappable::init(this);
+}
 
-class AnimationEvent : public Event {
-public:
-    static PassRefPtr<AnimationEvent> create()
-    {
-        return adoptRef(new AnimationEvent);
-    }
-    static PassRefPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
-    {
-        return adoptRef(new AnimationEvent(type, animationName, elapsedTime));
-    }
-    static PassRefPtr<AnimationEvent> create(const AtomicString& type, const AnimationEventInit& initializer)
-    {
-        return adoptRef(new AnimationEvent(type, initializer));
-    }
+WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const WebKitAnimationEventInit& initializer)
+    : Event(type, initializer)
+    , m_animationName(initializer.animationName)
+    , m_elapsedTime(initializer.elapsedTime)
+{
+    ScriptWrappable::init(this);
+}
 
-    virtual ~AnimationEvent();
+WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
+    : Event(type, true, true)
+    , m_animationName(animationName)
+    , m_elapsedTime(elapsedTime)
+{
+    ScriptWrappable::init(this);
+}
 
-    const String& animationName() const;
-    double elapsedTime() const;
+WebKitAnimationEvent::~WebKitAnimationEvent()
+{
+}
 
-    virtual const AtomicString& interfaceName() const;
+const String& WebKitAnimationEvent::animationName() const
+{
+    return m_animationName;
+}
 
-private:
-    AnimationEvent();
-    AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);
-    AnimationEvent(const AtomicString&, const AnimationEventInit&);
+double WebKitAnimationEvent::elapsedTime() const
+{
+    return m_elapsedTime;
+}
 
-    String m_animationName;
-    double m_elapsedTime;
-};
+const AtomicString& WebKitAnimationEvent::interfaceName() const
+{
+    return eventNames().interfaceForWebKitAnimationEvent;
+}
 
 } // namespace WebCore
-
-#endif // AnimationEvent_h

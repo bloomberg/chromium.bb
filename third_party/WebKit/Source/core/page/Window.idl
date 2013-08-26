@@ -264,6 +264,7 @@
 
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;
+    [EnabledAtRuntime=cssAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
     [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator
     // Mozilla has a separate XMLDocument object for XML documents.
     // We just use Document for this.
