@@ -31,7 +31,6 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"
-#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -267,8 +266,7 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
                                          OmniboxView* omnibox_view,
                                          OmniboxEditModel* edit_model,
                                          GtkWidget* location_bar)
-    : signal_registrar_(new ui::GtkSignalRegistrar),
-      model_(new OmniboxPopupModel(this, edit_model)),
+    : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_(location_bar),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
@@ -298,14 +296,14 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
                                  GDK_POINTER_MOTION_MASK |
                                  GDK_BUTTON_PRESS_MASK |
                                  GDK_BUTTON_RELEASE_MASK);
-  signal_registrar_->Connect(window_, "motion-notify-event",
-                             G_CALLBACK(HandleMotionThunk), this);
-  signal_registrar_->Connect(window_, "button-press-event",
-                             G_CALLBACK(HandleButtonPressThunk), this);
-  signal_registrar_->Connect(window_, "button-release-event",
-                             G_CALLBACK(HandleButtonReleaseThunk), this);
-  signal_registrar_->Connect(window_, "expose-event",
-                             G_CALLBACK(HandleExposeThunk), this);
+  g_signal_connect(window_, "motion-notify-event",
+                   G_CALLBACK(HandleMotionThunk), this);
+  g_signal_connect(window_, "button-press-event",
+                   G_CALLBACK(HandleButtonPressThunk), this);
+  g_signal_connect(window_, "button-release-event",
+                   G_CALLBACK(HandleButtonReleaseThunk), this);
+  g_signal_connect(window_, "expose-event",
+                   G_CALLBACK(HandleExposeThunk), this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -326,10 +324,6 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
 }
 
 OmniboxPopupViewGtk::~OmniboxPopupViewGtk() {
-  // Stop listening to our signals before we destroy the model. I suspect that
-  // we can race window destruction, otherwise.
-  signal_registrar_.reset();
-
   // Explicitly destroy our model here, before we destroy our GTK widgets.
   // This is because the model destructor can call back into us, and we need
   // to make sure everything is still valid when it does.
@@ -467,6 +461,7 @@ void OmniboxPopupViewGtk::StackWindow() {
 }
 
 size_t OmniboxPopupViewGtk::LineFromY(int y) {
+  DCHECK_NE(0U, model_->result().size());
   size_t line = std::max(y - kBorderThickness, 0) / kHeightPerResult;
   return std::min(line, model_->result().size() - 1);
 }
@@ -542,6 +537,9 @@ void OmniboxPopupViewGtk::GetVisibleMatchForInput(
 
 gboolean OmniboxPopupViewGtk::HandleMotion(GtkWidget* widget,
                                            GdkEventMotion* event) {
+  if (!IsOpen())
+    return FALSE;
+
   // TODO(deanm): Windows has a bunch of complicated logic here.
   size_t line = LineFromY(static_cast<int>(event->y));
   // There is both a hovered and selected line, hovered just means your mouse
@@ -555,6 +553,9 @@ gboolean OmniboxPopupViewGtk::HandleMotion(GtkWidget* widget,
 
 gboolean OmniboxPopupViewGtk::HandleButtonPress(GtkWidget* widget,
                                                 GdkEventButton* event) {
+  if (!IsOpen())
+    return FALSE;
+
   ignore_mouse_drag_ = false;
   // Very similar to HandleMotion.
   size_t line = LineFromY(static_cast<int>(event->y));
@@ -566,6 +567,9 @@ gboolean OmniboxPopupViewGtk::HandleButtonPress(GtkWidget* widget,
 
 gboolean OmniboxPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
                                                   GdkEventButton* event) {
+  if (!IsOpen())
+    return FALSE;
+
   if (ignore_mouse_drag_) {
     // See header comment about this flag.
     ignore_mouse_drag_ = false;
