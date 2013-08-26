@@ -14,10 +14,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::MessageLoopRunner;
@@ -72,39 +75,6 @@ class ManagedUserServiceTest : public ::testing::Test {
 };
 
 }  // namespace
-
-TEST_F(ManagedUserServiceTest, ExtensionManagementPolicyProviderUnmanaged) {
-  EXPECT_FALSE(managed_user_service_->ProfileIsManaged());
-
-  string16 error_1;
-  EXPECT_TRUE(managed_user_service_->UserMayLoad(NULL, &error_1));
-  EXPECT_EQ(string16(), error_1);
-
-  string16 error_2;
-  EXPECT_TRUE(managed_user_service_->UserMayModifySettings(NULL, &error_2));
-  EXPECT_EQ(string16(), error_2);
-}
-
-TEST_F(ManagedUserServiceTest, ExtensionManagementPolicyProviderManaged) {
-  ManagedModeURLFilterObserver observer(
-      managed_user_service_->GetURLFilterForUIThread());
-  managed_user_service_->InitForTesting();
-  EXPECT_TRUE(managed_user_service_->ProfileIsManaged());
-
-  string16 error_1;
-  EXPECT_FALSE(managed_user_service_->UserMayLoad(NULL, &error_1));
-  EXPECT_FALSE(error_1.empty());
-
-  string16 error_2;
-  EXPECT_FALSE(managed_user_service_->UserMayModifySettings(NULL, &error_2));
-  EXPECT_FALSE(error_2.empty());
-
-#ifndef NDEBUG
-  EXPECT_FALSE(managed_user_service_->GetDebugPolicyProviderName().empty());
-#endif
-  // Wait for the initial update to finish (otherwise we'll get leaks).
-  observer.Wait();
-}
 
 TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
   GURL kExampleFooURL("http://www.example.com/foo");
@@ -182,7 +152,82 @@ class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
       ManagedUserService* managed_user_service) {
     return managed_user_service->GetActiveSiteLists();
   }
+
+  scoped_refptr<extensions::Extension> MakeThemeExtension() {
+    scoped_ptr<DictionaryValue> source(new DictionaryValue());
+    source->SetString(extensions::manifest_keys::kName, "Theme");
+    source->Set(extensions::manifest_keys::kTheme, new DictionaryValue());
+    source->SetString(extensions::manifest_keys::kVersion, "1.0");
+    extensions::ExtensionBuilder builder;
+    scoped_refptr<extensions::Extension> extension =
+        builder.SetManifest(source.Pass()).Build();
+    return extension;
+  }
+
+  scoped_refptr<extensions::Extension> MakeExtension() {
+    scoped_ptr<DictionaryValue> manifest = extensions::DictionaryBuilder()
+      .Set(extensions::manifest_keys::kName, "Extension")
+      .Set(extensions::manifest_keys::kVersion, "1.0")
+      .Build();
+    extensions::ExtensionBuilder builder;
+    scoped_refptr<extensions::Extension> extension =
+        builder.SetManifest(manifest.Pass()).Build();
+    return extension;
+  }
 };
+
+TEST_F(ManagedUserServiceExtensionTest,
+       ExtensionManagementPolicyProviderUnmanaged) {
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile_.get());
+  EXPECT_FALSE(profile_->IsManaged());
+
+  scoped_refptr<extensions::Extension> extension = MakeExtension();
+  string16 error_1;
+  EXPECT_TRUE(managed_user_service->UserMayLoad(extension.get(), &error_1));
+  EXPECT_EQ(string16(), error_1);
+
+  string16 error_2;
+  EXPECT_TRUE(
+      managed_user_service->UserMayModifySettings(extension.get(), &error_2));
+  EXPECT_EQ(string16(), error_2);
+}
+
+TEST_F(ManagedUserServiceExtensionTest,
+       ExtensionManagementPolicyProviderManaged) {
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile_.get());
+  managed_user_service->InitForTesting();
+  ManagedModeURLFilterObserver observer(
+      managed_user_service->GetURLFilterForUIThread());
+  EXPECT_TRUE(profile_->IsManaged());
+  // Wait for the initial update to finish (otherwise we'll get leaks).
+  observer.Wait();
+
+  // Check that a supervised user can install a theme.
+  scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
+  string16 error_1;
+  EXPECT_TRUE(managed_user_service->UserMayLoad(theme.get(), &error_1));
+  EXPECT_TRUE(error_1.empty());
+  EXPECT_TRUE(
+      managed_user_service->UserMayModifySettings(theme.get(), &error_1));
+  EXPECT_TRUE(error_1.empty());
+
+  // Now check a different kind of extension.
+  scoped_refptr<extensions::Extension> extension = MakeExtension();
+  EXPECT_FALSE(managed_user_service->UserMayLoad(extension.get(), &error_1));
+  EXPECT_FALSE(error_1.empty());
+
+  string16 error_2;
+  EXPECT_FALSE(
+      managed_user_service->UserMayModifySettings(extension.get(), &error_2));
+  EXPECT_FALSE(error_2.empty());
+
+#ifndef NDEBUG
+  EXPECT_FALSE(managed_user_service->GetDebugPolicyProviderName().empty());
+#endif
+}
+
 
 TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
   ManagedUserService* managed_user_service =

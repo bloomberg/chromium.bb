@@ -7197,13 +7197,6 @@
    fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificatesEPSt6vectorI13scoped_refptrIN3net15X509CertificateEESaIS5_EE
 }
 {
-   bug_272083
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12ThemeService19SetManagedUserThemeEv
-   fun:_ZN12ThemeService24OnManagedUserInitializedEv
-}
-{
    bug_273398
    Memcheck:Leak
    ...
