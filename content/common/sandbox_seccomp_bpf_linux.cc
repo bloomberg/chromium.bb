@@ -6,8 +6,6 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/audit.h>
-#include <linux/filter.h>
 #include <linux/net.h>
 #include <signal.h>
 #include <string.h>
