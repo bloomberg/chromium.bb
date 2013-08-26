@@ -29,9 +29,10 @@ extern const char kAppShimSocketName[];
 // Special app mode id used for the App Launcher.
 extern const char kAppListModeId[];
 
-// Instructs the app shim to send LaunchApp with launch_now = false. This
-// associates the shim without launching the app.
-extern const char kNoLaunchApp[];
+// The process ID of the Chrome process that launched the app shim.
+// The presence of this switch instructs the app shim to send LaunchApp with
+// launch_now = false. This associates the shim without launching the app.
+extern const char kLaunchedByChromeProcessId[];
 
 // The display name of the bundle as shown in Finder and the Dock. For localized
 // bundles, this overrides the bundle's file name.

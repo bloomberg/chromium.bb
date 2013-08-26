@@ -17,6 +17,8 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
+#include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -210,7 +212,9 @@ void LaunchShimOnFileThread(
     return;
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(app_mode::kNoLaunchApp);
+  command_line.AppendSwitchASCII(
+      app_mode::kLaunchedByChromeProcessId,
+      base::IntToString(base::GetCurrentProcId()));
   // Launch without activating (kLSLaunchDontSwitch).
   base::mac::OpenApplicationWithPath(
       shim_path, command_line, kLSLaunchDefaults | kLSLaunchDontSwitch, NULL);

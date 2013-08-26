@@ -10,7 +10,7 @@ const char kAppShimSocketName[] = "App Shim Socket";
 
 const char kAppListModeId[] = "app_list";
 
-const char kNoLaunchApp[] = "no-launch-app";
+const char kLaunchedByChromeProcessId[] = "launched-by-chrome-process-id";
 
 NSString* const kCFBundleDisplayNameKey = @"CFBundleDisplayName";
 NSString* const kLSHasLocalizedDisplayNameKey = @"LSHasLocalizedDisplayName";

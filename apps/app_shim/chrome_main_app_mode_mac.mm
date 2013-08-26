@@ -21,6 +21,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
@@ -118,9 +119,12 @@ void AppShimController::Init() {
   channel_ = new IPC::ChannelProxy(handle, IPC::Channel::MODE_NAMED_CLIENT,
       this, g_io_thread->message_loop_proxy().get());
 
+  bool launched_by_chrome =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedByChromeProcessId);
   channel_->Send(new AppShimHostMsg_LaunchApp(
       g_info->profile_dir, g_info->app_mode_id,
-      CommandLine::ForCurrentProcess()->HasSwitch(app_mode::kNoLaunchApp) ?
+      launched_by_chrome ?
           apps::APP_SHIM_LAUNCH_REGISTER_ONLY : apps::APP_SHIM_LAUNCH_NORMAL));
 
   nsapp_delegate_.reset([[AppShimDelegate alloc] initWithController:this]);
@@ -432,15 +436,24 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   g_io_thread = io_thread;
 
   // Find already running instances of Chrome.
-  NSString* chrome_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
-  NSArray* existing_chrome = [NSRunningApplication
-      runningApplicationsWithBundleIdentifier:chrome_bundle_id];
+  pid_t pid = -1;
+  std::string chrome_process_id = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(app_mode::kLaunchedByChromeProcessId);
+  if (!chrome_process_id.empty()) {
+    if (!base::StringToInt(chrome_process_id, &pid))
+      LOG(FATAL) << "Invalid PID: " << chrome_process_id;
+  } else {
+    NSString* chrome_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
+    NSArray* existing_chrome = [NSRunningApplication
+        runningApplicationsWithBundleIdentifier:chrome_bundle_id];
+    if ([existing_chrome count] > 0)
+      pid = [[existing_chrome objectAtIndex:0] processIdentifier];
+  }
 
   // Launch Chrome if it isn't already running.
   ProcessSerialNumber psn;
-  if ([existing_chrome count] > 0) {
-    OSStatus status = GetProcessForPID(
-        [[existing_chrome objectAtIndex:0] processIdentifier], &psn);
+  if (pid > -1) {
+    OSStatus status = GetProcessForPID(pid, &psn);
     if (status)
       return 1;
 
