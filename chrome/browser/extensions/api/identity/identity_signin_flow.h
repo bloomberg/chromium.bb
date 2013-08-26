@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
 

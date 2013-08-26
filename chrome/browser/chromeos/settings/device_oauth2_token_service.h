@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {

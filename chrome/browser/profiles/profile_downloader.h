@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"

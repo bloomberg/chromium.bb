@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
 class URLRequestContextGetter;

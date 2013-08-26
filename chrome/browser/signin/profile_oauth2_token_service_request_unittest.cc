@@ -7,13 +7,13 @@
 #include <string>
 #include <vector>
 #include "base/threading/thread.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 #include <vector>
 
@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -25,18 +24,17 @@ int OAuth2TokenService::max_fetch_retry_num_ = 5;
 OAuth2TokenService::RequestImpl::RequestImpl(
     OAuth2TokenService::Consumer* consumer)
     : consumer_(consumer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 OAuth2TokenService::RequestImpl::~RequestImpl() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 }
 
 void OAuth2TokenService::RequestImpl::InformConsumer(
     const GoogleServiceAuthError& error,
     const std::string& access_token,
     const base::Time& expiration_date) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   if (error.state() == GoogleServiceAuthError::NONE)
     consumer_->OnGetTokenSuccess(this, access_token, expiration_date);
   else
@@ -377,7 +375,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
     const std::string& client_secret,
     const ScopeSet& scopes,
     Consumer* consumer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
 
@@ -447,12 +445,12 @@ void OAuth2TokenService::StartCacheLookupRequest(
 
 void OAuth2TokenService::InvalidateToken(const ScopeSet& scopes,
                                          const std::string& invalid_token) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   RemoveCacheEntry(scopes, invalid_token);
 }
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   // Update the auth error state so auth errors are appropriately communicated
   // to the user.
@@ -500,7 +498,7 @@ bool OAuth2TokenService::HasCacheEntry(
 
 const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
     const OAuth2TokenService::ScopeSet& scopes) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   TokenCache::iterator token_iterator = token_cache_.find(scopes);
   if (token_iterator == token_cache_.end())
     return NULL;
@@ -514,7 +512,7 @@ const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
 bool OAuth2TokenService::RemoveCacheEntry(
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& token_to_remove) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   TokenCache::iterator token_iterator = token_cache_.find(scopes);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
@@ -529,7 +527,7 @@ void OAuth2TokenService::RegisterCacheEntry(
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token,
     const base::Time& expiration_date) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   CacheEntry& token = token_cache_[scopes];
   token.access_token = access_token;
@@ -541,7 +539,7 @@ void OAuth2TokenService::UpdateAuthError(const GoogleServiceAuthError& error) {
 }
 
 void OAuth2TokenService::ClearCache() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   token_cache_.clear();
 }
 
@@ -605,6 +603,6 @@ int OAuth2TokenService::cache_size_for_testing() const {
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
     int max_retries) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   max_fetch_retry_num_ = max_retries;
 }

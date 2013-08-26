@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace extensions {
 

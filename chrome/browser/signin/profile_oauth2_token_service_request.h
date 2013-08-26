@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
 

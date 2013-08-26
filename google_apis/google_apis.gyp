@@ -83,6 +83,8 @@
         'gaia/oauth2_api_call_flow.h',
         'gaia/oauth2_mint_token_flow.cc',
         'gaia/oauth2_mint_token_flow.h',
+        'gaia/oauth2_token_service.cc',
+        'gaia/oauth2_token_service.h',
         'google_api_keys.cc',
         'google_api_keys.h',
       ],

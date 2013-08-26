@@ -1,28 +1,21 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
-#include "chrome/browser/signin/oauth2_token_service_test_util.h"
-#include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/signin/token_service_unittest.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 // A testing consumer that retries on error.
 class RetryingTestingOAuth2TokenServiceConsumer
@@ -74,17 +67,16 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 };
 
-class OAuth2TokenServiceTest : public TokenServiceTestHarness {
+class OAuth2TokenServiceTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    TokenServiceTestHarness::SetUp();
     oauth2_service_.reset(
         new TestOAuth2TokenService(new net::TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(
-                BrowserThread::IO))));
+            message_loop_.message_loop_proxy())));
   }
 
  protected:
+  base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory factory_;
   scoped_ptr<TestOAuth2TokenService> oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;

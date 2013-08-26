@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
 

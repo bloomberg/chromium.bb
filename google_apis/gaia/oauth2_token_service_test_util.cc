@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/oauth2_token_service_test_util.h"
+#include "google_apis/gaia/oauth2_token_service_test_util.h"
 
+#include "base/strings/stringprintf.h"
+
+namespace {
 const char kValidTokenResponse[] =
     "{"
     "  \"access_token\": \"%s\","
     "  \"expires_in\": %d,"
     "  \"token_type\": \"Bearer\""
     "}";
+}
 
 std::string GetValidTokenResponse(std::string token, int expiration) {
   return base::StringPrintf(kValidTokenResponse, token.c_str(), expiration);

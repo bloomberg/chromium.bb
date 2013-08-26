@@ -3,11 +3,3 @@ include_rules = [
   "-content",
   "+chrome/browser/google_apis",
 ]
-
-# Exceptions are temporarily needed. crbug.com/146989
-specific_include_rules = {
-  # AuthService should be gone. crbug.com/162157
-  "auth_service\.(h|cc)": [
-    "!chrome/browser/signin/oauth2_token_service.h",
-  ],
-}

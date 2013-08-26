@@ -1905,8 +1905,6 @@
         'browser/signin/about_signin_internals_factory.h',
         'browser/signin/chrome_signin_manager_delegate.cc',
         'browser/signin/chrome_signin_manager_delegate.h',
-        'browser/signin/oauth2_token_service.cc',
-        'browser/signin/oauth2_token_service.h',
         'browser/signin/profile_oauth2_token_service.cc',
         'browser/signin/profile_oauth2_token_service.h',
         'browser/signin/profile_oauth2_token_service_factory.cc',

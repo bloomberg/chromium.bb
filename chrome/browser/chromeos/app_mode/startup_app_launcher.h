@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
 
 class Profile;

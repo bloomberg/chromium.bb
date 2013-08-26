@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
-#include "chrome/browser/signin/oauth2_token_service_test_util.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

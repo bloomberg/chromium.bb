@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/google_apis/auth_service_interface.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
 class URLRequestContextGetter;

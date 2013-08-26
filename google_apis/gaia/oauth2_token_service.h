@@ -1,26 +1,21 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_H_
+#ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_H_
+#define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_H_
 
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-
-namespace base {
-class Time;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -156,6 +151,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
   class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
+                      public base::NonThreadSafe,
                       public Request {
    public:
     // |consumer| is required to outlive this.
@@ -276,7 +272,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // token using these parameters.
   std::map<FetchParameters, Fetcher*> pending_fetchers_;
 
-  // List of observers to notify when token availiability changes.
+  // List of observers to notify when token availability changes.
   // Makes sure list is empty on destruction.
   ObserverList<Observer, true> observer_list_;
 
@@ -286,4 +282,4 @@ class OAuth2TokenService : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_H_
+#endif  // GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_H_

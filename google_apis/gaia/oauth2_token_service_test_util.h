@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
-#define CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
-
-#include "chrome/browser/signin/oauth2_token_service.h"
+#ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
+#define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
 
 #include <string>
 
-#include "base/strings/stringprintf.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-
-extern const char kValidTokenResponse[];
+#include "google_apis/gaia/oauth2_token_service.h"
 
 std::string GetValidTokenResponse(std::string token, int expiration);
 
@@ -35,4 +31,4 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
   int number_of_errors_;
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_
+#endif  // GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_TEST_UTIL_H_

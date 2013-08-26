@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/oauth2_login_verifier.h"
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/login/oauth_login_manager.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GoogleServiceAuthError;

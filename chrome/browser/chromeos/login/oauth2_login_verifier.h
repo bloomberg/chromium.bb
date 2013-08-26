@@ -14,10 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {

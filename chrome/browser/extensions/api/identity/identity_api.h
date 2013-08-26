@@ -19,9 +19,9 @@
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class GoogleServiceAuthError;
 class MockGetAuthTokenFunction;
