@@ -12,8 +12,10 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
+#include "content/renderer/media/native_handle_impl.h"
 #include "media/base/bind_to_loop.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
+#include "third_party/webrtc/common_video/interface/texture_video_frame.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 
 namespace content {
@@ -362,12 +364,9 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(inserted);
 
   // Create a WebRTC video frame.
-  // TODO(wuchengli): make media::VideoFrame an opaque native handle and put it
-  // into WebRTC frame.
-  webrtc::I420VideoFrame decoded_image;
-  decoded_image.CreateEmptyFrame(
-      width, height, width, (width + 1) / 2, (width + 1) / 2);
-  decoded_image.set_timestamp(timestamp);
+  webrtc::RefCountImpl<NativeHandleImpl>* handle =
+      new webrtc::RefCountImpl<NativeHandleImpl>(frame);
+  webrtc::TextureVideoFrame decoded_image(handle, width, height, timestamp, 0);
 
   // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {

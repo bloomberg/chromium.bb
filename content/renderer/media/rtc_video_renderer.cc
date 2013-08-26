@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/renderer/media/native_handle_impl.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
@@ -84,25 +85,30 @@ void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
                        "timestamp_ms",
                        timestamp.InMilliseconds());
 
-  gfx::Size size(frame->GetWidth(), frame->GetHeight());
-  scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                     size,
-                                     gfx::Rect(size),
-                                     size,
-                                     timestamp);
+  scoped_refptr<media::VideoFrame> video_frame;
+  if (frame->GetNativeHandle() != NULL) {
+    NativeHandleImpl* handle =
+        static_cast<NativeHandleImpl*>(frame->GetNativeHandle());
+    video_frame = static_cast<media::VideoFrame*>(handle->GetHandle());
+    video_frame->SetTimestamp(timestamp);
+  } else {
+    gfx::Size size(frame->GetWidth(), frame->GetHeight());
+    video_frame = media::VideoFrame::CreateFrame(
+        media::VideoFrame::YV12, size, gfx::Rect(size), size, timestamp);
 
-  // Aspect ratio unsupported; DCHECK when there are non-square pixels.
-  DCHECK_EQ(frame->GetPixelWidth(), 1u);
-  DCHECK_EQ(frame->GetPixelHeight(), 1u);
+    // Aspect ratio unsupported; DCHECK when there are non-square pixels.
+    DCHECK_EQ(frame->GetPixelWidth(), 1u);
+    DCHECK_EQ(frame->GetPixelHeight(), 1u);
 
-  int y_rows = frame->GetHeight();
-  int uv_rows = frame->GetHeight() / 2;  // YV12 format.
-  CopyYPlane(frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame.get());
-  CopyUPlane(
-      frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame.get());
-  CopyVPlane(
-      frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
+    int y_rows = frame->GetHeight();
+    int uv_rows = frame->GetHeight() / 2;  // YV12 format.
+    CopyYPlane(
+        frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame.get());
+    CopyUPlane(
+        frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame.get());
+    CopyVPlane(
+        frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
+  }
 
   message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&RTCVideoRenderer::DoRenderFrameOnMainThread,
