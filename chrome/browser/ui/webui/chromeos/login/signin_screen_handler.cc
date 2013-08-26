@@ -933,7 +933,7 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 }
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {
-
+  core_oobe_actor_->ShowSignInUI(email);
 }
 
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
