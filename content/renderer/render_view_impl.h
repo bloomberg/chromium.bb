@@ -1087,6 +1087,9 @@ class CONTENT_EXPORT RenderViewImpl
   void CheckPreferredSize();
 
   // Initializes |media_stream_client_| if needed.
+  // TODO(qinmin): rename this function as it does not guarantee
+  // |media_stream_client_| will be created.
+  // http://crbug.com/278490.
   void EnsureMediaStreamClient();
 
   // This callback is triggered when DownloadFavicon completes, either

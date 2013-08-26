@@ -2996,7 +2996,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 #if defined(ENABLE_WEBRTC)
   EnsureMediaStreamClient();
 #if !defined(GOOGLE_TV)
-  if (media_stream_client_->IsMediaStream(url)) {
+  if (media_stream_client_ && media_stream_client_->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
