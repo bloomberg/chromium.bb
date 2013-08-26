@@ -38,6 +38,7 @@ class SyncedTabDelegateAndroid : public browser_sync::SyncedTabDelegate {
   virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE;
   virtual bool IsPinned() const OVERRIDE;
   virtual bool HasWebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual int GetSyncId() const OVERRIDE;
   virtual void SetSyncId(int sync_id) OVERRIDE;
 

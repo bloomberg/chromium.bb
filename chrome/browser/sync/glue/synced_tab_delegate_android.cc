@@ -87,6 +87,10 @@ bool SyncedTabDelegateAndroid::HasWebContents() const {
   return web_contents_ != NULL;
 }
 
+content::WebContents* SyncedTabDelegateAndroid::GetWebContents() const {
+  return web_contents_;
+}
+
 void SyncedTabDelegateAndroid::SetWebContents(
     content::WebContents* web_contents) {
   web_contents_ = web_contents;
