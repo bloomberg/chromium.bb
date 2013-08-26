@@ -14,7 +14,6 @@ body {
 }
 
 img {
-  float: left;
   height: 16px;
   padding-left: 2px;
   padding-right: 5px;
@@ -127,17 +126,32 @@ img {
 }
 
 .browser-header {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  padding-top: 10px;
+}
+
+.browser-header > .browser-name {
+  font-size: 110%;
   font-weight: bold;
-  margin: 5px 0 0;
-  padding: 2px 0;
 }
 
 .row {
-  padding: 5px 0;
+  padding: 6px 0;
 }
 
 .subrow {
-  padding: 5px 24px;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.subrow > div {
+  margin-right: 0.5em;
+}
+
+.subrow.webview {
+  margin-top: -2px;
 }
 
 .invisible-view {
@@ -149,24 +163,27 @@ img {
 }
 
 .list {
-  margin-bottom: 20px;
   margin-top: 5px;
 }
 
 a {
   color: rgb(17, 85, 204);
-  padding: 0 3px;
+  margin-right: 6px;
   text-decoration: none;
+}
+
+.list.pages .subrow + a,
+.subrow.webview > div:first-child {
+  margin-left: 24px;  /* Align with the favicon */
+}
+
+.list:not(.pages) .subrow {
+  height: 19px;
 }
 
 a.disabled {
   opacity: 0.5;
   pointer-events: none;
-}
-
-.open {
-  margin-bottom: -4px;
-  margin-top: 5px;
 }
 
 .open > input {
@@ -177,6 +194,12 @@ a.disabled {
   padding: 0 2px;
 }
 
+.open > input:focus {
+  -webkit-transition: border-color 200ms;
+  border-color: rgb(77, 144, 254);
+  outline: none;
+}
+
 .open > button {
   line-height: 13px;
 }
@@ -185,6 +208,11 @@ a.disabled {
   position: absolute;
   right: 20px;
   top: 15px;
+}
+
+#port-forwarding-settings input {
+  position: relative;
+  top: 2px;
 }
 
 #port-forwarding-overlay {

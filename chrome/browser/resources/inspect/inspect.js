@@ -134,7 +134,7 @@ function populateDeviceLists(devices) {
     } else {
       deviceSection = document.createElement('div');
       deviceSection.id = device.adbGlobalId;
-      deviceSection.className = 'device list';
+      deviceSection.className = 'device';
       deviceList.appendChild(deviceSection);
 
       var deviceHeader = document.createElement('div');
@@ -212,13 +212,17 @@ function populateDeviceLists(devices) {
 
         var browserHeader = document.createElement('div');
         browserHeader.className = 'browser-header';
+
+        var browserName = document.createElement('div');
+        browserName.className = 'browser-name';
+        browserHeader.appendChild(browserName);
         if (browser.adbBrowserPackage && !isChrome)
-          browserHeader.textContent = browser.adbBrowserPackage;
+          browserName.textContent = browser.adbBrowserPackage;
         else
-          browserHeader.textContent = browser.adbBrowserProduct;
+          browserName.textContent = browser.adbBrowserProduct;
         var majorChromeVersion = 0;
         if (browser.adbBrowserVersion) {
-          browserHeader.textContent += ' (' + browser.adbBrowserVersion + ')';
+          browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
           if (isChrome) {
             var match = browser.adbBrowserVersion.match(/^(\d+)/);
             if (match)
@@ -250,7 +254,7 @@ function populateDeviceLists(devices) {
           newPage.appendChild(newPageButton);
           newPageButton.addEventListener('click', openHandler, true);
 
-          browserSection.appendChild(newPage);
+          browserHeader.appendChild(newPage);
         }
 
         pageList = document.createElement('div');
@@ -290,7 +294,7 @@ function addToAppsList(data) {
 }
 
 function addToWorkersList(data) {
-  var row = addTargetToList(data, $('workers'), ['name', 'url', 'pid']);
+  var row = addTargetToList(data, $('workers'), ['pid', 'url']);
   row.appendChild(createActionLink(
       'terminate', terminate.bind(null, data), data.attached));
 }
@@ -320,8 +324,8 @@ function formatValue(data, property) {
   if (property == 'pid')
     text = 'Pid:' + text;
 
-  var span = document.createElement('span');
-  span.textContent = ' ' + text + ' ';
+  var span = document.createElement('div');
+  span.textContent = text;
   span.className = property;
   return span;
 }
@@ -341,7 +345,7 @@ function addWebViewDescription(webview, list) {
   }
 
   var row = document.createElement('div');
-  row.className = 'subrow';
+  row.className = 'subrow webview';
   if (webview.empty || !webview.attached || !webview.visible)
     row.className += ' invisible-view';
   row.appendChild(formatValue(viewStatus, 'visibility'));
@@ -354,10 +358,15 @@ function addWebViewDescription(webview, list) {
 function addTargetToList(data, list, properties) {
   var row = document.createElement('div');
   row.className = 'row';
+
+  var subrow = document.createElement('div');
+  subrow.className = 'subrow';
+  row.appendChild(subrow);
+
   var description = null;
   for (var j = 0; j < properties.length; j++) {
     if (properties[j] != 'description')
-      row.appendChild(formatValue(data, properties[j]));
+      subrow.appendChild(formatValue(data, properties[j]));
     else if (data['description']) {
       try {
         description = JSON.parse(data['description']);
@@ -365,13 +374,10 @@ function addTargetToList(data, list, properties) {
     }
   }
 
-  row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
-
   if (description)
     addWebViewDescription(description, row);
 
-  row.processId = data.processId;
-  row.routeId = data.routeId;
+  row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
 
   list.appendChild(row);
   return row;
