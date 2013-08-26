@@ -127,7 +127,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     const AtomicString& pseudoId = element->shadowPseudoId();
     if (!pseudoId.isEmpty()) {
         ASSERT(element->isStyledElement());
-        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId.impl()), cascadeScope, cascadeOrder, matchRequest, ruleRange);
+        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId.impl()), ignoreCascadeScope, cascadeOrder, matchRequest, ruleRange);
     }
 
     if (element->isWebVTTElement())
@@ -297,7 +297,7 @@ static inline bool compareRules(const MatchedRule& matchedRule1, const MatchedRu
     unsigned specificity2 = matchedRule2.ruleData()->specificity();
     return matchedRule1.cascadeScope() == matchedRule2.cascadeScope() ?
         ((specificity1 == specificity2) ? matchedRule1.position() < matchedRule2.position() : specificity1 < specificity2) :
-        matchedRule1.cascadeScope() < matchedRule2.cascadeScope();
+        matchedRule1.cascadeScope() > matchedRule2.cascadeScope();
 }
 
 void ElementRuleCollector::sortMatchedRules()

@@ -331,16 +331,18 @@ void StyleResolver::matchScopedAuthorRulesForShadowHost(Element* element, Elemen
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    CascadeScope cascadeScope = (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope()) ? resolvers.size() + 1 : resolvers.size();
+    CascadeScope cascadeScope = 0;
     CascadeOrder cascadeOrder = 0;
     bool applyAuthorStyles = applyAuthorStylesOf(element);
 
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
         resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope, cascadeOrder++);
 
-    cascadeScope = resolvers.size();
+    if (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope())
+        ++cascadeScope;
+    cascadeOrder += resolvers.size();
     for (unsigned i = 0; i < resolvers.size(); ++i)
-        resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope--, cascadeOrder);
+        resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, --cascadeOrder);
 
     collector.sortAndTransferMatchedRules();
 
@@ -369,12 +371,17 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
         return;
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
-    CascadeScope cascadeScope = resolvers.size();
+    CascadeScope cascadeScope = 0;
+    CascadeOrder cascadeOrder = resolvers.size();
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    for (unsigned i = 0; i < resolvers.size(); ++i)
-        resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope--);
+    for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
+        ScopedStyleResolver* resolver = resolvers.at(i);
+        // FIXME: Need to clarify how to treat style scoped.
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode()->isShadowRoot() ? 0 : cascadeOrder);
+    }
+
     collector.sortAndTransferMatchedRules();
 
     matchHostRules(element, resolvers.first(), collector, includeEmptyRules);

@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../js/resources/js-test-pre.js"></script>
+<style>
+#host::part(x-part) {
+    color: green;
+}
+</style>
+</head>
+<body>
+<div id='sandbox'></div>
+<pre id='console'></pre>
+<script>
+description('Test for crbug.com/273138. ::part declared in document (or parent treescope) can override styles with lower specificity declared in a shadow tree.');
+
+var sandbox = document.getElementById('sandbox');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div { color: red; }')),
+            createDOM('div', {'id': 'target', 'part': 'x-part'},
+                document.createTextNode('Hello')))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host/target")).color', '"rgb(0, 128, 0)"');
+sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('#target.targetClass { color: red; }')),
+            createDOM('div', {'id': 'target', 'part': 'x-part', 'class': 'targetClass'},
+                document.createTextNode('Hello')))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host/target")).color', '"rgb(0, 128, 0)"');
+sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host1'},
+        createShadowRoot(
+            createDOM('div', {'id': 'host'},
+                createShadowRoot({'applyAuthorStyles': 'true'},
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'target', 'part': 'x-part'},
+                        document.createTextNode('Hello')))))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color', '"rgb(0, 128, 0)"');
+sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host1'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('#host::part(x-part) { color: blue; }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot(
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'target', 'part': 'x-part'},
+                        document.createTextNode('Hello')))))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color', '"rgb(0, 0, 255)"');
+sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host1'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div::part(x-part) { color: blue; }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot({'applyAuthorStyles': 'true'},
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'target', 'part': 'x-part'},
+                        document.createTextNode('Hello')))))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color', '"rgb(0, 128, 0)"');
+sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host1'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('#host::part(x-part) { color: blue; }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot({'applyAuthorStyles': 'true'},
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'target', 'part': 'x-part'},
+                        document.createTextNode('Hello')))))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color', '"rgb(0, 0, 255)"');
+sandbox.innerHTML = '';
+
+</script>
+</body>
+<script src="../../js/resources/js-test-post.js"></script>
+</html>

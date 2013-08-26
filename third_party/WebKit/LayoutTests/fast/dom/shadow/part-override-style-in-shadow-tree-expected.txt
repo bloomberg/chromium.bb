@@ -1,0 +1,15 @@
+Test for crbug.com/273138. ::part declared in document (or parent treescope) can override styles with lower specificity declared in a shadow tree.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host/target")).color is "rgb(0, 128, 0)"
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host/target")).color is "rgb(0, 128, 0)"
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color is "rgb(0, 128, 0)"
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color is "rgb(0, 0, 255)"
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color is "rgb(0, 128, 0)"
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host1/host/target")).color is "rgb(0, 0, 255)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
