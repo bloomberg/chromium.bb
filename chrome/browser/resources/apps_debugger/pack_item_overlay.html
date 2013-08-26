@@ -4,10 +4,15 @@
     <div class="pack-item-heading" id="pack-heading"></div>
     <input class="pack-item-text-area" id="item-root-dir" type="hidden">
     <div class="pack-item-text-boxes">
-      <label i18n-content="packExtensionPrivateKey"></label>
-      <input class="pack-item-text-area" id="item-private-key" type="text">
-      <button id="browse-private-key"
-              i18n-content="packExtensionBrowseButton"></button>
+      <div id="item-private-key-label">
+        <label i18n-content="packExtensionPrivateKey"></label>
+      </div>
+      <div id="item-private-key-container">
+        <input class="pack-item-text-area" id="item-private-key" type="text"
+            disabled>
+        <button id="browse-private-key"
+            i18n-content="packExtensionBrowseButton"></button>
+      </div>
     </div>
   </div>
   <div class="action-area">

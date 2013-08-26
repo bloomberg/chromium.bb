@@ -341,7 +341,6 @@ html[dir='rtl'] .enable-control {
 }
 
 .enable-checkbox-text {
-  /* Matches width of trash. */
   -webkit-margin-end: 30px;
   min-width: 62px;
 }
@@ -436,38 +435,42 @@ html[dir='rtl'] .delete-link {
 /* Overlays */
 
 #overlay {
+  background-color: rgba(0, 0, 0, 0.6);
   z-index: 5;
+}
+
+#overlay .page {
+  -webkit-border-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+  padding: 25px;
 }
 
 #overlay .page:not(.showing) {
   display: none;
 }
 
+#overlay .page h1 {
+  font-size: 21px;
+  padding: 0;
+}
+
+#overlay .page .content-area,
+#overlay .page .action-area {
+  font-size: 13px;
+  margin-top: 40px;
+  padding: 0;
+}
+
+/* Pack dialog button size and delete dialog button size */
+#packItemOverlay .button-strip button,
+#item-private-key-container button,
+#alertOverlay .button-strip button {
+  width: 90px;
+}
+
 .extension-id {
   -webkit-user-select: text;
-}
-
-#extension-settings .trash {
-  -webkit-transition: opacity 200ms;
-  height: 22px;
-  opacity: 0.8;
-  position: absolute;
-  right: 0;
-  top: 3px;
-  vertical-align: middle;
-}
-
-html[dir='rtl'] #extension-settings .trash {
-  left: 0;
-  right: auto;
-}
-
-.extension-list-item:not(:hover) .trash:not(:focus) {
-  opacity: 0;
-}
-
-.extension-list-item-wrapper.may-not-disable .trash {
-  visibility: hidden;
 }
 
 .may-not-disable .optional-controls .optional-controls-disableable {
@@ -530,4 +533,23 @@ button[disabled]:active {
   border-color: rgba(0, 0, 0, 0.1);
   box-shadow: none;
   color: #888;
+}
+
+/* Pack dialog styling */
+#item-private-key-container {
+  display: -webkit-box;
+}
+
+#item-private-key-label {
+  margin: 20px 0 10px;
+  text-align: start;
+}
+
+#item-private-key {
+  -webkit-box-flex: 1;
+  display: block;
+}
+
+#browse-private-key {
+  margin-left: 10px;
 }
