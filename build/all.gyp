@@ -350,6 +350,11 @@
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
               ],
             }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:linux_symbols'
+              ],
+            }],
           ],
         }, # target_name: chromium_builder_perf
         {
