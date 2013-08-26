@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
+#include "core/platform/FloatConversion.h"
 #include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -326,7 +327,14 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     SkPaint paint;
     paint.setXfermodeMode(compOp);
     paint.setAlpha(context->getNormalizedAlpha());
-    paint.setLooper(context->drawLooper());
+    DrawLooper* drawLooper = context->drawLooper();
+    if (drawLooper) {
+        if (drawLooper->shouldUseImageFilterToDrawBitmap(bitmap())) {
+            paint.setImageFilter(context->drawLooper()->imageFilter());
+        } else {
+            paint.setLooper(drawLooper->skDrawLooper());
+        }
+    }
     // only antialias if we're rotated or skewed
     paint.setAntiAlias(hasNon90rotation(context));
 

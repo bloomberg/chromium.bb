@@ -282,18 +282,18 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         return;
     }
 
-    DrawLooper drawLooper;
-    drawLooper.addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
-    drawLooper.addUnmodifiedContent();
-    setDrawLooper(drawLooper);
+    RefPtr<DrawLooper> drawLooper = adoptRef(new DrawLooper);
+    drawLooper->addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
+    drawLooper->addUnmodifiedContent();
+    setDrawLooper(drawLooper.release());
 }
 
-void GraphicsContext::setDrawLooper(const DrawLooper& drawLooper)
+void GraphicsContext::setDrawLooper(PassRefPtr<DrawLooper> drawLooper)
 {
     if (paintingDisabled())
         return;
 
-    m_state->m_looper = drawLooper.skDrawLooper();
+    m_state->m_looper = drawLooper;
 }
 
 void GraphicsContext::clearDrawLooper()
@@ -638,8 +638,8 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
         clip(rect.rect());
     }
 
-    DrawLooper drawLooper;
-    drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+    RefPtr<DrawLooper> drawLooper = adoptRef(new DrawLooper);
+    drawLooper->addShadow(shadowOffset, shadowBlur, shadowColor,
         DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
     setDrawLooper(drawLooper);
     fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
@@ -1718,7 +1718,7 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 
     paint->setAntiAlias(m_state->m_shouldAntialias);
     paint->setXfermodeMode(m_state->m_xferMode);
-    paint->setLooper(m_state->m_looper.get());
+    paint->setLooper(m_state->m_looper ? m_state->m_looper->skDrawLooper() : 0);
 }
 
 void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int width)

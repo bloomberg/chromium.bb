@@ -707,6 +707,10 @@ webkit.org/b/99333 [ Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
 webkit.org/b/93566 [ Debug ] fast/parser/iframe-sets-parent-to-javascript-url.html [ Failure Pass ]
 webkit.org/b/93567 [ Debug ] fast/parser/javascript-url-compat-mode.html [ Failure Pass ]
 
+crbug.com/100703 fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Pass Timeout ]
+
 # Added by bug 89826
 webkit.org/b/94003 [ Win ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 

@@ -31,18 +31,22 @@
 #ifndef DrawLooper_h
 #define DrawLooper_h
 
+#include "SkRefCnt.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FloatSize.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
+class SkBitmap;
 class SkDrawLooper;
+class SkImageFilter;
 class SkLayerDrawLooper;
 
 namespace WebCore {
 
-class Color;
-class FloatSize;
-
-class DrawLooper {
+class DrawLooper : public RefCounted<DrawLooper> {
     // Implementing the copy constructor properly would require writing code to
     // copy the underlying SkDrawLooper.
     WTF_MAKE_NONCOPYABLE(DrawLooper);
@@ -63,14 +67,39 @@ public:
     // Callees should not modify this looper other than to iterate over it.
     // A downcast to SkLayerDrawLooper* is tantamount to a const_cast.
     SkDrawLooper* skDrawLooper() const;
+    SkImageFilter* imageFilter() const;
 
     void addUnmodifiedContent();
     void addShadow(const FloatSize& offset, float blur, const Color&,
         ShadowTransformMode = ShadowRespectsTransforms,
         ShadowAlphaMode = ShadowRespectsAlpha);
 
+    bool shouldUseImageFilterToDrawBitmap(const SkBitmap&) const;
+
 private:
-    RefPtr<SkLayerDrawLooper> m_skDrawLooper;
+    enum LayerType {
+        ShadowLayer,
+        UnmodifiedLayer
+    };
+    void clearCached();
+    void buildCachedDrawLooper() const;
+    void buildCachedImageFilter() const;
+
+    struct DrawLooperLayerInfo {
+        FloatSize m_offset;
+        float m_blur;
+        Color m_color;
+        ShadowTransformMode m_shadowTransformMode;
+        ShadowAlphaMode m_shadowAlphaMode;
+        LayerType m_layerType;
+    };
+
+    typedef Vector<DrawLooperLayerInfo, 2> LayerVector;
+
+    LayerVector m_layerInfo;
+
+    mutable RefPtr<SkLayerDrawLooper> m_cachedDrawLooper;
+    mutable RefPtr<SkImageFilter> m_cachedImageFilter;
 };
 
 } // namespace WebCore
