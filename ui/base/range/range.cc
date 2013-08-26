@@ -80,4 +80,8 @@ std::string Range::ToString() const {
   return base::StringPrintf("{%" PRIuS ",%" PRIuS "}", start(), end());
 }
 
-}  // namespace gfx
+std::ostream& operator<<(std::ostream& os, const Range& range) {
+  return os << range.ToString();
+}
+
+}  // namespace ui

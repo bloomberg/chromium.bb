@@ -5,6 +5,7 @@
 #ifndef UI_BASE_RANGE_RANGE_H_
 #define UI_BASE_RANGE_RANGE_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/basictypes.h"
@@ -108,6 +109,8 @@ class UI_EXPORT Range {
   size_t start_;
   size_t end_;
 };
+
+UI_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
 
 }  // namespace ui
 
