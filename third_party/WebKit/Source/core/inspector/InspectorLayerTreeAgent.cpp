@@ -75,6 +75,8 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         if (parent)
             layerObject->setParentLayerId(String::number(parent->platformLayer()->id()));
     }
+    if (!graphicsLayer->contentsAreVisible())
+        layerObject->setInvisible(true);
     const TransformationMatrix& transform = graphicsLayer->transform();
     if (!transform.isIdentity()) {
         TransformationMatrix::FloatMatrix4 flattenedMatrix;
