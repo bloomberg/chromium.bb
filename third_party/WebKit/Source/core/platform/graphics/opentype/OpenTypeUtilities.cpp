@@ -45,24 +45,6 @@ struct BigEndianULong {
 
 #pragma pack(1)
 
-struct EOTPrefix {
-    unsigned eotSize;
-    unsigned fontDataSize;
-    unsigned version;
-    unsigned flags;
-    uint8_t fontPANOSE[10];
-    uint8_t charset;
-    uint8_t italic;
-    unsigned weight;
-    unsigned short fsType;
-    unsigned short magicNumber;
-    unsigned unicodeRange[4];
-    unsigned codePageRange[2];
-    unsigned checkSumAdjustment;
-    unsigned reserved[4];
-    unsigned short padding1;
-};
-
 struct TableDirectoryEntry {
     BigEndianULong tag;
     BigEndianULong checkSum;
@@ -160,188 +142,9 @@ struct nameTable {
 
 #pragma pack()
 
-EOTHeader::EOTHeader()
-{
-    m_buffer.resize(sizeof(EOTPrefix));
-}
-
-void EOTHeader::updateEOTSize(size_t fontDataSize)
-{
-    prefix()->eotSize = m_buffer.size() + fontDataSize;
-}
-
-void EOTHeader::appendBigEndianString(const BigEndianUShort* string, unsigned short length)
-{
-    size_t oldSize = m_buffer.size();
-    m_buffer.resize(oldSize + length + 2 * sizeof(unsigned short));
-    UChar* dst = reinterpret_cast<UChar*>(m_buffer.data() + oldSize);
-    unsigned i = 0;
-    dst[i++] = length;
-    unsigned numCharacters = length / 2;
-    for (unsigned j = 0; j < numCharacters; j++)
-        dst[i++] = string[j];
-    dst[i] = 0;
-}
-
-void EOTHeader::appendPaddingShort()
-{
-    unsigned short padding = 0;
-    m_buffer.append(reinterpret_cast<uint8_t*>(&padding), sizeof(padding));
-}
-
-bool getEOTHeader(SharedBuffer* fontData, EOTHeader& eotHeader, size_t& overlayDst, size_t& overlaySrc, size_t& overlayLength)
-{
-    overlayDst = 0;
-    overlaySrc = 0;
-    overlayLength = 0;
-
-    size_t dataLength = fontData->size();
-    const char* data = fontData->data();
-
-    EOTPrefix* prefix = eotHeader.prefix();
-
-    prefix->fontDataSize = dataLength;
-    prefix->version = 0x00020001;
-    prefix->flags = 0;
-
-    if (dataLength < offsetof(sfntHeader, tables))
-        return false;
-
-    const sfntHeader* sfnt = reinterpret_cast<const sfntHeader*>(data);
-
-    if (dataLength < offsetof(sfntHeader, tables) + sfnt->numTables * sizeof(TableDirectoryEntry))
-        return false;
-
-    bool haveOS2 = false;
-    bool haveHead = false;
-    bool haveName = false;
-
-    const BigEndianUShort* familyName = 0;
-    unsigned short familyNameLength = 0;
-    const BigEndianUShort* subfamilyName = 0;
-    unsigned short subfamilyNameLength = 0;
-    const BigEndianUShort* fullName = 0;
-    unsigned short fullNameLength = 0;
-    const BigEndianUShort* versionString = 0;
-    unsigned short versionStringLength = 0;
-
-    for (unsigned i = 0; i < sfnt->numTables; i++) {
-        unsigned tableOffset = sfnt->tables[i].offset;
-        unsigned tableLength = sfnt->tables[i].length;
-
-        if (dataLength < tableOffset || dataLength < tableLength || dataLength < tableOffset + tableLength)
-            return false;
-
-        unsigned tableTag = sfnt->tables[i].tag;
-        switch (tableTag) {
-            case 'OS/2':
-                {
-                    if (dataLength < tableOffset + sizeof(OS2Table))
-                        return false;
-
-                    haveOS2 = true;
-                    const OS2Table* OS2 = reinterpret_cast<const OS2Table*>(data + tableOffset);
-                    for (unsigned j = 0; j < 10; j++)
-                        prefix->fontPANOSE[j] = OS2->panose[j];
-                    prefix->italic = OS2->fsSelection & 0x01;
-                    prefix->weight = OS2->weightClass;
-                    // FIXME: Should use OS2->fsType, but some TrueType fonts set it to an over-restrictive value.
-                    // Since ATS does not enforce this on Mac OS X, we do not enforce it either.
-                    prefix->fsType = 0;
-                    for (unsigned j = 0; j < 4; j++)
-                        prefix->unicodeRange[j] = OS2->unicodeRange[j];
-                    for (unsigned j = 0; j < 2; j++)
-                        prefix->codePageRange[j] = OS2->codePageRange[j];
-                    break;
-                }
-            case 'head':
-                {
-                    if (dataLength < tableOffset + sizeof(headTable))
-                        return false;
-
-                    haveHead = true;
-                    const headTable* head = reinterpret_cast<const headTable*>(data + tableOffset);
-                    prefix->checkSumAdjustment = head->checkSumAdjustment;
-                    break;
-                }
-            case 'name':
-                {
-                    if (dataLength < tableOffset + offsetof(nameTable, nameRecords))
-                        return false;
-
-                    haveName = true;
-                    const nameTable* name = reinterpret_cast<const nameTable*>(data + tableOffset);
-                    for (int j = 0; j < name->count; j++) {
-                        if (dataLength < tableOffset + offsetof(nameTable, nameRecords) + (j + 1) * sizeof(nameRecord))
-                            return false;
-                        if (name->nameRecords[j].platformID == 3 && name->nameRecords[j].encodingID == 1 && name->nameRecords[j].languageID == 0x0409) {
-                            if (dataLength < tableOffset + name->stringOffset + name->nameRecords[j].offset + name->nameRecords[j].length)
-                                return false;
-
-                            unsigned short nameLength = name->nameRecords[j].length;
-                            const BigEndianUShort* nameString = reinterpret_cast<const BigEndianUShort*>(data + tableOffset + name->stringOffset + name->nameRecords[j].offset);
-
-                            switch (name->nameRecords[j].nameID) {
-                                case 1:
-                                    familyNameLength = nameLength;
-                                    familyName = nameString;
-                                    break;
-                                case 2:
-                                    subfamilyNameLength = nameLength;
-                                    subfamilyName = nameString;
-                                    break;
-                                case 4:
-                                    fullNameLength = nameLength;
-                                    fullName = nameString;
-                                    break;
-                                case 5:
-                                    versionStringLength = nameLength;
-                                    versionString = nameString;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            default:
-                break;
-        }
-        if (haveOS2 && haveHead && haveName)
-            break;
-    }
-
-    prefix->charset = DEFAULT_CHARSET;
-    prefix->magicNumber = 0x504c;
-    prefix->reserved[0] = 0;
-    prefix->reserved[1] = 0;
-    prefix->reserved[2] = 0;
-    prefix->reserved[3] = 0;
-    prefix->padding1 = 0;
-
-    eotHeader.appendBigEndianString(familyName, familyNameLength);
-    eotHeader.appendBigEndianString(subfamilyName, subfamilyNameLength);
-    eotHeader.appendBigEndianString(versionString, versionStringLength);
-
-    // If possible, ensure that the family name is a prefix of the full name.
-    if (fullNameLength >= familyNameLength && memcmp(familyName, fullName, familyNameLength)) {
-        overlaySrc = reinterpret_cast<const char*>(fullName) - data;
-        overlayDst = reinterpret_cast<const char*>(familyName) - data;
-        overlayLength = familyNameLength;
-    }
-    eotHeader.appendBigEndianString(fullName, fullNameLength);
-
-    eotHeader.appendPaddingShort();
-    eotHeader.updateEOTSize(fontData->size());
-
-    return true;
-}
-
-// code shared by renameFont and renameAndActivateFont
 // adds fontName to the font table in fontData, and writes the new font table to rewrittenFontTable
 // returns the size of the name table (which is used by renameAndActivateFont), or 0 on early abort
-static size_t renameFontInternal(SharedBuffer* fontData, const String& fontName, Vector<char> &rewrittenFontData)
+static size_t renameFont(SharedBuffer* fontData, const String& fontName, Vector<char> &rewrittenFontData)
 {
     size_t originalDataSize = fontData->size();
     const sfntHeader* sfnt = reinterpret_cast<const sfntHeader*>(fontData->data());
@@ -403,7 +206,7 @@ static size_t renameFontInternal(SharedBuffer* fontData, const String& fontName,
 HANDLE renameAndActivateFont(SharedBuffer* fontData, const String& fontName)
 {
     Vector<char> rewrittenFontData;
-    size_t nameTableSize = renameFontInternal(fontData, fontName, rewrittenFontData);
+    size_t nameTableSize = renameFont(fontData, fontName, rewrittenFontData);
     if (!nameTableSize)
         return 0;
 
