@@ -518,11 +518,11 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 #endif
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  if (ShouldShowNewIncognitoWindowMenuItem())
-    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-
   if (ShouldShowNewWindowMenuItem())
     AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+
+  if (ShouldShowNewIncognitoWindowMenuItem())
+    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
 #if defined(OS_WIN) && !defined(NDEBUG) && defined(USE_ASH)
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
