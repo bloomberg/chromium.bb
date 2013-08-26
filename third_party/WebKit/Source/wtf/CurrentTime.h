@@ -32,8 +32,6 @@
 #ifndef CurrentTime_h
 #define CurrentTime_h
 
-#include <time.h>
-
 #include "wtf/WTFExport.h"
 
 namespace WTF {
