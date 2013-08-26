@@ -59,19 +59,17 @@ public:
     bool multiEntry() const { return m_metadata.multiEntry; }
     int64_t id() const { return m_metadata.id; }
 
-    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionState&);
     PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
-    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
+    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, const ScriptValue& range, ExceptionState&);
     PassRefPtr<IDBRequest> get(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
     PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
+
+    // Used internally and by InspectorIndexedDBAgent:
+    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection);
 
     IDBDatabaseBackendInterface* backendDB() const;
 

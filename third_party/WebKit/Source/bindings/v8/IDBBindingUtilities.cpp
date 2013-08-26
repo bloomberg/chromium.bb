@@ -26,12 +26,14 @@
 #include "config.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 
+#include "V8IDBKeyRange.h"
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
@@ -329,6 +331,16 @@ PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState* state, const ScriptValue
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(scriptValue.v8Value());
     return createIDBKeyFromValue(v8Value);
+}
+
+PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState* state, const ScriptValue& scriptValue)
+{
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Value> value(scriptValue.v8Value());
+    if (V8IDBKeyRange::HasInstance(value, isolate, worldType(isolate)))
+        return V8IDBKeyRange::toNative(value.As<v8::Object>());
+    return 0;
 }
 
 } // namespace WebCore

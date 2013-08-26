@@ -41,6 +41,25 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::create(PassRefPtr<IDBKey> prpKey)
     return adoptRef(new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed));
 }
 
+PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ScriptExecutionContext* context, const ScriptValue& value, ExceptionState& es)
+{
+    DOMRequestState requestState(context);
+    if (value.isUndefined() || value.isNull())
+        return 0;
+
+    RefPtr<IDBKeyRange> range = scriptValueToIDBKeyRange(&requestState, value);
+    if (range)
+        return range.release();
+
+    RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, value);
+    if (!key || !key->isValid()) {
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
+        return 0;
+    }
+
+    return adoptRef(new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed));
+}
+
 IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
     : m_lower(lower)
     , m_upper(upper)

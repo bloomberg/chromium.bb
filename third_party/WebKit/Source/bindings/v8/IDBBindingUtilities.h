@@ -35,6 +35,7 @@ namespace WebCore {
 class DOMRequestState;
 class IDBKey;
 class IDBKeyPath;
+class IDBKeyRange;
 class SerializedScriptValue;
 class SharedBuffer;
 
@@ -45,6 +46,7 @@ ScriptValue deserializeIDBValue(DOMRequestState*, PassRefPtr<SerializedScriptVal
 ScriptValue deserializeIDBValueBuffer(DOMRequestState*, PassRefPtr<SharedBuffer>);
 ScriptValue idbKeyToScriptValue(DOMRequestState*, PassRefPtr<IDBKey>);
 PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue&);
+PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState*, const ScriptValue&);
 
 } // namespace WebCore
 

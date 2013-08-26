@@ -52,6 +52,10 @@ public:
         return adoptRef(new IDBKeyRange(lower, upper, lowerType, upperType));
     }
     static PassRefPtr<IDBKeyRange> create(PassRefPtr<IDBKey> prpKey);
+
+    // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
+    static PassRefPtr<IDBKeyRange> fromScriptValue(ScriptExecutionContext*, const ScriptValue&, ExceptionState&);
+
     ~IDBKeyRange() { }
 
     // Implement the IDBKeyRange IDL
