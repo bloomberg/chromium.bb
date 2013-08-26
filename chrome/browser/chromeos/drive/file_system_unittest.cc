@@ -27,7 +27,6 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +79,7 @@ class MockDirectoryChangeObserver : public FileSystemObserver {
 class FileSystemTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
@@ -99,28 +98,23 @@ class FileSystemTest : public testing::Test {
                                       fake_drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
-    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
-        profile_.get()).Append(util::kMetadataDirectory)));
-    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
-        profile_.get()).Append(util::kCacheFileDirectory)));
-    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
-        profile_.get()).Append(util::kTemporaryFileDirectory)));
-
     mock_directory_observer_.reset(new MockDirectoryChangeObserver);
 
     SetUpResourceMetadataAndFileSystem();
   }
 
   void SetUpResourceMetadataAndFileSystem() {
+    const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
+    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
     metadata_storage_.reset(new internal::ResourceMetadataStorage(
-        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
-        base::MessageLoopProxy::current().get()));
+        metadata_dir, base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
+    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
     cache_.reset(new internal::FileCache(
         metadata_storage_.get(),
-        util::GetCacheRootPath(profile_.get()).Append(
-            util::kCacheFileDirectory),
+        cache_dir,
         base::MessageLoopProxy::current().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
@@ -128,6 +122,8 @@ class FileSystemTest : public testing::Test {
     resource_metadata_.reset(new internal::ResourceMetadata(
         metadata_storage_.get(), base::MessageLoopProxy::current()));
 
+    const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
+    ASSERT_TRUE(file_util::CreateDirectory(temp_file_dir));
     file_system_.reset(new FileSystem(
         pref_service_.get(),
         cache_.get(),
@@ -135,8 +131,7 @@ class FileSystemTest : public testing::Test {
         scheduler_.get(),
         resource_metadata_.get(),
         base::MessageLoopProxy::current().get(),
-        util::GetCacheRootPath(profile_.get()).Append(
-            util::kTemporaryFileDirectory)));
+        temp_file_dir));
     file_system_->AddObserver(mock_directory_observer_.get());
     file_system_->Initialize();
 
@@ -210,34 +205,33 @@ class FileSystemTest : public testing::Test {
   // drive/root/Dir1/SubDir2/File3. If |use_up_to_date_timestamp| is true, sets
   // the changestamp to 654321, equal to that of "account_metadata.json" test
   // data, indicating the cache is holding the latest file system info.
-  bool SetUpTestFileSystem(SetUpTestFileSystemParam param) {
+  void SetUpTestFileSystem(SetUpTestFileSystemParam param) {
     // Destroy the existing resource metadata to close DB.
     resource_metadata_.reset();
 
-    base::FilePath metadata_directory =
-        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory);
+    const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
+    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
     scoped_ptr<internal::ResourceMetadataStorage,
                test_util::DestroyHelperForTests> metadata_storage(
         new internal::ResourceMetadataStorage(
-            metadata_directory, base::MessageLoopProxy::current().get()));
+            metadata_dir, base::MessageLoopProxy::current().get()));
 
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
             metadata_storage_.get(), base::MessageLoopProxy::current()));
 
-    if (resource_metadata->Initialize() != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->Initialize());
 
     const int64 changestamp = param == USE_SERVER_TIMESTAMP ? 654321 : 1;
-    if (resource_metadata->SetLargestChangestamp(changestamp) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK,
+              resource_metadata->SetLargestChangestamp(changestamp));
 
     // drive/root
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
-    if (resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
-            root_resource_id)) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK,
+              resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
+                  root_resource_id)));
 
     // drive/root/File1
     ResourceEntry file1;
@@ -247,8 +241,7 @@ class FileSystemTest : public testing::Test {
     file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
-    if (resource_metadata->AddEntry(file1) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file1));
 
     // drive/root/Dir1
     ResourceEntry dir1;
@@ -256,8 +249,7 @@ class FileSystemTest : public testing::Test {
     dir1.set_resource_id("resource_id:Dir1");
     dir1.set_parent_local_id(root_resource_id);
     dir1.mutable_file_info()->set_is_directory(true);
-    if (resource_metadata->AddEntry(dir1) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir1));
 
     // drive/root/Dir1/File2
     ResourceEntry file2;
@@ -267,8 +259,7 @@ class FileSystemTest : public testing::Test {
     file2.mutable_file_specific_info()->set_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
-    if (resource_metadata->AddEntry(file2) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file2));
 
     // drive/root/Dir1/SubDir2
     ResourceEntry dir2;
@@ -276,8 +267,7 @@ class FileSystemTest : public testing::Test {
     dir2.set_resource_id("resource_id:SubDir2");
     dir2.set_parent_local_id(dir1.resource_id());
     dir2.mutable_file_info()->set_is_directory(true);
-    if (resource_metadata->AddEntry(dir2) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir2));
 
     // drive/root/Dir1/SubDir2/File3
     ResourceEntry file3;
@@ -287,17 +277,14 @@ class FileSystemTest : public testing::Test {
     file3.mutable_file_specific_info()->set_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
-    if (resource_metadata->AddEntry(file3) != FILE_ERROR_OK)
-      return false;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file3));
 
     // Recreate resource metadata.
     SetUpResourceMetadataAndFileSystem();
-
-    return true;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  base::ScopedTempDir temp_dir_;
   // We don't use TestingProfile::GetPrefs() in favor of having less
   // dependencies to Profile in general.
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
@@ -528,7 +515,7 @@ TEST_F(FileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
 }
 
 TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
-  ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
@@ -548,7 +535,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
 }
 
 TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
-  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
 
   // Make GetResourceList fail for simulating offline situation. This will
   // leave the file system "loaded from cache, but not synced with server"
@@ -597,7 +584,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
 
 TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
   // Enter the "refreshing" state so the fast fetch will be performed.
-  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
 
   // The list of resources in "drive/root/Dir1" should be fetched.
@@ -610,7 +597,7 @@ TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
 
 TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
   // Enter the "refreshing" state.
-  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
 
   // If an entry is already found in local metadata, no directory fetch happens.
@@ -621,7 +608,7 @@ TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
 
 TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
   // Enter the "refreshing" state so the fast fetch will be performed.
-  ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
 
   // If an entry is not found, parent directory's resource list is fetched.

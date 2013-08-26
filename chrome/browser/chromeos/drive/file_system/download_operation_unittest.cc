@@ -18,7 +18,7 @@ namespace file_system {
 
 class DownloadOperationTest : public OperationTestBase {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     OperationTestBase::SetUp();
 
     operation_.reset(new DownloadOperation(
