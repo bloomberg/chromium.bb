@@ -122,11 +122,14 @@ void DesktopBackgroundWidgetController::StartAnimating(
   if (widget_) {
     ui::ScopedLayerAnimationSettings settings(
         widget_->GetNativeView()->layer()->GetAnimator());
-    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     settings.AddObserver(new ShowWallpaperAnimationObserver(
         root_window_controller, widget_,
         Shell::GetInstance()->user_wallpaper_delegate()->
             ShouldShowInitialAnimation()));
+    // When |widget_| shows, AnimateShowWindowCommon() is called to do the
+    // animation. Sets transition duration to 0 to avoid animating to the
+    // show animation's initial values.
+    settings.SetTransitionDuration(base::TimeDelta());
     widget_->Show();
     widget_->GetNativeView()->SetName("DesktopBackgroundView");
   } else if (layer_)
