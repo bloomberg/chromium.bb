@@ -46,20 +46,12 @@ namespace {
 class NativeWebContentsModalDialogManagerViews
     : public NativeWebContentsModalDialogManager,
       public WebContentsModalDialogHostObserver,
-      public views::WidgetObserver
-#if defined(USE_AURA)
-      , public aura::WindowObserver
-#endif
-                                   {
+      public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(
       NativeWebContentsModalDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate),
         host_(NULL) {
-#if defined(USE_AURA)
-    native_delegate_->GetWebContents()->GetView()->GetNativeView()->
-        AddObserver(this);
-#endif
   }
 
   virtual ~NativeWebContentsModalDialogManagerViews() {
@@ -205,40 +197,25 @@ class NativeWebContentsModalDialogManagerViews
 
     host_ = new_host;
 
-    if (host_) {
+    if (host_)
       host_->AddObserver(this);
+
+    // Old-style dialogs are parented to the web contents view and don't need
+    // reparenting.  The host_ may be null during tab drag under Views/Win32 or
+    // when destroying the WebContents.
+    if (views::DialogDelegate::UseNewStyle() && host_) {
+      for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
+           it != observed_widgets_.end();
+           ++it) {
+        views::Widget::ReparentNativeView((*it)->GetNativeView(),
+                                          host_->GetHostView());
+      }
+
+      OnPositionRequiresUpdate();
     }
   }
 
  private:
-#if defined(USE_AURA)
-  // aura::WindowObserver overrides
-  virtual void OnWindowHierarchyChanged(
-      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE {
-    // We are called during the teardown of the WebContents' view by which time
-    // GetWebContents() will return NULL. We can safely ignore this case.
-    if (!native_delegate_->GetWebContents())
-      return;
-    if (params.target ==
-        native_delegate_->GetWebContents()->GetView()->GetNativeView()) {
-      std::set<views::Widget*>::const_iterator it = observed_widgets_.begin();
-      for (; it != observed_widgets_.end(); ++it) {
-        // WebContents Modal dialogs don't have their own focus manager, they
-        // rely on the focus manager of the attached frame. When we reparent
-        // them to a different window we need to update the original FM in case
-        // a view in the WCMD is focused to avoid crashing.
-        if ((*it)->GetFocusManager())
-          (*it)->GetFocusManager()->ViewRemoved((*it)->GetRootView());
-        params.new_parent->AddChild((*it)->GetNativeWindow());
-      }
-
-      // Host may be null when destroying the WebContents.
-      if (host_)
-        OnPositionRequiresUpdate();
-    }
-  }
-#endif
-
   static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
     DCHECK(widget);
