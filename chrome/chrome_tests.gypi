@@ -802,6 +802,8 @@
         'test/chromedriver/chrome/chrome_android_impl.h',
         'test/chromedriver/chrome/chrome_desktop_impl.cc',
         'test/chromedriver/chrome/chrome_desktop_impl.h',
+        'test/chromedriver/chrome/chrome_existing_impl.cc',
+        'test/chromedriver/chrome/chrome_existing_impl.h',
         'test/chromedriver/chrome/chrome_finder.cc',
         'test/chromedriver/chrome/chrome_finder.h',
         'test/chromedriver/chrome/chrome_finder_mac.mm',

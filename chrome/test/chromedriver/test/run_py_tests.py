@@ -7,8 +7,10 @@
 
 import base64
 import optparse
+import subprocess
 import os
 import sys
+import socket
 import tempfile
 import time
 import unittest
@@ -104,6 +106,7 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowMaximize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
+        'ExistingBrowserTest.*',
         # Don't enable perf testing on Android yet.
         'PerfTest.testSessionStartTime',
         'PerfTest.testSessionStopTime',
@@ -669,6 +672,36 @@ class SessionHandlingTest(ChromeDriverBaseTest):
     driver.Quit()
     driver.Quit()
 
+
+class ExistingBrowserTest(ChromeDriverBaseTest):
+  """Tests for ChromeDriver existing browser capability."""
+  def setUp(self):
+    self.assertTrue(_CHROME_BINARY is not None,
+                    'must supply a chrome binary arg')
+
+  def testConnectToExistingBrowser(self):
+    port = self.FindFreePort()
+    temp_dir = util.MakeTempDir()
+    process = subprocess.Popen([_CHROME_BINARY,
+                                '--remote-debugging-port=%d' % port,
+                                '--user-data-dir=%s' % temp_dir])
+    if process is None:
+      raise RuntimeError('Chrome could not be started with debugging port')
+    try:
+      hostAndPort = '127.0.0.1:%d' % port
+      driver = self.CreateDriver(chrome_existing_browser=hostAndPort)
+      driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
+      driver.Quit()
+    finally:
+      process.terminate()
+
+  def FindFreePort(self):
+    for port in range(10000, 10100):
+      try:
+        socket.create_connection(('127.0.0.1', port), 0.2).close()
+      except socket.error:
+        return port
+    raise RuntimeError('Cannot find open port')
 
 class PerfTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver perf."""

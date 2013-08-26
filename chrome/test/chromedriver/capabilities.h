@@ -24,6 +24,9 @@ struct Capabilities {
   Capabilities();
   ~Capabilities();
 
+  // Return true if existing host:port session is to be used.
+  bool IsExistingBrowser() const;
+
   // Return true if android package is specified.
   bool IsAndroid() const;
 
@@ -33,6 +36,9 @@ struct Capabilities {
   // bound to ChromeDriver's process. If true, Chrome will not quit if
   // ChromeDriver dies.
   bool detach;
+
+  // If provided, the remote debugging port on 127.0.0.1 to connect to.
+  int existing_browser_port;
 
   std::string android_package;
   std::string android_activity;

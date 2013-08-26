@@ -62,7 +62,7 @@ class ChromeDriver(object):
 
   def __init__(self, server_url, chrome_binary=None, android_package=None,
                chrome_switches=None, chrome_extensions=None,
-               chrome_log_path=None):
+               chrome_log_path=None, chrome_existing_browser=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -82,6 +82,10 @@ class ChromeDriver(object):
     if chrome_log_path:
       assert type(chrome_log_path) is str
       options['logPath'] = chrome_log_path
+
+    if chrome_existing_browser:
+      assert type(chrome_existing_browser) is str
+      options['useExistingBrowser'] = chrome_existing_browser
 
     params = {
       'desiredCapabilities': {

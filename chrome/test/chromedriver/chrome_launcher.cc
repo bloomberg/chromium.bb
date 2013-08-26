@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/chrome_existing_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
@@ -170,6 +171,27 @@ Status WaitForDevToolsAndCheckVersion(
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   return Status(kUnknownError, "unable to discover open pages");
+}
+
+Status LaunchExistingChromeSession(
+    URLRequestContextGetter* context_getter,
+    int port,
+    const SyncWebSocketFactory& socket_factory,
+    Log* log,
+    const Capabilities& capabilities,
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    scoped_ptr<Chrome>* chrome) {
+  Status status(kOk);
+  scoped_ptr<DevToolsHttpClient> devtools_client;
+  status = WaitForDevToolsAndCheckVersion(
+      port, context_getter, socket_factory, log, &devtools_client);
+  if (status.IsError()) {
+    return Status(kUnknownError, "Failed to connect to existing chrome");
+  }
+  chrome->reset(new ChromeExistingImpl(devtools_client.Pass(),
+      devtools_event_listeners,
+      log));
+  return Status(kOk);
 }
 
 Status LaunchDesktopChrome(
@@ -318,7 +340,12 @@ Status LaunchChrome(
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
-  if (capabilities.IsAndroid()) {
+
+  if (capabilities.IsExistingBrowser()) {
+    return LaunchExistingChromeSession(
+        context_getter, capabilities.existing_browser_port, socket_factory,
+        log, capabilities, devtools_event_listeners, chrome);
+  } else if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(
         context_getter, port, socket_factory, log, capabilities,
         devtools_event_listeners, device_manager, chrome);

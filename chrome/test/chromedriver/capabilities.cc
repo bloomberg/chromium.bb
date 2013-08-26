@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -289,6 +292,45 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
   return Status(kOk);
 }
 
+Status ParseExistingBrowserCapabilities(
+    const base::DictionaryValue& desired_caps,
+    Capabilities* capabilities) {
+  const base::Value* chrome_options = NULL;
+  if (desired_caps.Get("chromeOptions", &chrome_options)) {
+    const base::DictionaryValue* chrome_options_dict = NULL;
+    if (!chrome_options->GetAsDictionary(&chrome_options_dict))
+      return Status(kUnknownError, "'chromeOptions' must be a dictionary");
+
+    // UseExistingBrowser will be formatted as host:port.
+    const base::Value* existing_browser_value;
+    if (!chrome_options_dict->Get("useExistingBrowser",
+        &existing_browser_value)) {
+      return Status(kOk);
+    }
+
+    std::string existing_pair;
+    if (!existing_browser_value->GetAsString(&existing_pair)) {
+      return Status(kUnknownError,
+                    "'useExistingBrowser' must be host:port");
+    }
+
+    std::vector<std::string> values;
+    base::SplitString(existing_pair, ':', &values);
+    if (values.size() != 2) {
+      return Status(kUnknownError,
+                    "'useExistingBrowser' must be formatted as host:port");
+    }
+
+    // Ignoring host input for now, hardcoding to 127.0.0.1.
+    base::StringToInt(values[1], &capabilities->existing_browser_port);
+    if (capabilities->existing_browser_port <= 0) {
+      return Status(kUnknownError,
+                    "existing browser port must be greater than 0");
+    }
+  }
+  return Status(kOk);
+}
+
 Status ParseLoggingPrefs(const base::DictionaryValue& desired_caps,
                          Capabilities* capabilities) {
   const base::Value* logging_prefs = NULL;
@@ -308,12 +350,17 @@ Status ParseLoggingPrefs(const base::DictionaryValue& desired_caps,
 
 Capabilities::Capabilities()
     : detach(false),
+      existing_browser_port(0),
       command(CommandLine::NO_PROGRAM) {}
 
 Capabilities::~Capabilities() {}
 
 bool Capabilities::IsAndroid() const {
   return !android_package.empty();
+}
+
+bool Capabilities::IsExistingBrowser() const {
+  return existing_browser_port > 0;
 }
 
 Status Capabilities::Parse(
@@ -326,6 +373,11 @@ Status Capabilities::Parse(
   if (status.IsError())
     return status;
   if (IsAndroid())
+    return Status(kOk);
+  status = ParseExistingBrowserCapabilities(desired_caps, this);
+  if (status.IsError())
+    return status;
+  if (IsExistingBrowser())
     return Status(kOk);
 
   std::map<std::string, Parser> parser_map;

@@ -333,3 +333,14 @@ TEST(ParseCapabilities, ExcludeSwitches) {
   ASSERT_TRUE(switches.find("switch1") != switches.end());
   ASSERT_TRUE(switches.find("switch2") != switches.end());
 }
+
+TEST(ParseCapabilities, UseExistingBrowser) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetString("chromeOptions.useExistingBrowser", "abc:123");
+  Logger log(Log::kError);
+  Status status = capabilities.Parse(caps, &log);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_TRUE(capabilities.IsExistingBrowser());
+  ASSERT_EQ(123, capabilities.existing_browser_port);
+}
