@@ -30,7 +30,7 @@ const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
 bool is_directory_operation_enabled = false;
 
-}
+}  // namespace
 
 void RegisterSyncableFileSystem() {
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(

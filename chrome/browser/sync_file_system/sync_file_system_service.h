@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_H_
 
-#include <set>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"

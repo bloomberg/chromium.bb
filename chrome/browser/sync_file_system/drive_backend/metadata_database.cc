@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 
+#include <algorithm>
 #include <stack>
 
 #include "base/bind.h"

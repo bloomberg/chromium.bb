@@ -33,7 +33,7 @@ class LoggerTest : public testing::Test {
     util::ClearLog();
   }
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(LoggerTest);
 };
 

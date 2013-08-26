@@ -24,6 +24,6 @@ enum SyncFileStatus {
   SYNC_FILE_STATUS_CONFLICTING,
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_STATUS_H_
