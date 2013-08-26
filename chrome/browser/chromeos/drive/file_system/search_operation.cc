@@ -25,9 +25,11 @@ namespace drive {
 namespace file_system {
 namespace {
 
-// Refreshes entries of |resource_metadata| based on |resource_list|, and
-// returns the result. Refreshed entries will be stored into |result|.
-FileError RefreshEntriesOnBlockingPool(
+// Computes the path of each item in |resource_list| returned from the server
+// and stores to |result|, by using |resource_metadata|. If the metadata is not
+// up-to-date and did not contain an item, adds the item to "drive/other" for
+// temporally assigning a path.
+FileError ResolveSearchResultOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,
     scoped_ptr<google_apis::ResourceList> resource_list,
     std::vector<SearchResultInfo>* result) {
@@ -38,17 +40,15 @@ FileError RefreshEntriesOnBlockingPool(
       resource_list->entries();
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
+    const std::string id = entries[i]->resource_id();
     ResourceEntry entry;
-    std::string parent_resource_id;
-    if (!ConvertToResourceEntry(*entries[i], &entry, &parent_resource_id))
-      continue;  // Skip non-file entries.
 
-    // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-    entry.set_parent_local_id(parent_resource_id);
-
-    const std::string id = entry.resource_id();
-    FileError error = resource_metadata->RefreshEntry(id, entry);
+    FileError error = resource_metadata->GetResourceEntryById(id, &entry);
     if (error == FILE_ERROR_NOT_FOUND) {
+      std::string original_parent_id;
+      if (!ConvertToResourceEntry(*entries[i], &entry, &original_parent_id))
+        continue;  // Skip non-file entries.
+
       // The result is absent in local resource metadata. This can happen if
       // the metadata is not synced to the latest server state yet. In that
       // case, we temporarily add the file to the special "drive/other"
@@ -59,14 +59,7 @@ FileError RefreshEntriesOnBlockingPool(
       // in normal loading process in ChangeListProcessor.
       entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
       error = resource_metadata->AddEntry(entry);
-
-      // FILE_ERROR_EXISTS may happen if we have already added the entry to
-      // "drive/other" once before. That's not an error.
-      if (error == FILE_ERROR_EXISTS)
-        error = FILE_ERROR_OK;
     }
-    if (error == FILE_ERROR_OK)
-      error = resource_metadata->GetResourceEntryById(id, &entry);
     if (error != FILE_ERROR_OK)
       return error;
     result->push_back(SearchResultInfo(resource_metadata->GetFilePath(id),
@@ -130,9 +123,6 @@ void SearchOperation::SearchAfterGetResourceList(
   GURL next_url;
   resource_list->GetNextFeedURL(&next_url);
 
-  // The search results will be returned using virtual directory.
-  // The directory is not really part of the file system, so it has no parent or
-  // root.
   scoped_ptr<std::vector<SearchResultInfo> > result(
       new std::vector<SearchResultInfo>);
   if (resource_list->entries().empty()) {
@@ -146,18 +136,18 @@ void SearchOperation::SearchAfterGetResourceList(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&RefreshEntriesOnBlockingPool,
+      base::Bind(&ResolveSearchResultOnBlockingPool,
                  metadata_,
                  base::Passed(&resource_list),
                  result_ptr),
-      base::Bind(&SearchOperation::SearchAfterRefreshEntry,
+      base::Bind(&SearchOperation::SearchAfterResolveSearchResult,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  next_url,
                  base::Passed(&result)));
 }
 
-void SearchOperation::SearchAfterRefreshEntry(
+void SearchOperation::SearchAfterResolveSearchResult(
     const SearchCallback& callback,
     const GURL& next_url,
     scoped_ptr<std::vector<SearchResultInfo> > result,

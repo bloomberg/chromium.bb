@@ -54,16 +54,14 @@ class SearchOperation {
               const SearchCallback& callback);
 
  private:
-  // Part of Search(). This is called after the ResourceList is fetched from
-  // the server.
+  // Part of Search(), called after the ResourceList is fetched from the server.
   void SearchAfterGetResourceList(
       const SearchCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
-  // Part of Search(). This is called after the RefreshEntryOnBlockingPool
-  // is completed.
-  void SearchAfterRefreshEntry(
+  // Part of Search(), called after |result| is filled on the blocking pool.
+  void SearchAfterResolveSearchResult(
       const SearchCallback& callback,
       const GURL& next_url,
       scoped_ptr<std::vector<SearchResultInfo> > result,
