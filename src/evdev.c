@@ -602,6 +602,7 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	device->rel.dy = 0;
 	device->dispatch = NULL;
 	device->fd = device_fd;
+	wl_list_init(&device->link);
 
 	ioctl(device->fd, EVIOCGNAME(sizeof(devname)), devname);
 	devname[sizeof(devname) - 1] = '\0';
@@ -645,8 +646,7 @@ evdev_device_destroy(struct evdev_device *device)
 
 	if (device->source)
 		wl_event_source_remove(device->source);
-	if (!wl_list_empty(&device->link))
-		wl_list_remove(&device->link);
+	wl_list_remove(&device->link);
 	if (device->mtdev)
 		mtdev_close_delete(device->mtdev);
 	close(device->fd);
