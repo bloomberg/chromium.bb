@@ -782,6 +782,25 @@ cr.define('options.internet', function() {
     }
   };
 
+  DetailsInternetPage.updateConnectionButtonVisibilty = function(data) {
+    $('details-internet-login').hidden = data.connected;
+    $('details-internet-login').disabled = data.disableConnectButton;
+
+    if (!data.connected &&
+        ((data.type == Constants.TYPE_WIFI && data.encryption) ||
+          data.type == Constants.TYPE_WIMAX ||
+          data.type == Constants.TYPE_VPN)) {
+      $('details-internet-configure').hidden = false;
+    } else {
+      $('details-internet-configure').hidden = true;
+    }
+
+    if (data.type == Constants.TYPE_ETHERNET)
+      $('details-internet-disconnect').hidden = true;
+    else
+      $('details-internet-disconnect').hidden = !data.connected;
+  };
+
   DetailsInternetPage.updateConnectionData = function(update) {
     var detailsPage = DetailsInternetPage.getInstance();
     if (!detailsPage.visible)
@@ -802,8 +821,7 @@ cr.define('options.internet', function() {
     detailsPage.connected = data.connected;
     $('connection-state').textContent = data.connectionState;
 
-    $('details-internet-login').hidden = data.connected;
-    $('details-internet-login').disabled = data.disableConnectButton;
+    this.updateConnectionButtonVisibilty(data);
 
     if (data.type == Constants.TYPE_WIFI) {
       $('wifi-connection-state').textContent = data.connectionState;
@@ -820,18 +838,8 @@ cr.define('options.internet', function() {
         $('details-internet-login').hidden = true;
     }
 
-    if (data.type != Constants.TYPE_ETHERNET)
-      $('details-internet-disconnect').hidden = !data.connected;
-
-    if ((data.type == Constants.TYPE_WIFI && data.encryption) ||
-        data.type == Constants.TYPE_WIMAX ||
-        data.type == Constants.TYPE_VPN) {
-      $('details-internet-configure').hidden = false;
-    } else {
-      $('details-internet-configure').hidden = true;
-    }
     $('connection-state').data = data;
-  }
+  };
 
   DetailsInternetPage.showDetailedInfo = function(data) {
     var detailsPage = DetailsInternetPage.getInstance();
@@ -878,19 +886,9 @@ cr.define('options.internet', function() {
     $('buyplan-details').hidden = true;
     $('activate-details').hidden = true;
     $('view-account-details').hidden = true;
-    $('details-internet-login').hidden = data.connected;
-    $('details-internet-login').disabled = data.disableConnectButton;
-    if (data.type == Constants.TYPE_ETHERNET)
-      $('details-internet-disconnect').hidden = true;
-    else
-      $('details-internet-disconnect').hidden = !data.connected;
-    if ((data.type == Constants.TYPE_WIFI && data.encryption) ||
-        data.type == Constants.TYPE_WIMAX ||
-        data.type == Constants.TYPE_VPN) {
-      $('details-internet-configure').hidden = false;
-    } else {
-      $('details-internet-configure').hidden = true;
-    }
+
+    this.updateConnectionButtonVisibilty(data);
+
     $('web-proxy-auto-discovery').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
