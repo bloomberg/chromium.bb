@@ -83,7 +83,7 @@ void NotificationServiceImpl::RemoveObserver(NotificationObserver* observer,
       observers_[type][source.map_key()];
   if (observer_list) {
     observer_list->RemoveObserver(observer);
-    if (!observer_list->size()) {
+    if (!observer_list->might_have_observers()) {
       observers_[type].erase(source.map_key());
       delete observer_list;
     }

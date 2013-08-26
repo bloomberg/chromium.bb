@@ -180,9 +180,8 @@ ShillClientHelper::ShillClientHelper(dbus::Bus* bus,
 }
 
 ShillClientHelper::~ShillClientHelper() {
-  LOG_IF(ERROR, observer_list_.size() != 0u)
-      << "ShillClientHelper destroyed with active observers: "
-      << observer_list_.size();
+  LOG_IF(ERROR, observer_list_.might_have_observers())
+      << "ShillClientHelper destroyed with active observers";
 }
 
 void ShillClientHelper::AddPropertyChangedObserver(
@@ -203,7 +202,7 @@ void ShillClientHelper::RemovePropertyChangedObserver(
 
 void ShillClientHelper::MonitorPropertyChanged(
     const std::string& interface_name) {
-  if (observer_list_.size() > 0) {
+  if (observer_list_.might_have_observers()) {
     // Effectively monitor the PropertyChanged now.
     MonitorPropertyChangedInternal(interface_name);
   } else {

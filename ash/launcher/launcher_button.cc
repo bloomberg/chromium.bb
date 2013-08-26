@@ -67,7 +67,7 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
 
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
-    if (observers_.size() == 0)
+    if (!observers_.might_have_observers())
       animation_.Stop();
   }
 

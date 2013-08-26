@@ -65,7 +65,7 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
   dict->SetString("url", url);
   peer_connection_data_.Append(dict);
 
-  if (observers_.size() > 0)
+  if (observers_.might_have_observers())
     SendUpdate("addPeerConnection", dict);
 }
 
@@ -85,7 +85,7 @@ void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
 
     peer_connection_data_.Remove(i, NULL);
 
-    if (observers_.size() > 0) {
+    if (observers_.might_have_observers()) {
       base::DictionaryValue id;
       id.SetInteger("pid", static_cast<int>(pid));
       id.SetInteger("lid", lid);
@@ -123,7 +123,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
     log_entry->SetString("value", value);
     log->Append(log_entry);
 
-    if (observers_.size() > 0) {
+    if (observers_.might_have_observers()) {
       base::DictionaryValue update;
       update.SetInteger("pid", static_cast<int>(pid));
       update.SetInteger("lid", lid);
@@ -138,7 +138,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
 
 void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
                                  const base::ListValue& value) {
-  if (observers_.size() == 0)
+  if (!observers_.might_have_observers())
     return;
 
   base::DictionaryValue dict;
@@ -165,7 +165,7 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
 }
 
 void WebRTCInternals::SendAllUpdates() {
-  if (observers_.size() > 0)
+  if (observers_.might_have_observers())
     SendUpdate("updateAllPeerConnections", &peer_connection_data_);
 }
 
@@ -184,7 +184,7 @@ void WebRTCInternals::StopRtpRecording() {
 }
 
 void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
-  DCHECK_GT(observers_.size(), (size_t)0);
+  DCHECK(observers_.might_have_observers());
 
   FOR_EACH_OBSERVER(WebRTCInternalsUIObserver,
                     observers_,
@@ -216,7 +216,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
     record->GetInteger("rid", &this_rid);
 
     if (this_rid == render_process_id) {
-      if (observers_.size() > 0) {
+      if (observers_.might_have_observers()) {
         int lid = 0, pid = 0;
         record->GetInteger("lid", &lid);
         record->GetInteger("pid", &pid);

@@ -73,7 +73,7 @@ void SyncJsController::UpdateBackendEventHandler() {
     // event handler we pass to it if we don't have any event
     // handlers.
     WeakHandle<JsEventHandler> backend_event_handler =
-        (js_event_handlers_.size() > 0) ?
+        js_event_handlers_.might_have_observers() ?
         MakeWeakHandle(AsWeakPtr()) : WeakHandle<SyncJsController>();
     js_backend_.Call(FROM_HERE, &JsBackend::SetJsEventHandler,
                      backend_event_handler);

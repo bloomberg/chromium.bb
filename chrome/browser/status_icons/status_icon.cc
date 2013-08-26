@@ -22,7 +22,7 @@ void StatusIcon::RemoveObserver(StatusIconObserver* observer) {
 }
 
 bool StatusIcon::HasObservers() const {
-  return observers_.size() > 0;
+  return observers_.might_have_observers();
 }
 
 void StatusIcon::DispatchClickEvent() {

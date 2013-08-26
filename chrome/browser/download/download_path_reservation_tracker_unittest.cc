@@ -35,7 +35,7 @@ class FakeDownloadItem : public MockDownloadItem {
   }
   virtual ~FakeDownloadItem() {
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
-    EXPECT_EQ(0u, observers_.size());
+    EXPECT_FALSE(observers_.might_have_observers());
   }
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);

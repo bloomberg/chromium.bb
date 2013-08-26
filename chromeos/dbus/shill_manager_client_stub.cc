@@ -523,7 +523,7 @@ void ShillManagerClientStub::CallNotifyObserversPropertyChanged(
     int delay_ms) {
   // Avoid unnecessary delayed task if we have no observers (e.g. during
   // initial setup).
-  if (observer_list_.size() == 0)
+  if (!observer_list_.might_have_observers())
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableStubInteractive)) {

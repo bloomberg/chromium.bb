@@ -79,7 +79,7 @@ void ChromeProxyConfigService::UpdateProxyConfig(
   pref_config_state_ = config_state;
   pref_config_ = config;
 
-  if (!observers_.size())
+  if (!observers_.might_have_observers())
     return;
 
   // Evaluate the proxy configuration. If GetLatestProxyConfig returns

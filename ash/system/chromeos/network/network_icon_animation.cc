@@ -45,7 +45,7 @@ void NetworkIconAnimation::AddObserver(AnimationObserver* observer) {
 
 void NetworkIconAnimation::RemoveObserver(AnimationObserver* observer) {
   observers_.RemoveObserver(observer);
-  if (observers_.size() == 0)
+  if (!observers_.might_have_observers())
     animation_.Reset();  // Stops the animation and resets the current value.
 }
 

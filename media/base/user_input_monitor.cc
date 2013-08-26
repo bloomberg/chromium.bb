@@ -33,7 +33,7 @@ void UserInputMonitor::AddMouseListener(MouseEventListener* listener) {
 void UserInputMonitor::RemoveMouseListener(MouseEventListener* listener) {
   base::AutoLock auto_lock(lock_);
   mouse_listeners_.RemoveObserver(listener);
-  if (mouse_listeners_.size() == 0) {
+  if (!mouse_listeners_.might_have_observers()) {
     StopMouseMonitoring();
     monitoring_mouse_ = false;
     DVLOG(2) << "Stopped mouse monitoring.";
@@ -51,7 +51,7 @@ void UserInputMonitor::AddKeyStrokeListener(KeyStrokeListener* listener) {
 void UserInputMonitor::RemoveKeyStrokeListener(KeyStrokeListener* listener) {
   base::AutoLock auto_lock(lock_);
   key_stroke_listeners_.RemoveObserver(listener);
-  if (key_stroke_listeners_.size() == 0) {
+  if (!key_stroke_listeners_.might_have_observers()) {
     StopKeyboardMonitoring();
     monitoring_keyboard_ = false;
     DVLOG(2) << "Stopped keyboard monitoring.";

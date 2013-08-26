@@ -1813,7 +1813,7 @@ void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
   DelegateMap::iterator it = delegate_map_.find(id);
   DCHECK(it->second->HasObserver(delegate));
   it->second->RemoveObserver(delegate);
-  if (it->second->size() == 0) {
+  if (!it->second->might_have_observers()) {
     delete it->second;
     delegate_map_.erase(it);
   }

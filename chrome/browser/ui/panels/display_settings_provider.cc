@@ -43,9 +43,10 @@ void DisplaySettingsProvider::RemoveDesktopBarObserver(
 void DisplaySettingsProvider::AddFullScreenObserver(
     FullScreenObserver* observer) {
   is_full_screen_ = IsFullScreen();
+  bool already_started = full_screen_observers_.might_have_observers();
   full_screen_observers_.AddObserver(observer);
 
-  if (full_screen_observers_.size() == 1 && NeedsPeriodicFullScreenCheck()) {
+  if (!already_started && NeedsPeriodicFullScreenCheck()) {
     full_screen_mode_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
         base::Bind(&DisplaySettingsProvider::CheckFullScreenMode,
@@ -58,7 +59,7 @@ void DisplaySettingsProvider::RemoveFullScreenObserver(
     FullScreenObserver* observer) {
   full_screen_observers_.RemoveObserver(observer);
 
-  if (full_screen_observers_.size() == 0)
+  if (!full_screen_observers_.might_have_observers())
     full_screen_mode_timer_.Stop();
 }
 

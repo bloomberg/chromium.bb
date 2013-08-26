@@ -14,15 +14,16 @@ PanelMouseWatcher::~PanelMouseWatcher() {
 }
 
 void PanelMouseWatcher::AddObserver(PanelMouseWatcherObserver* observer) {
+  bool already_started = observers_.might_have_observers();
   observers_.AddObserver(observer);
-  if (observers_.size() == 1)
+  if (!already_started)
     Start();
 }
 
 void PanelMouseWatcher::RemoveObserver(PanelMouseWatcherObserver* observer) {
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
-  if (observers_.size() == 0)
+  if (!observers_.might_have_observers())
     Stop();
 }
 

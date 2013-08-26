@@ -378,7 +378,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
   observer_list_iterator->second->RemoveObserver(listener);
 
   // Remove the observer list from the map if it is empty
-  if (observer_list_iterator->second->size() == 0) {
+  if (!observer_list_iterator->second->might_have_observers()) {
     // Schedule the actual removal for later in case the listener removal
     // happens while iterating over the observer list.
     base::MessageLoop::current()->PostTask(
@@ -389,7 +389,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
 
 void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
   ListenerMap::iterator found = listeners_.find(key);
-  if (found != listeners_.end() && found->second->size() == 0) {
+  if (found != listeners_.end() && !found->second->might_have_observers()) {
     delete found->second;
     listeners_.erase(found);
   }
