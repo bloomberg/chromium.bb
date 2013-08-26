@@ -49,6 +49,7 @@
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -75,7 +76,7 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, OwnPtr<Canvas2DLay
 
 static SkCanvas* createNonPlatformCanvas(const IntSize& size)
 {
-    SkAutoTUnref<SkDevice> device(new SkDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height()));
+    SkAutoTUnref<SkBaseDevice> device(new SkBitmapDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height()));
     SkPixelRef* pixelRef = device->accessBitmap(false).pixelRef();
     return pixelRef ? new SkCanvas(device) : 0;
 }
@@ -99,7 +100,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const Graph
         return;
     }
 
-    SkAutoTUnref<SkDevice> device(compatibleContext->createCompatibleDevice(size, hasAlpha));
+    SkAutoTUnref<SkBaseDevice> device(compatibleContext->createCompatibleDevice(size, hasAlpha));
     if (!device.get()) {
         success = false;
         return;

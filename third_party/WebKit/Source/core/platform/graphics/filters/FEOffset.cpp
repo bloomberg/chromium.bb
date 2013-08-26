@@ -52,7 +52,7 @@ public:
         if (input && !input->filterImage(proxy, src, ctm, &source, &srcOffset))
             return false;
 
-        SkAutoTUnref<SkDevice> device(proxy->createDevice(source.width(), source.height()));
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(source.width(), source.height()));
         SkCanvas canvas(device);
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);

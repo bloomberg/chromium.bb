@@ -61,11 +61,11 @@ void compositeToCopy(GraphicsContext& sourceLayers,
     // bottom-up. Note that each layer can also have an offset in canvas
     // coordinates, which is the (x, y) position.
     struct DeviceInfo {
-        DeviceInfo(SkDevice* d, int lx, int ly)
+        DeviceInfo(SkBaseDevice* d, int lx, int ly)
             : device(d)
             , x(lx)
             , y(ly) {}
-        SkDevice* device;
+        SkBaseDevice* device;
         int x;
         int y;
     };

@@ -100,7 +100,7 @@ const SkBitmap& GraphicsContext::layerBitmap(AccessMode access) const
     return m_canvas->getTopDevice()->accessBitmap(access == ReadWrite);
 }
 
-SkDevice* GraphicsContext::createCompatibleDevice(const IntSize& size, bool hasAlpha) const
+SkBaseDevice* GraphicsContext::createCompatibleDevice(const IntSize& size, bool hasAlpha) const
 {
     if (paintingDisabled())
         return 0;
@@ -337,7 +337,7 @@ bool GraphicsContext::isPrintingDevice() const
 {
     if (paintingDisabled())
         return false;
-    return m_canvas->getTopDevice()->getDeviceCapabilities() & SkDevice::kVector_Capability;
+    return m_canvas->getTopDevice()->getDeviceCapabilities() & SkBaseDevice::kVector_Capability;
 }
 
 void GraphicsContext::adjustTextRenderMode(SkPaint* paint)

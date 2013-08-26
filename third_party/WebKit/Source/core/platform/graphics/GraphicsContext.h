@@ -38,13 +38,14 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
+// TODO(robertphillips): replace this include with "class SkBaseDevice;"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 class SkBitmap;
-class SkDevice;
 class SkPaint;
 class SkPath;
 class SkRRect;
@@ -86,7 +87,7 @@ public:
     const SkBitmap* bitmap() const;
     const SkBitmap& layerBitmap(AccessMode = ReadOnly) const;
 
-    SkDevice* createCompatibleDevice(const IntSize&, bool hasAlpha) const;
+    SkBaseDevice* createCompatibleDevice(const IntSize&, bool hasAlpha) const;
 
     // ---------- State management methods -----------------
     void save();

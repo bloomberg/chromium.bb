@@ -62,7 +62,7 @@ public:
         if (foregroundInput && !foregroundInput->filterImage(proxy, src, ctm, &foreground, &foregroundOffset))
             return false;
 
-        SkAutoTUnref<SkDevice> device(proxy->createDevice(background.width(), background.height()));
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(background.width(), background.height()));
         SkCanvas canvas(device);
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);

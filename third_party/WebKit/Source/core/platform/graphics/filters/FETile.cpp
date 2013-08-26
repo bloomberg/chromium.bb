@@ -64,7 +64,7 @@ public:
         if (!source.extractSubset(&subset, srcRect))
             return false;
 
-        SkAutoTUnref<SkDevice> device(proxy->createDevice(m_dstRect.width(), m_dstRect.height()));
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(m_dstRect.width(), m_dstRect.height()));
         SkIRect bounds;
         source.getBounds(&bounds);
         SkCanvas canvas(device);

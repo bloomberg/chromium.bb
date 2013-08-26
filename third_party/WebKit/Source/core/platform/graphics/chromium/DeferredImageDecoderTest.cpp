@@ -27,8 +27,8 @@
 
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
+#include "SkBitmapDevice.h"
 #include "SkCanvas.h"
-#include "SkDevice.h"
 #include "SkPicture.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
@@ -59,7 +59,7 @@ const unsigned char whitePNG[] = {
 
 static SkCanvas* createRasterCanvas(int width, int height)
 {
-    SkAutoTUnref<SkDevice> device(new SkDevice(SkBitmap::kARGB_8888_Config, width, height));
+    SkAutoTUnref<SkBaseDevice> device(new SkBitmapDevice(SkBitmap::kARGB_8888_Config, width, height));
     return new SkCanvas(device);
 }
 

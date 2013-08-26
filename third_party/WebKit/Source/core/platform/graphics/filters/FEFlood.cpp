@@ -59,7 +59,7 @@ public:
         if (!src.width() || !src.height())
             return false;
 
-        SkAutoTUnref<SkDevice> device(proxy->createDevice(src.width(), src.height()));
+        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(src.width(), src.height()));
         SkCanvas canvas(device.get());
         SkPaint paint;
         paint.setColor(m_color);
