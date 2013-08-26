@@ -1994,6 +1994,7 @@ void FlagsState::ConvertFlagsToSwitches(
     const std::pair<std::string, std::string>&
         switch_and_value_pair = name_to_switch_it->second;
 
+    CHECK(!switch_and_value_pair.first.empty());
     command_line->AppendSwitchASCII(switch_and_value_pair.first,
                                     switch_and_value_pair.second);
     flags_switches_[switch_and_value_pair.first] = switch_and_value_pair.second;
