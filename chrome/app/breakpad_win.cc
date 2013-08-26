@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -151,7 +152,7 @@ void InitBrowserCrashDumpsRegKey() {
   // before consuming the signal (overwriting the signal with an identical one).
   // For now, we're willing to live with that risk.
   int length = swprintf(g_browser_crash_dump_value,
-                        sizeof(g_browser_crash_dump_value),
+                        arraysize(g_browser_crash_dump_value),
                         kBrowserCrashDumpValueFormatStr,
                         ::GetCurrentProcessId(),
                         ::GetTickCount());
