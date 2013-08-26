@@ -5658,13 +5658,6 @@
    fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
 }
 {
-   bug_163111
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
-   fun:_ZN8chromeos20IBusPanelServiceImpl*
-}
-{
    bug_163922
    Memcheck:Leak
    fun:_Znw*
