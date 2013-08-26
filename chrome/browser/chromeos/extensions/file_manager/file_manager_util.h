@@ -7,12 +7,11 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-class Browser;
-class GURL;
-class Profile;
+namespace base {
+class FilePath;
+}
 
 // File manager helper methods.
 namespace file_manager {
@@ -41,10 +40,6 @@ void OpenItem(const base::FilePath& file_path);
 // Opens the file manager for the folder containing the item specified by
 // |file_path|, with the item selected.
 void ShowItemInFolder(const base::FilePath& file_path);
-
-// Returns the MIME type of |file_path|. Returns "" if the MIME type is
-// unknown.
-std::string GetMimeTypeForPath(const base::FilePath& file_path);
 
 }  // namespace util
 }  // namespace file_manager

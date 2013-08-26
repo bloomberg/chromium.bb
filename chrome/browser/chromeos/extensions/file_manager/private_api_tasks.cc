@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/extensions/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -72,16 +73,6 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
     VLOG(1) << "Associating task " << task_id
             << " with the following suffixes: ";
     VLOG(1) << "  " << suffixes_str;
-  }
-}
-
-// Gets the mime types for the given file paths.
-void GetMimeTypesForFileURLs(const std::vector<base::FilePath>& file_paths,
-                             PathAndMimeTypeSet* files) {
-  for (std::vector<base::FilePath>::const_iterator iter = file_paths.begin();
-       iter != file_paths.end(); ++iter) {
-    files->insert(
-        std::make_pair(*iter, util::GetMimeTypeForPath(*iter)));
   }
 }
 
@@ -349,7 +340,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
     return;
 
   PathAndMimeTypeSet files;
-  GetMimeTypesForFileURLs(file_paths, &files);
+  util::GetMimeTypesForPaths(file_paths, &files);
   std::set<std::string> default_tasks;
   for (PathAndMimeTypeSet::iterator it = files.begin(); it != files.end();
        ++it) {

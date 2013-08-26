@@ -5,13 +5,14 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
-#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -370,26 +370,6 @@ void OpenItem(const base::FilePath& file_path) {
 void ShowItemInFolder(const base::FilePath& file_path) {
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileManagerWithInternalActionId(file_path, "select");
-}
-
-std::string GetMimeTypeForPath(const base::FilePath& file_path) {
-  const base::FilePath::StringType file_extension =
-      StringToLowerASCII(file_path.Extension());
-
-  // TODO(thorogood): Rearchitect this call so it can run on the File thread;
-  // GetMimeTypeFromFile requires this on Linux. Right now, we use
-  // Chrome-level knowledge only.
-  std::string mime_type;
-  if (file_extension.empty() ||
-      !net::GetWellKnownMimeTypeFromExtension(file_extension.substr(1),
-                                              &mime_type)) {
-    // If the file doesn't have an extension or its mime-type cannot be
-    // determined, then indicate that it has the empty mime-type. This will
-    // only be matched if the Web Intents accepts "*" or "*/*".
-    return "";
-  } else {
-    return mime_type;
-  }
 }
 
 }  // namespace util
