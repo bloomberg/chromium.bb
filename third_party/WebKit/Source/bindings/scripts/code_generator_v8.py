@@ -43,6 +43,7 @@ third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pard
 sys.path.append(third_party)
 import jinja2
 
+templates_dir = os.path.join(module_path, os.pardir, 'templates')
 
 CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'core/dom/ScriptExecutionContext.h',
@@ -63,6 +64,8 @@ INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ScriptController.h',
     'bindings/v8/V8Binding.h',
+    'bindings/v8/V8DOMConfiguration.h',
+    'bindings/v8/V8DOMWrapper.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'core/page/Frame.h',
@@ -73,6 +76,8 @@ INTERFACE_CPP_INCLUDES = set([
 
 INTERFACE_H_INCLUDES = set([
     'bindings/v8/V8Binding.h',
+    'bindings/v8/V8DOMWrapper.h',
+    'bindings/v8/WrapperTypeInfo.h',
 ])
 
 
@@ -106,9 +111,8 @@ PRIMITIVE_TYPES = set([
 ])
 
 
-def apply_template(path_to_template, contents):
-    dirname, basename = os.path.split(path_to_template)
-    jinja_env = jinja2.Environment(trim_blocks=True, loader=jinja2.FileSystemLoader([dirname]))
+def apply_template(basename, contents):
+    jinja_env = jinja2.Environment(trim_blocks=True, loader=jinja2.FileSystemLoader(templates_dir))
     template = jinja_env.get_template(basename)
     return template.render(contents)
 
@@ -152,7 +156,7 @@ def includes_for_type(data_type):
 
 
 def includes_for_cpp_class(class_name, relative_dir_posix):
-    return set([posixpath.join('bindings', relative_dir_posix, class_name + '.h')])
+    return set([posixpath.join(relative_dir_posix, class_name + '.h')])
 
 
 def includes_for_operation(operation):
@@ -264,12 +268,12 @@ class CodeGeneratorV8:
         header_basename = v8_class_name(self.interface) + '.h'
         cpp_basename = v8_class_name(self.interface) + '.cpp'
         if self.interface.is_callback:
-            header_template = 'templates/callback_interface.h'
-            cpp_template = 'templates/callback_interface.cpp'
+            header_template = 'callback_interface.h'
+            cpp_template = 'callback_interface.cpp'
             template_contents = self.generate_callback_interface()
         else:
-            header_template = 'templates/interface.h'
-            cpp_template = 'templates/interface.cpp'
+            header_template = 'interface.h'
+            cpp_template = 'interface.cpp'
             template_contents = self.generate_interface()
         template_contents['conditional_string'] = generate_conditional_string(self.interface)
         header_file_text = apply_template(header_template, template_contents)

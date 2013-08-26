@@ -22,7 +22,7 @@
 #define V8TestObject_h
 
 #include "V8EventTarget.h"
-#include "bindings/bindings/tests/idls/TestObj.h"
+#include "bindings/tests/idls/TestObj.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -128,7 +128,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestObj* impl
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<TestObj > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

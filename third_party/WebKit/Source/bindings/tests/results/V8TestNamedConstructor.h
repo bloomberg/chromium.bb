@@ -21,7 +21,7 @@
 #ifndef V8TestNamedConstructor_h
 #define V8TestNamedConstructor_h
 
-#include "bindings/bindings/tests/idls/TestNamedConstructor.h"
+#include "bindings/tests/idls/TestNamedConstructor.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -126,7 +126,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestNamedCons
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<TestNamedConstructor > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

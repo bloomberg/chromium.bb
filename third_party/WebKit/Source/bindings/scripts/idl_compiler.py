@@ -51,6 +51,8 @@ import sys
 import code_generator_v8
 import idl_reader
 
+module_path, _ = os.path.split(__file__)
+source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
 
 def parse_options():
     parser = optparse.OptionParser()
@@ -71,7 +73,9 @@ def parse_options():
     options, args = parser.parse_args()
     if options.output_directory is None:
         parser.error('Must specify output directory using --output-directory.')
-    if options.additional_idl_files is not None:
+    if options.additional_idl_files is None:
+        options.additional_idl_files = []
+    else:
         # additional_idl_files is passed as a string with varied (shell-style)
         # quoting, hence needs parsing.
         options.additional_idl_files = shlex.split(options.additional_idl_files)
@@ -82,8 +86,8 @@ def parse_options():
 
 
 def get_relative_dir_posix(filename):
-    """Returns relative directory to a local file, in POSIX format."""
-    relative_path_local = os.path.relpath(filename)
+    """Returns directory of a local file relative to Source, in POSIX format."""
+    relative_path_local = os.path.relpath(filename, source_path)
     relative_dir_local = os.path.dirname(relative_path_local)
     return relative_dir_local.replace(os.path.sep, posixpath.sep)
 

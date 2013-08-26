@@ -255,7 +255,7 @@ sub new
     $interfaceIdlFiles = shift;
     $writeFileOnlyIfChanged = shift;
 
-    $sourceRoot = getcwd();
+    $sourceRoot = dirname(dirname(dirname(Cwd::abs_path($0))));
 
     bless($reference, $object);
     return $reference;
@@ -443,8 +443,8 @@ sub HeaderFilesForInterface
     if (IsTypedArrayType($interfaceName)) {
         push(@includes, "wtf/${interfaceName}.h");
     } elsif (!SkipIncludeHeader($interfaceName)) {
-        my $idlFilename = IDLFileForInterface($interfaceName) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
-        my $idlRelPath= "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
+        my $idlFilename = Cwd::abs_path(IDLFileForInterface($interfaceName)) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
+        my $idlRelPath = File::Spec->abs2rel($idlFilename, $sourceRoot);
         push(@includes, dirname($idlRelPath) . "/" . $implClassName . ".h");
     }
     return @includes;
@@ -913,7 +913,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 END
     }
 
@@ -4755,7 +4754,6 @@ sub GenerateToV8Converters
 
     my $code = "";
     $code .= <<END;
-
 v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
@@ -4786,10 +4784,10 @@ END
     }
 
     $code .= <<END;
-
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+
 END
     if (IsTypedArrayType($interface->name)) {
       AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
@@ -4806,6 +4804,7 @@ END
     V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &info, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
 }
+
 END
     $implementation{nameSpaceWebCore}->add($code);
 }

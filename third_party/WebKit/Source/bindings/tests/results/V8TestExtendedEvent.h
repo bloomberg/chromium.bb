@@ -23,7 +23,7 @@
 
 #if ENABLE(TEST)
 #include "V8TestEvent.h"
-#include "bindings/bindings/tests/idls/Event.h"
+#include "bindings/tests/idls/Event.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -123,7 +123,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Event* impl, 
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<Event > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

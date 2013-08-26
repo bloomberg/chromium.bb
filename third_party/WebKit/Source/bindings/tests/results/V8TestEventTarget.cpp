@@ -324,7 +324,6 @@ EventTarget* V8TestEventTarget::toEventTarget(v8::Handle<v8::Object> object)
     return toNative(object);
 }
 
-
 v8::Handle<v8::Object> V8TestEventTarget::createWrapper(PassRefPtr<TestEventTarget> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
@@ -336,14 +335,15 @@ v8::Handle<v8::Object> V8TestEventTarget::createWrapper(PassRefPtr<TestEventTarg
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
     }
 
-
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestEventTarget>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
+
 void V8TestEventTarget::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();

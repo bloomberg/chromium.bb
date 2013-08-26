@@ -21,7 +21,7 @@
 #ifndef V8TestCallback_h
 #define V8TestCallback_h
 
-#include "bindings/bindings/tests/idls/TestCallback.h"
+#include "bindings/tests/idls/TestCallback.h"
 #include "bindings/v8/ActiveDOMCallback.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"

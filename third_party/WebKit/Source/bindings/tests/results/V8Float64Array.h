@@ -119,7 +119,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Float64Array*
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-
 inline v8::Handle<v8::Value> toV8(PassRefPtr<Float64Array > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);

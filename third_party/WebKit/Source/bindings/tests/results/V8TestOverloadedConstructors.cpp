@@ -197,7 +197,6 @@ bool V8TestOverloadedConstructors::HasInstanceInAnyWorld(v8::Handle<v8::Value> v
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
-
 v8::Handle<v8::Object> V8TestOverloadedConstructors::createWrapper(PassRefPtr<TestOverloadedConstructors> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
@@ -209,14 +208,15 @@ v8::Handle<v8::Object> V8TestOverloadedConstructors::createWrapper(PassRefPtr<Te
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
     }
 
-
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestOverloadedConstructors>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
+
 void V8TestOverloadedConstructors::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();

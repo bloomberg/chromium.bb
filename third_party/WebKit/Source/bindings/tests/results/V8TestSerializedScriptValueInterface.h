@@ -22,7 +22,7 @@
 #define V8TestSerializedScriptValueInterface_h
 
 #if ENABLE(Condition1) || ENABLE(Condition2)
-#include "bindings/bindings/tests/idls/TestSerializedScriptValueInterface.h"
+#include "bindings/tests/idls/TestSerializedScriptValueInterface.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -120,7 +120,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestSerialize
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<TestSerializedScriptValueInterface > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

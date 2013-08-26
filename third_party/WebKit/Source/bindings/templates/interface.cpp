@@ -78,7 +78,6 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
 }
 
 {% endfor %}
-
 } // namespace {{cpp_class_name}}V8Internal
 
 {% if attributes %}
@@ -89,8 +88,6 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 };
 
 {% endif %}
-
-
 static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -159,7 +156,7 @@ void {{v8_class_name}}::derefObject(void* object)
 }
 
 } // namespace WebCore
-
 {% if conditional_string %}
+
 #endif // {{conditional_string}}
 {% endif %}

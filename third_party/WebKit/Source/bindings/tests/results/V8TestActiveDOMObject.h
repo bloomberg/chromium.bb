@@ -21,7 +21,7 @@
 #ifndef V8TestActiveDOMObject_h
 #define V8TestActiveDOMObject_h
 
-#include "bindings/bindings/tests/idls/TestActiveDOMObject.h"
+#include "bindings/tests/idls/TestActiveDOMObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -119,7 +119,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestActiveDOM
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
-
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<TestActiveDOMObject > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

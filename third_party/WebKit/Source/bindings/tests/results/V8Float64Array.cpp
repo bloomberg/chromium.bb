@@ -201,7 +201,6 @@ bool V8Float64Array::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isol
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
-
 v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
@@ -213,10 +212,10 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
     }
 
-
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+
     if (!impl->buffer()->hasDeallocationObserver()) {
         v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->buffer()->byteLength());
         impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
@@ -225,6 +224,7 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
     V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
+
 void V8Float64Array::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();

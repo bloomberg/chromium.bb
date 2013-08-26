@@ -26,8 +26,8 @@
 #include "V8Node.h"
 #include "V8NodeList.h"
 #include "V8TestObject.h"
-#include "bindings/bindings/tests/idls/TestImplements.h"
-#include "bindings/bindings/tests/idls/TestPartialInterface.h"
+#include "bindings/tests/idls/TestImplements.h"
+#include "bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -1251,7 +1251,6 @@ ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> objec
     return toNative(object);
 }
 
-
 v8::Handle<v8::Object> V8TestInterface::createWrapper(PassRefPtr<TestInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
@@ -1263,14 +1262,15 @@ v8::Handle<v8::Object> V8TestInterface::createWrapper(PassRefPtr<TestInterface> 
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
     }
 
-
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl, &info, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
+
 void V8TestInterface::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();

@@ -27,6 +27,7 @@
 {% for filename in header_includes %}
 #include "{{filename}}"
 {% endfor %}
+
 namespace WebCore {
 
 class {{v8_class_name}} {
@@ -40,9 +41,7 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
-
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-
     static inline void* toInternalPointer({{cpp_class_name}}* impl)
     {
         return impl;
@@ -52,14 +51,12 @@ public:
     {
         return static_cast<{{cpp_class_name}}*>(object);
     }
-
     static void installPerContextProperties(v8::Handle<v8::Object>, {{cpp_class_name}}*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap({{cpp_class_name}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<{{cpp_class_name}}>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
 };
 
 template<>
@@ -83,11 +80,6 @@ inline v8::Handle<v8::Value> toV8({{cpp_class_name}}* impl, v8::Handle<v8::Objec
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
-}
-
-inline v8::Handle<v8::Value> toV8(PassRefPtr< {{cpp_class_name}} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl.get(), creationContext, isolate);
 }
 
 template<typename CallbackInfo>
@@ -124,34 +116,40 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class_n
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueFromWrapperFast<{{v8_class_name}}>(callbackInfo.GetReturnValue(), impl, callbackInfo.GetHolder(), wrappable))
+    if (DOMDataStore::setReturnValueFromWrapperFast<{{v8_class_name}}>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
+inline v8::Handle<v8::Value> toV8(PassRefPtr<{{cpp_class_name}} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl.get(), creationContext, isolate);
+}
+
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}} > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValue(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}} > impl, v8::Handle<v8::Object> creationContext)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}}> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{cpp_class_name}} > impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
 }
-
 {% if conditional_string %}
+
 #endif // {{conditional_string}}
 {% endif %}
 
 #endif // {{v8_class_name}}_h
+
