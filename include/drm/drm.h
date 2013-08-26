@@ -181,7 +181,7 @@ enum drm_map_type {
 	_DRM_AGP = 3,		  /**< AGP/GART */
 	_DRM_SCATTER_GATHER = 4,  /**< Scatter/gather memory for PCI DMA */
 	_DRM_CONSISTENT = 5,	  /**< Consistent memory for PCI DMA */
-	_DRM_GEM = 6,		  /**< GEM object */
+	_DRM_GEM = 6		  /**< GEM object */
 };
 
 /**
@@ -435,7 +435,7 @@ struct drm_draw {
  * DRM_IOCTL_UPDATE_DRAW ioctl argument type.
  */
 typedef enum {
-	DRM_DRAWABLE_CLIPRECTS,
+	DRM_DRAWABLE_CLIPRECTS
 } drm_drawable_info_type_t;
 
 struct drm_update_draw {

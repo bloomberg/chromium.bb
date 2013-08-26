@@ -218,11 +218,11 @@ typedef struct _drmModeProperty {
 	uint32_t flags;
 	char name[DRM_PROP_NAME_LEN];
 	int count_values;
-	uint64_t *values; // store the blob lengths
+	uint64_t *values; /* store the blob lengths */
 	int count_enums;
 	struct drm_mode_property_enum *enums;
 	int count_blobs;
-	uint32_t *blob_ids; // store the blob IDs
+	uint32_t *blob_ids; /* store the blob IDs */
 } drmModePropertyRes, *drmModePropertyPtr;
 
 typedef struct _drmModeCrtc {
