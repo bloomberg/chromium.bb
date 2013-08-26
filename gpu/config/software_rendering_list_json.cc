@@ -89,7 +89,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.5",
+  "version": "6.6",
   "entries": [
     {
       "id": 1,
@@ -1159,6 +1159,23 @@ LONG_STRING_CONST(
       ],
       "features": [
         "webgl"
+      ]
+    },
+    {
+      "id": 77,
+      "description": "Multisampling is reportedly very slow on Quadro NVS 135M/GeForce 8400M GS",
+      "cr_bugs": [279446],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0429", "0x042b"],
+      "features": [
+        "multisampling"
       ]
     }
   ]
