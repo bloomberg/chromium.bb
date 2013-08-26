@@ -1969,9 +1969,9 @@ class BisectPerformanceMetrics(object):
 
       if type(build_status) is bool:
         if build_status:
-          build_status = 'Passed'
+          build_status = 'Good'
         else:
-          build_status = 'Failed'
+          build_status = 'Bad'
 
       print '  %8s  %40s  %s' % (current_data['depot'],
                                  current_id, build_status)
