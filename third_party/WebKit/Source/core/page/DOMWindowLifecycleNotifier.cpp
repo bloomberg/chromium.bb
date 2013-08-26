@@ -54,4 +54,30 @@ void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer, Lif
     LifecycleNotifier::removeObserver(observer, type);
 }
 
+PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LifecycleContext* context)
+{
+    return adoptPtr(new DOMWindowLifecycleNotifier(context));
+}
+
+void DOMWindowLifecycleNotifier::notifyAddEventListener(DOMWindow* window, const AtomicString& eventType)
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
+    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
+        (*it)->didAddEventListener(window, eventType);
+}
+
+void DOMWindowLifecycleNotifier::notifyRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
+    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
+        (*it)->didRemoveEventListener(window, eventType);
+}
+
+void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(DOMWindow* window)
+{
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
+    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
+        (*it)->didRemoveAllEventListeners(window);
+}
+
 } // namespace WebCore

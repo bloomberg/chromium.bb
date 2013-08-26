@@ -35,6 +35,7 @@
 namespace WebCore {
 
 class DeviceMotionData;
+class DOMWindow;
 
 class DeviceMotionController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext>, public DOMWindowLifecycleObserver {
 
@@ -47,7 +48,9 @@ public:
     void didChangeDeviceMotion(DeviceMotionData*);
 
     // Inherited from DOMWindowLifecycleObserver
-    virtual void removeAllEventListeners() OVERRIDE;
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
 private:
     explicit DeviceMotionController(Document*);

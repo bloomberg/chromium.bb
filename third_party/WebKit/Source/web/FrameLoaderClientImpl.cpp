@@ -33,27 +33,7 @@
 #include "FrameLoaderClientImpl.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Document.h"
-#include "core/dom/MessageEvent.h"
-#include "core/dom/MouseEvent.h"
-#include "core/history/HistoryItem.h"
-#include "core/html/HTMLAppletElement.h"
-#include "core/html/HTMLFormElement.h"  // needed by core/loader/FormState.h
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FormState.h"
-#include "core/loader/FrameLoadRequest.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/ProgressTracker.h"
-#include "core/page/Chrome.h"
-#include "core/page/EventHandler.h"
-#include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
-#include "core/platform/network/HTTPParsers.h"
-#include "core/plugins/PluginData.h"
-#include "core/rendering/HitTestResult.h"
-#include <v8.h>
+#include "RuntimeEnabledFeatures.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
@@ -73,12 +53,33 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/Document.h"
+#include "core/dom/MessageEvent.h"
+#include "core/dom/MouseEvent.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/history/HistoryItem.h"
+#include "core/html/HTMLAppletElement.h"
+#include "core/html/HTMLFormElement.h" // needed by core/loader/FormState.h
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/ProgressTracker.h"
+#include "core/page/Chrome.h"
+#include "core/page/EventHandler.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/SocketStreamHandleInternal.h"
+#include "core/plugins/PluginData.h"
+#include "core/rendering/HitTestResult.h"
+#include "modules/device_orientation/DeviceMotionController.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "public/platform/WebSocketStreamHandle.h"
@@ -88,6 +89,7 @@
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 using namespace WebCore;
 
@@ -115,8 +117,11 @@ void FrameLoaderClientImpl::frameLoaderDestroyed()
 
 void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*)
 {
-    if (m_webFrame->client())
+    if (m_webFrame->client()) {
         m_webFrame->client()->didClearWindowObject(m_webFrame);
+        if (RuntimeEnabledFeatures::deviceMotionEnabled())
+            DeviceMotionController::from(m_webFrame->frame()->document());
+    }
 }
 
 void FrameLoaderClientImpl::documentElementAvailable()

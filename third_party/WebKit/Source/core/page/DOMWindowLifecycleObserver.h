@@ -28,6 +28,7 @@
 #define DOMWindowLifecycleObserver_h
 
 #include "core/platform/LifecycleObserver.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -40,7 +41,9 @@ public:
 
     DOMWindow* window() const;
 
-    virtual void removeAllEventListeners() { }
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) { }
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) { }
+    virtual void didRemoveAllEventListeners(DOMWindow*) { }
 };
 
 } // namespace WebCore

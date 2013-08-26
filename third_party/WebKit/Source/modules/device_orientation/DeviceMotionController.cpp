@@ -27,7 +27,9 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/EventNames.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceMotionDispatcher.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
@@ -91,7 +93,19 @@ bool DeviceMotionController::isNullEvent(Event* event)
     return !motionEvent->deviceMotionData()->canProvideEventData();
 }
 
-void DeviceMotionController::removeAllEventListeners()
+void DeviceMotionController::didAddEventListener(DOMWindow*, const AtomicString& eventType)
+{
+    if (eventType == eventNames().devicemotionEvent && RuntimeEnabledFeatures::deviceMotionEnabled())
+        startUpdating();
+}
+
+void DeviceMotionController::didRemoveEventListener(DOMWindow*, const AtomicString& eventType)
+{
+    if (eventType == eventNames().devicemotionEvent)
+        stopUpdating();
+}
+
+void DeviceMotionController::didRemoveAllEventListeners(DOMWindow*)
 {
     stopUpdating();
 }

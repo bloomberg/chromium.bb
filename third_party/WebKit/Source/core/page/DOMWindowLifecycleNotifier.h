@@ -30,6 +30,7 @@
 #include "core/platform/LifecycleNotifier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -39,7 +40,9 @@ class DOMWindowLifecycleNotifier : public LifecycleNotifier {
 public:
     static PassOwnPtr<DOMWindowLifecycleNotifier> create(LifecycleContext*);
 
-    void notifyRemoveAllEventListeners();
+    void notifyAddEventListener(DOMWindow*, const AtomicString& eventType);
+    void notifyRemoveEventListener(DOMWindow*, const AtomicString& eventType);
+    void notifyRemoveAllEventListeners(DOMWindow*);
 
     virtual void addObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
     virtual void removeObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
@@ -50,18 +53,6 @@ private:
     typedef HashSet<DOMWindowLifecycleObserver*> DOMWindowObserverSet;
     DOMWindowObserverSet m_windowObservers;
 };
-
-inline PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LifecycleContext* context)
-{
-    return adoptPtr(new DOMWindowLifecycleNotifier(context));
-}
-
-inline void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners()
-{
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
-        (*it)->removeAllEventListeners();
-}
 
 } // namespace WebCore
 
