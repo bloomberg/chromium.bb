@@ -322,7 +322,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
   content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(frame);
   FormData form_data;
   if (!in_flight_request_form_.isNull() ||
-      (url.SchemeIs(chrome::kHttpsScheme) &&
+      (url.SchemeIs(content::kHttpsScheme) &&
        (net::IsCertStatusError(ssl_status.cert_status) ||
         net::IsCertStatusMinorError(ssl_status.cert_status))) ||
       !WebFormElementToFormData(form,

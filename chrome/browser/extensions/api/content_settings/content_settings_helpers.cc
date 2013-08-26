@@ -45,7 +45,7 @@ COMPILE_ASSERT(arraysize(kContentSettingNames) <=
 std::string GetDefaultPort(const std::string& scheme) {
   if (scheme == chrome::kHttpScheme)
     return "80";
-  if (scheme == chrome::kHttpsScheme)
+  if (scheme == content::kHttpsScheme)
     return "443";
   NOTREACHED();
   return std::string();

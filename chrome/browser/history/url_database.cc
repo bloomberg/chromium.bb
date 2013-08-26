@@ -312,7 +312,7 @@ bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
 bool URLDatabase::IsTypedHost(const std::string& host) {
   const char* schemes[] = {
     chrome::kHttpScheme,
-    chrome::kHttpsScheme,
+    content::kHttpsScheme,
     chrome::kFtpScheme
   };
   URLRows dummy;

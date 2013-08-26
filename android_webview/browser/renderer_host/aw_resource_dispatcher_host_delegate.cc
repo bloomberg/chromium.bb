@@ -231,7 +231,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       (resource_type == ResourceType::MAIN_FRAME ||
        (resource_type == ResourceType::SUB_FRAME &&
         !request->url().SchemeIs(chrome::kHttpScheme) &&
-        !request->url().SchemeIs(chrome::kHttpsScheme)));
+        !request->url().SchemeIs(content::kHttpsScheme)));
   if (allow_intercepting) {
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));

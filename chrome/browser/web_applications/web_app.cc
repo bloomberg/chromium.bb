@@ -199,7 +199,7 @@ bool IsValidUrl(const GURL& url) {
       chrome::kFileSystemScheme,
       chrome::kFtpScheme,
       chrome::kHttpScheme,
-      chrome::kHttpsScheme,
+      content::kHttpsScheme,
       extensions::kExtensionScheme,
   };
 

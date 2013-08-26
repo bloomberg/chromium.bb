@@ -321,7 +321,7 @@ void WebPluginProxy::HandleURLRequest(const char* url,
         WebPluginDelegateImpl::PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
       GURL request_url(url);
       if (!request_url.SchemeIs(chrome::kHttpScheme) &&
-          !request_url.SchemeIs(chrome::kHttpsScheme) &&
+          !request_url.SchemeIs(kHttpsScheme) &&
           !request_url.SchemeIs(chrome::kFtpScheme)) {
         return;
       }

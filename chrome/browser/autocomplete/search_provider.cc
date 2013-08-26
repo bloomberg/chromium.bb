@@ -731,7 +731,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // our checks below.  Other QUERY cases are less likely to be URLs and thus we
   // assume we're OK.
   if (!LowerCaseEqualsASCII(input_.scheme(), chrome::kHttpScheme) &&
-      !LowerCaseEqualsASCII(input_.scheme(), chrome::kHttpsScheme) &&
+      !LowerCaseEqualsASCII(input_.scheme(), content::kHttpsScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), chrome::kFtpScheme))
     return (input_.type() == AutocompleteInput::QUERY);
 
@@ -749,7 +749,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // Don't send anything for https except the hostname.  Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (LowerCaseEqualsASCII(input_.scheme(), chrome::kHttpsScheme) &&
+  if (LowerCaseEqualsASCII(input_.scheme(), content::kHttpsScheme) &&
       parts.path.is_nonempty())
     return false;
 

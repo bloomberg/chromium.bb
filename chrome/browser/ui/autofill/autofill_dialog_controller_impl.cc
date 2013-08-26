@@ -2321,7 +2321,7 @@ bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
 }
 
 bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(chrome::kHttpsScheme);
+  return source_url_.SchemeIs(content::kHttpsScheme);
 }
 
 void AutofillDialogControllerImpl::ShowNewCreditCardBubble(

@@ -140,7 +140,7 @@ bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
   return my_url.host() == other_url.host() &&
          my_url.port() == other_url.port() &&
          (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(chrome::kHttpsScheme) &&
+          (my_url.SchemeIs(content::kHttpsScheme) &&
            other_url.SchemeIs(chrome::kHttpScheme)));
 }
 
@@ -430,7 +430,7 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
       google_util::StartsWithCommandLineGoogleBaseURL(instant_url))
     return instant_url;
   GURL::Replacements replacements;
-  const std::string secure_scheme(chrome::kHttpsScheme);
+  const std::string secure_scheme(content::kHttpsScheme);
   replacements.SetSchemeStr(secure_scheme);
   return instant_url.ReplaceComponents(replacements);
 }

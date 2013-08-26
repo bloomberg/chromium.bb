@@ -376,7 +376,7 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
   }
 
   // Replace https protocol with http protocol.
-  if (stripped_destination_url.SchemeIs(chrome::kHttpsScheme)) {
+  if (stripped_destination_url.SchemeIs(content::kHttpsScheme)) {
     replacements.SetScheme(
         chrome::kHttpScheme,
         url_parse::Component(0, strlen(chrome::kHttpScheme)));

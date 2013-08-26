@@ -280,7 +280,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(chrome::kHttpScheme);
-  RegisterWebSafeScheme(chrome::kHttpsScheme);
+  RegisterWebSafeScheme(kHttpsScheme);
   RegisterWebSafeScheme(chrome::kFtpScheme);
   RegisterWebSafeScheme(chrome::kDataScheme);
   RegisterWebSafeScheme("feed");

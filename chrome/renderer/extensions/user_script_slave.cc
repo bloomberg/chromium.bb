@@ -105,7 +105,7 @@ void UserScriptSlave::InitializeIsolatedWorld(int isolated_world_id,
        i != permissions.end(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,
-      chrome::kHttpsScheme,
+      content::kHttpsScheme,
       chrome::kFileScheme,
       chrome::kChromeUIScheme,
     };

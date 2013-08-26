@@ -16,7 +16,7 @@ namespace {
 const char* kValidSchemes[] = {
   chrome::kChromeUIScheme,
   chrome::kHttpScheme,
-  chrome::kHttpsScheme,
+  content::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
   content::kJavaScriptScheme,

@@ -173,7 +173,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
       !LowerCaseEqualsASCII(parsed_scheme, chrome::kHttpScheme) &&
-      !LowerCaseEqualsASCII(parsed_scheme, chrome::kHttpsScheme)) {
+      !LowerCaseEqualsASCII(parsed_scheme, content::kHttpsScheme)) {
     // See if we know how to handle the URL internally.
     if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)))
       return URL;

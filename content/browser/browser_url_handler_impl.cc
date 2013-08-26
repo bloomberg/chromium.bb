@@ -13,8 +13,7 @@
 namespace content {
 
 // Handles rewriting view-source URLs for what we'll actually load.
-static bool HandleViewSource(GURL* url,
-                             BrowserContext* browser_context) {
+static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
   if (url->SchemeIs(kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
@@ -22,7 +21,7 @@ static bool HandleViewSource(GURL* url,
     // Bug 26129: limit view-source to view the content and not any
     // other kind of 'active' url scheme like 'javascript' or 'data'.
     static const char* const allowed_sub_schemes[] = {
-      chrome::kHttpScheme, chrome::kHttpsScheme, chrome::kFtpScheme,
+      chrome::kHttpScheme, kHttpsScheme, chrome::kFtpScheme,
       chrome::kChromeDevToolsScheme, chrome::kChromeUIScheme,
       chrome::kFileScheme, chrome::kFileSystemScheme
     };

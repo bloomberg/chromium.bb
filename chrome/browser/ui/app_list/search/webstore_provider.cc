@@ -73,9 +73,8 @@ bool IsSensitiveInput(const string16& query) {
   // Don't send anything for https except the hostname. Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kHttpsScheme) &&
-      !query_as_url.path().empty() &&
-      query_as_url.path() != "/") {
+  if (LowerCaseEqualsASCII(query_as_url.scheme(), content::kHttpsScheme) &&
+      !query_as_url.path().empty() && query_as_url.path() != "/") {
     return true;
   }
 

@@ -518,7 +518,7 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   // 2. The origin of the url and the opener is the same in which case the
   //    opener relationship is maintained.
   // 3. Reloads/form submits/back forward navigations
-  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
+  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(kHttpsScheme))
     return false;
 
   if (type != WebKit::WebNavigationTypeReload &&
@@ -6542,6 +6542,5 @@ void RenderViewImpl::DidStopLoadingIcons() {
   }
   SendUpdateFaviconURL(urls);
 }
-
 
 }  // namespace content

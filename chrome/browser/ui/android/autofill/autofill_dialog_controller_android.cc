@@ -454,7 +454,7 @@ bool AutofillDialogControllerAndroid::RequestingCreditCardInfo() const {
 }
 
 bool AutofillDialogControllerAndroid::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(chrome::kHttpsScheme);
+  return source_url_.SchemeIs(content::kHttpsScheme);
 }
 
 void AutofillDialogControllerAndroid::SetAutocheckoutState(

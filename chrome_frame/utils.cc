@@ -1002,7 +1002,7 @@ bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
     return false;
 
   if (url.SchemeIs(chrome::kHttpScheme) ||
-      url.SchemeIs(chrome::kHttpsScheme) ||
+      url.SchemeIs(content::kHttpsScheme) ||
       url.SchemeIs(chrome::kAboutScheme))
     return true;
 
@@ -1011,7 +1011,7 @@ bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
   if (url.SchemeIs(content::kViewSourceScheme)) {
     GURL sub_url(url.path());
     if (sub_url.SchemeIs(chrome::kHttpScheme) ||
-        sub_url.SchemeIs(chrome::kHttpsScheme))
+        sub_url.SchemeIs(content::kHttpsScheme))
       return true;
     else
       return false;

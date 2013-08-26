@@ -374,7 +374,7 @@ string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
     if (result.compare(0, scheme_component.end(),
                        ASCIIToUTF16(chrome::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
-                       ASCIIToUTF16(chrome::kHttpsScheme)))
+                       ASCIIToUTF16(content::kHttpsScheme)))
       return string16();
 
     // Include trailing ':'.

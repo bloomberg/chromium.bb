@@ -20,11 +20,11 @@ const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";
 const char kGuestScheme[] = "chrome-guest";
 const char kHttpScheme[] = "http";
-const char kHttpsScheme[] = "https";
 }  // namespace chrome
 
 namespace content {
 
+const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
 const char kMetadataScheme[] = "metadata";

@@ -21,7 +21,7 @@ namespace {
 // Note: keep this array in sync with kValidSchemeMasks.
 const char* kValidSchemes[] = {
   chrome::kHttpScheme,
-  chrome::kHttpsScheme,
+  content::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
   chrome::kChromeUIScheme,

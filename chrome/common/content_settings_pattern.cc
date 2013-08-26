@@ -24,7 +24,7 @@ namespace {
 std::string GetDefaultPort(const std::string& scheme) {
   if (scheme == chrome::kHttpScheme)
     return "80";
-  if (scheme == chrome::kHttpsScheme)
+  if (scheme == content::kHttpsScheme)
     return "443";
   return std::string();
 }
@@ -244,7 +244,7 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   // Test if the scheme is supported or a wildcard.
   if (!parts.is_scheme_wildcard &&
       parts.scheme != std::string(chrome::kHttpScheme) &&
-      parts.scheme != std::string(chrome::kHttpsScheme)) {
+      parts.scheme != std::string(content::kHttpsScheme)) {
     return false;
   }
   return true;
@@ -279,7 +279,7 @@ bool ContentSettingsPattern::Builder::LegacyValidate(
   // Test if the scheme is supported or a wildcard.
   if (!parts.is_scheme_wildcard &&
       parts.scheme != std::string(chrome::kHttpScheme) &&
-      parts.scheme != std::string(chrome::kHttpsScheme)) {
+      parts.scheme != std::string(content::kHttpsScheme)) {
     return false;
   }
   return true;
@@ -342,15 +342,15 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
     } else if (local_url->SchemeIs(chrome::kHttpScheme)) {
       builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(
           local_url->host());
-    } else if (local_url->SchemeIs(chrome::kHttpsScheme)) {
+    } else if (local_url->SchemeIs(content::kHttpsScheme)) {
       builder->WithScheme(local_url->scheme())->WithDomainWildcard()->WithHost(
           local_url->host());
     } else {
       // Unsupported scheme
     }
     if (local_url->port().empty()) {
-      if (local_url->SchemeIs(chrome::kHttpsScheme))
-        builder->WithPort(GetDefaultPort(chrome::kHttpsScheme));
+      if (local_url->SchemeIs(content::kHttpsScheme))
+        builder->WithPort(GetDefaultPort(content::kHttpsScheme));
       else
         builder->WithPortWildcard();
     } else {

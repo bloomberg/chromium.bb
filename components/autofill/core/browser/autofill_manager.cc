@@ -129,7 +129,7 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
 }
 
 bool FormIsHTTPS(const FormStructure& form) {
-  return form.source_url().SchemeIs(chrome::kHttpsScheme);
+  return form.source_url().SchemeIs(content::kHttpsScheme);
 }
 
 // Uses the existing personal data in |profiles| and |credit_cards| to determine

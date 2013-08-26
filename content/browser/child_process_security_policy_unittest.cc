@@ -100,7 +100,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kHttpScheme));
-  EXPECT_TRUE(p->IsWebSafeScheme(chrome::kHttpsScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(kHttpsScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kFtpScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kDataScheme));
   EXPECT_TRUE(p->IsWebSafeScheme("feed"));

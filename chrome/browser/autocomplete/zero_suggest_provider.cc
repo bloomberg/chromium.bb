@@ -390,7 +390,7 @@ void ZeroSuggestProvider::Run() {
       ReplaceSearchTerms(search_term_args);
   GURL suggest_url(req_url);
   // Make sure we are sending the suggest request through HTTPS.
-  if (!suggest_url.SchemeIs(chrome::kHttpsScheme)) {
+  if (!suggest_url.SchemeIs(content::kHttpsScheme)) {
     Stop(true);
     return;
   }

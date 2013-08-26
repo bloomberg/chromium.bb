@@ -1229,7 +1229,7 @@ void CookiesTreeModel::PopulateServerBoundCertInfoWithFilter(
     if (!origin.is_valid()) {
       // Domain Bound Cert.  Make a valid URL to satisfy the
       // CookieTreeRootNode::GetOrCreateHostNode interface.
-      origin = GURL(std::string(chrome::kHttpsScheme) +
+      origin = GURL(std::string(content::kHttpsScheme) +
           content::kStandardSchemeSeparator +
           cert_info->server_identifier() + "/");
     }

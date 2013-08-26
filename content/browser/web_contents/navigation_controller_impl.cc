@@ -638,7 +638,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       break;
     case LOAD_TYPE_BROWSER_INITIATED_HTTP_POST:
       if (!params.url.SchemeIs(chrome::kHttpScheme) &&
-          !params.url.SchemeIs(chrome::kHttpsScheme)) {
+          !params.url.SchemeIs(kHttpsScheme)) {
         NOTREACHED() << "Http post load must use http(s) scheme.";
         return;
       }
