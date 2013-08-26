@@ -657,9 +657,9 @@ FileTable.prototype.updateListItemsMetadata = function(type, propsMap) {
       this.updateSize_(item, entry, props);
     });
   } else if (type == 'drive') {
-    forEachCell('.table-row-cell > .offline',
+    // The cell name does not matter as the entire list item is needed.
+    forEachCell('.table-row-cell > .date',
                 function(item, entry, props, listItem) {
-      this.updateOffline_(item, props);
       filelist.updateListItemDriveProps(listItem, props);
     });
   }
@@ -934,6 +934,8 @@ filelist.decorateSelectionCheckbox = function(input, entry, list) {
 filelist.decorateListItem = function(li, entry, metadataCache) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   if (FileType.isOnDrive(entry)) {
+    // The metadata may not yet be ready. In that case, the list item will be
+    // updated when the metadata is ready via updateListItemsMetadata.
     var driveProps = metadataCache.getCached(entry, 'drive');
     if (driveProps)
       filelist.updateListItemDriveProps(li, driveProps);
