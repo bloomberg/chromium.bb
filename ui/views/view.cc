@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -185,7 +184,6 @@ View::View()
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
       drag_controller_(NULL),
-      currently_dragging_(false),
       post_dispatch_handler_(new internal::PostEventDispatchHandler(this)),
       native_view_accessibility_(NULL) {
   AddPostTargetHandler(post_dispatch_handler_.get());
@@ -194,10 +192,6 @@ View::View()
 View::~View() {
   if (parent_)
     parent_->RemoveChildView(this);
-
-  // If we destroy the view during a drag, AutoReset will probably write to
-  // freed memory.
-  DCHECK(!currently_dragging_);
 
   for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
     (*i)->parent_ = NULL;
@@ -2303,14 +2297,20 @@ bool View::DoDrag(const ui::LocatedEvent& event,
                   const gfx::Point& press_pt,
                   ui::DragDropTypes::DragEventSource source) {
 #if !defined(OS_MACOSX)
-  if (currently_dragging_)
-    return false;
-
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return false;
 
-  base::AutoReset<bool> updating_focus(&currently_dragging_, true);
+  Widget* widget = GetWidget();
+  // We should only start a drag from an event, implying we have a widget.
+  DCHECK(widget);
+
+  // Don't attempt to start a drag while in the process of dragging. This is
+  // especially important on X where we can get multiple mouse move events when
+  // we start the drag.
+  if (widget->dragged_view())
+    return false;
+
   OSExchangeData data;
   WriteDragData(press_pt, &data);
 
@@ -2318,9 +2318,8 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   // the RootView can detect it and avoid calling us back.
   gfx::Point widget_location(event.location());
   ConvertPointToWidget(this, &widget_location);
-  GetWidget()->RunShellDrag(this, data, widget_location, drag_operations,
-      source);
-
+  widget->RunShellDrag(this, data, widget_location, drag_operations, source);
+  // WARNING: we may have been deleted.
   return true;
 #else
   return false;
