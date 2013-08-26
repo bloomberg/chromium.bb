@@ -1,0 +1,29 @@
+Name: jqTree
+URL: http://mbraak.github.io/jqTree/
+Version: 0.17
+License: Apache 2.0
+License File: LICENSE
+Security Critical: no
+
+Description:
+This is a jquery plugin to draw a tree from a JSON data. This library is
+required only by src/tools/deep_memory_profiler, and it doesn't go into the
+binary.
+
+Local Modifications:
+Removed the following files:
+* bower.json
+* build
+* docs_src/
+* examples/
+* extra/
+* intodex.html
+* jqtree-circle.png
+* jqtree.jquery.jsonon
+* phantomjs/
+* screenshot.png
+* sitemap.txt
+* src/
+* test/
+* tree_logo.png
+* .travis.yml

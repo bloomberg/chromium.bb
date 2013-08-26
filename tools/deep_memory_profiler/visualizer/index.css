@@ -1,0 +1,30 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#graph-div {
+  width: 1024px;
+  height: 600px;
+  margin-top: 30px;
+  margin-left: 50px;
+  float: left;
+}
+
+#info-div {
+  width: 240px;
+  height: 600px;
+  margin-top: 35px;
+  margin-left: 50px;
+  float: left;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  outline: 1px solid rgba(0,0,0,0.2);
+  overflow: auto;
+}
+
+#breakdown-menu {
+  padding-left: 15px;
+}
+
+#subs-dropdown {
+  padding-left: 15px;
+}
