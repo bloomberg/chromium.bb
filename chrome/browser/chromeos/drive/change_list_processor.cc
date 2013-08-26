@@ -27,10 +27,15 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
 
   entries_.resize(resource_list.entries().size());
   size_t entries_index = 0;
+  std::string parent_resource_id;
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
     if (ConvertToResourceEntry(*resource_list.entries()[i],
-                               &entries_[entries_index]))
+                               &entries_[entries_index],
+                               &parent_resource_id)) {
+      // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+      entries_[entries_index].set_parent_local_id(parent_resource_id);
       ++entries_index;
+    }
   }
   entries_.resize(entries_index);
 }

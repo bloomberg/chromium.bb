@@ -279,8 +279,11 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
   DCHECK(gdata_entry);
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  bool converted = ConvertToResourceEntry(*gdata_entry, entry.get());
+  std::string parent_resource_id;
+  bool converted =
+      ConvertToResourceEntry(*gdata_entry, entry.get(), &parent_resource_id);
   DCHECK(converted);
+  entry->set_parent_local_id(parent_resource_id);
 
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry->resource_id());
@@ -371,8 +374,11 @@ void FakeFileSystem::GetResourceEntryByPathAfterGetResourceList(
       resource_list->entries();
   for (size_t i = 0; i < entries.size(); ++i) {
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-    bool converted = ConvertToResourceEntry(*entries[i], entry.get());
+    std::string parent_resource_id;
+    bool converted =
+        ConvertToResourceEntry(*entries[i], entry.get(), &parent_resource_id);
     DCHECK(converted);
+    entry->set_parent_local_id(parent_resource_id);
 
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.

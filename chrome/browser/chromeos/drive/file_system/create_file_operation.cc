@@ -87,8 +87,13 @@ FileError UpdateLocalStateForCreateFile(
   // Add the entry to the local resource metadata.
   FileError error = FILE_ERROR_NOT_A_FILE;
   ResourceEntry entry;
-  if (ConvertToResourceEntry(*resource_entry, &entry))
+  std::string parent_resource_id;
+  if (ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
+    // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+    entry.set_parent_local_id(parent_resource_id);
+
     error = metadata->AddEntry(entry);
+  }
 
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.

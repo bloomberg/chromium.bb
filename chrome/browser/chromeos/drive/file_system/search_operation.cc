@@ -39,8 +39,12 @@ FileError RefreshEntriesOnBlockingPool(
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     ResourceEntry entry;
-    if (!ConvertToResourceEntry(*entries[i], &entry))
+    std::string parent_resource_id;
+    if (!ConvertToResourceEntry(*entries[i], &entry, &parent_resource_id))
       continue;  // Skip non-file entries.
+
+    // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+    entry.set_parent_local_id(parent_resource_id);
 
     const std::string id = entry.resource_id();
     FileError error = resource_metadata->RefreshEntry(id, entry);

@@ -73,8 +73,12 @@ FileError UpdateFileLocalState(
     scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* drive_file_path) {
   ResourceEntry entry;
-  if (!ConvertToResourceEntry(*resource_entry, &entry))
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
     return FILE_ERROR_NOT_A_FILE;
+
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
 
   FileError error = metadata->RefreshEntry(entry.resource_id(), entry);
   if (error != FILE_ERROR_OK)

@@ -346,10 +346,14 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   DCHECK(resource_entry);
 
   ResourceEntry entry;
-  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
     callback.Run(FILE_ERROR_NOT_A_FILE);
     return;
   }
+
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
 
   // The entry was added in the root directory on the server, so we should
   // first add it to the root to mirror the state and then move it to the
@@ -472,10 +476,14 @@ void CopyOperation::OnCopyResourceCompleted(
 
   DCHECK(resource_entry);
   ResourceEntry entry;
-  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
     callback.Run(FILE_ERROR_NOT_A_FILE);
     return;
   }
+
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
 
   // The copy on the server side is completed successfully. Update the local
   // metadata.

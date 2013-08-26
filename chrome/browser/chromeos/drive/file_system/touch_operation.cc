@@ -100,10 +100,14 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
 
   DCHECK(resource_entry);
   ResourceEntry entry;
-  if (!ConvertToResourceEntry(*resource_entry, &entry)) {
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
     callback.Run(FILE_ERROR_NOT_A_FILE);
     return;
   }
+
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
