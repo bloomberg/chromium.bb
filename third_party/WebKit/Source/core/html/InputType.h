@@ -34,8 +34,8 @@
 #define InputType_h
 
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/html/InputTypeUI.h"
 #include "core/html/StepRange.h"
+#include "core/html/forms/InputTypeView.h"
 #include "core/page/UseCounter.h"
 
 namespace WebCore {

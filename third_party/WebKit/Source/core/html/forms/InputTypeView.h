@@ -30,8 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InputTypeUI_h
-#define InputTypeUI_h
+#ifndef InputTypeView_h
+#define InputTypeView_h
 
 #include "core/page/FocusDirection.h"
 #include "wtf/FastAllocBase.h"

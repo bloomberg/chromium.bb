@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/html/InputTypeUI.h"
+#include "core/html/forms/InputTypeView.h"
 
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
