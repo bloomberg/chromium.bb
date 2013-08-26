@@ -833,6 +833,31 @@ unlock_dialog_button_handler(struct widget *widget,
 }
 
 static void
+unlock_dialog_touch_down_handler(struct widget *widget, struct input *input,
+		   uint32_t serial, uint32_t time, int32_t id,
+		   float x, float y, void *data)
+{
+	struct unlock_dialog *dialog = data;
+
+	dialog->button_focused = 1;
+	widget_schedule_redraw(widget);
+}
+
+static void
+unlock_dialog_touch_up_handler(struct widget *widget, struct input *input,
+				uint32_t serial, uint32_t time, int32_t id,
+				void *data)
+{
+	struct unlock_dialog *dialog = data;
+	struct desktop *desktop = dialog->desktop;
+
+	dialog->button_focused = 0;
+	widget_schedule_redraw(widget);
+	display_defer(desktop->display, &desktop->unlock_task);
+	dialog->closing = 1;
+}
+
+static void
 unlock_dialog_keyboard_focus_handler(struct window *window,
 				     struct input *device, void *data)
 {
@@ -886,6 +911,10 @@ unlock_dialog_create(struct desktop *desktop)
 				 unlock_dialog_widget_leave_handler);
 	widget_set_button_handler(dialog->button,
 				  unlock_dialog_button_handler);
+	widget_set_touch_down_handler(dialog->button,
+				      unlock_dialog_touch_down_handler);
+	widget_set_touch_up_handler(dialog->button,
+				      unlock_dialog_touch_up_handler);
 
 	desktop_shell_set_lock_surface(desktop->shell,
 				       window_get_wl_surface(dialog->window));
