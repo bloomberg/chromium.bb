@@ -281,7 +281,7 @@ def DeviceStatusCheck(_):
 def GetDeviceSetupStepCmds():
   return [
     ('provision_devices', ProvisionDevices),
-    ('device_status_check', DeviceStatusCheck)
+    ('device_status_check', DeviceStatusCheck),
   ]
 
 
@@ -384,6 +384,9 @@ def MainTestWrapper(options):
     if options.install:
       test_obj = INSTRUMENTATION_TESTS[options.install]
       InstallApk(options, test_obj, print_step=True)
+
+    if options.coverage_bucket:
+      RunCmd(['rm', '-rf', options.coverage_dir])
 
     if options.test_filter:
       bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
