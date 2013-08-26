@@ -93,6 +93,19 @@ static void setPropertySwitchesFromRuntimeFeatures()
     };
     setCSSPropertiesEnabled(cssGridLayoutProperties, WTF_ARRAY_LENGTH(cssGridLayoutProperties), RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
+    CSSPropertyID animationProperties[] = {
+        CSSPropertyAnimation,
+        CSSPropertyAnimationName,
+        CSSPropertyAnimationDuration,
+        CSSPropertyAnimationTimingFunction,
+        CSSPropertyAnimationDelay,
+        CSSPropertyAnimationIterationCount,
+        CSSPropertyAnimationDirection,
+        CSSPropertyAnimationFillMode,
+        CSSPropertyAnimationPlayState
+    };
+    setCSSPropertiesEnabled(animationProperties, WTF_ARRAY_LENGTH(animationProperties), RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
+
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());

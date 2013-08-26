@@ -4,15 +4,6 @@ alignContent
 alignItems
 alignSelf
 alignmentBaseline
-animation
-animationDelay
-animationDirection
-animationDuration
-animationFillMode
-animationIterationCount
-animationName
-animationPlayState
-animationTimingFunction
 background
 backgroundAttachment
 backgroundClip
