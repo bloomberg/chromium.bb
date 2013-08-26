@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_aedesc.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -118,6 +119,87 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
 
   NSString* drop_path = [base::mac::CFToNSCast(drop_url) path];
   return drop_path;
+}
+
+void SelectFileInFinder(const base::FilePath& file_path) {
+  DCHECK([NSThread isMainThread]);
+
+  // Create the target of this AppleEvent, the Finder.
+  base::mac::ScopedAEDesc<AEAddressDesc> address;
+  const OSType finder_creator_code = 'MACS';
+  OSErr status = AECreateDesc(typeApplSignature,  // type
+                              &finder_creator_code,  // data
+                              sizeof(finder_creator_code),  // dataSize
+                              address.OutPointer());  // result
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status) << "Could not create SelectFile() AE target";
+    return;
+  }
+
+  // Build the AppleEvent data structure that instructs Finder to select files.
+  base::mac::ScopedAEDesc<AppleEvent> the_event;
+  status = AECreateAppleEvent(kAEMiscStandards,  // theAEEventClass
+                              kAESelect,  // theAEEventID
+                              address,  // target
+                              kAutoGenerateReturnID,  // returnID
+                              kAnyTransactionID,  // transactionID
+                              the_event.OutPointer());  // result
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status) << "Could not create SelectFile() AE event";
+    return;
+  }
+
+  // Create the list of files (only ever one) to select.
+  base::mac::ScopedAEDesc<AEDescList> file_list;
+  status = AECreateList(NULL,  // factoringPtr
+                        0,  // factoredSize
+                        false,  // isRecord
+                        file_list.OutPointer());  // resultList
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not create SelectFile() AE file list";
+    return;
+  }
+
+  // Add the single path to the file list.
+  NSURL* url = [NSURL fileURLWithPath:SysUTF8ToNSString(file_path.value())];
+  base::ScopedCFTypeRef<CFDataRef> url_data(
+      CFURLCreateData(kCFAllocatorDefault, base::mac::NSToCFCast(url),
+                      kCFStringEncodingUTF8, true));
+  status = AEPutPtr(file_list.OutPointer(),  // theAEDescList
+                    0,  // index
+                    typeFileURL,  // typeCode
+                    CFDataGetBytePtr(url_data),  // dataPtr
+                    CFDataGetLength(url_data));  // dataSize
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not add file path to AE list in SelectFile()";
+    return;
+  }
+
+  // Attach the file list to the AppleEvent.
+  status = AEPutParamDesc(the_event.OutPointer(),  // theAppleEvent
+                          keyDirectObject,  // theAEKeyword
+                          file_list);  // theAEDesc
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not put the AE file list the path in SelectFile()";
+    return;
+  }
+
+  // Send the actual event.  Do not care about the reply.
+  base::mac::ScopedAEDesc<AppleEvent> reply;
+  status = AESend(the_event,  // theAppleEvent
+                  reply.OutPointer(),  // reply
+                  kAENoReply + kAEAlwaysInteract,  // sendMode
+                  kAENormalPriority,  // sendPriority
+                  kAEDefaultTimeout,  // timeOutInTicks
+                  NULL, // idleProc
+                  NULL);  // filterProc
+  if (status != noErr) {
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not send AE to Finder in SelectFile()";
+  }
 }
 
 }  // namespace
@@ -399,6 +481,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
                                        *dropData_,
                                        base::Passed(&fileStream)));
   }
+  SelectFileInFinder(filePath);
 }
 
 - (void)fillPasteboard {
