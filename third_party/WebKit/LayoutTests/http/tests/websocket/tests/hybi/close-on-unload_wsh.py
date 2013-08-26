@@ -27,7 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+import json
 from mod_pywebsocket import msgutil
 
 
@@ -42,15 +42,17 @@ def web_socket_do_extra_handshake(request):
 def web_socket_transfer_data(request):
     global connections
     connections[request] = True
-    socketName = None
+    message = None
+    dataToBroadcast = {}
     try:
-        socketName = msgutil.receive_message(request)
-        # notify to client that socketName is received by server.
-        msgutil.send_message(request, socketName)
+        message = msgutil.receive_message(request)
+        # notify to client that message is received by server.
+        msgutil.send_message(request, message)
         msgutil.receive_message(request)  # wait, and exception by close.
-        socketName = socketName + ': ' + request.ws_close_code
+        dataToBroadcast["message"] = message
+        dataToBroadcast["closeCode"] = str(request.ws_close_code)
     finally:
-        # request is closed. notify this socketName to other web sockets.
+        # request is closed. notify this dataToBroadcast to other web sockets.
         del connections[request]
         for ws in connections.keys():
-            msgutil.send_message(ws, socketName)
+            msgutil.send_message(ws, json.dumps(dataToBroadcast))

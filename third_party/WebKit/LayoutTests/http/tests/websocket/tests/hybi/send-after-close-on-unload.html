@@ -13,6 +13,7 @@ window.jsTestIsAsync = true;
 
 var frameDiv;
 var closedSocket;
+var closeCode;
 document.childWebSocket = null;
 
 var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/close-on-unload");
@@ -26,12 +27,15 @@ ws.onopen = function()
 };
 ws.onmessage = function(evt)
 {
-    closedSocket = evt.data;
+    var messageData = JSON.parse(evt.data);
+    closedSocket = messageData.message;
+    closeCode = messageData.closeCode;
     ws.close();
 };
 ws.onclose = function()
 {
     shouldBe("closedSocket", '"socket1"');
+    shouldBe("closeCode", '"1001"');
     shouldBe("document.childWebSocket.readyState", "3");
     finishJSTest();
 };
