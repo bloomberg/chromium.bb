@@ -44,6 +44,7 @@ namespace WebCore {
 class InspectorDOMAgent;
 class InstrumentingAgents;
 class Page;
+class RenderLayerCompositor;
 
 typedef String ErrorString;
 
@@ -66,16 +67,19 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void getLayers(ErrorString*, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
+    virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&);
 
 private:
     InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, Page*);
+
+    RenderLayerCompositor* renderLayerCompositor(ErrorString*);
+    GraphicsLayer* layerById(ErrorString*, const String& layerId);
+    int idForNode(ErrorString*, Node*);
 
     void gatherLayersUsingRenderObjectHierarchy(ErrorString*, RenderObject*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     void gatherLayersUsingRenderLayerHierarchy(ErrorString*, RenderLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     void gatherLayersUsingGraphicsLayerHierarchy(ErrorString*, GraphicsLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     void addRenderLayerBacking(ErrorString*, RenderLayerBacking*, Node*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-
-    int idForNode(ErrorString*, Node*);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;

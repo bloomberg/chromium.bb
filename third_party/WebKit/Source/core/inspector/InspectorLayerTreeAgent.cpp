@@ -46,6 +46,7 @@
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
+#include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebLayer.h"
 
 namespace WebCore {
@@ -63,13 +64,17 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         .setOffsetY(graphicsLayer->position().y())
         .setWidth(graphicsLayer->size().width())
         .setHeight(graphicsLayer->size().height())
-        .setPaintCount(graphicsLayer->repaintCount());
+        .setPaintCount(graphicsLayer->paintCount());
 
-    // Artificially clip tree at root renger layer's graphic layer -- it might be not the real
-    // root of graphics layer hierarchy, as platform adds containing layers (e.g. for overflosw scroll).
-    if (graphicsLayer->parent() && !forceRoot)
-        layerObject->setParentLayerId(String::number(graphicsLayer->parent()->platformLayer()->id()));
-
+    // Artificially clip tree at root render layer's graphic layer -- it might be not the real
+    // root of graphics layer hierarchy, as platform adds containing layers (e.g. for frame scrolling).
+    if (!forceRoot) {
+        GraphicsLayer* parent = graphicsLayer->parent();
+        if (!parent)
+            parent = graphicsLayer->replicatedLayer();
+        if (parent)
+            layerObject->setParentLayerId(String::number(parent->platformLayer()->id()));
+    }
     const TransformationMatrix& transform = graphicsLayer->transform();
     if (!transform.isIdentity()) {
         TransformationMatrix::FloatMatrix4 flattenedMatrix;
@@ -151,12 +156,9 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
 {
     layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
 
-    RenderView* renderView = m_page->mainFrame()->contentRenderer();
-    RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
-    if (!compositor) {
-        *errorString = "Not in compositing mode";
+    RenderLayerCompositor* compositor = renderLayerCompositor(errorString);
+    if (!compositor)
         return;
-    }
     if (!nodeId) {
         gatherLayersUsingRenderLayerHierarchy(errorString, compositor->rootRenderLayer(), layers);
         return;
@@ -177,7 +179,6 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
 void InspectorLayerTreeAgent::addRenderLayerBacking(ErrorString* errorString, RenderLayerBacking* layerBacking, Node* node, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
 {
     int nodeId = idForNode(errorString, node);
-    RenderLayerCompositor* compositor = layerBacking->owningLayer()->compositor();
     bool forceRoot = layerBacking->owningLayer()->isRootLayer();
     if (layerBacking->ancestorClippingLayer()) {
         maybeAddGraphicsLayer(layerBacking->ancestorClippingLayer(), nodeId, layers, forceRoot);
@@ -223,6 +224,102 @@ int InspectorLayerTreeAgent::idForNode(ErrorString* errorString, Node* node)
         nodeId = domAgent->pushNodeToFrontend(errorString, domAgent->boundNodeId(node->document()), node);
 
     return nodeId;
+}
+
+RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor(ErrorString* errorString)
+{
+    RenderView* renderView = m_page->mainFrame()->contentRenderer();
+    RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
+    if (!compositor)
+        *errorString = "Not in the compositing mode";
+    return compositor;
+}
+
+static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
+{
+    if (root->platformLayer()->id() == layerId)
+        return root;
+    for (size_t i = 0, size = root->children().size(); i < size; ++i) {
+        if (GraphicsLayer* layer = findLayerById(root->children()[i], layerId))
+            return layer;
+    }
+    return 0;
+}
+
+GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, const String& layerId)
+{
+    bool ok;
+    int id = layerId.toInt(&ok);
+    if (!ok) {
+        *errorString = "Invalid layer id";
+        return 0;
+    }
+    RenderLayerCompositor* compositor = renderLayerCompositor(errorString);
+    if (!compositor)
+        return 0;
+
+    GraphicsLayer* result = findLayerById(compositor->rootGraphicsLayer(), id);
+    if (!result)
+        *errorString = "No layer matching given id found";
+    return result;
+}
+
+struct CompositingReasonToProtocolName {
+    uint64_t mask;
+    const char *protocolName;
+};
+
+
+void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const String& layerId, RefPtr<TypeBuilder::Array<String> >& reasonStrings)
+{
+    static CompositingReasonToProtocolName compositingReasonNames[] = {
+        { CompositingReason3DTransform, "transform3D" },
+        { CompositingReasonVideo, "video" },
+        { CompositingReasonCanvas, "canvas" },
+        { CompositingReasonPlugin, "plugin" },
+        { CompositingReasonIFrame, "iFrame" },
+        { CompositingReasonBackfaceVisibilityHidden, "backfaceVisibilityHidden" },
+        { CompositingReasonAnimation, "animation" },
+        { CompositingReasonFilters, "filters" },
+        { CompositingReasonPositionFixed, "positionFixed" },
+        { CompositingReasonPositionSticky, "positionSticky" },
+        { CompositingReasonOverflowScrollingTouch, "overflowScrollingTouch" },
+        { CompositingReasonAssumedOverlap, "assumedOverlap" },
+        { CompositingReasonOverlap, "overlap" },
+        { CompositingReasonNegativeZIndexChildren, "negativeZIndexChildren" },
+        { CompositingReasonTransformWithCompositedDescendants, "transformWithCompositedDescendants" },
+        { CompositingReasonOpacityWithCompositedDescendants, "opacityWithCompositedDescendants" },
+        { CompositingReasonMaskWithCompositedDescendants, "maskWithCompositedDescendants" },
+        { CompositingReasonReflectionWithCompositedDescendants, "reflectionWithCompositedDescendants" },
+        { CompositingReasonFilterWithCompositedDescendants, "filterWithCompositedDescendants" },
+        { CompositingReasonBlendingWithCompositedDescendants, "blendingWithCompositedDescendants" },
+        { CompositingReasonClipsCompositingDescendants, "clipsCompositingDescendants" },
+        { CompositingReasonPerspective, "perspective" },
+        { CompositingReasonPreserve3D, "preserve3D" },
+        { CompositingReasonRoot, "root" },
+        { CompositingReasonLayerForClip, "layerForClip" },
+        { CompositingReasonLayerForScrollbar, "layerForScrollbar" },
+        { CompositingReasonLayerForScrollingContainer, "layerForScrollingContainer" },
+        { CompositingReasonLayerForForeground, "layerForForeground" },
+        { CompositingReasonLayerForBackground, "layerForBackground" },
+        { CompositingReasonLayerForMask, "layerForMask" },
+        { CompositingReasonLayerForVideoOverlay, "layerForVideoOverlay" }
+    };
+
+    const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
+    if (!graphicsLayer)
+        return;
+    WebKit::WebCompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
+    reasonStrings = TypeBuilder::Array<String>::create();
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonNames); ++i) {
+        if (!(reasonsBitmask & compositingReasonNames[i].mask))
+            continue;
+        reasonStrings->addItem(compositingReasonNames[i].protocolName);
+#ifndef _NDEBUG
+        reasonsBitmask &= ~compositingReasonNames[i].mask;
+#endif
+    }
+    ASSERT(!reasonsBitmask);
 }
 
 } // namespace WebCore

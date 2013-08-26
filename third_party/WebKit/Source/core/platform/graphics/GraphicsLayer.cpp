@@ -115,14 +115,13 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
-    , m_showRepaintCounter(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
     , m_maskLayer(0)
     , m_replicaLayer(0)
     , m_replicatedLayer(0)
-    , m_repaintCount(0)
+    , m_paintCount(0)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_linkHighlight(0)
@@ -358,8 +357,10 @@ void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsD
 
 void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const IntRect& clip)
 {
-    if (m_client)
-        m_client->paintContents(this, context, m_paintingPhase, clip);
+    if (!m_client)
+        return;
+    incrementPaintCount();
+    m_client->paintContents(this, context, m_paintingPhase, clip);
 }
 
 String GraphicsLayer::animationNameForTransition(AnimatedPropertyID property)
@@ -892,6 +893,7 @@ WebKit::WebString GraphicsLayer::debugName(WebKit::WebLayer* webLayer)
 
 void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)
 {
+    m_compositingReasons = reasons;
     m_layer->layer()->setCompositingReasons(reasons);
 }
 

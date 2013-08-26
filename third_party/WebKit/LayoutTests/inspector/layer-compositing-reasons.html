@@ -1,0 +1,82 @@
+<html>
+<head>
+<style>
+@-webkit-keyframes rotate {
+        0%  { -webkit-transform: rotate(0deg); }
+        50%  { -webkit-transform: rotate(180deg); }
+        100%  { -webkit-transform: rotate(360deg); }
+}
+
+</style>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="layers-test.js"></script>
+<script>
+function test()
+{
+    function dumpCompositingReasons(layer, callback)
+    {
+        layer.requestCompositingReasons(function(reasons)
+        {
+            var node = WebInspector.domAgent.nodeForId(layer.nodeIdForSelfOrAncestor());
+            var label = node.appropriateSelectorFor(false);
+            InspectorTest.addResult("Compositing reasons for " + label + ": " + reasons.sort().join(","));
+            callback();
+        });
+    }
+
+    var idsToTest = [
+        "transform3d",
+        "iframe",
+        "backface-visibility",
+        "animation",
+        "transformWithCompositedDescendants",
+        "opacityWithCompositedDescendants",
+        "reflectionWithCompositedDescendants",
+        "perspective",
+        "preserve3d"
+    ];
+
+    function iterateThroughLayers(nextLayerId)
+    {
+        if (nextLayerId >= idsToTest.length) {
+            InspectorTest.completeTest();
+            return;
+        }
+        dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[nextLayerId]), iterateThroughLayers.bind(this, nextLayerId + 1));
+    }
+    function onGotLayers()
+    {
+         dumpCompositingReasons(InspectorTest._layerTreeModel.root(), iterateThroughLayers.bind(this, 0));
+    }
+    InspectorTest._layerTreeModel.requestLayers(onGotLayers);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<div id="transform3d" style="-webkit-transform: translateZ(100px);">translated</div>
+<iframe id="iframe" src="resources/composited-iframe.html"></iframe>
+<div id="backface-visibility" style="-webkit-backface-visibility: hidden">backface hidden</div>
+<div id="animation" style="width: 50px; height: 50px; -webkit-animation-name: rotate; -webkit-animation-iteration-count: infinite; -webkit-animation-duration: 5s;">animated</div>
+<div id="transformWithCompositedDescendants" style="-webkit-transform: rotate(10deg)">
+    <div style="-webkit-transform: translateZ(100px);">
+    </div>
+</div>
+<div id="opacityWithCompositedDescendants" style="opacity: 0.5">
+    <div style="-webkit-transform: translateZ(100px);">opacity
+    </div>
+</div>
+<div id="reflectionWithCompositedDescendants" style="-webkit-box-reflect: below">
+    <div style="-webkit-transform: translateZ(100px);">reflected
+    </div>
+</div>
+<div id="perspective" style="-webkit-perspective: 500;">
+    <div style="-webkit-transform: translateZ(100px);">perspective
+    </div>
+</div>
+<div id="preserve3d" style="-webkit-transform-style: preserve-3d;">
+    <div style="-webkit-transform: translateZ(100px);">preserve3d
+    </div>
+</div>
+</body>
+</html>

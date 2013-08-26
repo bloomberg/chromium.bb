@@ -58,6 +58,8 @@ function initialize_LayerTreeTests()
             return true;
         }
         InspectorTest._layerTreeModel.forEachLayer(testLayer);
+        if (!result)
+            InspectorTest.addResult("ERROR: No layer for " + nodeIdAttribute);
         return result;
     }
 }
