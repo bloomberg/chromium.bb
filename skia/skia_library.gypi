@@ -89,8 +89,6 @@
     '../third_party/skia/src/pdf/SkPDFGraphicState.h',
     '../third_party/skia/src/pdf/SkPDFImage.cpp',
     '../third_party/skia/src/pdf/SkPDFImage.h',
-    '../third_party/skia/src/pdf/SkPDFImageStream.cpp',
-    '../third_party/skia/src/pdf/SkPDFImageStream.h',
     '../third_party/skia/src/pdf/SkPDFPage.cpp',
     '../third_party/skia/src/pdf/SkPDFPage.h',
     '../third_party/skia/src/pdf/SkPDFResourceDict.cpp',
