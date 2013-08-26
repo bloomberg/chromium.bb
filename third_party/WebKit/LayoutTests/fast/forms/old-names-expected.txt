@@ -1,4 +1,4 @@
-This tests accessing form elements by name. IE updates collections immediatelly after name changes, but A collection never be changed to a single node when the number of matched nodes becomes 1. Firefox remembers every name item has been accessed with, but forgets items that have not been accessed. We follow the standard behavior. i.e. collections are updated immediately, and it's changed to a single node when the size becomes 1.
+This tests accessing form elements by name. IE only lets you look up names under the first name the element had and does not respond to name changes. Firefox remembers every name item has been accessed with, but forgets items that have not been accessed. This test has been written to expect the Firefox behavior.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -33,7 +33,7 @@ now change the form item a's name to thisWillBeForgottenToo, but don't access it
 now change the form item a's name to second
 
 PASS form.length is 2
-PASS form.original is undefined.
+PASS form.original is a
 PASS form.originalB is b
 PASS form.second is a
 PASS form.third is undefined
@@ -45,9 +45,9 @@ PASS form.elements.third is undefined
 now change the form item a's name to third
 
 PASS form.length is 2
-PASS form.original is undefined.
+PASS form.original is a
 PASS form.originalB is b
-PASS form.second is undefined.
+PASS form.second is a
 PASS form.third is a
 PASS form.elements.original is undefined
 PASS form.elements.originalB is b
@@ -57,8 +57,8 @@ PASS form.elements.third is a
 now change form item b's name to second
 
 PASS form.length is 2
-PASS form.original is undefined.
-PASS form.originalB is undefined.
+PASS form.original is a
+PASS form.originalB is b
 PASS form.second is b
 PASS form.elements.original is undefined
 PASS form.elements.originalB is undefined
@@ -67,9 +67,9 @@ PASS form.elements.second is b
 now change a form item b's name to third
 
 PASS form.length is 2
-PASS form.original is undefined.
-PASS form.originalB is undefined.
-PASS form.second is undefined.
+PASS form.original is a
+PASS form.originalB is b
+PASS form.second is b
 PASS form.third.length is 2
 PASS form.third[0] is a
 PASS form.third[1] is b
@@ -90,10 +90,10 @@ PASS form.elements.third.length is undefined
 now remove element a
 
 PASS form.length is 1
-PASS form.original is undefined.
-PASS form.originalB is undefined.
-PASS form.second is undefined.
-PASS form.third is undefined.
+PASS form.original is a
+PASS form.originalB is b
+PASS form.second is b
+PASS form.third is a
 PASS form.fourth is b
 PASS form.elements.original is undefined
 PASS form.elements.originalB is undefined
@@ -101,12 +101,12 @@ PASS form.elements.second is undefined
 PASS form.elements.third is undefined
 PASS form.elements.fourth is b
 
-check we forget names we should
+check we still remember names we should
 
 PASS form.thisWillBeForgotten is undefined
 PASS form.thisWillBeForgottenToo is undefined
-PASS form.thisWillBeRemembered is undefined.
-PASS form.thisWillBeRememberedToo is undefined.
+PASS form.thisWillBeRemembered is a
+PASS form.thisWillBeRememberedToo is a
 
 PASS successfullyParsed is true
 
