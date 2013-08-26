@@ -24,8 +24,8 @@ void ValueMapPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t ValueMapPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool ValueMapPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 ValueMapPrefStore::~ValueMapPrefStore() {}

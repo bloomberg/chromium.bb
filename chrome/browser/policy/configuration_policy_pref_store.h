@@ -39,7 +39,7 @@ class ConfigurationPolicyPrefStore
   // PrefStore methods:
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual size_t NumberOfObservers() const OVERRIDE;
+  virtual bool HasObservers() const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual bool GetValue(const std::string& key,
                         const Value** result) const OVERRIDE;

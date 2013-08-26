@@ -4,8 +4,8 @@
 
 #include "base/prefs/pref_store.h"
 
-size_t PrefStore::NumberOfObservers() const {
-  return 0;
+bool PrefStore::HasObservers() const {
+  return false;
 }
 
 bool PrefStore::IsInitializationComplete() const {

@@ -25,7 +25,7 @@ class BASE_PREFS_EXPORT ValueMapPrefStore : public PrefStore {
                         const base::Value** value) const OVERRIDE;
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual size_t NumberOfObservers() const OVERRIDE;
+  virtual bool HasObservers() const OVERRIDE;
 
  protected:
   virtual ~ValueMapPrefStore();

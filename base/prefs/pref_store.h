@@ -41,7 +41,7 @@ class BASE_PREFS_EXPORT PrefStore : public base::RefCounted<PrefStore> {
   // Add and remove observers.
   virtual void AddObserver(Observer* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
-  virtual size_t NumberOfObservers() const;
+  virtual bool HasObservers() const;
 
   // Whether the store has completed all asynchronous initialization.
   virtual bool IsInitializationComplete() const;

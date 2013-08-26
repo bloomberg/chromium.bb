@@ -179,8 +179,8 @@ void JsonPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t JsonPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool JsonPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 bool JsonPrefStore::IsInitializationComplete() const {

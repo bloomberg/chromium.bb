@@ -30,8 +30,8 @@ void TestingPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t TestingPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool TestingPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 bool TestingPrefStore::IsInitializationComplete() const {

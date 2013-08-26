@@ -25,7 +25,7 @@ class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
                         const base::Value** result) const OVERRIDE;
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
-  virtual size_t NumberOfObservers() const OVERRIDE;
+  virtual bool HasObservers() const OVERRIDE;
 
   // Sets a |value| for |key|. Should only be called if a value has not been
   // set yet; otherwise call ReplaceDefaultValue().

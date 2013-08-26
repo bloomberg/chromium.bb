@@ -25,8 +25,8 @@ void OverlayUserPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t OverlayUserPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool OverlayUserPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 bool OverlayUserPrefStore::IsInitializationComplete() const {

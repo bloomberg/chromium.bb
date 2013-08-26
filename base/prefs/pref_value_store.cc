@@ -27,7 +27,7 @@ void PrefValueStore::PrefStoreKeeper::Initialize(
     PrefValueStore::PrefStoreType type) {
   if (pref_store_.get()) {
     pref_store_->RemoveObserver(this);
-    DCHECK_EQ(0U, pref_store_->NumberOfObservers());
+    DCHECK(!pref_store_->HasObservers());
   }
   type_ = type;
   pref_value_store_ = store;

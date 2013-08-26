@@ -22,8 +22,8 @@ void DefaultPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t DefaultPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool DefaultPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 void DefaultPrefStore::SetDefaultValue(const std::string& key,

@@ -29,8 +29,8 @@ void AwPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-size_t AwPrefStore::NumberOfObservers() const {
-  return observers_.size();
+bool AwPrefStore::HasObservers() const {
+  return observers_.might_have_observers();
 }
 
 bool AwPrefStore::IsInitializationComplete() const {
