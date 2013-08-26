@@ -719,7 +719,7 @@ bool DocumentLoader::isLoadingInAPISense() const
 void DocumentLoader::createArchive()
 {
     m_archive = MHTMLArchive::create(m_response.url(), mainResourceData().get());
-    ASSERT(m_archive);
+    RELEASE_ASSERT(m_archive);
 
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();

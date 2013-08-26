@@ -138,6 +138,7 @@ http/tests/security/isolatedWorld/resources/iframe.html -crlf
 http/tests/security/isolatedWorld/resources/userGestureEvents-second-window.html -crlf
 http/tests/security/isolatedWorld/userGestureEvents.html -crlf
 http/tests/security/resources/empty-svg.php -crlf
+mhtml/*.mht -crlf
 platform/win/fast/events/panScroll-event-fired.html -crlf
 platform/win/fast/events/panScroll-image-no-scroll.html -crlf
 platform/win/fast/events/panScroll-imageMap-href-no-scroll.html -crlf

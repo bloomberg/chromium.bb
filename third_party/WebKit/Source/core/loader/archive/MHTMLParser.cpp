@@ -202,6 +202,7 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
     case MIMEHeader::QuotedPrintable:
         quotedPrintableDecode(content->data(), content->size(), data);
         break;
+    case MIMEHeader::EightBit:
     case MIMEHeader::SevenBit:
     case MIMEHeader::Binary:
         data.append(content->data(), content->size());

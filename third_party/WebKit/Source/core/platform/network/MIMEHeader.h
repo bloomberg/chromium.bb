@@ -46,6 +46,7 @@ public:
     enum Encoding {
         QuotedPrintable,
         Base64,
+        EightBit,
         SevenBit,
         Binary,
         Unknown
