@@ -1319,40 +1319,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void ToggleNetworkDevice(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  void SetProxySettings(base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-
-  void SetSharedProxies(base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-
-  void ConnectToCellularNetwork(base::DictionaryValue* args,
-                            IPC::Message* reply_message);
-
-  void DisconnectFromCellularNetwork(base::DictionaryValue* args,
-                                 IPC::Message* reply_message);
-
-  void ConnectToWifiNetwork(base::DictionaryValue* args,
-                            IPC::Message* reply_message);
-
   void ConnectToHiddenWifiNetwork(base::DictionaryValue* args,
                                   IPC::Message* reply_message);
 
-  void DisconnectFromWifiNetwork(base::DictionaryValue* args,
-                                 IPC::Message* reply_message);
-
   void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
-
-  // VPN.
-  void AddPrivateNetwork(DictionaryValue* args, IPC::Message* reply_message);
-
-  void GetPrivateNetworkInfo(base::DictionaryValue* args,
-                             IPC::Message* reply_message);
-
-  void ConnectToPrivateNetwork(base::DictionaryValue* args,
-                               IPC::Message* reply_message);
-
-  void DisconnectFromPrivateNetwork(base::DictionaryValue* args,
-                                    IPC::Message* reply_message);
 
   // Accessibility.
   void EnableSpokenFeedback(DictionaryValue* args, IPC::Message* reply_message);

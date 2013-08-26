@@ -218,7 +218,6 @@
       'chromeos_browser',
       'chromeos_crosh',
       'chromeos_file_browser',
-      'chromeos_offline',
       'chromeos_power',
       'chromeos_prefs',
       'chromeos_security',
@@ -274,8 +273,6 @@
       '-prefs.PrefsTest.testSessionRestore',
       # Deal with i18n chars.  crosbug.com/12639
       '-omnibox.OmniboxTest.testCrazyFilenames',
-      # crosbug.com/16977
-      '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
       # crosbug.com/20025
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
       # Chrome driver does not work in Chrome OS.
@@ -380,41 +377,10 @@
   'EMPTY': {
   },
 
-  'CHROMEOS_CONNECTIVITY': {
-    'chromeos': [
-      'chromeos_wifi_functional',
-      'chromeos_wifi_compliance',
-      'wifi_downloads',
-      'wifi_notification',
-    ],
-  },
-
   # ChromeOS flash tests.
   'CHROMEOS_FLASH': {
     'chromeos': [
       'flash',
-    ],
-  },
-
-  # ChromeOS login tests.
-  'CHROMEOS_LOGIN': {
-    'chromeos': [
-      'chromeos_login',
-      'chromeos_oobe',
-
-      # crosbug.com/32583
-      '-chromeos_login.ChromeosLoginCachedCredentialsUserPod.testCachedCredentialsUserPod',
-    ],
-  },
-
-  # ChromeOS policy tests. Some of these are shared with Desktop Chrome tests
-  # but require custom setup on ChromeOS. Others are specific to ChromeOS only.
-  'CHROMEOS_POLICY': {
-    'chromeos': [
-      'chromeos_ephemeral',
-      'chromeos_device_policy',
-      'chromeos_onc',
-      'chromeos_retail_mode',
     ],
   },
 

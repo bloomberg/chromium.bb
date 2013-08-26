@@ -1762,27 +1762,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
   handler_map_["ToggleNetworkDevice"] =
       &TestingAutomationProvider::ToggleNetworkDevice;
-  handler_map_["ConnectToCellularNetwork"] =
-      &TestingAutomationProvider::ConnectToCellularNetwork;
-  handler_map_["DisconnectFromCellularNetwork"] =
-      &TestingAutomationProvider::DisconnectFromCellularNetwork;
-  handler_map_["ConnectToWifiNetwork"] =
-      &TestingAutomationProvider::ConnectToWifiNetwork;
   handler_map_["ConnectToHiddenWifiNetwork"] =
       &TestingAutomationProvider::ConnectToHiddenWifiNetwork;
-  handler_map_["DisconnectFromWifiNetwork"] =
-      &TestingAutomationProvider::DisconnectFromWifiNetwork;
   handler_map_["ForgetWifiNetwork"] =
       &TestingAutomationProvider::ForgetWifiNetwork;
-
-  handler_map_["AddPrivateNetwork"] =
-      &TestingAutomationProvider::AddPrivateNetwork;
-  handler_map_["GetPrivateNetworkInfo"] =
-      &TestingAutomationProvider::GetPrivateNetworkInfo;
-  handler_map_["ConnectToPrivateNetwork"] =
-      &TestingAutomationProvider::ConnectToPrivateNetwork;
-  handler_map_["DisconnectFromPrivateNetwork"] =
-      &TestingAutomationProvider::DisconnectFromPrivateNetwork;
 
   handler_map_["EnableSpokenFeedback"] =
       &TestingAutomationProvider::EnableSpokenFeedback;
@@ -1799,10 +1782,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["SetMute"] = &TestingAutomationProvider::SetMute;
 
   handler_map_["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
-  handler_map_["SetProxySettings"] =
-      &TestingAutomationProvider::SetProxySettings;
-  handler_map_["SetSharedProxies"] =
-      &TestingAutomationProvider::SetSharedProxies;
 
   browser_handler_map_["GetTimeInfo"] =
       &TestingAutomationProvider::GetTimeInfo;
