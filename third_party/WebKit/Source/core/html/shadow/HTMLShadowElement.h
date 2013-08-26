@@ -66,6 +66,12 @@ inline const HTMLShadowElement* toHTMLShadowElement(const Node* node)
     ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLShadowElement(node));
     return static_cast<const HTMLShadowElement*>(node);
 }
+
+inline bool isActiveShadowInsertionPoint(const Node* node)
+{
+    return isHTMLShadowElement(node) && toHTMLShadowElement(node)->isActive();
+}
+
 } // namespace WebCore
 
 #endif // HTMLShadowElement_h

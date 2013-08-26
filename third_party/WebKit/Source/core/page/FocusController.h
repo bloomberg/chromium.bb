@@ -39,6 +39,7 @@ class Document;
 class Element;
 class Frame;
 class HTMLFrameOwnerElement;
+class HTMLShadowElement;
 class IntRect;
 class KeyboardEvent;
 class Node;
@@ -50,8 +51,10 @@ public:
     Node* rootNode() const;
     Element* owner() const;
     static FocusNavigationScope focusNavigationScopeOf(Node*);
-    static FocusNavigationScope focusNavigationScopeOwnedByShadowHost(Node*);
-    static FocusNavigationScope focusNavigationScopeOwnedByIFrame(HTMLFrameOwnerElement*);
+    static FocusNavigationScope ownedByNonFocusableFocusScopeOwner(Node*);
+    static FocusNavigationScope ownedByShadowHost(Node*);
+    static FocusNavigationScope ownedByShadowInsertionPoint(HTMLShadowElement*);
+    static FocusNavigationScope ownedByIFrame(HTMLFrameOwnerElement*);
 
 private:
     explicit FocusNavigationScope(TreeScope*);

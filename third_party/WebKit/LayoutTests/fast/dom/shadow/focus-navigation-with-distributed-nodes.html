@@ -27,7 +27,7 @@ function testWithDistributedNodes()
                   createDOM('input', {'id': 'input-3', 'tabindex': 1})));
     sandbox.offsetLeft;
 
-    var elementsInFocusNavigationOrder = ['input-1', 'shadowhost', 'distributed-node-1', 'shadowhost/input-2', 'distributed-node-2', 'input-3'];
+    var elementsInFocusNavigationOrder = ['input-1', 'shadowhost', 'shadowhost/input-2', 'distributed-node-2', 'distributed-node-1', 'input-3'];
     testFocusNavigationFowrad(elementsInFocusNavigationOrder);
     elementsInFocusNavigationOrder.reverse()
     testFocusNavigationBackward(elementsInFocusNavigationOrder)

@@ -8,25 +8,23 @@ Should move from input-C-1 to host-B in forward
 PASS
 Should move from host-B to host-B//younger-input-A-1 in forward
 PASS
-Should move from host-B//younger-input-A-1 to host-B/older-input-A-1 in forward
-PASS
-Should move from host-B/older-input-A-1 to light-child-selected-1 in forward
-PASS
-Should move from light-child-selected-1 to host-B/older-input-B-1 in forward
-PASS
-Should move from host-B/older-input-B-1 to host-B//younger-input-B-1 in forward
+Should move from host-B//younger-input-A-1 to host-B//younger-input-B-1 in forward
 PASS
 Should move from host-B//younger-input-B-1 to host-B//younger-input-A-0 in forward
 PASS
-Should move from host-B//younger-input-A-0 to host-B/older-input-A-0 in forward
+Should move from host-B//younger-input-A-0 to host-B/older-input-A-1 in forward
 PASS
-Should move from host-B/older-input-A-0 to light-child-selected-0 in forward
+Should move from host-B/older-input-A-1 to host-B/older-input-B-1 in forward
 PASS
-Should move from light-child-selected-0 to host-B/older-input-B-0 in forward
+Should move from host-B/older-input-B-1 to host-B/older-input-A-0 in forward
+PASS
+Should move from host-B/older-input-A-0 to host-B/older-input-B-0 in forward
 PASS
 Should move from host-B/older-input-B-0 to host-B//younger-input-B-0 in forward
 PASS
-Should move from host-B//younger-input-B-0 to input-D-1 in forward
+Should move from host-B//younger-input-B-0 to light-child-selected-1 in forward
+PASS
+Should move from light-child-selected-1 to input-D-1 in forward
 PASS
 Should move from input-D-1 to input-A-0 in forward
 PASS
@@ -42,7 +40,9 @@ Should move from host-A/nested-host/input-15 to host-A/nested-host/input-25 in f
 PASS
 Should move from host-A/nested-host/input-25 to input-B-0 in forward
 PASS
-Should move from input-B-0 to input-C-0 in forward
+Should move from input-B-0 to light-child-selected-0 in forward
+PASS
+Should move from light-child-selected-0 to input-C-0 in forward
 PASS
 Should move from input-C-0 to input-D-0 in forward
 PASS
@@ -60,7 +60,9 @@ Should move from host-D to input-D-0 in backward
 PASS
 Should move from input-D-0 to input-C-0 in backward
 PASS
-Should move from input-C-0 to input-B-0 in backward
+Should move from input-C-0 to light-child-selected-0 in backward
+PASS
+Should move from light-child-selected-0 to input-B-0 in backward
 PASS
 Should move from input-B-0 to host-A/nested-host/input-25 in backward
 PASS
@@ -76,25 +78,23 @@ Should move from host-A/input-1 to input-A-0 in backward
 PASS
 Should move from input-A-0 to input-D-1 in backward
 PASS
-Should move from input-D-1 to host-B//younger-input-B-0 in backward
+Should move from input-D-1 to light-child-selected-1 in backward
+PASS
+Should move from light-child-selected-1 to host-B//younger-input-B-0 in backward
 PASS
 Should move from host-B//younger-input-B-0 to host-B/older-input-B-0 in backward
 PASS
-Should move from host-B/older-input-B-0 to light-child-selected-0 in backward
+Should move from host-B/older-input-B-0 to host-B/older-input-A-0 in backward
 PASS
-Should move from light-child-selected-0 to host-B/older-input-A-0 in backward
+Should move from host-B/older-input-A-0 to host-B/older-input-B-1 in backward
 PASS
-Should move from host-B/older-input-A-0 to host-B//younger-input-A-0 in backward
+Should move from host-B/older-input-B-1 to host-B/older-input-A-1 in backward
+PASS
+Should move from host-B/older-input-A-1 to host-B//younger-input-A-0 in backward
 PASS
 Should move from host-B//younger-input-A-0 to host-B//younger-input-B-1 in backward
 PASS
-Should move from host-B//younger-input-B-1 to host-B/older-input-B-1 in backward
-PASS
-Should move from host-B/older-input-B-1 to light-child-selected-1 in backward
-PASS
-Should move from light-child-selected-1 to host-B/older-input-A-1 in backward
-PASS
-Should move from host-B/older-input-A-1 to host-B//younger-input-A-1 in backward
+Should move from host-B//younger-input-B-1 to host-B//younger-input-A-1 in backward
 PASS
 Should move from host-B//younger-input-A-1 to host-B in backward
 PASS
@@ -103,8 +103,6 @@ PASS
 Should move from input-C-1 to input-B-1 in backward
 PASS
 Should move from input-B-1 to input-A-1 in backward
-PASS
-Should move from input-A-1 to input-E-0 in backward
 PASS
 Test finished.
 
