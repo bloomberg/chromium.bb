@@ -15,7 +15,9 @@ FakeNotifierSettingsProvider::NotifierGroupItem::NotifierGroupItem() {
 FakeNotifierSettingsProvider::NotifierGroupItem::~NotifierGroupItem() {
 }
 
-FakeNotifierSettingsProvider::FakeNotifierSettingsProvider() {
+FakeNotifierSettingsProvider::FakeNotifierSettingsProvider()
+    : closed_called_count_(0),
+      active_item_index_(0) {
 }
 
 FakeNotifierSettingsProvider::FakeNotifierSettingsProvider(
