@@ -59,14 +59,10 @@
         'c_sources': [
           'compat/msvcrt/snprintf.c',
           'compat/strtod.c',
-          'libavcodec/file_open.c',
-          'libavformat/file_open.c',
         ],
         'converter_outputs': [
           '<(shared_generated_dir)/compat/msvcrt/snprintf.c',
           '<(shared_generated_dir)/compat/strtod.c',
-          '<(shared_generated_dir)/libavcodec/file_open.c',
-          '<(shared_generated_dir)/libavformat/file_open.c',
         ],
       }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "Chromium") and (OS == "win")
       ['(1) and (ffmpeg_branding == "ChromeOS") and (1)', {
