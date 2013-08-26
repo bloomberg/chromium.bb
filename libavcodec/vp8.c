@@ -2041,6 +2041,13 @@ static av_cold int vp8_decode_init(AVCodecContext *avctx)
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->internal->allocate_progress = 1;
 
+    // TODO(dalecurtis): w32pthreads.h includes static variables which result
+    // in multiple copies for each includer.  Hack around our version not being
+    // initialized by calling initialize again.
+#if HAVE_W32THREADS
+    w32thread_init();
+#endif
+
     ff_videodsp_init(&s->vdsp, 8);
     ff_h264_pred_init(&s->hpc, AV_CODEC_ID_VP8, 8, 1);
     ff_vp8dsp_init(&s->vp8dsp);
