@@ -587,6 +587,7 @@ void Document::dispose()
     m_documentElement = 0;
     m_contextFeatures = ContextFeatures::defaultSwitch();
     m_userActionElements.documentDidRemoveLastRef();
+    m_associatedFormControls.clear();
 
     detachParser();
 

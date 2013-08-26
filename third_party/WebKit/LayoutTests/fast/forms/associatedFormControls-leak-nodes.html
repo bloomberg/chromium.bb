@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<iframe id="frame"></iframe>
+
+<script src="../js/resources/js-test-pre.js"></script>
+<script>
+if (!window.internals) {
+    debug("This test only runs on \"content_shell --dump-render-tree\", as it requires existence of window.internals.");
+} else {
+    gc();
+    var documentsBefore = window.internals.numberOfLiveDocuments();
+
+    var frame = document.getElementById('frame');
+    frame.contentDocument.body.innerHTML = '<form></form>';
+    document.body.removeChild(frame);
+    frame = null;
+
+    gc();
+    var documentsAfter = window.internals.numberOfLiveDocuments();
+
+    // -1 is from removing frame itself.
+    shouldBe('documentsBefore - 1', 'documentsAfter');
+}
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
