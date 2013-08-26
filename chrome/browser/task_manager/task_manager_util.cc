@@ -41,6 +41,8 @@ int GetMessagePrefixID(bool is_app,
     return IDS_TASK_MANAGER_PRERENDER_PREFIX;
   if (is_instant_overlay)
     return IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX;
+  if (is_incognito)
+    return IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX;
 
   return IDS_TASK_MANAGER_TAB_PREFIX;
 }

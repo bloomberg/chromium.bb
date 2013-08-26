@@ -1342,6 +1342,7 @@
         'browser/tab_contents/render_view_context_menu_test_util.h',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/task_manager/task_manager_unittest.cc',
+        'browser/task_manager/task_manager_util_unittest.cc',
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_properties_unittest.cc',

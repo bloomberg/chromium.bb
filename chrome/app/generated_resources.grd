@@ -3533,6 +3533,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_TASK_MANAGER_TAB_PREFIX" desc="The prefix for a Task Manager Tab row">
         Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito Tab row (may not be visible if incognito is not open)">
+        Incognito Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
+      </message>
       <message name="IDS_TASK_MANAGER_BACKGROUND_PREFIX" desc="The prefix for a Task Manager background page row">
         Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
       </message>
