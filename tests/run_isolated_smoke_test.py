@@ -10,7 +10,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -65,7 +64,8 @@ def write_json(filepath, data):
 
 class RunSwarmStep(unittest.TestCase):
   def setUp(self):
-    self.tempdir = tempfile.mkdtemp(prefix='run_isolated_smoke_test')
+    self.tempdir = run_isolated.make_temp_dir(
+        'run_isolated_smoke_test', ROOT_DIR)
     logging.debug(self.tempdir)
     # run_isolated.zip executable package.
     self.run_isolated_zip = os.path.join(self.tempdir, 'run_isolated.zip')
@@ -182,7 +182,7 @@ class RunSwarmStep(unittest.TestCase):
   def test_download_isolated(self):
     out_dir = None
     try:
-      out_dir = tempfile.mkdtemp()
+      out_dir = run_isolated.make_temp_dir('run_isolated_smoke_test', ROOT_DIR)
 
       # Store the required files.
       self._store('file1.txt')
