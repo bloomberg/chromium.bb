@@ -6,6 +6,7 @@ message ShaderInfoProto {
   optional string name = 3;
   optional string key = 4;
   optional int32 precision = 5;
+  optional int32 static_use = 6;  
 }
 
 message ShaderProto {

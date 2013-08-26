@@ -165,6 +165,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
   static const int kAttrib2Precision = SH_PRECISION_HIGHP;
   static const int kAttrib3Precision = SH_PRECISION_LOWP;
+  static const int kAttribStaticUse = 0;
   static const GLint kAttrib1Location = 0;
   static const GLint kAttrib2Location = 1;
   static const GLint kAttrib3Location = 2;
@@ -184,6 +185,9 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const int kUniform1Precision = SH_PRECISION_LOWP;
   static const int kUniform2Precision = SH_PRECISION_MEDIUMP;
   static const int kUniform3Precision = SH_PRECISION_HIGHP;
+  static const int kUniform1StaticUse = 1;
+  static const int kUniform2StaticUse = 1;
+  static const int kUniform3StaticUse = 1;
   static const GLint kUniform1FakeLocation = 0;  // These are hard coded
   static const GLint kUniform2FakeLocation = 1;  // to match
   static const GLint kUniform3FakeLocation = 2;  // ProgramManager.
@@ -266,6 +270,82 @@ class ProgramManagerWithShaderTest : public testing::Test {
     GLint link_status;
     program->GetProgramiv(GL_LINK_STATUS, &link_status);
     return (static_cast<bool>(link_status) == expected_link_status);
+  }
+
+  Program* SetupVaryingsMatchingTest(bool vertex_varying_declare,
+                                     int vertex_varying_type,
+                                     int vertex_varying_size,
+                                     int vertex_varying_precision,
+                                     int vertex_varying_static_use,
+                                     bool frag_varying_declare,
+                                     int frag_varying_type,
+                                     int frag_varying_size,
+                                     int frag_varying_precision,
+                                     int frag_varying_static_use) {
+    // Set up shader
+    const GLuint kVShaderClientId = 1;
+    const GLuint kVShaderServiceId = 11;
+    const GLuint kFShaderClientId = 2;
+    const GLuint kFShaderServiceId = 12;
+
+    MockShaderTranslator vertex_shader_translator;
+    ShaderTranslator::VariableMap vertex_attrib_map;
+    ShaderTranslator::VariableMap vertex_uniform_map;
+    ShaderTranslator::VariableMap vertex_varying_map;
+    if (vertex_varying_declare) {
+      vertex_varying_map["a"] = ShaderTranslator::VariableInfo(
+          vertex_varying_type, vertex_varying_size,
+          vertex_varying_precision, vertex_varying_static_use, "a");
+    }
+    ShaderTranslator::NameMap vertex_name_map;
+    EXPECT_CALL(vertex_shader_translator, attrib_map())
+        .WillRepeatedly(ReturnRef(vertex_attrib_map));
+    EXPECT_CALL(vertex_shader_translator, uniform_map())
+        .WillRepeatedly(ReturnRef(vertex_uniform_map));
+    EXPECT_CALL(vertex_shader_translator, varying_map())
+        .WillRepeatedly(ReturnRef(vertex_varying_map));
+    EXPECT_CALL(vertex_shader_translator, name_map())
+      .WillRepeatedly(ReturnRef(vertex_name_map));
+
+    MockShaderTranslator frag_shader_translator;
+    ShaderTranslator::VariableMap frag_attrib_map;
+    ShaderTranslator::VariableMap frag_uniform_map;
+    ShaderTranslator::VariableMap frag_varying_map;
+    if (frag_varying_declare) {
+      frag_varying_map["a"] = ShaderTranslator::VariableInfo(
+          frag_varying_type, frag_varying_size,
+          frag_varying_precision, frag_varying_static_use, "a");
+    }
+    ShaderTranslator::NameMap frag_name_map;
+    EXPECT_CALL(frag_shader_translator, attrib_map())
+        .WillRepeatedly(ReturnRef(frag_attrib_map));
+    EXPECT_CALL(frag_shader_translator, uniform_map())
+        .WillRepeatedly(ReturnRef(frag_uniform_map));
+    EXPECT_CALL(frag_shader_translator, varying_map())
+        .WillRepeatedly(ReturnRef(frag_varying_map));
+    EXPECT_CALL(frag_shader_translator, name_map())
+      .WillRepeatedly(ReturnRef(frag_name_map));
+
+    // Check we can create shader.
+    Shader* vshader = shader_manager_.CreateShader(
+        kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+    Shader* fshader = shader_manager_.CreateShader(
+        kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+    // Check shader got created.
+    EXPECT_TRUE(vshader != NULL && fshader != NULL);
+    // Set Status
+    vshader->SetStatus(true, "", &vertex_shader_translator);
+    fshader->SetStatus(true, "", &frag_shader_translator);
+
+    // Set up program
+    const GLuint kClientProgramId = 6666;
+    const GLuint kServiceProgramId = 8888;
+    Program* program =
+        manager_.CreateProgram(kClientProgramId, kServiceProgramId);
+    EXPECT_TRUE(program != NULL);
+    EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
+    EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
+    return program;
   }
 
   static AttribInfo kAttribs[];
@@ -678,17 +758,23 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ShaderTranslator::VariableMap uniform_map;
   ShaderTranslator::VariableMap varying_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib1Type, kAttrib1Size, kAttrib1Precision, kAttrib1Name);
+      kAttrib1Type, kAttrib1Size, kAttrib1Precision,
+      kAttribStaticUse, kAttrib1Name);
   attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib2GoodType, kAttrib2Size, kAttrib2Precision, kAttrib2Name);
+      kAttrib2GoodType, kAttrib2Size, kAttrib2Precision,
+      kAttribStaticUse, kAttrib2Name);
   attrib_map[kAttrib3Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib3Type, kAttrib3Size, kAttrib3Precision, kAttrib3Name);
+      kAttrib3Type, kAttrib3Size, kAttrib3Precision,
+      kAttribStaticUse, kAttrib3Name);
   uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform1Type, kUniform1Size, kUniform1Precision, kUniform1Name);
+      kUniform1Type, kUniform1Size, kUniform1Precision,
+      kUniform1StaticUse, kUniform1Name);
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform2GoodType, kUniform2Size, kUniform2Precision, kUniform2Name);
+      kUniform2GoodType, kUniform2Size, kUniform2Precision,
+      kUniform2StaticUse, kUniform2Name);
   uniform_map[kUniform3GoodName] = ShaderTranslatorInterface::VariableInfo(
-      kUniform3Type, kUniform3Size, kUniform3Precision, kUniform3GoodName);
+      kUniform3Type, kUniform3Size, kUniform3Precision,
+      kUniform3StaticUse, kUniform3GoodName);
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
@@ -949,6 +1035,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
         kAttribs[ii].type,
         kAttribs[ii].size,
         SH_PRECISION_MEDIUMP,
+        kAttribStaticUse,
         kAttribs[ii].name);
   }
   ShaderTranslator::VariableMap uniform_map;
@@ -980,6 +1067,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
     EXPECT_EQ(it->second.precision, variable_info->precision);
+    EXPECT_EQ(it->second.static_use, variable_info->static_use);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
   fshader->SetStatus(true, "", NULL);
@@ -1024,7 +1112,7 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   ShaderTranslator::VariableMap vertex_attrib_map;
   ShaderTranslator::VariableMap vertex_uniform_map;
   vertex_uniform_map["a"] = ShaderTranslator::VariableInfo(
-      1, 3, SH_PRECISION_MEDIUMP, "a");
+      1, 3, SH_PRECISION_MEDIUMP, 1, "a");
   ShaderTranslator::VariableMap vertex_varying_map;
   ShaderTranslator::NameMap vertex_name_map;
   EXPECT_CALL(vertex_shader_translator, attrib_map())
@@ -1040,7 +1128,7 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   ShaderTranslator::VariableMap frag_attrib_map;
   ShaderTranslator::VariableMap frag_uniform_map;
   frag_uniform_map["a"] = ShaderTranslator::VariableInfo(
-      1, 3, SH_PRECISION_LOWP, "a");
+      1, 3, SH_PRECISION_LOWP, 1, "a");
   ShaderTranslator::VariableMap frag_varying_map;
   ShaderTranslator::NameMap frag_name_map;
   EXPECT_CALL(frag_shader_translator, attrib_map())
@@ -1074,6 +1162,62 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
 
   EXPECT_TRUE(program->DetectUniformsMismatch());
   EXPECT_TRUE(LinkAsExpected(program, false));
+}
+
+// If a varying has different type in the vertex and fragment
+// shader, linking should fail.
+TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
+  Program* program = SetupVaryingsMatchingTest(
+      true, SH_FLOAT_VEC3, 1, SH_PRECISION_MEDIUMP, 1,
+      true, SH_FLOAT_VEC4, 1, SH_PRECISION_MEDIUMP, 1);
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, false));
+}
+
+// If a varying has different array size in the vertex and fragment
+// shader, linking should fail.
+TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
+  Program* program = SetupVaryingsMatchingTest(
+      true, SH_FLOAT, 2, SH_PRECISION_MEDIUMP, 1,
+      true, SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 1);
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, false));
+}
+
+// If a varying has different precision in the vertex and fragment
+// shader, linking should succeed.
+TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
+  Program* program = SetupVaryingsMatchingTest(
+      true, SH_FLOAT, 2, SH_PRECISION_HIGHP, 1,
+      true, SH_FLOAT, 2, SH_PRECISION_MEDIUMP, 1);
+
+  EXPECT_FALSE(program->DetectVaryingsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, true));
+}
+
+// If a varying is statically used in fragment shader but not
+// declared in vertex shader, link should fail.
+TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
+  Program* program = SetupVaryingsMatchingTest(
+      false, 0, 0, 0, 0,
+      true, SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 1);
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, false));
+}
+
+// If a varying is declared but not statically used in fragment
+// shader, even if it's not declared in vertex shader, link should
+// succeed.
+TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
+  Program* program = SetupVaryingsMatchingTest(
+      false, 0, 0, 0, 0,
+      true, SH_FLOAT, 3, SH_PRECISION_MEDIUMP, 0);
+
+  EXPECT_FALSE(program->DetectVaryingsMismatch());
+  EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
 TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {

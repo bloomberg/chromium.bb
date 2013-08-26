@@ -538,6 +538,12 @@ bool Program::Link(ShaderManager* manager,
     set_log_info("Uniforms with the same name but different type/precision");
     return false;
   }
+  if (DetectVaryingsMismatch()) {
+    set_log_info("Varyings with the same name but different type, "
+                 "or statically used varyings in fragment shader are not "
+                 "declared in vertex shader");
+    return false;
+  }
 
   TimeTicks before_time = TimeTicks::HighResNow();
   bool link = true;
@@ -1011,6 +1017,52 @@ bool Program::DetectUniformsMismatch() const {
         return true;
       }
     }
+  }
+  return false;
+}
+
+bool Program::DetectVaryingsMismatch() const {
+  DCHECK(attached_shaders_[0] &&
+         attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
+         attached_shaders_[1] &&
+         attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
+  const ShaderTranslator::VariableMap* vertex_varyings =
+      &(attached_shaders_[0]->varying_map());
+  const ShaderTranslator::VariableMap* fragment_varyings =
+      &(attached_shaders_[1]->varying_map());
+
+  for (ShaderTranslator::VariableMap::const_iterator iter =
+           fragment_varyings->begin();
+       iter != fragment_varyings->end(); ++iter) {
+    // Built-in variables.
+    const char* kBuiltInVaryings[] = {
+        "gl_FragCoord",
+        "gl_FrontFacing",
+        "gl_PointCoord"
+    };
+    const std::string& name = iter->first;
+    bool is_built_in = false;
+    for (size_t ii = 0; ii < arraysize(kBuiltInVaryings); ++ii) {
+      if (name == kBuiltInVaryings[ii]) {
+        is_built_in = true;
+        break;
+      }
+    }
+    if (is_built_in)
+      continue;
+
+    ShaderTranslator::VariableMap::const_iterator hit =
+        vertex_varyings->find(name);
+    if (hit == vertex_varyings->end()) {
+      if (iter->second.static_use)
+        return true;
+      continue;
+    }
+
+    if (hit->second.type != iter->second.type ||
+        hit->second.size != iter->second.size)
+      return true;
+
   }
   return false;
 }
