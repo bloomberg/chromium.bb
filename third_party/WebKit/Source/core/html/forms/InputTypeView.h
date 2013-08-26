@@ -62,16 +62,15 @@ public:
     RefPtr<HTMLInputElement> checkedRadioButton;
 };
 
-// An InputTypeUI object represents the UI-specific part of an HTMLInputElement.
-// Do not expose instances of InputTypeUI and classes derived from it to classes
-// other than HTMLInputElement.
-// FIXME: Rename InputTypeUI to InputTypeView.
-class InputTypeUI {
-    WTF_MAKE_NONCOPYABLE(InputTypeUI);
+// An InputTypeView object represents the UI-specific part of an
+// HTMLInputElement. Do not expose instances of InputTypeView and classes
+// derived from it to classes other than HTMLInputElement.
+class InputTypeView {
+    WTF_MAKE_NONCOPYABLE(InputTypeView);
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    virtual ~InputTypeUI();
+    virtual ~InputTypeView();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);
@@ -111,11 +110,12 @@ public:
     virtual void updateClearButtonVisibility();
 
 protected:
-    InputTypeUI(HTMLInputElement* element) : m_element(element) { }
+    InputTypeView(HTMLInputElement* element) : m_element(element) { }
     HTMLInputElement* element() const { return m_element; }
 
 private:
-    // Raw pointer because the HTMLInputElement object owns this InputTypeUI object.
+    // Raw pointer because the HTMLInputElement object owns this InputTypeView
+    // object.
     HTMLInputElement* m_element;
 };
 

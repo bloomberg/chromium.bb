@@ -34,162 +34,162 @@
 
 namespace WebCore {
 
-InputTypeUI::~InputTypeUI()
+InputTypeView::~InputTypeView()
 {
 }
 
-bool InputTypeUI::sizeShouldIncludeDecoration(int, int& preferredSize) const
+bool InputTypeView::sizeShouldIncludeDecoration(int, int& preferredSize) const
 {
     preferredSize = element()->size();
     return false;
 }
 
-void InputTypeUI::handleClickEvent(MouseEvent*)
+void InputTypeView::handleClickEvent(MouseEvent*)
 {
 }
 
-void InputTypeUI::handleMouseDownEvent(MouseEvent*)
+void InputTypeView::handleMouseDownEvent(MouseEvent*)
 {
 }
 
-void InputTypeUI::handleDOMActivateEvent(Event*)
+void InputTypeView::handleDOMActivateEvent(Event*)
 {
 }
 
-void InputTypeUI::handleKeydownEvent(KeyboardEvent*)
+void InputTypeView::handleKeydownEvent(KeyboardEvent*)
 {
 }
 
-void InputTypeUI::handleKeypressEvent(KeyboardEvent*)
+void InputTypeView::handleKeypressEvent(KeyboardEvent*)
 {
 }
 
-void InputTypeUI::handleKeyupEvent(KeyboardEvent*)
+void InputTypeView::handleKeyupEvent(KeyboardEvent*)
 {
 }
 
-void InputTypeUI::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
+void InputTypeView::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
 {
 }
 
-void InputTypeUI::handleTouchEvent(TouchEvent*)
+void InputTypeView::handleTouchEvent(TouchEvent*)
 {
 }
 
-void InputTypeUI::forwardEvent(Event*)
+void InputTypeView::forwardEvent(Event*)
 {
 }
 
-bool InputTypeUI::shouldSubmitImplicitly(Event* event)
+bool InputTypeView::shouldSubmitImplicitly(Event* event)
 {
     return false;
 }
 
-PassRefPtr<HTMLFormElement> InputTypeUI::formForSubmission() const
+PassRefPtr<HTMLFormElement> InputTypeView::formForSubmission() const
 {
     return element()->form();
 }
 
-RenderObject* InputTypeUI::createRenderer(RenderStyle* style) const
+RenderObject* InputTypeView::createRenderer(RenderStyle* style) const
 {
     return RenderObject::createObject(element(), style);
 }
 
-PassRefPtr<RenderStyle> InputTypeUI::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
+PassRefPtr<RenderStyle> InputTypeView::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
 {
     return originalStyle;
 }
 
-void InputTypeUI::blur()
+void InputTypeView::blur()
 {
     element()->defaultBlur();
 }
 
-bool InputTypeUI::hasCustomFocusLogic() const
+bool InputTypeView::hasCustomFocusLogic() const
 {
     return false;
 }
 
-void InputTypeUI::handleFocusEvent(Element*, FocusDirection)
+void InputTypeView::handleFocusEvent(Element*, FocusDirection)
 {
 }
 
-void InputTypeUI::handleBlurEvent()
+void InputTypeView::handleBlurEvent()
 {
 }
 
-void InputTypeUI::attach()
+void InputTypeView::attach()
 {
 }
 
-void InputTypeUI::altAttributeChanged()
+void InputTypeView::altAttributeChanged()
 {
 }
 
-void InputTypeUI::srcAttributeChanged()
+void InputTypeView::srcAttributeChanged()
 {
 }
 
-void InputTypeUI::minOrMaxAttributeChanged()
+void InputTypeView::minOrMaxAttributeChanged()
 {
 }
 
-void InputTypeUI::stepAttributeChanged()
+void InputTypeView::stepAttributeChanged()
 {
 }
 
-PassOwnPtr<ClickHandlingState> InputTypeUI::willDispatchClick()
+PassOwnPtr<ClickHandlingState> InputTypeView::willDispatchClick()
 {
     return nullptr;
 }
 
-void InputTypeUI::didDispatchClick(Event*, const ClickHandlingState&)
+void InputTypeView::didDispatchClick(Event*, const ClickHandlingState&)
 {
 }
 
-void InputTypeUI::updateInnerTextValue()
+void InputTypeView::updateInnerTextValue()
 {
 }
 
-void InputTypeUI::attributeChanged()
+void InputTypeView::attributeChanged()
 {
 }
 
-void InputTypeUI::multipleAttributeChanged()
+void InputTypeView::multipleAttributeChanged()
 {
 }
 
-void InputTypeUI::disabledAttributeChanged()
+void InputTypeView::disabledAttributeChanged()
 {
 }
 
-void InputTypeUI::readonlyAttributeChanged()
+void InputTypeView::readonlyAttributeChanged()
 {
 }
 
-void InputTypeUI::requiredAttributeChanged()
+void InputTypeView::requiredAttributeChanged()
 {
 }
 
-void InputTypeUI::valueAttributeChanged()
+void InputTypeView::valueAttributeChanged()
 {
 }
 
-void InputTypeUI::subtreeHasChanged()
+void InputTypeView::subtreeHasChanged()
 {
     ASSERT_NOT_REACHED();
 }
 
-bool InputTypeUI::hasTouchEventHandler() const
+bool InputTypeView::hasTouchEventHandler() const
 {
     return false;
 }
 
-void InputTypeUI::listAttributeTargetChanged()
+void InputTypeView::listAttributeTargetChanged()
 {
 }
 
-void InputTypeUI::updateClearButtonVisibility()
+void InputTypeView::updateClearButtonVisibility()
 {
 }
 

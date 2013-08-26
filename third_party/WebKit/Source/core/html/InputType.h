@@ -52,8 +52,8 @@ class Node;
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
-// FIXME: InputType should not inherit InputTypeUI. It's conceptually wrong.
-class InputType : public InputTypeUI {
+// FIXME: InputType should not inherit InputTypeView. It's conceptually wrong.
+class InputType : public InputTypeView {
     WTF_MAKE_NONCOPYABLE(InputType);
     WTF_MAKE_FAST_ALLOCATED;
 
@@ -234,12 +234,12 @@ public:
 
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
-    // InputTypeUI override
+    // InputTypeView override
     virtual bool shouldSubmitImplicitly(Event*) OVERRIDE;
     virtual bool hasCustomFocusLogic() const OVERRIDE;
 
 protected:
-    InputType(HTMLInputElement* element) : InputTypeUI(element) { }
+    InputType(HTMLInputElement* element) : InputTypeView(element) { }
     Chrome* chrome() const;
     Decimal parseToNumberOrNaN(const String&) const;
     void observeFeatureIfVisible(UseCounter::Feature) const;
