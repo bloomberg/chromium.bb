@@ -708,7 +708,6 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
-  create_delta_sysroot=True,
 )
 
 # Used for paladin builders that build from source.
