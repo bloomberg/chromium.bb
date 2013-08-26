@@ -291,6 +291,57 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
   EXPECT_TRUE(test_dialog->done());
 }
 
+// Tests that the constrained window behaves properly when moving its tab
+// between browser windows.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
+  // Open a second browser.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+
+  // Create a second WebContents in the second browser, so that moving the
+  // WebContents does not trigger the browser to close immediately. This mimics
+  // the behavior when a user drags tabs between browsers.
+  content::WebContents* web_contents = content::WebContents::Create(
+      content::WebContents::CreateParams(browser()->profile()));
+  browser2->tab_strip_model()->AppendWebContents(web_contents, true);
+  ASSERT_EQ(web_contents, browser2->tab_strip_model()->GetActiveWebContents());
+
+  // Create a constrained dialog.  It will attach itself to web_contents.
+  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  ASSERT_TRUE(modal_delegate != NULL);
+  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
+      test_dialog.get(),
+      web_contents->GetView()->GetNativeView(),
+      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
+  EXPECT_TRUE(window->IsVisible());
+
+  // Detach the web contents from the second browser's tab strip.
+  browser2->tab_strip_model()->DetachWebContentsAt(
+      browser2->tab_strip_model()->GetIndexOfWebContents(web_contents));
+
+  // Append the web contents to the first browser.
+  browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+  EXPECT_TRUE(window->IsVisible());
+
+  // Close the second browser.
+  browser2->tab_strip_model()->CloseAllTabs();
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(window->IsVisible());
+
+  // Close the dialog's tab.
+  bool closed =
+      browser()->tab_strip_model()->CloseWebContentsAt(
+          browser()->tab_strip_model()->GetIndexOfWebContents(web_contents),
+          TabStripModel::CLOSE_NONE);
+  EXPECT_TRUE(closed);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(test_dialog->done());
+}
+
 #if defined(OS_WIN) || (defined(USE_AURA) && defined(USE_X11))
 
 // Forwards the key event which has |key_code| to the renderer.
