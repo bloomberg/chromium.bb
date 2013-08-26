@@ -96,7 +96,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
+    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
     webViewImpl->enableFixedLayoutMode(true);
     webViewImpl->settings()->setViewportEnabled(true);
     int pageWidth = 640;

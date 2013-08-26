@@ -59,7 +59,7 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
     const std::string fileName("test_touch_link_highlight.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
+    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
@@ -164,7 +164,7 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     const std::string fileName("test_touch_link_highlight.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true, 0, compositingWebViewClient()));
+    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true, 0, compositingWebViewClient()));
 
     int pageWidth = 640;
     int pageHeight = 480;

@@ -185,7 +185,7 @@ void WebPageSerializer::serialize(WebView* view, WebVector<WebPageSerializer::Re
 {
     Vector<SerializedResource> resources;
     PageSerializer serializer(&resources);
-    serializer.serialize(static_cast<WebViewImpl*>(view)->page());
+    serializer.serialize(toWebViewImpl(view)->page());
 
     Vector<Resource> result;
     for (Vector<SerializedResource>::const_iterator iter = resources.begin(); iter != resources.end(); ++iter) {
@@ -211,14 +211,14 @@ static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::E
 
 WebCString WebPageSerializer::serializeToMHTML(WebView* view)
 {
-    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(static_cast<WebViewImpl*>(view)->page(), MHTMLArchive::UseDefaultEncoding);
+    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(toWebViewImpl(view)->page(), MHTMLArchive::UseDefaultEncoding);
     // FIXME: we are copying all the data here. Idealy we would have a WebSharedData().
     return WebCString(mhtml->data(), mhtml->size());
 }
 
 WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
 {
-    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(static_cast<WebViewImpl*>(view)->page(), MHTMLArchive::UseBinaryEncoding);
+    RefPtr<SharedBuffer> mhtml = serializePageToMHTML(toWebViewImpl(view)->page(), MHTMLArchive::UseBinaryEncoding);
     // FIXME: we are copying all the data here. Idealy we would have a WebSharedData().
     return WebCString(mhtml->data(), mhtml->size());
 }

@@ -93,10 +93,7 @@ WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebDevToolsFrontendClient* client,
     const WebString& applicationLocale)
 {
-    return new WebDevToolsFrontendImpl(
-      static_cast<WebViewImpl*>(view),
-      client,
-      applicationLocale);
+    return new WebDevToolsFrontendImpl(toWebViewImpl(view), client, applicationLocale);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(

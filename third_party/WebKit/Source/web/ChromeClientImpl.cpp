@@ -238,7 +238,7 @@ Page* ChromeClientImpl::createWindow(
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
 
-    WebViewImpl* newView = static_cast<WebViewImpl*>(
+    WebViewImpl* newView = toWebViewImpl(
         m_webView->client()->createView(WebFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy));
     if (!newView)
         return 0;

@@ -86,11 +86,10 @@ TEST_F(ProgrammaticScrollTest, UserScroll)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(webView);
     EXPECT_FALSE(client.eventReceived());
 
     // Non zero page scale and scroll.
-    webViewImpl->applyScrollAndScale(WebSize(9, 13), 2.0f);
+    toWebViewImpl(webView)->applyScrollAndScale(WebSize(9, 13), 2.0f);
     EXPECT_FALSE(client.eventReceived());
 
     webView->close();
@@ -105,8 +104,7 @@ TEST_F(ProgrammaticScrollTest, ProgrammaticScroll)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(webView);
-    WebFrameImpl* frameImpl = webViewImpl->mainFrameImpl();
+    WebFrameImpl* frameImpl = toWebViewImpl(webView)->mainFrameImpl();
     FrameView* frameView = frameImpl->frameView();
 
     // Slow scroll path.
@@ -171,7 +169,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(webView);
+    WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameView* frameView = webViewImpl->mainFrameImpl()->frameView();
     HistoryController* history = webViewImpl->page()->mainFrame()->loader()->history();
 
@@ -202,7 +200,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(webView);
+    WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameView* frameView = webViewImpl->mainFrameImpl()->frameView();
     HistoryController* history = webViewImpl->page()->mainFrame()->loader()->history();
 

@@ -838,6 +838,13 @@ private:
     Vector<RefPtr<WebHelperPluginImpl> > m_helperPluginsPendingClose;
 };
 
+inline WebViewImpl* toWebViewImpl(WebView* webView)
+{
+    // We have no ways to check if the specified WebView is an instance of
+    // WebViewImpl because WebViewImpl is the only implementation of WebView.
+    return static_cast<WebViewImpl*>(webView);
+}
+
 } // namespace WebKit
 
 #endif

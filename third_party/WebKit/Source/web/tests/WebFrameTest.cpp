@@ -178,6 +178,8 @@ public:
     }
 
 protected:
+    WebViewImpl* webViewImpl() const { return toWebViewImpl(m_webView); }
+
     std::string m_baseURL;
     std::string m_chromeURL;
     OwnPtr<FakeCompositingWebViewClient> m_fakeCompositingWebViewClient;
@@ -326,15 +328,14 @@ TEST_F(WebFrameTest, FrameViewNeedsLayoutOnFixedLayoutResize)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->mainFrameImpl()->frameView()->setFixedLayoutSize(WebCore::IntSize(100, 100));
-    EXPECT_TRUE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
+    webViewImpl()->mainFrameImpl()->frameView()->setFixedLayoutSize(WebCore::IntSize(100, 100));
+    EXPECT_TRUE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
 
-    int prevLayoutCount = webViewImpl->mainFrameImpl()->frameView()->layoutCount();
-    webViewImpl->mainFrameImpl()->frameView()->setFrameRect(WebCore::IntRect(0, 0, 641, 481));
-    EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
+    int prevLayoutCount = webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
+    webViewImpl()->mainFrameImpl()->frameView()->setFrameRect(WebCore::IntRect(0, 0, 641, 481));
+    EXPECT_EQ(prevLayoutCount, webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 
-    webViewImpl->layout();
+    webViewImpl()->layout();
 }
 
 TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
@@ -350,13 +351,12 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
 
-    WebCore::Document* document = webViewImpl->page()->mainFrame()->document();
+    WebCore::Document* document = webViewImpl()->page()->mainFrame()->document();
     document->settings()->setTextAutosizingEnabled(true);
     EXPECT_TRUE(document->settings()->textAutosizingEnabled());
-    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
-    webViewImpl->layout();
+    webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl()->layout();
 
     WebCore::RenderObject* renderer = document->renderer();
     bool multiplierSetAtLeastOnce = false;
@@ -372,7 +372,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
 
     WebCore::ViewportArguments arguments = document->viewportArguments();
     arguments.width += 10;
-    webViewImpl->updatePageDefinedPageScaleConstraints(arguments);
+    webViewImpl()->updatePageDefinedPageScaleConstraints(arguments);
 
     bool multiplierCheckedAtLeastOnce = false;
     renderer = document->renderer();
@@ -446,9 +446,8 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale)
 
     // Make sure we don't reset to initial scale if the page continues to load.
     bool isNewNavigation;
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl ->didCommitLoad(&isNewNavigation, false);
-    webViewImpl ->didChangeContentsSize();
+    webViewImpl()->didCommitLoad(&isNewNavigation, false);
+    webViewImpl()->didChangeContentsSize();
     EXPECT_EQ(userPinchPageScaleFactor, m_webView->pageScaleFactor());
 
     // Make sure we don't reset to initial scale if the viewport size changes.
@@ -487,9 +486,8 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale)
 
     // Make sure we don't reset to initial scale if the page continues to load.
     bool isNewNavigation;
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl ->didCommitLoad(&isNewNavigation, false);
-    webViewImpl ->didChangeContentsSize();
+    webViewImpl()->didCommitLoad(&isNewNavigation, false);
+    webViewImpl()->didChangeContentsSize();
     EXPECT_EQ(userPinchPageScaleFactor, m_webView->pageScaleFactor());
 
     // Make sure we don't reset to initial scale if the viewport size changes.
@@ -555,9 +553,8 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
 
     // The page sets viewport width to 3000, but with UseWideViewport == false is must be ignored.
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    EXPECT_EQ(viewportWidth, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
-    EXPECT_EQ(viewportHeight, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
+    EXPECT_EQ(viewportWidth, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(viewportHeight, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
@@ -578,9 +575,8 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
 
     // The page sets viewport width to 3000, but with UseWideViewport == false is must be ignored.
     // While the initial scale specified by the page must be accounted.
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    EXPECT_EQ(viewportWidth / 2, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
-    EXPECT_EQ(viewportHeight / 2, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
+    EXPECT_EQ(viewportWidth / 2, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(viewportHeight / 2, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
@@ -599,9 +595,8 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
     m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    EXPECT_EQ(980, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
-    EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
+    EXPECT_EQ(980, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
@@ -723,17 +718,16 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
     int viewportWidth = 64;
     int viewportHeight = 48;
 
-    m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client));
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    int prevLayoutCount = webViewImpl->mainFrameImpl()->frameView()->layoutCount();
-    webViewImpl->setPageScaleFactor(3, WebPoint());
-    EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
-    EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
+    int prevLayoutCount = webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
+    webViewImpl()->setPageScaleFactor(3, WebPoint());
+    EXPECT_FALSE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
+    EXPECT_EQ(prevLayoutCount, webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 }
 
 TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
@@ -749,17 +743,16 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client));
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    int prevLayoutCount = webViewImpl->mainFrameImpl()->frameView()->layoutCount();
-    webViewImpl->setPageScaleFactor(30, WebPoint());
-    EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
-    EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
+    int prevLayoutCount = webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
+    webViewImpl()->setPageScaleFactor(30, WebPoint());
+    EXPECT_FALSE(webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
+    EXPECT_EQ(prevLayoutCount, webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 
     WebCore::Settings::setMockScrollbarsEnabled(false);
     WebCore::Settings::setUsesOverlayScrollbars(false);
@@ -770,12 +763,12 @@ TEST_F(WebFrameTest, setPageScaleFactorBeforeFrameHasView)
     registerMockedHttpURLLoad("fixed_layout.html");
 
     float pageScaleFactor = 3;
-    m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad("about:html", true, 0, 0));
+    m_webView = FrameTestHelpers::createWebViewAndLoad("about:html", true, 0, 0);
     m_webView->setPageScaleFactor(pageScaleFactor, WebPoint());
 
     FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "fixed_layout.html");
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
     EXPECT_EQ(pageScaleFactor, view->visibleContentScaleFactor());
 }
 
@@ -794,11 +787,10 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     m_webView->setPageScaleFactor(3, WebPoint());
-    webViewImpl->page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
+    webViewImpl()->page()->mainFrame()->loader()->history()->saveDocumentAndScrollState();
     m_webView->setPageScaleFactor(1, WebPoint());
-    webViewImpl->page()->mainFrame()->loader()->history()->restoreScrollPositionAndViewState();
+    webViewImpl()->page()->mainFrame()->loader()->history()->restoreScrollPositionAndViewState();
     EXPECT_EQ(3, m_webView->pageScaleFactor());
 }
 
@@ -818,7 +810,7 @@ TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
     int viewportWidthMinusScrollbar = viewportWidth - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     int viewportHeightMinusScrollbar = viewportHeight - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
 
@@ -854,9 +846,8 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
     m_webView->setPageScaleFactor(2, WebPoint());
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    EXPECT_EQ(980, webViewImpl->page()->mainFrame()->contentRenderer()->unscaledDocumentRect().width());
-    EXPECT_EQ(980, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(980, webViewImpl()->page()->mainFrame()->contentRenderer()->unscaledDocumentRect().width());
+    EXPECT_EQ(980, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
 TEST_F(WebFrameTest, targetDensityDpiHigh)
@@ -947,53 +938,52 @@ protected:
         m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + url, true);
         m_webView->settings()->setViewportEnabled(true);
         m_webView->enableFixedLayoutMode(true);
-        WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
 
         // Origin scrollOffsets preserved under resize.
         {
-            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
             m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
-            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
+            webViewImpl()->resize(WebSize(viewportSize.height, viewportSize.width));
             float expectedPageScaleFactor = initialPageScaleFactor * (shouldScaleRelativeToViewportWidth ? 1 / aspectRatio : 1);
-            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
-            EXPECT_EQ(WebSize(), webViewImpl->mainFrame()->scrollOffset());
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl()->pageScaleFactor(), 0.05f);
+            EXPECT_EQ(WebSize(), webViewImpl()->mainFrame()->scrollOffset());
         }
 
         // Resizing just the height should not affect pageScaleFactor.
         {
-            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
             m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
-            webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 10));
-            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height * 1.25f));
-            EXPECT_EQ(initialPageScaleFactor, webViewImpl->pageScaleFactor());
-            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height * .8f));
-            EXPECT_EQ(initialPageScaleFactor, webViewImpl->pageScaleFactor());
+            webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 10));
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 1.25f));
+            EXPECT_EQ(initialPageScaleFactor, webViewImpl()->pageScaleFactor());
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * .8f));
+            EXPECT_EQ(initialPageScaleFactor, webViewImpl()->pageScaleFactor());
         }
 
         // Generic resize preserves scrollOffset relative to anchor node located
         // the top center of the screen.
         {
-            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
-            float pageScaleFactor = webViewImpl->pageScaleFactor();
-            webViewImpl->resize(WebSize(viewportSize.width, viewportSize.height));
+            webViewImpl()->resize(WebSize(viewportSize.height, viewportSize.width));
+            float pageScaleFactor = webViewImpl()->pageScaleFactor();
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
             float expectedPageScaleFactor = pageScaleFactor * (shouldScaleRelativeToViewportWidth ? aspectRatio : 1);
-            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
-            webViewImpl->mainFrame()->setScrollOffset(scrollOffset);
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl()->pageScaleFactor(), 0.05f);
+            webViewImpl()->mainFrame()->setScrollOffset(scrollOffset);
 
             WebCore::IntPoint anchorPoint = WebCore::IntPoint(scrollOffset) + WebCore::IntPoint(viewportSize.width / 2, 0);
-            RefPtr<WebCore::Node> anchorNode = webViewImpl->mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(anchorPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent).innerNode();
+            RefPtr<WebCore::Node> anchorNode = webViewImpl()->mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(anchorPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent).innerNode();
             ASSERT(anchorNode);
 
-            pageScaleFactor = webViewImpl->pageScaleFactor();
+            pageScaleFactor = webViewImpl()->pageScaleFactor();
             const WebCore::FloatSize preResizeRelativeOffset
                 = computeRelativeOffset(anchorPoint, anchorNode->boundingBox());
-            webViewImpl->resize(WebSize(viewportSize.height, viewportSize.width));
-            WebCore::IntPoint newAnchorPoint = WebCore::IntPoint(webViewImpl->mainFrame()->scrollOffset()) + WebCore::IntPoint(viewportSize.height / 2, 0);
+            webViewImpl()->resize(WebSize(viewportSize.height, viewportSize.width));
+            WebCore::IntPoint newAnchorPoint = WebCore::IntPoint(webViewImpl()->mainFrame()->scrollOffset()) + WebCore::IntPoint(viewportSize.height / 2, 0);
             const WebCore::FloatSize postResizeRelativeOffset
                 = computeRelativeOffset(newAnchorPoint, anchorNode->boundingBox());
             EXPECT_NEAR(preResizeRelativeOffset.width(), postResizeRelativeOffset.width(), 0.15f);
             expectedPageScaleFactor = pageScaleFactor * (shouldScaleRelativeToViewportWidth ? 1 / aspectRatio : 1);
-            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl->pageScaleFactor(), 0.05f);
+            EXPECT_NEAR(expectedPageScaleFactor, webViewImpl()->pageScaleFactor(), 0.05f);
         }
     }
 };
@@ -1068,7 +1058,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 
     EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
 
-    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
     WebCore::IntRect paintRect(0, 0, 200, 200);
     view->paint(&context, paintRect);
 
@@ -1093,7 +1083,7 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
     EXPECT_EQ(view->scrollSize(WebCore::HorizontalScrollbar), view->contentsSize().width() - view->visibleContentRect().width());
     EXPECT_EQ(view->scrollSize(WebCore::VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
 
@@ -1153,7 +1143,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     m_webView->layout();
 
-    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    WebCore::FrameView* view = webViewImpl()->mainFrameImpl()->frameView();
     EXPECT_TRUE(view->renderView()->compositor()->layerForHorizontalScrollbar());
     EXPECT_TRUE(view->renderView()->compositor()->layerForVerticalScrollbar());
 
@@ -1194,10 +1184,9 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
     WebPoint scroll;
     bool doubleTapShouldZoomOut;
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     // Test double-tap zooming into wide div.
-    wideBlockBounds = webViewImpl->computeBlockBounds(doubleTapPointWide, false);
-    webViewImpl->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    wideBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
+    webViewImpl()->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
     // The div should horizontally fill the screen (modulo margins), and
     // vertically centered (modulo integer rounding).
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
@@ -1205,19 +1194,19 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
     EXPECT_EQ(0, scroll.y);
     EXPECT_FALSE(doubleTapShouldZoomOut);
 
-    setScaleAndScrollAndLayout(webViewImpl, scroll, scale);
+    setScaleAndScrollAndLayout(webViewImpl(), scroll, scale);
 
     // Test zoom out back to minimum scale.
-    wideBlockBounds = webViewImpl->computeBlockBounds(doubleTapPointWide, false);
-    webViewImpl->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    wideBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
+    webViewImpl()->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
     EXPECT_TRUE(doubleTapShouldZoomOut);
 
-    scale = webViewImpl->minimumPageScaleFactor();
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), scale);
+    scale = webViewImpl()->minimumPageScaleFactor();
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), scale);
 
     // Test double-tap zooming into tall div.
-    tallBlockBounds = webViewImpl->computeBlockBounds(doubleTapPointTall, false);
-    webViewImpl->computeScaleAndScrollForBlockRect(tallBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    tallBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointTall, false);
+    webViewImpl()->computeScaleAndScrollForBlockRect(tallBlockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
     // The div should start at the top left of the viewport.
     EXPECT_NEAR(viewportWidth / (float) tallDiv.width, scale, 0.1);
     EXPECT_NEAR(tallDiv.x, scroll.x, 20);
@@ -1226,7 +1215,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
 
     // Test for Non-doubletap scaling
     // Test zooming into div.
-    webViewImpl->computeScaleAndScrollForBlockRect(webViewImpl->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, scale, scroll, doubleTapShouldZoomOut);
+    webViewImpl()->computeScaleAndScrollForBlockRect(webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, scale, scroll, doubleTapShouldZoomOut);
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
 }
 
@@ -1267,38 +1256,37 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)
     m_webView->setPageScaleFactor(0.5f, WebPoint(0, 0));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->enableFakePageScaleAnimationForTesting(true);
+    webViewImpl()->enableFakePageScaleAnimationForTesting(true);
 
     WebRect topDiv(200, 100, 200, 150);
     WebRect bottomDiv(200, 300, 200, 150);
     WebPoint topPoint(topDiv.x + 50, topDiv.y + 50);
     WebPoint bottomPoint(bottomDiv.x + 50, bottomDiv.y + 50);
     float scale;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
 
     // Test double tap on two different divs
     // After first zoom, we should go back to minimum page scale with a second double tap.
-    simulateDoubleTap(webViewImpl, topPoint, scale);
+    simulateDoubleTap(webViewImpl(), topPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    simulateDoubleTap(webViewImpl, bottomPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 
     // If the user pinch zooms after double tap, a second double tap should zoom back to the div.
-    simulateDoubleTap(webViewImpl, topPoint, scale);
+    simulateDoubleTap(webViewImpl(), topPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    webViewImpl->applyScrollAndScale(WebSize(), 0.6f);
-    simulateDoubleTap(webViewImpl, bottomPoint, scale);
+    webViewImpl()->applyScrollAndScale(WebSize(), 0.6f);
+    simulateDoubleTap(webViewImpl(), bottomPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    simulateDoubleTap(webViewImpl, bottomPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 
     // If we didn't yet get an auto-zoom update and a second double-tap arrives, should go back to minimum scale.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
-    webViewImpl->animateDoubleTapZoom(topPoint);
-    EXPECT_TRUE(webViewImpl->fakeDoubleTapAnimationPendingForTesting());
-    simulateDoubleTap(webViewImpl, bottomPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->animateDoubleTapZoom(topPoint);
+    EXPECT_TRUE(webViewImpl()->fakeDoubleTapAnimationPendingForTesting());
+    simulateDoubleTap(webViewImpl(), bottomPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
@@ -1314,8 +1302,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     m_webView->setDeviceScaleFactor(1.5f);
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->enableFakePageScaleAnimationForTesting(true);
+    webViewImpl()->enableFakePageScaleAnimationForTesting(true);
 
     WebRect div(200, 100, 200, 150);
     WebPoint doubleTapPoint(div.x + 50, div.y + 50);
@@ -1325,42 +1312,42 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1
     m_webView->setPageScaleFactorLimits(0.5f, 4);
     m_webView->layout();
-    float doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    float doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
     // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
     m_webView->setPageScaleFactorLimits(1.1f, 4);
     m_webView->layout();
-    doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
     // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
     m_webView->setPageScaleFactorLimits(0.95f, 4);
     m_webView->layout();
-    doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
@@ -1376,9 +1363,8 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->enableFakePageScaleAnimationForTesting(true);
-    webViewImpl->page()->settings().setTextAutosizingFontScaleFactor(textAutosizingFontScaleFactor);
+    webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+    webViewImpl()->page()->settings().setTextAutosizingFontScaleFactor(textAutosizingFontScaleFactor);
 
     WebRect div(200, 100, 200, 150);
     WebPoint doubleTapPoint(div.x + 50, div.y + 50);
@@ -1387,57 +1373,57 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     // Test double tap scale bounds.
     // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1 < textAutosizingFontScaleFactor
     float legibleScale = textAutosizingFontScaleFactor;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    float doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    float doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
     m_webView->setPageScaleFactorLimits(0.5f, 4);
     m_webView->layout();
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
     // 1 < textAutosizingFontScaleFactor < minimumPageScale < doubleTapZoomAlreadyLegibleScale
     m_webView->setPageScaleFactorLimits(1.0f, 4);
     m_webView->layout();
-    doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
     // minimumPageScale < 1 < textAutosizingFontScaleFactor < doubleTapZoomAlreadyLegibleScale
     m_webView->setPageScaleFactorLimits(0.95f, 4);
     m_webView->layout();
-    doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
     // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale < textAutosizingFontScaleFactor
     m_webView->setPageScaleFactorLimits(0.9f, 4);
     m_webView->layout();
-    doubleTapZoomAlreadyLegibleScale = webViewImpl->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    doubleTapZoomAlreadyLegibleScale = webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
-    EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
-    simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
+    EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+    simulateDoubleTap(webViewImpl(), doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
 }
 
@@ -1457,23 +1443,22 @@ TEST_F(WebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
     m_webView->setPageScaleFactor(0.5f, WebPoint(0, 0));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->enableFakePageScaleAnimationForTesting(true);
+    webViewImpl()->enableFakePageScaleAnimationForTesting(true);
 
     WebRect viewportRect(0, 0, viewportWidth, viewportHeight);
     WebRect topDiv(200, 100, 200, 150);
     WebRect bottomDiv(200, 300, 200, 150);
     float scale;
-    setScaleAndScrollAndLayout(webViewImpl, WebPoint(0, 0), (webViewImpl->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
+    setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), (webViewImpl()->minimumPageScaleFactor()) * (1 + doubleTapZoomAlreadyLegibleRatio) / 2);
 
-    simulateMultiTargetZoom(webViewImpl, topDiv, scale);
+    simulateMultiTargetZoom(webViewImpl(), topDiv, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    simulateMultiTargetZoom(webViewImpl, bottomDiv, scale);
+    simulateMultiTargetZoom(webViewImpl(), bottomDiv, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    simulateMultiTargetZoom(webViewImpl, viewportRect, scale);
+    simulateMultiTargetZoom(webViewImpl(), viewportRect, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    webViewImpl->setPageScaleFactor(webViewImpl->minimumPageScaleFactor(), WebPoint(0, 0));
-    simulateMultiTargetZoom(webViewImpl, topDiv, scale);
+    webViewImpl()->setPageScaleFactor(webViewImpl()->minimumPageScaleFactor(), WebPoint(0, 0));
+    simulateMultiTargetZoom(webViewImpl(), topDiv, scale);
     EXPECT_FLOAT_EQ(1, scale);
 }
 
@@ -1494,8 +1479,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     m_webView->setDeviceScaleFactor(1.5f);
     m_webView->settings()->setAutoZoomFocusedNodeToLegibleScale(true);
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->enableFakePageScaleAnimationForTesting(true);
+    webViewImpl()->enableFakePageScaleAnimationForTesting(true);
 
     WebRect editBoxWithText(200, 200, 250, 20);
     WebRect editBoxWithNoText(200, 250, 250, 20);
@@ -1507,12 +1491,12 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     m_webView->mainFrame()->document().getElementById("EditBoxWithText").to<WebInputElement>().setSelectionRange(1000, 1000);
     setScaleAndScrollAndLayout(m_webView, WebPoint(0, 0), 1);
     WebRect rect, caret;
-    webViewImpl->selectionBounds(caret, rect);
+    webViewImpl()->selectionBounds(caret, rect);
 
     float scale;
     WebCore::IntPoint scroll;
     bool needAnimation;
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
+    webViewImpl()->computeScaleAndScrollForFocusedNode(webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned with a margin for possible label.
     int hScroll = editBoxWithText.x - leftBoxRatio * viewportWidth / scale;
@@ -1526,8 +1510,8 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     viewportHeight = 150;
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     setScaleAndScrollAndLayout(m_webView, WebPoint(0, 0), 1);
-    webViewImpl->selectionBounds(caret, rect);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
+    webViewImpl()->selectionBounds(caret, rect);
+    webViewImpl()->computeScaleAndScrollForFocusedNode(webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The caret should be right aligned since the caret would be offscreen when the edit box is left aligned.
     hScroll = caret.x + caret.width + caretPadding - viewportWidth / scale;
@@ -1537,8 +1521,8 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     setScaleAndScrollAndLayout(m_webView, WebPoint(0, 0), 1);
     // Move focus to edit box with text.
     m_webView->advanceFocus(false);
-    webViewImpl->selectionBounds(caret, rect);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
+    webViewImpl()->selectionBounds(caret, rect);
+    webViewImpl()->computeScaleAndScrollForFocusedNode(webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned.
     hScroll = editBoxWithNoText.x;
@@ -1547,11 +1531,11 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_NEAR(vScroll, scroll.y(), 1);
     EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);
 
-    setScaleAndScrollAndLayout(webViewImpl, scroll, scale);
+    setScaleAndScrollAndLayout(webViewImpl(), scroll, scale);
 
     // Move focus back to the first edit box.
     m_webView->advanceFocus(true);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
+    webViewImpl()->computeScaleAndScrollForFocusedNode(webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     // The position should have stayed the same since this box was already on screen with the right scale.
     EXPECT_FALSE(needAnimation);
 }
@@ -1599,25 +1583,24 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     registerMockedHttpURLLoad(thirdURL);
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + firstURL, true);
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->mainFrame()->setScrollOffset(WebSize(pageWidth / 4, pageHeight / 4));
-    webViewImpl->setPageScaleFactorPreservingScrollOffset(pageScaleFactor);
+    webViewImpl()->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl()->mainFrame()->setScrollOffset(WebSize(pageWidth / 4, pageHeight / 4));
+    webViewImpl()->setPageScaleFactorPreservingScrollOffset(pageScaleFactor);
 
-    WebSize previousOffset = webViewImpl->mainFrame()->scrollOffset();
-    float previousScale = webViewImpl->pageScaleFactor();
+    WebSize previousOffset = webViewImpl()->mainFrame()->scrollOffset();
+    float previousScale = webViewImpl()->pageScaleFactor();
 
     // Reload the page using the cache.
-    webViewImpl->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + secondURL), false);
+    webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + secondURL), false);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    ASSERT_EQ(previousOffset, webViewImpl->mainFrame()->scrollOffset());
-    ASSERT_EQ(previousScale, webViewImpl->pageScaleFactor());
+    ASSERT_EQ(previousOffset, webViewImpl()->mainFrame()->scrollOffset());
+    ASSERT_EQ(previousScale, webViewImpl()->pageScaleFactor());
 
     // Reload the page while ignoring the cache.
-    webViewImpl->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + thirdURL), true);
+    webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + thirdURL), true);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    ASSERT_EQ(previousOffset, webViewImpl->mainFrame()->scrollOffset());
-    ASSERT_EQ(previousScale, webViewImpl->pageScaleFactor());
+    ASSERT_EQ(previousOffset, webViewImpl()->mainFrame()->scrollOffset());
+    ASSERT_EQ(previousScale, webViewImpl()->pageScaleFactor());
 }
 
 class TestReloadWhileProvisionalFrameClient : public WebFrameClient {
@@ -1672,7 +1655,7 @@ TEST_F(WebFrameTest, ClearFocusedNodeTest)
     m_webView->clearFocusedNode();
 
     // Now retrieve the FocusedNode and test it should be null.
-    EXPECT_EQ(0, static_cast<WebViewImpl*>(m_webView)->focusedElement());
+    EXPECT_EQ(0, webViewImpl()->focusedElement());
 }
 
 // Implementation of WebFrameClient that tracks the v8 contexts that are created
@@ -3365,12 +3348,11 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     m_webView->resize(WebSize(1000, 1000));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // Do a compositor scroll, verify that this is counted as a user scroll.
-    webViewImpl->applyScrollAndScale(WebSize(0, 1), 1.1f);
+    webViewImpl()->applyScrollAndScale(WebSize(0, 1), 1.1f);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
@@ -3378,23 +3360,23 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // The page scale 1.0f and scroll.
-    webViewImpl->applyScrollAndScale(WebSize(0, 1), 1.0f);
+    webViewImpl()->applyScrollAndScale(WebSize(0, 1), 1.0f);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
     // No scroll event if there is no scroll delta.
-    webViewImpl->applyScrollAndScale(WebSize(), 1.0f);
+    webViewImpl()->applyScrollAndScale(WebSize(), 1.0f);
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_FALSE(client.wasProgrammaticScroll());
     client.reset();
 
     // Non zero page scale and scroll.
-    webViewImpl->applyScrollAndScale(WebSize(9, 13), 0.6f);
+    webViewImpl()->applyScrollAndScale(WebSize(9, 13), 0.6f);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
     // Programmatic scroll.
-    WebFrameImpl* frameImpl = webViewImpl->mainFrameImpl();
+    WebFrameImpl* frameImpl = webViewImpl()->mainFrameImpl();
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_TRUE(client.wasProgrammaticScroll());
@@ -3422,12 +3404,11 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
     m_webView->resize(WebSize(1000, 1000));
     m_webView->layout();
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // Non zero page scale and scroll.
-    webViewImpl->applyScrollAndScale(WebSize(9, 13), 2.0f);
+    webViewImpl()->applyScrollAndScale(WebSize(9, 13), 2.0f);
     EXPECT_FALSE(client.wasProgrammaticScroll());
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
@@ -3477,9 +3458,8 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
     registerMockedHttpURLLoad("fragment_middle_click.html");
     TestNavigationPolicyWebFrameClient client;
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fragment_middle_click.html", true, &client);
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
 
-    WebCore::Document* document = webViewImpl->page()->mainFrame()->document();
+    WebCore::Document* document = webViewImpl()->page()->mainFrame()->document();
     WebCore::KURL destination = document->url();
     destination.setFragmentIdentifier("test");
 
@@ -3487,7 +3467,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
         document->defaultView(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, 0);
     WebCore::FrameLoadRequest frameRequest(document->securityOrigin(), WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
-    webViewImpl->page()->mainFrame()->loader()->load(frameRequest);
+    webViewImpl()->page()->mainFrame()->loader()->load(frameRequest);
 
     m_webView->close();
     m_webView = 0;
@@ -3545,9 +3525,8 @@ TEST_F(WebFrameTest, NavigateToSame)
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "navigate_to_same.html", true, &client);
     EXPECT_FALSE(client.frameLoadTypeSameSeen());
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(static_cast<WebViewImpl*>(m_webView)->page()->mainFrame()->document()->url()));
-    webViewImpl->page()->mainFrame()->loader()->load(frameRequest);
+    WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(webViewImpl()->page()->mainFrame()->document()->url()));
+    webViewImpl()->page()->mainFrame()->loader()->load(frameRequest);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     EXPECT_TRUE(client.frameLoadTypeSameSeen());

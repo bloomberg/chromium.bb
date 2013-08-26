@@ -86,7 +86,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_webView = static_cast<WebViewImpl*>(WebView::create(&m_webViewClient));
+        m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
         m_webView->initializeMainFrame(&m_webFrameClient);
         m_chromeClientImpl = static_cast<ChromeClientImpl*>(&m_webView->page()->chrome().client());
         m_result = WebNavigationPolicyIgnore;

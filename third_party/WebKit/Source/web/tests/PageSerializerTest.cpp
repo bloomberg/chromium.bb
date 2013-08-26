@@ -74,7 +74,7 @@ protected:
     virtual void SetUp()
     {
         // Create and initialize the WebView.
-        m_webViewImpl = static_cast<WebViewImpl*>(WebView::create(0));
+        m_webViewImpl = toWebViewImpl(WebView::create(0));
 
         // We want the images to load and JavaScript to be on.
         WebSettings* settings = m_webViewImpl->settings();

@@ -157,8 +157,7 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
 {
     ASSERT(!m_helperPlugin);
 
-    WebViewImpl* webView = static_cast<WebViewImpl*>(frame->view());
-    m_helperPlugin = webView->createHelperPlugin(pluginType, frame->document());
+    m_helperPlugin = toWebViewImpl(frame->view())->createHelperPlugin(pluginType, frame->document());
     if (!m_helperPlugin)
         return 0;
 
@@ -185,8 +184,7 @@ void WebMediaPlayerClientImpl::closeHelperPlugin()
 void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
 {
     ASSERT(m_helperPlugin);
-    WebViewImpl* webView = static_cast<WebViewImpl*>(frame->view());
-    webView->closeHelperPluginSoon(m_helperPlugin.release());
+    toWebViewImpl(frame->view())->closeHelperPluginSoon(m_helperPlugin.release());
 }
 
 void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)

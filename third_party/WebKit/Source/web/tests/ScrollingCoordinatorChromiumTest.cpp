@@ -76,7 +76,7 @@ public:
     {
         // We cannot reuse FrameTestHelpers::createWebViewAndLoad here because the compositing
         // settings need to be set before the page is loaded.
-        m_webViewImpl = static_cast<WebViewImpl*>(WebView::create(&m_mockWebViewClient));
+        m_webViewImpl = toWebViewImpl(WebView::create(&m_mockWebViewClient));
         m_webViewImpl->settings()->setJavaScriptEnabled(true);
         m_webViewImpl->settings()->setForceCompositingMode(true);
         m_webViewImpl->settings()->setAcceleratedCompositingEnabled(true);
