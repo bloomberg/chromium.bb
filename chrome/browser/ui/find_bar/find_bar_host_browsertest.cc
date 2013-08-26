@@ -91,8 +91,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   string16 GetFindBarTextForBrowser(Browser* browser) {
-    FindBarTesting* find_bar =
-        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+    FindBar* find_bar = browser->GetFindBarController()->find_bar();
     return find_bar->GetFindText();
   }
 
@@ -1567,6 +1566,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
       GetFindBarTextForBrowser(browser_incognito));
   EXPECT_EQ(ASCIIToUTF16("1 of 2"),
       GetFindBarMatchCountTextForBrowser(browser_incognito));
+
+  // Close the find bar.
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(web_contents_incognito);
+  find_tab_helper->StopFinding(FindBarController::kActivateSelectionOnPage);
 
   // Cmd + G triggers IDC_FIND_NEXT command. Thus we test FindInPage()
   // method from browser_commands.cc. FindInPageWchar() bypasses it.

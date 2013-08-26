@@ -134,6 +134,10 @@ void FindBarHost::SetFindText(const string16& find_text) {
   find_bar_view()->SetFindText(find_text);
 }
 
+string16 FindBarHost::GetFindText() {
+  return find_bar_view()->GetFindText();
+}
+
 void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
                                         const string16& find_text) {
   // Make sure match count is clear. It may get set again in UpdateForResult
@@ -233,10 +237,6 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
   if (fully_visible)
     *fully_visible = IsVisible() && !IsAnimating();
   return true;
-}
-
-string16 FindBarHost::GetFindText() {
-  return find_bar_view()->GetFindText();
 }
 
 string16 FindBarHost::GetFindSelectedText() {

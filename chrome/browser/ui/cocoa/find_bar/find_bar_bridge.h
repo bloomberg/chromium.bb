@@ -59,6 +59,7 @@ class FindBarBridge : public FindBar,
   virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
   virtual void StopAnimation() OVERRIDE;
   virtual void SetFindText(const string16& find_text) OVERRIDE;
+  virtual string16 GetFindText() OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
                                      const string16& find_text) OVERRIDE;
   virtual void AudibleAlert() OVERRIDE;
@@ -72,7 +73,6 @@ class FindBarBridge : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible) OVERRIDE;
-  virtual string16 GetFindText() OVERRIDE;
   virtual string16 GetFindSelectedText() OVERRIDE;
   virtual string16 GetMatchCountText() OVERRIDE;
   virtual int GetWidth() OVERRIDE;

@@ -56,6 +56,10 @@ void FindBarBridge::SetFindText(const string16& find_text) {
   [cocoa_controller_ setFindText:base::SysUTF16ToNSString(find_text)];
 }
 
+string16 FindBarBridge::GetFindText() {
+  return base::SysNSStringToUTF16([cocoa_controller_ findText]);
+}
+
 void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,
                                           const string16& find_text) {
   [cocoa_controller_ updateUIForFindResult:result withText:find_text];
@@ -107,10 +111,6 @@ bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
         ![cocoa_controller_ isFindBarAnimating];
   }
   return window_visible;
-}
-
-string16 FindBarBridge::GetFindText() {
-  return base::SysNSStringToUTF16([cocoa_controller_ findText]);
 }
 
 string16 FindBarBridge::GetFindSelectedText() {

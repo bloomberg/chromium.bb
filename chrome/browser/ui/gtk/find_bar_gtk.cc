@@ -377,6 +377,11 @@ void FindBarGtk::SetFindText(const string16& find_text) {
   ignore_changed_signal_ = false;
 }
 
+string16 FindBarGtk::GetFindText() {
+  std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
+  return UTF8ToUTF16(contents);
+}
+
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
   selection_rect_ = result.selection_rect();
@@ -570,11 +575,6 @@ bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
                      slide_widget_->IsShowing();
   }
   return true;
-}
-
-string16 FindBarGtk::GetFindText() {
-  std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
-  return UTF8ToUTF16(contents);
 }
 
 string16 FindBarGtk::GetFindSelectedText() {

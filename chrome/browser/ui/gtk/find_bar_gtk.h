@@ -51,6 +51,7 @@ class FindBarGtk : public FindBar,
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                      bool no_redraw) OVERRIDE;
   virtual void SetFindText(const string16& find_text) OVERRIDE;
+  virtual string16 GetFindText() OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
                                      const string16& find_text) OVERRIDE;
   virtual void AudibleAlert() OVERRIDE;
@@ -63,7 +64,6 @@ class FindBarGtk : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible) OVERRIDE;
-  virtual string16 GetFindText() OVERRIDE;
   virtual string16 GetFindSelectedText() OVERRIDE;
   virtual string16 GetMatchCountText() OVERRIDE;
   virtual int GetWidth() OVERRIDE;

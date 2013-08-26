@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -70,10 +71,6 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-
-#if defined(OS_MACOSX)
-#include "ui/base/cocoa/find_pasteboard.h"
-#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
@@ -829,12 +826,12 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
     FindTabHelper* find_helper = FindTabHelper::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents());
 #if defined(OS_MACOSX)
-    // We always want to search for the contents of the find pasteboard on OS X.
-    // But Incognito window doesn't write to the find pboard. Therefore, its own
-    // find text has higher priority.
-    if (!browser->profile()->IsOffTheRecord() ||
-        find_helper->find_text().empty())
-      find_text = GetFindPboardText();
+    // We always want to search for the current contents of the find bar on
+    // OS X. For regular profile it's always the current find pboard. For
+    // Incognito window it's the newest value of the find pboard content and
+    // user-typed text.
+    FindBar* find_bar = browser->GetFindBarController()->find_bar();
+    find_text = find_bar->GetFindText();
 #endif
     find_helper->StartFinding(find_text, forward_direction, false);
   }

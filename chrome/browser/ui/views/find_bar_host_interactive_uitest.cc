@@ -39,8 +39,7 @@ class FindInPageTest : public InProcessBrowserTest {
   }
 
   string16 GetFindBarText() {
-    FindBarTesting* find_bar =
-        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+    FindBar* find_bar = browser()->GetFindBarController()->find_bar();
     return find_bar->GetFindText();
   }
 
