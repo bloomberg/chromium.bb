@@ -19,9 +19,9 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
@@ -128,7 +128,7 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   // clipRect on the current SkCanvas. This is done by setting clipRect to
   // the viewport's dimensions.
   is_scissor_enabled_ = false;
-  SkDevice* device = current_canvas_->getDevice();
+  SkBaseDevice* device = current_canvas_->getDevice();
   SetClipRect(gfx::Rect(device->width(), device->height()));
 }
 
@@ -318,7 +318,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
                           quad->texture_size.width(),
                           quad->texture_size.height());
     temp_bitmap.allocPixels();
-    SkDevice temp_device(temp_bitmap);
+    SkBitmapDevice temp_device(temp_bitmap);
     SkCanvas temp_canvas(&temp_device);
 
     quad->picture_pile->RasterToBitmap(

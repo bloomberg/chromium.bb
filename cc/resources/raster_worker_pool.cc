@@ -89,7 +89,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
+  bool RunRasterOnThread(SkBaseDevice* device, unsigned thread_index) {
     TRACE_EVENT2(
         benchmark_instrumentation::kCategory,
         benchmark_instrumentation::kRunRasterOnThread,
@@ -153,7 +153,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
   // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(SkDevice* device, unsigned thread_index)
+  virtual bool RunOnWorkerThread(SkBaseDevice* device, unsigned thread_index)
       OVERRIDE {
     RunAnalysisOnThread(thread_index);
     return RunRasterOnThread(device, thread_index);

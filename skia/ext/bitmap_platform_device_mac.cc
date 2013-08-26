@@ -195,10 +195,10 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateWithData(uint8_t* data,
 }
 
 // The device will own the bitmap, which corresponds to also owning the pixel
-// data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
+// data. Therefore, we do not transfer ownership to the SkBitmapDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
     const skia::RefPtr<BitmapPlatformDeviceData>& data, const SkBitmap& bitmap)
-    : SkDevice(bitmap),
+    : SkBitmapDevice(bitmap),
       data_(data) {
   SetPlatformDevice(this, this);
 }
@@ -253,12 +253,13 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
   return *bitmap;
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkDevice* bitmap_device = BitmapPlatformDevice::CreateAndClear(width, height,
-                                                                 isOpaque);
+  SkBaseDevice* bitmap_device = BitmapPlatformDevice::CreateAndClear(width, 
+                                                                     height,
+                                                                     isOpaque);
   return bitmap_device;
 }
 
@@ -266,14 +267,14 @@ SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
 
 SkCanvas* CreatePlatformCanvas(CGContextRef ctx, int width, int height,
                                bool is_opaque, OnFailureType failureType) {
-  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
       BitmapPlatformDevice::Create(ctx, width, height, is_opaque));
   return CreateCanvas(dev, failureType);
 }
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
       BitmapPlatformDevice::CreateWithData(data, width, height, is_opaque));
   return CreateCanvas(dev, failureType);
 }

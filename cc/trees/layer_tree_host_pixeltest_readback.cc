@@ -852,7 +852,7 @@ TEST_F(LayerTreeHostReadbackPixelTest,
   bitmap.allocPixels();
   bitmap.eraseColor(SK_ColorGREEN);
   {
-    SkDevice device(bitmap);
+    SkBitmapDevice device(bitmap);
     skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(&device));
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);

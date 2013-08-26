@@ -8,7 +8,8 @@
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
 
-class SkDevice;
+// TODO(robertphillips): change this to "class SkBaseDevice;"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace skia {
 
@@ -19,7 +20,7 @@ namespace skia {
 class SK_API VectorCanvas : public PlatformCanvas {
  public:
   // Ownership of |device| is transfered to VectorCanvas.
-  explicit VectorCanvas(SkDevice* device);
+  explicit VectorCanvas(SkBaseDevice* device);
   virtual ~VectorCanvas();
 
   virtual SkBounder* setBounder(SkBounder* bounder) OVERRIDE;

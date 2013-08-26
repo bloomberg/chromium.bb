@@ -517,7 +517,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
   return res;
 }
 
-SkDevice* Emf::StartPageForVectorCanvas(
+SkBaseDevice* Emf::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   if (!StartPage(page_size, content_area, scale_factor))

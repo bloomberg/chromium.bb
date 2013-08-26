@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 
 namespace cc {
 
@@ -40,7 +40,7 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                      task_->resource()->size().height(),
                      stride_);
     bitmap.setPixels(buffer_);
-    SkDevice device(bitmap);
+    SkBitmapDevice device(bitmap);
     task_->RunOnWorkerThread(&device, thread_index);
   }
   virtual void CompleteOnOriginThread() OVERRIDE {

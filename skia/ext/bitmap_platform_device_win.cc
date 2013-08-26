@@ -207,11 +207,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
 }
 
 // The device will own the HBITMAP, which corresponds to also owning the pixel
-// data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
+// data. Therefore, we do not transfer ownership to the SkBitmapDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
     const skia::RefPtr<BitmapPlatformDeviceData>& data,
     const SkBitmap& bitmap)
-    : SkDevice(bitmap),
+    : SkBitmapDevice(bitmap),
       data_(data) {
   // The data object is already ref'ed for us by create().
   SkDEBUGCODE(begin_paint_count_ = 0);
@@ -301,7 +301,7 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
   return *bitmap;
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque, Usage) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
   return BitmapPlatformDevice::CreateAndClear(width, height, isOpaque);
@@ -314,7 +314,7 @@ SkCanvas* CreatePlatformCanvas(int width,
                                bool is_opaque,
                                HANDLE shared_section,
                                OnFailureType failureType) {
-  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
       BitmapPlatformDevice::Create(width, height, is_opaque, shared_section));
   return CreateCanvas(dev, failureType);
 }

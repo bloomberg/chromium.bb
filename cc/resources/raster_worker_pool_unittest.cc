@@ -34,7 +34,7 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         did_raster_(false) {}
 
   // Overridden from internal::WorkerPoolTask:
-  virtual bool RunOnWorkerThread(SkDevice* device, unsigned thread_index)
+  virtual bool RunOnWorkerThread(SkBaseDevice* device, unsigned thread_index)
       OVERRIDE {
     did_raster_ = true;
     return true;

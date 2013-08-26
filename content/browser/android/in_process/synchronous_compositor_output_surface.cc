@@ -15,8 +15,8 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -96,7 +96,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 
  private:
   SynchronousCompositorOutputSurface* surface_;
-  SkDevice null_device_;
+  SkBitmapDevice null_device_;
   SkCanvas null_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareDevice);

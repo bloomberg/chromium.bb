@@ -133,11 +133,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
 }
 
 // The device will own the bitmap, which corresponds to also owning the pixel
-// data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
+// data. Therefore, we do not transfer ownership to the SkBitmapDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap,
     BitmapPlatformDeviceData* data)
-    : SkDevice(bitmap),
+    : SkBitmapDevice(bitmap),
       data_(data) {
   SetPlatformDevice(this, this);
 }
@@ -145,7 +145,7 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
@@ -180,7 +180,7 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
       BitmapPlatformDevice::Create(width, height, is_opaque, data));
   return CreateCanvas(dev, failureType);
 }

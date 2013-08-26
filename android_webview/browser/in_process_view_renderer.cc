@@ -23,8 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/skia_util.h"
@@ -91,7 +91,7 @@ bool RasterizeIntoBitmap(JNIEnv* env,
                      bitmap_info.stride);
     bitmap.setPixels(pixels);
 
-    SkDevice device(bitmap);
+    SkBitmapDevice device(bitmap);
     SkCanvas canvas(&device);
     canvas.translate(-scroll_x, -scroll_y);
     succeeded = renderer.Run(&canvas);
@@ -505,7 +505,7 @@ bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
                    pixels->height,
                    pixels->row_bytes);
   bitmap.setPixels(pixels->pixels);
-  SkDevice device(bitmap);
+  SkBitmapDevice device(bitmap);
   SkCanvas canvas(&device);
   canvas.setMatrix(matrix);
 
@@ -802,7 +802,7 @@ void InProcessViewRenderer::FallbackTickFired() {
   // means block_invalidates_ must still be true.
   DCHECK(block_invalidates_);
   if (compositor_needs_continuous_invalidate_ && compositor_) {
-    SkDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
+    SkBitmapDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
     SkCanvas canvas(&device);
     block_invalidates_ = true;
     CompositeSW(&canvas);

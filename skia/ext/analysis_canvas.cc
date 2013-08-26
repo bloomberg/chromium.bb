@@ -283,7 +283,7 @@ void AnalysisDevice::drawVertices(const SkDraw& draw,
 }
 
 void AnalysisDevice::drawDevice(const SkDraw& draw,
-                                SkDevice* device,
+                                SkBaseDevice* device,
                                 int x,
                                 int y,
                                 const SkPaint& paint) {

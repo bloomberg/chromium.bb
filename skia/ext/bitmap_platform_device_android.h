@@ -12,13 +12,13 @@
 namespace skia {
 
 // -----------------------------------------------------------------------------
-// For now we just use SkBitmap for SkDevice
+// For now we just use SkBitmap for SkBitmapDevice
 //
 // This is all quite ok for test_shell. In the future we will want to use
 // shared memory between the renderer and the main process at least. In this
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
-class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
+class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
  public:
   // Construct a BitmapPlatformDevice. |is_opaque| should be set if the caller
   // knows the bitmap will be completely opaque and allows some optimizations.
@@ -47,9 +47,9 @@ class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
                                    const PlatformRect* src_rect) OVERRIDE;
 
  protected:
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+                                                 int height, bool isOpaque,
+                                                 Usage usage) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);

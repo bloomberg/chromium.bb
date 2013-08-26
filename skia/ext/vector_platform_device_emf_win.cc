@@ -22,7 +22,7 @@ namespace skia {
     do { if (paint.isNoDrawAnnotation()) { return; } } while (0)
 
 // static
-SkDevice* VectorPlatformDeviceEmf::CreateDevice(
+SkBaseDevice* VectorPlatformDeviceEmf::CreateDevice(
     int width, int height, bool is_opaque, HANDLE shared_section) {
   if (!is_opaque) {
     // TODO(maruel):  http://crbug.com/18382 When restoring a semi-transparent
@@ -46,7 +46,7 @@ SkDevice* VectorPlatformDeviceEmf::CreateDevice(
   // SkScalarRound(value) as SkScalarRound(value * 10). Safari is already
   // doing the same for text rendering.
   SkASSERT(shared_section);
-  SkDevice* device = VectorPlatformDeviceEmf::create(
+  SkBaseDevice* device = VectorPlatformDeviceEmf::create(
       reinterpret_cast<HDC>(shared_section), width, height);
   return device;
 }
@@ -65,7 +65,7 @@ static void FillBitmapInfoHeader(int width, int height, BITMAPINFOHEADER* hdr) {
   hdr->biClrImportant = 0;
 }
 
-SkDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
+SkBaseDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
   InitializeDC(dc);
 
   // Link the SkBitmap to the current selected bitmap in the device context.
@@ -100,7 +100,7 @@ SkDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
 }
 
 VectorPlatformDeviceEmf::VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap)
-    : SkDevice(bitmap),
+    : SkBitmapDevice(bitmap),
       hdc_(dc),
       previous_brush_(NULL),
       previous_pen_(NULL) {
@@ -118,7 +118,7 @@ HDC VectorPlatformDeviceEmf::BeginPlatformPaint() {
 }
 
 uint32_t VectorPlatformDeviceEmf::getDeviceCapabilities() {
-  return SkDevice::getDeviceCapabilities() | kVector_Capability;
+  return SkBitmapDevice::getDeviceCapabilities() | kVector_Capability;
 }
 
 void VectorPlatformDeviceEmf::drawPaint(const SkDraw& draw,
@@ -586,7 +586,7 @@ void VectorPlatformDeviceEmf::drawVertices(const SkDraw& draw,
 }
 
 void VectorPlatformDeviceEmf::drawDevice(const SkDraw& draw,
-                                         SkDevice* device,
+                                         SkBaseDevice* device,
                                          int x,
                                          int y,
                                          const SkPaint& paint) {
@@ -693,7 +693,7 @@ void VectorPlatformDeviceEmf::LoadClipRegion() {
   LoadClippingRegionToDC(hdc_, clip_region_, t);
 }
 
-SkDevice* VectorPlatformDeviceEmf::onCreateCompatibleDevice(
+SkBaseDevice* VectorPlatformDeviceEmf::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);

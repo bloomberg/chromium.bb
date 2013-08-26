@@ -20,7 +20,7 @@
 #include "cc/test/mock_quad_culler.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -28,7 +28,7 @@ namespace {
 
 class MockCanvas : public SkCanvas {
  public:
-  explicit MockCanvas(SkDevice* device) : SkCanvas(device) {}
+  explicit MockCanvas(SkBaseDevice* device) : SkCanvas(device) {}
 
   virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE {
     // Capture calls before SkCanvas quickReject() kicks in.
@@ -180,7 +180,7 @@ class PictureLayerImplTest : public testing::Test {
 
     SkBitmap store;
     store.setConfig(SkBitmap::kNo_Config, 1000, 1000);
-    SkDevice device(store);
+    SkBitmapDevice device(store);
 
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {

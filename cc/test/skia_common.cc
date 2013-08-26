@@ -6,7 +6,7 @@
 
 #include "cc/resources/picture.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -65,7 +65,7 @@ void DrawPicture(unsigned char* buffer,
                    layer_rect.width(),
                    layer_rect.height());
   bitmap.setPixels(buffer);
-  SkDevice device(bitmap);
+  SkBitmapDevice device(bitmap);
   SkCanvas canvas(&device);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   picture->Raster(&canvas, NULL, layer_rect, 1.0f);

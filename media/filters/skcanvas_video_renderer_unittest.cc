@@ -5,8 +5,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "media/filters/skcanvas_video_renderer.h"
 
 using media::VideoFrame;
@@ -75,9 +75,9 @@ class SkCanvasVideoRendererTest : public testing::Test {
   scoped_refptr<VideoFrame> smaller_frame_;
   scoped_refptr<VideoFrame> cropped_frame_;
 
-  SkDevice fast_path_device_;
+  SkBitmapDevice fast_path_device_;
   SkCanvas fast_path_canvas_;
-  SkDevice slow_path_device_;
+  SkBitmapDevice slow_path_device_;
   SkCanvas slow_path_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);

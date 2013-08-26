@@ -5,9 +5,9 @@
 #include "skia/ext/lazy_pixel_ref_utils.h"
 
 #include "skia/ext/lazy_pixel_ref.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkDraw.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -44,10 +44,10 @@ class LazyPixelRefSet {
   std::vector<LazyPixelRefUtils::PositionLazyPixelRef>* pixel_refs_;
 };
 
-class GatherPixelRefDevice : public SkDevice {
+class GatherPixelRefDevice : public SkBitmapDevice {
  public:
   GatherPixelRefDevice(const SkBitmap& bm, LazyPixelRefSet* lazy_pixel_ref_set)
-      : SkDevice(bm), lazy_pixel_ref_set_(lazy_pixel_ref_set) {}
+      : SkBitmapDevice(bm), lazy_pixel_ref_set_(lazy_pixel_ref_set) {}
 
   virtual void clear(SkColor color) SK_OVERRIDE {}
   virtual void writePixels(const SkBitmap& bitmap,
@@ -315,7 +315,7 @@ class GatherPixelRefDevice : public SkDevice {
         draw, SkCanvas::kPolygon_PointMode, vertex_count, verts, paint);
   }
   virtual void drawDevice(const SkDraw&,
-                          SkDevice*,
+                          SkBaseDevice*,
                           int x,
                           int y,
                           const SkPaint&) SK_OVERRIDE {}
@@ -349,7 +349,7 @@ class GatherPixelRefDevice : public SkDevice {
 
 class NoSaveLayerCanvas : public SkCanvas {
  public:
-  NoSaveLayerCanvas(SkDevice* device) : INHERITED(device) {}
+  NoSaveLayerCanvas(SkBaseDevice* device) : INHERITED(device) {}
 
   // Turn saveLayer() into save() for speed, should not affect correctness.
   virtual int saveLayer(const SkRect* bounds,

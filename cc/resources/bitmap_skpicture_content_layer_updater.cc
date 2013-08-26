@@ -9,8 +9,8 @@
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update_queue.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 
 namespace cc {
 
@@ -28,7 +28,7 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
       SkBitmap::kARGB_8888_Config, source_rect.width(), source_rect.height());
   bitmap_.allocPixels();
   bitmap_.setIsOpaque(updater_->layer_is_opaque());
-  SkDevice device(bitmap_);
+  SkBitmapDevice device(bitmap_);
   SkCanvas canvas(&device);
   updater_->PaintContentsRect(&canvas, source_rect);
 

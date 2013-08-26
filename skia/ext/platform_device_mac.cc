@@ -14,7 +14,7 @@
 
 namespace skia {
 
-CGContextRef GetBitmapContext(SkDevice* device) {
+CGContextRef GetBitmapContext(SkBaseDevice* device) {
   PlatformDevice* platform_device = GetPlatformDevice(device);
   if (platform_device)
     return platform_device->GetBitmapContext();

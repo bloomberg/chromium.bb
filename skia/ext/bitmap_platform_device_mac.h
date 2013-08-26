@@ -26,7 +26,7 @@ namespace skia {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
+class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
  public:
   // Creates a BitmapPlatformDevice instance. |is_opaque| should be set if the
   // caller knows the bitmap will be completely opaque and allows some
@@ -55,7 +55,7 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
   virtual void DrawToNativeContext(CGContextRef context, int x, int y,
                                    const CGRect* src_rect) OVERRIDE;
 
-  // SkDevice overrides
+  // SkBaseDevice overrides
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&) OVERRIDE;
 
@@ -69,13 +69,13 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
                        const SkBitmap& bitmap);
 
   // Flushes the CoreGraphics context so that the pixel data can be accessed
-  // directly by Skia. Overridden from SkDevice, this is called when Skia
+  // directly by Skia. Overridden from SkBaseDevice, this is called when Skia
   // starts accessing pixel data.
   virtual const SkBitmap& onAccessBitmap(SkBitmap*) OVERRIDE;
 
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+                                                 int height, bool isOpaque,
+                                                 Usage usage) OVERRIDE;
 
   // Data associated with this device, guaranteed non-null.
   skia::RefPtr<BitmapPlatformDeviceData> data_;

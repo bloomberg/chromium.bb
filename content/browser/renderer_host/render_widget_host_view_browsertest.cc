@@ -25,8 +25,8 @@
 #include "media/filters/skcanvas_video_renderer.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gl_switches.h"
@@ -568,7 +568,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     bitmap.allocPixels();
     bitmap.setIsOpaque(true);
 
-    SkDevice device(bitmap);
+    SkBitmapDevice device(bitmap);
     SkCanvas canvas(&device);
 
     video_renderer.Paint(video_frame.get(),

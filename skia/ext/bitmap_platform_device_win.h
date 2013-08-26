@@ -26,7 +26,7 @@ namespace skia {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
+class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
  public:
   // Factory function. is_opaque should be set if the caller knows the bitmap
   // will be completely opaque and allows some optimizations.
@@ -60,19 +60,19 @@ class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
                                    const RECT* src_rect) OVERRIDE;
 
   // Loads the given transform and clipping region into the HDC. This is
-  // overridden from SkDevice.
+  // overridden from SkBaseDevice.
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&) OVERRIDE;
 
  protected:
   // Flushes the Windows device context so that the pixel data can be accessed
-  // directly by Skia. Overridden from SkDevice, this is called when Skia
+  // directly by Skia. Overridden from SkBaseDevice, this is called when Skia
   // starts accessing pixel data.
   virtual const SkBitmap& onAccessBitmap(SkBitmap* bitmap) OVERRIDE;
 
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+                                                 int height, bool isOpaque,
+                                                 Usage usage) OVERRIDE;
 
  private:
   // Reference counted data that can be shared between multiple devices. This

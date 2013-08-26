@@ -13,7 +13,7 @@
 #endif
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkPreConfig.h"
 
 class SkMatrix;
@@ -50,29 +50,27 @@ typedef CGRect PlatformRect;
 #endif
 
 // The following routines provide accessor points for the functionality
-// exported by the various PlatformDevice ports.  The PlatformDevice, and
-// BitmapPlatformDevice classes inherit directly from SkDevice, which is no
-// longer a supported usage-pattern for skia.  In preparation of the removal of
-// these classes, all calls to PlatformDevice::* should be routed through these
+// exported by the various PlatformDevice ports.  
+// All calls to PlatformDevice::* should be routed through these 
 // helper functions.
 
 // Bind a PlatformDevice instance, |platform_device| to |device|.  Subsequent
 // calls to the functions exported below will forward the request to the
 // corresponding method on the bound PlatformDevice instance.    If no
-// PlatformDevice has been bound to the SkDevice passed, then the routines are
-// NOPS.
-SK_API void SetPlatformDevice(SkDevice* device,
+// PlatformDevice has been bound to the SkBaseDevice passed, then the 
+// routines are NOPS.
+SK_API void SetPlatformDevice(SkBaseDevice* device,
                               PlatformDevice* platform_device);
-SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
+SK_API PlatformDevice* GetPlatformDevice(SkBaseDevice* device);
 
 
 #if defined(OS_WIN)
 // Initializes the default settings and colors in a device context.
 SK_API void InitializeDC(HDC context);
 #elif defined(OS_MACOSX)
-// Returns the CGContext that backing the SkDevice.  Forwards to the bound
+// Returns the CGContext that backing the SkBaseDevice.  Forwards to the bound
 // PlatformDevice.  Returns NULL if no PlatformDevice is bound.
-SK_API CGContextRef GetBitmapContext(SkDevice* device);
+SK_API CGContextRef GetBitmapContext(SkBaseDevice* device);
 #endif
 
 // Following routines are used in print preview workflow to mark the draft mode
@@ -86,14 +84,18 @@ SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
 SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
 #endif
 
-// A SkDevice is basically a wrapper around SkBitmap that provides a surface for
-// SkCanvas to draw into. PlatformDevice provides a surface Windows can also
-// write to. It also provides functionality to play well with GDI drawing
-// functions. This class is abstract and must be subclassed. It provides the
-// basic interface to implement it either with or without a bitmap backend.
+// A SkBitmapDevice is basically a wrapper around SkBitmap that provides a 
+// surface for SkCanvas to draw into. PlatformDevice provides a surface 
+// Windows can also write to. It also provides functionality to play well 
+// with GDI drawing functions. This class is abstract and must be subclassed. 
+// It provides the basic interface to implement it either with or without 
+// a bitmap backend.
 //
-// PlatformDevice provides an interface which sub-classes of SkDevice can also
-// provide to allow for drawing by the native platform into the device.
+// PlatformDevice provides an interface which sub-classes of SkBaseDevice can 
+// also provide to allow for drawing by the native platform into the device.
+// TODO(robertphillips): Once the bitmap-specific entry points are removed
+// from SkBaseDevice it might make sense for PlatformDevice to be derived
+// from it.
 class SK_API PlatformDevice {
  public:
   virtual ~PlatformDevice() {}

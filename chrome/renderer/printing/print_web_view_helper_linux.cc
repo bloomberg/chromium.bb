@@ -167,8 +167,9 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect canvas_area =
       params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-  SkDevice* device = metafile->StartPageForVectorCanvas(page_size, canvas_area,
-                                                        scale_factor);
+  SkBaseDevice* device = metafile->StartPageForVectorCanvas(page_size,
+                                                            canvas_area,
+                                                            scale_factor);
   if (!device)
     return;
 

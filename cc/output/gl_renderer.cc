@@ -1705,7 +1705,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
         ResourceProvider::TextureUsageAny);
   }
 
-  SkDevice device(on_demand_tile_raster_bitmap_);
+  SkBitmapDevice device(on_demand_tile_raster_bitmap_);
   SkCanvas canvas(&device);
 
   quad->picture_pile->RasterToBitmap(&canvas, quad->content_rect,
@@ -3114,7 +3114,7 @@ void GLRenderer::ReinitializeGrCanvas() {
 
   skia::RefPtr<GrSurface> surface(
       skia::AdoptRef(gr_context_->wrapBackendRenderTarget(desc)));
-  skia::RefPtr<SkDevice> device(
+  skia::RefPtr<SkBaseDevice> device(
       skia::AdoptRef(SkGpuDevice::Create(surface.get())));
   sk_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
 }

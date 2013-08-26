@@ -56,7 +56,7 @@ namespace skia {
 // shared memory between the renderer and the main process at least. In this
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
-class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
+class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // A reference counted cairo surface
   class BitmapPlatformDeviceData;
 
@@ -86,7 +86,7 @@ class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       uint8_t* data);
 
-  // Overridden from SkDevice:
+  // Overridden from SkBaseDevice:
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&) OVERRIDE;
 
@@ -96,9 +96,9 @@ class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
                                    const PlatformRect* src_rect) OVERRIDE;
 
  protected:
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+                                                 int height, bool isOpaque,
+                                                 Usage usage) OVERRIDE;
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

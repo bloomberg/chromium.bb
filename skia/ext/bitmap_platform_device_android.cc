@@ -46,14 +46,14 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
 }
 
 BitmapPlatformDevice::BitmapPlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(bitmap) {
+    : SkBitmapDevice(bitmap) {
   SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
@@ -76,7 +76,7 @@ void BitmapPlatformDevice::DrawToNativeContext(
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
                                uint8_t* data, OnFailureType failureType) {
-  skia::RefPtr<SkDevice> dev = skia::AdoptRef(
+  skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
       BitmapPlatformDevice::Create(width, height, is_opaque, data));
   return CreateCanvas(dev, failureType);
 }

@@ -56,7 +56,7 @@ static bool CanFastPaint(SkCanvas* canvas, uint8 alpha,
       SkScalarNearlyZero(total_matrix.getSkewY()) &&
       total_matrix.getScaleX() > 0 &&
       total_matrix.getScaleY() > 0) {
-    SkDevice* device = canvas->getDevice();
+    SkBaseDevice* device = canvas->getDevice();
     const SkBitmap::Config config = device->config();
 
     if (config == SkBitmap::kARGB_8888_Config && device->isOpaque()) {

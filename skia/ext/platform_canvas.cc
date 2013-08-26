@@ -9,7 +9,7 @@
 
 namespace skia {
 
-SkDevice* GetTopDevice(const SkCanvas& canvas) {
+SkBaseDevice* GetTopDevice(const SkCanvas& canvas) {
   return canvas.getTopDevice(true);
 }
 
@@ -64,7 +64,7 @@ size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
 
-SkCanvas* CreateCanvas(const skia::RefPtr<SkDevice>& device, OnFailureType failureType) {
+SkCanvas* CreateCanvas(const skia::RefPtr<SkBaseDevice>& device, OnFailureType failureType) {
   if (!device) {
     if (CRASH_ON_FAILURE == failureType)
       SK_CRASH();

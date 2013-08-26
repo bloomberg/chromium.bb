@@ -6,8 +6,8 @@
 #define SKIA_EXT_ANALYSIS_CANVAS_H_
 
 #include "base/compiler_specific.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace skia {
@@ -58,7 +58,10 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
   int force_not_transparent_stack_level_;
 };
 
-class SK_API AnalysisDevice : public SkDevice {
+// TODO(robertphillips): Once Skia's SkBaseDevice API is refactored to
+// remove the bitmap-specific entry points, it might make sense for this
+// to be derived from SkBaseDevice (rather than SkBitmapDevice)
+class SK_API AnalysisDevice : public SkBitmapDevice {
  public:
   AnalysisDevice(const SkBitmap& bitmap);
   virtual ~AnalysisDevice();
@@ -70,7 +73,7 @@ class SK_API AnalysisDevice : public SkDevice {
   void SetForceNotTransparent(bool flag);
 
  protected:
-  // SkDevice overrides.
+  // SkBaseDevice overrides.
   virtual void clear(SkColor color) OVERRIDE;
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw,
@@ -143,13 +146,13 @@ class SK_API AnalysisDevice : public SkDevice {
                             int index_count,
                             const SkPaint& paint) OVERRIDE;
   virtual void drawDevice(const SkDraw& draw,
-                          SkDevice* device,
+                          SkBaseDevice* device,
                           int x,
                           int y,
                           const SkPaint& paint) OVERRIDE;
 
  private:
-  typedef SkDevice INHERITED;
+  typedef SkBitmapDevice INHERITED;
 
   bool is_forced_not_solid_;
   bool is_forced_not_transparent_;

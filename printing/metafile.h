@@ -28,6 +28,7 @@ class Size;
 }
 
 class SkDevice;
+typedef SkDevice SkBaseDevice;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {
@@ -87,7 +88,7 @@ class PRINTING_EXPORT Metafile {
   // This method calls StartPage and then returns an appropriate
   // VectorPlatformDevice implementation bound to the context created by
   // StartPage or NULL on error.
-  virtual SkDevice* StartPageForVectorCanvas(
+  virtual SkBaseDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       const float& scale_factor) = 0;

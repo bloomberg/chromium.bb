@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "skia/ext/benchmarking_canvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/utils/SkProxyCanvas.h"
 
 namespace skia {
@@ -25,8 +25,8 @@ class TimingCanvas : public SkProxyCanvas {
 public:
   TimingCanvas(int width, int height, const BenchmarkingCanvas* track_canvas)
       : tracking_canvas_(track_canvas) {
-    skia::RefPtr<SkDevice> device = skia::AdoptRef(
-        SkNEW_ARGS(SkDevice, (SkBitmap::kARGB_8888_Config, width, height)));
+    skia::RefPtr<SkBaseDevice> device = skia::AdoptRef(
+        SkNEW_ARGS(SkBitmapDevice, (SkBitmap::kARGB_8888_Config, width, height)));
     canvas_ = skia::AdoptRef(SkNEW_ARGS(SkCanvas, (device.get())));
 
     setProxy(canvas_.get());

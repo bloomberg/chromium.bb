@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "cc/output/software_frame_data.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -21,7 +21,7 @@ void SoftwareOutputDevice::Resize(gfx::Size viewport_size) {
     return;
 
   viewport_size_ = viewport_size;
-  device_ = skia::AdoptRef(new SkDevice(SkBitmap::kARGB_8888_Config,
+  device_ = skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
       viewport_size.width(), viewport_size.height(), true));
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
 }

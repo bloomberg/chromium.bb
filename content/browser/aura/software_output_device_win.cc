@@ -85,7 +85,7 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
                           RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
     skia::EndPlatformPaint(canvas);
   } else {
-    SkDevice* device = canvas->getDevice();
+    SkBaseDevice* device = canvas->getDevice();
     const SkBitmap& bitmap = device->accessBitmap(false);
     HDC hdc = ::GetDC(hwnd_);
     gfx::StretchDIBits(hdc,
@@ -102,7 +102,7 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
 void SoftwareOutputDeviceWin::CopyToBitmap(
     gfx::Rect rect, SkBitmap* output) {
   DCHECK(contents_);
-  SkDevice* device = contents_->sk_canvas()->getDevice();
+  SkBaseDevice* device = contents_->sk_canvas()->getDevice();
   const SkBitmap& bitmap = device->accessBitmap(false);
   bitmap.extractSubset(output, gfx::RectToSkIRect(rect));
 }

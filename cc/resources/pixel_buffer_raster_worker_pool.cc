@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
@@ -46,7 +46,7 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                      task_->resource()->size().width(),
                      task_->resource()->size().height());
     bitmap.setPixels(buffer_);
-    SkDevice device(bitmap);
+    SkBitmapDevice device(bitmap);
     needs_upload_ = task_->RunOnWorkerThread(&device, thread_index);
   }
   virtual void CompleteOnOriginThread() OVERRIDE {

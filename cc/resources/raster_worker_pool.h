@@ -14,8 +14,8 @@
 #include "cc/resources/tile_priority.h"
 #include "cc/resources/worker_pool.h"
 #include "third_party/khronos/GLES2/gl2.h"
-
-class SkDevice;
+// TODO(robertphillips): change this to "class SkBaseDevice;"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace skia {
 class LazyPixelRef;
@@ -37,7 +37,8 @@ class CC_EXPORT RasterWorkerPoolTask
   // Returns true if |device| was written to. False indicate that
   // the content of |device| is undefined and the resource doesn't
   // need to be initialized.
-  virtual bool RunOnWorkerThread(SkDevice* device, unsigned thread_index) = 0;
+  virtual bool RunOnWorkerThread(SkBaseDevice* device,
+                                 unsigned thread_index) = 0;
   virtual void CompleteOnOriginThread() = 0;
 
   void DidRun(bool was_canceled);

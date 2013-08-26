@@ -33,12 +33,12 @@ bool GetBoolMetaData(const SkCanvas& canvas, const char* key) {
 
 }  // namespace
 
-void SetPlatformDevice(SkDevice* device, PlatformDevice* platform_behaviour) {
+void SetPlatformDevice(SkBaseDevice* device, PlatformDevice* platform_behaviour) {
   SkMetaData& meta_data = device->getMetaData();
   meta_data.setPtr(kDevicePlatformBehaviour, platform_behaviour);
 }
 
-PlatformDevice* GetPlatformDevice(SkDevice* device) {
+PlatformDevice* GetPlatformDevice(SkBaseDevice* device) {
   if (device) {
     SkMetaData& meta_data = device->getMetaData();
     PlatformDevice* device_behaviour = NULL;
@@ -50,7 +50,7 @@ PlatformDevice* GetPlatformDevice(SkDevice* device) {
 }
 
 SkMetaData& getMetaData(const SkCanvas& canvas) {
-  SkDevice* device = canvas.getDevice();
+  SkBaseDevice* device = canvas.getDevice();
   DCHECK(device != NULL);
   return device->getMetaData();
 }

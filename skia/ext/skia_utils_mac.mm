@@ -192,7 +192,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   int width = CGImageGetWidth(image);
   int height = CGImageGetHeight(image);
 
-  scoped_ptr<SkDevice> device(
+  scoped_ptr<SkBaseDevice> device(
       skia::BitmapPlatformDevice::Create(NULL, width, height, false));
 
   CGContextRef context = skia::GetBitmapContext(device.get());
@@ -362,7 +362,7 @@ foundRight:
 }
 
 CGContextRef SkiaBitLocker::cgContext() {
-  SkDevice* device = canvas_->getTopDevice();
+  SkBaseDevice* device = canvas_->getTopDevice();
   DCHECK(device);
   if (!device)
     return 0;

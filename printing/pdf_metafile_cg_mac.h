@@ -37,7 +37,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
                             uint32 src_buffer_size) OVERRIDE;
 
   // Not implemented on mac.
-  virtual SkDevice* StartPageForVectorCanvas(
+  virtual SkBaseDevice* StartPageForVectorCanvas(
       const gfx::Size& page_size, const gfx::Rect& content_area,
       const float& scale_factor) OVERRIDE;
   virtual bool StartPage(const gfx::Size& page_size,

@@ -12,9 +12,9 @@
 #include "skia/ext/benchmarking_canvas.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 #include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
@@ -250,8 +250,9 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     gfx::Rect bounds = picture->LayerRect();
 
     // Measure the total time by drawing straight into a bitmap-backed canvas.
-    skia::RefPtr<SkDevice> device = skia::AdoptRef(SkNEW_ARGS(SkDevice,
-        (SkBitmap::kARGB_8888_Config, bounds.width(), bounds.height())));
+    skia::RefPtr<SkBaseDevice> device = skia::AdoptRef(
+        SkNEW_ARGS(SkBitmapDevice,
+             (SkBitmap::kARGB_8888_Config, bounds.width(), bounds.height())));
     SkCanvas bitmap_canvas(device.get());
     bitmap_canvas.clear(SK_ColorTRANSPARENT);
     base::TimeTicks t0 = base::TimeTicks::HighResNow();

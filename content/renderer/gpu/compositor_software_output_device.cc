@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "cc/output/software_frame_data.h"
 #include "content/renderer/render_process.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/skia_util.h"
@@ -147,7 +147,7 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
                     viewport_size_.width(),
                     viewport_size_.height());
   bitmap_.setPixels(current->memory());
-  device_ = skia::AdoptRef(new SkDevice(bitmap_));
+  device_ = skia::AdoptRef(new SkBitmapDevice(bitmap_));
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
 
   if (!previous) {
