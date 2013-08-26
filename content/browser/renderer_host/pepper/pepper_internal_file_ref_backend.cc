@@ -63,7 +63,10 @@ fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
   if (!fs_url_.is_valid() && fs_host_.get() && fs_host_->IsOpened()) {
     GURL fs_path = fs_host_->GetRootUrl().Resolve(
         net::EscapePath(path_.substr(1)));
-    fs_url_ = GetFileSystemContext()->CrackURL(fs_path);
+    scoped_refptr<fileapi::FileSystemContext> fs_context =
+        GetFileSystemContext();
+    if (fs_context.get())
+      fs_url_ = fs_context->CrackURL(fs_path);
   }
   return fs_url_;
 }
@@ -83,7 +86,6 @@ base::FilePath PepperInternalFileRefBackend::GetExternalPath() const {
 
 scoped_refptr<fileapi::FileSystemContext>
 PepperInternalFileRefBackend::GetFileSystemContext() const {
-  // TODO(teravest): Make this work for CRX file systems.
   if (!fs_host_.get())
     return NULL;
   return fs_host_->GetFileSystemContext();

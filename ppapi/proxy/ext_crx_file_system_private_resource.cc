@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_file_info.h"
+#include "ppapi/proxy/file_system_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -14,6 +16,13 @@
 
 namespace ppapi {
 namespace proxy {
+
+namespace {
+void RunTrackedCallback(scoped_refptr<TrackedCallback> callback,
+                        int32_t rc) {
+  callback->Run(rc);
+}
+}  // namespace
 
 ExtCrxFileSystemPrivateResource::ExtCrxFileSystemPrivateResource(
     Connection connection, PP_Instance instance)
@@ -61,19 +70,12 @@ void ExtCrxFileSystemPrivateResource::OnBrowserOpenComplete(
     return;
   }
 
-  thunk::EnterResourceCreationNoLock enter(pp_instance());
-  if (enter.failed()) {
-    callback->Run(enter.retval());
-    return;
-  }
-
-  *file_system_resource = enter.functions()->CreateIsolatedFileSystem(
-      pp_instance(), fsid.c_str());
-  if (*file_system_resource != 0) {
-    callback->Run(PP_OK);
-  } else {
+  FileSystemResource* fs = new FileSystemResource(
+      connection(), pp_instance(), PP_FILESYSTEMTYPE_ISOLATED);
+  *file_system_resource = fs->GetReference();
+  if (*file_system_resource == 0)
     callback->Run(PP_ERROR_FAILED);
-  }
+  fs->InitIsolatedFileSystem(fsid, base::Bind(&RunTrackedCallback, callback));
 }
 
 }  // namespace proxy

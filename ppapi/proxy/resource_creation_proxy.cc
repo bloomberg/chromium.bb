@@ -96,15 +96,6 @@ PP_Resource ResourceCreationProxy::CreateFileSystem(
                                  type))->GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateIsolatedFileSystem(
-    PP_Instance instance,
-    const char* fsid) {
-  FileSystemResource* fs = new FileSystemResource(
-      GetConnection(), instance, PP_FILESYSTEMTYPE_ISOLATED);
-  fs->InitIsolatedFileSystem(fsid);
-  return fs->GetReference();
-}
-
 PP_Resource ResourceCreationProxy::CreateIMEInputEvent(
     PP_Instance instance,
     PP_InputEvent_Type type,

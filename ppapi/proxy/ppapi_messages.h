@@ -1437,6 +1437,7 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Open,
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_OpenReply)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
                      std::string /* fsid */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply)
 
 // Flash DRM ------------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_Create)

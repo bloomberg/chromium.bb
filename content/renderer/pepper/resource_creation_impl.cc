@@ -167,12 +167,6 @@ PP_Resource ResourceCreationImpl::CreateIMEInputEvent(
       segment_offsets, target_segment, selection_start, selection_end);
 }
 
-PP_Resource ResourceCreationImpl::CreateIsolatedFileSystem(PP_Instance instance,
-                                                           const char* fsid) {
-  NOTIMPLEMENTED();  // no need to support in-process
-  return 0;
-}
-
 PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
     PP_Instance instance,
     PP_InputEvent_Type type,

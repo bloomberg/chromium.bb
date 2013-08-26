@@ -60,8 +60,6 @@ class ResourceCreationAPI {
       const PPB_FileRef_CreateInfo& serialized) = 0;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) = 0;
-  virtual PP_Resource CreateIsolatedFileSystem(PP_Instance instance,
-                                               const char* fsid) = 0;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,
                                           PP_TimeTicks time_stamp,

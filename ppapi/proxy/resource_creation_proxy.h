@@ -45,9 +45,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PPB_FileRef_CreateInfo& create_info) OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) OVERRIDE;
-  virtual PP_Resource CreateIsolatedFileSystem(
-      PP_Instance instance,
-      const char* fsid) OVERRIDE;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,
                                           PP_TimeTicks time_stamp,

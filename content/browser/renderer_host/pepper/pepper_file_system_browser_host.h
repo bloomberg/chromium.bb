@@ -47,6 +47,9 @@ class PepperFileSystemBrowserHost :
       ppapi::host::ReplyMessageContext reply_context,
       fileapi::FileSystemType file_system_type,
       scoped_refptr<fileapi::FileSystemContext> fs_context);
+  void GotIsolatedFileSystemContext(
+      ppapi::host::ReplyMessageContext reply_context,
+      scoped_refptr<fileapi::FileSystemContext> fs_context);
   void OpenFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       base::PlatformFileError error,
