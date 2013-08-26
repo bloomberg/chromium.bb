@@ -204,6 +204,7 @@ public:
     static PassRefPtr<CSSPrimitiveValue> createColor(unsigned rgbValue) { return adoptRef(new CSSPrimitiveValue(rgbValue)); }
     static PassRefPtr<CSSPrimitiveValue> create(double value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
     static PassRefPtr<CSSPrimitiveValue> create(const String& value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
+    static PassRefPtr<CSSPrimitiveValue> create(const Length& value, const RenderStyle* style) { return adoptRef(new CSSPrimitiveValue(value, style)); }
 
     template<typename T> static PassRefPtr<CSSPrimitiveValue> create(T value)
     {
@@ -331,7 +332,12 @@ private:
     // FIXME: int vs. unsigned overloading is too subtle to distinguish the color and operator cases.
     CSSPrimitiveValue(int parserOperator);
     CSSPrimitiveValue(unsigned color); // RGB value
-    CSSPrimitiveValue(const Length&);
+    CSSPrimitiveValue(const Length& length)
+        : CSSValue(PrimitiveClass)
+    {
+        init(length);
+    }
+    CSSPrimitiveValue(const Length&, const RenderStyle*);
     CSSPrimitiveValue(const String&, UnitTypes);
     CSSPrimitiveValue(double, UnitTypes);
 
@@ -352,6 +358,7 @@ private:
     static void create(unsigned); // compile-time guard
     template<typename T> operator T*(); // compile-time guard
 
+    void init(const Length&);
     void init(PassRefPtr<Counter>);
     void init(PassRefPtr<Rect>);
     void init(PassRefPtr<Pair>);

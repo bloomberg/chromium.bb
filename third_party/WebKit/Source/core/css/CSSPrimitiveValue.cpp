@@ -275,15 +275,47 @@ CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
     m_value.rgbcolor = color;
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(const Length& length)
+CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, const RenderStyle* style)
     : CSSValue(PrimitiveClass)
+{
+    switch (length.type()) {
+    case Auto:
+    case Intrinsic:
+    case MinIntrinsic:
+    case MinContent:
+    case MaxContent:
+    case FillAvailable:
+    case FitContent:
+    case ExtendToZoom:
+    case Percent:
+    case ViewportPercentageWidth:
+    case ViewportPercentageHeight:
+    case ViewportPercentageMin:
+    case ViewportPercentageMax:
+        init(length);
+        return;
+    case Fixed:
+        m_primitiveUnitType = CSS_PX;
+        m_value.num = adjustFloatForAbsoluteZoom(length.value(), style);
+        return;
+    case Calculated:
+        init(CSSCalcValue::create(length.calculationValue().get(), style));
+        return;
+    case Relative:
+    case Undefined:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+}
+
+void CSSPrimitiveValue::init(const Length& length)
 {
     switch (length.type()) {
         case Auto:
             m_primitiveUnitType = CSS_VALUE_ID;
             m_value.valueID = CSSValueAuto;
             break;
-        case WebCore::Fixed:
+        case Fixed:
             m_primitiveUnitType = CSS_PX;
             m_value.num = length.value();
             break;

@@ -458,7 +458,7 @@ static PassRefPtr<CSSBorderImageSliceValue> valueForNinePieceImageSlice(const Ni
     return CSSBorderImageSliceValue::create(cssValuePool().createValue(quad.release()), image.fill());
 }
 
-static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox& box)
+static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox& box, const RenderStyle* style)
 {
     // Create the slices.
     RefPtr<CSSPrimitiveValue> top;
@@ -469,7 +469,7 @@ static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox&
     if (box.top().isRelative())
         top = cssValuePool().createValue(box.top().value(), CSSPrimitiveValue::CSS_NUMBER);
     else
-        top = cssValuePool().createValue(box.top());
+        top = cssValuePool().createValue(box.top(), style);
 
     if (box.right() == box.top() && box.bottom() == box.top() && box.left() == box.top()) {
         right = top;
@@ -479,7 +479,7 @@ static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox&
         if (box.right().isRelative())
             right = cssValuePool().createValue(box.right().value(), CSSPrimitiveValue::CSS_NUMBER);
         else
-            right = cssValuePool().createValue(box.right());
+            right = cssValuePool().createValue(box.right(), style);
 
         if (box.bottom() == box.top() && box.right() == box.left()) {
             bottom = top;
@@ -488,7 +488,7 @@ static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox&
             if (box.bottom().isRelative())
                 bottom = cssValuePool().createValue(box.bottom().value(), CSSPrimitiveValue::CSS_NUMBER);
             else
-                bottom = cssValuePool().createValue(box.bottom());
+                bottom = cssValuePool().createValue(box.bottom(), style);
 
             if (box.left() == box.right())
                 left = right;
@@ -496,7 +496,7 @@ static PassRefPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const LengthBox&
                 if (box.left().isRelative())
                     left = cssValuePool().createValue(box.left().value(), CSSPrimitiveValue::CSS_NUMBER);
                 else
-                    left = cssValuePool().createValue(box.left());
+                    left = cssValuePool().createValue(box.left(), style);
             }
         }
     }
@@ -523,7 +523,7 @@ static PassRefPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& i
     return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release()));
 }
 
-static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image)
+static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const RenderStyle* style)
 {
     if (!image.hasImage())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -537,10 +537,10 @@ static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image)
     RefPtr<CSSBorderImageSliceValue> imageSlices = valueForNinePieceImageSlice(image);
 
     // Create the border area slices.
-    RefPtr<CSSValue> borderSlices = valueForNinePieceImageQuad(image.borderSlices());
+    RefPtr<CSSValue> borderSlices = valueForNinePieceImageQuad(image.borderSlices(), style);
 
     // Create the border outset.
-    RefPtr<CSSValue> outset = valueForNinePieceImageQuad(image.outset());
+    RefPtr<CSSValue> outset = valueForNinePieceImageQuad(image.outset(), style);
 
     // Create the repeat rules.
     RefPtr<CSSValue> repeat = valueForNinePieceImageRepeat(image);
@@ -592,7 +592,7 @@ static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection
         break;
     }
 
-    return CSSReflectValue::create(direction.release(), offset.release(), valueForNinePieceImage(reflection->mask()));
+    return CSSReflectValue::create(direction.release(), offset.release(), valueForNinePieceImage(reflection->mask(), style));
 }
 
 static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer* layer, const RenderStyle* style)
@@ -2499,25 +2499,25 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitBackfaceVisibility:
             return cssValuePool().createIdentifierValue((style->backfaceVisibility() == BackfaceVisibilityHidden) ? CSSValueHidden : CSSValueVisible);
         case CSSPropertyWebkitBorderImage:
-            return valueForNinePieceImage(style->borderImage());
+            return valueForNinePieceImage(style->borderImage(), style.get());
         case CSSPropertyBorderImageOutset:
-            return valueForNinePieceImageQuad(style->borderImage().outset());
+            return valueForNinePieceImageQuad(style->borderImage().outset(), style.get());
         case CSSPropertyBorderImageRepeat:
             return valueForNinePieceImageRepeat(style->borderImage());
         case CSSPropertyBorderImageSlice:
             return valueForNinePieceImageSlice(style->borderImage());
         case CSSPropertyBorderImageWidth:
-            return valueForNinePieceImageQuad(style->borderImage().borderSlices());
+            return valueForNinePieceImageQuad(style->borderImage().borderSlices(), style.get());
         case CSSPropertyWebkitMaskBoxImage:
-            return valueForNinePieceImage(style->maskBoxImage());
+            return valueForNinePieceImage(style->maskBoxImage(), style.get());
         case CSSPropertyWebkitMaskBoxImageOutset:
-            return valueForNinePieceImageQuad(style->maskBoxImage().outset());
+            return valueForNinePieceImageQuad(style->maskBoxImage().outset(), style.get());
         case CSSPropertyWebkitMaskBoxImageRepeat:
             return valueForNinePieceImageRepeat(style->maskBoxImage());
         case CSSPropertyWebkitMaskBoxImageSlice:
             return valueForNinePieceImageSlice(style->maskBoxImage());
         case CSSPropertyWebkitMaskBoxImageWidth:
-            return valueForNinePieceImageQuad(style->maskBoxImage().borderSlices());
+            return valueForNinePieceImageQuad(style->maskBoxImage().borderSlices(), style.get());
         case CSSPropertyWebkitMaskBoxImageSource:
             if (style->maskBoxImageSource())
                 return style->maskBoxImageSource()->cssValue();
@@ -2751,7 +2751,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBorderLeft:
             return valuesForShorthandProperty(borderLeftShorthand());
         case CSSPropertyBorderImage:
-            return valueForNinePieceImage(style->borderImage());
+            return valueForNinePieceImage(style->borderImage(), style.get());
         case CSSPropertyBorderRadius:
             return valueForBorderRadiusShorthand(style.get(), m_node->document()->renderView());
         case CSSPropertyBorderRight:

@@ -33,6 +33,7 @@
 
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -704,6 +705,72 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(PassRefPtr<
 PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(PassRefPtr<CSSCalcExpressionNode> leftSide, PassRefPtr<CSSCalcExpressionNode> rightSide, CalcOperator op)
 {
     return CSSCalcBinaryOperation::create(leftSide, rightSide, op);
+}
+
+PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const CalcExpressionNode* node, const RenderStyle* style)
+{
+    switch (node->type()) {
+    case CalcExpressionNodeNumber: {
+        float value = toCalcExpressionNumber(node)->value();
+        return createExpressionNode(CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER), value == trunc(value));
+    }
+    case CalcExpressionNodeLength:
+        return createExpressionNode(toCalcExpressionLength(node)->length(), style);
+    case CalcExpressionNodeBinaryOperation: {
+        const CalcExpressionBinaryOperation* binaryNode = toCalcExpressionBinaryOperation(node);
+        return createExpressionNode(createExpressionNode(binaryNode->leftSide(), style), createExpressionNode(binaryNode->rightSide(), style), binaryNode->getOperator());
+    }
+    case CalcExpressionNodeBlendLength: {
+        // FIXME(crbug.com/269320): Create a CSSCalcExpressionNode equivalent of CalcExpressionBlendLength.
+        const CalcExpressionBlendLength* blendNode = toCalcExpressionBlendLength(node);
+        const double progress = blendNode->progress();
+        const bool isInteger = !progress || (progress == 1);
+        return createExpressionNode(
+            createExpressionNode(
+                createExpressionNode(blendNode->from(), style),
+                createExpressionNode(CSSPrimitiveValue::create(1 - progress, CSSPrimitiveValue::CSS_NUMBER), isInteger),
+                CalcMultiply),
+            createExpressionNode(
+                createExpressionNode(blendNode->to(), style),
+                createExpressionNode(CSSPrimitiveValue::create(progress, CSSPrimitiveValue::CSS_NUMBER), isInteger),
+                CalcMultiply),
+            CalcAdd);
+    }
+    case CalcExpressionNodeUndefined:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Length& length, const RenderStyle* style)
+{
+    switch (length.type()) {
+    case Percent:
+    case ViewportPercentageWidth:
+    case ViewportPercentageHeight:
+    case ViewportPercentageMin:
+    case ViewportPercentageMax:
+    case Fixed:
+        return createExpressionNode(CSSPrimitiveValue::create(length, style), length.value() == trunc(length.value()));
+    case Calculated:
+        return createExpressionNode(length.calculationValue()->expression(), style);
+    case Auto:
+    case Intrinsic:
+    case MinIntrinsic:
+    case MinContent:
+    case MaxContent:
+    case FillAvailable:
+    case FitContent:
+    case ExtendToZoom:
+    case Relative:
+    case Undefined:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, CalculationPermittedValueRange range)

@@ -3788,6 +3788,7 @@
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
             'css/CSSParserValuesTest.cpp',
+            'css/CSSCalculationValueTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
             'fetch/ResourceFetcherTest.cpp',

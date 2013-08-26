@@ -43,9 +43,10 @@ namespace WebCore {
 
 class CSSParserValueList;
 class CSSValueList;
-class RenderStyle;
 class CalculationValue;
 class CalcExpressionNode;
+class RenderStyle;
+struct Length;
 
 enum CalculationCategory {
     CalcNumber = 0,
@@ -94,9 +95,12 @@ class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, CalculationPermittedValueRange);
     static PassRefPtr<CSSCalcValue> create(PassRefPtr<CSSCalcExpressionNode>, CalculationPermittedValueRange = CalculationRangeAll);
+    static PassRefPtr<CSSCalcValue> create(const CalculationValue* value, const RenderStyle* style) { return adoptRef(new CSSCalcValue(value, style)); }
 
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSPrimitiveValue>, bool isInteger = false);
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSCalcExpressionNode>, PassRefPtr<CSSCalcExpressionNode>, CalcOperator);
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const CalcExpressionNode*, const RenderStyle*);
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const Length&, const RenderStyle*);
 
     PassRefPtr<CalculationValue> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom = 1.0) const
     {
@@ -119,6 +123,12 @@ private:
         : CSSValue(CalculationClass)
         , m_expression(expression)
         , m_nonNegative(range == CalculationRangeNonNegative)
+    {
+    }
+    CSSCalcValue(const CalculationValue* value, const RenderStyle* style)
+        : CSSValue(CalculationClass)
+        , m_expression(createExpressionNode(value->expression(), style))
+        , m_nonNegative(value->isNonNegative())
     {
     }
 
