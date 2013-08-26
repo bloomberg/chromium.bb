@@ -36,6 +36,37 @@
         <structure type="chrome_scaled_image" name="IDR_APP_TOP_RIGHT" file="app_top_right.png" />
       </if>
       <if expr="is_linux and pp_ifdef('use_aura')">
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_ALIAS" file="common/pointers/alias_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_CELL" file="common/pointers/cell_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_COL_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_CONTEXT_MENU" file="common/pointers/context_menu_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_COPY" file="common/pointers/copy_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_CROSSHAIR" file="common/pointers/crosshair_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_EAST_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_EAST_WEST_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_FLEUR" file="common/pointers/fleur_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_HAND" file="common/pointers/hand2_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_HELP" file="common/pointers/help_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_IBEAM" file="common/pointers/xterm_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_MOVE" file="common/pointers/move_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_EAST_RESIZE" file="common/pointers/top_right_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_EAST_SOUTH_WEST_RESIZE" file="common/pointers/top_right_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_RESIZE" file="common/pointers/sb_v_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_SOUTH_RESIZE" file="common/pointers/sb_v_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_WEST_RESIZE" file="common/pointers/top_left_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NORTH_WEST_SOUTH_EAST_RESIZE" file="common/pointers/top_left_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_NO_DROP" file="common/pointers/nodrop_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_PTR" file="common/pointers/left_ptr_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_ROW_RESIZE" file="common/pointers/sb_v_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_SOUTH_EAST_RESIZE" file="common/pointers/top_left_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_SOUTH_RESIZE" file="common/pointers/sb_v_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_SOUTH_WEST_RESIZE" file="common/pointers/top_right_corner_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_WEST_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_XTERM_HORIZ" file="common/pointers/xterm_horiz_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_ZOOM_IN" file="common/pointers/zoom_in_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_ZOOM_OUT" file="common/pointers/zoom_out_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_GRAB" file="common/pointers/fleur_big.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_GRABBING" file="common/pointers/hand3_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ALIAS" file="common/pointers/alias.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CELL" file="common/pointers/cell.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COL_RESIZE" file="common/pointers/sb_h_double_arrow.png" />

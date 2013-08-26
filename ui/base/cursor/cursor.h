@@ -84,8 +84,6 @@ const int kCursorCustom = 44;
 
 enum CursorSetType {
   CURSOR_SET_NORMAL,
-  // Don't use this large cursor set now, except in tests. Large assets are not
-  // added yet. crbug.com/247254
   CURSOR_SET_LARGE
 };
 

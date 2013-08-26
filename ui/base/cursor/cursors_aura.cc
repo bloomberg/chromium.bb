@@ -74,6 +74,52 @@ const CursorData kNormalCursors[] = {
   {ui::kCursorGrabbing, IDR_AURA_CURSOR_GRABBING, {9, 9}, {18, 18}},
 };
 
+const CursorData kLargeCursors[] = {
+  {ui::kCursorNull, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {10, 10}},
+  {ui::kCursorPointer, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {10, 10}},
+  {ui::kCursorNoDrop, IDR_AURA_CURSOR_BIG_NO_DROP, {23, 23}, {23, 23}},
+  {ui::kCursorNotAllowed, IDR_AURA_CURSOR_BIG_NO_DROP, {23, 23}, {23, 23}},
+  {ui::kCursorCopy, IDR_AURA_CURSOR_BIG_COPY, {23, 23}, {23, 23}},
+  {ui::kCursorHand, IDR_AURA_CURSOR_BIG_HAND, {23, 10}, {23, 10}},
+  {ui::kCursorMove, IDR_AURA_CURSOR_BIG_MOVE, {28, 28}, {28, 28}},
+  {ui::kCursorNorthEastResize, IDR_AURA_CURSOR_BIG_NORTH_EAST_RESIZE,
+   {31, 28}, {31, 28}},
+  {ui::kCursorSouthWestResize, IDR_AURA_CURSOR_BIG_SOUTH_WEST_RESIZE,
+   {31, 28}, {31, 28}},
+  {ui::kCursorSouthEastResize, IDR_AURA_CURSOR_BIG_SOUTH_EAST_RESIZE,
+   {28, 28}, {28, 28}},
+  {ui::kCursorNorthWestResize, IDR_AURA_CURSOR_BIG_NORTH_WEST_RESIZE,
+   {28, 28}, {28, 28}},
+  {ui::kCursorNorthResize, IDR_AURA_CURSOR_BIG_NORTH_RESIZE,
+   {28, 31}, {28, 31}},
+  {ui::kCursorSouthResize, IDR_AURA_CURSOR_BIG_SOUTH_RESIZE,
+   {28, 31}, {28, 31}},
+  {ui::kCursorEastResize, IDR_AURA_CURSOR_BIG_EAST_RESIZE, {31, 28}, {31, 28}},
+  {ui::kCursorWestResize, IDR_AURA_CURSOR_BIG_WEST_RESIZE, {31, 28}, {31, 28}},
+  {ui::kCursorIBeam, IDR_AURA_CURSOR_BIG_IBEAM, {31, 31}, {31, 31}},
+  {ui::kCursorAlias, IDR_AURA_CURSOR_BIG_ALIAS, {51, 15}, {51, 11}},
+  {ui::kCursorCell, IDR_AURA_CURSOR_BIG_CELL, {28, 28}, {24, 23}},
+  {ui::kCursorContextMenu, IDR_AURA_CURSOR_BIG_CONTEXT_MENU, {4, 4}, {8, 9}},
+  {ui::kCursorCross, IDR_AURA_CURSOR_BIG_CROSSHAIR, {31, 31}, {31, 31}},
+  {ui::kCursorHelp, IDR_AURA_CURSOR_BIG_HELP, {10, 10}, {8, 9}},
+  {ui::kCursorVerticalText, IDR_AURA_CURSOR_BIG_XTERM_HORIZ,
+   {31, 28}, {31, 28}},
+  {ui::kCursorZoomIn, IDR_AURA_CURSOR_BIG_ZOOM_IN, {26, 26}, {26, 26}},
+  {ui::kCursorZoomOut, IDR_AURA_CURSOR_BIG_ZOOM_OUT, {26, 26}, {26, 26}},
+  {ui::kCursorRowResize, IDR_AURA_CURSOR_BIG_ROW_RESIZE, {28, 31}, {28, 31}},
+  {ui::kCursorColumnResize, IDR_AURA_CURSOR_BIG_COL_RESIZE, {31, 28}, {31, 28}},
+  {ui::kCursorEastWestResize, IDR_AURA_CURSOR_BIG_EAST_WEST_RESIZE,
+   {31, 28}, {31, 28}},
+  {ui::kCursorNorthSouthResize, IDR_AURA_CURSOR_BIG_NORTH_SOUTH_RESIZE,
+   {28, 31}, {28, 31}},
+  {ui::kCursorNorthEastSouthWestResize,
+   IDR_AURA_CURSOR_BIG_NORTH_EAST_SOUTH_WEST_RESIZE, {31, 28}, {31, 28}},
+  {ui::kCursorNorthWestSouthEastResize,
+   IDR_AURA_CURSOR_BIG_NORTH_WEST_SOUTH_EAST_RESIZE, {28, 28}, {28, 28}},
+  {ui::kCursorGrab, IDR_AURA_CURSOR_BIG_GRAB, {20, 13}, {20, 13}},
+  {ui::kCursorGrabbing, IDR_AURA_CURSOR_BIG_GRABBING, {23, 23}, {23, 23}},
+};
+
 const CursorData kAnimatedCursors[] = {
   {ui::kCursorWait, IDR_THROBBER, {7, 7}, {14, 14}},
   {ui::kCursorProgress, IDR_THROBBER, {7, 7}, {14, 14}},
@@ -85,7 +131,12 @@ const CursorSet kCursorSets[] = {
     kNormalCursors, arraysize(kNormalCursors),
     kAnimatedCursors, arraysize(kAnimatedCursors)
   },
-  // TODO)yoshiki): Add Large cursor set. crbug.com/247254
+  {
+    CURSOR_SET_LARGE,
+    kLargeCursors, arraysize(kLargeCursors),
+    // TODO(yoshiki): Replace animated cursors with big assets. crbug.com/247254
+    kAnimatedCursors, arraysize(kAnimatedCursors)
+  },
 };
 
 const CursorSet* GetCursorSetByType(CursorSetType cursor_set_id) {
