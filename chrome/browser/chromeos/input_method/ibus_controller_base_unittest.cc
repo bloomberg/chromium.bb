@@ -27,8 +27,8 @@ class TestIBusController : public IBusControllerBase {
     return true;
   }
 
-  size_t GetObserverCount() const {
-    return observers_.size();
+  bool HasObservers() const {
+    return observers_.might_have_observers();
   }
 
  private:
@@ -60,19 +60,19 @@ TEST_F(IBusControllerBaseTest, TestAddRemoveObserver) {
   TestObserver observer1;
   TestObserver observer2;
   TestObserver observer3;
-  EXPECT_EQ(0U, controller_->GetObserverCount());
+  EXPECT_FALSE(controller_->HasObservers());
   controller_->AddObserver(&observer1);
-  EXPECT_EQ(1U, controller_->GetObserverCount());
+  EXPECT_TRUE(controller_->HasObservers());
   controller_->AddObserver(&observer2);
-  EXPECT_EQ(2U, controller_->GetObserverCount());
+  EXPECT_TRUE(controller_->HasObservers());
   controller_->RemoveObserver(&observer3);  // nop
-  EXPECT_EQ(2U, controller_->GetObserverCount());
+  EXPECT_TRUE(controller_->HasObservers());
   controller_->RemoveObserver(&observer1);
-  EXPECT_EQ(1U, controller_->GetObserverCount());
+  EXPECT_TRUE(controller_->HasObservers());
   controller_->RemoveObserver(&observer1);  // nop
-  EXPECT_EQ(1U, controller_->GetObserverCount());
+  EXPECT_TRUE(controller_->HasObservers());
   controller_->RemoveObserver(&observer2);
-  EXPECT_EQ(0U, controller_->GetObserverCount());
+  EXPECT_FALSE(controller_->HasObservers());
 }
 
 TEST_F(IBusControllerBaseTest, TestGetCurrentProperties) {
