@@ -6,7 +6,6 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -110,10 +109,9 @@ void OperationTestBase::SetUp() {
   ASSERT_TRUE(success);
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
-  internal::ChangeListLoader change_list_loader(
-      blocking_task_runner_.get(), metadata_.get(), scheduler_.get());
-
-  change_list_loader.LoadIfNeeded(
+  change_list_loader_.reset(new internal::ChangeListLoader(
+      blocking_task_runner_.get(), metadata_.get(), scheduler_.get()));
+  change_list_loader_->LoadIfNeeded(
       internal::DirectoryFetchInfo(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
@@ -129,6 +127,14 @@ FileError OperationTestBase::GetLocalResourceEntry(const base::FilePath& path,
       base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
                  base::Unretained(metadata()), path, entry),
       base::Bind(google_apis::test_util::CreateCopyResultCallback(&error)));
+  test_util::RunBlockingPoolTask();
+  return error;
+}
+
+FileError OperationTestBase::CheckForUpdates() {
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   return error;
 }

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/scoped_temp_dir.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -81,6 +82,10 @@ class OperationTestBase : public testing::Test {
   FileError GetLocalResourceEntry(const base::FilePath& path,
                                   ResourceEntry* entry);
 
+  // Synchronously updates |metadata_| by fetching the change feed from the
+  // |fake_service_|.
+  FileError CheckForUpdates();
+
   // Accessors for the components.
   FakeDriveService* fake_service() {
     return fake_drive_service_.get();
@@ -111,6 +116,7 @@ class OperationTestBase : public testing::Test {
       metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::ChangeListLoader> change_list_loader_;
 };
 
 }  // namespace file_system

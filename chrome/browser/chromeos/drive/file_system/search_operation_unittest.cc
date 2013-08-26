@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -98,11 +97,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   }
 
   // Load the change from FakeDriveService.
-  internal::ChangeListLoader change_list_loader(
-      blocking_task_runner(), metadata(), scheduler());
-  change_list_loader.CheckForUpdates(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(FILE_ERROR_OK, CheckForUpdates());
 
   // Now the new entry must be reported to be in the right directory.
   const SearchResultPair kExpectedResultsAfterLoad[] = {
