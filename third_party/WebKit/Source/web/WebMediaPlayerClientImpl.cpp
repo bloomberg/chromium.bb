@@ -218,7 +218,7 @@ void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
     m_client->mediaPlayerDidRemoveTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
 }
 
-void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSourceNew* webMediaSource)
+void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
     ASSERT(webMediaSource);
     m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(webMediaSource))));

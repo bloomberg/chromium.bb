@@ -43,7 +43,7 @@
 
 namespace WebKit {
 
-MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<WebKit::WebMediaSourceNew> webMediaSource)
+MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<WebKit::WebMediaSource> webMediaSource)
     : m_webMediaSource(webMediaSource)
 {
 }
@@ -82,7 +82,7 @@ void MediaSourcePrivateImpl::setDuration(double duration)
 void MediaSourcePrivateImpl::markEndOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus status)
 {
     if (m_webMediaSource)
-        m_webMediaSource->markEndOfStream(static_cast<WebMediaSourceNew::EndOfStreamStatus>(status));
+        m_webMediaSource->markEndOfStream(static_cast<WebMediaSource::EndOfStreamStatus>(status));
 }
 
 void MediaSourcePrivateImpl::unmarkEndOfStream()

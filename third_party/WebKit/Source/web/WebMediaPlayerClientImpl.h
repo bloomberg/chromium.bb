@@ -90,7 +90,7 @@ public:
     virtual void setWebLayer(WebLayer*);
     virtual void addTextTrack(WebInbandTextTrack*);
     virtual void removeTextTrack(WebInbandTextTrack*);
-    virtual void mediaSourceOpened(WebMediaSourceNew*);
+    virtual void mediaSourceOpened(WebMediaSource*);
     virtual void requestSeek(double);
 
     // MediaPlayer methods:
