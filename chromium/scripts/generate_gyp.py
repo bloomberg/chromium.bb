@@ -516,7 +516,8 @@ def main():
     root = os.path.normpath(root)
     # Only process headers in code we use.  There should be no dependencies on
     # headers from libraries we don't use.
-    if not root.startswith(('libavcodec', 'libavutil', 'libavformat')):
+    if not root.startswith(
+        ('libavcodec', 'libavutil', 'libavformat', 'compat')):
       continue
     for fn in fnmatch.filter(filenames, '*.h'):
       header_files.append(os.path.join(root,fn))

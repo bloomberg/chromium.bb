@@ -718,6 +718,17 @@
       }],  # (1) and (1) and (1)
     ],  # conditions
     'c_headers': [
+      'compat/aix/math.h',
+      'compat/avisynth/avisynth_c.h',
+      'compat/avisynth/avisynth_c_25.h',
+      'compat/avisynth/avxsynth_c.h',
+      'compat/avisynth/windowsPorts/basicDataTypeConversions.h',
+      'compat/avisynth/windowsPorts/windows2linux.h',
+      'compat/msvcrt/snprintf.h',
+      'compat/os2threads.h',
+      'compat/tms470/math.h',
+      'compat/va_copy.h',
+      'compat/w32pthreads.h',
       'libavcodec/a64colors.h',
       'libavcodec/a64tables.h',
       'libavcodec/aac.h',
