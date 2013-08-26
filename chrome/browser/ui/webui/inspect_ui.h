@@ -25,6 +25,7 @@ class InspectUI : public content::WebUIController,
 
   void InitUI();
   void InspectRemotePage(const std::string& page_id);
+  void ActivateRemotePage(const std::string& page_id);
   void CloseRemotePage(const std::string& page_id);
   void ReloadRemotePage(const std::string& page_id);
   void OpenRemotePage(const std::string& browser_id, const std::string& url);

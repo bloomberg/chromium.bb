@@ -74,6 +74,7 @@ static const char kAdbTargetType[]  = "adb_page";
 
 static const char kInitUICommand[]  = "init-ui";
 static const char kInspectCommand[]  = "inspect";
+static const char kActivateCommand[]  = "activate";
 static const char kTerminateCommand[]  = "terminate";
 static const char kReloadCommand[]  = "reload";
 static const char kOpenCommand[]  = "open";
@@ -188,6 +189,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
 
   void HandleInitUICommand(const ListValue* args);
   void HandleInspectCommand(const ListValue* args);
+  void HandleActivateCommand(const ListValue* args);
   void HandleTerminateCommand(const ListValue* args);
   void HandleReloadCommand(const ListValue* args);
   void HandleOpenCommand(const ListValue* args);
@@ -211,6 +213,9 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kInspectCommand,
       base::Bind(&InspectMessageHandler::HandleInspectCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kActivateCommand,
+      base::Bind(&InspectMessageHandler::HandleActivateCommand,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kTerminateCommand,
       base::Bind(&InspectMessageHandler::HandleTerminateCommand,
@@ -263,6 +268,12 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     return;
 
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host.get());
+}
+
+void InspectMessageHandler::HandleActivateCommand(const ListValue* args) {
+  std::string page_id;
+  if (GetRemotePageId(args, &page_id))
+    inspect_ui_->ActivateRemotePage(page_id);
 }
 
 static void TerminateWorker(int process_id, int route_id) {
@@ -470,6 +481,12 @@ void InspectUI::InspectRemotePage(const std::string& id) {
     Profile* profile = Profile::FromWebUI(web_ui());
     it->second->Inspect(profile);
   }
+}
+
+void InspectUI::ActivateRemotePage(const std::string& id) {
+  RemotePages::iterator it = remote_pages_.find(id);
+  if (it != remote_pages_.end())
+    it->second->Activate();
 }
 
 void InspectUI::ReloadRemotePage(const std::string& id) {

@@ -56,6 +56,8 @@ static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
 static const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
 static const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
+static const char kActivatePageRequest[] =
+    "GET /json/activate/%s HTTP/1.1\r\n\r\n";
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 const int kAdbPollingIntervalMs = 1000;
@@ -706,6 +708,13 @@ void DevToolsAdbBridge::RemotePage::Inspect(Profile* profile) {
 }
 
 static void Noop(int, const std::string&) {}
+
+void DevToolsAdbBridge::RemotePage::Activate() {
+  std::string request = base::StringPrintf(kActivatePageRequest, id_.c_str());
+  bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+      base::Bind(&AndroidDevice::HttpQuery,
+          device_, socket_, request, base::Bind(&Noop)));
+}
 
 void DevToolsAdbBridge::RemotePage::Close() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

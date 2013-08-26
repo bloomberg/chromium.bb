@@ -6,6 +6,10 @@ function inspect(data) {
   chrome.send('inspect', [data]);
 }
 
+function activate(data) {
+  chrome.send('activate', [data]);
+}
+
 function terminate(data) {
   chrome.send('terminate', [data]);
 }
@@ -200,6 +204,13 @@ function populateDeviceLists(devices) {
       var isChrome = browser.adbBrowserProduct &&
           browser.adbBrowserProduct.match(/^Chrome/);
 
+      var majorChromeVersion = 0;
+      if (isChrome && browser.adbBrowserVersion) {
+        var match = browser.adbBrowserVersion.match(/^(\d+)/);
+        if (match)
+          majorChromeVersion = parseInt(match[1]);
+      }
+
       var pageList;
       var browserSection = $(browser.adbGlobalId);
       if (browserSection) {
@@ -220,15 +231,8 @@ function populateDeviceLists(devices) {
           browserName.textContent = browser.adbBrowserPackage;
         else
           browserName.textContent = browser.adbBrowserProduct;
-        var majorChromeVersion = 0;
-        if (browser.adbBrowserVersion) {
+        if (browser.adbBrowserVersion)
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
-          if (isChrome) {
-            var match = browser.adbBrowserVersion.match(/^(\d+)/);
-            if (match)
-              majorChromeVersion = parseInt(match[1]);
-          }
-        }
         browserSection.appendChild(browserHeader);
 
         if (majorChromeVersion >= 29) {
@@ -271,6 +275,10 @@ function populateDeviceLists(devices) {
         var row = addTargetToList(
             page, pageList, ['faviconUrl', 'name', 'url', 'description']);
         if (isChrome) {
+          if (majorChromeVersion >= 30) {
+            row.appendChild(createActionLink(
+                'activate', activate.bind(null, page), false));
+          }
           row.appendChild(createActionLink(
               'reload', reload.bind(null, page), page.attached));
           row.appendChild(createActionLink(

@@ -98,6 +98,7 @@ class DevToolsAdbBridge
     bool attached() { return debug_url_.empty(); }
 
     void Inspect(Profile* profile);
+    void Activate();
     void Close();
     void Reload();
 
