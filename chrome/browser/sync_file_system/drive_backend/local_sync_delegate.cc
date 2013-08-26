@@ -413,9 +413,13 @@ void LocalSyncDelegate::UpdateMetadata(
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
-void LocalSyncDelegate::ResetMetadataMD5(const SyncStatusCallback& callback) {
+void LocalSyncDelegate::ResetMetadataForStartOver(
+    const SyncStatusCallback& callback) {
   has_drive_metadata_ = true;
+  DCHECK(!drive_metadata_.resource_id().empty());
   drive_metadata_.set_md5_checksum(std::string());
+  drive_metadata_.set_conflicted(false);
+  drive_metadata_.set_to_be_fetched(false);
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
@@ -538,8 +542,8 @@ void LocalSyncDelegate::HandleLocalWinCase(
     return;
   }
 
-  ResetMetadataMD5(base::Bind(&LocalSyncDelegate::StartOver,
-                              weak_factory_.GetWeakPtr(), callback));
+  ResetMetadataForStartOver(base::Bind(&LocalSyncDelegate::StartOver,
+                                       weak_factory_.GetWeakPtr(), callback));
 }
 
 void LocalSyncDelegate::HandleRemoteWinCase(

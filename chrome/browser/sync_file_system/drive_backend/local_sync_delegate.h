@@ -86,7 +86,7 @@ class LocalSyncDelegate {
                       const std::string& md5,
                       DriveMetadata::ResourceType type,
                       const SyncStatusCallback& callback);
-  void ResetMetadataMD5(const SyncStatusCallback& callback);
+  void ResetMetadataForStartOver(const SyncStatusCallback& callback);
   void SetMetadataToBeFetched(DriveMetadata::ResourceType type,
                               const SyncStatusCallback& callback);
   void DeleteMetadata(const SyncStatusCallback& callback);
