@@ -146,6 +146,13 @@ _PATH_RULES_SPECIFIER = [
       "Source/bindings/templates",
       "Source/core/scripts/templates"],
      ["-"]),
+
+    ([# IDL compiler reference output
+      # Conforming to style significantly increases the complexity of the code
+      # generator and decreases *its* readability, which is of more concern
+      # than style of the machine-generated code itself.
+      "Source/bindings/tests/results"],
+     ["-"]),
 ]
 
 
