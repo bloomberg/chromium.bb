@@ -42,8 +42,13 @@ namespace WebCore {
 
 static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_t* family, UChar32 character)
 {
-    char characters[2] = {character, 0};
-    return fontData->typeface()->charsToGlyphs(characters, SkTypeface::kUTF32_Encoding, 0, 1) == 1;
+    SkPaint paint;
+    fontData->setupPaint(&paint);
+    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+
+    uint16_t glyph;
+    paint.textToGlyphs(&character, sizeof(character), &glyph);
+    return glyph != 0;
 }
 
 // Given the desired base font, this will create a SimpleFontData for a specific
