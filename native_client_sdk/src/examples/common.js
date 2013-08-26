@@ -84,11 +84,9 @@ var common = (function() {
   /**
    * Run all tests for this example.
    *
-   * @param {bool} waitForModule True if the tests should wait for the module
-   *     to load. This is not necessary for trusted plugins (i.e. host plugins).
    * @param {Object} moduleEl The module DOM element.
    */
-  function runTests(waitForModule, moduleEl) {
+  function runTests(moduleEl) {
     console.log('runTests()');
     common.tester = new Tester();
 
@@ -107,9 +105,7 @@ var common = (function() {
       window.addTests();
     }
 
-    if (waitForModule) {
-      common.tester.waitFor(moduleEl);
-    }
+    common.tester.waitFor(moduleEl);
     common.tester.run();
   }
 
@@ -155,9 +151,11 @@ var common = (function() {
     var isHost = isHostToolchain(tool);
     if (isHost) {
       window.setTimeout(function() {
-        var evt = document.createEvent('Event');
-        evt.initEvent('load', true, true);  // bubbles, cancelable
-        moduleEl.dispatchEvent(evt);
+        moduleEl.readyState = 1;
+        moduleEl.dispatchEvent(new CustomEvent('loadstart'));
+        moduleEl.readyState = 4;
+        moduleEl.dispatchEvent(new CustomEvent('load'));
+        moduleEl.dispatchEvent(new CustomEvent('loadend'));
       }, 100);  // 100 ms
     }
 
@@ -165,8 +163,7 @@ var common = (function() {
     if (isTest) {
       var loadNaClTest = function() {
         injectScript('nacltest.js', function() {
-          var waitForModule = !isHost;
-          runTests(waitForModule, moduleEl);
+          runTests(moduleEl);
         });
       };
 
