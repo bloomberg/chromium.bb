@@ -64,11 +64,10 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
     ANGLEGetInfoType len = 0;
     int size = 0;
     ShDataType type = SH_NONE;
-    ShPrecisionType precision = SH_PRECISION_UNDEFINED;
-    int static_use = 0;
+    ShPrecisionType precision = SH_PRECISION_MEDIUMP;
 
     ShGetVariableInfo(compiler, var_type, i,
-                      &len, &size, &type, &precision, &static_use,
+                      &len, &size, &type, &precision,
                       name.get(), mapped_name.get());
 
     // In theory we should CHECK(len <= name_len - 1) here, but ANGLE needs
@@ -78,8 +77,7 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
     std::string name_string(name.get(), std::min(len, name_len - 1));
     mapped_name.get()[mapped_name_len - 1] = '\0';
 
-    ShaderTranslator::VariableInfo info(
-        type, size, precision, static_use, name_string);
+    ShaderTranslator::VariableInfo info(type, size, precision, name_string);
     (*var_map)[mapped_name.get()] = info;
   }
 }

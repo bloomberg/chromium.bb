@@ -67,7 +67,6 @@ void StoreShaderInfo(ShaderMapType type, ShaderProto *proto,
     info->set_type(iter->second.type);
     info->set_size(iter->second.size);
     info->set_precision(iter->second.precision);
-    info->set_static_use(iter->second.static_use);
     info->set_name(iter->second.name);
   }
 }
@@ -75,8 +74,7 @@ void StoreShaderInfo(ShaderMapType type, ShaderProto *proto,
 void RetrieveShaderInfo(const ShaderInfoProto& proto,
                         ShaderTranslator::VariableMap* map) {
   ShaderTranslator::VariableInfo info(
-      proto.type(), proto.size(), proto.precision(),
-      proto.static_use(), proto.name());
+      proto.type(), proto.size(), proto.precision(), proto.name());
   (*map)[proto.key()] = info;
 }
 

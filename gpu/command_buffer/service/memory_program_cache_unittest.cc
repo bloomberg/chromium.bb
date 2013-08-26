@@ -113,15 +113,15 @@ class MemoryProgramCacheTest : public testing::Test {
     VariableMap fragment_uniform_map;
     VariableMap fragment_varying_map;
 
-    vertex_attrib_map["a"] = VariableInfo(1, 34, SH_PRECISION_LOWP, 0, "a");
-    vertex_uniform_map["a"] = VariableInfo(0, 10, SH_PRECISION_MEDIUMP, 1, "a");
-    vertex_uniform_map["b"] = VariableInfo(2, 3114, SH_PRECISION_HIGHP, 1, "b");
-    vertex_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, 1, "c");
+    vertex_attrib_map["a"] = VariableInfo(1, 34, SH_PRECISION_LOWP, "a");
+    vertex_uniform_map["a"] = VariableInfo(0, 10, SH_PRECISION_MEDIUMP,  "a");
+    vertex_uniform_map["b"] = VariableInfo(2, 3114, SH_PRECISION_HIGHP, "b");
+    vertex_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, "c");
     fragment_attrib_map["jjjbb"] =
-        VariableInfo(463, 1114, SH_PRECISION_MEDIUMP, 0, "jjjbb");
+        VariableInfo(463, 1114, SH_PRECISION_MEDIUMP, "jjjbb");
     fragment_uniform_map["k"] =
-        VariableInfo(10, 34413, SH_PRECISION_MEDIUMP, 1, "k");
-    fragment_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, 1, "c");
+        VariableInfo(10, 34413, SH_PRECISION_MEDIUMP, "k");
+    fragment_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, "c");
 
     vertex_shader_->set_attrib_map(vertex_attrib_map);
     vertex_shader_->set_uniform_map(vertex_uniform_map);
