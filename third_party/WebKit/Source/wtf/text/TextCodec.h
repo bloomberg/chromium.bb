@@ -27,7 +27,6 @@
 #ifndef TextCodec_h
 #define TextCodec_h
 
-#include <memory>
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

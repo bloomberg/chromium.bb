@@ -31,7 +31,6 @@
 #ifndef CrossThreadTask_h
 #define CrossThreadTask_h
 
-#include <memory>
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
 #include "wtf/PassOwnPtr.h"

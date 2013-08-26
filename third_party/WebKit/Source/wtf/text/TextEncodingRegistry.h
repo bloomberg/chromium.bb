@@ -26,7 +26,6 @@
 #ifndef TextEncodingRegistry_h
 #define TextEncodingRegistry_h
 
-#include <memory>
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/WTFString.h"

@@ -27,7 +27,6 @@
 #include "wtf/OwnPtrCommon.h"
 #include "wtf/TypeTraits.h"
 #include <algorithm>
-#include <memory>
 
 namespace WTF {
 

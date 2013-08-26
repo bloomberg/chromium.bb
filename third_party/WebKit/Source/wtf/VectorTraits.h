@@ -25,7 +25,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
 #include <utility>
-#include <memory>
 
 using std::pair;
 
