@@ -7,14 +7,15 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/browser_thread_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
+class CookieStore;
 class HttpTransactionFactory;
 class ProxyConfigService;
 class URLRequestContext;
@@ -23,20 +24,14 @@ class URLRequestJobFactory;
 
 namespace android_webview {
 
-class AwBrowserContext;
 class AwNetworkDelegate;
 
-class AwURLRequestContextGetter : public net::URLRequestContextGetter,
-                                  public content::BrowserThreadDelegate {
+class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  explicit AwURLRequestContextGetter(AwBrowserContext* browser_context);
+  AwURLRequestContextGetter(const base::FilePath& partition_path,
+                            net::CookieStore* cookie_store);
 
   void InitializeOnNetworkThread();
-
-  // content::BrowserThreadDelegate implementation.
-  virtual void Init() OVERRIDE;
-  virtual void InitAsync() OVERRIDE;
-  virtual void CleanUp() OVERRIDE {}
 
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -45,7 +40,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
 
  private:
   friend class AwBrowserContext;
-
   virtual ~AwURLRequestContextGetter();
 
   // Prior to GetURLRequestContext() being called, SetProtocolHandlers() is
@@ -56,9 +50,9 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
   // on the UI thread while |job_factory_| must be created on the IO thread.
   void SetProtocolHandlers(content::ProtocolHandlerMap* protocol_handlers);
 
-  void PopulateNetworkSessionParams(net::HttpNetworkSession::Params* params);
+  void InitializeURLRequestContext();
 
-  AwBrowserContext* browser_context_;  // weak
+  const base::FilePath partition_path_;
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;

@@ -44,8 +44,6 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
-  browser_context_->InitializeBeforeThreadCreation();
-
   ui::ResourceBundle::InitSharedInstanceLocaleOnly(
       l10n_util::GetDefaultLocale(), NULL);
 

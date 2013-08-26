@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/net/init_native_callback.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_builder.h"
@@ -16,6 +17,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -32,7 +34,9 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 class AwResourceContext : public content::ResourceContext {
  public:
   explicit AwResourceContext(net::URLRequestContextGetter* getter)
-      : getter_(getter) {}
+      : getter_(getter) {
+    DCHECK(getter_);
+  }
   virtual ~AwResourceContext() {}
 
   // content::ResourceContext implementation.
@@ -90,12 +94,18 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
-void AwBrowserContext::InitializeBeforeThreadCreation() {
-  DCHECK(!url_request_context_getter_.get());
-  url_request_context_getter_ = new AwURLRequestContextGetter(this);
-}
-
 void AwBrowserContext::PreMainMessageLoopRun() {
+  cookie_store_ = content::CreatePersistentCookieStore(
+      GetPath().Append(FILE_PATH_LITERAL("Cookies")),
+      true,
+      NULL,
+      NULL);
+  cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
+  url_request_context_getter_ =
+      new AwURLRequestContextGetter(GetPath(), cookie_store_.get());
+
+  DidCreateCookieMonster(cookie_store_->GetCookieMonster());
+
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
   visitedlink_master_->Init();
@@ -108,9 +118,14 @@ void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
 
 net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers) {
-  CHECK(url_request_context_getter_.get());
+  // This function cannot actually create the request context because
+  // there is a reentrant dependency on GetResourceContext() via
+  // content::StoragePartitionImplMap::Create(). This is not fixable
+  // until http://crbug.com/159193. Until then, assert that the context
+  // has already been allocated and just handle setting the protocol_handlers.
+  DCHECK(url_request_context_getter_);
   url_request_context_getter_->SetProtocolHandlers(protocol_handlers);
-  return url_request_context_getter_.get();
+  return url_request_context_getter_;
 }
 
 net::URLRequestContextGetter*
@@ -118,8 +133,8 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers) {
-  CHECK(url_request_context_getter_.get());
-  return url_request_context_getter_.get();
+  NOTREACHED();
+  return NULL;
 }
 
 AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
@@ -205,12 +220,12 @@ net::URLRequestContextGetter*
 AwBrowserContext::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return GetRequestContext();
+  NOTREACHED();
+  return NULL;
 }
 
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
   if (!resource_context_) {
-    CHECK(url_request_context_getter_.get());
     resource_context_.reset(
         new AwResourceContext(url_request_context_getter_.get()));
   }
