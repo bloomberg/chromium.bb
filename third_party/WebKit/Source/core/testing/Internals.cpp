@@ -1710,6 +1710,32 @@ PassRefPtr<NodeList> Internals::paintOrderListAfterPromote(Element* element, Exc
     return paintOrderList(element, es, RenderLayer::AfterPromote);
 }
 
+bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, ExceptionState& es)
+{
+    if (!element1 || !element2) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    element1->document()->updateLayout();
+
+    RenderObject* renderer1 = element1->renderer();
+    RenderObject* renderer2 = element2->renderer();
+    if (!renderer1 || !renderer2 || !renderer1->isBox() || !renderer2->isBox()) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    RenderLayer* layer1 = toRenderBox(renderer1)->layer();
+    RenderLayer* layer2 = toRenderBox(renderer2)->layer();
+    if (!layer1 || !layer2) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    return layer1->scrollsWithRespectTo(layer2);
+}
+
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& es) const
 {
     if (!document || !document->frame()) {

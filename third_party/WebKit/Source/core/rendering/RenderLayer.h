@@ -788,6 +788,7 @@ public:
 
     enum PaintOrderListType {BeforePromote, AfterPromote};
     void computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >&);
+    bool scrollsWithRespectTo(const RenderLayer*) const;
 
     enum ForceNeedsCompositedScrollingMode {
         DoNotForceCompositedScrolling = 0,

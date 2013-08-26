@@ -652,6 +652,68 @@ void RenderLayer::computePaintOrderList(PaintOrderListType type, Vector<RefPtr<N
     }
 }
 
+bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
+{
+    const EPosition position = renderer()->style()->position();
+    const EPosition otherPosition = other->renderer()->style()->position();
+    const RenderObject* containingBlock = renderer()->containingBlock();
+    const RenderObject* otherContainingBlock = other->renderer()->containingBlock();
+    const RenderLayer* rootLayer = renderer()->view()->compositor()->rootRenderLayer();
+
+    // Fixed-position elements are a special case. They are static with respect
+    // to the viewport, which is not represented by any RenderObject, and their
+    // containingBlock() method returns the root HTML element (while its true
+    // containingBlock should really be the viewport). The real measure for a
+    // non-transformed fixed-position element is as follows: any fixed position
+    // element, A, scrolls with respect an element, B, if and only if B is not
+    // fixed position.
+    //
+    // Unfortunately, it gets a bit more complicated - a fixed-position element
+    // which has a transform acts exactly as an absolute-position element
+    // (including having a real, non-viewport containing block).
+    //
+    // Below, a "root" fixed position element is defined to be one whose
+    // containing block is the root. These root-fixed-position elements are
+    // the only ones that need this special case code - other fixed position
+    // elements, as well as all absolute, relative, and static elements use the
+    // logic below.
+    const bool isRootFixedPos = position == FixedPosition && containingBlock->enclosingLayer() == rootLayer;
+    const bool otherIsRootFixedPos = otherPosition == FixedPosition && otherContainingBlock->enclosingLayer() == rootLayer;
+
+    if (isRootFixedPos && otherIsRootFixedPos)
+        return false;
+    if (isRootFixedPos || otherIsRootFixedPos)
+        return true;
+
+    FrameView* frameView = renderer()->view()->frameView();
+
+    if (containingBlock == otherContainingBlock)
+        return false;
+
+    // Maintain a set of containing blocks between the first layer and its
+    // closest scrollable ancestor.
+    HashSet<const RenderObject*> containingBlocks;
+    while (containingBlock) {
+        if (frameView && frameView->containsScrollableArea(containingBlock->enclosingLayer()->scrollableArea()))
+            break;
+        containingBlocks.add(containingBlock);
+        containingBlock = containingBlock->containingBlock();
+    }
+
+    // Do the same for the 2nd layer, but if we find a common containing block,
+    // it means both layers are contained within a single non-scrolling subtree.
+    // Hence, they will not scroll with respect to each other.
+    while (otherContainingBlock) {
+        if (containingBlocks.contains(otherContainingBlock))
+            return false;
+        if (frameView && frameView->containsScrollableArea(otherContainingBlock->enclosingLayer()->scrollableArea()))
+            break;
+        otherContainingBlock = otherContainingBlock->containingBlock();
+    }
+
+    return true;
+}
+
 void RenderLayer::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
 {
     ASSERT(!m_visibleContentStatusDirty);

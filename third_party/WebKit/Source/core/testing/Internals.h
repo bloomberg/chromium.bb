@@ -220,6 +220,8 @@ public:
     PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionState&);
     PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
 
+    bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
+
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 
     String repaintRectsAsText(Document*, ExceptionState&) const;

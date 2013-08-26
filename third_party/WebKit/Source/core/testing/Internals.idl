@@ -178,6 +178,8 @@
     [RaisesException] NodeList paintOrderListBeforePromote(Element element);
     [RaisesException] NodeList paintOrderListAfterPromote(Element element);
 
+    [RaisesException] boolean scrollsWithRespectTo(Element element1, Element element2);
+
     // The values of these constants must be kept in sync with those in RenderLayer.
     const unsigned short DO_NOT_FORCE_COMPOSITED_SCROLLING = 0;
     const unsigned short COMPOSITED_SCROLLING_ALWAYS_ON = 1;
