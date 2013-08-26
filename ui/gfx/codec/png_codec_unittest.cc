@@ -14,6 +14,7 @@
 #include "third_party/zlib/zlib.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 
 namespace gfx {
 
@@ -1119,43 +1120,31 @@ TEST(PNGCodec, EncodeDecodeWithVaryingCompressionLevels) {
 
   // create an image with known values, a must be opaque because it will be
   // lost during encoding
-  std::vector<unsigned char> original;
-  MakeRGBAImage(w, h, true, &original);
+  SkBitmap original_bitmap;
+  MakeTestSkBitmap(w, h, &original_bitmap);
 
   // encode
-  std::vector<unsigned char> encoded_fast;
-  EXPECT_TRUE(PNGCodec::EncodeWithCompressionLevel(
-        &original[0], PNGCodec::FORMAT_RGBA, Size(w, h), w * 4, false,
-        std::vector<PNGCodec::Comment>(), Z_BEST_SPEED, &encoded_fast));
+  std::vector<unsigned char> encoded_normal;
+  EXPECT_TRUE(
+      PNGCodec::EncodeBGRASkBitmap(original_bitmap, false, &encoded_normal));
 
-  std::vector<unsigned char> encoded_best;
-  EXPECT_TRUE(PNGCodec::EncodeWithCompressionLevel(
-        &original[0], PNGCodec::FORMAT_RGBA, Size(w, h), w * 4, false,
-        std::vector<PNGCodec::Comment>(), Z_BEST_COMPRESSION, &encoded_best));
+  std::vector<unsigned char> encoded_fast;
+  EXPECT_TRUE(
+      PNGCodec::FastEncodeBGRASkBitmap(original_bitmap, false, &encoded_fast));
 
   // Make sure the different compression settings actually do something; the
   // sizes should be different.
-  EXPECT_NE(encoded_fast.size(), encoded_best.size());
+  EXPECT_NE(encoded_normal.size(), encoded_fast.size());
 
-  // decode, it should have the same size as the original
-  std::vector<unsigned char> decoded;
-  int outw, outh;
-  EXPECT_TRUE(PNGCodec::Decode(&encoded_fast[0], encoded_fast.size(),
-                               PNGCodec::FORMAT_RGBA, &decoded,
-                               &outw, &outh));
-  ASSERT_EQ(w, outw);
-  ASSERT_EQ(h, outh);
-  ASSERT_EQ(original.size(), decoded.size());
+  // decode, they should be identical to the original.
+  SkBitmap decoded;
+  EXPECT_TRUE(
+      PNGCodec::Decode(&encoded_normal[0], encoded_normal.size(), &decoded));
+  EXPECT_TRUE(BitmapsAreEqual(decoded, original_bitmap));
 
-  EXPECT_TRUE(PNGCodec::Decode(&encoded_best[0], encoded_best.size(),
-                               PNGCodec::FORMAT_RGBA, &decoded,
-                               &outw, &outh));
-  ASSERT_EQ(w, outw);
-  ASSERT_EQ(h, outh);
-  ASSERT_EQ(original.size(), decoded.size());
-
-  // Images must be exactly equal
-  ASSERT_TRUE(original == decoded);
+  EXPECT_TRUE(
+      PNGCodec::Decode(&encoded_fast[0], encoded_fast.size(), &decoded));
+  EXPECT_TRUE(BitmapsAreEqual(decoded, original_bitmap));
 }
 
 
