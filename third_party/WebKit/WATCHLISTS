@@ -59,6 +59,15 @@
                   '|Source/WebKit/chromium/public' \
                   '|Tools/DumpRenderTree/chromium/TestRunner/public/',
     },
+    'spellcheck' : {
+      'filepath':  'Source/core/editing/Editor.*' \
+                   '|Source/core/editing/Spell.*' \
+                   '|Source/core/editing/TextCheckingHelper.*' \
+                   '|Source/core/platform/Text/TextCheck.*' \
+                   '|Source/web/EditorClientImpl.*' \
+                   '|LayoutTests/editing/spelling' \
+                   '|public/web/WebSpellCheckClient.h',
+    },
     'wtf': {
       'filepath': 'Source/wtf',
     },
@@ -239,5 +248,6 @@
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'geolocation': [ 'mvanouwerkerk@chromium.org' ],
+    'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
   },
 }
