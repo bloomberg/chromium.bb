@@ -60,13 +60,15 @@ import zipfile
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
-  def __init__(self, platform, good_revision, bad_revision, is_official):
+  def __init__(self, platform, good_revision, bad_revision, is_official,
+               is_aura):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.platform = platform  # What's passed in to the '-a/--archive' option.
     self.good_revision = good_revision
     self.bad_revision = bad_revision
     self.is_official = is_official
+    self.is_aura = is_aura
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -100,7 +102,10 @@ class PathContext(object):
         self._listing_platform_dir = 'mac/'
         self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
       elif self.platform == 'win':
-        self._listing_platform_dir = 'win/'
+        if self.is_aura:
+          self._listing_platform_dir = 'win-aura/'
+        else:
+          self._listing_platform_dir = 'win/'
     else:
       if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
@@ -143,6 +148,14 @@ class PathContext(object):
     """Returns a relative path (presumably from the archive extraction location)
     that is used to run the executable."""
     return os.path.join(self._archive_extract_dir, self._binary_name)
+
+  def IsAuraBuild(self, build):
+    """Check the given build is Aura."""
+    return build.split('.')[3] == '1'
+
+  def IsASANBuild(self, build):
+    """Check the given build is ASAN build."""
+    return build.split('.')[3] == '2'
 
   def ParseDirectoryIndex(self):
     """Parses the Google Storage directory listing into a list of revision
@@ -233,7 +246,17 @@ class PathContext(object):
         if build_number > maxrev:
           break
         if build_number >= minrev:
-          final_list.append(str(build_number))
+          # If we are bisecting Aura, we want to include only builds which
+          # ends with ".1".
+          if self.is_aura:
+            if self.IsAuraBuild(str(build_number)):
+              final_list.append(str(build_number))
+          # If we are bisecting only official builds (without --aura),
+          # we can not include builds which ends with '.1' or '.2' since
+          # they have different folder hierarchy inside.
+          elif (not self.IsAuraBuild(str(build_number)) and
+                not self.IsASANBuild(str(build_number))):
+            final_list.append(str(build_number))
       except urllib.HTTPError, e:
         pass
     return final_list
@@ -395,6 +418,7 @@ class DownloadJob(object):
 
 def Bisect(platform,
            official_builds,
+           is_aura,
            good_rev=0,
            bad_rev=0,
            num_runs=1,
@@ -433,7 +457,7 @@ def Bisect(platform,
   if not profile:
     profile = 'profile'
 
-  context = PathContext(platform, good_rev, bad_rev, official_builds)
+  context = PathContext(platform, good_rev, bad_rev, official_builds, is_aura)
   cwd = os.getcwd()
 
 
@@ -656,6 +680,12 @@ def main():
                     'Defaults to "%p %a". Note that any extra paths ' +
                     'specified should be absolute.',
                     default = '%p %a');
+  parser.add_option('--aura',
+                    dest='aura',
+                    action='store_true',
+                    default=False,
+                    help='Allow the script to bisect aura builds')
+
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -664,8 +694,14 @@ def main():
     parser.print_help()
     return 1
 
+  if opts.aura:
+    if opts.archive != 'win' or not opts.official_builds:
+      print 'Error: Aura is supported only on Windows platform '\
+            'and official builds.'
+      return 1
+
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0, opts.official_builds)
+  context = PathContext(opts.archive, 0, 0, opts.official_builds, opts.aura)
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
     bad_rev = opts.bad
@@ -694,8 +730,8 @@ def main():
     return 1
 
   (min_chromium_rev, max_chromium_rev) = Bisect(
-      opts.archive, opts.official_builds, good_rev, bad_rev, opts.times,
-      opts.command, args, opts.profile)
+      opts.archive, opts.official_builds, opts.aura, good_rev, bad_rev,
+      opts.times, opts.command, args, opts.profile)
 
   # Get corresponding blink revisions.
   try:
