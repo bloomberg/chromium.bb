@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: Not allowed to load local resource: index.html
 
 Running: testNetworkResourceNonCached
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php
@@ -31,7 +32,7 @@ Dumping request: http://localhost:8080/inspector/network/resources/resource.php?
 
 Running: testResourceFromFileScheme
 Loading resource from file:///var/www/index.html
-Failed: Can not load local file
+Failed: Couldn't create a loader
 Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
   statusCode: 304
 
