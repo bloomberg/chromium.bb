@@ -1493,11 +1493,11 @@ FcConfigSubstituteWithPat (FcConfig    *config,
     FcValue v;
     FcSubst	    *s;
     FcRule          *r;
-    FcValueList	    *l, **value = NULL;
+    FcValueList	    *l, **value = NULL, *vl;
     FcPattern	    *m;
     FcStrSet	    *strs;
     FcObject	    object = FC_INVALID_OBJECT;
-    FcPatternElt    **elt = NULL;
+    FcPatternElt    **elt = NULL, *e;
     int		    i, nobjs;
     FcBool	    retval = FcTrue;
 
@@ -1593,12 +1593,17 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		else
 		    m = p;
 		if (m)
-		    elt[object] = FcPatternObjectFindElt (m, r->u.test->object);
+		    e = FcPatternObjectFindElt (m, r->u.test->object);
+		else
+		    e = NULL;
+		/* different 'kind' won't be the target of edit */
+		if (!elt[object] && kind == r->u.test->kind)
+		    elt[object] = e;
 		/*
 		 * If there's no such field in the font,
 		 * then FcQualAll matches while FcQualAny does not
 		 */
-		if (!elt[object])
+		if (!e)
 		{
 		    if (r->u.test->qual == FcQualAll)
 		    {
@@ -1616,10 +1621,13 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		 * Check to see if there is a match, mark the location
 		 * to apply match-relative edits
 		 */
-		value[object] = FcConfigMatchValueList (m, p_pat, kind, r->u.test, elt[object]->values);
-		if (!value[object] ||
-		    (r->u.test->qual == FcQualFirst && value[object] != elt[object]->values) ||
-		    (r->u.test->qual == FcQualNotFirst && value[object] == elt[object]->values))
+		vl = FcConfigMatchValueList (m, p_pat, kind, r->u.test, e->values);
+		/* different 'kind' won't be the target of edit */
+		if (!value[object] && kind == r->u.test->kind)
+		    value[object] = vl;
+		if (!vl ||
+		    (r->u.test->qual == FcQualFirst && vl != e->values) ||
+		    (r->u.test->qual == FcQualNotFirst && vl == e->values))
 		{
 		    if (FcDebug () & FC_DBG_EDIT)
 			printf ("No match\n");
