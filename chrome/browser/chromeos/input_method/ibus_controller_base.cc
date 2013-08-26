@@ -30,14 +30,5 @@ void IBusControllerBase::ClearProperties() {
   current_property_list_.clear();
 }
 
-void IBusControllerBase::NotifyPropertyChangedForTesting() {
-  FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
-}
-
-void IBusControllerBase::SetCurrentPropertiesForTesting(
-    const InputMethodPropertyList& current_property_list) {
-  current_property_list_ = current_property_list;
-}
-
 }  // namespace input_method
 }  // namespace chromeos

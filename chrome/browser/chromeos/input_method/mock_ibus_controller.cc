@@ -23,5 +23,31 @@ bool MockIBusController::ActivateInputMethodProperty(const std::string& key) {
   return activate_input_method_property_return_;
 }
 
+void MockIBusController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockIBusController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+const InputMethodPropertyList&
+MockIBusController::GetCurrentProperties() const {
+  return current_property_list_;
+}
+
+void MockIBusController::ClearProperties() {
+  current_property_list_.clear();
+}
+
+void MockIBusController::NotifyPropertyChangedForTesting() {
+  FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
+}
+
+void MockIBusController::SetCurrentPropertiesForTesting(
+    const InputMethodPropertyList& current_property_list) {
+  current_property_list_ = current_property_list;
+}
+
 }  // namespace input_method
 }  // namespace chromeos
