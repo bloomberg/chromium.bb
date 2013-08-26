@@ -464,7 +464,11 @@ class RunTestCases(unittest.TestCase):
         ])
 
     expected_out_re = [
-        'Failed to list test cases',
+        'Failed to list test cases. This means the test executable is so '
+            'broken that it failed to start and enumerate its test cases.',
+        '',
+        'An example of a potential problem causing this is a Windows API '
+            'function not available on this version of Windows.',
         'Failed to run %s %s --gtest_list_tests' % (
           re.escape(sys.executable),
           re.escape(

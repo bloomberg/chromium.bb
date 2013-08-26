@@ -1086,7 +1086,10 @@ def get_test_cases(
         pre=False,
         manual=manual)
   except Failure, e:
-    print('Failed to list test cases')
+    print('Failed to list test cases. This means the test executable is so '
+        'broken that it failed to start and enumerate its test cases.\n\n'
+        'An example of a potential problem causing this is a Windows API '
+        'function not available on this version of Windows.')
     print(e.args[0])
     return None
 
