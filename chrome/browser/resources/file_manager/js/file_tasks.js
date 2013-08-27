@@ -260,59 +260,45 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 /**
  * Executes default task.
  *
+ * @param {function(boolean, Array.<string>)=} opt_callback Called wheh the
+ *     default task is executed, or the error is occured.
  * @private
  */
-FileTasks.prototype.executeDefault_ = function() {
+FileTasks.prototype.executeDefault_ = function(opt_callback) {
   var urls = this.urls_;
   FileTasks.recordViewingFileTypeUMA_(urls);
-  this.executeDefaultInternal_(urls);
+  this.executeDefaultInternal_(urls, opt_callback);
 };
 
 /**
  * Executes default task.
  *
  * @param {Array.<string>} urls Urls to execute.
+ * @param {function(boolean, Array.<string>)=} opt_callback Called wheh the
+ *     default task is executed, or the error is occured.
  * @private
  */
-FileTasks.prototype.executeDefaultInternal_ = function(urls) {
+FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
+  var callback = opt_callback || function(arg1, arg2) {};
+
   if (this.defaultTask_ != null) {
     this.executeInternal_(this.defaultTask_.taskId, urls);
+    callback(true, urls);
     return;
   }
 
   // We don't have tasks, so try to show a file in a browser tab.
   // We only do that for single selection to avoid confusion.
-  if (urls.length == 1) {
-    var callback = function(success) {
-      if (!success) {
-        var filename = decodeURIComponent(urls[0]);
-        if (filename.indexOf('/') != -1)
-          filename = filename.substr(filename.lastIndexOf('/') + 1);
-        var extension = filename.lastIndexOf('.') != -1 ?
-            filename.substr(filename.lastIndexOf('.') + 1) : '';
+  if (urls.length != 1)
+    return;
 
-        this.fileManager_.metadataCache_.get(urls, 'drive', function(props) {
-          var mimeType;
-          if (props && props[0] && props[0].contentMimeType)
-            mimeType = props[0].contentMimeType;
+  var onViewFiles = function(success) {
+    callback(success, urls);
+  }.bind(this);
 
-          var messageString = extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
-                                                   'NO_ACTION_FOR_FILE';
-          var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-          var text = loadTimeData.getStringF(messageString,
-                                             webStoreUrl,
-                                             FileTasks.NO_ACTION_FOR_FILE_URL);
-          this.fileManager_.alert.showHtml(filename, text, function() {});
-        }.bind(this));
-      }
-    }.bind(this);
-
-    this.checkAvailability_(function() {
-      util.viewFilesInBrowser(urls, callback);
-    }.bind(this));
-  }
-
-  // Do nothing for multiple urls.
+  this.checkAvailability_(function() {
+    util.viewFilesInBrowser(urls, onViewFiles);
+  }.bind(this));
 };
 
 /**

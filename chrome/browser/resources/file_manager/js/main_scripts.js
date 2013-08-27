@@ -69,12 +69,14 @@
 //<include src="combobutton.js"/>
 //<include src="commandbutton.js"/>
 //
+//<include src="app_installer.js"/>
 //<include src="async_util.js"/>
 //<include src="path_util.js"/>
 //<include src="util.js"/>
 //<include src="action_choice_util.js"/>
 //<include src="breadcrumbs_controller.js"/>
 //<include src="butter_bar.js"/>
+//<include src="cws_container_client.js"/>
 //<include src="directory_contents.js"/>
 //<include src="directory_model.js"/>
 //<include src="directory_tree.js"/>
@@ -96,6 +98,7 @@
 //<include src="scrollbar.js"/>
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>
+//<include src="suggest_apps_dialog.js"/>
 //<include src="tree.css.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>

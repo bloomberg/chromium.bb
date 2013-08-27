@@ -1842,6 +1842,51 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   z-index: 101;
 }
 
+#suggest-app-dialog {
+  background-color: #fff;
+  border: 0;
+  padding: 0;
+  width: auto;
+}
+
+#suggest-app-dialog #suggested-app-list {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  width: 450px;
+}
+
+#suggest-app-dialog .cr-dialog-title {
+  font-size: 16px;
+  height: 18px;
+  padding: 10px 18px;
+}
+
+#suggest-app-dialog .cr-dialog-buttons,
+#suggest-app-dialog .cr-dialog-text,
+#suggest-app-dialog .cr-dialog-ok,
+#suggest-app-dialog .cr-dialog-cancel {
+  display: none;
+}
+
+#suggest-app-dialog #buttons {
+  background: #eee;
+  width: 100%;
+}
+
+#suggest-app-dialog #buttons > #webstore-button {
+  -webkit-padding-start: 32px;
+  background-image: -webkit-image-set(
+    url('chrome://theme/IDR_WEBSTORE_ICON_16') 1x,
+    url('chrome://theme/IDR_WEBSTORE_ICON_16@2x') 2x);
+  background-position: 12px center;
+  background-repeat: no-repeat;
+  color: #00f;
+  cursor: pointer;
+  display: inline-block;
+  height: 16px;
+  padding: 10px;
+}
+
 .cr-dialog-frame.error-dialog-frame {
   width: 300px;
 }
@@ -1850,8 +1895,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_ERROR_NETWORK_GENERIC') 1x,
     url('chrome://theme/IDR_ERROR_NETWORK_GENERIC@2x') 2x);
-  background-repeat: no-repeat;
   background-position: center;
+  background-repeat: no-repeat;
   height: 40px;
 }
 

@@ -246,6 +246,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
+    // TODO(yoshiki): Remove the flag when the feature is launched.
+    this.enableExperimentalWebstoreIntegration_ = false;
+    group.add(function(done) {
+      chrome.commandLinePrivate.hasSwitch(
+          'file-manager-enable-webstore-integration', function(flag) {
+        this.enableExperimentalWebstoreIntegration_ = flag;
+        done();
+      }.bind(this));
+    }.bind(this));
+
     group.run(callback);
   };
 
@@ -856,6 +866,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.shareDialog_ = new ShareDialog(this.dialogDom_);
     this.defaultTaskPicker =
         new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
+    this.suggestAppsDialog =
+        new SuggestAppsDialog(this.dialogDom_);
   };
 
   /**
@@ -2301,8 +2313,52 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.dispatchSelectionAction_ = function() {
     if (this.dialogType == DialogType.FULL_PAGE) {
-      var tasks = this.getSelection().tasks;
-      if (tasks) tasks.executeDefault();
+      var selection = this.getSelection();
+      var tasks = selection.tasks;
+      var urls = selection.urls;
+      var mimeTypes = selection.mimeTypes;
+      if (tasks) {
+        tasks.executeDefault(function(result) {
+          if (result)
+            return;
+
+          var showAlert = function() {
+            var filename = decodeURIComponent(urls[0]);
+            if (filename.indexOf('/') != -1)
+              filename = filename.substr(filename.lastIndexOf('/') + 1);
+            var extension = filename.lastIndexOf('.') != -1 ?
+                filename.substr(filename.lastIndexOf('.') + 1) : '';
+            var mimeType = mimeTypes && mimeTypes[0];
+
+            var messageString =
+                extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
+                                     'NO_ACTION_FOR_FILE';
+            var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
+            var text = loadTimeData.getStringF(
+                messageString,
+                webStoreUrl,
+                FileTasks.NO_ACTION_FOR_FILE_URL);
+            this.alert.showHtml(filename, text, function() {});
+          }.bind(this);
+
+          if (!this.enableExperimentalWebstoreIntegration_) {
+            showAlert();
+            return;
+          }
+
+          this.openSuggestAppsDialog_(urls,
+            // Success callback.
+            function() {
+              var tasks = new FileTasks(this);
+              tasks.init(urls, mimeTypes);
+              tasks.executeDefault();
+            }.bind(this),
+            // Failure callback.
+            function() {},
+            // Cancelled callback.
+            showAlert);
+        }.bind(this));
+      }
       return true;
     }
     if (!this.okButton_.disabled) {
@@ -2310,6 +2366,42 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return true;
     }
     return false;
+  };
+
+  /**
+   * Opens the suggest file dialog.
+   *
+   * @param {Array.<string>} urls List of URLs of files.
+   * @param {function()} onSuccess Success callback.
+   * @param {function()} onCancelled User-cancelled callback.
+   * @param {function()} onFailure Failure callback.
+   * @private
+   */
+  FileManager.prototype.openSuggestAppsDialog_ =
+      function(urls, onSuccess, onCancelled, onFailure) {
+    if (!urls || urls.length != 1) {
+      onFailure();
+      return;
+    }
+
+    this.metadataCache_.get(urls, 'drive', function(props) {
+      if (!props || !props[0] || !props[0].contentMimeType) {
+        onFailure();
+        return;
+      }
+
+      var filename = util.extractFilePath(urls[0]);
+      var extension = PathUtil.extractExtension(filename);
+      var mime = props[0].contentMimeType;
+      this.suggestAppsDialog.show(
+          extension, mime,
+          function(installed) {
+            if (installed)
+              onSuccess();
+            else
+              onCancelled();
+          });
+    }.bind(this));
   };
 
   /**

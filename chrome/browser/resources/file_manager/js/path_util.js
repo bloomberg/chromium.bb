@@ -351,3 +351,17 @@ PathUtil.isEligibleForFolderShortcut = function(directoryPath) {
          !PathUtil.isRootPath(directoryPath) &&
          PathUtil.isDriveBasedPath(directoryPath);
 };
+
+/**
+ * Returns the extension of the filename
+ *
+ * @param {string} filename Filename to be extracted.
+ * @return {string} Extension of the given filename.
+ */
+PathUtil.extractExtension = function(filename) {
+  if (filename.indexOf('/') != -1)
+    filename = filename.substr(filename.lastIndexOf('/') + 1);
+  var extension = filename.lastIndexOf('.') != -1 ?
+      filename.substr(filename.lastIndexOf('.') + 1) : '';
+  return extension;
+};
