@@ -31,19 +31,6 @@ const size_t kWebSocketCloseCodeLength = 2;
 // WebSocketFrameHeader::payload_length in websocket_frame.h.
 const uint64 kMaxControlFramePayload = 125;
 
-// Concatenate the data from two IOBufferWithSize objects into a single one.
-IOBufferWithSize* ConcatenateIOBuffers(
-    const scoped_refptr<IOBufferWithSize>& part1,
-    const scoped_refptr<IOBufferWithSize>& part2) {
-  int newsize = part1->size() + part2->size();
-  IOBufferWithSize* newbuffer = new IOBufferWithSize(newsize);
-  std::copy(part1->data(), part1->data() + part1->size(), newbuffer->data());
-  std::copy(part2->data(),
-            part2->data() + part2->size(),
-            newbuffer->data() + part1->size());
-  return newbuffer;
-}
-
 }  // namespace
 
 // A class to encapsulate a set of frames and information about the size of
@@ -90,10 +77,10 @@ class WebSocketChannel::ConnectDelegate
   }
 
  private:
-  // A pointer to the WebSocketChannel that created us. We do not need to worry
-  // about this pointer being stale, because deleting WebSocketChannel cancels
-  // the connect process, deleting this object and preventing its callbacks from
-  // being called.
+  // A pointer to the WebSocketChannel that created this object. There is no
+  // danger of this pointer being stale, because deleting the WebSocketChannel
+  // cancels the connect process, deleting this object and preventing its
+  // callbacks from being called.
   WebSocketChannel* const creator_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectDelegate);
@@ -129,8 +116,8 @@ void WebSocketChannel::SendAddChannelRequest(
 }
 
 bool WebSocketChannel::InClosingState() const {
-  // We intentionally do not support state RECV_CLOSED here, because it is only
-  // used in one code path and should not leak into the code in general.
+  // The state RECV_CLOSED is not supported here, because it is only used in one
+  // code path and should not leak into the code in general.
   DCHECK_NE(RECV_CLOSED, state_)
       << "InClosingState called with state_ == RECV_CLOSED";
   return state_ == SEND_CLOSED || state_ == CLOSE_WAIT || state_ == CLOSED;
@@ -172,9 +159,9 @@ void WebSocketChannel::SendFrame(bool fin,
   }
   current_send_quota_ -= data.size();
   // TODO(ricea): If current_send_quota_ has dropped below
-  // send_quota_low_water_mark_, we may want to consider increasing the "low
-  // water mark" and "high water mark", but only if we think we are not
-  // saturating the link to the WebSocket server.
+  // send_quota_low_water_mark_, it might be good to increase the "low
+  // water mark" and "high water mark", but only if the link to the WebSocket
+  // server is not saturated.
   // TODO(ricea): For kOpCodeText, do UTF-8 validation?
   scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
@@ -241,7 +228,7 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
   current_send_quota_ = send_quota_high_water_mark_;
   event_interface_->OnFlowControl(send_quota_high_water_mark_);
 
-  // We don't need this any more.
+  // |stream_request_| is not used once the connection has succeeded.
   stream_request_.reset();
   ReadFrames();
 }
@@ -256,8 +243,8 @@ void WebSocketChannel::OnConnectFailure(uint16 websocket_error) {
 void WebSocketChannel::WriteFrames() {
   int result = OK;
   do {
-    // This use of base::Unretained is safe because we own the WebSocketStream
-    // and destroying it cancels all callbacks.
+    // This use of base::Unretained is safe because this object owns the
+    // WebSocketStream and destroying it cancels all callbacks.
     result = stream_->WriteFrames(
         data_being_sent_->frames(),
         base::Bind(
@@ -317,8 +304,9 @@ void WebSocketChannel::OnWriteDone(bool synchronous, int result) {
 void WebSocketChannel::ReadFrames() {
   int result = OK;
   do {
-    // This use of base::Unretained is safe because we own the WebSocketStream,
-    // and any pending reads will be cancelled when it is destroyed.
+    // This use of base::Unretained is safe because this object owns the
+    // WebSocketStream, and any pending reads will be cancelled when it is
+    // destroyed.
     result = stream_->ReadFrames(
         &read_frame_chunks_,
         base::Bind(
@@ -345,7 +333,7 @@ void WebSocketChannel::OnReadDone(bool synchronous, int result) {
         ProcessFrameChunk(chunk.Pass());
       }
       read_frame_chunks_.clear();
-      // We need to always keep a call to ReadFrames pending.
+      // There should always be a call to ReadFrames pending.
       if (!synchronous && state_ != CLOSED) {
         ReadFrames();
       }
@@ -388,10 +376,11 @@ void WebSocketChannel::ProcessFrameChunk(
     }
   }
   if (!current_frame_header_) {
-    // If we rejected the previous chunk as invalid, then we will have reset
-    // current_frame_header_ to avoid using it. More chunks of the invalid frame
-    // may still arrive, so this is not necessarily a bug on our side. However,
-    // if this happens when state_ is CONNECTED, it is definitely a bug.
+    // If this channel rejected the previous chunk as invalid, then it will have
+    // reset |current_frame_header_| and closed the channel. More chunks of the
+    // invalid frame may still arrive, and it is not necessarily a bug for that
+    // to happen. However, if this happens when state_ is CONNECTED, it is
+    // definitely a bug.
     DCHECK(state_ != CONNECTED) << "Unexpected header-less frame received "
                                 << "(final_chunk = " << chunk->final_chunk
                                 << ", data size = " << chunk->data->size()
@@ -402,7 +391,7 @@ void WebSocketChannel::ProcessFrameChunk(
   data_buffer.swap(chunk->data);
   const bool is_final_chunk = chunk->final_chunk;
   chunk.reset();
-  WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
+  const WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
   if (WebSocketFrameHeader::IsKnownControlOpCode(opcode)) {
     if (!current_frame_header_->final) {
       FailChannel(SEND_REAL_ERROR,
@@ -419,32 +408,35 @@ void WebSocketChannel::ProcessFrameChunk(
     if (!is_final_chunk) {
       VLOG(2) << "Encountered a split control frame, opcode " << opcode;
       if (incomplete_control_frame_body_) {
-        // The really horrid case. We need to create a new IOBufferWithSize
-        // combining the new one and the old one. This should virtually never
-        // happen.
-        // TODO(ricea): This algorithm is O(N^2). Use a fixed 127-byte buffer
-        // instead.
-        VLOG(3) << "Hit the really horrid case";
-        incomplete_control_frame_body_ =
-            ConcatenateIOBuffers(incomplete_control_frame_body_, data_buffer);
+        VLOG(3) << "Appending to an existing split control frame.";
+        AddToIncompleteControlFrameBody(data_buffer);
       } else {
-        // The merely horrid case. Store the IOBufferWithSize to use when the
-        // rest of the control frame arrives.
-        incomplete_control_frame_body_.swap(data_buffer);
+        VLOG(3) << "Creating new storage for an incomplete control frame.";
+        incomplete_control_frame_body_ = new GrowableIOBuffer();
+        // This method checks for oversize control frames above, so as long as
+        // the frame parser is working correctly, this won't overflow. If a bug
+        // does cause it to overflow, it will CHECK() in
+        // AddToIncompleteControlFrameBody() without writing outside the buffer.
+        incomplete_control_frame_body_->SetCapacity(kMaxControlFramePayload);
+        AddToIncompleteControlFrameBody(data_buffer);
       }
       return;  // Handle when complete.
     }
     if (incomplete_control_frame_body_) {
       VLOG(2) << "Rejoining a split control frame, opcode " << opcode;
-      data_buffer =
-          ConcatenateIOBuffers(incomplete_control_frame_body_, data_buffer);
+      AddToIncompleteControlFrameBody(data_buffer);
+      const int body_size = incomplete_control_frame_body_->offset();
+      data_buffer = new IOBufferWithSize(body_size);
+      memcpy(data_buffer->data(),
+             incomplete_control_frame_body_->StartOfBuffer(),
+             body_size);
       incomplete_control_frame_body_ = NULL;  // Frame now complete.
     }
   }
 
   // Apply basic sanity checks to the |payload_length| field from the frame
-  // header. We can only apply a strict check when we know we have the whole
-  // frame in one chunk.
+  // header. A check for exact equality can only be used when the whole frame
+  // arrives in one chunk.
   DCHECK_GE(current_frame_header_->payload_length,
             base::checked_numeric_cast<uint64>(data_buffer->size()));
   DCHECK(!is_first_chunk || !is_final_chunk ||
@@ -455,9 +447,22 @@ void WebSocketChannel::ProcessFrameChunk(
   HandleFrame(opcode, is_first_chunk, is_final_chunk, data_buffer);
 
   if (is_final_chunk) {
-    // Make sure we do not apply this frame header to any future chunks.
+    // Make sure that this frame header is not applied to any future chunks.
     current_frame_header_.reset();
   }
+}
+
+void WebSocketChannel::AddToIncompleteControlFrameBody(
+    const scoped_refptr<IOBufferWithSize>& data_buffer) {
+  const int new_offset =
+      incomplete_control_frame_body_->offset() + data_buffer->size();
+  CHECK_GE(incomplete_control_frame_body_->capacity(), new_offset)
+      << "Control frame body larger than frame header indicates; frame parser "
+         "bug?";
+  memcpy(incomplete_control_frame_body_->data(),
+         data_buffer->data(),
+         data_buffer->size());
+  incomplete_control_frame_body_->set_offset(new_offset);
 }
 
 void WebSocketChannel::HandleFrame(
@@ -496,8 +501,8 @@ void WebSocketChannel::HandleFrame(
         frame_name = "Unknown frame type";
         break;
     }
-    // SEND_REAL_ERROR makes no difference here, as we won't send another Close
-    // frame.
+    // SEND_REAL_ERROR makes no difference here, as FailChannel() won't send
+    // another Close frame.
     FailChannel(SEND_REAL_ERROR,
                 kWebSocketErrorProtocolError,
                 frame_name + " received after close");
@@ -515,12 +520,12 @@ void WebSocketChannel::HandleFrame(
         const char* const data_begin = data_buffer->data();
         const char* const data_end = data_begin + data_buffer->size();
         const std::vector<char> data(data_begin, data_end);
-        // TODO(ricea): Handle the (improbable) case when ReadFrames returns far
-        // more data at once than we want to send in a single IPC (in which case
-        // we need to buffer the data and return to the event loop with a
-        // callback to send the rest in 32K chunks).
+        // TODO(ricea): Handle the case when ReadFrames returns far
+        // more data at once than should be sent in a single IPC. This needs to
+        // be handled carefully, as an overloaded IO thread is one possible
+        // cause of receiving very large chunks.
 
-        // Send the received frame to the renderer process.
+        // Sends the received frame to the renderer process.
         event_interface_->OnDataFrame(
             final,
             is_first_chunk ? opcode : WebSocketFrameHeader::kOpCodeContinuation,
@@ -542,7 +547,7 @@ void WebSocketChannel::HandleFrame(
 
     case WebSocketFrameHeader::kOpCodePong:
       VLOG(1) << "Got Pong of size " << data_buffer->size();
-      // We do not need to do anything with pong messages.
+      // There is no need to do anything with pong messages.
       return;
 
     case WebSocketFrameHeader::kOpCodeClose: {
@@ -599,10 +604,10 @@ void WebSocketChannel::SendIOBufferWithSize(
   chunk->final_chunk = true;
   chunk->data = buffer;
   if (data_being_sent_) {
-    // Either the link to the WebSocket server is saturated, or we are simply
-    // processing a batch of messages.
-    // TODO(ricea): We need to keep some statistics to work out which situation
-    // we are in and adjust quota appropriately.
+    // Either the link to the WebSocket server is saturated, or several messages
+    // are being sent in a batch.
+    // TODO(ricea): Keep some statistics to work out the situation and adjust
+    // quota appropriately.
     if (!data_to_send_next_)
       data_to_send_next_.reset(new SendBuffer);
     data_to_send_next_->AddFrame(chunk.Pass());
@@ -629,13 +634,14 @@ void WebSocketChannel::FailChannel(ExposeError expose,
     }
     SendClose(send_code, send_reason);  // Sets state_ to SEND_CLOSED
   }
-  // Careful study of RFC6455 section 7.1.7 and 7.1.1 indicates we should close
-  // the connection ourselves without waiting for the closing handshake.
+  // Careful study of RFC6455 section 7.1.7 and 7.1.1 indicates the browser
+  // should close the connection itself without waiting for the closing
+  // handshake.
   stream_->Close();
   state_ = CLOSED;
 
-  // We may be in the middle of processing several chunks. We should not re-use
-  // the frame header.
+  // The channel may be in the middle of processing several chunks. It should
+  // not use this frame header for subsequent chunks.
   current_frame_header_.reset();
   if (old_state != CLOSED) {
     event_interface_->OnDropChannel(code, reason);

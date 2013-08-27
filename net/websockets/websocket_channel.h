@@ -19,8 +19,10 @@
 
 namespace net {
 
+class GrowableIOBuffer;
 class URLRequestContext;
 class WebSocketEventInterface;
+class BoundNetLog;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -72,7 +74,7 @@ class NET_EXPORT WebSocketChannel {
   // send up to |quota| units of data.
   void SendFlowControl(int64 quota);
 
-  // Start the closing handshake for a client-initiated shutdown of the
+  // Starts the closing handshake for a client-initiated shutdown of the
   // connection. There is no API to close the connection without a closing
   // handshake, but destroying the WebSocketChannel object while connected will
   // effectively do that. |code| must be in the range 1000-4999. |reason| should
@@ -92,16 +94,16 @@ class NET_EXPORT WebSocketChannel {
       const WebSocketStreamFactory& factory);
 
  private:
-  // We have a simple linear progression of states from FRESHLY_CONSTRUCTED to
-  // CLOSED, except that the SEND_CLOSED and RECV_CLOSED states may be skipped
-  // in case of error.
+  // The object passes through a linear progression of states from
+  // FRESHLY_CONSTRUCTED to CLOSED, except that the SEND_CLOSED and RECV_CLOSED
+  // states may be skipped in case of error.
   enum State {
     FRESHLY_CONSTRUCTED,
     CONNECTING,
     CONNECTED,
-    SEND_CLOSED,  // We have sent a Close frame but not received a Close frame.
+    SEND_CLOSED,  // A Close frame has been sent but not received.
     RECV_CLOSED,  // Used briefly between receiving a Close frame and sending
-                  // the response. Once we have responded, the state changes
+                  // the response. Once the response is sent, the state changes
                   // to CLOSED.
     CLOSE_WAIT,   // The Closing Handshake has completed, but the remote server
                   // has not yet closed the connection.
@@ -109,17 +111,18 @@ class NET_EXPORT WebSocketChannel {
                   // has been closed; or the connection is failed.
   };
 
-  // When failing a channel, we may or may not want to send the real reason for
-  // failing to the remote server. This enum is used by FailChannel() to
-  // choose.
+  // When failing a channel, sometimes it is inappropriate to expose the real
+  // reason for failing to the remote server. This enum is used by FailChannel()
+  // to select between sending the real status or a "Going Away" status.
   enum ExposeError {
     SEND_REAL_ERROR,
     SEND_GOING_AWAY,
   };
 
-  // Our implementation of WebSocketStream::ConnectDelegate. We do not inherit
-  // from WebSocketStream::ConnectDelegate directly to avoid cluttering our
-  // public interface with the implementation of those methods, and because the
+  // Implementation of WebSocketStream::ConnectDelegate for
+  // WebSocketChannel. WebSocketChannel does not inherit from
+  // WebSocketStream::ConnectDelegate directly to avoid cluttering the public
+  // interface with the implementation of those methods, and because the
   // lifetime of a WebSocketChannel is longer than the lifetime of the
   // connection process.
   class ConnectDelegate;
@@ -164,7 +167,11 @@ class NET_EXPORT WebSocketChannel {
   // Processes a single chunk that has been read from the stream.
   void ProcessFrameChunk(scoped_ptr<WebSocketFrameChunk> chunk);
 
-  // Handle a frame that we have received enough of to process. May call
+  // Appends |data_buffer| to |incomplete_control_frame_body_|.
+  void AddToIncompleteControlFrameBody(
+      const scoped_refptr<IOBufferWithSize>& data_buffer);
+
+  // Handles a frame that the object has received enough of to process. May call
   // event_interface_ methods, send responses to the server, and change the
   // value of state_.
   void HandleFrame(const WebSocketFrameHeader::OpCode opcode,
@@ -181,13 +188,13 @@ class NET_EXPORT WebSocketChannel {
                             WebSocketFrameHeader::OpCode op_code,
                             const scoped_refptr<IOBufferWithSize>& buffer);
 
-  // Perform the "Fail the WebSocket Connection" operation as defined in
+  // Performs the "Fail the WebSocket Connection" operation as defined in
   // RFC6455. The supplied code and reason are sent back to the renderer in an
   // OnDropChannel message. If state_ is CONNECTED then a Close message is sent
   // to the remote host. If |expose| is SEND_REAL_ERROR then the remote host is
-  // given the same status code we gave the renderer; otherwise it is sent a
-  // fixed "Going Away" code.  Resets current_frame_header_, closes the
-  // stream_, and sets state_ to CLOSED.
+  // given the same status code passed to the renderer; otherwise it is sent a
+  // fixed "Going Away" code.  Resets current_frame_header_, closes the stream_,
+  // and sets state_ to CLOSED.
   void FailChannel(ExposeError expose, uint16 code, const std::string& reason);
 
   // Sends a Close frame to Start the WebSocket Closing Handshake, or to respond
@@ -205,13 +212,13 @@ class NET_EXPORT WebSocketChannel {
                   uint16* code,
                   std::string* reason);
 
-  // The URL to which we connect.
+  // The URL of the remote server.
   const GURL socket_url_;
 
   // The object receiving events.
   const scoped_ptr<WebSocketEventInterface> event_interface_;
 
-  // The WebSocketStream to which we are sending/receiving data.
+  // The WebSocketStream on which to send and receive data.
   scoped_ptr<WebSocketStream> stream_;
 
   // A data structure containing a vector of frames to be sent and the total
@@ -226,32 +233,32 @@ class NET_EXPORT WebSocketChannel {
   // Destination for the current call to WebSocketStream::ReadFrames
   ScopedVector<WebSocketFrameChunk> read_frame_chunks_;
   // Frame header for the frame currently being received. Only non-NULL while we
-  // are processing the frame. If the frame arrives in multiple chunks, can
-  // remain non-NULL while we wait for additional chunks to arrive. If the
-  // header of the frame was invalid, this is set to NULL, the channel is
-  // failed, and subsequent chunks of the same frame will be ignored.
+  // are processing the frame. If the frame arrives in multiple chunks, it can
+  // remain non-NULL until additional chunks arrive. If the header of the frame
+  // was invalid, this is set to NULL, the channel is failed, and subsequent
+  // chunks of the same frame will be ignored.
   scoped_ptr<WebSocketFrameHeader> current_frame_header_;
   // Handle to an in-progress WebSocketStream creation request. Only non-NULL
   // during the connection process.
   scoped_ptr<WebSocketStreamRequest> stream_request_;
-  // Although it will almost never happen in practice, we can be passed an
-  // incomplete control frame, in which case we need to keep the data around
-  // long enough to reassemble it. This variable will be NULL the rest of the
-  // time.
-  scoped_refptr<IOBufferWithSize> incomplete_control_frame_body_;
-  // The point at which we give the renderer a quota refresh (quota units).
-  // "quota units" are currently bytes. TODO(ricea): Update the definition of
-  // quota units when necessary.
+  // Although it should rarely happen in practice, a control frame can arrive
+  // broken into chunks. This variable provides storage for a partial control
+  // frame until the rest arrives. It will be NULL the rest of the time.
+  scoped_refptr<GrowableIOBuffer> incomplete_control_frame_body_;
+  // If the renderer's send quota reaches this level, it is sent a quota
+  // refresh. "quota units" are currently bytes. TODO(ricea): Update the
+  // definition of quota units when necessary.
   int send_quota_low_water_mark_;
-  // The amount which we refresh the quota to when it reaches the
-  // low_water_mark (quota units).
+  // The level the quota is refreshed to when it reaches the low_water_mark
+  // (quota units).
   int send_quota_high_water_mark_;
   // The current amount of quota that the renderer has available for sending
   // on this logical channel (quota units).
   int current_send_quota_;
 
-  // Storage for the status code and reason from the time we receive the Close
-  // frame until the connection is closed and we can call OnDropChannel().
+  // Storage for the status code and reason from the time the Close frame
+  // arrives until the connection is closed and they are passed to
+  // OnDropChannel().
   uint16 closing_code_;
   std::string closing_reason_;
 
