@@ -4,8 +4,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS node.innerHTML is '<bar>AB<moo>C</moo>DE</bar>'
-PASS foo.outerHTML is '<foo></foo>'
-PASS range.surroundContents(foo) threw exception InvalidNodeTypeError: The supplied node is invalid or has an invalid ancestor for this operation..
 PASS r.surroundContents(document.createElement('a')) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 PASS r.surroundContents(document.createElement('a')) threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 PASS successfullyParsed is true

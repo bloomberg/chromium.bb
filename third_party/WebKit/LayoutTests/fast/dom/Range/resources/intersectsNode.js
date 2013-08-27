@@ -113,7 +113,7 @@ shouldThrow("range.intersectsNode(document)");
 debug("");
 
 debug("2.4 Range has no parent");
-shouldThrow("range.selectNode(document)");
+shouldThrow("range.selectNode(document)", '"InvalidNodeTypeError: Failed to execute \'selectNode\' on \'Range\': the given Node has no parent."');
 debug("");
 
 debug("2.5 Wrong documents");

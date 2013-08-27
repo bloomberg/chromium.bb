@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/dom/Range.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
@@ -1159,11 +1160,26 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& es) const
     return 0;
 }
 
-void Range::checkNodeBA(Node* n, ExceptionState& es) const
+void Range::checkNodeBA(Node* n, ExceptionState& es, const char* methodName) const
 {
+    if (!m_start.container()) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    if (!n) {
+        es.throwDOMException(NotFoundError);
+        return;
+    }
+
     // InvalidNodeTypeError: Raised if the root container of refNode is not an
     // Attr, Document, DocumentFragment or ShadowRoot node, or part of a SVG shadow DOM tree,
     // or if refNode is a Document, DocumentFragment, ShadowRoot, Attr, Entity, or Notation node.
+
+    if (!n->parentNode()) {
+        es.throwDOMException(InvalidNodeTypeError, ExceptionMessages::failedToExecute(methodName, "Range", "the given Node has no parent."));
+        return;
+    }
 
     switch (n->nodeType()) {
         case Node::ATTRIBUTE_NODE:
@@ -1191,11 +1207,11 @@ void Range::checkNodeBA(Node* n, ExceptionState& es) const
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
+        case Node::ELEMENT_NODE:
             break;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
         case Node::DOCUMENT_TYPE_NODE:
-        case Node::ELEMENT_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
@@ -1218,17 +1234,7 @@ PassRefPtr<Range> Range::cloneRange(ExceptionState& es) const
 
 void Range::setStartAfter(Node* refNode, ExceptionState& es)
 {
-    if (!m_start.container()) {
-        es.throwDOMException(InvalidStateError);
-        return;
-    }
-
-    if (!refNode) {
-        es.throwDOMException(NotFoundError);
-        return;
-    }
-
-    checkNodeBA(refNode, es);
+    checkNodeBA(refNode, es, "setStartAfter");
     if (es.hadException())
         return;
 
@@ -1237,17 +1243,7 @@ void Range::setStartAfter(Node* refNode, ExceptionState& es)
 
 void Range::setEndBefore(Node* refNode, ExceptionState& es)
 {
-    if (!m_start.container()) {
-        es.throwDOMException(InvalidStateError);
-        return;
-    }
-
-    if (!refNode) {
-        es.throwDOMException(NotFoundError);
-        return;
-    }
-
-    checkNodeBA(refNode, es);
+    checkNodeBA(refNode, es, "setEndBefore");
     if (es.hadException())
         return;
 
@@ -1256,17 +1252,7 @@ void Range::setEndBefore(Node* refNode, ExceptionState& es)
 
 void Range::setEndAfter(Node* refNode, ExceptionState& es)
 {
-    if (!m_start.container()) {
-        es.throwDOMException(InvalidStateError);
-        return;
-    }
-
-    if (!refNode) {
-        es.throwDOMException(NotFoundError);
-        return;
-    }
-
-    checkNodeBA(refNode, es);
+    checkNodeBA(refNode, es, "setEndAfter");
     if (es.hadException())
         return;
 
@@ -1282,6 +1268,11 @@ void Range::selectNode(Node* refNode, ExceptionState& es)
 
     if (!refNode) {
         es.throwDOMException(NotFoundError);
+        return;
+    }
+
+    if (!refNode->parentNode()) {
+        es.throwDOMException(InvalidNodeTypeError, ExceptionMessages::failedToExecute("selectNode", "Range", "the given Node has no parent."));
         return;
     }
 
@@ -1329,10 +1320,8 @@ void Range::selectNode(Node* refNode, ExceptionState& es)
     if (m_ownerDocument != refNode->document())
         setDocument(refNode->document());
 
-    setStartBefore(refNode, es);
-    if (es.hadException())
-        return;
-    setEndAfter(refNode, es);
+    setStartBefore(refNode);
+    setEndAfter(refNode);
 }
 
 void Range::selectNodeContents(Node* refNode, ExceptionState& es)
@@ -1462,17 +1451,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& es)
 
 void Range::setStartBefore(Node* refNode, ExceptionState& es)
 {
-    if (!m_start.container()) {
-        es.throwDOMException(InvalidStateError);
-        return;
-    }
-
-    if (!refNode) {
-        es.throwDOMException(NotFoundError);
-        return;
-    }
-
-    checkNodeBA(refNode, es);
+    checkNodeBA(refNode, es, "setStartBefore");
     if (es.hadException())
         return;
 

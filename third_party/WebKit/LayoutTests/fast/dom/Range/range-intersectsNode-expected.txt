@@ -53,7 +53,7 @@ PASS intersects is false
 PASS range.intersectsNode(document) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
 
 2.4 Range has no parent
-PASS range.selectNode(document) threw exception InvalidNodeTypeError: The supplied node is invalid or has an invalid ancestor for this operation..
+PASS range.selectNode(document) threw exception InvalidNodeTypeError: Failed to execute 'selectNode' on 'Range': the given Node has no parent..
 
 2.5 Wrong documents
 PASS intersects is false

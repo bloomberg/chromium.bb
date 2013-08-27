@@ -101,7 +101,7 @@ public:
     void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNodeContents(Node*, ExceptionState&);
     void surroundContents(PassRefPtr<Node>, ExceptionState&);
-    void setStartBefore(Node*, ExceptionState&);
+    void setStartBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     const Position startPosition() const { return m_start.toPosition(); }
     const Position endPosition() const { return m_end.toPosition(); }
@@ -156,7 +156,7 @@ private:
     void setDocument(Document*);
 
     Node* checkNodeWOffset(Node*, int offset, ExceptionState&) const;
-    void checkNodeBA(Node*, ExceptionState&) const;
+    void checkNodeBA(Node*, ExceptionState&, const char* methodName) const;
     void checkDeleteExtract(ExceptionState&);
     int maxStartOffset() const;
     int maxEndOffset() const;
