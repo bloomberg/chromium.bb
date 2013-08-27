@@ -821,7 +821,7 @@ bool isEmptyTableCell(const Node* node)
 
 PassRefPtr<HTMLElement> createDefaultParagraphElement(Document* document)
 {
-    switch (document->frame()->editor()->defaultParagraphSeparator()) {
+    switch (document->frame()->editor().defaultParagraphSeparator()) {
     case EditorParagraphSeparatorIsDiv:
         return HTMLDivElement::create(document);
     case EditorParagraphSeparatorIsP:

@@ -270,7 +270,7 @@ void HTMLTextAreaElement::defaultEventHandler(Event* event)
 void HTMLTextAreaElement::handleFocusEvent(Element*, FocusDirection)
 {
     if (Frame* frame = document()->frame())
-        frame->editor()->textAreaOrTextFieldDidBeginEditing(this);
+        frame->editor().textAreaOrTextFieldDidBeginEditing(this);
 }
 
 void HTMLTextAreaElement::subtreeHasChanged()

@@ -3214,8 +3214,8 @@ TEST_F(WebFrameTest, CancelSpellingRequestCrash)
     m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    frame->frame()->editor()->replaceSelectionWithText("A", false, false);
-    frame->frame()->editor()->spellCheckRequester().cancelCheck();
+    frame->frame()->editor().replaceSelectionWithText("A", false, false);
+    frame->frame()->editor().spellCheckRequester().cancelCheck();
 
     m_webView->close();
     m_webView = 0;

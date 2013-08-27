@@ -1079,7 +1079,7 @@ void WebFrameImpl::replaceSelection(const WebString& text)
 {
     bool selectReplacement = false;
     bool smartReplace = true;
-    frame()->editor()->replaceSelectionWithText(text, selectReplacement, smartReplace);
+    frame()->editor().replaceSelectionWithText(text, selectReplacement, smartReplace);
 }
 
 void WebFrameImpl::insertText(const WebString& text)
@@ -1087,7 +1087,7 @@ void WebFrameImpl::insertText(const WebString& text)
     if (frame()->inputMethodController().hasComposition())
         frame()->inputMethodController().confirmComposition(text);
     else
-        frame()->editor()->insertText(text, 0);
+        frame()->editor().insertText(text, 0);
 }
 
 void WebFrameImpl::setMarkedText(const WebString& text, unsigned location, unsigned length)
@@ -1119,7 +1119,7 @@ bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length
     RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(frame()->selection()->rootEditableElementOrDocumentElement(), location, length);
     if (!range)
         return false;
-    IntRect intRect = frame()->editor()->firstRectForRange(range.get());
+    IntRect intRect = frame()->editor().firstRectForRange(range.get());
     rect = WebRect(intRect);
     rect = frame()->view()->contentsToWindow(rect);
     return true;
@@ -1168,23 +1168,24 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
     // Specially handling commands that Editor::execCommand does not directly
     // support.
     if (command == "DeleteToEndOfParagraph") {
-        if (!frame()->editor()->deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
-            frame()->editor()->deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
-    } else if (command == "Indent")
-        frame()->editor()->indent();
-    else if (command == "Outdent")
-        frame()->editor()->outdent();
-    else if (command == "DeleteBackward")
-        result = frame()->editor()->command(AtomicString("BackwardDelete")).execute();
-    else if (command == "DeleteForward")
-        result = frame()->editor()->command(AtomicString("ForwardDelete")).execute();
-    else if (command == "AdvanceToNextMisspelling") {
+        if (!frame()->editor().deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
+            frame()->editor().deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
+    } else if (command == "Indent") {
+        frame()->editor().indent();
+    } else if (command == "Outdent") {
+        frame()->editor().outdent();
+    } else if (command == "DeleteBackward") {
+        result = frame()->editor().command(AtomicString("BackwardDelete")).execute();
+    } else if (command == "DeleteForward") {
+        result = frame()->editor().command(AtomicString("ForwardDelete")).execute();
+    } else if (command == "AdvanceToNextMisspelling") {
         // Wee need to pass false here or else the currently selected word will never be skipped.
-        frame()->editor()->advanceToNextMisspelling(false);
-    } else if (command == "ToggleSpellPanel")
-        frame()->editor()->showSpellingGuessPanel();
-    else
-        result = frame()->editor()->command(command).execute();
+        frame()->editor().advanceToNextMisspelling(false);
+    } else if (command == "ToggleSpellPanel") {
+        frame()->editor().showSpellingGuessPanel();
+    } else {
+        result = frame()->editor().command(command).execute();
+    }
     return result;
 }
 
@@ -1198,31 +1199,31 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value,
         return true;
 
     // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
-    if (!frame()->editor()->canEdit() && webName == "moveToBeginningOfDocument")
+    if (!frame()->editor().canEdit() && webName == "moveToBeginningOfDocument")
         return viewImpl()->propagateScroll(ScrollUp, ScrollByDocument);
 
-    if (!frame()->editor()->canEdit() && webName == "moveToEndOfDocument")
+    if (!frame()->editor().canEdit() && webName == "moveToEndOfDocument")
         return viewImpl()->propagateScroll(ScrollDown, ScrollByDocument);
 
-    return frame()->editor()->command(webName).execute(value);
+    return frame()->editor().command(webName).execute(value);
 }
 
 bool WebFrameImpl::isCommandEnabled(const WebString& name) const
 {
     ASSERT(frame());
-    return frame()->editor()->command(name).isEnabled();
+    return frame()->editor().command(name).isEnabled();
 }
 
 void WebFrameImpl::enableContinuousSpellChecking(bool enable)
 {
     if (enable == isContinuousSpellCheckingEnabled())
         return;
-    frame()->editor()->toggleContinuousSpellChecking();
+    frame()->editor().toggleContinuousSpellChecking();
 }
 
 bool WebFrameImpl::isContinuousSpellCheckingEnabled() const
 {
-    return frame()->editor()->isContinuousSpellCheckingEnabled();
+    return frame()->editor().isContinuousSpellCheckingEnabled();
 }
 
 void WebFrameImpl::requestTextChecking(const WebElement& webElement)
@@ -1230,7 +1231,7 @@ void WebFrameImpl::requestTextChecking(const WebElement& webElement)
     if (webElement.isNull())
         return;
     RefPtr<Range> rangeToCheck = rangeOfContents(const_cast<Element*>(webElement.constUnwrap<Element>()));
-    frame()->editor()->spellCheckRequester().requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    frame()->editor().spellCheckRequester().requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
 void WebFrameImpl::replaceMisspelledRange(const WebString& text)
@@ -1250,7 +1251,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     if (!frame()->selection()->shouldChangeSelection(markerRange.get()))
         return;
     frame()->selection()->setSelection(markerRange.get(), CharacterGranularity);
-    frame()->editor()->replaceSelectionWithText(text, false, false);
+    frame()->editor().replaceSelectionWithText(text, false, false);
 }
 
 void WebFrameImpl::removeSpellingMarkers()
@@ -1504,7 +1505,7 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
         | (options.matchCase ? 0 : CaseInsensitive)
         | (wrapWithinFrame ? WrapAround : 0)
         | (!options.findNext ? StartInSelection : 0);
-    m_activeMatch = frame()->editor()->findStringAndScrollToVisible(searchText, m_activeMatch.get(), findOptions);
+    m_activeMatch = frame()->editor().findStringAndScrollToVisible(searchText, m_activeMatch.get(), findOptions);
 
     if (!m_activeMatch) {
         // If we're finding next the next active match might not be in the current frame.
@@ -1565,7 +1566,7 @@ void WebFrameImpl::stopFinding(bool clearSelection)
 
     // Remove all markers for matches found and turn off the highlighting.
     frame()->document()->markers()->removeMarkers(DocumentMarker::TextMatch);
-    frame()->editor()->setMarkedTextMatchesAreHighlighted(false);
+    frame()->editor().setMarkedTextMatchesAreHighlighted(false);
     clearFindMatchesCache();
 
     // Let the frame know that we don't want tickmarks or highlighting anymore.
@@ -1584,7 +1585,7 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
         m_findRequestIdentifier = identifier;
 
         // Clear highlighting for this frame.
-        if (frame() && frame()->page() && frame()->editor()->markedTextMatchesAreHighlighted())
+        if (frame() && frame()->page() && frame()->editor().markedTextMatchesAreHighlighted())
             frame()->page()->unmarkAllTextMatches();
 
         // Clear the tickmarks and results cache.
@@ -1714,7 +1715,7 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
     m_lastSearchString = searchText;
 
     if (matchCount > 0) {
-        frame()->editor()->setMarkedTextMatchesAreHighlighted(true);
+        frame()->editor().setMarkedTextMatchesAreHighlighted(true);
 
         m_lastMatchCount += matchCount;
 
@@ -2066,7 +2067,7 @@ bool WebFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length) cons
 {
     if (!frame())
         return false;
-    return frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
+    return frame()->editor().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
 WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const

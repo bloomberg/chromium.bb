@@ -104,7 +104,7 @@ void EditCommandComposition::unapply()
             m_commands[i - 1]->doUnapply();
     }
 
-    frame->editor()->unappliedEditing(this);
+    frame->editor().unappliedEditing(this);
 }
 
 void EditCommandComposition::reapply()
@@ -124,7 +124,7 @@ void EditCommandComposition::reapply()
             m_commands[i]->doReapply();
     }
 
-    frame->editor()->reappliedEditing(this);
+    frame->editor().reappliedEditing(this);
 }
 
 void EditCommandComposition::append(SimpleEditCommand* command)
@@ -202,7 +202,7 @@ void CompositeEditCommand::apply()
     // Only need to call appliedEditing for top-level commands,
     // and TypingCommands do it on their own (see TypingCommand::typingAddedToOpenCommand).
     if (!isTypingCommand())
-        frame->editor()->appliedEditing(this);
+        frame->editor().appliedEditing(this);
     setShouldRetainAutocorrectionIndicator(false);
 }
 
@@ -1204,7 +1204,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // FIXME (5098931): We should add a new insert action "WebViewInsertActionMoved" and call shouldInsertFragment here.
 
     setEndingSelection(VisibleSelection(start, end, DOWNSTREAM));
-    document()->frame()->editor()->clearMisspellingsAndBadGrammar(endingSelection());
+    document()->frame()->editor().clearMisspellingsAndBadGrammar(endingSelection());
     deleteSelection(false, false, false, false);
 
     ASSERT(destination.deepEquivalent().anchorNode()->inDocument());
@@ -1237,7 +1237,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         options |= ReplaceSelectionCommand::MatchStyle;
     applyCommandToComposite(ReplaceSelectionCommand::create(document(), fragment, options));
 
-    document()->frame()->editor()->markMisspellingsAndBadGrammar(endingSelection());
+    document()->frame()->editor().markMisspellingsAndBadGrammar(endingSelection());
 
     // If the selection is in an empty paragraph, restore styles from the old empty paragraph to the new empty paragraph.
     bool selectionIsEmptyParagraph = endingSelection().isCaret() && isStartOfParagraph(endingSelection().visibleStart()) && isEndOfParagraph(endingSelection().visibleStart());

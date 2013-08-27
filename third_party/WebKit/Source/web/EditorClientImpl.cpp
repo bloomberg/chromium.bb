@@ -106,10 +106,8 @@ bool EditorClientImpl::shouldSpellcheckByDefault()
     const Frame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return false;
-    const Editor* editor = frame->editor();
-    if (!editor)
-        return false;
-    if (editor->isSpellCheckingEnabledInFocusedNode())
+    const Editor& editor = frame->editor();
+    if (editor.isSpellCheckingEnabledInFocusedNode())
         return true;
     const Document* document = frame->document();
     if (!document)
@@ -154,7 +152,7 @@ void EditorClientImpl::toggleContinuousSpellChecking()
             VisibleSelection frameSelection = frame->selection()->selection();
             // If a selection is in an editable element spell check its content.
             if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
-                frame->editor()->elementDidBeginEditing(rootEditableElement);
+                frame->editor().elementDidBeginEditing(rootEditableElement);
             }
         }
     }
@@ -547,7 +545,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
         return false;
 
     String commandName = interpretKeyEvent(evt);
-    Editor::Command command = frame->editor()->command(commandName);
+    Editor::Command command = frame->editor().command(commandName);
 
     if (keyEvent->type() == PlatformEvent::RawKeyDown) {
         // WebKit doesn't have enough information about mode to decide how
@@ -609,10 +607,10 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
 #endif
     }
 
-    if (!frame->editor()->canEdit())
+    if (!frame->editor().canEdit())
         return false;
 
-    return frame->editor()->insertText(evt->keyEvent()->text(), evt);
+    return frame->editor().insertText(evt->keyEvent()->text(), evt);
 }
 
 void EditorClientImpl::handleKeyboardEvent(KeyboardEvent* evt)

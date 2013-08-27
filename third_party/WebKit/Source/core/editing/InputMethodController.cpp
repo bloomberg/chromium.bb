@@ -91,7 +91,7 @@ InputMethodController::~InputMethodController()
 
 inline Editor& InputMethodController::editor() const
 {
-    return *m_frame->editor();
+    return m_frame->editor();
 }
 
 inline EditorClient& InputMethodController::editorClient() const

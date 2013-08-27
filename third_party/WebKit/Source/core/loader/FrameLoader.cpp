@@ -304,7 +304,7 @@ bool FrameLoader::closeURL()
         m_frame->document()->dispatchUnloadEvents();
     stopLoading();
 
-    m_frame->editor()->clearUndoRedoOperations();
+    m_frame->editor().clearUndoRedoOperations();
     return true;
 }
 
@@ -328,7 +328,7 @@ void FrameLoader::clear(ClearOptions options)
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    m_frame->editor()->clear();
+    m_frame->editor().clear();
     m_frame->document()->cancelParsing();
     m_frame->document()->stopActiveDOMObjects();
     if (m_frame->document()->attached()) {
@@ -989,7 +989,7 @@ void FrameLoader::commitProvisionalLoad()
     m_client->transitionToCommittedForNewPage();
 
     m_frame->navigationScheduler()->cancel();
-    m_frame->editor()->clearLastEditCommand();
+    m_frame->editor().clearLastEditCommand();
 
     // If we are still in the process of initializing an empty document then
     // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText

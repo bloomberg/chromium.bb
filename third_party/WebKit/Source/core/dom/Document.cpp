@@ -300,7 +300,7 @@ static bool acceptsEditingFocus(Element* element)
     if (!frame || !root)
         return false;
 
-    return frame->editor()->shouldBeginEditing(rangeOfContents(root).get());
+    return frame->editor().shouldBeginEditing(rangeOfContents(root).get());
 }
 
 static bool canAccessAncestor(const SecurityOrigin* activeSecurityOrigin, Frame* targetFrame)
@@ -3315,7 +3315,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         }
 
         if (oldFocusedElement->isRootEditableElement())
-            frame()->editor()->didEndEditing();
+            frame()->editor().didEndEditing();
 
         if (view()) {
             Widget* oldWidget = widgetForElement(oldFocusedElement.get());
@@ -3364,7 +3364,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         m_focusedElement->setFocus(true);
 
         if (m_focusedElement->isRootEditableElement())
-            frame()->editor()->didBeginEditing(m_focusedElement.get());
+            frame()->editor().didBeginEditing(m_focusedElement.get());
 
         // eww, I suck. set the qt focus correctly
         // ### find a better place in the code for this
@@ -3976,9 +3976,7 @@ static Editor::Command command(Document* document, const String& commandName, bo
         return Editor::Command();
 
     document->updateStyleIfNeeded();
-
-    return frame->editor()->command(commandName,
-        userInterface ? CommandFromDOMWithUserInterface : CommandFromDOM);
+    return frame->editor().command(commandName, userInterface ? CommandFromDOMWithUserInterface : CommandFromDOM);
 }
 
 bool Document::execCommand(const String& commandName, bool userInterface, const String& value)

@@ -82,7 +82,7 @@ static inline LayoutUnit NoXPosForVerticalArrowNavigation()
 
 static inline bool shouldAlwaysUseDirectionalSelection(Frame* frame)
 {
-    return !frame || frame->editor()->behavior().shouldConsiderSelectionAsDirectional();
+    return !frame || frame->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
 
 FrameSelection::FrameSelection(Frame* frame)
@@ -287,11 +287,11 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
     selectFrameElementInParentIfFullySelected();
     notifyRendererOfSelectionChange(userTriggered);
-    m_frame->editor()->respondToChangedSelection(oldSelection, options);
+    m_frame->editor().respondToChangedSelection(oldSelection, options);
     if (userTriggered == UserTriggered) {
         ScrollAlignment alignment;
 
-        if (m_frame->editor()->behavior().shouldCenterAlignWhenSelectionIsRevealed())
+        if (m_frame->editor().behavior().shouldCenterAlignWhenSelectionIsRevealed())
             alignment = (align == AlignCursorOnScrollAlways) ? ScrollAlignment::alignCenterAlways : ScrollAlignment::alignCenterIfNeeded;
         else
             alignment = (align == AlignCursorOnScrollAlways) ? ScrollAlignment::alignTopAlways : ScrollAlignment::alignToEdgeIfNeeded;
@@ -542,7 +542,7 @@ VisiblePosition FrameSelection::nextWordPositionForPlatform(const VisiblePositio
 {
     VisiblePosition positionAfterCurrentWord = nextWordPosition(originalPosition);
 
-    if (m_frame && m_frame->editor()->behavior().shouldSkipSpaceWhenMovingRight()) {
+    if (m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight()) {
         // In order to skip spaces when moving right, we advance one
         // word further and then move one word back. Given the
         // semantics of previousWordPosition() this will put us at the
@@ -660,7 +660,7 @@ VisiblePosition FrameSelection::modifyMovingRight(TextGranularity granularity)
             pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).right(true);
         break;
     case WordGranularity: {
-        bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor()->behavior().shouldSkipSpaceWhenMovingRight();
+        bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();
         pos = rightWordPosition(VisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
@@ -828,7 +828,7 @@ VisiblePosition FrameSelection::modifyMovingLeft(TextGranularity granularity)
             pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).left(true);
         break;
     case WordGranularity: {
-        bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor()->behavior().shouldSkipSpaceWhenMovingRight();
+        bool skipsSpaceWhenMovingRight = m_frame && m_frame->editor().behavior().shouldSkipSpaceWhenMovingRight();
         pos = leftWordPosition(VisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
@@ -964,7 +964,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
 
         if (!m_selection.isCaret()
             && (granularity == WordGranularity || granularity == ParagraphGranularity || granularity == LineGranularity)
-            && m_frame && !m_frame->editor()->behavior().shouldExtendSelectionByWordOrLineAcrossCaret()) {
+            && m_frame && !m_frame->editor().behavior().shouldExtendSelectionByWordOrLineAcrossCaret()) {
             // Don't let the selection go across the base position directly. Needed to match mac
             // behavior when, for instance, word-selecting backwards starting with the caret in
             // the middle of a word and then word-selecting forward, leaving the caret in the
@@ -977,7 +977,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
 
         // Standard Mac behavior when extending to a boundary is grow the selection rather than leaving the
         // base in place and moving the extent. Matches NSTextView.
-        if (!m_frame || !m_frame->editor()->behavior().shouldAlwaysGrowSelectionWhenExtendingToBoundary() || m_selection.isCaret() || !isBoundary(granularity))
+        if (!m_frame || !m_frame->editor().behavior().shouldAlwaysGrowSelectionWhenExtendingToBoundary() || m_selection.isCaret() || !isBoundary(granularity))
             setExtent(position, userTriggered);
         else {
             TextDirection textDirection = directionOfEnclosingBlock();
@@ -1507,7 +1507,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     if (activeAndFocused)
         setSelectionFromNone();
     else
-        m_frame->editor()->spellCheckAfterBlur();
+        m_frame->editor().spellCheckAfterBlur();
     setCaretVisibility(activeAndFocused ? Visible : Hidden);
 
     // Update for caps lock state
@@ -1564,7 +1564,7 @@ bool FrameSelection::isFocusedAndActive() const
 
 inline static bool shouldStopBlinkingDueToTypingCommand(Frame* frame)
 {
-    return frame->editor()->lastEditCommand() && frame->editor()->lastEditCommand()->shouldStopCaretBlinking();
+    return frame->editor().lastEditCommand() && frame->editor().lastEditCommand()->shouldStopCaretBlinking();
 }
 
 void FrameSelection::updateAppearance()
@@ -1762,7 +1762,7 @@ String FrameSelection::selectedTextForClipboard() const
 
 bool FrameSelection::shouldDeleteSelection(const VisibleSelection& selection) const
 {
-    return m_frame->editor()->client().shouldDeleteRange(selection.toNormalizedRange().get());
+    return m_frame->editor().client().shouldDeleteRange(selection.toNormalizedRange().get());
 }
 
 FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
@@ -1881,7 +1881,7 @@ void FrameSelection::setSelectionFromNone()
 
 bool FrameSelection::shouldChangeSelection(const VisibleSelection& newSelection) const
 {
-    return m_frame->editor()->shouldChangeSelection(selection(), newSelection, newSelection.affinity(), false);
+    return m_frame->editor().shouldChangeSelection(selection(), newSelection, newSelection.affinity(), false);
 }
 
 bool FrameSelection::dispatchSelectStart()

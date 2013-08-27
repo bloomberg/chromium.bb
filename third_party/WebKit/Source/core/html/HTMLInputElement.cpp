@@ -363,7 +363,7 @@ void HTMLInputElement::beginEditing()
         return;
 
     if (Frame* frame = document()->frame())
-        frame->editor()->textAreaOrTextFieldDidBeginEditing(this);
+        frame->editor().textAreaOrTextFieldDidBeginEditing(this);
 }
 
 void HTMLInputElement::endEditing()
@@ -372,7 +372,7 @@ void HTMLInputElement::endEditing()
         return;
 
     if (Frame* frame = document()->frame())
-        frame->editor()->textFieldDidEndEditing(this);
+        frame->editor().textFieldDidEndEditing(this);
 }
 
 bool HTMLInputElement::shouldUseInputMethod()

@@ -160,7 +160,7 @@ void TypingCommand::insertText(Document* document, const String& text, Options o
     ASSERT(frame);
 
     if (!text.isEmpty())
-        document->frame()->editor()->updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
+        document->frame()->editor().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
     insertText(document, text, frame->selection()->selection(), options, composition);
 }
@@ -236,7 +236,7 @@ PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(F
 {
     ASSERT(frame);
 
-    RefPtr<CompositeEditCommand> lastEditCommand = frame->editor()->lastEditCommand();
+    RefPtr<CompositeEditCommand> lastEditCommand = frame->editor().lastEditCommand();
     if (!lastEditCommand || !lastEditCommand->isTypingCommand() || !static_cast<TypingCommand*>(lastEditCommand.get())->isOpenForMoreTyping())
         return 0;
 
@@ -296,10 +296,10 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (!frame)
         return;
 
-    if (!frame->editor()->isContinuousSpellCheckingEnabled())
+    if (!frame->editor().isContinuousSpellCheckingEnabled())
         return;
 
-    frame->editor()->spellCheckRequester().cancelCheck();
+    frame->editor().spellCheckRequester().cancelCheck();
 
     // Take a look at the selection that results after typing and determine whether we need to spellcheck.
     // Since the word containing the current selection is never marked, this does a check to
@@ -311,7 +311,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
         VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
         if (p1 != p2)
-            frame->editor()->markMisspellingsAfterTypingToWord(p1, endingSelection());
+            frame->editor().markMisspellingsAfterTypingToWord(p1, endingSelection());
     }
 }
 
@@ -325,7 +325,7 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
 
     // The old spellchecking code requires that checking be done first, to prevent issues like that in 6864072, where <doesn't> is marked as misspelled.
     markMisspellingsAfterTyping(commandTypeForAddedTyping);
-    frame->editor()->appliedEditing(this);
+    frame->editor().appliedEditing(this);
 }
 
 void TypingCommand::insertText(const String &text, bool selectInsertedText)
@@ -407,7 +407,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
     if (!frame)
         return;
 
-    frame->editor()->updateMarkersForWordsAffectedByEditing(false);
+    frame->editor().updateMarkersForWordsAffectedByEditing(false);
 
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;
@@ -494,7 +494,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
         return;
 
     if (killRing)
-        frame->editor()->addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
+        frame->editor().addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
     // Make undo select everything that has been deleted, unless an undo will undo more than just this deletion.
     // FIXME: This behaves like TextEdit except for the case where you open with text insertion and then delete
     // more text than you insert.  In that case all of the text that was around originally should be selected.
@@ -511,7 +511,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
     if (!frame)
         return;
 
-    frame->editor()->updateMarkersForWordsAffectedByEditing(false);
+    frame->editor().updateMarkersForWordsAffectedByEditing(false);
 
     VisibleSelection selectionToDelete;
     VisibleSelection selectionAfterUndo;
@@ -587,7 +587,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         return;
 
     if (killRing)
-        frame->editor()->addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
+        frame->editor().addToKillRing(selectionToDelete.toNormalizedRange().get(), false);
     // make undo select what was deleted
     setStartingSelection(selectionAfterUndo);
     CompositeEditCommand::deleteSelection(selectionToDelete, m_smartDelete);

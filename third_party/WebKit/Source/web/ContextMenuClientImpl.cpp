@@ -192,17 +192,17 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;
-    if (m_webView->focusedWebCoreFrame()->editor()->canUndo())
+    if (m_webView->focusedWebCoreFrame()->editor().canUndo())
         data.editFlags |= WebContextMenuData::CanUndo;
-    if (m_webView->focusedWebCoreFrame()->editor()->canRedo())
+    if (m_webView->focusedWebCoreFrame()->editor().canRedo())
         data.editFlags |= WebContextMenuData::CanRedo;
-    if (m_webView->focusedWebCoreFrame()->editor()->canCut())
+    if (m_webView->focusedWebCoreFrame()->editor().canCut())
         data.editFlags |= WebContextMenuData::CanCut;
-    if (m_webView->focusedWebCoreFrame()->editor()->canCopy())
+    if (m_webView->focusedWebCoreFrame()->editor().canCopy())
         data.editFlags |= WebContextMenuData::CanCopy;
-    if (m_webView->focusedWebCoreFrame()->editor()->canPaste())
+    if (m_webView->focusedWebCoreFrame()->editor().canPaste())
         data.editFlags |= WebContextMenuData::CanPaste;
-    if (m_webView->focusedWebCoreFrame()->editor()->canDelete())
+    if (m_webView->focusedWebCoreFrame()->editor().canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
     // We can always select all...
     data.editFlags |= WebContextMenuData::CanSelectAll;
@@ -320,9 +320,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             }
         } else {
             data.isSpellCheckingEnabled =
-                m_webView->focusedWebCoreFrame()->editor()->isContinuousSpellCheckingEnabled();
+                m_webView->focusedWebCoreFrame()->editor().isContinuousSpellCheckingEnabled();
             // Spellchecking might be enabled for the field, but could be disabled on the node.
-            if (m_webView->focusedWebCoreFrame()->editor()->isSpellCheckingEnabledInFocusedNode()) {
+            if (m_webView->focusedWebCoreFrame()->editor().isSpellCheckingEnabledInFocusedNode()) {
                 data.misspelledWord = selectMisspelledWord(selectedFrame);
                 if (m_webView->spellCheckClient()) {
                     int misspelledOffset, misspelledLength;
@@ -346,9 +346,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     }
 
 #if OS(DARWIN)
-    if (selectedFrame->editor()->selectionHasStyle(CSSPropertyDirection, "ltr") != FalseTriState)
+    if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "ltr") != FalseTriState)
         data.writingDirectionLeftToRight |= WebContextMenuData::CheckableMenuItemChecked;
-    if (selectedFrame->editor()->selectionHasStyle(CSSPropertyDirection, "rtl") != FalseTriState)
+    if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "rtl") != FalseTriState)
         data.writingDirectionRightToLeft |= WebContextMenuData::CheckableMenuItemChecked;
 #endif // OS(DARWIN)
 

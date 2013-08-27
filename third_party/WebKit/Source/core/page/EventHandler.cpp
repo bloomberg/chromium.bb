@@ -463,7 +463,7 @@ void EventHandler::selectClosestWordFromMouseEvent(const MouseEventWithHitTestRe
 {
     if (m_mouseDownMayStartSelect) {
         selectClosestWordFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor()->isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
+            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
     }
 }
 
@@ -471,7 +471,7 @@ void EventHandler::selectClosestMisspellingFromMouseEvent(const MouseEventWithHi
 {
     if (m_mouseDownMayStartSelect) {
         selectClosestMisspellingFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor()->isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
+            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
     }
 }
 
@@ -573,7 +573,7 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
                 pos = selectionInUserSelectAll.end();
         }
 
-        if (!m_frame->editor()->behavior().shouldConsiderSelectionAsDirectional()) {
+        if (!m_frame->editor().behavior().shouldConsiderSelectionAsDirectional()) {
             // See <rdar://problem/3668157> REGRESSION (Mail): shift-click deselects when selection
             // was created right-to-left
             Position start = newSelection.start();
@@ -1697,8 +1697,8 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
         return false;
     Frame* focusFrame = m_frame->page()->focusController().focusedOrMainFrame();
     // Do not paste here if the focus was moved somewhere else.
-    if (m_frame == focusFrame && m_frame->editor()->client().supportsGlobalSelection())
-        return m_frame->editor()->command("PasteGlobalSelection").execute();
+    if (m_frame == focusFrame && m_frame->editor().client().supportsGlobalSelection())
+        return m_frame->editor().command("PasteGlobalSelection").execute();
 
     return false;
 }
@@ -2705,7 +2705,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 
         if (mev.hitTestResult().isMisspelled())
             selectClosestMisspellingFromMouseEvent(mev);
-        else if (m_frame->editor()->behavior().shouldSelectOnContextualMenuClick())
+        else if (m_frame->editor().behavior().shouldSelectOnContextualMenuClick())
             selectClosestWordOrLinkFromMouseEvent(mev);
     }
 
@@ -2742,7 +2742,7 @@ bool EventHandler::sendContextMenuEventForKey()
 
     if (start.deprecatedNode() && (selection->rootEditableElement() || selection->isRange())) {
         RefPtr<Range> selectionRange = selection->toNormalizedRange();
-        IntRect firstRect = m_frame->editor()->firstRectForRange(selectionRange.get());
+        IntRect firstRect = m_frame->editor().firstRectForRange(selectionRange.get());
 
         int x = rightAligned ? firstRect.maxX() : firstRect.x();
         // In a multiline edit, firstRect.maxY() would endup on the next line, so -1.
@@ -3070,7 +3070,7 @@ static FocusDirection focusDirectionForKey(const AtomicString& keyIdentifier)
 void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
 {
     if (event->type() == eventNames().keydownEvent) {
-        m_frame->editor()->handleKeyboardEvent(event);
+        m_frame->editor().handleKeyboardEvent(event);
         if (event->defaultHandled())
             return;
         if (event->keyIdentifier() == "U+0009")
@@ -3084,7 +3084,7 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
         }
     }
     if (event->type() == eventNames().keypressEvent) {
-        m_frame->editor()->handleKeyboardEvent(event);
+        m_frame->editor().handleKeyboardEvent(event);
         if (event->defaultHandled())
             return;
         if (event->charCode() == ' ')
@@ -3348,7 +3348,7 @@ bool EventHandler::isKeyboardOptionTab(KeyboardEvent* event)
 
 void EventHandler::defaultTextInputEventHandler(TextEvent* event)
 {
-    if (m_frame->editor()->handleTextEvent(event))
+    if (m_frame->editor().handleTextEvent(event))
         event->setDefaultHandled();
 }
 
@@ -3380,7 +3380,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     if (event->ctrlKey() || event->metaKey() || event->altKey() || event->altGraphKey())
         return;
 
-    if (!m_frame->editor()->behavior().shouldNavigateBackOnBackspace())
+    if (!m_frame->editor().behavior().shouldNavigateBackOnBackspace())
         return;
 
     Page* page = m_frame->page();

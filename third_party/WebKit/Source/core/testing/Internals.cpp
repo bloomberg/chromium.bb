@@ -171,10 +171,9 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
 
 static SpellCheckRequester* spellCheckRequester(Document* document)
 {
-    if (!document || !document->frame() || !document->frame()->editor())
+    if (!document || !document->frame())
         return 0;
-
-    return &document->frame()->editor()->spellCheckRequester();
+    return &document->frame()->editor().spellCheckRequester();
 }
 
 const char* Internals::internalsId = "internals";
@@ -201,10 +200,10 @@ void Internals::resetToConsistentState(Page* page)
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client().resetPagePopupDriver();
-    if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
-        page->mainFrame()->editor()->toggleContinuousSpellChecking();
-    if (page->mainFrame()->editor()->isOverwriteModeEnabled())
-        page->mainFrame()->editor()->toggleOverwriteModeEnabled();
+    if (!page->mainFrame()->editor().isContinuousSpellCheckingEnabled())
+        page->mainFrame()->editor().toggleContinuousSpellChecking();
+    if (page->mainFrame()->editor().isOverwriteModeEnabled())
+        page->mainFrame()->editor().toggleOverwriteModeEnabled();
 }
 
 Internals::Internals(Document* document)
@@ -1519,16 +1518,16 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length, Exce
     if (!document || !document->frame())
         return 0;
 
-    return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
+    return document->frame()->editor().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
 void Internals::setContinuousSpellCheckingEnabled(bool enabled, ExceptionState&)
 {
-    if (!contextDocument() || !contextDocument()->frame() || !contextDocument()->frame()->editor())
+    if (!contextDocument() || !contextDocument()->frame())
         return;
 
-    if (enabled != contextDocument()->frame()->editor()->isContinuousSpellCheckingEnabled())
-        contextDocument()->frame()->editor()->toggleContinuousSpellChecking();
+    if (enabled != contextDocument()->frame()->editor().isContinuousSpellCheckingEnabled())
+        contextDocument()->frame()->editor().toggleContinuousSpellChecking();
 }
 
 bool Internals::isOverwriteModeEnabled(Document* document, ExceptionState&)
@@ -1536,7 +1535,7 @@ bool Internals::isOverwriteModeEnabled(Document* document, ExceptionState&)
     if (!document || !document->frame())
         return 0;
 
-    return document->frame()->editor()->isOverwriteModeEnabled();
+    return document->frame()->editor().isOverwriteModeEnabled();
 }
 
 void Internals::toggleOverwriteModeEnabled(Document* document, ExceptionState&)
@@ -1544,7 +1543,7 @@ void Internals::toggleOverwriteModeEnabled(Document* document, ExceptionState&)
     if (!document || !document->frame())
         return;
 
-    document->frame()->editor()->toggleOverwriteModeEnabled();
+    document->frame()->editor().toggleOverwriteModeEnabled();
 }
 
 unsigned Internals::numberOfLiveNodes() const
@@ -1636,7 +1635,7 @@ bool Internals::hasGrammarMarker(Document* document, int from, int length, Excep
     if (!document || !document->frame())
         return 0;
 
-    return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Grammar, from, length);
+    return document->frame()->editor().selectionStartHasMarkerFor(DocumentMarker::Grammar, from, length);
 }
 
 unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionState&)

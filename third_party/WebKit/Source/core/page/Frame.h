@@ -94,7 +94,7 @@ namespace WebCore {
         Document* document() const;
         FrameView* view() const;
 
-        Editor* editor() const;
+        Editor& editor() const;
         EventHandler* eventHandler() const;
         FrameLoader* loader() const;
         NavigationScheduler* navigationScheduler() const;
@@ -184,7 +184,7 @@ namespace WebCore {
         RefPtr<DOMWindow> m_domWindow;
 
         OwnPtr<ScriptController> m_script;
-        OwnPtr<Editor> m_editor;
+        const OwnPtr<Editor> m_editor;
         OwnPtr<FrameSelection> m_selection;
         OwnPtr<EventHandler> m_eventHandler;
         OwnPtr<AnimationController> m_animationController;
@@ -235,9 +235,9 @@ namespace WebCore {
         return m_selection.get();
     }
 
-    inline Editor* Frame::editor() const
+    inline Editor& Frame::editor() const
     {
-        return m_editor.get();
+        return *m_editor;
     }
 
     inline AnimationController* Frame::animation() const
