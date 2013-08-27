@@ -72,7 +72,6 @@ menu > [checked]::before {
   display: inline-block;
   height: 9px;
   margin: 0 5px;
-  vertical-align: 50%;
   width: 9px;
 }
 
