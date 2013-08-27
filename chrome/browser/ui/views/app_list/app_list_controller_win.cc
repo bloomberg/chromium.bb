@@ -756,8 +756,19 @@ class AppListShower {
   }
 
   void FreeAnyKeepAliveForView() {
-    if (keep_alive_)
-      keep_alive_.reset(NULL);
+    if (keep_alive_) {
+      // We may end up here as the result of the OS deleting the AppList's
+      // widget (WidgetObserver::OnWidgetDestroyed). If this happens and there
+      // are no browsers around then deleting the keep alive will result in
+      // deleting the Widget again (by way of CloseAllSecondaryWidgets). When
+      // the stack unravels we end up back in the Widget that was deleted and
+      // crash. By delaying deletion of the keep alive we ensure the Widget has
+      // correctly been destroyed before ending the keep alive so that
+      // CloseAllSecondaryWidgets() won't attempt to delete the AppList's Widget
+      // again.
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE,
+                                               keep_alive_.release());
+    }
   }
 
   scoped_ptr<AppListViewFactory> factory_;
