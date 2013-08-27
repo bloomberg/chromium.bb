@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -60,8 +61,8 @@ class SpellingRequest {
   std::vector<SpellCheckResult> local_results_;
   std::vector<SpellCheckResult> remote_results_;
 
-  bool local_pending_;
-  bool remote_pending_;
+  // Barrier closure for completion of both remote and local check.
+  base::Closure completion_barrier_;
   bool remote_success_;
 
   SpellingServiceClient* client_;  // Owned by |destination|.
@@ -77,9 +78,7 @@ class SpellingRequest {
 SpellingRequest::SpellingRequest(SpellingServiceClient* client,
                                  content::BrowserMessageFilter* destination,
                                  int render_process_id)
-    : local_pending_(true),
-      remote_pending_(true),
-      remote_success_(false),
+    : remote_success_(false),
       client_(client),
       destination_(destination),
       render_process_id_(render_process_id),
@@ -104,6 +103,10 @@ void SpellingRequest::RequestCheck(
   markers_ = markers;
 
   // Send the remote query out.
+  completion_barrier_ =
+      BarrierClosure(2,
+                     base::Bind(&SpellingRequest::OnCheckCompleted,
+                     base::Owned(this)));
   RequestRemoteCheck(text);
   RequestLocalCheck(text, document_tag_);
 }
@@ -134,10 +137,6 @@ void SpellingRequest::RequestLocalCheck(const string16& text,
 
 void SpellingRequest::OnCheckCompleted() {
   // Final completion can happen on any thread - don't DCHECK thread.
-
-  if (local_pending_ || remote_pending_)
-    return;
-
   const std::vector<SpellCheckResult>* check_results = &local_results_;
   if (remote_success_) {
     std::sort(remote_results_.begin(), remote_results_.end(), CompareLocation);
@@ -155,7 +154,6 @@ void SpellingRequest::OnCheckCompleted() {
   destination_->Release();
 
   // Object is self-managed - at this point, its life span is over.
-  delete this;
 }
 
 void SpellingRequest::OnRemoteCheckCompleted(
@@ -165,7 +163,6 @@ void SpellingRequest::OnRemoteCheckCompleted(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   remote_success_ = success;
   remote_results_ = results;
-  remote_pending_ = false;
 
   SpellcheckService* spellcheck_service =
       SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
@@ -177,17 +174,14 @@ void SpellingRequest::OnRemoteCheckCompleted(
         &remote_results_);
   }
 
-  OnCheckCompleted();
+  completion_barrier_.Run();
 }
 
 void SpellingRequest::OnLocalCheckCompleted(
     const std::vector<SpellCheckResult>& results) {
   // Local checking can happen on any thread - don't DCHECK thread.
-
   local_results_ = results;
-  local_pending_ = false;
-
-  OnCheckCompleted();
+  completion_barrier_.Run();
 }
 
 
