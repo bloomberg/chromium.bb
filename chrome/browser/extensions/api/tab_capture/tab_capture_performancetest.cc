@@ -234,16 +234,13 @@ class TabCapturePerformanceTest
 }  // namespace
 
 
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+// Disabled due to failures on GPU bots (crbug.com/279443)
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, DISABLED_Performance) {
   RunTest("TabCapturePerformance");
 }
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-//
-// Note: The following combinations are disabled. See crbug.com/279443
-//       kDisableVsync | kUseGpu | kForceGpuComposited
-//       kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited
 INSTANTIATE_TEST_CASE_P(
     ,
     TabCapturePerformanceTest,
@@ -251,9 +248,11 @@ INSTANTIATE_TEST_CASE_P(
         0,
         kUseGpu | kForceGpuComposited,
         kDisableVsync,
+        kDisableVsync | kUseGpu | kForceGpuComposited,
         kTestThroughWebRTC,
         kTestThroughWebRTC | kUseGpu | kForceGpuComposited,
-        kTestThroughWebRTC | kDisableVsync));
+        kTestThroughWebRTC | kDisableVsync,
+        kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
 
 #ifdef USE_AURA
 // TODO(hubbe):
