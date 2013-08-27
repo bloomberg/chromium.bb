@@ -34,11 +34,14 @@
 #include "core/dom/Text.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/html/HTMLLegendElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/rendering/RenderObject.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace std;
@@ -158,6 +161,11 @@ bool AccessibilityNodeObject::computeAccessibilityIsIgnored() const
 
     // If this element is within a parent that cannot have children, it should not be exposed.
     if (isDescendantOfBarrenParent())
+        return true;
+
+    // Ignore labels that are already referenced by a control's title UI element.
+    AccessibilityObject* controlObject = correspondingControlForLabelElement();
+    if (controlObject && !controlObject->exposesTitleUIElement() && controlObject->isCheckboxOrRadio())
         return true;
 
     return m_role == UnknownRole;
@@ -745,6 +753,22 @@ bool AccessibilityNodeObject::canSetFocusAttribute() const
     return node->isElementNode() && toElement(node)->supportsFocus();
 }
 
+bool AccessibilityNodeObject::canSetValueAttribute() const
+{
+    if (equalIgnoringCase(getAttribute(aria_readonlyAttr), "true"))
+        return false;
+
+    if (isProgressIndicator() || isSlider())
+        return true;
+
+    if (isTextControl() && !isNativeTextControl())
+        return true;
+
+    // Any node could be contenteditable, so isReadOnly should be relied upon
+    // for this information for all elements.
+    return !isReadOnly();
+}
+
 bool AccessibilityNodeObject::canvasHasFallbackContent() const
 {
     Node* node = this->node();
@@ -760,6 +784,33 @@ bool AccessibilityNodeObject::canvasHasFallbackContent() const
     }
 
     return false;
+}
+
+bool AccessibilityNodeObject::exposesTitleUIElement() const
+{
+    if (!isControl())
+        return false;
+
+    // If this control is ignored (because it's invisible),
+    // then the label needs to be exposed so it can be visible to accessibility.
+    if (accessibilityIsIgnored())
+        return true;
+
+    // ARIA: section 2A, bullet #3 says if aria-labeledby or aria-label appears, it should
+    // override the "label" element association.
+    bool hasTextAlternative = (!ariaLabeledByAttribute().isEmpty() || !getAttribute(aria_labelAttr).isEmpty());
+
+    // Checkboxes and radio buttons use the text of their title ui element as their own AXTitle.
+    // This code controls whether the title ui element should appear in the AX tree (usually, no).
+    // It should appear if the control already has a label (which will be used as the AXTitle instead).
+    if (isCheckboxOrRadio())
+        return hasTextAlternative;
+
+    // When controls have their own descriptions, the title element should be ignored.
+    if (hasTextAlternative)
+        return false;
+
+    return true;
 }
 
 int AccessibilityNodeObject::headingLevel() const
@@ -841,6 +892,21 @@ String AccessibilityNodeObject::text() const
         return String();
 
     return toElement(node)->innerText();
+}
+
+AccessibilityObject* AccessibilityNodeObject::titleUIElement() const
+{
+    if (!node() || !node()->isElementNode())
+        return 0;
+
+    if (isFieldset())
+        return axObjectCache()->getOrCreate(static_cast<HTMLFieldSetElement*>(node())->legend());
+
+    HTMLLabelElement* label = labelForElement(toElement(node()));
+    if (label)
+        return axObjectCache()->getOrCreate(label);
+
+    return 0;
 }
 
 AccessibilityButtonState AccessibilityNodeObject::checkboxOrRadioValue() const
@@ -1393,6 +1459,66 @@ Document* AccessibilityNodeObject::document() const
 void AccessibilityNodeObject::setNode(Node* node)
 {
     m_node = node;
+}
+
+AccessibilityObject* AccessibilityNodeObject::correspondingControlForLabelElement() const
+{
+    HTMLLabelElement* labelElement = labelElementContainer();
+    if (!labelElement)
+        return 0;
+
+    HTMLElement* correspondingControl = labelElement->control();
+    if (!correspondingControl)
+        return 0;
+
+    // Make sure the corresponding control isn't a descendant of this label
+    // that's in the middle of being destroyed.
+    if (correspondingControl->renderer() && !correspondingControl->renderer()->parent())
+        return 0;
+
+    return axObjectCache()->getOrCreate(correspondingControl);
+}
+
+HTMLLabelElement* AccessibilityNodeObject::labelElementContainer() const
+{
+    if (!node())
+        return 0;
+
+    // the control element should not be considered part of the label
+    if (isControl())
+        return 0;
+
+    // find if this has a parent that is a label
+    for (Node* parentNode = node(); parentNode; parentNode = parentNode->parentNode()) {
+        if (isHTMLLabelElement(parentNode))
+            return toHTMLLabelElement(parentNode);
+    }
+
+    return 0;
+}
+
+void AccessibilityNodeObject::setFocused(bool on)
+{
+    if (!canSetFocusAttribute())
+        return;
+
+    Document* document = this->document();
+    if (!on) {
+        document->setFocusedElement(0);
+    } else {
+        Node* node = this->node();
+        if (node && node->isElementNode()) {
+            // If this node is already the currently focused node, then calling focus() won't do anything.
+            // That is a problem when focus is removed from the webpage to chrome, and then returns.
+            // In these cases, we need to do what keyboard and mouse focus do, which is reset focus first.
+            if (document->focusedElement() == node)
+                document->setFocusedElement(0);
+
+            toElement(node)->focus();
+        } else {
+            document->setFocusedElement(0);
+        }
+    }
 }
 
 void AccessibilityNodeObject::increment()

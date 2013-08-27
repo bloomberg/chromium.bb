@@ -71,7 +71,6 @@ public:
     RenderBoxModelObject* renderBoxModelObject() const;
     RenderView* topRenderer() const;
     Document* topDocument() const;
-    HTMLLabelElement* labelElementContainer() const;
     bool shouldNotifyActiveDescendant() const;
     bool needsToUpdateChildren() const { return m_childrenDirty; }
     ScrollableArea* getScrollableAreaIfScrollable() const;
@@ -108,20 +107,15 @@ protected:
     virtual bool isFocused() const OVERRIDE;
     virtual bool isSelected() const OVERRIDE;
 
-    // Check whether certain properties can be modified.
-    virtual bool canSetValueAttribute() const OVERRIDE;
-
     // Whether objects are ignored, i.e. not included in the tree.
     virtual AccessibilityObjectInclusion defaultObjectInclusion() const OVERRIDE;
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 
     // Properties of static elements.
     virtual const AtomicString& accessKey() const OVERRIDE;
-    virtual bool exposesTitleUIElement() const OVERRIDE;
     virtual AccessibilityOrientation orientation() const OVERRIDE;
     virtual String text() const OVERRIDE;
     virtual int textLength() const OVERRIDE;
-    virtual AccessibilityObject* titleUIElement() const OVERRIDE;
     virtual KURL url() const OVERRIDE;
 
     // Properties of interactive elements.
@@ -190,7 +184,6 @@ protected:
     virtual String selectedText() const OVERRIDE;
 
     // Modify or take an action on an object.
-    virtual void setFocused(bool) OVERRIDE;
     virtual void setSelectedTextRange(const PlainTextRange&) OVERRIDE;
     virtual void setValue(const String&) OVERRIDE;
     virtual void scrollTo(const IntPoint&) const OVERRIDE;
@@ -206,7 +199,6 @@ protected:
 
 private:
     bool isAllowedChildOfTree() const;
-    bool hasTextAlternative() const;
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
     PlainTextRange ariaSelectedTextRange() const;
     bool nodeIsTextControl(const Node*) const;
@@ -233,7 +225,6 @@ private:
     LayoutRect computeElementRect() const;
     VisibleSelection selection() const;
     String stringForRange(const PlainTextRange&) const;
-    AccessibilityObject* correspondingControlForLabelElement() const;
     int indexForVisiblePosition(const VisiblePosition&) const;
 };
 
