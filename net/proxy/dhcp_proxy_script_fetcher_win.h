@@ -16,6 +16,10 @@
 #include "base/timer/timer.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace net {
 
 class DhcpProxyScriptAdapterFetcher;
@@ -49,6 +53,8 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   int num_pending_fetchers() const;
 
   URLRequestContext* url_request_context() const;
+
+  scoped_refptr<base::TaskRunner> GetTaskRunner();
 
   // This inner class encapsulate work done on a worker pool thread.
   // The class calls GetCandidateAdapterNames, which can take a couple of
@@ -160,6 +166,9 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // Time |Fetch()| was last called, 0 if never.
   base::TimeTicks fetch_start_time_;
+
+  // Worker pool we use for all DHCP lookup tasks.
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpProxyScriptFetcherWin);
 };
