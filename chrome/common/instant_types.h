@@ -18,19 +18,59 @@
 // Visited items) that the Instant page needs access to.
 typedef int InstantRestrictedID;
 
-// A wrapper to hold Instant suggested text and its metadata. Used to tell the
-// server what suggestion to prefetch.
+const size_t kNoMatchIndex = -1;
+
+// Ways that the Instant suggested text is autocompleted into the omnibox.
+enum InstantCompleteBehavior {
+  // Autocomplete the suggestion immediately.
+  INSTANT_COMPLETE_NOW,
+
+  // Do not autocomplete the suggestion. The suggestion may still be displayed
+  // in the omnibox, but not made a part of the omnibox text by default (e.g.,
+  // by displaying the suggestion as non-highlighted, non-selected gray text).
+  INSTANT_COMPLETE_NEVER,
+
+  // Treat the suggested text as the entire omnibox text, effectively replacing
+  // whatever the user has typed.
+  INSTANT_COMPLETE_REPLACE,
+};
+
+// The type of suggestion provided by Instant. For example, if Instant suggests
+// "yahoo.com", should that be considered a search string or a URL?
+enum InstantSuggestionType {
+  INSTANT_SUGGESTION_SEARCH,
+  INSTANT_SUGGESTION_URL,
+};
+
+// A wrapper to hold Instant suggested text and its metadata.
 struct InstantSuggestion {
   InstantSuggestion();
-  InstantSuggestion(const string16& in_text,
-                    const std::string& in_metadata);
+  InstantSuggestion(const string16& text,
+                    InstantCompleteBehavior behavior,
+                    InstantSuggestionType type,
+                    const string16& query,
+                    size_t autocomplete_match_index);
   ~InstantSuggestion();
 
   // Full suggested text.
   string16 text;
 
-  // JSON metadata from the server response which produced this suggestion.
-  std::string metadata;
+  // Completion behavior for the suggestion.
+  InstantCompleteBehavior behavior;
+
+  // Is this a search or a URL suggestion?
+  InstantSuggestionType type;
+
+  // Query for which this suggestion was generated. May be set to empty string
+  // if unknown.
+  string16 query;
+
+  // Index of the AutocompleteMatch in AutocompleteResult. Used to get the
+  // metadata details of the suggested text from AutocompleteResult. Set to a
+  // positive value if the suggestion is displayed on the Local NTP and
+  // set to kNoMatchIndex if the suggestion is displayed on the
+  // Instant NTP.
+  size_t autocomplete_match_index;
 };
 
 // Omnibox dropdown matches provided by the native autocomplete providers.

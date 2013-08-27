@@ -147,7 +147,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
     is_focused_(false),
     is_input_in_progress_(false),
     is_key_capture_enabled_(false),
-    display_instant_results_(false),
     most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
     omnibox_font_(),
     omnibox_font_size_(12),
@@ -280,12 +279,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnMostVisitedChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxPromoInformation,
                         OnPromoInformationReceived)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
-                        OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetInputInProgress,
                         OnSetInputInProgress)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
-                        OnSetSuggestionToPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSubmit, OnSubmit)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
@@ -373,10 +368,6 @@ void SearchBox::OnPromoInformationReceived(bool is_app_launcher_enabled) {
   app_launcher_enabled_ = is_app_launcher_enabled;
 }
 
-void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
-  display_instant_results_ = display_instant_results;
-}
-
 void SearchBox::OnSetInputInProgress(bool is_input_in_progress) {
   if (is_input_in_progress_ != is_input_in_progress) {
     is_input_in_progress_ = is_input_in_progress;
@@ -391,15 +382,6 @@ void SearchBox::OnSetInputInProgress(bool is_input_in_progress) {
             render_view()->GetWebView()->mainFrame());
       }
     }
-  }
-}
-
-void SearchBox::OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
-  suggestion_ = suggestion;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    DVLOG(1) << render_view() << " OnSetSuggestionToPrefetch";
-    extensions_v8::SearchBoxExtension::DispatchSuggestionChange(
-        render_view()->GetWebView()->mainFrame());
   }
 }
 
@@ -440,7 +422,6 @@ GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
 
 void SearchBox::Reset() {
   query_.clear();
-  suggestion_ = InstantSuggestion();
   start_margin_ = 0;
   width_ = 0;
   is_focused_ = false;

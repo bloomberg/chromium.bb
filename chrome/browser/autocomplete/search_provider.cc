@@ -136,11 +136,9 @@ SearchProvider::Result::~Result() {
 SearchProvider::SuggestResult::SuggestResult(const string16& suggestion,
                                              bool from_keyword_provider,
                                              int relevance,
-                                             bool relevance_from_server,
-                                             bool should_prefetch)
+                                             bool relevance_from_server)
     : Result(from_keyword_provider, relevance, relevance_from_server),
-      suggestion_(suggestion),
-      should_prefetch_(should_prefetch) {
+      suggestion_(suggestion) {
 }
 
 SearchProvider::SuggestResult::~SuggestResult() {
@@ -214,7 +212,6 @@ void SearchProvider::Results::Clear() {
   suggest_results.clear();
   navigation_results.clear();
   verbatim_relevance = -1;
-  metadata.clear();
 }
 
 bool SearchProvider::Results::HasServerProvidedScores() const {
@@ -246,8 +243,6 @@ const int SearchProvider::kDefaultProviderURLFetcherID = 1;
 const int SearchProvider::kKeywordProviderURLFetcherID = 2;
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 const char SearchProvider::kRelevanceFromServerKey[] = "relevance_from_server";
-const char SearchProvider::kShouldPrefetchKey[] = "should_prefetch";
-const char SearchProvider::kSuggestMetadataKey[] = "suggest_metadata";
 const char SearchProvider::kTrue[] = "true";
 const char SearchProvider::kFalse[] = "false";
 
@@ -355,16 +350,6 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
       content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
 
   return match;
-}
-
-// static
-bool SearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
-  return match.GetAdditionalInfo(kShouldPrefetchKey) == kTrue;
-}
-
-// static
-std::string SearchProvider::GetSuggestMetadata(const AutocompleteMatch& match) {
-  return match.GetAdditionalInfo(kSuggestMetadataKey);
 }
 
 void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
@@ -896,7 +881,6 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   ListValue* types = NULL;
   ListValue* relevances = NULL;
   DictionaryValue* extras = NULL;
-  int prefetch_index = -1;
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
 
@@ -913,16 +897,6 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     extras->GetBoolean("google:fieldtrialtriggered", &triggered);
     field_trial_triggered_ |= triggered;
     field_trial_triggered_in_session_ |= triggered;
-
-    // Extract the prefetch hint.
-    DictionaryValue* client_data = NULL;
-    if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
-      client_data->GetInteger("phi", &prefetch_index);
-
-    // Store the metadata that came with the response in case we need to pass it
-    // along with the prefetch query to Instant.
-    JSONStringValueSerializer json_serializer(&results->metadata);
-    json_serializer.Serialize(*extras);
   }
 
   // Clear the previous results now that new results are available.
@@ -951,10 +925,9 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
             *this, url, title, is_keyword, relevance, true));
       }
     } else {
-      bool should_prefetch = static_cast<int>(index) == prefetch_index;
       // TODO(kochi): Improve calculator result presentation.
       results->suggest_results.push_back(
-          SuggestResult(result, is_keyword, relevance, true, should_prefetch));
+          SuggestResult(result, is_keyword, relevance, true));
     }
   }
 
@@ -992,7 +965,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   if (verbatim_relevance > 0) {
     AddMatchToMap(input_.text(), input_.text(), verbatim_relevance,
-                  relevance_from_server, false, std::string(),
+                  relevance_from_server,
                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, false, &map);
   }
@@ -1011,7 +984,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       if (keyword_verbatim_relevance > 0) {
         AddMatchToMap(keyword_input_.text(), keyword_input_.text(),
                       keyword_verbatim_relevance, keyword_relevance_from_server,
-                      false, std::string(),
                       AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                       did_not_accept_keyword_suggestion, true, &map);
       }
@@ -1022,9 +994,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddHistoryResultsToMap(default_history_results_, false,
                          did_not_accept_default_suggestion, &map);
 
-  AddSuggestResultsToMap(keyword_results_.suggest_results, std::string(), &map);
-  AddSuggestResultsToMap(default_results_.suggest_results,
-                         default_results_.metadata, &map);
+  AddSuggestResultsToMap(keyword_results_.suggest_results, &map);
+  AddSuggestResultsToMap(default_results_.suggest_results, &map);
 
   ACMatches matches;
   for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
@@ -1238,8 +1209,9 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   for (SuggestResults::const_iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
     AddMatchToMap(i->suggestion(), input_text, i->relevance(), false,
-                  false, std::string(), AutocompleteMatchType::SEARCH_HISTORY,
-                  did_not_accept_suggestion, is_keyword, map);
+                  AutocompleteMatchType::SEARCH_HISTORY,
+                  did_not_accept_suggestion,
+                  is_keyword, map);
   }
 }
 
@@ -1286,7 +1258,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     scored_results.push_back(
-        SuggestResult(i->term, is_keyword, relevance, false, false));
+        SuggestResult(i->term, is_keyword, relevance, false));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1308,14 +1280,12 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
 }
 
 void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
-                                            const std::string& metadata,
                                             MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
     const bool is_keyword = results[i].from_keyword_provider();
     const string16& input = is_keyword ? keyword_input_.text() : input_.text();
     AddMatchToMap(results[i].suggestion(), input, results[i].relevance(),
                   results[i].relevance_from_server(),
-                  results[i].should_prefetch(), metadata,
                   AutocompleteMatchType::SEARCH_SUGGEST, i, is_keyword, map);
   }
 }
@@ -1432,8 +1402,6 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    const string16& input_text,
                                    int relevance,
                                    bool relevance_from_server,
-                                   bool should_prefetch,
-                                   const std::string& metadata,
                                    AutocompleteMatch::Type type,
                                    int accepted_suggestion,
                                    bool is_keyword,
@@ -1463,50 +1431,22 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
     return;
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              relevance_from_server ? kTrue : kFalse);
-  match.RecordAdditionalInfo(kShouldPrefetchKey,
-                             should_prefetch ? kTrue : kFalse);
-
-  // Metadata is needed only for prefetching queries.
-  if (should_prefetch)
-    match.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
 
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
   const std::pair<MatchMap::iterator, bool> i(
       map->insert(std::make_pair(base::i18n::ToLower(query_string), match)));
-
-  if (!i.second) {
-    // NOTE: We purposefully do a direct relevance comparison here instead of
-    // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items
-    // added first" rather than "items alphabetically first" when the scores are
-    // equal. The only case this matters is when a user has results with the
-    // same score that differ only by capitalization; because the history system
-    // returns results sorted by recency, this means we'll pick the most
-    // recent such result even if the precision of our relevance score is too
-    // low to distinguish the two.
-    if (match.relevance > i.first->second.relevance) {
-      i.first->second = match;
-    } else if (match.keyword == i.first->second.keyword) {
-      // Old and new matches are from the same search provider. It is okay to
-      // record one match's prefetch data onto a different match (for the same
-      // query string) for the following reasons:
-      // 1. Because the suggest server only sends down a query string from which
-      // we construct a URL, rather than sending a full URL, and because we
-      // construct URLs from query strings in the same way every time, the URLs
-      // for the two matches will be the same. Therefore, we won't end up
-      // prefetching something the server didn't intend.
-      // 2. Presumably the server sets the prefetch bit on a match it things is
-      // sufficiently relevant that the user is likely to choose it. Surely
-      // setting the prefetch bit on a match of even higher relevance won't
-      // violate this assumption.
-      should_prefetch |= ShouldPrefetch(i.first->second);
-      i.first->second.RecordAdditionalInfo(kShouldPrefetchKey,
-                                           should_prefetch ? kTrue : kFalse);
-      if (should_prefetch)
-        i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
-    }
-  }
+  // NOTE: We purposefully do a direct relevance comparison here instead of
+  // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
+  // first" rather than "items alphabetically first" when the scores are equal.
+  // The only case this matters is when a user has results with the same score
+  // that differ only by capitalization; because the history system returns
+  // results sorted by recency, this means we'll pick the most recent such
+  // result even if the precision of our relevance score is too low to
+  // distinguish the two.
+  if (!i.second && (match.relevance > i.first->second.relevance))
+    i.first->second = match;
 }
 
 AutocompleteMatch SearchProvider::NavigationToMatch(
@@ -1573,7 +1513,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.RecordAdditionalInfo(
       kRelevanceFromServerKey,
       navigation.relevance_from_server() ? kTrue : kFalse);
-  match.RecordAdditionalInfo(kShouldPrefetchKey, kFalse);
 
   return match;
 }

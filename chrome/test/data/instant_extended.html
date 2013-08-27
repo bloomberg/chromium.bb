@@ -19,7 +19,6 @@ var submitCount = 0;
 var onEscKeyPressedCalls = 0;
 var onFocusChangedCalls = 0;
 var onToggleVoiceSearchCalls = 0;
-var prefetchQuery = '';
 var isFocused = false;
 var onvisibilitycalls = 0;
 var onThemeChangedCalls = 0;
@@ -119,10 +118,6 @@ function handleToggleVoiceSearch() {
   onToggleVoiceSearchCalls++;
 }
 
-function handleSuggestionChange() {
-  prefetchQuery = getApiHandle().suggestion.text;
-}
-
 function handleThemeChange() {
   onThemeChangedCalls++;
 }
@@ -139,7 +134,6 @@ function setUp() {
   apiHandle.onkeypress = handleKeyPress;
   apiHandle.onfocuschange = handleFocusChange;
   apiHandle.ontogglevoicesearch = handleToggleVoiceSearch;
-  apiHandle.onsuggestionchange = handleSuggestionChange;
   newTabPageHandle.onmostvisitedchange = handleMostVisitedChange;
   newTabPageHandle.onthemechange = handleThemeChange;
   if (apiHandle.value) {

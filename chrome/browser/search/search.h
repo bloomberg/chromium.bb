@@ -186,9 +186,6 @@ void SetInstantSupportStateInNavigationEntry(InstantSupportState state,
 InstantSupportState GetInstantSupportStateFromNavigationEntry(
     const content::NavigationEntry& entry);
 
-// Returns true if the field trial flag is enabled to prefetch results on SRP.
-bool ShouldPrefetchSearchResultsOnSRP();
-
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

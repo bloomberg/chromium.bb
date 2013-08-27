@@ -35,12 +35,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), is_app_launcher_enabled));
   }
 
-  virtual void SetSuggestionToPrefetch(
-      const InstantSuggestion& suggestion) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxSetSuggestionToPrefetch(routing_id(),
-                                                            suggestion));
-  }
-
   virtual void SendThemeBackgroundInfo(
       const ThemeBackgroundInfo& theme_info) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));

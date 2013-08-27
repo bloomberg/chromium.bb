@@ -48,8 +48,6 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   data.SetURL(instant_url_.spec() +
               "q={searchTerms}&is_search&{google:omniboxStartMarginParameter}");
   data.instant_url = instant_url_.spec();
-  if (init_suggestions_url_)
-    data.suggestions_url = instant_url_.spec() + "#q={searchTerms}";
   data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
   data.search_terms_replacement_key = "strk";
 
@@ -77,9 +75,8 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
   service->SetDefaultSearchProvider(template_url);
 }
 
-void InstantTestBase::Init(const GURL& instant_url, bool init_suggestions_url) {
+void InstantTestBase::Init(const GURL& instant_url) {
   instant_url_ = instant_url;
-  init_suggestions_url_ = init_suggestions_url;
 }
 
 void InstantTestBase::FocusOmnibox() {

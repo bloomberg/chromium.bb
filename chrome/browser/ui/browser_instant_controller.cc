@@ -240,11 +240,6 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }
 
-void BrowserInstantController::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  instant_.SetSuggestionToPrefetch(suggestion);
-}
-
 void BrowserInstantController::ToggleVoiceSearch() {
   instant_.ToggleVoiceSearch();
 }

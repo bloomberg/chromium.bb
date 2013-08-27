@@ -162,11 +162,6 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
-  IPC_STRUCT_TRAITS_MEMBER(text)
-  IPC_STRUCT_TRAITS_MEMBER(metadata)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(title)
@@ -296,9 +291,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_HandleMessageFromExternalHost,
 
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
-                    bool /* display_instant_results */)
-
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
                     OmniboxFocusState /* new_focus_state */,
                     OmniboxFocusChangeReason /* reason */)
@@ -319,9 +311,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPromoInformation,
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
                     bool /* input_in_progress */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
-                    InstantSuggestion /* suggestion */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
                     string16 /* value */)

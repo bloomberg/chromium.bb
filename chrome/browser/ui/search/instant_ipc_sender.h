@@ -45,9 +45,6 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Tells the page information it needs to display promos.
   virtual void SetPromoInformation(bool is_app_launcher_enabled) {}
 
-  // Tells the page the suggestion to be prefetched if any.
-  virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) {}
-
   // Tells the page about the current theme background.
   virtual void SendThemeBackgroundInfo(
       const ThemeBackgroundInfo& theme_info) {}

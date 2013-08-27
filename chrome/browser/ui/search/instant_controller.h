@@ -58,9 +58,6 @@ class InstantController : public InstantPage::Delegate {
   // Sets the stored start-edge margin and width of the omnibox.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Sends the current SearchProvider suggestion to the Instant page if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
-
   // Notifies |instant_Tab_| to toggle voice search.
   void ToggleVoiceSearch();
 

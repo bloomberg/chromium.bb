@@ -152,17 +152,6 @@ void SearchTabHelper::Observe(
   if (!load_details->is_main_frame)
     return;
 
-  // TODO(kmadhusu): Set the page initial states (such as omnibox margin, etc)
-  // from here. Please refer to crbug.com/247517 for more details.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                               profile)) {
-    Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
-         routing_id(),
-         chrome::ShouldPrefetchSearchResultsOnSRP()));
-  }
-
   UpdateMode(true, false);
 
   content::NavigationEntry* entry =

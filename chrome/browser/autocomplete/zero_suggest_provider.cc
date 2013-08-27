@@ -296,7 +296,7 @@ void ZeroSuggestProvider::FillResults(
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, false, relevance, relevances != NULL, false));
+          result, false, relevance, relevances != NULL));
     }
   }
 }

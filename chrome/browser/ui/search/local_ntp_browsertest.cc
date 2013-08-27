@@ -26,7 +26,7 @@ class LocalNTPTest : public InProcessBrowserTest,
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/local_ntp_browsertest.html?strk=1&");
-    InstantTestBase::Init(instant_url, false);
+    InstantTestBase::Init(instant_url);
   }
 };
 

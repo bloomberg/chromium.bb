@@ -63,7 +63,6 @@ const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
 const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
 const char kUseCacheableNTP[] = "use_cacheable_ntp";
-const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
@@ -631,25 +630,6 @@ InstantSupportState GetInstantSupportStateFromNavigationEntry(
     return INSTANT_SUPPORT_UNKNOWN;
 
   return StringToInstantSupportState(value);
-}
-
-bool ShouldPrefetchSearchResultsOnSRP() {
-  // Check the command-line/about:flags setting first, which should have
-  // precedence and allows the trial to not be reported (if it's never queried).
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
-    return false;
-  }
-
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kPrefetchSearchResultsOnSRP, false,
-                                          flags);
-  }
-  return false;
 }
 
 void EnableInstantExtendedAPIForTesting() {
