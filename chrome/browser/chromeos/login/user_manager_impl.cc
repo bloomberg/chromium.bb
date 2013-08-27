@@ -790,7 +790,7 @@ void UserManagerImpl::Observe(int type,
 }
 
 void UserManagerImpl::OnStateChanged() {
-  DCHECK(IsLoggedInAsRegularUser());
+  DCHECK(IsLoggedInAsRegularUser() || IsLoggedInAsLocallyManagedUser());
   GoogleServiceAuthError::State state =
       observed_sync_service_->GetAuthError().state();
   if (state != GoogleServiceAuthError::NONE &&
