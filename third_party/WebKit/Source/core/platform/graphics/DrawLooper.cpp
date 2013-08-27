@@ -33,29 +33,48 @@
 
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 
 namespace WebCore {
 
-DrawLooper::DrawLooper() : m_skDrawLooper(adoptRef(new SkLayerDrawLooper)) { }
+DrawLooper::DrawLooper() { }
 
 DrawLooper::~DrawLooper() { }
 
 SkDrawLooper* DrawLooper::skDrawLooper() const
 {
-    return m_skDrawLooper.get();
+    if (!m_cachedDrawLooper)
+        buildCachedDrawLooper();
+    return m_cachedDrawLooper.get();
+}
+
+SkImageFilter* DrawLooper::imageFilter() const
+{
+    if (!m_cachedImageFilter)
+        buildCachedImageFilter();
+    return m_cachedImageFilter.get();
+}
+
+void DrawLooper::clearCached()
+{
+    m_cachedDrawLooper.clear();
+    m_cachedImageFilter.clear();
 }
 
 void DrawLooper::addUnmodifiedContent()
 {
-    SkLayerDrawLooper::LayerInfo info;
-    m_skDrawLooper->addLayerOnTop(info);
+    DrawLooperLayerInfo info;
+    info.m_layerType = UnmodifiedLayer;
+    m_layerInfo.append(info);
+    clearCached();
 }
 
 void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& color,
@@ -64,41 +83,115 @@ void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& col
     // Detect when there's no effective shadow.
     if (!color.alpha())
         return;
+    DrawLooperLayerInfo info;
+    info.m_layerType = ShadowLayer;
+    info.m_blur = blur;
+    info.m_color = color;
+    info.m_offset = offset;
+    info.m_shadowAlphaMode = shadowAlphaMode;
+    info.m_shadowTransformMode = shadowTransformMode;
+    m_layerInfo.append(info);
+    clearCached();
+};
 
-    SkColor skColor = color.rgb();
+void DrawLooper::buildCachedDrawLooper() const
+{
+    m_cachedDrawLooper = adoptRef(new SkLayerDrawLooper);
+    LayerVector::const_iterator info;
+    for (info = m_layerInfo.begin(); info < m_layerInfo.end(); ++info) {
+        if (info->m_layerType == ShadowLayer) {
+            SkColor skColor = info->m_color.rgb();
 
-    SkLayerDrawLooper::LayerInfo info;
+            SkLayerDrawLooper::LayerInfo skInfo;
 
-    switch (shadowAlphaMode) {
-    case ShadowRespectsAlpha:
-        info.fColorMode = SkXfermode::kDst_Mode;
-        break;
-    case ShadowIgnoresAlpha:
-        info.fColorMode = SkXfermode::kSrc_Mode;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
+            switch (info->m_shadowAlphaMode) {
+            case ShadowRespectsAlpha:
+                skInfo.fColorMode = SkXfermode::kDst_Mode;
+                break;
+            case ShadowIgnoresAlpha:
+                skInfo.fColorMode = SkXfermode::kSrc_Mode;
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
+
+            if (info->m_blur)
+                skInfo.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit; // our blur
+            skInfo.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
+            skInfo.fOffset.set(info->m_offset.width(), info->m_offset.height());
+            skInfo.fPostTranslate = (info->m_shadowTransformMode == ShadowIgnoresTransforms);
+
+            SkPaint* paint = m_cachedDrawLooper->addLayerOnTop(skInfo);
+
+            if (info->m_blur) {
+                uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
+                if (info->m_shadowTransformMode == ShadowIgnoresTransforms)
+                    mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
+                RefPtr<SkMaskFilter> mf = adoptRef(SkBlurMaskFilter::Create(
+                    (double)info->m_blur / 2.0, SkBlurMaskFilter::kNormal_BlurStyle, mfFlags));
+                paint->setMaskFilter(mf.get());
+            }
+
+            RefPtr<SkColorFilter> cf = adoptRef(SkColorFilter::CreateModeFilter(skColor, SkXfermode::kSrcIn_Mode));
+            paint->setColorFilter(cf.get());
+        } else {
+            // Unmodified layer
+            SkLayerDrawLooper::LayerInfo skInfo;
+            m_cachedDrawLooper->addLayerOnTop(skInfo);
+        }
     }
+}
 
-    if (blur)
-        info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit; // our blur
-    info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-    info.fOffset.set(offset.width(), offset.height());
-    info.fPostTranslate = (shadowTransformMode == ShadowIgnoresTransforms);
+void DrawLooper::buildCachedImageFilter() const
+{
+    ASSERT(m_layerInfo.size() == 2);
+    ASSERT(m_layerInfo[0].m_layerType == ShadowLayer);
+    ASSERT(m_layerInfo[1].m_layerType == UnmodifiedLayer);
+    ASSERT(m_layerInfo[0].m_shadowAlphaMode == ShadowRespectsAlpha);
+    ASSERT(m_layerInfo[0].m_shadowTransformMode == ShadowIgnoresTransforms);
+    const float blurToSigmaFactor = 0.25;
+    SkColor skColor = m_layerInfo[0].m_color.rgb();
+    m_cachedImageFilter = adoptRef(new SkDropShadowImageFilter(m_layerInfo[0].m_offset.width(), m_layerInfo[0].m_offset.height(), m_layerInfo[0].m_blur * blurToSigmaFactor, skColor));
+}
 
-    SkPaint* paint = m_skDrawLooper->addLayerOnTop(info);
+bool DrawLooper::shouldUseImageFilterToDrawBitmap(const SkBitmap& bitmap) const
+{
+    if (bitmap.isOpaque() || !m_layerInfo.size())
+        return false;
 
-    if (blur) {
-        uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
-        if (shadowTransformMode == ShadowIgnoresTransforms)
-            mfFlags |= SkBlurMaskFilter::kIgnoreTransform_BlurFlag;
-        RefPtr<SkMaskFilter> mf = adoptRef(SkBlurMaskFilter::Create(
-            (double)blur / 2.0, SkBlurMaskFilter::kNormal_BlurStyle, mfFlags));
-        paint->setMaskFilter(mf.get());
+#if !ASSERT_DISABLED
+    // Verify that cases that require a mask filter to render correctly are of
+    // a form that can be handled by DropShadowImageFilter.
+    LayerVector::const_iterator info;
+    int unmodifiedCount = 0;
+    int shadowCount = 0;
+    bool needsFilter = false;
+    for (info = m_layerInfo.begin(); info < m_layerInfo.end(); ++info) {
+        if (info->m_layerType == ShadowLayer) {
+            needsFilter = needsFilter || (info->m_blur && info->m_shadowAlphaMode == ShadowRespectsAlpha);
+            shadowCount++;
+        } else {
+            unmodifiedCount++;
+        }
+
     }
+    if (needsFilter) {
+        // If any of the following assertions ever fire, it means that we are hitting
+        // case that may not be rendered correclty by the DrawLooper and cannot be
+        // handled by DropShadowImageFilter.
+        ASSERT(shadowCount == 1);
+        ASSERT(unmodifiedCount == 1);
+        ASSERT(m_layerInfo[0].m_layerType == ShadowLayer);
+        ASSERT(m_layerInfo[0].m_shadowTransformMode == ShadowIgnoresTransforms);
+    }
+#endif
 
-    RefPtr<SkColorFilter> cf = adoptRef(SkColorFilter::CreateModeFilter(skColor, SkXfermode::kSrcIn_Mode));
-    paint->setColorFilter(cf.get());
+    return m_layerInfo.size() == 2
+        && m_layerInfo[0].m_layerType == ShadowLayer
+        && m_layerInfo[0].m_shadowAlphaMode == ShadowRespectsAlpha
+        && m_layerInfo[0].m_shadowTransformMode == ShadowIgnoresTransforms
+        && m_layerInfo[0].m_blur
+        && m_layerInfo[1].m_layerType == UnmodifiedLayer;
 }
 
 } // namespace WebCore

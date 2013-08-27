@@ -133,6 +133,13 @@ function checkPixels() {
     shouldBe('d[2]', '255');
     shouldNotBe('d[3]', '255');
 
+    imageData = ctx.getImageData(476, 324, 1, 1);
+    d = imageData.data;
+    shouldBe('d[0]', '0');
+    shouldBe('d[1]', '0');
+    shouldBe('d[2]', '255');
+    shouldNotBe('d[3]', '255');
+
     imageData = ctx.getImageData(400, 500, 1, 1);
     d = imageData.data;
     shouldBe('d[0]', '0');
