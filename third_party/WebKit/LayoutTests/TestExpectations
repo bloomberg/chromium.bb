@@ -1242,6 +1242,6 @@ crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/remove-overflo
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure ]
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
 
-crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ ImageOnlyFailure ]
-crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ ImageOnlyFailure ]
-crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/lots-of-img-layers.html [ ImageOnlyFailure ]
+crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
+crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
+crbug.com/280213 [ Win Linux ] virtual/softwarecompositing/lots-of-img-layers.html [ NeedsRebaseline ]
