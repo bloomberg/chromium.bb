@@ -23,6 +23,8 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   // ManagedState overrides
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) OVERRIDE;
+  virtual bool InitialPropertiesReceived(
+      const base::DictionaryValue& properties) OVERRIDE;
 
   // Accessors
   const std::string& mac_address() const { return mac_address_; }

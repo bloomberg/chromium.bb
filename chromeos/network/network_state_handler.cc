@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -595,11 +596,28 @@ void NetworkStateHandler::ManagedStateListChanged(
     // The list order may have changed, so check if the default network changed.
     if (CheckDefaultNetworkChanged())
       OnDefaultNetworkChanged();
+    // Update UMA stats.
+    UMA_HISTOGRAM_COUNTS_100("Networks.Visible", network_list_.size());
   } else if (type == ManagedState::MANAGED_TYPE_FAVORITE) {
     NET_LOG_DEBUG("FavoriteListChanged",
                   base::StringPrintf("Size:%" PRIuS, favorite_list_.size()));
     // The FavoriteState list only changes when the NetworkState list changes,
     // so no need to signal observers here again.
+
+    // Update UMA stats.
+    size_t shared = 0, unshared = 0;
+    for (ManagedStateList::iterator iter = favorite_list_.begin();
+         iter != favorite_list_.end(); ++iter) {
+      FavoriteState* favorite = (*iter)->AsFavoriteState();
+      if (!favorite->is_favorite())
+        continue;
+      if (favorite->IsPrivate())
+        ++unshared;
+      else
+        ++shared;
+    }
+    UMA_HISTOGRAM_COUNTS_100("Networks.RememberedShared", shared);
+    UMA_HISTOGRAM_COUNTS_100("Networks.RememberedUnshared", unshared);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     NET_LOG_DEBUG("DeviceListChanged",
                   base::StringPrintf("Size:%" PRIuS, device_list_.size()));

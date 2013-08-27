@@ -5,6 +5,7 @@
 #include "chromeos/network/device_state.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -114,6 +115,16 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &mdn_);
   } else if (key == shill::kSIMPresentProperty) {
     return GetBooleanValue(key, value, &sim_present_);
+  }
+  return false;
+}
+
+bool DeviceState::InitialPropertiesReceived(
+    const base::DictionaryValue& properties) {
+  // Update UMA stats.
+  if (sim_present_) {
+    bool locked = !sim_lock_type_.empty();
+    UMA_HISTOGRAM_BOOLEAN("Cellular.SIMLocked", locked);
   }
   return false;
 }
