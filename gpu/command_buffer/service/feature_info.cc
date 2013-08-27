@@ -120,7 +120,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       enable_samplers(false),
       ext_draw_buffers(false),
       ext_frag_depth(false),
-      use_async_readpixels(false) {
+      use_async_readpixels(false),
+      map_buffer_range(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -644,16 +645,6 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
     feature_flags_.ext_frag_depth = true;
   }
 
-  bool ui_gl_fence_works =
-      extensions.Contains("GL_NV_fence") ||
-      extensions.Contains("GL_ARB_sync");
-
-  if (ui_gl_fence_works &&
-      extensions.Contains("GL_ARB_pixel_buffer_object") &&
-      !workarounds_.disable_async_readpixels) {
-    feature_flags_.use_async_readpixels = true;
-  }
-
   if (!disallowed_features_.swap_buffer_complete_callback)
     AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
 
@@ -662,6 +653,24 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   if (str) {
     std::string lstr(StringToLowerASCII(std::string(str)));
     is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
+  }
+
+  bool ui_gl_fence_works = extensions.Contains("GL_NV_fence") ||
+                           extensions.Contains("GL_ARB_sync") ||
+                           extensions.Contains("EGL_KHR_fence_sync");
+
+  feature_flags_.map_buffer_range =
+      is_es3 || extensions.Contains("GL_ARB_map_buffer_range");
+
+  // Really it's part of core OpenGL 2.1 and up, but let's assume the
+  // extension is still advertised.
+  bool has_pixel_buffers =
+      is_es3 || extensions.Contains("GL_ARB_pixel_buffer_object");
+
+  // We will use either glMapBuffer() or glMapBufferRange() for async readbacks.
+  if (has_pixel_buffers && ui_gl_fence_works &&
+      !workarounds_.disable_async_readpixels) {
+    feature_flags_.use_async_readpixels = true;
   }
 
   if (is_es3 || extensions.Contains("GL_ARB_sampler_objects")) {

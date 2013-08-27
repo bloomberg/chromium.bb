@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.6",
+  "version": "2.7",
   "entries": [
     {
       "id": 1,
@@ -435,6 +435,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_angle_instanced_arrays"
+      ]
+    },
+    {
+      "id": 29,
+      "cr_bugs": [278606],
+      "description": "Testing fences is broken on QualComm.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_async_readpixels"
       ]
     }
   ]

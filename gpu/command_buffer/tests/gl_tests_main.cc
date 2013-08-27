@@ -38,8 +38,7 @@ int main(int argc, char** argv) {
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
   gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
-  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_UI;
-  base::MessageLoop main_message_loop(message_loop_type);
+  base::MessageLoop main_message_loop;
   return GLTestHelper::RunTests(argc, argv);
 }
 

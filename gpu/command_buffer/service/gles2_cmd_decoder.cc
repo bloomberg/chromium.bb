@@ -6716,7 +6716,13 @@ void GLES2DecoderImpl::FinishReadPixels(
 
   if (buffer != 0) {
     glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
-    void* data = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+    void* data;
+    if (features().map_buffer_range) {
+      data = glMapBufferRange(
+          GL_PIXEL_PACK_BUFFER_ARB, 0, pixels_size, GL_MAP_READ_BIT);
+    } else {
+      data = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+    }
     memcpy(pixels, data, pixels_size);
     // GL_PIXEL_PACK_BUFFER_ARB is currently unused, so we don't
     // have to restore the state.

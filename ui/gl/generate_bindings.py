@@ -432,6 +432,13 @@ GL_FUNCTIONS = [
 { 'return_type': 'void*',
   'names': ['glMapBuffer', 'glMapBufferOES'],
   'arguments': 'GLenum target, GLenum access', },
+{ 'return_type': 'void*',
+  'names': ['glMapBufferRange'],
+  'arguments':
+      'GLenum target, GLintptr offset, GLsizeiptr length, GLenum access', },
+{ 'return_type': 'void',
+  'names': ['glFlushMappedBufferRange'],
+  'arguments': 'GLenum target, GLintptr offset, GLsizeiptr length', },
 { 'return_type': 'void',
   'names': ['glPixelStorei'],
   'arguments': 'GLenum pname, GLint param', },

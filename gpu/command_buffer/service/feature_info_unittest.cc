@@ -96,6 +96,8 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
+  EXPECT_FALSE(info_->feature_flags().map_buffer_range);
+  EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
 
 #define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
@@ -864,16 +866,24 @@ TEST_F(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
   EXPECT_TRUE(info_->feature_flags().enable_samplers);
 }
 
-TEST_F(FeatureInfoTest, InitializeSamplersWithES3) {
+TEST_F(FeatureInfoTest, InitializeWithES3) {
   SetupInitExpectationsWithGLVersion("", "OpenGL ES 3.0");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->feature_flags().enable_samplers);
+  EXPECT_TRUE(info_->feature_flags().map_buffer_range);
+  EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
 }
 
 TEST_F(FeatureInfoTest, InitializeWithoutSamplers) {
   SetupInitExpectationsWithGLVersion("", "OpenGL GL 3.0");
   info_->Initialize(NULL);
   EXPECT_FALSE(info_->feature_flags().enable_samplers);
+}
+
+TEST_F(FeatureInfoTest, InitializeWithES3AndFences) {
+  SetupInitExpectationsWithGLVersion("EGL_KHR_fence_sync", "OpenGL ES 3.0");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
 }
 
 TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsSingle) {

@@ -80,6 +80,7 @@ class EGLFenceSync : public gfx::GLFence {
   EGLFenceSync() {
     display_ = eglGetCurrentDisplay();
     sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
+    glFlush();
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -90,7 +91,7 @@ class EGLFenceSync : public gfx::GLFence {
   }
 
   virtual void ClientWait() OVERRIDE {
-    EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
+    EGLint flags = 0;
     EGLTimeKHR time = EGL_FOREVER_KHR;
     eglClientWaitSyncKHR(display_, sync_, flags, time);
   }
