@@ -1323,20 +1323,11 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
                                  ResourceProvider::ResourceId resource_id) {
   gfx::Rect tile_rect = quad->visible_rect;
 
-  gfx::RectF tex_coord_rect = quad->tex_coord_rect;
-  float tex_to_geom_scale_x = quad->rect.width() / tex_coord_rect.width();
-  float tex_to_geom_scale_y = quad->rect.height() / tex_coord_rect.height();
-
-  // tex_coord_rect corresponds to quad_rect, but quad_visible_rect may be
-  // smaller than quad_rect due to occlusion or clipping. Adjust
-  // tex_coord_rect to match.
-  gfx::Vector2d top_left_diff = tile_rect.origin() - quad->rect.origin();
-  gfx::Vector2d bottom_right_diff =
-      tile_rect.bottom_right() - quad->rect.bottom_right();
-  tex_coord_rect.Inset(top_left_diff.x() / tex_to_geom_scale_x,
-                       top_left_diff.y() / tex_to_geom_scale_y,
-                       -bottom_right_diff.x() / tex_to_geom_scale_x,
-                       -bottom_right_diff.y() / tex_to_geom_scale_y);
+  gfx::RectF tex_coord_rect = MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, quad->rect, tile_rect);
+  float tex_to_geom_scale_x = quad->rect.width() / quad->tex_coord_rect.width();
+  float tex_to_geom_scale_y =
+      quad->rect.height() / quad->tex_coord_rect.height();
 
   gfx::RectF clamp_geom_rect(tile_rect);
   gfx::RectF clamp_tex_rect(tex_coord_rect);

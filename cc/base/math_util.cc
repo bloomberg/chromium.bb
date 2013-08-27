@@ -446,6 +446,26 @@ gfx::PointF MathUtil::ProjectPoint(const gfx::Transform& transform,
   return h.CartesianPoint2d();
 }
 
+gfx::RectF MathUtil::ScaleRectProportional(const gfx::RectF& input_outer_rect,
+                                           const gfx::RectF& scale_outer_rect,
+                                           const gfx::RectF& scale_inner_rect) {
+  gfx::RectF output_inner_rect = input_outer_rect;
+  float scale_rect_to_input_scale_x =
+      scale_outer_rect.width() / input_outer_rect.width();
+  float scale_rect_to_input_scale_y =
+      scale_outer_rect.height() / input_outer_rect.height();
+
+  gfx::Vector2dF top_left_diff =
+      scale_inner_rect.origin() - scale_outer_rect.origin();
+  gfx::Vector2dF bottom_right_diff =
+      scale_inner_rect.bottom_right() - scale_outer_rect.bottom_right();
+  output_inner_rect.Inset(top_left_diff.x() / scale_rect_to_input_scale_x,
+                          top_left_diff.y() / scale_rect_to_input_scale_y,
+                          -bottom_right_diff.x() / scale_rect_to_input_scale_x,
+                          -bottom_right_diff.y() / scale_rect_to_input_scale_y);
+  return output_inner_rect;
+}
+
 static inline float ScaleOnAxis(double a, double b, double c) {
   return std::sqrt(a * a + b * b + c * c);
 }

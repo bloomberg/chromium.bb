@@ -277,9 +277,11 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
 
 void SoftwareRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
                                             const CheckerboardDrawQuad* quad) {
+  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+      QuadVertexRect(), quad->rect, quad->visible_rect);
   current_paint_.setColor(quad->color);
   current_paint_.setAlpha(quad->opacity() * SkColorGetA(quad->color));
-  current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
+  current_canvas_->drawRect(gfx::RectFToSkRect(visible_quad_vertex_rect),
                             current_paint_);
 }
 
@@ -336,9 +338,11 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                                           const SolidColorDrawQuad* quad) {
+  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+      QuadVertexRect(), quad->rect, quad->visible_rect);
   current_paint_.setColor(quad->color);
   current_paint_.setAlpha(quad->opacity() * SkColorGetA(quad->color));
-  current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
+  current_canvas_->drawRect(gfx::RectFToSkRect(visible_quad_vertex_rect),
                             current_paint_);
 }
 
@@ -357,8 +361,12 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                                         quad->uv_bottom_right),
                                       bitmap->width(),
                                       bitmap->height());
-  SkRect sk_uv_rect = gfx::RectFToSkRect(uv_rect);
-  SkRect quad_rect = gfx::RectFToSkRect(QuadVertexRect());
+  gfx::RectF visible_uv_rect =
+      MathUtil::ScaleRectProportional(uv_rect, quad->rect, quad->visible_rect);
+  SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
+  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+      QuadVertexRect(), quad->rect, quad->visible_rect);
+  SkRect quad_rect = gfx::RectFToSkRect(visible_quad_vertex_rect);
 
   if (quad->flipped)
     current_canvas_->scale(1, -1);
@@ -391,12 +399,18 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
   DCHECK(IsSoftwareResource(quad->resource_id));
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);
+  gfx::RectF visible_tex_coord_rect = MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, quad->rect, quad->visible_rect);
+  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+      QuadVertexRect(), quad->rect, quad->visible_rect);
 
-  SkRect uv_rect = gfx::RectFToSkRect(quad->tex_coord_rect);
+  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
   current_paint_.setFilterBitmap(true);
-  current_canvas_->drawBitmapRectToRect(*lock.sk_bitmap(), &uv_rect,
-                                        gfx::RectFToSkRect(QuadVertexRect()),
-                                        &current_paint_);
+  current_canvas_->drawBitmapRectToRect(
+      *lock.sk_bitmap(),
+      &uv_rect,
+      gfx::RectFToSkRect(visible_quad_vertex_rect),
+      &current_paint_);
 }
 
 void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
@@ -411,6 +425,8 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                                 content_texture->id());
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
+  SkRect dest_visible_rect = gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
+      QuadVertexRect(), quad->rect, quad->visible_rect));
   SkRect content_rect = SkRect::MakeWH(quad->rect.width(), quad->rect.height());
 
   SkMatrix content_mat;
@@ -458,10 +474,10 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     mask_rasterizer->addLayer(mask_paint);
 
     current_paint_.setRasterizer(mask_rasterizer.get());
-    current_canvas_->drawRect(dest_rect, current_paint_);
+    current_canvas_->drawRect(dest_visible_rect, current_paint_);
   } else {
     // TODO(skaslev): Apply background filters and blend with content
-    current_canvas_->drawRect(dest_rect, current_paint_);
+    current_canvas_->drawRect(dest_visible_rect, current_paint_);
   }
 }
 
