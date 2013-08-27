@@ -466,8 +466,7 @@ static NPError PostURLNotify(NPP id,
       DCHECK(file_url.SchemeIsFile());
       net::FileURLToFilePath(file_url, &file_path);
     } else {
-      file_path = base::FilePath::FromWStringHack(
-          base::SysNativeMBToWide(file_path_ascii));
+      file_path = base::FilePath::FromUTF8Unsafe(file_path_ascii);
     }
 
     base::PlatformFileInfo post_file_info;

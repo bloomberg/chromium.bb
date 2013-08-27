@@ -1209,8 +1209,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
     bool can_save_as_complete,
     const std::string& contents_mime_type,
     const std::string& accept_langs) {
-  base::FilePath name_with_proper_ext =
-      base::FilePath::FromWStringHack(UTF16ToWideHack(title_));
+  base::FilePath name_with_proper_ext = base::FilePath::FromUTF16Unsafe(title_);
 
   // If the page's title matches its URL, use the URL. Try to use the last path
   // component or if there is none, the domain as the file name.
@@ -1238,8 +1237,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
     } else {
       url_path = "dataurl";
     }
-    name_with_proper_ext =
-        base::FilePath::FromWStringHack(UTF8ToWide(url_path));
+    name_with_proper_ext = base::FilePath::FromUTF8Unsafe(url_path);
   }
 
   // Ask user for getting final saving name.
