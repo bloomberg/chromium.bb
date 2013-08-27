@@ -120,7 +120,8 @@ class PrivetNotificationService
 
 class PrivetNotificationDelegate : public NotificationDelegate {
  public:
-  explicit PrivetNotificationDelegate(const std::string& device_id);
+  explicit PrivetNotificationDelegate(const std::string& device_id,
+                                      content::BrowserContext* profile);
 
   // NotificationDelegate implementation.
   virtual std::string id() const OVERRIDE;
@@ -129,10 +130,15 @@ class PrivetNotificationDelegate : public NotificationDelegate {
   virtual void Error() OVERRIDE;
   virtual void Close(bool by_user) OVERRIDE;
   virtual void Click() OVERRIDE;
+  virtual void ButtonClick(int button_index) OVERRIDE;
+
  private:
+  void OpenTab(const GURL& url);
+
   virtual ~PrivetNotificationDelegate();
 
   std::string device_id_;
+  content::BrowserContext* profile_;
 };
 
 }  // namespace local_discovery

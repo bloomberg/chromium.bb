@@ -10,9 +10,19 @@
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace local_discovery {
 
@@ -150,19 +160,30 @@ void PrivetNotificationService::PrivetNotify(
     const std::string& human_readable_name,
     const std::string& description) {
   Profile* profile_object = Profile::FromBrowserContext(profile_);
+  message_center::RichNotificationData rich_notification_data;
+
+  rich_notification_data.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
+
   Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(kPrivetNotificationOriginUrl),
-      GURL(),
       l10n_util::GetStringUTF16(IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER),
       l10n_util::GetStringFUTF16(
           IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER,
           UTF8ToUTF16(human_readable_name)),
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
       WebKit::WebTextDirectionDefault,
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT),
       l10n_util::GetStringUTF16(
           IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER),
       UTF8ToUTF16(kPrivetNotificationIDPrefix +
                   device_name),
-      new PrivetNotificationDelegate(device_name));
+      rich_notification_data,
+      new PrivetNotificationDelegate(device_name, profile_));
 
   notification_manager_->Add(notification, profile_object);
 }
@@ -187,7 +208,8 @@ void PrivetNotificationService::Start() {
 }
 
 PrivetNotificationDelegate::PrivetNotificationDelegate(
-    const std::string& device_id) : device_id_(device_id) {
+    const std::string& device_id, content::BrowserContext* profile)
+    : device_id_(device_id), profile_(profile) {
 }
 
 PrivetNotificationDelegate::~PrivetNotificationDelegate() {
@@ -213,5 +235,30 @@ void PrivetNotificationDelegate::Close(bool by_user) {
 
 void PrivetNotificationDelegate::Click() {
 }
+
+void PrivetNotificationDelegate::ButtonClick(int button_index) {
+  if (button_index == 0) {
+    // TODO(noamsml): Direct-to-register URL
+    OpenTab(GURL(kPrivetNotificationOriginUrl));
+  }
+}
+
+void PrivetNotificationDelegate::OpenTab(const GURL& url) {
+  Profile* profile_obj = Profile::FromBrowserContext(profile_);
+
+  Browser* browser = FindOrCreateTabbedBrowser(profile_obj,
+                                               chrome::GetActiveDesktop());
+  content::WebContents::CreateParams create_params(profile_obj);
+
+  scoped_ptr<content::WebContents> contents(
+      content::WebContents::Create(create_params));
+  contents->GetController().LoadURL(url,
+                                    content::Referrer(),
+                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    "");
+
+  browser->tab_strip_model()->AppendWebContents(contents.release(), true);
+}
+
 
 }  // namespace local_discovery

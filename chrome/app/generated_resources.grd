@@ -14991,6 +14991,9 @@ Do you accept?
     <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER" desc="Display name for notification for a new printer showing up on your network">
       Google Cloud Print
     </message>
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER" desc="Message on registration button for printer">
+      Add to Cloud Print
+    </message>
   </messages>
 
   <structures fallback_to_english="true">
