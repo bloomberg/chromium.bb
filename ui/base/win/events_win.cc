@@ -357,6 +357,8 @@ int GetModifiersFromKeyState() {
     modifiers |= EF_CONTROL_DOWN;
   if (base::win::IsAltPressed())
     modifiers |= EF_ALT_DOWN;
+  if (base::win::IsAltGrPressed())
+    modifiers |= EF_ALTGR_DOWN;
   return modifiers;
 }
 
