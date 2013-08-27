@@ -116,6 +116,7 @@ class ReplayServer(object):
   def _AddDefaultReplayOptions(self):
     """Set WPR command-line options. Can be overridden if needed."""
     self.replay_options += [
+        '--host', str(self._replay_host),
         '--port', str(self._http_port),
         '--ssl_port', str(self._https_port),
         '--use_closest_match',
@@ -140,9 +141,9 @@ class ReplayServer(object):
         # The process has exited.
         break
       try:
-        up_url = '%s://localhost:%s/web-page-replay-generate-200'
-        http_up_url = up_url % ('http', self._http_port)
-        https_up_url = up_url % ('https', self._https_port)
+        up_url = '%s://%s:%s/web-page-replay-generate-200'
+        http_up_url = up_url % ('http', self._replay_host, self._http_port)
+        https_up_url = up_url % ('https', self._replay_host, self._https_port)
         if (200 == urllib.urlopen(http_up_url, None, {}).getcode() and
             200 == urllib.urlopen(https_up_url, None, {}).getcode()):
           return True
