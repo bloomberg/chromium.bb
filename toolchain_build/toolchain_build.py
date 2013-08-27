@@ -17,7 +17,7 @@ import toolchain_main
 GIT_REVISIONS = {
     'binutils': '64380341b91b364918b9968c91e70a85cf24b8f6',
     'gcc': '7e29dc7ddbec30ae2e8eaa202649ff6182986243',
-    'newlib': '5feee65e182c08a7e89fbffc3223c57e4335420f',
+    'newlib': 'ff87898bdfb49afce8a02c7c9367b08d5436a461',
     }
 
 TARGET_LIST = ['arm']

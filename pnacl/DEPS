@@ -5,7 +5,7 @@ vars = {
   "pnacl_gcc_rev": "3cf5e99663b9694923c4cc437a00d197e9854565",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
-  "newlib_rev": "ea41247df4c25e3cfacc56d28755424b81a563da",
+  "newlib_rev": "ff87898bdfb49afce8a02c7c9367b08d5436a461",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
