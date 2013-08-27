@@ -87,6 +87,7 @@ private:
     v8::Handle<v8::Context> m_context;
     const Dictionary* m_options;
     v8::Handle<v8::Object> m_prototype;
+    v8::Handle<v8::Object> m_baseConstructor;
     WrapperTypeInfo* m_wrapperType;
     AtomicString m_namespaceURI;
     v8::Handle<v8::Function> m_constructor;
