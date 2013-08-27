@@ -25,7 +25,7 @@ DirectoryModelUtil.resolveRoots = function(
     drive: [],
     downloads: [],
     archives: [],
-    removables: [],
+    removables: []
   };
 
   // Add the entry at path as a root.
@@ -373,7 +373,8 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
  * If updateFunc returns true, it force to dispatch the change event even if the
  * selection index is not changed.
  *
- * @param {cr.ui.ListSingleSelectionModel} selection Selection to be updated.
+ * @param {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel} selection
+ *     Selection to be updated.
  * @param {function(): boolean} updateFunc Function updating the selection.
  * @private
  */
@@ -395,7 +396,11 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 
   // If the change evnet have been already dispatched, dispatchNeeded is false.
   if (dispatchNeeded) {
-    selection.dispatchEvent(selection.createChangeEvent('change'));
+    var event = new Event('change');
+    // The selection status (selected or not) is not changed because
+    // this event is caused by the change of selected item.
+    event.changes = [];
+    selection.dispatchEvent(event);
   }
 };
 
