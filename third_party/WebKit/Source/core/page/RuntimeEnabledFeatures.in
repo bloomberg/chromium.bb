@@ -34,7 +34,7 @@ Database status=stable
 DataListElement status=stable
 DeviceMotion status=test
 DeviceOrientation status=stable
-DevicePixelRatioIncludesZoom status=experimental
+DevicePixelRatioIncludesZoom status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
 // FIXME: Remove this separate feature when CustomElements are always enabled
