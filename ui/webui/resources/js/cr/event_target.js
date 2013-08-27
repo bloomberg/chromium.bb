@@ -76,9 +76,6 @@ cr.define('cr', function() {
       event.__defineGetter__('target', function() {
         return self;
       });
-      event.preventDefault = function() {
-        this.returnValue = false;
-      };
 
       var type = event.type;
       var prevented = 0;
@@ -93,7 +90,7 @@ cr.define('cr', function() {
         }
       }
 
-      return !prevented && event.returnValue;
+      return !prevented && !event.defaultPrevented;
     }
   };
 

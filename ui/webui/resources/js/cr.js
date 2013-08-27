@@ -280,21 +280,26 @@ this.cr = (function() {
     };
   }
 
+  var OriginalEvent = global.Event;
+
   /**
    * Creates a new event to be used with cr.EventTarget or DOM EventTarget
    * objects.
    * @param {string} type The name of the event.
    * @param {boolean=} opt_bubbles Whether the event bubbles.
    *     Default is false.
-   * @param {boolean=} opt_preventable Whether the default action of the event
-   *     can be prevented.
+   * @param {boolean=} opt_cancelable Whether the default action of the event
+   *     can be prevented. Unlike the DOM event constructor, this defaults to
+   *     true.
    * @constructor
    * @extends {Event}
    */
-  function Event(type, opt_bubbles, opt_preventable) {
-    var e = cr.doc.createEvent('Event');
-    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
-    e.__proto__ = global.Event.prototype;
+  function Event(type, opt_bubbles, opt_cancelable) {
+    var e = new OriginalEvent(type, {
+      bubbles: opt_bubbles,
+      cancelable: opt_cancelable === undefined ? true : opt_cancelable
+    });
+    e.__proto__ = OriginalEvent.prototype;
     return e;
   };
 
@@ -319,7 +324,7 @@ this.cr = (function() {
       return;
     }
 
-    Event.prototype = {__proto__: global.Event.prototype};
+    Event.prototype = {__proto__: OriginalEvent.prototype};
 
     cr.doc = document;
 
