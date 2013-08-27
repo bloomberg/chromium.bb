@@ -106,7 +106,8 @@ struct CC_EXPORT TilePriority {
   bool operator ==(const TilePriority& other) const {
     return resolution == other.resolution &&
         time_to_visible_in_seconds == other.time_to_visible_in_seconds &&
-        distance_to_visible_in_pixels == other.distance_to_visible_in_pixels;
+        distance_to_visible_in_pixels == other.distance_to_visible_in_pixels &&
+        required_for_activation == other.required_for_activation;
     // No need to compare current_screen_quad which is for debug only and
     // never changes by itself.
   }

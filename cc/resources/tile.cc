@@ -42,11 +42,17 @@ Tile::~Tile() {
 }
 
 void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {
+  if (priority == priority_[tree])
+    return;
+
   priority_[tree] = priority;
   tile_manager_->DidChangeTilePriority(this);
 }
 
 void Tile::MarkRequiredForActivation() {
+  if (priority_[PENDING_TREE].required_for_activation)
+    return;
+
   priority_[PENDING_TREE].required_for_activation = true;
   tile_manager_->DidChangeTilePriority(this);
 }
