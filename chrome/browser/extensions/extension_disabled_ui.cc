@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -168,6 +170,9 @@ class ExtensionDisabledGlobalError : public GlobalError,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Callback to notify UI that extension has been removed.
+  void HandleExtensionRemoved(const Extension* extension);
+
  private:
   ExtensionService* service_;
   const Extension* extension_;
@@ -188,6 +193,8 @@ class ExtensionDisabledGlobalError : public GlobalError,
   int menu_command_id_;
 
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<ExtensionDisabledGlobalError> weak_factory_;
+  base::Callback<void(const Extension*)> on_removed_callback_;
 };
 
 // TODO(yoz): create error at startup for disabled extensions.
@@ -199,7 +206,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       extension_(extension),
       icon_(icon),
       user_response_(IGNORED),
-      menu_command_id_(GetMenuCommandID()) {
+      menu_command_id_(GetMenuCommandID()),
+      weak_factory_(this) {
   if (icon_.IsEmpty()) {
     icon_ = gfx::Image(
         gfx::ImageSkiaOperations::CreateResizedImage(
@@ -209,13 +217,16 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
             skia::ImageOperations::RESIZE_BEST,
             gfx::Size(kIconSize, kIconSize)));
   }
+  on_removed_callback_ = base::Bind(
+      &ExtensionDisabledGlobalError::HandleExtensionRemoved,
+      weak_factory_.GetWeakPtr());
+  service_->RegisterExtensionRemovedCallback(on_removed_callback_);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(service->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
 }
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
+  service_->RemoveExtensionRemovedCallback(on_removed_callback_);
   ReleaseMenuCommandID(menu_command_id_);
   UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
                             user_response_,
@@ -319,18 +330,23 @@ void ExtensionDisabledGlobalError::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
-         type == chrome::NOTIFICATION_EXTENSION_REMOVED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension != extension_)
     return;
   GlobalErrorServiceFactory::GetForProfile(service_->profile())->
       RemoveGlobalError(this);
+  user_response_ = REENABLE;
+  delete this;
+}
 
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED)
-    user_response_ = REENABLE;
-  else if (type == chrome::NOTIFICATION_EXTENSION_REMOVED)
-    user_response_ = UNINSTALL;
+void ExtensionDisabledGlobalError::HandleExtensionRemoved(
+    const Extension* extension) {
+  if (extension != extension_)
+    return;
+  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
+      RemoveGlobalError(this);
+  user_response_ = UNINSTALL;
   delete this;
 }
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -695,6 +696,12 @@ class ExtensionService
   // sync_start_util for more.
   void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
 
+  // Register and remove callbacks to be notified when an extension is removed.
+  void RegisterExtensionRemovedCallback(
+      const base::Callback<void(const extensions::Extension*)>& callback);
+  void RemoveExtensionRemovedCallback(
+      const base::Callback<void(const extensions::Extension*)>& callback);
+
  private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -755,6 +762,9 @@ class ExtensionService
   // Handles sending notification that |extension| was unloaded.
   void NotifyExtensionUnloaded(const extensions::Extension* extension,
                                extension_misc::UnloadedExtensionReason reason);
+
+  // Handles sending notification that |extension| was removed.
+  void NotifyExtensionRemoved(const extensions::Extension* extension);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const extensions::Extension* extension);
@@ -959,6 +969,9 @@ class ExtensionService
   // have started happening. It will cause sync to call us back
   // asynchronously via MergeDataAndStartSyncing as soon as possible.
   syncer::SyncableService::StartSyncFlare flare_;
+
+  std::vector<base::Callback<void(const extensions::Extension*)> >
+      extension_removed_callbacks_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);
