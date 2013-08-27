@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "gpu/config/gpu_info.h"
 
 namespace child_process_logging {
 
@@ -25,12 +24,6 @@ using base::debug::SetCrashKeyValue;
 using base::debug::ClearCrashKey;
 
 const char* kGuidParamName = "guid";
-const char* kGPUVendorIdParamName = "gpu-venid";
-const char* kGPUDeviceIdParamName = "gpu-devid";
-const char* kGPUDriverVersionParamName = "gpu-driver";
-const char* kGPUPixelShaderVersionParamName = "gpu-psver";
-const char* kGPUVertexShaderVersionParamName = "gpu-vsver";
-const char* kGPUGLVersionParamName = "gpu-glver";
 const char* kNumberOfViews = "num-views";
 const char* kNumExtensionsName = "num-extensions";
 const char* kExtensionNameFormat = "extension-%zu";
@@ -77,37 +70,6 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
       ClearCrashKey(key);
     }
   }
-}
-
-void SetGpuKeyValue(const char* param_name, const std::string& value_str,
-                    SetCrashKeyValueFuncT set_key_func) {
-  set_key_func(param_name, value_str);
-}
-
-void SetGpuInfoImpl(const gpu::GPUInfo& gpu_info,
-                    SetCrashKeyValueFuncT set_key_func) {
-  SetGpuKeyValue(kGPUVendorIdParamName,
-                 base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id),
-                 set_key_func);
-  SetGpuKeyValue(kGPUDeviceIdParamName,
-                 base::StringPrintf("0x%04x", gpu_info.gpu.device_id),
-                 set_key_func);
-  SetGpuKeyValue(kGPUDriverVersionParamName,
-                 gpu_info.driver_version,
-                 set_key_func);
-  SetGpuKeyValue(kGPUPixelShaderVersionParamName,
-                 gpu_info.pixel_shader_version,
-                 set_key_func);
-  SetGpuKeyValue(kGPUVertexShaderVersionParamName,
-                 gpu_info.vertex_shader_version,
-                 set_key_func);
-  SetGpuKeyValue(kGPUGLVersionParamName,
-                 gpu_info.gl_version,
-                 set_key_func);
-}
-
-void SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  SetGpuInfoImpl(gpu_info, SetCrashKeyValue);
 }
 
 void SetPrinterInfo(const char* printer_info) {

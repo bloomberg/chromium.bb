@@ -18,6 +18,21 @@ size_t RegisterChromeCrashKeys();
 // The URL of the active tab.
 extern const char kActiveURL[];
 
+// GPU information.
+#if !defined(OS_ANDROID)
+extern const char kGPUVendorID[];
+extern const char kGPUDeviceID[];
+#endif
+extern const char kGPUDriverVersion[];
+extern const char kGPUPixelShaderVersion[];
+extern const char kGPUVertexShaderVersion[];
+#if defined(OS_LINUX)
+extern const char kGPUVendor[];
+extern const char kGPURenderer[];
+#elif defined(OS_MACOSX)
+extern const char kGPUGLVersion[];
+#endif
+
 #if defined(OS_MACOSX)
 namespace mac {
 

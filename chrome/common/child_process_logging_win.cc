@@ -9,13 +9,11 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "gpu/config/gpu_info.h"
 
 namespace child_process_logging {
 
@@ -31,11 +29,6 @@ typedef void (__cdecl *MainSetNumberOfExtensions)(int);
 // exported in breakpad_win.cc:
 // void __declspec(dllexport) __cdecl SetExtensionID.
 typedef void (__cdecl *MainSetExtensionID)(size_t, const wchar_t*);
-
-// exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetGpuInfo.
-typedef void (__cdecl *MainSetGpuInfo)(const wchar_t*, const wchar_t*,
-                                       const wchar_t*, const wchar_t*,
-                                       const wchar_t*);
 
 // exported in breakpad_win.cc:
 //     void __declspec(dllexport) __cdecl SetPrinterInfo.
@@ -145,26 +138,6 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
       (set_extension_id)(i, L"");
     }
   }
-}
-
-void SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  static MainSetGpuInfo set_gpu_info = NULL;
-  // note: benign race condition on set_gpu_info.
-  if (!set_gpu_info) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_gpu_info = reinterpret_cast<MainSetGpuInfo>(
-        GetProcAddress(exe_module, "SetGpuInfo"));
-    if (!set_gpu_info)
-      return;
-  }
-  (set_gpu_info)(
-      base::StringPrintf(L"0x%04x", gpu_info.gpu.vendor_id).c_str(),
-      base::StringPrintf(L"0x%04x", gpu_info.gpu.device_id).c_str(),
-      UTF8ToUTF16(gpu_info.driver_version).c_str(),
-      UTF8ToUTF16(gpu_info.pixel_shader_version).c_str(),
-      UTF8ToUTF16(gpu_info.vertex_shader_version).c_str());
 }
 
 void SetPrinterInfo(const char* printer_info) {

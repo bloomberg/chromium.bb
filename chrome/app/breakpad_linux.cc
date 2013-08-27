@@ -1152,11 +1152,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   abcdef \r\n
   //   BOUNDARY \r\n
   //
-  //   zero or more gpu entries:
-  //   Content-Disposition: form-data; name="gpu-xxxxx" \r\n \r\n
-  //   <gpu-xxxxx> \r\n
-  //   BOUNDARY \r\n
-  //
   //   zero or one:
   //   Content-Disposition: form-data; name="lsb-release" \r\n \r\n
   //   abcdef \r\n
@@ -1293,38 +1288,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
   if (info.process_type_length) {
     writer.AddPairString("ptype", info.process_type);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  // If GPU info is known, send it.
-  if (*child_process_logging::g_gpu_vendor_id) {
-#if !defined(OS_ANDROID)
-    static const char vendor_msg[] = "gpu-venid";
-    static const char device_msg[] = "gpu-devid";
-#endif
-    static const char gl_vendor_msg[] = "gpu-gl-vendor";
-    static const char gl_renderer_msg[] = "gpu-gl-renderer";
-    static const char driver_msg[] = "gpu-driver";
-    static const char psver_msg[] = "gpu-psver";
-    static const char vsver_msg[] = "gpu-vsver";
-
-#if !defined(OS_ANDROID)
-    writer.AddPairString(vendor_msg, child_process_logging::g_gpu_vendor_id);
-    writer.AddBoundary();
-    writer.AddPairString(device_msg, child_process_logging::g_gpu_device_id);
-    writer.AddBoundary();
-#endif
-    writer.AddPairString(gl_vendor_msg, child_process_logging::g_gpu_gl_vendor);
-    writer.AddBoundary();
-    writer.AddPairString(gl_renderer_msg,
-                         child_process_logging::g_gpu_gl_renderer);
-    writer.AddBoundary();
-    writer.AddPairString(driver_msg, child_process_logging::g_gpu_driver_ver);
-    writer.AddBoundary();
-    writer.AddPairString(psver_msg, child_process_logging::g_gpu_ps_ver);
-    writer.AddBoundary();
-    writer.AddPairString(vsver_msg, child_process_logging::g_gpu_vs_ver);
     writer.AddBoundary();
     writer.Flush();
   }

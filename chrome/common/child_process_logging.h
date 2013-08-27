@@ -15,10 +15,6 @@
 
 class CommandLine;
 
-namespace gpu {
-struct GPUInfo;
-}
-
 // The maximum number of active extensions we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
@@ -52,13 +48,6 @@ namespace child_process_logging {
 extern char g_channel[];
 extern char g_client_id[];
 extern char g_extension_ids[];
-extern char g_gpu_vendor_id[];
-extern char g_gpu_device_id[];
-extern char g_gpu_gl_vendor[];
-extern char g_gpu_gl_renderer[];
-extern char g_gpu_driver_ver[];
-extern char g_gpu_ps_ver[];
-extern char g_gpu_vs_ver[];
 extern char g_num_extensions[];
 extern char g_num_switches[];
 extern char g_num_variations[];
@@ -94,9 +83,6 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids);
 
 // Sets a number of views/tabs opened in this process.
 void SetNumberOfViews(int number_of_views);
-
-// Sets the data on the gpu to send along with crash reports.
-void SetGpuInfo(const gpu::GPUInfo& gpu_info);
 
 // Sets the data on the printer to send along with crash reports. Data may be
 // separated by ';' up to kMaxReportedPrinterRecords strings. Each substring

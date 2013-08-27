@@ -105,7 +105,6 @@ char* g_real_terminate_process_stub = NULL;
 static size_t g_num_of_extensions_offset = 0;
 static size_t g_extension_ids_offset = 0;
 static size_t g_client_id_offset = 0;
-static size_t g_gpu_info_offset = 0;
 static size_t g_printer_info_offset = 0;
 static size_t g_num_of_views_offset = 0;
 static size_t g_num_switches_offset = 0;
@@ -451,21 +450,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
         base::StringPrintf(L"extension-%i", i).c_str(), L""));
   }
 
-  // Add empty values for the gpu_info. We'll put the actual values when we
-  // collect them at this location.
-  g_gpu_info_offset = g_custom_entries->size();
-  static const wchar_t* const kGpuEntries[] = {
-    L"gpu-venid",
-    L"gpu-devid",
-    L"gpu-driver",
-    L"gpu-psver",
-    L"gpu-vsver",
-  };
-  for (size_t i = 0; i < arraysize(kGpuEntries); ++i) {
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(kGpuEntries[i], L""));
-  }
-
   // Add empty values for the prn_info-*. We'll put the actual values when we
   // collect them at this location.
   g_printer_info_offset = g_custom_entries->size();
@@ -685,28 +669,6 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
   base::wcslcpy((*g_custom_entries)[g_extension_ids_offset + index].value,
                 id,
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
-    const wchar_t* vendor_id, const wchar_t* device_id,
-    const wchar_t* driver_version, const wchar_t* pixel_shader_version,
-    const wchar_t* vertex_shader_version) {
-  if (!g_custom_entries)
-    return;
-
-  const wchar_t* info[] = {
-    vendor_id,
-    device_id,
-    driver_version,
-    pixel_shader_version,
-    vertex_shader_version
-  };
-
-  for (size_t i = 0; i < arraysize(info); ++i) {
-    base::wcslcpy((*g_custom_entries)[g_gpu_info_offset + i].value,
-                  info[i],
-                  google_breakpad::CustomInfoEntry::kValueMaxLength);
-  }
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetPrinterInfo(

@@ -46,6 +46,19 @@ COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
 size_t RegisterChromeCrashKeys() {
   base::debug::CrashKey keys[] = {
     { kActiveURL, kLargeSize },
+#if !defined(OS_ANDROID)
+    { kGPUVendorID, kSmallSize },
+    { kGPUDeviceID, kSmallSize },
+#endif
+    { kGPUDriverVersion, kSmallSize },
+    { kGPUPixelShaderVersion, kSmallSize },
+    { kGPUVertexShaderVersion, kSmallSize },
+#if defined(OS_LINUX)
+    { kGPUVendor, kSmallSize },
+    { kGPURenderer, kSmallSize },
+#elif defined(OS_MACOSX)
+    { kGPUGLVersion, kSmallSize },
+#endif
 
     // content/:
     { "ppapi_path", kMediumSize },
@@ -73,6 +86,20 @@ size_t RegisterChromeCrashKeys() {
 }
 
 const char kActiveURL[] = "url-chunk";
+
+#if !defined(OS_ANDROID)
+const char kGPUVendorID[] = "gpu-venid";
+const char kGPUDeviceID[] = "gpu-devid";
+#endif
+const char kGPUDriverVersion[] = "gpu-driver";
+const char kGPUPixelShaderVersion[] = "gpu-psver";
+const char kGPUVertexShaderVersion[] = "gpu-vsver";
+#if defined(OS_LINUX)
+const char kGPUVendor[] = "gpu-gl-vendor";
+const char kGPURenderer[] = "gpu-gl-renderer";
+#elif defined(OS_MACOSX)
+const char kGPUGLVersion[] = "gpu-glver";
+#endif
 
 #if defined(OS_MACOSX)
 namespace mac {

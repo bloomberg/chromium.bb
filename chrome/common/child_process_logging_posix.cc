@@ -12,8 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "gpu/config/gpu_info.h"
-#include "url/gurl.h"
 
 namespace child_process_logging {
 
@@ -27,15 +25,6 @@ static const size_t kChannelSize = 32;
 char g_client_id[kClientIdSize];
 
 char g_channel[kChannelSize] = "";
-
-static const size_t kGpuStringSize = 32;
-char g_gpu_vendor_id[kGpuStringSize] = "";
-char g_gpu_device_id[kGpuStringSize] = "";
-char g_gpu_gl_vendor[kGpuStringSize] = "";
-char g_gpu_gl_renderer[kGpuStringSize] = "";
-char g_gpu_driver_ver[kGpuStringSize] = "";
-char g_gpu_ps_ver[kGpuStringSize] = "";
-char g_gpu_vs_ver[kGpuStringSize] = "";
 
 char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 
@@ -86,23 +75,6 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   }
   base::strlcpy(g_extension_ids, extension_str.c_str(),
                 arraysize(g_extension_ids));
-}
-
-void SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  snprintf(g_gpu_vendor_id, arraysize(g_gpu_vendor_id), "0x%04x",
-           gpu_info.gpu.vendor_id);
-  snprintf(g_gpu_device_id, arraysize(g_gpu_device_id), "0x%04x",
-           gpu_info.gpu.device_id);
-  base::strlcpy(g_gpu_gl_vendor, gpu_info.gl_vendor.c_str(),
-                arraysize(g_gpu_gl_vendor));
-  base::strlcpy(g_gpu_gl_renderer, gpu_info.gl_renderer.c_str(),
-                arraysize(g_gpu_gl_renderer));
-  base::strlcpy(g_gpu_driver_ver, gpu_info.driver_version.c_str(),
-                arraysize(g_gpu_driver_ver));
-  base::strlcpy(g_gpu_ps_ver, gpu_info.pixel_shader_version.c_str(),
-                arraysize(g_gpu_ps_ver));
-  base::strlcpy(g_gpu_vs_ver,  gpu_info.vertex_shader_version.c_str(),
-                arraysize(g_gpu_vs_ver));
 }
 
 void SetPrinterInfo(const char* printer_info) {
