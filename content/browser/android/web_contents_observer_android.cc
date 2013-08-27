@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "jni/WebContentsObserverAndroid_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -78,8 +79,19 @@ void WebContentsObserverAndroid::DidStopLoading(
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
-      env, web_contents()->GetLastCommittedURL().spec()));
+
+  std::string url_string;
+  NavigationEntry* entry =
+    web_contents()->GetController().GetLastCommittedEntry();
+  // Not that GetBaseURLForDataURL is only used by the Android WebView
+  if (entry && !entry->GetBaseURLForDataURL().is_empty()) {
+    url_string = entry->GetBaseURLForDataURL().possibly_invalid_spec();
+  } else {
+    url_string = web_contents()->GetLastCommittedURL().spec();
+  }
+
+  ScopedJavaLocalRef<jstring> jstring_url(
+      ConvertUTF8ToJavaString(env, url_string));
   Java_WebContentsObserverAndroid_didStopLoading(
       env, obj.obj(), jstring_url.obj());
 }
