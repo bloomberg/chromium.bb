@@ -155,7 +155,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
    * @const
    */
   var ListType = {
-    PINNED_LIST: 1,
+    VOLUME_LIST: 1,
     SHORTCUT_LIST: 2
   };
   Object.freeze(ListType);
@@ -169,7 +169,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     var permutedEvent = new Event('permuted');
     var newPermutation = [];
     var newLength;
-    if (listType == ListType.PINNED_LIST) {
+    if (listType == ListType.VOLUME_LIST) {
       // Creates new permutation array.
       newLength = event.newLength + this.pinnedList_.length;
       for (var i = 0; i < event.permutation.length; i++) {
@@ -219,7 +219,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     this.dispatchEvent(permutedEvent);
   };
   this.volumesListModel_.addEventListener(
-      'permuted', permutedHandler.bind(this, ListType.PINNED_LIST));
+      'permuted', permutedHandler.bind(this, ListType.VOLUME_LIST));
   this.pinnedListModel_.addEventListener(
       'permuted', permutedHandler.bind(this, ListType.SHORTCUT_LIST));
 
@@ -228,18 +228,18 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     var i = event.index;
 
     // Updates the list.
-    if (listType == ListType.PINNED_LIST)
+    if (listType == ListType.VOLUME_LIST)
       this.volumesList_[i] = entryToModelItem(this.volumesListModel_.item(i));
     else
       this.pinnedList_[i] = pathToModelItem(this.pinnedListModel_.item(i));
 
     var changeEvent = new Event('change');
     changeEvent.index =
-        (listType == ListType.PINNED_LIST) ? i : (i + this.volumesList_.length);
+        (listType == ListType.VOLUME_LIST) ? i : (i + this.volumesList_.length);
     this.dispatchEvent(changeEvent);
   };
   this.volumesListModel_.addEventListener(
-      'change', changeHandler.bind(this, ListType.PINNED_LIST));
+      'change', changeHandler.bind(this, ListType.VOLUME_LIST));
   this.pinnedListModel_.addEventListener(
       'change', changeHandler.bind(this, ListType.SHORTCUT_LIST));
 
