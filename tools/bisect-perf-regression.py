@@ -75,6 +75,12 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "from" : 'chromium'
   },
+  'angle' : {
+    "src" : "src/third_party/angle_dx11",
+    "recurse" : True,
+    "depends" : None,
+    "from" : 'chromium'
+  },
   'v8' : {
     "src" : "src/v8",
     "recurse" : True,
