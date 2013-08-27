@@ -109,6 +109,13 @@ class DevToolsAdbBridge
     friend class base::RefCounted<RemotePage>;
     virtual ~RemotePage();
 
+    void RequestActivate(const CommandCallback& callback);
+
+    void InspectOnHandlerThread(
+        Profile* profile, int result, const std::string& response);
+
+    void InspectOnUIThread(Profile* profile);
+
     scoped_refptr<DevToolsAdbBridge> bridge_;
     scoped_refptr<AndroidDevice> device_;
     std::string socket_;

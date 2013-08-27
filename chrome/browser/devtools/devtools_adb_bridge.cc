@@ -695,25 +695,15 @@ DevToolsAdbBridge::RemotePage::RemotePage(
 
 void DevToolsAdbBridge::RemotePage::Inspect(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string agent_id = base::StringPrintf("%s:%s:%s",
-    device_->serial().c_str(), socket_.c_str(), id_.c_str());
-  AgentHostDelegates::iterator it =
-      g_host_delegates.Get().find(agent_id);
-  if (it != g_host_delegates.Get().end())
-    it->second->OpenFrontend();
-  else if (!debug_url_.empty())
-    new AgentHostDelegate(
-        agent_id, device_, socket_, debug_url_,
-        frontend_url_, bridge_->GetAdbMessageLoop(), profile);
+  RequestActivate(
+      base::Bind(&RemotePage::InspectOnHandlerThread, this, profile));
 }
 
 static void Noop(int, const std::string&) {}
 
 void DevToolsAdbBridge::RemotePage::Activate() {
-  std::string request = base::StringPrintf(kActivatePageRequest, id_.c_str());
-  bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
-      base::Bind(&AndroidDevice::HttpQuery,
-          device_, socket_, request, base::Bind(&Noop)));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RequestActivate(base::Bind(&Noop));
 }
 
 void DevToolsAdbBridge::RemotePage::Close() {
@@ -741,6 +731,36 @@ void DevToolsAdbBridge::RemotePage::SendProtocolCommand(
 }
 
 DevToolsAdbBridge::RemotePage::~RemotePage() {
+}
+
+void DevToolsAdbBridge::RemotePage::RequestActivate(
+    const CommandCallback& callback) {
+  std::string request = base::StringPrintf(kActivatePageRequest, id_.c_str());
+  bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+      base::Bind(&AndroidDevice::HttpQuery,
+          device_, socket_, request, callback));
+}
+
+void DevToolsAdbBridge::RemotePage::InspectOnHandlerThread(
+    Profile* profile, int result, const std::string& response) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RemotePage::InspectOnUIThread, this, profile));
+}
+
+void DevToolsAdbBridge::RemotePage::InspectOnUIThread(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string agent_id = base::StringPrintf("%s:%s:%s",
+    device_->serial().c_str(), socket_.c_str(), id_.c_str());
+  AgentHostDelegates::iterator it =
+      g_host_delegates.Get().find(agent_id);
+  if (it != g_host_delegates.Get().end()) {
+    it->second->OpenFrontend();
+  } else if (!attached()) {
+    new AgentHostDelegate(
+        agent_id, device_, socket_, debug_url_,
+        frontend_url_, bridge_->GetAdbMessageLoop(), profile);
+  }
 }
 
 DevToolsAdbBridge::RemoteBrowser::RemoteBrowser(
