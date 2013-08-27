@@ -70,7 +70,10 @@ class ASH_EXPORT ResolutionNotificationController
   static const char kNotificationId[];
 
   // Create a new notification, or update its content if it already exists.
-  void CreateOrUpdateNotification();
+  // |enable_spoken_feedback| is set to false when the notification is updated
+  // during the countdown so the update isn't necessarily read by the spoken
+  // feedback.
+  void CreateOrUpdateNotification(bool enable_spoken_feedback);
 
   // Called every second for timeout.
   void OnTimerTick();

@@ -192,7 +192,8 @@ bool ResolutionNotificationController::DoesNotificationTimeout() {
   return change_info_ && change_info_->timeout_count > 0;
 }
 
-void ResolutionNotificationController::CreateOrUpdateNotification() {
+void ResolutionNotificationController::CreateOrUpdateNotification(
+    bool enable_spoken_feedback) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
   if (!change_info_) {
@@ -212,6 +213,8 @@ void ResolutionNotificationController::CreateOrUpdateNotification() {
   }
   data.buttons.push_back(message_center::ButtonInfo(
         l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_RESOLUTION_CHANGE_REVERT)));
+
+  data.should_make_spoken_feedback_for_popup_updates = enable_spoken_feedback;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
@@ -241,7 +244,7 @@ void ResolutionNotificationController::OnTimerTick() {
   if (change_info_->timeout_count == 0)
     RevertResolutionChange();
   else
-    CreateOrUpdateNotification();
+    CreateOrUpdateNotification(false);
 }
 
 void ResolutionNotificationController::AcceptResolutionChange(
@@ -283,7 +286,7 @@ void ResolutionNotificationController::OnDisplayConfigurationChanged() {
   if (!change_info_)
     return;
 
-  CreateOrUpdateNotification();
+  CreateOrUpdateNotification(true);
   if (g_use_timer && change_info_->timeout_count > 0) {
     change_info_->timer.Start(FROM_HERE,
                               base::TimeDelta::FromSeconds(1),

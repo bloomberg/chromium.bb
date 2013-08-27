@@ -93,8 +93,20 @@ void ToastContentsView::SetContents(MessageView* view) {
   // popup toast, and the new contents should be read through a11y feature.
   // The notification type should be ALERT, otherwise the accessibility message
   // won't be read for this view which returns ROLE_WINDOW.
-  if (already_has_contents)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
+  if (already_has_contents) {
+    const NotificationList::Notifications& notifications =
+        message_center_->GetNotifications();
+    for (NotificationList::Notifications::const_iterator iter =
+             notifications.begin(); iter != notifications.end(); ++iter) {
+      if ((*iter)->id() != id_)
+        continue;
+
+      const RichNotificationData& optional = (*iter)->rich_notification_data();
+      if (optional.should_make_spoken_feedback_for_popup_updates)
+        NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
+      break;
+    }
+  }
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {

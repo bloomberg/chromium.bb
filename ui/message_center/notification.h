@@ -47,6 +47,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<NotificationItem> items;
   int progress;
   std::vector<ButtonInfo> buttons;
+  bool should_make_spoken_feedback_for_popup_updates;
 };
 
 class MESSAGE_CENTER_EXPORT Notification {
