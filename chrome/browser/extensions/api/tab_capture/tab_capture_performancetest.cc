@@ -240,6 +240,10 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
+//
+// Note: The following combinations are disabled. See crbug.com/279443
+//       kDisableVsync | kUseGpu | kForceGpuComposited
+//       kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited
 INSTANTIATE_TEST_CASE_P(
     ,
     TabCapturePerformanceTest,
@@ -247,11 +251,9 @@ INSTANTIATE_TEST_CASE_P(
         0,
         kUseGpu | kForceGpuComposited,
         kDisableVsync,
-        kDisableVsync | kUseGpu | kForceGpuComposited,
         kTestThroughWebRTC,
         kTestThroughWebRTC | kUseGpu | kForceGpuComposited,
-        kTestThroughWebRTC | kDisableVsync,
-        kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
+        kTestThroughWebRTC | kDisableVsync));
 
 #ifdef USE_AURA
 // TODO(hubbe):
