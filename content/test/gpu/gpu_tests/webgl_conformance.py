@@ -88,10 +88,9 @@ class WebglConformance(test_module.Test):
           {'action': 'navigate'},
           {
             'action': 'wait',
-            'condition': 'javascript',
             'javascript': 'webglTestHarness._finished',
             'timeout': 120
-          },
+          }
         ]
       })
 

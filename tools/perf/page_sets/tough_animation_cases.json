@@ -1,6 +1,6 @@
 {
   "description": "A collection of animation performance tests",
-  "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 },
+  "smoothness": { "action": "wait", "seconds": 5 },
   "pages": [
     {
       "url": "file:///tough_animation_cases/keyframed_animations.html",

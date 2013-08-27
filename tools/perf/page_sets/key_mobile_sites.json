@@ -16,7 +16,10 @@
     {
       "url": "http://iphone.capitolvolkswagen.com/index.htm#new-inventory_p_2Fsb-new_p_2Ehtm_p_3Freset_p_3DInventoryListing",
       "why": "Typical mobile business site",
-      "wait_for_element_with_text": "Next 35"
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "condition": "element", "text": "Next 35" }
+      ]
     },
     {
       "url": "http://gsp.ro",
@@ -33,12 +36,18 @@
     {
       "url": "http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy",
       "why": "Top tech blog",
-      "wait_for_javascript_expression": "window.Chorus !== undefined && window.Chorus.Comments !== undefined && window.Chorus.Comments.Json !== undefined && (window.Chorus.Comments.loaded || window.Chorus.Comments.Json.load_comments())"
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "window.Chorus !== undefined && window.Chorus.Comments !== undefined && window.Chorus.Comments.Json !== undefined && (window.Chorus.Comments.loaded || window.Chorus.Comments.Json.load_comments())" }
+      ]
     },
     {
       "url": "http://www.cnn.com/2012/10/03/politics/michelle-obama-debate/index.html",
       "why": "Top news site",
-      "wait_seconds": 8
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 8 }
+      ]
     },
     {
       "url": "http://digg.com",
@@ -59,12 +68,18 @@
     {
       "url": "https://facebook.com/barackobama",
       "why": "#1 (Alexa global)",
-      "wait_for_javascript_expression": "document.getElementById('timelineBody') !== null"
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById('timelineBody') !== null" }
+      ]
     },
     {
       "url": "http://m.youtube.com/watch?v=9hBpF_Zj4OA",
       "why": "#3 (Alexa global)",
-      "wait_for_javascript_expression": "document.getElementById('paginatortarget') !== null"
+      "navigate_steps": [
+        { "action": "navigate"},
+        { "action": "wait", "javascript": "document.getElementById('paginatortarget') !== null"}
+      ]
     },
     {
       "name": "Blogger",
@@ -80,8 +95,11 @@
       "name": "LinkedIn",
       "url": "https://www.linkedin.com/in/linustorvalds",
       "why": "#12 (Alexa global),Public profile",
-      "post_navigate_javascript_to_execute": "getAppJs.noApp();",
-      "wait_for_javascript_expression": "document.getElementById('profile-view-scroller') !== null"
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "javascript", "expression": "getAppJs.noApp();" },
+        { "action": "wait", "javascript": "document.getElementById('profile-view-scroller') !== null" }
+      ]
     },
     {
       "name": "Wikipedia (1 tab)",
@@ -141,7 +159,10 @@
       "url": "https://mail.google.com/mail/",
       "why": "productivity, top google properties",
       "credentials": "google",
-      "wait_for_element_with_text": "Inbox",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "condition": "element", "text": "Inbox" }
+      ],
       "smoothness": {
         "action": "scroll",
         "scrollable_element_function": "function(callback) { callback(document.getElementById('views').childNodes[1].firstChild); }"
@@ -194,8 +215,11 @@
     {
       "url": "http://groupcloned.com",
       "why": "crbug.com/172906",
-      "wait_for_javascript_expression": "document.getElementById('element-19') !== null && document.getElementById('element-19').contentDocument.getElementById('element-22') !== null && document.getElementById('element-19').contentDocument.getElementsByClassName('container list-item gc-list-item stretched').length !== 0",
-      "wait_seconds": 5,
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 5 },
+        { "action": "wait", "javascript": "document.getElementById('element-19') !== null && document.getElementById('element-19').contentDocument.getElementById('element-22') !== null && document.getElementById('element-19').contentDocument.getElementsByClassName('container list-item gc-list-item stretched').length !== 0" }
+      ],
       "smoothness": {
         "action": "scroll",
         "scroll_requires_touch": true,

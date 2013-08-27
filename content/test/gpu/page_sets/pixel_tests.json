@@ -4,7 +4,10 @@
   "pages": [
     {
       "url": "file:///../../data/gpu/pixel_webgl.html",
-      "wait_seconds": 4
+      "navigate_steps": [
+        { "action": "navigate"},
+        { "action": "wait", "seconds": 4 }
+      ]
     }
   ]
 }
