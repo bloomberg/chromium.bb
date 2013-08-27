@@ -36,8 +36,8 @@ public:
 
     virtual ScrollbarMode scrollingMode() const { return m_scrolling; }
 
-    virtual int marginWidth() const { return m_marginWidth; }
-    virtual int marginHeight() const { return m_marginHeight; }
+    int marginWidth() const { return m_marginWidth; }
+    int marginHeight() const { return m_marginHeight; }
 
     int width();
     int height();
@@ -48,8 +48,6 @@ protected:
     HTMLFrameElementBase(const QualifiedName&, Document*);
 
     bool isURLAllowed() const;
-
-    virtual bool allowScrollingInContentFrame() { return scrollingMode() != ScrollbarAlwaysOff; }
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

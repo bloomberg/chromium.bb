@@ -65,10 +65,6 @@ protected:
 
     bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool lockBackForwardList);
 
-    virtual bool allowScrollingInContentFrame() { return true; }
-    virtual int marginWidth() const { return -1; }
-    virtual int marginHeight() const { return -1; }
-
 private:
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isFrameOwnerElement() const OVERRIDE { return true; }

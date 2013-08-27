@@ -109,7 +109,7 @@ PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(const Re
     return DocumentLoader::create(request, substituteData);
 }
 
-PassRefPtr<Frame> EmptyFrameLoaderClient::createFrame(const KURL&, const String&, HTMLFrameOwnerElement*, const String&, bool, int, int)
+PassRefPtr<Frame> EmptyFrameLoaderClient::createFrame(const KURL&, const String&, const String&, HTMLFrameOwnerElement*)
 {
     return 0;
 }

@@ -579,11 +579,8 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
 PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
     const KURL& url,
     const String& name,
-    HTMLFrameOwnerElement* ownerElement,
     const String& referrer,
-    bool allowsScrolling,
-    int marginWidth,
-    int marginHeight)
+    HTMLFrameOwnerElement* ownerElement)
 {
     FrameLoadRequest frameRequest(m_webFrame->frame()->document()->securityOrigin(),
         ResourceRequest(url, referrer), name);
