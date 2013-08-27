@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/database_string_table.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -128,6 +130,30 @@ TEST_F(DatabaseStringTableTest, Lookup) {
   value = "";
   ASSERT_TRUE(table.IntToString(&db_, id, &value));
   ASSERT_EQ("abc", value);
+}
+
+// Check that the in-memory cache for the string table does not become too
+// large, even if many items are inserted.
+TEST_F(DatabaseStringTableTest, Prune) {
+  DatabaseStringTable table("size_test");
+  table.Initialize(&db_);
+
+  // Wrap the lookups in a transaction to improve performance.
+  sql::Transaction transaction(&db_);
+
+  transaction.Begin();
+  for (int i = 0; i < 2000; i++) {
+    int64 id;
+    ASSERT_TRUE(table.StringToInt(&db_, base::StringPrintf("value-%d", i),
+                                  &id));
+  }
+  transaction.Commit();
+
+  // The maximum size below should correspond to kMaximumCacheSize in
+  // database_string_table.cc, with a small amount of additional slop (an entry
+  // might be inserted after doing the pruning).
+  ASSERT_LE(table.id_to_value_.size(), 1005U);
+  ASSERT_LE(table.value_to_id_.size(), 1005U);
 }
 
 }  // namespace extensions

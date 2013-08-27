@@ -12,6 +12,10 @@ using base::StringPrintf;
 
 namespace extensions {
 
+// A target maximum size (in number of entries) for the mapping tables.  If the
+// cache would grow larger than this, the size should be reduced.
+static const size_t kMaximumCacheSize = 1000;
+
 DatabaseStringTable::DatabaseStringTable(const std::string& table)
     : table_(table) {}
 
@@ -39,6 +43,10 @@ bool DatabaseStringTable::StringToInt(sql::Connection* connection,
     *id = lookup->second;
     return true;
   }
+
+  // We will be adding data to the cache below--check the cache size now and
+  // reduce it if needed.
+  PruneCache();
 
   // Operate on the assumption that the cache does a good job on
   // frequently-used strings--if there is a cache miss, first act on the
@@ -82,6 +90,10 @@ bool DatabaseStringTable::IntToString(sql::Connection* connection,
     return true;
   }
 
+  // We will be adding data to the cache below--check the cache size now and
+  // reduce it if needed.
+  PruneCache();
+
   sql::Statement query(connection->GetUniqueStatement(
       StringPrintf("SELECT value FROM %s WHERE id = ?", table_.c_str())
           .c_str()));
@@ -98,6 +110,18 @@ bool DatabaseStringTable::IntToString(sql::Connection* connection,
 void DatabaseStringTable::ClearCache() {
   id_to_value_.clear();
   value_to_id_.clear();
+}
+
+void DatabaseStringTable::PruneCache() {
+  if (id_to_value_.size() <= kMaximumCacheSize &&
+      value_to_id_.size() <= kMaximumCacheSize)
+    return;
+
+  // TODO(mvrable): Perhaps implement a more intelligent caching policy.  For
+  // now, to limit memory usage we simply clear the entire cache when it would
+  // become too large.  Data will be brought back in from the database as
+  // needed.
+  ClearCache();
 }
 
 }  // namespace extensions

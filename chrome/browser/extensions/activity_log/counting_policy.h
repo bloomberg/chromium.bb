@@ -104,6 +104,7 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   base::Time last_database_cleaning_time_;
 
   friend class CountingPolicyTest;
+  FRIEND_TEST_ALL_PREFIXES(CountingPolicyTest, EarlyFlush);
   FRIEND_TEST_ALL_PREFIXES(CountingPolicyTest, MergingAndExpiring);
   FRIEND_TEST_ALL_PREFIXES(CountingPolicyTest, StringTableCleaning);
 };

@@ -28,6 +28,15 @@ using content::BrowserThread;
 
 namespace extensions {
 
+// A size threshold at which data should be flushed to the database.  The
+// ActivityDatabase will signal the Delegate to write out data based on a
+// periodic timer, but will also initiate a flush if AdviseFlush indicates that
+// more than kSizeThresholdForFlush action records are queued in memory.  This
+// should be set large enough that write costs can be amortized across many
+// records, but not so large that too much space can be tied up holding records
+// in memory.
+static const int kSizeThresholdForFlush = 200;
+
 ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
     : delegate_(delegate),
       valid_db_(false),
@@ -98,7 +107,8 @@ void ActivityDatabase::LogInitFailure() {
 void ActivityDatabase::AdviseFlush(int size) {
   if (!valid_db_)
     return;
-  if (!batch_mode_ || size == kFlushImmediately) {
+  if (!batch_mode_ || size == kFlushImmediately ||
+      size >= kSizeThresholdForFlush) {
     if (!delegate_->FlushDatabase(&db_))
       SoftFailureClose();
   }

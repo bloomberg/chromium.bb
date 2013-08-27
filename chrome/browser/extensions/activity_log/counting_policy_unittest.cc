@@ -117,6 +117,14 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_EQ(url_size, statement2.ColumnInt(0));
   }
 
+  // Checks that the number of queued actions to be written out does not exceed
+  // kSizeThresholdForFlush.  Runs on the database thread.
+  static void CheckQueueSize(CountingPolicy* policy) {
+    // This should be updated if kSizeThresholdForFlush in activity_database.cc
+    // changes.
+    ASSERT_LE(policy->queued_actions_.size(), 200U);
+  }
+
   static void CheckWrapper(
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker,
       const base::Closure& done,
@@ -569,6 +577,26 @@ TEST_F(CountingPolicyTest, MoreMerging) {
       0,
       base::Bind(
           &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 3, time5));
+  policy->Close();
+}
+
+// Check that actions are flushed to disk before letting too many accumulate in
+// memory.
+TEST_F(CountingPolicyTest, EarlyFlush) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+
+  for (int i = 0; i < 500; i++) {
+    scoped_refptr<Action> action =
+        new Action("punky",
+                   base::Time::Now(),
+                   Action::ACTION_API_CALL,
+                   base::StringPrintf("apicall_%d", i));
+    policy->ProcessAction(action);
+  }
+
+  policy->ScheduleAndForget(policy, &CountingPolicyTest::CheckQueueSize);
+  WaitOnThread(BrowserThread::DB);
+
   policy->Close();
 }
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 
 namespace sql {
 class Connection;
@@ -51,17 +52,22 @@ class DatabaseStringTable {
   // found.
   bool IntToString(sql::Connection* connection, int64 id, std::string* value);
 
-  // Clear the in-memory cache; this should be called if the underlying
+  // Clears the in-memory cache; this should be called if the underlying
   // database table has been manipulated and the cache may be stale.
   void ClearCache();
 
  private:
+  // Reduces the size of the cache if too many entries are held in it.
+  void PruneCache();
+
   // In-memory caches of recently accessed values.
   std::map<int64, std::string> id_to_value_;
   std::map<std::string, int64> value_to_id_;
 
   // The name of the database table where the mapping is stored.
   std::string table_;
+
+  FRIEND_TEST_ALL_PREFIXES(DatabaseStringTableTest, Prune);
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseStringTable);
 };
