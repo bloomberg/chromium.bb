@@ -199,15 +199,15 @@
     }
   ],
   "downloads": {
-    "channel": "stable",
+    "channel": "beta",
     "extension_types": ["extension"]
   },
   "downloads.open": {
-    "channel": "stable",
+    "channel": "beta",
     "extension_types": ["extension"]
   },
   "downloads.shelf": {
-    "channel": "stable",
+    "channel": "beta",
     "extension_types": ["extension"]
   },
   "dial": {
