@@ -268,9 +268,9 @@ PERF_TEST_DIR = '/test.checkout/PerformanceTests'
 # we don't need a real filesystem to run the tests.
 def add_unit_tests_to_mock_filesystem(filesystem):
     # Add the test_expectations file.
-    filesystem.maybe_make_directory(LAYOUT_TEST_DIR)
-    if not filesystem.exists(LAYOUT_TEST_DIR + '/TestExpectations'):
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/TestExpectations', """
+    filesystem.maybe_make_directory('/mock-checkout/LayoutTests')
+    if not filesystem.exists('/mock-checkout/LayoutTests/TestExpectations'):
+        filesystem.write_text_file('/mock-checkout/LayoutTests/TestExpectations', """
 Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
@@ -364,7 +364,17 @@ class TestPort(Port):
         Port.__init__(self, host, port_name or TestPort.default_port_name, **kwargs)
         self._tests = unit_test_list()
         self._flakes = set()
-        self._generic_expectations_path = LAYOUT_TEST_DIR + '/TestExpectations'
+
+        # FIXME: crbug.com/279494. This needs to be in the "real layout tests
+        # dir" in a mock filesystem, rather than outside of the checkout, so
+        # that tests that want to write to a TestExpectations file can share
+        # this between "test" ports and "real" ports.  This is the result of
+        # rebaseline_unittest.py having tests that refer to "real" port names
+        # and real builders instead of fake builders that point back to the
+        # test ports. rebaseline_unittest.py needs to not mix both "real" ports
+        # and "test" ports
+
+        self._generic_expectations_path = '/mock-checkout/LayoutTests/TestExpectations'
         self._results_directory = None
 
         self._operating_system = 'mac'

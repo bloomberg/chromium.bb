@@ -406,6 +406,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._run_webkit_patch(['optimize-baselines', '--suffixes', ','.join(all_suffixes), test], verbose)
 
     def _update_expectations_files(self, lines_to_remove):
+        # FIXME: This routine is way too expensive. We're creating N ports and N TestExpectations
+        # objects and (re-)writing the actual expectations file N times, for each test we update.
+        # We should be able to update everything in memory, once, and then write the file out a single time.
         for test in lines_to_remove:
             for builder in lines_to_remove[test]:
                 port = self._tool.port_factory.get_from_builder_name(builder)
@@ -415,6 +418,18 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                     if test_configuration.version == port.test_configuration().version:
                         expectationsString = expectations.remove_configuration_from_test(test, test_configuration)
                 self._tool.filesystem.write_text_file(path, expectationsString)
+
+            for port_name in self._tool.port_factory.all_port_names():
+                port = self._tool.port_factory.get(port_name)
+                full_expectations = TestExpectations(port, tests=[test], include_overrides=True)
+                generic_expectations = TestExpectations(port, tests=[test], include_overrides=False)
+                generic_path = port.path_to_generic_test_expectations_file()
+                if (SKIP in full_expectations.get_expectations(test) and
+                    SKIP not in generic_expectations.get_expectations(test)):
+                    for test_configuration in port.all_test_configurations():
+                        if test_configuration.version == port.test_configuration().version:
+                            expectationsString = generic_expectations.remove_configuration_from_test(test, test_configuration)
+                    self._tool.filesystem.write_text_file(generic_path, expectationsString)
 
     def _run_in_parallel_and_update_scm(self, commands):
         command_results = self._tool.executive.run_in_parallel(commands)

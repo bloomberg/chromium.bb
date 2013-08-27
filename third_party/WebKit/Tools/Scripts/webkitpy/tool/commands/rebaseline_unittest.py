@@ -51,9 +51,10 @@ class _BaseTestCase(unittest.TestCase):
         self.lion_port = self.tool.port_factory.get_from_builder_name("WebKit Mac10.7")
         self.lion_expectations_path = self.lion_port.path_to_generic_test_expectations_file()
 
-        # FIXME: we should override builders._exact_matches here to point to a set
-        # of test ports and restore the value in tearDown(), and that way the
-        # individual tests wouldn't have to worry about it.
+        # FIXME: crbug.com/279494. We should override builders._exact_matches
+        # here to point to a set of test ports and restore the value in
+        # tearDown(), and that way the individual tests wouldn't have to worry
+        # about it.
 
     def _expand(self, path):
         if self.tool.filesystem.isabs(path):
@@ -88,6 +89,7 @@ class _BaseTestCase(unittest.TestCase):
         }
     }
 });""")
+        # FIXME: crbug.com/279494 - we shouldn't be mixing mock and real builder names.
         for builder in ['MOCK builder', 'MOCK builder (Debug)', 'WebKit Mac10.7']:
             self.command._builder_data[builder] = data
 
@@ -101,7 +103,7 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
     def test_copying_overwritten_baseline(self):
         self.tool.executive = MockExecutive2()
 
-        # FIXME: it's confusing that this is the test- port, and not the regular lion port. Really all of the tests should be using the test ports.
+        # FIXME: crbug.com/279494. it's confusing that this is the test- port, and not the regular lion port. Really all of the tests should be using the test ports.
         port = self.tool.port_factory.get('test-mac-snowleopard')
         self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-mac-snowleopard/failures/expected/image-expected.txt'), 'original snowleopard result')
 
@@ -127,7 +129,7 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
     def test_copying_overwritten_baseline_to_multiple_locations(self):
         self.tool.executive = MockExecutive2()
 
-        # FIXME: it's confusing that this is the test- port, and not the regular win port. Really all of the tests should be using the test ports.
+        # FIXME: crbug.com/279494. it's confusing that this is the test- port, and not the regular win port. Really all of the tests should be using the test ports.
         port = self.tool.port_factory.get('test-win-win7')
         self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
 
@@ -429,6 +431,43 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         new_expectations = self._read(self.lion_expectations_path)
         self.assertMultiLineEqual(new_expectations, "Bug(x) [ Android Linux MountainLion SnowLeopard Win ] userscripts/first-test.html [ ImageOnlyFailure ]\n")
 
+    def test_rebaseline_handles_platform_skips(self):
+        # This test is just like test_rebaseline_updates_expectations_file_all_platforms(),
+        # except that if a particular port happens to SKIP a test in an overrides file,
+        # we count that as passing, and do not think that we still need to rebaseline it.
+        options = MockOptions(optimize=False, verbose=True, results_directory=None)
+
+        self._write(self.lion_expectations_path, "Bug(x) userscripts/first-test.html [ ImageOnlyFailure ]\n")
+        self._write("platform/android/TestExpectations", "Bug(y) userscripts [ Skip ]\n")
+        self._write("userscripts/first-test.html", "Dummy test contents")
+        self._setup_mock_builder_data()
+
+        self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
+
+        new_expectations = self._read(self.lion_expectations_path)
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux MountainLion SnowLeopard Win ] userscripts/first-test.html [ ImageOnlyFailure ]\n")
+
+    def test_rebaseline_handles_skips_in_file(self):
+        # This test is like test_Rebaseline_handles_platform_skips, except that the
+        # Skip is in the same (generic) file rather than a platform file. In this case,
+        # the Skip line should be left unmodified. Note that the first line is now
+        # qualified as "[Linux Mac Win]"; if it was unqualified, it would conflict with
+        # the second line.
+        options = MockOptions(optimize=False, verbose=True, results_directory=None)
+
+        self._write(self.lion_expectations_path,
+            ("Bug(x) [ Linux Mac Win ] userscripts/first-test.html [ ImageOnlyFailure ]\n"
+             "Bug(y) [ Android ] userscripts/first-test.html [ Skip ]\n"))
+        self._write("userscripts/first-test.html", "Dummy test contents")
+        self._setup_mock_builder_data()
+
+        self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
+
+        new_expectations = self._read(self.lion_expectations_path)
+        self.assertMultiLineEqual(new_expectations,
+            ("Bug(x) [ Linux MountainLion SnowLeopard Win ] userscripts/first-test.html [ ImageOnlyFailure ]\n"
+             "Bug(y) [ Android ] userscripts/first-test.html [ Skip ]\n"))
+
 
 class TestRebaseline(_BaseTestCase):
     # This command shares most of its logic with RebaselineJson, so these tests just test what is different.
@@ -718,6 +757,7 @@ TBR=foo@chromium.org
                 return test_port
             return original_get(port_name, options, **kwargs)
         # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
+        # FIXME: crbug.com/279494 - we shouldn't be doing this.
         self.tool.port_factory.get = get_test_port
 
         old_builder_data = self.command.builder_data
@@ -824,6 +864,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 return test_port
             return original_get(port_name, options, **kwargs)
         # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
+        # FIXME: crbug.com/279494 - we shouldn't be doing this.
         self.tool.port_factory.get = get_test_port
 
         old_builder_data = self.command.builder_data
