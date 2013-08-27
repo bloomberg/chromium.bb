@@ -531,6 +531,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
   nacl_abi_size_t i;
 
   // Initialize to allow simple cleanups.
+  header.iov = NULL;
   header.ndescv = NULL;
   for (i = 0; i < dgram->ndescv_length; ++i) {
     dgram->ndescv[i] = NULL;
