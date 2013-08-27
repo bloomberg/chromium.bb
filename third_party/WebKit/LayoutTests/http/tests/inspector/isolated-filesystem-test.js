@@ -8,11 +8,12 @@ InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMa
     return manager;
 }
 
-var MockIsolatedFileSystem = function(path)
+var MockIsolatedFileSystem = function(path, manager)
 {
     this.originalTimestamp = 1000000;
     this.modificationTimestampDelta = 1000;
     this._path = path;
+    this._manager = manager;
 };
 MockIsolatedFileSystem.prototype = {
     path: function()
@@ -54,8 +55,18 @@ MockIsolatedFileSystem.prototype = {
         if (!this._callback)
             return;
         var files = Object.keys(this._files);
-        for (var i = 0; i < files.length; ++i)
+        for (var i = 0; i < files.length; ++i) {
+            var isExcluded = false;
+            for (var j = 0; j < files[i].length; ++j) {
+                if (files[i][j] === "/") {
+                    if (this._manager.fileSystemMapping.isFileExcluded(this._path, files[i].substr(0, j + 1)))
+                        isExcluded = true;
+                }
+            }
+            if (isExcluded)
+                continue;
             this._callback(files[i].substr(1));
+        }
         delete this._callback;
     },
 
@@ -74,7 +85,7 @@ var MockIsolatedFileSystemManager = function() {};
 MockIsolatedFileSystemManager.prototype = {
     addMockFileSystem: function(path, skipAddFileSystem)
     {
-        var fileSystem = new MockIsolatedFileSystem(path);
+        var fileSystem = new MockIsolatedFileSystem(path, this);
         this._fileSystems = this._fileSystems || {};
         this._fileSystems[path] = fileSystem;
         if (!skipAddFileSystem)

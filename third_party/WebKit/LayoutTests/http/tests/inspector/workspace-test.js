@@ -4,6 +4,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 {
     InspectorTest.testFileSystemMapping = new WebInspector.FileSystemMapping();
     InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
+    InspectorTest.testFileSystemMapping._excludedFoldersSetting = new InspectorTest.MockSetting({});
 
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(InspectorTest.testWorkspace, WebInspector.projectTypes.Network);
@@ -24,6 +25,22 @@ InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count)
         if (!(--InspectorTest.uiSourceCodeAddedEventsLeft)) {
             InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
             InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
+        }
+        callback(event.data);
+    }
+}
+
+InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, count)
+{
+    InspectorTest.uiSourceCodeRemovedEventsLeft = count || 1;
+    InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
+    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeAdded);
+
+    function uiSourceCodeAdded(event)
+    {
+        if (!(--InspectorTest.uiSourceCodeRemovedEventsLeft)) {
+            InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeAdded);
+            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
         }
         callback(event.data);
     }

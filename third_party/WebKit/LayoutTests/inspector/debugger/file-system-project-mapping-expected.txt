@@ -67,3 +67,13 @@ Loading script.
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
 
+Running: testExcludingFolders
+Adding file system.
+Adding exclusion pattern and excluded folder.
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www/bar.js
+  - file:///var/www/html2/foo.js
+Excluding html2 folder:
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www/bar.js
+
