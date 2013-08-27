@@ -207,6 +207,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   HWND GetHWND() const;
 
  private:
+  void SetWindowTransparency();
+
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;
 

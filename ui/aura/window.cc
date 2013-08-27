@@ -224,9 +224,9 @@ void Window::SetName(const std::string& name) {
 }
 
 void Window::SetTransparent(bool transparent) {
-  // Cannot change transparent flag after the window is initialized.
-  DCHECK(!layer());
   transparent_ = transparent;
+  if (layer())
+    layer_->SetFillsBoundsOpaquely(!transparent_);
 }
 
 RootWindow* Window::GetRootWindow() {
