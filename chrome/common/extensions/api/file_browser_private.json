@@ -635,30 +635,6 @@
         ]
       },
       {
-        "name": "viewFiles",
-        "type": "function",
-        "description": "Views multiple files.",
-        "parameters": [
-          {
-            "name": "fileUrls",
-            "type": "array",
-            "description": "Array of selected paths",
-            "items": {"type": "string"}
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name" : "success",
-                "type": "boolean",
-                "description": "True if the selected files can be viewed by the browser."
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "getDriveEntryProperties",
         "description": "Requests Drive file properties for a file",
         "parameters": [

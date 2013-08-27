@@ -18341,7 +18341,7 @@ other types of suffix sets.
   <int value="306" label="TYPES_CHROMESETTING_SET"/>
   <int value="307" label="BROWSERACTION_SETICON"/>
   <int value="308" label="EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED"/>
-  <int value="309" label="FILEBROWSERPRIVATE_VIEWFILES"/>
+  <int value="309" label="DELETED_FILEBROWSERPRIVATE_VIEWFILES"/>
   <int value="310" label="BLUETOOTH_GETSERVICES"/>
   <int value="311" label="TABS_UPDATE"/>
   <int value="312" label="BROWSINGDATA_REMOVEFORMDATA"/>

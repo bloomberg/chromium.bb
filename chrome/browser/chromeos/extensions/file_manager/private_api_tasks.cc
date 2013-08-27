@@ -595,47 +595,4 @@ bool SetDefaultTaskFunction::RunImpl() {
   return true;
 }
 
-ViewFilesFunction::ViewFilesFunction() {
-}
-
-ViewFilesFunction::~ViewFilesFunction() {
-}
-
-bool ViewFilesFunction::RunImpl() {
-  if (args_->GetSize() < 1) {
-    return false;
-  }
-
-  ListValue* path_list = NULL;
-  args_->GetList(0, &path_list);
-  DCHECK(path_list);
-
-  std::vector<base::FilePath> files;
-  for (size_t i = 0; i < path_list->GetSize(); ++i) {
-    std::string url_as_string;
-    path_list->GetString(i, &url_as_string);
-    base::FilePath path = util::GetLocalPathFromURL(
-        render_view_host(), profile(), GURL(url_as_string));
-    if (path.empty())
-      return false;
-    files.push_back(path);
-  }
-
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile_, chrome::HOST_DESKTOP_TYPE_ASH);
-  bool success = browser;
-
-  if (browser) {
-    for (size_t i = 0; i < files.size(); ++i) {
-      bool handled = util::OpenFileWithBrowser(browser, files[i]);
-      if (!handled && files.size() == 1)
-        success = false;
-    }
-  }
-
-  SetResult(Value::CreateBooleanValue(success));
-  SendResponse(true);
-  return true;
-}
-
 }  // namespace file_manager

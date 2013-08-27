@@ -26,7 +26,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<ExecuteTaskFunction>();
   registry->RegisterFunction<GetFileTasksFunction>();
   registry->RegisterFunction<SetDefaultTaskFunction>();
-  registry->RegisterFunction<ViewFilesFunction>();
 
   // Drive related functions.
   registry->RegisterFunction<GetDriveEntryPropertiesFunction>();

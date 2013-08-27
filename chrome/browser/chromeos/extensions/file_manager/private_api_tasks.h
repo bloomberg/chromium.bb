@@ -129,22 +129,6 @@ class SetDefaultTaskFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.viewFiles method.
-// Views multiple selected files.  Window stays open.
-class ViewFilesFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.viewFiles",
-                             FILEBROWSERPRIVATE_VIEWFILES)
-
-  ViewFilesFunction();
-
- protected:
-  virtual ~ViewFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 }  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_
