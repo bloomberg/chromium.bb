@@ -18821,6 +18821,11 @@ other types of suffix sets.
   <int value="120" label="NodeNamespaceURI"/>
   <int value="121" label="NodePrefix"/>
   <int value="122" label="NodeLocalName"/>
+  <int value="123" label="NavigatorProductSub"/>
+  <int value="124" label="NavigatorVendor"/>
+  <int value="125" label="NavigatorVendorSub"/>
+  <int value="126" label="FileError"/>
+  <int value="127" label="DocumentCharset"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
