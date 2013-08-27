@@ -90,6 +90,14 @@ class SearchProvider : public AutocompleteProvider,
       int omnibox_start_margin,
       bool append_extra_query_params);
 
+  // Returns whether the SearchProvider previously flagged |match| as a query
+  // that should be prefetched.
+  static bool ShouldPrefetch(const AutocompleteMatch& match);
+
+  // Extracts the suggest response metadata which SearchProvider previously
+  // stored for |match|.
+  static std::string GetSuggestMetadata(const AutocompleteMatch& match);
+
   // AutocompleteProvider:
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
   virtual void ResetSession() OVERRIDE;
@@ -109,6 +117,8 @@ class SearchProvider : public AutocompleteProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
 
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers
   // may be used:
@@ -213,10 +223,12 @@ class SearchProvider : public AutocompleteProvider,
     SuggestResult(const string16& suggestion,
                   bool from_keyword_provider,
                   int relevance,
-                  bool relevance_from_server);
+                  bool relevance_from_server,
+                  bool should_prefetch);
     virtual ~SuggestResult();
 
     const string16& suggestion() const { return suggestion_; }
+    bool should_prefetch() const { return should_prefetch_; }
 
     // Result:
     virtual bool IsInlineable(const string16& input) const OVERRIDE;
@@ -227,6 +239,9 @@ class SearchProvider : public AutocompleteProvider,
    private:
     // The search suggestion string.
     string16 suggestion_;
+
+    // Should this result be prefetched?
+    bool should_prefetch_;
   };
 
   class NavigationResult : public Result {
@@ -297,6 +312,9 @@ class SearchProvider : public AutocompleteProvider,
     // indicate that there is no suggested score; a value of 0
     // suppresses the verbatim result.
     int verbatim_relevance;
+
+    // The JSON metadata associated with this server response.
+    std::string metadata;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);
@@ -404,7 +422,9 @@ class SearchProvider : public AutocompleteProvider,
                                      bool is_keyword);
 
   // Adds matches for |results| to |map|.
-  void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
+  void AddSuggestResultsToMap(const SuggestResults& results,
+                              const std::string& metadata,
+                              MatchMap* map);
 
   // Gets the relevance score for the verbatim result.  This value may be
   // provided by the suggest server or calculated locally; if
@@ -449,6 +469,8 @@ class SearchProvider : public AutocompleteProvider,
                      const string16& input_text,
                      int relevance,
                      bool relevance_from_server,
+                     bool should_prefetch,
+                     const std::string& metadata,
                      AutocompleteMatch::Type type,
                      int accepted_suggestion,
                      bool is_keyword,
@@ -474,10 +496,20 @@ class SearchProvider : public AutocompleteProvider,
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
 
+  // The following keys are used to record additional information on matches.
+
   // We annotate our AutocompleteMatches with whether their relevance scores
   // were server-provided using this key in the |additional_info| field.
   static const char kRelevanceFromServerKey[];
-  // These are the values we record with the above key.
+
+  // Indicates whether the server said a match should be prefetched.
+  static const char kShouldPrefetchKey[];
+
+  // Used to store metadata from the server response, which is needed for
+  // prefetching.
+  static const char kSuggestMetadataKey[];
+
+  // These are the values for the above keys.
   static const char kTrue[];
   static const char kFalse[];
 

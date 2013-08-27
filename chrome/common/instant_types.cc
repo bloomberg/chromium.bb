@@ -4,33 +4,16 @@
 
 #include "chrome/common/instant_types.h"
 
-InstantSuggestion::InstantSuggestion()
-    : behavior(INSTANT_COMPLETE_NOW),
-      type(INSTANT_SUGGESTION_SEARCH),
-      autocomplete_match_index(kNoMatchIndex) {
+InstantSuggestion::InstantSuggestion() {
 }
 
 InstantSuggestion::InstantSuggestion(const string16& in_text,
-                                     InstantCompleteBehavior in_behavior,
-                                     InstantSuggestionType in_type,
-                                     const string16& in_query,
-                                     size_t in_autocomplete_match_index)
+                                     const std::string& in_metadata)
     : text(in_text),
-      behavior(in_behavior),
-      type(in_type),
-      query(in_query),
-      autocomplete_match_index(in_autocomplete_match_index) {
+      metadata(in_metadata) {
 }
 
 InstantSuggestion::~InstantSuggestion() {
-}
-
-InstantAutocompleteResult::InstantAutocompleteResult()
-    : transition(content::PAGE_TRANSITION_LINK),
-      relevance(0) {
-}
-
-InstantAutocompleteResult::~InstantAutocompleteResult() {
 }
 
 RGBAColor::RGBAColor()
@@ -68,7 +51,6 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
-
 
 bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
   return using_default_theme == rhs.using_default_theme &&

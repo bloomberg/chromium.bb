@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -74,6 +75,8 @@
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -155,7 +158,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
-    InstantTestBase::Init(instant_url);
+    InstantTestBase::Init(instant_url, false);
   }
 
   int64 GetHistogramCount(const char* name) {
@@ -209,7 +212,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetBoolFromJS(contents, "isFocused",
                          &is_focused_) &&
            GetIntFromJS(contents, "onToggleVoiceSearchCalls",
-                        &on_toggle_voice_search_calls_);
+                        &on_toggle_voice_search_calls_) &&
+           GetStringFromJS(contents, "prefetchQuery", &prefetch_query_value_);
+
   }
 
   TemplateURL* GetDefaultSearchProviderTemplateURL() {
@@ -264,6 +269,29 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int on_focus_changed_calls_;
   bool is_focused_;
   int on_toggle_voice_search_calls_;
+  std::string prefetch_query_value_;
+};
+
+class InstantExtendedPrefetchTest : public InstantExtendedTest {
+ public:
+  InstantExtendedPrefetchTest()
+      : factory_(new net::FakeURLFetcherFactory(
+            net::URLFetcherImpl::factory())) {
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    chrome::EnableInstantExtendedAPIForTesting();
+    ASSERT_TRUE(https_test_server().Start());
+    GURL instant_url = https_test_server().GetURL(
+        "files/instant_extended.html?strk=1&");
+    InstantTestBase::Init(instant_url, true);
+    factory_->SetFakeResponse(GoogleURLTracker::kSearchDomainCheckURL,
+                              ".google.com", true);
+  }
+
+  scoped_ptr<net::FakeURLFetcherFactory> factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstantExtendedPrefetchTest);
 };
 
 class InstantExtendedNetworkTest : public InstantExtendedTest {
@@ -302,7 +330,7 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
-    InstantTestBase::Init(instant_url);
+    InstantTestBase::Init(instant_url, false);
   }
 
   void InstallThemeSource() {
@@ -1652,4 +1680,94 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Make sure the URL remains the same.
   EXPECT_EQ(ntp_url, ntp_contents->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  content::WindowedNotificationObserver new_tab_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  new_tab_observer.Wait();
+
+  omnibox()->model()->autocomplete_controller()->search_provider()->
+      kMinimumTimeBetweenSuggestQueriesMs = 0;
+
+  // Set the fake response for suggest request. Response has prefetch details.
+  // Ensure that the page received the prefetch query.
+  factory_->SetFakeResponse(
+      instant_url().spec() + "#q=pupp",
+      "[\"pupp\",[\"puppy\", \"puppies\"],[],[],"
+      "{\"google:clientdata\":{\"phi\": 0},"
+          "\"google:suggesttype\":[\"QUERY\", \"QUERY\"],"
+          "\"google:suggestrelevance\":[1400, 9]}]",
+      true);
+
+  SetOmniboxText("pupp");
+  while (!omnibox()->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver ready_observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::Source<AutocompleteController>(
+            omnibox()->model()->autocomplete_controller()));
+    ready_observer.Wait();
+  }
+
+  ASSERT_EQ(3, CountSearchProviderSuggestions());
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(UpdateSearchState(active_tab));
+  ASSERT_TRUE(SearchProvider::ShouldPrefetch(*(
+      omnibox()->model()->result().default_match())));
+  ASSERT_EQ("puppy", prefetch_query_value_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  content::WindowedNotificationObserver new_tab_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  new_tab_observer.Wait();
+
+  omnibox()->model()->autocomplete_controller()->search_provider()->
+      kMinimumTimeBetweenSuggestQueriesMs = 0;
+
+  // Set the fake response for suggest request. Response has no prefetch
+  // details. Ensure that the page received a blank query to clear the
+  // prefetched results.
+  factory_->SetFakeResponse(
+      instant_url().spec() + "#q=dogs",
+      "[\"dogs\",[\"https://dogs.com\"],[],[],"
+          "{\"google:suggesttype\":[\"NAVIGATION\"],"
+          "\"google:suggestrelevance\":[2]}]",
+      true);
+
+  SetOmniboxText("dogs");
+  while (!omnibox()->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver ready_observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::Source<AutocompleteController>(
+            omnibox()->model()->autocomplete_controller()));
+    ready_observer.Wait();
+  }
+
+  ASSERT_EQ(2, CountSearchProviderSuggestions());
+  ASSERT_FALSE(SearchProvider::ShouldPrefetch(*(
+      omnibox()->model()->result().default_match())));
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(UpdateSearchState(active_tab));
+  ASSERT_EQ("", prefetch_query_value_);
 }

@@ -13,12 +13,14 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
+      native function GetDisplayInstantResults();
       native function GetFont();
       native function GetFontSize();
       native function GetMostVisitedItemData();
       native function GetQuery();
       native function GetRightToLeft();
       native function GetStartMargin();
+      native function GetSuggestionToPrefetch();
       native function IsFocused();
       native function IsKeyCaptureEnabled();
       native function Paste();
@@ -29,12 +31,14 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                           Exported functions
       // =======================================================================
+      this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
       this.__defineGetter__('font', GetFont);
       this.__defineGetter__('fontSize', GetFontSize);
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('rtl', GetRightToLeft);
       this.__defineGetter__('startMargin', GetStartMargin);
+      this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
       this.__defineGetter__('value', GetQuery);
 
       // This method is restricted to chrome-search://most-visited pages by
@@ -63,10 +67,10 @@ if (!chrome.embeddedSearch) {
       this.onkeycapturechange = null;
       this.onmarginchange = null;
       this.onsubmit = null;
+      this.onsuggestionchange = null;
       this.ontogglevoicesearch = null;
 
-      // TODO(jered): Remove these when google no longer requires them.
-      this.displayInstantResults = false;
+      //TODO(jered): Remove this empty method when google no longer requires it.
       this.setRestrictedValue = function() {};
     };
 
