@@ -1057,8 +1057,10 @@ class NinjaWriter:
           extra_bindings.append(('implibflag',
                                  '/IMPLIB:%s' % self.target.import_lib))
           output = [output, self.target.import_lib]
-      else:
+      elif not self.is_mac_bundle:
         output = [output, output + '.TOC']
+      else:
+        command = command + '_notoc'
 
     if len(solibs):
       extra_bindings.append(('solibs', gyp.common.EncodePOSIXShellList(solibs)))
@@ -1875,6 +1877,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
     # Record the public interface of $lib in $lib.TOC. See the corresponding
     # comment in the posix section above for details.
+    solink_base = '$ld -shared $ldflags -o $lib %(suffix)s'
     mtime_preserving_solink_base = (
         'if [ ! -e $lib -o ! -e ${lib}.TOC ] || '
              # Always force dependent targets to relink if this library
@@ -1888,26 +1891,39 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
             'mv ${lib}.tmp ${lib}.TOC ; '
           'fi; '
         'fi'
-        % { 'solink': '$ld -shared $ldflags -o $lib %(suffix)s',
+        % { 'solink': solink_base,
             'extract_toc':
               '{ otool -l $lib | grep LC_ID_DYLIB -A 5; '
               'nm -gP $lib | cut -f1-2 -d\' \' | grep -v U$$; true; }'})
 
     # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
     # -bundle -single_module here (for osmesa.so).
+    solink_suffix = '$in $solibs $libs$postbuilds'
     master_ninja.rule(
       'solink',
       description='SOLINK $lib, POSTBUILDS',
       restat=True,
-      command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}),
+      command=mtime_preserving_solink_base % {'suffix':solink_suffix},
       pool='link_pool')
+    master_ninja.rule(
+      'solink_notoc',
+      description='SOLINK $lib, POSTBUILDS',
+      restat=True,
+      command=solink_base % {'suffix':solink_suffix},
+      pool='link_pool')
+
+    solink_module_suffix = '$in $solibs $libs$postbuilds'
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib, POSTBUILDS',
       restat=True,
-      command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}),
+      command=mtime_preserving_solink_base % {'suffix':solink_module_suffix},
+      pool='link_pool')
+    master_ninja.rule(
+      'solink_module_notoc',
+      description='SOLINK(module) $lib, POSTBUILDS',
+      restat=True,
+      command=solink_base % {'suffix':solink_module_suffix},
       pool='link_pool')
 
     master_ninja.rule(
