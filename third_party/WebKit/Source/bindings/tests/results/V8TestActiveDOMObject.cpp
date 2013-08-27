@@ -196,11 +196,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestActiveDOMObject", v8::Local<v8::FunctionTemplate>(), V8TestActiveDOMObject::internalFieldCount,
         V8TestActiveDOMObjectAttributes, WTF_ARRAY_LENGTH(V8TestActiveDOMObjectAttributes),
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
     instance->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(&V8TestActiveDOMObject::info));
 
     // Custom Signature 'excitingFunction'

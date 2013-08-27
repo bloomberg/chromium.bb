@@ -1078,30 +1078,30 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
 static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"IMPLEMENTSCONSTANT1", 1},
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"IMPLEMENTSCONSTANT2", 2},
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"SUPPLEMENTALCONSTANT1", 1},
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"SUPPLEMENTALCONSTANT2", 2},
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
 COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TestInterfaceEnumIMPLEMENTSCONSTANT1IsWrongUseDoNotCheckConstants);
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
 COMPILE_ASSERT(2 == TestImplements::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition11) || ENABLE(Condition12)
 COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TestInterfaceEnumSUPPLEMENTALCONSTANT1IsWrongUseDoNotCheckConstants);
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
 COMPILE_ASSERT(2 == TestPartialInterface::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -1127,13 +1127,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
         V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
         V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods), isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestInterface::constructorCallback);
     desc->SetLength(1);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
     if (RuntimeEnabledFeatures::condition23Enabled()) {
@@ -1152,6 +1152,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
+    V8DOMConfiguration::installConstants(desc, proto, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
     desc->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
 #if ENABLE(Condition22) || ENABLE(Condition23)
 
@@ -1175,7 +1176,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 #if ENABLE(Condition11) || ENABLE(Condition12)
     desc->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-    V8DOMConfiguration::installConstants(desc, proto, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

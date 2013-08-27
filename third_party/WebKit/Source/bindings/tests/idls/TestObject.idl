@@ -260,20 +260,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     attribute long               id;
     readonly attribute DOMString hash;
 
-    // Check constants and enums.
-    const unsigned short CONST_VALUE_0 = 0;
-    const unsigned short CONST_VALUE_1 = 1;
-    const unsigned short CONST_VALUE_2 = 2;
-    const unsigned short CONST_VALUE_4 = 4;
-    const unsigned short CONST_VALUE_8 = 8;
-    const short CONST_VALUE_9 = -1;
-    const DOMString CONST_VALUE_10 = "my constant string";
-    const unsigned short CONST_VALUE_11 = 0xffffffff;
-    const unsigned short CONST_VALUE_12 = 0x01;
-    const unsigned short CONST_VALUE_13 = 0X20;
-    const unsigned short CONST_VALUE_14 = 0x1abc;
-    [Reflect=CONST_IMPL] const unsigned short CONST_JAVASCRIPT = 15;
-
     [Replaceable] readonly attribute long replaceableAttribute;
 
     void variadicStringMethod(DOMString head, DOMString... tail);

@@ -45,42 +45,35 @@ import jinja2
 
 templates_dir = os.path.join(module_path, os.pardir, 'templates')
 
+ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'XML', 'XSLT']
 CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'core/dom/ScriptExecutionContext.h',
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8Callback.h',
     'wtf/Assertions.h',
 ])
-
-
 CALLBACK_INTERFACE_H_INCLUDES = set([
     'bindings/v8/ActiveDOMCallback.h',
     'bindings/v8/DOMWrapperWorld.h',
     'bindings/v8/ScopedPersistent.h',
 ])
-
-
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ScriptController.h',
     'bindings/v8/V8Binding.h',
-    'bindings/v8/V8DOMConfiguration.h',
-    'bindings/v8/V8DOMWrapper.h',
+    'bindings/v8/V8DOMConfiguration.h',  # FIXME: necessary?
+    'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'core/page/Frame.h',
     'core/platform/chromium/TraceEvent.h',
     'wtf/UnusedParam.h',
 ])
-
-
 INTERFACE_H_INCLUDES = set([
     'bindings/v8/V8Binding.h',
-    'bindings/v8/V8DOMWrapper.h',
-    'bindings/v8/WrapperTypeInfo.h',
+    'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
+    'bindings/v8/WrapperTypeInfo.h',  # FIXME: necessary?
 ])
-
-
 CPP_TYPE_SPECIAL_CONVERSION_RULES = {
     'float': 'float',
     'double': 'double',
@@ -92,8 +85,12 @@ CPP_TYPE_SPECIAL_CONVERSION_RULES = {
     'boolean': 'bool',
     'DOMString': 'const String&',
 }
-
-
+CPP_UNSIGNED_TYPES = set([
+    'octet',
+    'unsigned int',
+    'unsigned long',
+    'unsigned short',
+])
 PRIMITIVE_TYPES = set([
     'boolean',
     'void',
@@ -109,6 +106,9 @@ PRIMITIVE_TYPES = set([
     'float',
     'double',
 ])
+V8_SET_RETURN_VALUE_DICT = {
+    'unsigned': 'v8SetReturnValueUnsigned({callback_info}, {cpp_value});',
+}
 
 
 def apply_template(basename, contents):
@@ -117,8 +117,8 @@ def apply_template(basename, contents):
     return template.render(contents)
 
 
-def cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context=''):
-    """Returns a expression that represent JS value corresponding to a C++ value."""
+def cpp_value_to_v8_value(data_type, cpp_value, isolate, creation_context=''):
+    """Return an expression converting a C++ value to a V8 value."""
     if data_type == 'boolean':
         return 'v8Boolean(%s, %s)' % (cpp_value, isolate)
     if data_type in ['long long', 'unsigned long long', 'DOMTimeStamp']:
@@ -135,6 +135,16 @@ def cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context=''):
     return 'toV8(%s, %s, %s)' % (cpp_value, creation_context, isolate)
 
 
+def v8_set_return_value(data_type, cpp_value, callback_info=''):
+    """Return an statement converting a C++ value to a V8 value and setting it as a return value."""
+    this_cpp_type = cpp_type(data_type)
+    if this_cpp_type in V8_SET_RETURN_VALUE_DICT:
+        expression_format_string = V8_SET_RETURN_VALUE_DICT[this_cpp_type]
+    else:
+        raise Exception('unexpected data_type %s' % data_type)
+    return expression_format_string.format(callback_info=callback_info, cpp_value=cpp_value)
+
+
 def generate_conditional_string(interface_or_attribute_or_operation):
     if 'Conditional' not in interface_or_attribute_or_operation.extended_attributes:
         return ''
@@ -145,6 +155,60 @@ def generate_conditional_string(interface_or_attribute_or_operation):
             operator_separator = ' %s%s ' % (operator, operator)
             return operator_separator.join(['ENABLE(%s)' % expression for expression in sorted(conditions)])
     return 'ENABLE(%s)' % conditional
+
+
+def generate_constants(interface):
+    return [generate_constant(constant) for constant in interface.constants]
+
+
+def generate_constant(constant):
+    # Extended Attributes: Conditional, DeprecateAs, EnabledAtRuntime, Reflect
+    # FIXME: Conditional only used in tests, so remove
+    # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
+    # in C++.
+    if constant.data_type == 'DOMString':
+        value = '"%s"' % constant.value
+    else:
+        value = constant.value
+    reflected_name = constant.extended_attributes.get('Reflect', constant.name)
+
+    constant_parameter = {
+        'name': constant.name,
+        # FIXME: use 'reflected_name' as correct 'name'
+        'reflected_name': reflected_name,
+        'value': value,
+        # FIXME: remove conditional: only used in tests
+        'conditional_string': generate_conditional_string(constant),
+        'enabled_at_runtime': 'EnabledAtRuntime' in constant.extended_attributes,
+        'runtime_enable_function_name': runtime_enable_function_name(constant),
+    }
+    return constant_parameter
+
+
+def runtime_enable_function_name(definition_or_member):
+    """Return the name of the RuntimeEnabledFeatures function.
+
+    The returned function checks if a method/attribute is enabled.
+    If a parameter is given (e.g. 'EnabledAtRuntime=FeatureName'), return:
+        RuntimeEnabledFeatures::{featureName}Enabled
+    Otherwise return:
+        RuntimeEnabledFeatures::{methodName}Enabled
+    """
+    name = definition_or_member.extended_attributes.get('EnabledAtRuntime') or definition_or_member.name
+    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(name)
+
+
+def uncapitalize(name):
+    """Uncapitalize first letter or initial acronym (* with some exceptions).
+
+    E.g., 'SetURL' becomes 'setURL', but 'URLFoo' becomes 'urlFoo'.
+    Used in method names; exceptions differ from capitalize().
+    """
+    for acronym in ACRONYMS:
+        if name.startswith(acronym):
+            name.replace(acronym, acronym.lower())
+            return name
+    return name[0].lower() + name[1:]
 
 
 def includes_for_type(data_type):
@@ -187,24 +251,27 @@ def array_type(data_type):
 def array_or_sequence_type(data_type):
     return array_type(data_type) or sequence_type(data_type)
 
-def cpp_type(data_type, pointer_type):
+
+def cpp_type(idl_type, pointer_type=None):
     """Returns the C++ type corresponding to the IDL type.
 
+    If unidentified, fall back to a pointer.
+
     Args:
-        pointer_type:
-            'raw': return raw pointer form (e.g. Foo*)
-            'RefPtr': return RefPtr form (e.g. RefPtr<Foo>)
-            'PassRefPtr': return PassRefPtr form (e.g. RefPtr<Foo>)
+        idl_type: IDL type
+        pointer_type: If specified, return 'pointer_type<idl_type>'
+            (e.g. RefPtr<Foo>, PassRefPtr<Foo>)
+            else defaults to returning raw pointer form (e.g. 'Foo*').
     """
-    if data_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
-        return CPP_TYPE_SPECIAL_CONVERSION_RULES[data_type]
-    if array_or_sequence_type(data_type):
-        return 'const Vector<%s >&' % cpp_type(array_or_sequence_type(data_type), 'RefPtr')
-    if pointer_type == 'raw':
-        return data_type + '*'
-    if pointer_type in ['RefPtr', 'PassRefPtr']:
-        return '%s<%s>' % (pointer_type, data_type)
-    raise Exception('Unrecognized pointer type: "%s"' % pointer_type)
+    if idl_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
+        return CPP_TYPE_SPECIAL_CONVERSION_RULES[idl_type]
+    if idl_type in CPP_UNSIGNED_TYPES:
+        return 'unsigned'
+    if array_or_sequence_type(idl_type):
+        return 'const Vector<{cpp_type} >&'.format(cpp_type=cpp_type(array_or_sequence_type(idl_type), 'RefPtr'))
+    if pointer_type:
+        return '{pointer_type}<{idl_type}>'.format(pointer_type=pointer_type, idl_type=idl_type)
+    return idl_type + '*'  # raw pointer
 
 
 def v8_type(data_type):
@@ -240,14 +307,14 @@ class CodeGeneratorV8:
             except KeyError:
                 raise Exception('%s not in IDL definitions' % interface_name)
 
-    def generate_cpp_to_js_conversion(self, data_type, cpp_value, format_string, isolate, creation_context=''):
-        """Returns a statement that converts a C++ value to a JS value.
+    def generate_cpp_to_v8_conversion(self, data_type, cpp_value, format_string, isolate, creation_context=''):
+        """Returns a statement that converts a C++ value to a V8 value.
 
         Also add necessary includes to self.cpp_includes.
         """
         self.cpp_includes |= includes_for_type(data_type)
-        js_value = cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context)
-        return format_string % js_value
+        v8_value = cpp_value_to_v8_value(data_type, cpp_value, isolate, creation_context)
+        return format_string % v8_value
 
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method
@@ -292,13 +359,25 @@ class CodeGeneratorV8:
             cpp_file.write(cpp_file_text)
 
     def generate_attribute(self, attribute):
-        self.cpp_includes |= includes_for_type(attribute.data_type)
+        data_type = attribute.data_type
+        # FIXME: need to check should_keep_attribute_alive, but for now
+        # sufficient to check if primitive.
+        should_keep_attribute_alive = not primitive_type(data_type)
+        if should_keep_attribute_alive:
+            return_v8_value_statement = None  # unused
+            self.cpp_includes |= includes_for_type(data_type)
+            self.cpp_includes.add('bindings/v8/V8HiddenPropertyName.h')
+        else:
+            cpp_value = 'imp->%s()' % uncapitalize(attribute.name)
+            return_v8_value_statement = v8_set_return_value(data_type, cpp_value, callback_info='info')
         return {
             'name': attribute.name,
             'conditional_string': generate_conditional_string(attribute),
             'cpp_method_name': cpp_method_name(attribute),
-            'cpp_type': cpp_type(attribute.data_type, pointer_type='RefPtr'),
-            'v8_type': v8_type(attribute.data_type),
+            'cpp_type': cpp_type(data_type, pointer_type='RefPtr'),
+            'should_keep_attribute_alive': should_keep_attribute_alive,
+            'return_v8_value_statement': return_v8_value_statement,
+            'v8_type': v8_type(data_type),
         }
 
     def generate_interface(self):
@@ -315,6 +394,7 @@ class CodeGeneratorV8:
             'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name(self.interface) if self.interface.attributes else '0',
             'attribute_templates': v8_class_name(self.interface) + 'Attributes' if self.interface.attributes else '0',
         }
+        template_contents['constants'] = generate_constants(self.interface)
         # Add includes afterwards, as they are modified by generate_attribute etc.
         template_contents['header_includes'] = sorted(list(self.header_includes))
         template_contents['cpp_includes'] = sorted(list(self.cpp_includes))
@@ -327,15 +407,15 @@ class CodeGeneratorV8:
 
         def generate_argument(argument):
             receiver = 'v8::Handle<v8::Value> %sHandle = %%s;' % argument.name
-            cpp_to_js_conversion = self.generate_cpp_to_js_conversion(argument.data_type, argument.name, receiver, 'isolate', creation_context='v8::Handle<v8::Object>()')
+            cpp_to_v8_conversion = self.generate_cpp_to_v8_conversion(argument.data_type, argument.name, receiver, 'isolate', creation_context='v8::Handle<v8::Object>()')
             return {
                 'name': argument.name,
-                'cpp_to_js_conversion': cpp_to_js_conversion,
+                'cpp_to_v8_conversion': cpp_to_v8_conversion,
             }
 
         def generate_method(operation):
             def argument_declaration(argument):
-                return '%s %s' % (cpp_type(argument.data_type, 'raw'), argument.name)
+                return '%s %s' % (cpp_type(argument.data_type), argument.name)
 
             arguments = []
             custom = 'Custom' in operation.extended_attributes

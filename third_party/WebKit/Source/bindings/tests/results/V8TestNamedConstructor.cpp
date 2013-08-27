@@ -133,7 +133,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTemplate(
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestNamedConstructor", v8::Local<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
         0, 0,
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

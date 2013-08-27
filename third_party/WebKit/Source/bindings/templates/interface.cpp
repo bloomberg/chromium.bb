@@ -18,6 +18,8 @@
     Boston, MA 02111-1307, USA.
 */
 
+{% from 'attributes.cpp' import attribute_getter, attribute_getter_callback, class_attributes with context %}
+{% from 'constants.cpp' import class_constants, install_constants with context %}
 #include "config.h"
 {% if conditional_string %}
 #if {{conditional_string}}
@@ -25,7 +27,7 @@
 #include "{{v8_class_name}}.h"
 
 {% for filename in cpp_includes %}
-#include "{{ filename }}"
+#include "{{filename}}"
 {% endfor %}
 
 namespace WebCore {
@@ -57,36 +59,17 @@ namespace {{cpp_class_name}}V8Internal {
 template <typename T> void V8_USE(T) { }
 
 {% for attribute in attributes %}
-static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
-    {{attribute.cpp_type}} result = imp->{{attribute.cpp_method_name}}();
-    if (result.get() && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
-        return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
-        v8SetReturnValue(info, wrapper);
-    }
-}
-
-static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
+{{attribute_getter(attribute)}}
+{{attribute_getter_callback(attribute)}}
 {% endfor %}
 } // namespace {{cpp_class_name}}V8Internal
 
 {% if attributes %}
-static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
-{% for attribute in attributes %}
-    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-{% endfor %}
-};
-
+{{class_attributes()}}
+{% endif %}
+{# FIXME: Move down and merge with install constants #}
+{% if constants %}
+{{class_constants()}}
 {% endif %}
 static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
@@ -96,7 +79,16 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
         {{attribute_templates}}, {{number_of_attributes}},
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
+{% if constants %}{# In general more checks than just constants #}
+    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
+{% endif %}
+{% if constants %}
+{{install_constants()}}
+{% endif %}
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

@@ -545,13 +545,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Hand
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
         V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes),
         V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods), isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestTypedefs::constructorCallback);
     desc->SetLength(2);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

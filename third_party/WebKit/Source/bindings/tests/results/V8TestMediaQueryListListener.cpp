@@ -96,11 +96,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListenerTem
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestMediaQueryListListener", v8::Local<v8::FunctionTemplate>(), V8TestMediaQueryListListener::internalFieldCount,
         0, 0,
         V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods), isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

@@ -69,7 +69,7 @@ namespace WebCore {
     v8::Context::Scope scope(v8Context);
 
 {% for argument in method.arguments %}
-    {{argument.cpp_to_js_conversion | indent(4)}}
+    {{argument.cpp_to_v8_conversion | indent}}
     if ({{argument.name}}Handle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();

@@ -151,11 +151,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestCustomAccessors", v8::Local<v8::FunctionTemplate>(), V8TestCustomAccessors::internalFieldCount,
         0, 0,
         V8TestCustomAccessorsMethods, WTF_ARRAY_LENGTH(V8TestCustomAccessorsMethods), isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
     desc->InstanceTemplate()->SetIndexedPropertyHandler(TestCustomAccessorsV8Internal::indexedPropertyGetterCallback, TestCustomAccessorsV8Internal::indexedPropertySetterCallback, 0, TestCustomAccessorsV8Internal::indexedPropertyDeleterCallback, 0);
     desc->InstanceTemplate()->SetNamedPropertyHandler(TestCustomAccessorsV8Internal::namedPropertyGetterCallback, TestCustomAccessorsV8Internal::namedPropertySetterCallback, TestCustomAccessorsV8Internal::namedPropertyQueryCallback, TestCustomAccessorsV8Internal::namedPropertyDeleterCallback, TestCustomAccessorsV8Internal::namedPropertyEnumeratorCallback);
 

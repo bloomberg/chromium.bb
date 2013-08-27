@@ -320,7 +320,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInte
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestSerializedScriptValueInterface", v8::Local<v8::FunctionTemplate>(), V8TestSerializedScriptValueInterface::internalFieldCount,
         V8TestSerializedScriptValueInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestSerializedScriptValueInterfaceAttributes),
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

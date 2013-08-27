@@ -71,7 +71,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTemplate(v8::Handle<
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestEvent", V8Event::GetTemplate(isolate, currentWorldType), V8TestEvent::internalFieldCount,
         0, 0,
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

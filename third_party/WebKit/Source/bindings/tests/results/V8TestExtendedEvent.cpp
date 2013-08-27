@@ -160,7 +160,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8:
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
         V8TestExtendedEventAttributes, WTF_ARRAY_LENGTH(V8TestExtendedEventAttributes),
         0, 0, isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestExtendedEvent::constructorCallback);
     desc->SetLength(1);
 

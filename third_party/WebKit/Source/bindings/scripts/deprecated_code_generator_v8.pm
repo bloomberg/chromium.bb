@@ -4153,7 +4153,7 @@ END
             $code .= <<END;
     {"${name}", $value},
 END
-            $code .= "#endif\n" if $conditionalString;
+            $code .= "#endif // $conditionalString\n" if $conditionalString;
         }
     }
     if ($has_constants) {
@@ -4241,7 +4241,7 @@ END
 
     AddToImplIncludes("wtf/UnusedParam.h");
     $code .= <<END;
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 END
 
     if (IsConstructable($interface)) {
@@ -4254,8 +4254,8 @@ END
         $code .=  <<END;
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 END
     }
 
@@ -4295,6 +4295,12 @@ END
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
     }
 
+    if ($has_constants) {
+        $code .= <<END;
+    V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
+END
+    }
+
     $code .= GenerateImplementationIndexedPropertyAccessors($interface);
     $code .= GenerateImplementationNamedPropertyAccessors($interface);
     $code .= GenerateImplementationLegacyCall($interface);
@@ -4314,12 +4320,6 @@ END
     }
 
     die "Wrong number of callbacks generated for $interfaceName ($num_callbacks, should be $total_functions)" if $num_callbacks != $total_functions;
-
-    if ($has_constants) {
-        $code .= <<END;
-    V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
-END
-    }
 
     # Special cases
     if ($interfaceName eq "Window") {
@@ -4429,7 +4429,7 @@ END
         # Setup the enable-by-settings functions if we have them
         $code .=  <<END;
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 
     ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
 END
@@ -5981,7 +5981,7 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
                 push(@checks, "COMPILE_ASSERT($value == ${implClassName}::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
             }
 
-            push(@checks, "#endif\n") if $conditionalString;
+            push(@checks, "#endif // $conditionalString\n") if $conditionalString;
         }
         push(@checks, "\n");
     }

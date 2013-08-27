@@ -5465,37 +5465,13 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
 static const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
 #if ENABLE(Condition1)
     {"CONDITIONAL_CONST", 0},
-#endif
-    {"CONST_VALUE_0", 0},
-    {"CONST_VALUE_1", 1},
-    {"CONST_VALUE_2", 2},
-    {"CONST_VALUE_4", 4},
-    {"CONST_VALUE_8", 8},
-    {"CONST_VALUE_9", -1},
-    {"CONST_VALUE_10", "my constant string"},
-    {"CONST_VALUE_11", 0xffffffff},
-    {"CONST_VALUE_12", 0x01},
-    {"CONST_VALUE_13", 0X20},
-    {"CONST_VALUE_14", 0x1abc},
-    {"CONST_JAVASCRIPT", 15},
+#endif // ENABLE(Condition1)
     {"DEPRECATED_CONSTANT", 1},
 };
 
 #if ENABLE(Condition1)
 COMPILE_ASSERT(0 == TestObj::CONDITIONAL_CONST, TestObjEnumCONDITIONAL_CONSTIsWrongUseDoNotCheckConstants);
-#endif
-COMPILE_ASSERT(0 == TestObj::CONST_VALUE_0, TestObjEnumCONST_VALUE_0IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(1 == TestObj::CONST_VALUE_1, TestObjEnumCONST_VALUE_1IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(2 == TestObj::CONST_VALUE_2, TestObjEnumCONST_VALUE_2IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(4 == TestObj::CONST_VALUE_4, TestObjEnumCONST_VALUE_4IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(8 == TestObj::CONST_VALUE_8, TestObjEnumCONST_VALUE_8IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(-1 == TestObj::CONST_VALUE_9, TestObjEnumCONST_VALUE_9IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT("my constant string" == TestObj::CONST_VALUE_10, TestObjEnumCONST_VALUE_10IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0xffffffff == TestObj::CONST_VALUE_11, TestObjEnumCONST_VALUE_11IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0x01 == TestObj::CONST_VALUE_12, TestObjEnumCONST_VALUE_12IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0X20 == TestObj::CONST_VALUE_13, TestObjEnumCONST_VALUE_13IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0x1abc == TestObj::CONST_VALUE_14, TestObjEnumCONST_VALUE_14IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(15 == TestObj::CONST_IMPL, TestObjEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
+#endif // ENABLE(Condition1)
 COMPILE_ASSERT(1 == TestObj::DEPRECATED_CONSTANT, TestObjEnumDEPRECATED_CONSTANTIsWrongUseDoNotCheckConstants);
 
 void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -5522,13 +5498,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestObject", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestObject::internalFieldCount,
         V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods), isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestObject::constructorCallback);
     desc->SetLength(1);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
-    UNUSED_PARAM(instance); // In some cases, it will not be used.
-    UNUSED_PARAM(proto); // In some cases, it will not be used.
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
     if (RuntimeEnabledFeatures::enabledAtRuntimeAttr1Enabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"enabledAtRuntimeAttr1", TestObjV8Internal::enabledAtRuntimeAttr1AttributeGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr1AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
@@ -5539,6 +5515,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
         {"enabledAtRuntimeAttr2", TestObjV8Internal::enabledAtRuntimeAttr2AttributeGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
+    V8DOMConfiguration::installConstants(desc, proto, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants), isolate);
     desc->InstanceTemplate()->SetIndexedPropertyHandler(TestObjV8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<TestObj>);
     desc->InstanceTemplate()->SetNamedPropertyHandler(TestObjV8Internal::namedPropertyGetterCallback, 0, TestObjV8Internal::namedPropertyQueryCallback, 0, TestObjV8Internal::namedPropertyEnumeratorCallback);
 
@@ -5614,7 +5591,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(desc, variadicNodeMethodArgc, variadicNodeMethodArgv);
     proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
     desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    V8DOMConfiguration::installConstants(desc, proto, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants), isolate);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -5667,7 +5643,7 @@ void V8TestObject::installPerContextPrototypeProperties(v8::Handle<v8::Object> p
 {
     UNUSED_PARAM(proto);
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
-    UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
+    UNUSED_PARAM(defaultSignature);
 
     ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
     if (context && context->isDocument() && ContextFeatures::enabledPerContextMethod1Enabled(toDocument(context)))
