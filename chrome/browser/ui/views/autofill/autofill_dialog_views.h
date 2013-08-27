@@ -382,6 +382,7 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(SectionContainer);
   };
 
+  // A button to show address or billing suggestions.
   class SuggestedButton : public views::MenuButton {
    public:
     explicit SuggestedButton(views::MenuButtonListener* listener);

@@ -1008,7 +1008,10 @@ AutofillDialogViews::SuggestedButton::~SuggestedButton() {}
 
 gfx::Size AutofillDialogViews::SuggestedButton::GetPreferredSize() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageNamed(ResourceIDForState()).Size();
+  gfx::Size size = rb.GetImageNamed(ResourceIDForState()).Size();
+  const gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 const char* AutofillDialogViews::SuggestedButton::GetClassName() const {
@@ -1019,7 +1022,9 @@ void AutofillDialogViews::SuggestedButton::PaintChildren(gfx::Canvas* canvas) {}
 
 void AutofillDialogViews::SuggestedButton::OnPaint(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  canvas->DrawImageInt(*rb.GetImageSkiaNamed(ResourceIDForState()), 0, 0);
+  const gfx::Insets insets = GetInsets();
+  canvas->DrawImageInt(*rb.GetImageSkiaNamed(ResourceIDForState()),
+                       insets.left(), insets.top());
 }
 
 int AutofillDialogViews::SuggestedButton::ResourceIDForState() const {
