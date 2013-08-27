@@ -354,9 +354,10 @@ void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
       // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
       // shouldn't result in a deep copy.
       v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-      V8VarConverter().FromV8Value(v8_value, v8::Context::GetCurrent(),
+      V8VarConverter(instance_->pp_instance()).FromV8Value(
+          v8_value, v8::Context::GetCurrent(),
           base::Bind(&MessageChannel::NPVariantToPPVarComplete,
-              weak_ptr_factory_.GetWeakPtr(), result_iterator));
+                     weak_ptr_factory_.GetWeakPtr(), result_iterator));
       return;
     }
   }
@@ -383,7 +384,8 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::Value> v8_val;
-  if (!V8VarConverter().ToV8Value(message_data, context, &v8_val)) {
+  if (!V8VarConverter(instance_->pp_instance()).ToV8Value(
+          message_data, context, &v8_val)) {
     PpapiGlobals::Get()->LogWithSource(instance_->pp_instance(),
         PP_LOGLEVEL_ERROR, std::string(), kVarToV8ConversionError);
     return;

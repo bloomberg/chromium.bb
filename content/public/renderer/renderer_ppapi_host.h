@@ -114,10 +114,10 @@ class RendererPpapiHost {
   // There are times when the renderer needs to create a ResourceHost in the
   // browser. This function does so asynchronously. |nested_msgs| is a list of
   // resource host creation messages and |instance| is the PP_Instance which
-  // the resource will belong to. |callback| will be called with the pending
-  // host IDs when the ResourceHosts have been created. This can be passed back
-  // to the plugin to attach to the ResourceHosts. Pending IDs of 0 will be
-  // passed to the callback if a ResourceHost fails to be created.
+  // the resource will belong to. |callback| will be called asynchronously with
+  // the pending host IDs when the ResourceHosts have been created. This can be
+  // passed back to the plugin to attach to the ResourceHosts. Pending IDs of 0
+  // will be passed to the callback if a ResourceHost fails to be created.
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,

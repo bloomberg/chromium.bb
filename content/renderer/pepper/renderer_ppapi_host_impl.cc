@@ -4,8 +4,10 @@
 
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/fullscreen_container.h"
@@ -233,7 +235,8 @@ void RendererPpapiHostImpl::CreateBrowserResourceHosts(
   PepperBrowserConnection* browser_connection =
       PepperBrowserConnection::Get(render_view);
   if (!browser_connection) {
-    callback.Run(std::vector<int>(nested_msgs.size(), 0));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback, std::vector<int>(nested_msgs.size(), 0)));
   } else {
     browser_connection->SendBrowserCreate(module_->GetPluginChildId(),
                                           instance,

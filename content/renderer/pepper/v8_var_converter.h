@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "v8/include/v8.h"
 #include "content/common/content_export.h"
@@ -24,9 +25,10 @@ class ResourceConverter;
 
 class CONTENT_EXPORT V8VarConverter {
  public:
-  V8VarConverter();
+  explicit V8VarConverter(PP_Instance instance);
   // Constructor for testing.
   V8VarConverter(
+      PP_Instance instance,
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       scoped_ptr<ResourceConverter> resource_converter);
   ~V8VarConverter();

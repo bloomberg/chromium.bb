@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/resource_converter.h"
 #include "ppapi/shared_impl/array_var.h"
@@ -234,12 +235,14 @@ bool CanHaveChildren(PP_Var var) {
 
 }  // namespace
 
-V8VarConverter::V8VarConverter()
-    : message_loop_proxy_(base::MessageLoopProxy::current()),
-      resource_converter_(new ResourceConverterImpl()) {
+V8VarConverter::V8VarConverter(PP_Instance instance)
+    : message_loop_proxy_(base::MessageLoopProxy::current()) {
+  resource_converter_.reset(new ResourceConverterImpl(
+      instance, RendererPpapiHost::GetForPPInstance(instance)));
 }
 
 V8VarConverter::V8VarConverter(
+    PP_Instance instance,
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
     scoped_ptr<ResourceConverter> resource_converter)
     : message_loop_proxy_(message_loop_proxy),
@@ -500,7 +503,7 @@ void V8VarConverter::FromV8Value(
       }
     }
   }
-  resource_converter_->ShutDown(base::Bind(callback, root));
+  resource_converter_->Flush(base::Bind(callback, root));
 }
 
 }  // namespace content

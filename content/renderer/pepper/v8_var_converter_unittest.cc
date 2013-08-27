@@ -45,7 +45,7 @@ namespace {
 class MockResourceConverter : public content::ResourceConverter {
  public:
   virtual ~MockResourceConverter() {}
-  virtual void ShutDown(const base::Callback<void(bool)>& callback) OVERRIDE {
+  virtual void Flush(const base::Callback<void(bool)>& callback) OVERRIDE {
     callback.Run(true);
   }
 };
@@ -149,7 +149,9 @@ class V8VarConverterTest : public testing::Test {
         conversion_event_(true, false),
         callback_thread_("callback_thread") {
     callback_thread_.Start();
+    PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
+        dummy,
         callback_thread_.message_loop_proxy(),
         scoped_ptr<ResourceConverter>(new MockResourceConverter).Pass()));
   }
