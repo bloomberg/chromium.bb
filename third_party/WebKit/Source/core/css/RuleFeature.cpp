@@ -47,9 +47,6 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
     case CSSSelector::PseudoFirstLine:
         m_usesFirstLineRules = true;
         break;
-    case CSSSelector::PseudoBefore:
-    case CSSSelector::PseudoAfter:
-        m_usesBeforeAfterRules = true;
         break;
     case CSSSelector::PseudoPart:
         attrsInRules.add(HTMLNames::partAttr.localName().impl());
@@ -87,7 +84,6 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
     siblingRules.append(other.siblingRules);
     uncommonAttributeRules.append(other.uncommonAttributeRules);
     m_usesFirstLineRules = m_usesFirstLineRules || other.m_usesFirstLineRules;
-    m_usesBeforeAfterRules = m_usesBeforeAfterRules || other.m_usesBeforeAfterRules;
 }
 
 void RuleFeatureSet::clear()
@@ -98,7 +94,6 @@ void RuleFeatureSet::clear()
     siblingRules.clear();
     uncommonAttributeRules.clear();
     m_usesFirstLineRules = false;
-    m_usesBeforeAfterRules = false;
 }
 
 } // namespace WebCore

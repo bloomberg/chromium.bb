@@ -48,7 +48,6 @@ class RuleFeatureSet {
 public:
     RuleFeatureSet()
         : m_usesFirstLineRules(false)
-        , m_usesBeforeAfterRules(false)
     { }
 
     void add(const RuleFeatureSet&);
@@ -58,7 +57,6 @@ public:
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
-    bool usesBeforeAfterRules() const { return m_usesBeforeAfterRules; }
 
     inline bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
@@ -87,7 +85,6 @@ private:
     void collectFeaturesFromSelectorList(const CSSSelectorList*);
 
     bool m_usesFirstLineRules;
-    bool m_usesBeforeAfterRules;
 };
 
 } // namespace WebCore

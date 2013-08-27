@@ -2458,9 +2458,6 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
 
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
-    if ((pseudoId == BEFORE || pseudoId == AFTER) && !document()->styleSheetCollection()->usesBeforeAfterRules())
-        return;
-
     if (pseudoId == BACKDROP && !isInTopLayer())
         return;
 

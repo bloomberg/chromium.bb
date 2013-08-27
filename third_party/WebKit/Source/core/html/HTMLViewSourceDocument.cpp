@@ -49,7 +49,6 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
     : HTMLDocument(initializer)
     , m_type(mimeType)
 {
-    styleSheetCollection()->setUsesBeforeAfterRulesOverride(true);
     setIsViewSource(true);
 
     // FIXME: Why do view-source pages need to load in quirks mode?
