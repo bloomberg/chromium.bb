@@ -21,6 +21,50 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
+namespace {
+
+// Returns ResourceEntry and the local ID of the entry at the given path.
+FileError GetResourceEntryAndIdByPath(internal::ResourceMetadata* metadata,
+                                      const base::FilePath& file_path,
+                                      std::string* local_id,
+                                      ResourceEntry* entry) {
+  FileError error = metadata->GetIdByPath(file_path, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+  return metadata->GetResourceEntryById(*local_id, entry);
+}
+
+// Refreshes the entry specified by |local_id| with the contents of
+// |resource_entry|.
+FileError RefreshEntry(internal::ResourceMetadata* metadata,
+                       const std::string& local_id,
+                       scoped_ptr<google_apis::ResourceEntry> resource_entry,
+                       base::FilePath* file_path) {
+  DCHECK(resource_entry);
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+    return FILE_ERROR_NOT_A_FILE;
+
+  std::string parent_local_id;
+  FileError error = metadata->GetIdByResourceId(parent_resource_id,
+                                                &parent_local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  entry.set_parent_local_id(parent_local_id);
+
+  error = metadata->RefreshEntry(local_id, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  *file_path = metadata->GetFilePath(local_id);
+  return file_path->empty() ? FILE_ERROR_FAILED : FILE_ERROR_OK;
+}
+
+}  // namespace
+
 TouchOperation::TouchOperation(base::SequencedTaskRunner* blocking_task_runner,
                                OperationObserver* observer,
                                JobScheduler* scheduler,
@@ -43,27 +87,29 @@ void TouchOperation::TouchFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   ResourceEntry* entry = new ResourceEntry;
+  std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
+      base::Bind(&GetResourceEntryAndIdByPath,
                  base::Unretained(metadata_),
                  file_path,
+                 local_id,
                  entry),
       base::Bind(&TouchOperation::TouchFileAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
                  last_access_time,
                  last_modified_time,
                  callback,
+                 base::Owned(local_id),
                  base::Owned(entry)));
 }
 
 void TouchOperation::TouchFileAfterGetResourceEntry(
-    const base::FilePath& file_path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const FileOperationCallback& callback,
+    std::string* local_id,
     ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -81,11 +127,11 @@ void TouchOperation::TouchFileAfterGetResourceEntry(
       entry->resource_id(), last_modified_time, last_access_time,
       base::Bind(&TouchOperation::TouchFileAfterServerTimeStampUpdated,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path, callback));
+                 *local_id, callback));
 }
 
 void TouchOperation::TouchFileAfterServerTimeStampUpdated(
-    const base::FilePath& file_path,
+    const std::string& local_id,
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -98,39 +144,30 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
     return;
   }
 
-  DCHECK(resource_entry);
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
-
+  base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::RefreshEntry,
+      base::Bind(&RefreshEntry,
                  base::Unretained(metadata_),
-                 entry.resource_id(),
-                 entry),
+                 local_id,
+                 base::Passed(&resource_entry),
+                 file_path),
       base::Bind(&TouchOperation::TouchFileAfterRefreshMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
+                 base::Owned(file_path),
                  callback));
 }
 
 void TouchOperation::TouchFileAfterRefreshMetadata(
-    const base::FilePath& file_path,
+    const base::FilePath* file_path,
     const FileOperationCallback& callback,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
-    observer_->OnDirectoryChangedByOperation(file_path.DirName());
+    observer_->OnDirectoryChangedByOperation(file_path->DirName());
 
   callback.Run(error);
 }

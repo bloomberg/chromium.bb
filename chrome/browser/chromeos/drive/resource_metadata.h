@@ -187,6 +187,10 @@ class ResourceMetadata {
   // Returns ID of the entry at the given path.
   FileError GetIdByPath(const base::FilePath& file_path, std::string* out_id);
 
+  // Returns the local ID associated with the given resource ID.
+  FileError GetIdByResourceId(const std::string& resource_id,
+                              std::string* out_local_id);
+
  private:
   // Note: Use Destroy() to delete this object.
   ~ResourceMetadata();

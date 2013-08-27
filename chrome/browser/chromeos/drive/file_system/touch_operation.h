@@ -52,23 +52,23 @@ class TouchOperation {
 
  private:
   // Part of TouchFile(). Runs after GetResourceEntry is completed.
-  void TouchFileAfterGetResourceEntry(const base::FilePath& file_path,
-                                      const base::Time& last_access_time,
+  void TouchFileAfterGetResourceEntry(const base::Time& last_access_time,
                                       const base::Time& last_modified_time,
                                       const FileOperationCallback& callback,
+                                      std::string* local_id,
                                       ResourceEntry* entry,
                                       FileError error);
 
   // Part of TouchFile(). Runs after the server side update for last access time
   // and last modified time is completed.
   void TouchFileAfterServerTimeStampUpdated(
-      const base::FilePath& file_path,
+      const std::string& local_id,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of TouchFile(). Runs after refreshing the local metadata is completed.
-  void TouchFileAfterRefreshMetadata(const base::FilePath& file_path,
+  void TouchFileAfterRefreshMetadata(const base::FilePath* file_path,
                                      const FileOperationCallback& callback,
                                      FileError error);
 

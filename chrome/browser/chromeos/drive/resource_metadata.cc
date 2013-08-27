@@ -503,6 +503,16 @@ FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
   return FILE_ERROR_OK;
 }
 
+FileError ResourceMetadata::GetIdByResourceId(const std::string& resource_id,
+                                              std::string* out_local_id) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
+  // TODO(hashimoto): Look up the DB actually and generate new one when not
+  // found. crbug.com/260514
+  *out_local_id = resource_id;
+  return FILE_ERROR_OK;
+}
+
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
