@@ -732,3 +732,40 @@ void BrowserWindowCocoa::ShowPasswordGenerationBubble(
                forForm:form];
   [controller showWindow:nil];
 }
+
+int
+BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
+  if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)
+    return 0;
+  // TODO(sail): please make this work with cocoa, then enable
+  // BrowserTest.GetSizeForNewRenderView and
+  // WebContentsImplBrowserTest.GetSizeForNewRenderView.
+  // This function should return the extra height of the render view when
+  // detached bookmark bar is hidden.
+  // However, I (kuan) return 0 for now to retain the original behavior,
+  // because I encountered the following problem on cocoa:
+  // 1) When a navigation is requested,
+  //    WebContentsImpl::CreateRenderViewForRenderManager creates the new
+  //    RenderWidgetHostView at the size specified by
+  //    WebContentsDelegate::GetSizeForNewRenderView implemented by Browser.
+  // 2) When the pending navigation entry is committed,
+  //    WebContentsImpl::UpdateRenderViewSizeForRenderManager udpates the size
+  //    of WebContentsView to the size in (1).
+  // 3) WebContentsImpl::DidNavigateMainFramePostCommit() is called, where
+  //    the detached bookmark bar is hidden, resulting in relayout of tab
+  //    contents area.
+  // On cocoa, (2) causes RenderWidgetHostView to resize (enlarge) further.
+  // e.g. if size in (1) is size A, and this function returns height H, height
+  // of RenderWidgetHostView after (2) becomes A.height() + H; it's supposed to
+  // stay at A.height().
+  // Then, in (3), WebContentsView and RenderWidgetHostView enlarge even
+  // further, both by another H, i.e. WebContentsView's height becomes
+  // A.height() + H and RenderWidgetHostView's height becomes A.height() + 2H.
+  // Strangely, the RenderWidgetHostView for the previous navigation entry also
+  // gets enlarged by H.
+  // I believe these "automatic" resizing are caused by setAutoresizingMask of
+  // of the cocoa view in WebContentsViewMac, which defeats the purpose of
+  // WebContentsDelegate::GetSizeForNewRenderView i.e. to prevent resizing of
+  // RenderWidgetHostView in (2) and (3).
+  return 0;
+}

@@ -176,6 +176,7 @@ class BrowserWindowGtk
       const gfx::Rect& rect,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) OVERRIDE;
+  virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,

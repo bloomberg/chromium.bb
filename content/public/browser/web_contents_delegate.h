@@ -94,9 +94,10 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
-  // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
-  // initial position. If |was_blocked| is non-NULL, then |*was_blocked| will
-  // be set to true if the popup gets blocked, and left unchanged otherwise.
+  // method returns.  If |disposition| is NEW_POPUP, |initial_pos| should hold
+  // the initial position. If |was_blocked| is non-NULL, then |*was_blocked|
+  // will be set to true if the popup gets blocked, and left unchanged
+  // otherwise.
   virtual void AddNewContents(WebContents* source,
                               WebContents* new_contents,
                               WindowOpenDisposition disposition,
@@ -432,6 +433,14 @@ class CONTENT_EXPORT WebContentsDelegate {
       const GURL& url,
       const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback);
+
+  // Returns the size for the new render view created for the pending entry in
+  // |web_contents|; if there's no size, returns an empty size.
+  // This is optional for implementations of WebContentsDelegate; if the
+  // delegate doesn't provide a size, the current WebContentsView's size will be
+  // used.
+  virtual gfx::Size GetSizeForNewRenderView(
+      const WebContents* web_contents) const;
 
  protected:
   virtual ~WebContentsDelegate();

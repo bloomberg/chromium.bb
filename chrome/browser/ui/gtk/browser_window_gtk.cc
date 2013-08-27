@@ -1187,6 +1187,15 @@ void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads(
       GetNativeWindow(), download_count, dialog_type, app_modal, callback);
 }
 
+int
+BrowserWindowGtk::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
+  if (!bookmark_bar_.get() ||
+      browser_->bookmark_bar_state() != BookmarkBar::DETACHED) {
+    return 0;
+  }
+  return bookmark_bar_->max_height();
+}
+
 void BrowserWindowGtk::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {

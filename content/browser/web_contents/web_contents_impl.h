@@ -760,6 +760,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Clear all PowerSaveBlockers, leave power_save_blocker_ empty.
   void ClearAllPowerSaveBlockers();
 
+  // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
+  gfx::Size GetSizeForNewRenderView() const;
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.

@@ -10,7 +10,9 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -20,6 +22,25 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
+
+void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
+                           bool set_start_page) {
+  // Shell::SizeTo is not implemented on Aura; WebContentsView::SizeContents
+  // works on Win and ChromeOS but not Linux - we need to resize the shell
+  // window on Linux because if we don't, the next layout of the unchanged shell
+  // window will resize WebContentsView back to the previous size.
+  // The cleaner and shorter SizeContents is preferred as more platforms convert
+  // to Aura.
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+  shell->SizeTo(size.width(), size.height());
+  // If |set_start_page| is true, start with blank page to make sure resize
+  // takes effect.
+  if (set_start_page)
+    NavigateToURL(shell, GURL("about://blank"));
+#else
+  shell->web_contents()->GetView()->SizeContents(size);
+#endif  // defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+}
 
 class WebContentsImplBrowserTest : public ContentBrowserTest {
  public:
@@ -80,6 +101,51 @@ class NavigateOnCommitObserver : public WebContentsObserver {
   Shell* shell_;
   GURL url_;
   bool done_;
+};
+
+class RenderViewSizeDelegate : public WebContentsDelegate {
+ public:
+  void set_size_insets(const gfx::Size& size_insets) {
+    size_insets_ = size_insets;
+  }
+
+  // WebContentsDelegate:
+  virtual gfx::Size GetSizeForNewRenderView(
+      const WebContents* web_contents) const OVERRIDE {
+    gfx::Size size(web_contents->GetView()->GetContainerSize());
+    size.Enlarge(size_insets_.width(), size_insets_.height());
+    return size;
+  }
+
+ private:
+  gfx::Size size_insets_;
+};
+
+class RenderViewSizeObserver : public WebContentsObserver {
+ public:
+  RenderViewSizeObserver(Shell* shell, const gfx::Size& wcv_new_size)
+      : WebContentsObserver(shell->web_contents()),
+        shell_(shell),
+        wcv_new_size_(wcv_new_size) {
+  }
+
+  // WebContentsObserver:
+  virtual void RenderViewCreated(RenderViewHost* rvh) OVERRIDE {
+    rwhv_create_size_ = rvh->GetView()->GetViewBounds().size();
+  }
+
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      NavigationController::ReloadType reload_type) OVERRIDE {
+    ResizeWebContentsView(shell_, wcv_new_size_, false);
+  }
+
+  gfx::Size rwhv_create_size() const { return rwhv_create_size_; }
+
+ private:
+  Shell* shell_;  // Weak ptr.
+  gfx::Size wcv_new_size_;
+  gfx::Size rwhv_create_size_;
 };
 
 // Test that DidStopLoading includes the correct URL in the details.
@@ -157,6 +223,63 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameTree) {
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
   EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+}
+
+// TODO(sail): enable this for MAC when auto resizing of WebContentsViewCocoa is
+// fixed.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
+#else
+#define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
+#endif
+// Test that RenderViewHost is created and updated at the size specified by
+// WebContentsDelegate::GetSizeForNewRenderView().
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_GetSizeForNewRenderView) {
+  scoped_ptr<RenderViewSizeDelegate> delegate(new RenderViewSizeDelegate());
+  shell()->web_contents()->SetDelegate(delegate.get());
+  ASSERT_TRUE(shell()->web_contents()->GetDelegate() == delegate.get());
+
+  // When no size is set, RenderWidgetHostView adopts the size of
+  // WebContenntsView.
+  NavigateToURL(shell(), GURL("http://foo0.com"));
+  EXPECT_EQ(shell()->web_contents()->GetView()->GetContainerSize(),
+            shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().
+                size());
+
+  // When a size is set, RenderWidgetHostView and WebContentsView honor this
+  // size.
+  gfx::Size size(300, 300);
+  gfx::Size size_insets(-10, -15);
+  ResizeWebContentsView(shell(), size, true);
+  delegate->set_size_insets(size_insets);
+  NavigateToURL(shell(), GURL("http://foo1.com"));
+  size.Enlarge(size_insets.width(), size_insets.height());
+  EXPECT_EQ(size,
+            shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().
+                size());
+  EXPECT_EQ(size, shell()->web_contents()->GetView()->GetContainerSize());
+
+  // If WebContentsView is resized after RenderWidgetHostView is created but
+  // before pending navigation entry is committed, both RenderWidgetHostView and
+  // WebContentsView use the new size of WebContentsView.
+  gfx::Size init_size(200, 200);
+  gfx::Size new_size(100, 100);
+  size_insets = gfx::Size(-20, -30);
+  ResizeWebContentsView(shell(), init_size, true);
+  delegate->set_size_insets(size_insets);
+  RenderViewSizeObserver observer(shell(), new_size);
+  NavigateToURL(shell(), GURL("http://foo2.com"));
+  // RenderWidgetHostView is created at specified size.
+  init_size.Enlarge(size_insets.width(), size_insets.height());
+  EXPECT_EQ(init_size, observer.rwhv_create_size());
+  // RenderViewSizeObserver resizes WebContentsView in NavigateToPendingEntry,
+  // so both WebContentsView and RenderWidgetHostView adopt this new size.
+  new_size.Enlarge(size_insets.width(), size_insets.height());
+  EXPECT_EQ(new_size,
+            shell()->web_contents()->GetRenderWidgetHostView()->GetViewBounds().
+                size());
+  EXPECT_EQ(new_size, shell()->web_contents()->GetView()->GetContainerSize());
 }
 
 }  // namespace content

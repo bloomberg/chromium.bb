@@ -172,4 +172,9 @@ void WebContentsDelegate::Detach(WebContents* web_contents) {
   attached_contents_.erase(web_contents);
 }
 
+gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
+    const WebContents* web_contents) const {
+  return gfx::Size();
+}
+
 }  // namespace content

@@ -362,6 +362,11 @@ class BrowserWindow : public ui::BaseWindow {
   // amount of overscroll that has occured in the y-direction.
   virtual void OverscrollUpdate(int delta_y) {}
 
+  // Returns the height inset for RenderView when detached bookmark bar is
+  // shown.  Invoked when a new RenderHostView is created for a non-NTP
+  // navigation entry and the bookmark bar is detached.
+  virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() = 0;
+
  protected:
   friend class BrowserCloseManager;
   friend class BrowserView;

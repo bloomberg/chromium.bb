@@ -140,6 +140,7 @@ class TestBrowserWindow : public BrowserWindow {
       const gfx::Rect& rect,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE {}
+  virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
 
  protected:
   virtual void DestroyBrowser() OVERRIDE {}

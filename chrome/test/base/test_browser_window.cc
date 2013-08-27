@@ -138,6 +138,11 @@ web_modal::WebContentsModalDialogHost*
   return NULL;
 }
 
+int
+TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
+  return 0;
+}
+
 namespace chrome {
 
 namespace {

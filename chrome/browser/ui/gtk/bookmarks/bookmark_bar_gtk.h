@@ -91,6 +91,8 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   const ui::Animation* animation() { return &slide_animation_; }
 
+  int max_height() const { return max_height_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest,

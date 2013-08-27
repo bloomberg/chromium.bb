@@ -3552,7 +3552,7 @@ void WebContentsImpl::RenderProcessGoneFromRenderManager(
 
 void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
   // TODO(brettw) this is a hack. See WebContentsView::SizeContents.
-  gfx::Size size = view_->GetContainerSize();
+  gfx::Size size = GetSizeForNewRenderView();
   // 0x0 isn't a valid window size (minimal window size is 1x1) but it may be
   // here during container initialization and normal window size will be set
   // later. In case of tab duplication this resizing to 0x0 prevents setting
@@ -3647,7 +3647,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 
   // Now that the RenderView has been created, we need to tell it its size.
   if (rwh_view)
-    rwh_view->SetSize(view_->GetContainerSize());
+    rwh_view->SetSize(GetSizeForNewRenderView());
 
   // Make sure we use the correct starting page_id in the new RenderView.
   UpdateMaxPageIDIfNecessary(render_view_host);
@@ -3749,6 +3749,15 @@ void WebContentsImpl::ClearAllPowerSaveBlockers() {
        i != power_save_blockers_.end(); ++i)
     STLDeleteValues(&power_save_blockers_[i->first]);
   power_save_blockers_.clear();
+}
+
+gfx::Size WebContentsImpl::GetSizeForNewRenderView() const {
+  gfx::Size size;
+  if (delegate_)
+    size = delegate_->GetSizeForNewRenderView(this);
+  if (size.IsEmpty())
+    size = view_->GetContainerSize();
+  return size;
 }
 
 }  // namespace content
