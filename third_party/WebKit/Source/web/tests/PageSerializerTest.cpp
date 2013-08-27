@@ -143,16 +143,31 @@ protected:
         return m_resources;
     }
 
-    bool isSerialized(const char* url, const char* mimeType)
+
+    const SerializedResource* getResource(const char* url, const char* mimeType)
     {
         KURL kURL = KURL(m_baseUrl, url);
-        WTF::String mime(mimeType);
+        String mime(mimeType);
         for (size_t i = 0; i < m_resources.size(); ++i) {
             const SerializedResource& resource = m_resources[i];
-            if (resource.url == kURL && !resource.data->isEmpty() && equalIgnoringCase(resource.mimeType, mime))
-                return true;
+            if (resource.url == kURL && !resource.data->isEmpty()
+                && (mime.isNull() || equalIgnoringCase(resource.mimeType, mime)))
+                return &resource;
         }
-        return false;
+        return 0;
+    }
+
+    bool isSerialized(const char* url, const char* mimeType = 0)
+    {
+        return getResource(url, mimeType);
+    }
+
+    String getSerializedData(const char* url, const char* mimeType = 0)
+    {
+        const SerializedResource* resource = getResource(url, mimeType);
+        if (resource)
+            return String(resource->data->data());
+        return String();
     }
 
     WebViewImpl* m_webViewImpl;
@@ -177,6 +192,28 @@ TEST_F(PageSerializerTest, InputImage)
 
     EXPECT_TRUE(isSerialized("button.png", "image/png"));
     EXPECT_FALSE(isSerialized("non-existing-button.png", "image/png"));
+}
+
+TEST_F(PageSerializerTest, XMLDeclaration)
+{
+    setBaseFolder("pageserializer/xmldecl/");
+
+    registerURL("xmldecl.xml", "text/xml");
+    serialize("xmldecl.xml");
+
+    String expectedStart("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    EXPECT_TRUE(getSerializedData("xmldecl.xml").startsWith(expectedStart));
+}
+
+TEST_F(PageSerializerTest, DTD)
+{
+    setBaseFolder("pageserializer/dtd/");
+
+    registerURL("dtd.html", "text/html");
+    serialize("dtd.html");
+
+    String expectedStart("<!DOCTYPE html>");
+    EXPECT_TRUE(getSerializedData("dtd.html").startsWith(expectedStart));
 }
 
 }

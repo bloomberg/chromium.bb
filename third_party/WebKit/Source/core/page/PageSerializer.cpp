@@ -115,9 +115,6 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* seriali
     , m_serializer(serializer)
     , m_document(document)
 {
-    // MarkupAccumulator does not serialize the <?xml ... line, so we add it explicitely to ensure the right encoding is specified.
-    if (m_document->isXHTMLDocument() || m_document->xmlStandalone() || m_document->isSVGDocument())
-        appendString("<?xml version=\"" + m_document->xmlVersion() + "\" encoding=\"" + m_document->charset() + "\"?>");
 }
 
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator()
@@ -205,7 +202,7 @@ void PageSerializer::serializeFrame(Frame* frame)
         // FIXME: iframes used as images trigger this. We should deal with them correctly.
         return;
     }
-    String text = accumulator.serializeNodes(document->documentElement(), IncludeNode);
+    String text = accumulator.serializeNodes(document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
