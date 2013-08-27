@@ -44,16 +44,6 @@ ScopedAvoidIdentityHashForTesting::~ScopedAvoidIdentityHashForTesting() {
   converter_->avoid_identity_hash_for_testing_ = false;
 }
 
-namespace {
-
-// A dumb getter for an object's named callback.
-v8::Handle<v8::Value> NamedCallbackGetter(v8::Local<v8::String> name,
-                                          const v8::AccessorInfo& info) {
-  return v8::String::New("bar");
-}
-
-}  // namespace
-
 class V8ValueConverterImplTest : public testing::Test {
  public:
   V8ValueConverterImplTest()
