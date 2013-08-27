@@ -1008,17 +1008,19 @@ def _UploadPrebuilts(buildroot, board, extra_args):
   _RunBuildScript(buildroot, cmd, cwd=cwd)
 
 
-def GenerateBreakpadSymbols(buildroot, board):
+def GenerateBreakpadSymbols(buildroot, board, debug):
   """Generate breakpad symbols.
 
   Args:
     buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine
+    board: Board type that was built on this machine.
+    debug: Include extra debugging output.
   """
-  cmd = ['./cros_generate_breakpad_symbols', '--board=%s' % board]
-  extra_env = {'NUM_JOBS': str(max([1, multiprocessing.cpu_count() / 2]))}
-  _RunBuildScript(buildroot, cmd, enter_chroot=True, capture_output=True,
-                  extra_env=extra_env)
+  cmd = ['cros_generate_breakpad_symbols', '--board=%s' % board,
+         '--jobs=%s' % str(max([1, multiprocessing.cpu_count() / 2]))]
+  if debug:
+    cmd += ['--debug']
+  _RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):

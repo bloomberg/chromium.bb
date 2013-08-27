@@ -2650,7 +2650,7 @@ class ArchiveStage(ArchivingStage):
       if config['archive_build_debug'] or config['vm_tests']:
         success = False
         try:
-          commands.GenerateBreakpadSymbols(buildroot, board)
+          commands.GenerateBreakpadSymbols(buildroot, board, debug)
           success = True
         finally:
           self._BreakpadSymbolsGenerated(success)

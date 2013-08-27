@@ -287,6 +287,11 @@ ca-t3/pk-g4-4.0.1-r333
     self.testBuild(extra_env=extra_env)
     self.assertCommandContains(['./build_packages'], extra_env=extra_env)
 
+  def testGenerateSymbols(self):
+    """Test GenerateBreakpadSymbols Command."""
+    commands.GenerateBreakpadSymbols(self.tempdir, self._board, False)
+    self.assertCommandContains(['--board=%s' % self._board])
+
   def testUploadSymbols(self, official=False, cnt=None):
     """Test UploadSymbols Command."""
     commands.UploadSymbols(self.tempdir, self._board, official, cnt)

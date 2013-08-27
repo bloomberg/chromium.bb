@@ -152,7 +152,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 
 
 def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
-                            generate_count=None, sysroot=None):
+                            generate_count=None, sysroot=None,
+                            num_processes=None):
   """Generate all the symbols for this board
 
   TODO(build):
@@ -165,6 +166,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     strip_cfi: Do not generate CFI data
     generate_count: If set, only generate this many symbols (meant for testing)
     sysroot: The root where to find the corresponding ELFs
+    num_processes: Number of jobs to run in parallel
   Returns:
     The number of errors that were encountered.
   """
@@ -206,7 +208,8 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   with parallel.BackgroundTaskRunner(GenerateBreakpadSymbol,
                                      breakpad_dir=breakpad_dir, board=board,
                                      strip_cfi=strip_cfi,
-                                     num_errors=bg_errors) as queue:
+                                     num_errors=bg_errors,
+                                     processes=num_processes) as queue:
     for _, debug_file in sorted(debug_files, reverse=True):
       if generate_count == 0:
         break
@@ -248,6 +251,8 @@ def main(argv):
                       help='root directory for breakpad symbols')
   parser.add_argument('--generate-count', type=int, default=None,
                       help='only generate # number of symbols')
+  parser.add_argument('--jobs', type=int, default=None,
+                      help='limit number of parallel jobs')
   parser.add_argument('--strip_cfi', action='store_true', default=False,
                       help='do not generate CFI data (pass -c to dump_syms)')
 
@@ -258,7 +263,8 @@ def main(argv):
 
   ret = GenerateBreakpadSymbols(opts.board, breakpad_dir=opts.breakpad_root,
                                 strip_cfi=opts.strip_cfi,
-                                generate_count=opts.generate_count)
+                                generate_count=opts.generate_count,
+                                num_processes=opts.jobs)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
