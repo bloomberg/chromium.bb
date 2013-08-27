@@ -7,11 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -121,15 +119,10 @@ class ExternalInstallMenuAlert : public GlobalError,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Callback to notify UI that extension has been removed.
-  void HandleExtensionRemoved(const Extension* extension);
-
  protected:
   ExtensionService* service_;
   const Extension* extension_;
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<ExternalInstallMenuAlert> weak_factory_;
-  base::Callback<void(const Extension*)> on_removed_callback_;
 };
 
 // Shows a menu item and a global error bubble, replacing the install dialog.
@@ -248,18 +241,14 @@ ExternalInstallMenuAlert::ExternalInstallMenuAlert(
     ExtensionService* service,
     const Extension* extension)
     : service_(service),
-      extension_(extension),
-      weak_factory_(this) {
-  on_removed_callback_ = base::Bind(
-      &ExternalInstallMenuAlert::HandleExtensionRemoved,
-      weak_factory_.GetWeakPtr());
-  service_->RegisterExtensionRemovedCallback(on_removed_callback_);
+      extension_(extension) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(service->profile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
 }
 
 ExternalInstallMenuAlert::~ExternalInstallMenuAlert() {
-  service_->RemoveExtensionRemovedCallback(on_removed_callback_);
 }
 
 GlobalError::Severity ExternalInstallMenuAlert::GetSeverity() {
@@ -327,19 +316,9 @@ void ExternalInstallMenuAlert::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+         type == chrome::NOTIFICATION_EXTENSION_REMOVED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (extension != extension_)
-    return;
-  GlobalErrorService* error_service =
-      GlobalErrorServiceFactory::GetForProfile(service_->profile());
-  error_service->RemoveGlobalError(this);
-  service_->AcknowledgeExternalExtension(extension_->id());
-  delete this;
-}
-
-void ExternalInstallMenuAlert::HandleExtensionRemoved(
-    const Extension* extension) {
   if (extension != extension_)
     return;
   GlobalErrorService* error_service =

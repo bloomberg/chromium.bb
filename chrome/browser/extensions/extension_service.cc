@@ -1222,13 +1222,6 @@ void ExtensionService::NotifyExtensionUnloaded(
   UpdateActiveExtensionsInCrashReporter();
 }
 
-void ExtensionService::NotifyExtensionRemoved(const Extension* extension) {
-  for (size_t i = 0; i < extension_removed_callbacks_.size(); ++i) {
-    if (!extension_removed_callbacks_[i].is_null())
-      extension_removed_callbacks_[i].Run(extension);
-  }
-}
-
 Profile* ExtensionService::profile() {
   return profile_;
 }
@@ -1962,7 +1955,10 @@ void ExtensionService::UnloadExtension(
     NotifyExtensionUnloaded(extension.get(), reason);
   }
 
-  NotifyExtensionRemoved(extension.get());
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_REMOVED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension.get()));
 }
 
 void ExtensionService::UnloadAllExtensions() {
@@ -2654,8 +2650,12 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   std::string lowercase_id = StringToLowerASCII(id);
   const Extension* extension = terminated_extensions_.GetByID(lowercase_id);
   terminated_extensions_.Remove(lowercase_id);
-  if (extension)
-    NotifyExtensionRemoved(extension);
+  if (extension) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_REMOVED,
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
+  }
 }
 
 const Extension* ExtensionService::GetTerminatedExtension(
@@ -3169,20 +3169,4 @@ void ExtensionService::AddUpdateObserver(extensions::UpdateObserver* observer) {
 void ExtensionService::RemoveUpdateObserver(
     extensions::UpdateObserver* observer) {
   update_observers_.RemoveObserver(observer);
-}
-
-void ExtensionService::RegisterExtensionRemovedCallback(
-    const base::Callback<void(const extensions::Extension*)>& callback) {
-  extension_removed_callbacks_.push_back(callback);
-}
-
-void ExtensionService::RemoveExtensionRemovedCallback(
-    const base::Callback<void(const extensions::Extension*)>& callback) {
-  for (size_t i = 0; i < extension_removed_callbacks_.size(); ++i) {
-    if (extension_removed_callbacks_[i].Equals(callback)) {
-      extension_removed_callbacks_.erase(
-          extension_removed_callbacks_.begin() + i);
-      return;
-    }
-  }
 }

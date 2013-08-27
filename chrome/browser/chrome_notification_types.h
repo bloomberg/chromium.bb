@@ -478,6 +478,12 @@ enum NotificationType {
   // removed the extension from its internal state.
   NOTIFICATION_EXTENSION_UNLOADED,
 
+  // Sent when an Extension object is removed from ExtensionService. This
+  // can happen when an extension is uninstalled, upgraded, or blacklisted,
+  // including all cases when the Extension is deleted. The details are an
+  // Extension, and the source is a Profile.
+  NOTIFICATION_EXTENSION_REMOVED,
+
   // Sent after a new ExtensionHost is created. The details are
   // an ExtensionHost* and the source is a Profile*.
   NOTIFICATION_EXTENSION_HOST_CREATED,
