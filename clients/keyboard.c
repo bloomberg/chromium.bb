@@ -625,6 +625,46 @@ button_handler(struct widget *widget,
 }
 
 static void
+touch_down_handler(struct widget *widget, struct input *input,
+		   uint32_t serial, uint32_t time, int32_t id,
+		   float x, float y, void *data)
+{
+
+	struct keyboard *keyboard = data;
+	struct rectangle allocation;
+	int row, col;
+	unsigned int i;
+	const struct layout *layout;
+
+	layout = get_current_layout(keyboard->keyboard);
+
+	widget_get_allocation(keyboard->widget, &allocation);
+
+	x -= allocation.x;
+	y -= allocation.y;
+
+	row = (int)y / key_height;
+	col = (int)x / key_width + row * layout->columns;
+	for (i = 0; i < layout->count; ++i) {
+		col -= layout->keys[i].width;
+		if (col < 0) {
+			keyboard_handle_key(keyboard, time, &layout->keys[i], input, WL_POINTER_BUTTON_STATE_PRESSED);
+			break;
+		}
+	}
+
+	widget_schedule_redraw(widget);
+}
+
+static void
+touch_up_handler(struct widget *widget, struct input *input,
+				uint32_t serial, uint32_t time, int32_t id,
+				void *data)
+{
+
+}
+
+static void
 handle_surrounding_text(void *data,
 			struct wl_input_method_context *context,
 			const char *text,
@@ -839,6 +879,9 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	widget_set_redraw_handler(keyboard->widget, redraw_handler);
 	widget_set_resize_handler(keyboard->widget, resize_handler);
 	widget_set_button_handler(keyboard->widget, button_handler);
+	widget_set_touch_down_handler(keyboard->widget, touch_down_handler);
+	widget_set_touch_up_handler(keyboard->widget, touch_up_handler);
+
 
 	window_schedule_resize(keyboard->window,
 			       layout->columns * key_width,
