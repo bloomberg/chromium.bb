@@ -24,6 +24,7 @@ class KioskAppLaunchError {
     USER_CANCEL,              // Canceled by user.
     NOT_KIOSK_ENABLED,        // Not a kiosk enabled app.
     UNABLE_TO_RETRIEVE_HASH,  // Unable to retrieve username hash.
+    POLICY_LOAD_FAILED,       // Failed to load policy for kiosk account.
   };
 
   // Returns a message for given |error|.

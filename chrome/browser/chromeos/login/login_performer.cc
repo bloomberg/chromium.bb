@@ -273,6 +273,14 @@ void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
                  username));
 }
 
+void LoginPerformer::LoginAsKioskAccount(const std::string& app_user_id) {
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
+                 app_user_id));
+}
+
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

@@ -11,7 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "chrome/browser/chromeos/login/login_performer.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 
 class Profile;
 
@@ -19,10 +20,11 @@ namespace chromeos {
 
 class KioskAppManager;
 
-// KioskProfileLoader loads a special profile for a given app. It first attempts
-// to mount a cryptohome for the app. If the mount is successful, it prepares
-// app profile then calls the delegate.
-class KioskProfileLoader {
+// KioskProfileLoader loads a special profile for a given app. It first
+// attempts to login for the app's generated user id. If the login is
+// successful, it prepares app profile then calls the delegate.
+class KioskProfileLoader : public LoginPerformer::Delegate,
+                           public LoginUtils::Delegate {
  public:
   class Delegate {
    public:
@@ -37,36 +39,37 @@ class KioskProfileLoader {
                      const std::string& app_id,
                      Delegate* delegate);
 
-  ~KioskProfileLoader();
+  virtual ~KioskProfileLoader();
 
   // Starts profile load. Calls delegate on success or failure.
   void Start();
 
  private:
   class CryptohomedChecker;
-  class ProfileLoader;
 
+  void LoginAsKioskAccount();
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
-  void StartMount();
-  void MountCallback(bool mount_success, cryptohome::MountError mount_error);
+  // LoginPerformer::Delegate overrides
+  virtual void OnLoginSuccess(
+      const UserContext& user_context,
+      bool pending_requests,
+      bool using_oauth) OVERRIDE;
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
+  virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
+  virtual void PolicyLoadFailed() OVERRIDE;
+  virtual void OnOnlineChecked(
+      const std::string& email, bool success) OVERRIDE;
 
-  void AttemptRemove();
-  void RemoveCallback(bool success,
-                      cryptohome::MountError return_code);
-
-  void OnProfilePrepared(Profile* profile);
+  // LoginUtils::Delegate implementation:
+  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
 
   KioskAppManager* kiosk_app_manager_;
   const std::string app_id_;
   std::string user_id_;
   Delegate* delegate_;
-
-  scoped_ptr<CryptohomedChecker> crytohomed_checker;
-  scoped_ptr<ProfileLoader> profile_loader_;
-
-  // Whether remove existing cryptohome has attempted.
-  bool remove_attempted_;
+  scoped_ptr<CryptohomedChecker> cryptohomed_checker_;
+  scoped_ptr<LoginPerformer> login_performer_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskProfileLoader);
 };

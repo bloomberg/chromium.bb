@@ -28,6 +28,7 @@ std::string KioskAppLaunchError::GetErrorMessage(Error error) {
     case HAS_PENDING_LAUNCH:
     case NOT_KIOSK_ENABLED:
     case UNABLE_TO_RETRIEVE_HASH:
+    case POLICY_LOAD_FAILED:
       return l10n_util::GetStringUTF8(IDS_KIOSK_APP_FAILED_TO_LAUNCH);
 
     case CRYPTOHOMED_NOT_RUNNING:

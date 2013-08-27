@@ -80,7 +80,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   DVLOG(1) << "Profile loaded... Starting app launch.";
   profile_ = profile;
 
-  // StartupAppLauncher manages its own lifetime.
+  kiosk_profile_loader_.reset();
   startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_));
   startup_app_launcher_->AddObserver(this);
   startup_app_launcher_->Start();
@@ -152,6 +152,5 @@ void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   chrome::AttemptUserExit();
   Cleanup();
 }
-
 
 }   // namespace chromeos

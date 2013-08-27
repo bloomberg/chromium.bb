@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -48,6 +49,22 @@ std::string GetOldUserId(const std::string& user_id) {
   }
 }
 
+KioskAppLaunchError::Error LoginFailureToKioskAppLaunchError(
+    const LoginFailure& error) {
+  switch (error.reason()) {
+    case LoginFailure::COULD_NOT_MOUNT_TMPFS:
+    case LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME:
+      return KioskAppLaunchError::UNABLE_TO_MOUNT;
+    case LoginFailure::DATA_REMOVAL_FAILED:
+      return KioskAppLaunchError::UNABLE_TO_REMOVE;
+    case LoginFailure::USERNAME_HASH_FAILED:
+      return KioskAppLaunchError::UNABLE_TO_RETRIEVE_HASH;
+    default:
+      NOTREACHED();
+      return KioskAppLaunchError::UNABLE_TO_MOUNT;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +72,7 @@ std::string GetOldUserId(const std::string& user_id) {
 // and running by issuing an IsMounted call. If the call does not go through
 // and chromeos::DBUS_METHOD_CALL_SUCCESS is not returned, it will retry after
 // some time out and at the maximum five times before it gives up. Upon
-// success, it resumes the launch by calling KioskProfileLoader::StartMount.
+// success, it resumes the launch by logging in as a kiosk mode account.
 
 class KioskProfileLoader::CryptohomedChecker
     : public base::SupportsWeakPtr<CryptohomedChecker> {
@@ -104,7 +121,7 @@ class KioskProfileLoader::CryptohomedChecker
 
   void ReportCheckResult(KioskAppLaunchError::Error error) {
     if (error == KioskAppLaunchError::NONE)
-      loader_->StartMount();
+      loader_->LoginAsKioskAccount();
     else
       loader_->ReportLaunchResult(error);
   }
@@ -115,61 +132,6 @@ class KioskProfileLoader::CryptohomedChecker
   DISALLOW_COPY_AND_ASSIGN(CryptohomedChecker);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// KioskProfileLoader::ProfileLoader actually creates or loads the app profile.
-
-class KioskProfileLoader::ProfileLoader : public LoginUtils::Delegate {
- public:
-  ProfileLoader(KioskAppManager* kiosk_app_manager,
-                KioskProfileLoader* kiosk_profile_loader)
-      : kiosk_profile_loader_(kiosk_profile_loader),
-        user_id_(kiosk_profile_loader->user_id_) {
-    CHECK(!user_id_.empty());
-  }
-
-  virtual ~ProfileLoader() {
-    LoginUtils::Get()->DelegateDeleted(this);
-  }
-
-  void Start() {
-    cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-        user_id_,
-        base::Bind(&ProfileLoader::OnUsernameHashRetrieved,
-                   base::Unretained(this)));
-  }
-
- private:
-  void OnUsernameHashRetrieved(bool success,
-                               const std::string& username_hash) {
-    if (!success) {
-      LOG(ERROR) << "Unable to retrieve username hash for user '" << user_id_
-                 << "'.";
-      kiosk_profile_loader_->ReportLaunchResult(
-          KioskAppLaunchError::UNABLE_TO_RETRIEVE_HASH);
-      return;
-    }
-    LoginUtils::Get()->PrepareProfile(
-        UserContext(user_id_,
-                    std::string(),   // password
-                    std::string(),   // auth_code
-                    username_hash),
-        std::string(),  // display email
-        false,  // using_oauth
-        false,  // has_cookies
-        false,  // has_active_session
-        this);
-  }
-
-  // LoginUtils::Delegate overrides:
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    kiosk_profile_loader_->OnProfilePrepared(profile);
-  }
-
-  KioskProfileLoader* kiosk_profile_loader_;
-  std::string user_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileLoader);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // KioskProfileLoader
@@ -179,8 +141,7 @@ KioskProfileLoader::KioskProfileLoader(KioskAppManager* kiosk_app_manager,
                                        Delegate* delegate)
     : kiosk_app_manager_(kiosk_app_manager),
       app_id_(app_id),
-      delegate_(delegate),
-      remove_attempted_(false) {
+      delegate_(delegate) {
   KioskAppManager::App app;
   CHECK(kiosk_app_manager_->GetApp(app_id_, &app));
   user_id_ = app.user_id;
@@ -190,22 +151,12 @@ KioskProfileLoader::~KioskProfileLoader() {}
 
 void KioskProfileLoader::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Check cryptohomed. If all goes good, flow goes to StartMount. Otherwise
-  // it goes to ReportLaunchResult with failure.
-  crytohomed_checker.reset(new CryptohomedChecker(this));
-  crytohomed_checker->StartCheck();
+  login_performer_.reset();
+  cryptohomed_checker_.reset(new CryptohomedChecker(this));
+  cryptohomed_checker_->StartCheck();
 }
 
-void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != KioskAppLaunchError::NONE) {
-    delegate_->OnProfileLoadFailed(error);
-  }
-}
-
-void KioskProfileLoader::StartMount() {
+void KioskProfileLoader::LoginAsKioskAccount() {
   // Nuke old home that uses |app_id_| as cryptohome user id.
   // TODO(xiyuan): Remove this after all clients migrated to new home.
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
@@ -218,53 +169,56 @@ void KioskProfileLoader::StartMount() {
       GetOldUserId(user_id_),
       base::Bind(&IgnoreResult));
 
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
-      user_id_,
-      cryptohome::CREATE_IF_MISSING,
-      base::Bind(&KioskProfileLoader::MountCallback,
-                 base::Unretained(this)));
+  login_performer_.reset(new LoginPerformer(this));
+  login_performer_->LoginAsKioskAccount(user_id_);
 }
 
-void KioskProfileLoader::MountCallback(bool mount_success,
-                                       cryptohome::MountError mount_error) {
-  if (mount_success) {
-    profile_loader_.reset(new ProfileLoader(kiosk_app_manager_, this));
-    profile_loader_->Start();
-    return;
+void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != KioskAppLaunchError::NONE) {
+    delegate_->OnProfileLoadFailed(error);
   }
-
-  if (!remove_attempted_) {
-    LOG(ERROR) << "Attempt to remove app cryptohome because of mount failure"
-               << ", mount error=" << mount_error;
-
-    remove_attempted_ = true;
-    AttemptRemove();
-    return;
-  }
-
-  LOG(ERROR) << "Failed to mount app cryptohome, error=" << mount_error;
-  ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_MOUNT);
 }
 
-void KioskProfileLoader::AttemptRemove() {
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      user_id_,
-      base::Bind(&KioskProfileLoader::RemoveCallback,
-                 base::Unretained(this)));
+void KioskProfileLoader::OnLoginSuccess(
+    const UserContext& user_context,
+    bool pending_requests,
+    bool using_oauth)  {
+  // LoginPerformer will delete itself.
+  login_performer_->set_delegate(NULL);
+  ignore_result(login_performer_.release());
+
+  LoginUtils::Get()->PrepareProfile(user_context,
+                                    std::string(),  // display email
+                                    false,  // using_oauth
+                                    false,  // has_cookies
+                                    false,  // has_active_session
+                                    this);
 }
 
-void KioskProfileLoader::RemoveCallback(bool success,
-                                      cryptohome::MountError return_code) {
-  if (success) {
-    StartMount();
-    return;
-  }
+void KioskProfileLoader::OnLoginFailure(const LoginFailure& error) {
+  ReportLaunchResult(LoginFailureToKioskAppLaunchError(error));
+}
 
-  LOG(ERROR) << "Failed to remove app cryptohome, error=" << return_code;
-  ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_REMOVE);
+void KioskProfileLoader::WhiteListCheckFailed(const std::string& email) {
+  NOTREACHED();
+}
+
+void KioskProfileLoader::PolicyLoadFailed() {
+  ReportLaunchResult(KioskAppLaunchError::POLICY_LOAD_FAILED);
+}
+
+void KioskProfileLoader::OnOnlineChecked(
+    const std::string& email, bool success) {
+  NOTREACHED();
 }
 
 void KioskProfileLoader::OnProfilePrepared(Profile* profile) {
+  // This object could be deleted any time after successfully reporting
+  // a profile load, so invalidate the LoginUtils delegate now.
+  LoginUtils::Get()->DelegateDeleted(this);
+
   UserManager::Get()->SessionStarted();
   delegate_->OnProfileLoaded(profile);
   ReportLaunchResult(KioskAppLaunchError::NONE);

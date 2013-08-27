@@ -38,6 +38,7 @@ class MockAuthenticator : public Authenticator {
       const UserContext& user_context) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+  virtual void LoginAsKioskAccount(const std::string& app_user_id) OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;
 
   virtual void OnRetailModeLoginSuccess() OVERRIDE;

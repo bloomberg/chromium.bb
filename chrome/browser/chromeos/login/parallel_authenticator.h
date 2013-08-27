@@ -83,7 +83,11 @@ class ParallelAuthenticator : public Authenticator,
     PUBLIC_ACCOUNT_LOGIN = 18,        // Logged into a public account.
     LOCALLY_MANAGED_USER_LOGIN = 19,  // Logged in as a locally managed user.
     LOGIN_FAILED = 20,       // Login denied.
-    OWNER_REQUIRED = 21      // Login is restricted to the owner only.
+    OWNER_REQUIRED = 21,     // Login is restricted to the owner only.
+    FAILED_USERNAME_HASH = 22,        // Failed GetSanitizedUsername request.
+    KIOSK_ACCOUNT_LOGIN = 23,         // Logged into a kiosk account.
+    REMOVED_DATA_AFTER_FAILURE = 24,  // Successfully removed the user's
+                                      // cryptohome after a login failure.
   };
 
   explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
@@ -129,6 +133,11 @@ class ParallelAuthenticator : public Authenticator,
   // success/failure.
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
 
+  // Initiates login into the kiosk mode account identified by |app_user_id|.
+  // Mounts an public but non-ephemeral cryptohome and notifies consumer on the
+  // success/failure.
+  virtual void LoginAsKioskAccount(const std::string& app_user_id) OVERRIDE;
+
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   virtual void OnRetailModeLoginSuccess() OVERRIDE;
@@ -160,6 +169,9 @@ class ParallelAuthenticator : public Authenticator,
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ResolveOwnerNeededMount);
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
                            ResolveOwnerNeededFailedMount);
+
+  // Removes the cryptohome of the user.
+  void RemoveEncryptedData();
 
   // Returns the AuthState we're in, given the status info we have at
   // the time of call.
@@ -219,6 +231,7 @@ class ParallelAuthenticator : public Authenticator,
   scoped_ptr<OnlineAttempt> current_online_;
   bool migrate_attempted_;
   bool remove_attempted_;
+  bool resync_attempted_;
   bool ephemeral_mount_attempted_;
   bool check_key_attempted_;
 
@@ -236,6 +249,13 @@ class ParallelAuthenticator : public Authenticator,
 
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;
+
+  // Flag indicating to delete the user's cryptohome the login fails.
+  bool remove_user_data_on_failure_;
+
+  // When |remove_user_data_on_failure_| is set, we delay calling
+  // consumer_->OnLoginFailure() until we removed the user cryptohome.
+  const LoginFailure* delayed_login_failure_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };

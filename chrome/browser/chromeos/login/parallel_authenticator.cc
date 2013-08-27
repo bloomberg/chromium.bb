@@ -54,7 +54,10 @@ void TriggerResolveHash(AuthAttemptState* attempt,
                         bool success,
                         const std::string& username_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  attempt->RecordUsernameHash(username_hash);
+  if (success)
+    attempt->RecordUsernameHash(username_hash);
+  else
+    attempt->RecordUsernameHashFailed();
   resolver->Resolve();
 }
 
@@ -101,6 +104,25 @@ void MountGuest(AuthAttemptState* attempt,
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountGuest(
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeMount-End",
+                 attempt,
+                 resolver));
+}
+
+// Calls cryptohome's MountPublic method
+void MountPublic(AuthAttemptState* attempt,
+                 scoped_refptr<ParallelAuthenticator> resolver,
+                 int flags) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
+      attempt->user_context.username,
+      flags,
+      base::Bind(&TriggerResolveWithLoginTimeMarker,
+                 "CryptohomeMountPublic-End",
+                 attempt,
+                 resolver));
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+      attempt->user_context.username,
+      base::Bind(&TriggerResolveHash,
                  attempt,
                  resolver));
 }
@@ -185,12 +207,15 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       migrate_attempted_(false),
       remove_attempted_(false),
+      resync_attempted_(false),
       ephemeral_mount_attempted_(false),
       check_key_attempted_(false),
       already_reported_success_(false),
       owner_is_verified_(false),
       user_can_login_(false),
-      using_oauth_(true) {
+      using_oauth_(true),
+      remove_user_data_on_failure_(false),
+      delayed_login_failure_(NULL) {
 }
 
 void ParallelAuthenticator::AuthenticateToLogin(
@@ -349,6 +374,24 @@ void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
         cryptohome::CREATE_IF_MISSING | cryptohome::ENSURE_EPHEMERAL);
 }
 
+void ParallelAuthenticator::LoginAsKioskAccount(
+    const std::string& app_user_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  current_state_.reset(new AuthAttemptState(
+      UserContext(app_user_id,
+                  std::string(),  // password
+                  std::string()),  // auth_code
+      std::string(),  // ascii_hash
+      std::string(),  // login_token
+      std::string(),  // login_captcha
+      User::USER_TYPE_KIOSK_APP,
+      false));
+  remove_user_data_on_failure_ = true;
+  MountPublic(current_state_.get(),
+        scoped_refptr<ParallelAuthenticator>(this),
+        cryptohome::CREATE_IF_MISSING);
+}
+
 void ParallelAuthenticator::OnRetailModeLoginSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Retail mode login success";
@@ -401,6 +444,15 @@ void ParallelAuthenticator::OnPasswordChangeDetected() {
 
 void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // OnLoginFailure will be called again with the same |error|
+  // after the cryptohome has been removed.
+  if (remove_user_data_on_failure_) {
+    delayed_login_failure_ = &error;
+    RemoveEncryptedData();
+    return;
+  }
+
   // Send notification of failure
   AuthenticationNotificationDetails details(false);
   content::NotificationService::current()->Notify(
@@ -426,8 +478,18 @@ void ParallelAuthenticator::RecoverEncryptedData(
                  old_hash));
 }
 
-void ParallelAuthenticator::ResyncEncryptedData() {
+void ParallelAuthenticator::RemoveEncryptedData() {
   remove_attempted_ = true;
+  current_state_->ResetCryptohomeStatus();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Remove,
+                 current_state_.get(),
+                 scoped_refptr<ParallelAuthenticator>(this)));
+}
+
+void ParallelAuthenticator::ResyncEncryptedData() {
+  resync_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -490,6 +552,7 @@ void ParallelAuthenticator::Resolve() {
     case FAILED_REMOVE:
       // In this case, we tried to remove the user's old cryptohome at her
       // request, and the remove failed.
+      remove_user_data_on_failure_ = false;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
@@ -510,6 +573,21 @@ void ParallelAuthenticator::Resolve() {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
                      LoginFailure(LoginFailure::TPM_ERROR)));
+      break;
+    case FAILED_USERNAME_HASH:
+      // In this case, we failed the GetSanitizedUsername request to
+      // cryptohomed. This can happen for any login attempt.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     LoginFailure(LoginFailure::USERNAME_HASH_FAILED)));
+      break;
+    case REMOVED_DATA_AFTER_FAILURE:
+      remove_user_data_on_failure_ = false;
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     *delayed_login_failure_));
       break;
     case CREATE_NEW:
       mount_flags |= cryptohome::CREATE_IF_MISSING;
@@ -565,6 +643,7 @@ void ParallelAuthenticator::Resolve() {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnOffTheRecordLoginSuccess, this));
       break;
+    case KIOSK_ACCOUNT_LOGIN:
     case PUBLIC_ACCOUNT_LOGIN:
       using_oauth_ = false;
       BrowserThread::PostTask(
@@ -625,14 +704,17 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
 
   AuthState state = CONTINUE;
 
-  if (current_state_->cryptohome_outcome())
+  if (current_state_->cryptohome_outcome() &&
+      current_state_->username_hash_valid()) {
     state = ResolveCryptohomeSuccessState();
-  else
+  } else {
     state = ResolveCryptohomeFailureState();
+  }
 
   DCHECK(current_state_->cryptohome_complete());  // Ensure invariant holds.
   migrate_attempted_ = false;
   remove_attempted_ = false;
+  resync_attempted_ = false;
   ephemeral_mount_attempted_ = false;
   check_key_attempted_ = false;
 
@@ -655,7 +737,7 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveCryptohomeFailureState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (remove_attempted_)
+  if (remove_attempted_ || resync_attempted_)
     return FAILED_REMOVE;
   if (ephemeral_mount_attempted_)
     return FAILED_TMPFS;
@@ -691,14 +773,19 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
     }
   }
 
+  if (!current_state_->username_hash_valid())
+    return FAILED_USERNAME_HASH;
+
   return FAILED_MOUNT;
 }
 
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (remove_attempted_)
+  if (resync_attempted_)
     return CREATE_NEW;
+  if (remove_attempted_)
+    return REMOVED_DATA_AFTER_FAILURE;
   if (migrate_attempted_)
     return RECOVER_MOUNT;
   if (check_key_attempted_)
@@ -710,6 +797,8 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
     return DEMO_LOGIN;
   if (current_state_->user_type == User::USER_TYPE_PUBLIC_ACCOUNT)
     return PUBLIC_ACCOUNT_LOGIN;
+  if (current_state_->user_type == User::USER_TYPE_KIOSK_APP)
+    return KIOSK_ACCOUNT_LOGIN;
   if (current_state_->user_type == User::USER_TYPE_LOCALLY_MANAGED)
     return LOCALLY_MANAGED_USER_LOGIN;
 

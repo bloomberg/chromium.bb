@@ -203,7 +203,7 @@ void StartupAppLauncher::OnLaunchSuccess() {
 }
 
 void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "App launch failed";
+  LOG(ERROR) << "App launch failed, error: " << error;
   DCHECK_NE(KioskAppLaunchError::NONE, error);
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLaunchFailed(error));
@@ -266,9 +266,7 @@ void StartupAppLauncher::InstallCallback(bool success,
     return;
   }
 
-  // TODO: revert this.
-  LOG(ERROR) << "Failed to install app with error: " << error << ".";
-  LOG(ERROR) << "            " << app_id_;
+  LOG(ERROR) << "App install failed: " << error;
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 

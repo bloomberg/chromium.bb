@@ -34,6 +34,7 @@ class LoginFailure {
                             // only. It is never generated or seen by any of the
                             // other authenticator classes.
     TPM_ERROR,              // Critical TPM error encountered.
+    USERNAME_HASH_FAILED,   // Could not get username hash.
     NUM_FAILURE_REASONS,    // This has to be the last item.
   };
 

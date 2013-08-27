@@ -33,7 +33,8 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
       cryptohome_code_(cryptohome::MOUNT_ERROR_NONE),
-      username_hash_obtained_(true) {
+      username_hash_obtained_(true),
+      username_hash_valid_(true) {
 }
 
 AuthAttemptState::AuthAttemptState(const std::string& username,
@@ -99,6 +100,13 @@ void AuthAttemptState::RecordUsernameHash(const std::string& username_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   user_context.username_hash = username_hash;
   username_hash_obtained_ = true;
+  username_hash_valid_ = true;
+}
+
+void AuthAttemptState::RecordUsernameHashFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  username_hash_obtained_ = true;
+  username_hash_valid_ = false;
 }
 
 void AuthAttemptState::UsernameHashRequested() {
@@ -149,6 +157,11 @@ cryptohome::MountError AuthAttemptState::cryptohome_code() {
 }
 
 bool AuthAttemptState::username_hash_obtained() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return username_hash_obtained_;
+}
+
+bool AuthAttemptState::username_hash_valid() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return username_hash_obtained_;
 }

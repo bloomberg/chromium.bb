@@ -65,6 +65,16 @@ void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
                             false);
 }
 
+void MockAuthenticator::LoginAsKioskAccount(
+    const std::string& app_user_id) {
+  consumer_->OnLoginSuccess(UserContext(expected_username_,
+                                        std::string(),
+                                        std::string(),
+                                        expected_username_),
+                            false,
+                            false);
+}
+
 void MockAuthenticator::LoginOffTheRecord() {
   consumer_->OnOffTheRecordLoginSuccess();
 }

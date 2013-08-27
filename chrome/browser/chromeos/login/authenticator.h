@@ -58,6 +58,10 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Initiates login into the public account identified by |username|.
   virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
+  // Initiates login into kiosk mode account identified by |app_user_id|.
+  // The |app_user_id| is a generated username for the account.
+  virtual void LoginAsKioskAccount(const std::string& app_user_id) = 0;
+
   // Completes retail mode login.
   virtual void OnRetailModeLoginSuccess() = 0;
 
