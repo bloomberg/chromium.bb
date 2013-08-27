@@ -671,7 +671,7 @@ bool AccessibilityNodeObject::isEnabled() const
     if (!node || !node->isElementNode())
         return true;
 
-    return !toElement(node)->isDisabledFormControl();
+    return !node->isInert() && !toElement(node)->isDisabledFormControl();
 }
 
 bool AccessibilityNodeObject::isIndeterminate() const

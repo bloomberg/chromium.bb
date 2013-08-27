@@ -1,0 +1,12 @@
+
+This tests that inert elements are not enabled.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS textField.isEnabled is true
+PASS textField.isEnabled is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

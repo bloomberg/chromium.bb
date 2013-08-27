@@ -418,6 +418,9 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(addressTag))
         return ContentInfoRole;
 
+    if (node && node->hasTagName(dialogTag))
+        return DialogRole;
+
     // The HTML element should not be exposed as an element. That's what the RenderView element does.
     if (node && isHTMLHtmlElement(node))
         return IgnoredRole;

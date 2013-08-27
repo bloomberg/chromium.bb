@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body id="body">
+<input id="input" type="text">
+<p id="description"></p>
+<div id="console"></div>
+<dialog></dialog>
+
+<script>
+description("This tests that inert elements are not enabled.");
+
+if (window.accessibilityController) {
+    textField = accessibilityController.accessibleElementById('input');
+    shouldBe("textField.isEnabled", "true");
+
+    document.querySelector('dialog').showModal();
+    shouldBe("textField.isEnabled", "false");
+}
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

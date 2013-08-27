@@ -17,13 +17,21 @@
     function validateRole(aria, real, result) {
         if (!window.accessibilityController)
             return;
-        
-        aria.focus();
-        var ariaRole = accessibilityController.focusedElement.role;
-        
-        real.focus();
-        var realRole = accessibilityController.focusedElement.role;
-       
+
+        var axElement = accessibilityController.accessibleElementById(aria.id);
+        if (!axElement) {
+            result.innerText = "ERROR: could not retrieve element " + aria.id;
+            return;
+        }
+        var ariaRole = axElement.role;
+
+        axElement = accessibilityController.accessibleElementById(real.id);
+        if (!axElement) {
+            result.innerText = "ERROR: could not retrieve element " + real.id;
+            return;
+        }
+        var realRole = axElement.role;
+
         if (ariaRole == realRole)
             result.innerText = "This test PASSES in DumpRenderTree. The role is " + ariaRole;
         else
@@ -35,7 +43,7 @@
   <!--Checkbox-->
   <div class="newRole">
     <p>The following should be a checkbox:</p>
-    <p><span tabindex="0" role="checkbox" id="ariaCheckBox">X</span></p>
+    <p><span role="checkbox" id="ariaCheckBox">X</span></p>
     <p>Actual checkboxes:</p>
     <form>
         <input type="checkbox" name="broccoli" id="realCheckBox">Broccoli<br>
@@ -53,7 +61,7 @@
   <!--Button-->
   <div class="newRole">
     <p>The following should be a button:</p>
-    <p><span tabindex="0" role="button" id="ariaButton">X</span></p>
+    <p><span role="button" id="ariaButton">X</span></p>
     <p>Actual button:</p>
     <button id="realButton">Hello</button>
     <span id="resultButton"></span>
@@ -68,7 +76,7 @@
   <!--Heading-->
   <div class="newRole">
     <p>The following should be a heading:</p>
-    <p><span tabindex="0" role="heading" id="ariaHeading">X</span></p>
+    <p><span role="heading" id="ariaHeading">X</span></p>
     <p>Actual heading:</p>
     <h1 id="realHeading">Hello</h1>
     <span id="resultHeading"></span>
@@ -83,7 +91,7 @@
   <!--Link-->
   <div class="newRole">
     <p>The following should be a link:</p>
-    <p><span tabindex="0" role="link" id="ariaLink">X</span></p>
+    <p><span role="link" id="ariaLink">X</span></p>
     <p>Actual link:</p>
     <a href="/" id="realLink">Hello</a>
     <span id="resultLink"></span>
@@ -98,7 +106,7 @@
   <!--Radio-->
   <div class="newRole">
     <p>The following should be a radio button:</p>
-    <p><span tabindex="0" role="radio" id="ariaRadio">X</span></p>
+    <p><span role="radio" id="ariaRadio">X</span></p>
     <p>Actual radio buttons:</p>
     <form>
         <input type="radio" name="broccoli" id="realRadio">Broccoli<br>
@@ -116,7 +124,7 @@
   <!--Textbox-->
   <div class="newRole">
     <p>The following should be a text box:</p>
-    <p><span tabindex="0" role="textbox" id="ariaTextBox">X</span></p>
+    <p><span role="textbox" id="ariaTextBox">X</span></p>
     <p>Actual text box:</p>
     <input type="text" id="realTextBox"></input>
     <span id="resultTextBox"></span>
@@ -131,9 +139,9 @@
   <!--Image-->
   <div class="newRole">
     <p>The following should be an image:</p>
-    <p><span tabindex="0" role="img" alt="Hello" id="ariaImage">X</span></p>
+    <p><span role="img" alt="Hello" id="ariaImage">X</span></p>
     <p>Actual image:</p>
-    <img src="resources/cake.png" alt="Giant cupcake" tabindex="0" id="realImage"></img>
+    <img src="resources/cake.png" alt="Giant cupcake" id="realImage"></img>
     <span id="resultImage"></span>
     <script>
         validateRole(document.getElementById('ariaImage'),
@@ -146,7 +154,7 @@
   <!--List-->
   <div class="newRole">
     <p>The following should be a list:</p>
-    <p><span tabindex="0" role="list" id="ariaList">X</span></p>
+    <p><span role="list" id="ariaList">X</span></p>
     <p>Actual list:</p>
     <ul id="realList">
         <li>Broccoli</li>
@@ -160,6 +168,20 @@
     </script>
   </div>
   <br/>
+
+  <!--Dialog -->
+  <div class="newRole">
+    <p>The following should be a dialog:</p>
+    <p><span role="dialog" id="ariaDialog">X</span></p>
+    <p>Actual dialog:</p>
+    <dialog id="realDialog" open>Hello.</dialog>
+    <span id="resultDialog"></dialog>
+    <script>
+        validateRole(document.getElementById('ariaDialog'),
+            document.getElementById('realDialog'),
+            document.getElementById('resultDialog'));
+    </script>
+  </div>
 
  </body>
 </html>
