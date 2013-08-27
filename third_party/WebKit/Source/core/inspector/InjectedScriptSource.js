@@ -575,7 +575,7 @@ InjectedScript.prototype = {
         try {
             if (injectCommandLineAPI && inspectedWindow.console) {
                 inspectedWindow.console._commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
-                expression = "with (((window || self) && (window || self).console && (window || self).console._commandLineAPI) || {}) {\n" + expression + "\n}";
+                expression = "with ((this && this.console && this.console._commandLineAPI) || {}) {\n" + expression + "\n}";
             }
             var result = evalFunction.call(object, expression);
             if (objectGroup === "console")
