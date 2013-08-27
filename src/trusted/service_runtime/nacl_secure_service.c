@@ -134,6 +134,8 @@ static void NaClSecureServiceConnectionCountIncr(
 
 static void NaClSecureServiceConnectionCountDecr(
     struct NaClSecureService *self) {
+  uint32_t conn_count;
+
   NaClLog(5, "NaClSecureServiceThreadCountDecr\n");
   NaClXMutexLock(&self->mu);
   if (0 == self->conn_count) {
@@ -141,7 +143,10 @@ static void NaClSecureServiceConnectionCountDecr(
             "NaClSecureServiceThreadCountDecr: "
             "decrementing thread count when count is zero\n");
   }
-  if (0 == --self->conn_count) {
+  conn_count = --self->conn_count;
+  NaClXMutexUnlock(&self->mu);
+
+  if (0 == conn_count) {
     NaClLog(4, "NaClSecureServiceThread: all channels closed, exiting.\n");
     /*
      * Set that we are killed by SIGKILL so that debug stub could report
@@ -149,7 +154,6 @@ static void NaClSecureServiceConnectionCountDecr(
      */
     NaClAppShutdown(self->nap, NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL));
   }
-  NaClXMutexUnlock(&self->mu);
 }
 
 int NaClSecureServiceAcceptConnection(
