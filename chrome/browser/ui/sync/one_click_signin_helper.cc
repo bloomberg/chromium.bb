@@ -586,15 +586,9 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents,
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
-  content::WebContents* contents = web_contents();
-  if (contents) {
-    Profile* profile =
-        Profile::FromBrowserContext(contents->GetBrowserContext());
-    ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
-    if (sync_service && sync_service->HasObserver(this))
-      sync_service->RemoveObserver(this);
-  }
+  // WebContentsDestroyed() should always be called before the object is
+  // deleted.
+  DCHECK(!web_contents());
 }
 
 // static
@@ -1323,6 +1317,17 @@ void OneClickSigninHelper::DidStopLoading(
   }
 
   CleanTransientState();
+}
+
+// It is guaranteed that this method is called before the object is deleted.
+void OneClickSigninHelper::WebContentsDestroyed(
+    content::WebContents* contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext());
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  if (sync_service)
+    sync_service->RemoveObserver(this);
 }
 
 void OneClickSigninHelper::OnStateChanged() {

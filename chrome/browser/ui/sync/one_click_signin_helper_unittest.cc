@@ -302,17 +302,13 @@ OneClickSigninHelperTest::CreateProfileSyncServiceMock() {
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(),
           ProfileSyncServiceMock::BuildMockProfileSyncService));
-  EXPECT_CALL(*sync_service, SetSetupInProgress(true));
-  EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*sync_service, FirstSetupInProgress()).WillRepeatedly(
       Return(false));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*sync_service, GetAuthError()).
       WillRepeatedly(::testing::ReturnRef(no_error_));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
   sync_service->Initialize();
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
   return sync_service;
 }
 
@@ -657,7 +653,11 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
       .WillRepeatedly(Return(true));
 
-  CreateProfileSyncServiceMock();
+  ProfileSyncServiceMock* sync_service = CreateProfileSyncServiceMock();
+  EXPECT_CALL(*sync_service, SetSetupInProgress(true));
+  EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
+  EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
 
   content::WebContents* contents = web_contents();
 
@@ -702,6 +702,22 @@ TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
   helper->DidNavigateMainFrame(details, params);
 
   EXPECT_EQ(OneClickSigninHelper::AUTO_ACCEPT_NONE, helper->auto_accept_);
+}
+
+// Checks that OneClickSigninHelper doesn't stay an observer of the profile
+// sync service after it's deleted.
+TEST_F(OneClickSigninHelperTest, RemoveObserverFromProfileSyncService) {
+  content::WebContents* contents = web_contents();
+
+  ProfileSyncServiceMock* sync_service = CreateProfileSyncServiceMock();
+
+  OneClickSigninHelper::CreateForWebContentsWithPasswordManager(contents, NULL);
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(contents);
+  helper->SetDoNotClearPendingEmailForTesting();
+
+  EXPECT_CALL(*sync_service, RemoveObserver(helper));
+  SetContents(NULL);
 }
 
 // I/O thread tests

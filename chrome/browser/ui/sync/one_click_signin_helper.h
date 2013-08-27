@@ -83,8 +83,6 @@ class OneClickSigninHelper
       content::WebContents* contents,
       PasswordManager* password_manager);
 
-  virtual ~OneClickSigninHelper();
-
   // Returns true if the one-click signin feature can be offered at this time.
   // If |email| is not empty, then the profile is checked to see if it's
   // already connected to a google account or if the user has already rejected
@@ -140,6 +138,8 @@ class OneClickSigninHelper
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninFailed);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
                            CleanTransientStateOnNavigate);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
+                           RemoveObserverFromProfileSyncService);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);
@@ -173,6 +173,8 @@ class OneClickSigninHelper
 
   OneClickSigninHelper(content::WebContents* web_contents,
                        PasswordManager* password_manager);
+
+  virtual ~OneClickSigninHelper();
 
   // Returns true if the one-click signin feature can be offered at this time.
   // It can be offered if the io_data is not in an incognito window and if the
@@ -226,6 +228,7 @@ class OneClickSigninHelper
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
 
   // ProfileSyncServiceObserver.
   virtual void OnStateChanged() OVERRIDE;
