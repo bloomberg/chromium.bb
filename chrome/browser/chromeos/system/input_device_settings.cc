@@ -155,7 +155,6 @@ void SetTapToClick(bool enabled) {
 void SetThreeFingerClick(bool enabled) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  SetTPControl("three_finger_click", enabled);
   // For Alex/ZGB.
   SetTPControl("t5r2_three_finger_click", enabled);
 }
