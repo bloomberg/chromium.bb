@@ -1003,24 +1003,10 @@ filelist.updateListItemDriveProps = function(li, driveProps) {
     // crbug.com/246611.
   }
 
-  if (driveProps.driveApps.length > 0) {
+  if (driveProps.customIconUrl) {
     var iconDiv = li.querySelector('.detail-icon');
     if (!iconDiv)
       return;
-    // Find the default app for this file.  If there is none, then
-    // leave it as the base icon for the file type.
-    var url;
-    for (var i = 0; i < driveProps.driveApps.length; ++i) {
-      var app = driveProps.driveApps[i];
-      if (app && app.docIcon && app.isPrimary) {
-        url = app.docIcon;
-        break;
-      }
-    }
-    if (url) {
-      iconDiv.style.backgroundImage = 'url(' + url + ')';
-    } else {
-      iconDiv.style.backgroundImage = null;
-    }
+    iconDiv.style.backgroundImage = 'url(' + driveProps.customIconUrl + ')';
   }
 };

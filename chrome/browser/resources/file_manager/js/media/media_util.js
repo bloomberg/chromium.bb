@@ -35,14 +35,8 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType,
 
   this.fallbackUrl_ = null;
   this.thumbnailUrl_ = null;
-  if (opt_metadata.drive) {
-    var apps = opt_metadata.drive.driveApps;
-    for (var i = 0; i < apps.length; ++i) {
-      if (apps[i].docIcon && apps[i].isPrimary) {
-        this.fallbackUrl_ = apps[i].docIcon;
-        break;
-      }
-    }
+  if (opt_metadata.drive && opt_metadata.drive.customIconUrl) {
+    this.fallbackUrl_ = opt_metadata.drive.customIconUrl;
   }
 
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&

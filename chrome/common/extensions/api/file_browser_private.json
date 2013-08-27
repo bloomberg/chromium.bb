@@ -67,39 +67,6 @@
         }
       },
       {
-        "id": "DriveWebApp",
-        "type": "object",
-        "description": "Drive WebApp properties.",
-        "properties": {
-          "appId": {
-            "type": "string",
-            "description": "WebApp ID."
-          },
-          "appName": {
-            "type": "string",
-            "description": "WebApp name."
-          },
-          "appIcon": {
-            "type": "string",
-            "optional": true,
-            "description": "URL to the Drive application icon for this application."
-          },
-          "docIcon": {
-            "type": "string",
-            "optional": true,
-            "description": "URL to the Drive document icon for documents associated with this application."
-          },
-          "objectType": {
-            "type": "string",
-            "description": "Object (file) type description."
-          },
-          "isPrimary": {
-            "type": "boolean",
-            "description": "True if this WebApp is the primary (default) open action for this file."
-          }
-        }
-      },
-      {
         "id": "DriveEntryProperties",
         "type": "object",
         "description": "Drive file properties.",
@@ -139,11 +106,10 @@
             "optional": true,
             "description": "The error code (from base::PlatformFileError) if fetching the properties for this file had an error."
           },
-          "driveApps" : {
-            "type": "array",
+          "customIconUrl": {
+            "type": "string",
             "optional": true,
-            "items": {"$ref": "DriveWebApp"},
-            "description": "An array of WebApps capable of opening this file."
+            "description": "URL to the custom icon for this file."
           },
           "contentMimeType": {
             "type": "string",

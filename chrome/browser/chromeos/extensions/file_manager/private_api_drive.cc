@@ -131,7 +131,8 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
   const drive::FileSpecificInfo& file_specific_info =
       entry->file_specific_info();
 
-  // Get drive WebApps that can accept this file.
+  // Get drive WebApps that can accept this file. We just need to extract the
+  // doc icon for the drive app, which is set as default.
   ScopedVector<drive::DriveAppInfo> drive_apps;
   integration_service->drive_app_registry()->GetAppsForFile(
       file_path_, file_specific_info.content_mime_type(), &drive_apps);
@@ -143,28 +144,14 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
     file_tasks::TaskDescriptor default_task;
     file_tasks::ParseTaskID(default_task_id, &default_task);
     DCHECK(default_task_id.empty() || !default_task.app_id.empty());
-
-    ListValue* apps = new ListValue();
-    properties_->Set("driveApps", apps);
-    for (ScopedVector<drive::DriveAppInfo>::const_iterator it =
-             drive_apps.begin();
-         it != drive_apps.end(); ++it) {
-      const drive::DriveAppInfo* app_info = *it;
-      DictionaryValue* app = new DictionaryValue();
-      app->SetString("appId", app_info->app_id);
-      app->SetString("appName", app_info->app_name);
-      GURL app_icon = util::FindPreferredIcon(app_info->app_icons,
-                                              util::kPreferredIconSize);
-      if (!app_icon.is_empty())
-        app->SetString("appIcon", app_icon.spec());
-      GURL doc_icon = util::FindPreferredIcon(app_info->document_icons,
-                                              util::kPreferredIconSize);
-      if (!doc_icon.is_empty())
-        app->SetString("docIcon", doc_icon.spec());
-      app->SetString("objectType", app_info->object_type);
-      app->SetBoolean("isPrimary",
-                      default_task.app_id == app_info->app_id);
-      apps->Append(app);
+    for (size_t i = 0; i < drive_apps.size(); ++i) {
+      const drive::DriveAppInfo* app_info = drive_apps[i];
+      if (default_task.app_id == app_info->app_id) {
+        // The drive app is set as default. Files.app should use the doc icon.
+        const GURL doc_icon = util::FindPreferredIcon(app_info->document_icons,
+                                                      util::kPreferredIconSize);
+        properties_->SetString("customIconUrl", doc_icon.spec());
+      }
     }
   }
 
