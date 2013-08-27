@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_APP_LIST_BUTTON_H_
-#define ASH_LAUNCHER_APP_LIST_BUTTON_H_
+#ifndef ASH_SHELF_APP_LIST_BUTTON_H_
+#define ASH_SHELF_APP_LIST_BUTTON_H_
 
 #include "ui/views/controls/button/image_button.h"
 
@@ -23,7 +23,7 @@ class AppListButton : public views::ImageButton {
   void StopLoadingAnimation();
 
  protected:
-  // View overrides:
+  // views::ImageButton:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -42,4 +42,4 @@ class AppListButton : public views::ImageButton {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_APP_LIST_BUTTON_H_
+#endif  // ASH_SHELF_APP_LIST_BUTTON_H_

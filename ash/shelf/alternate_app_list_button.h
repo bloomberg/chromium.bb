@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_ALTERNATE_APP_LIST_BUTTON_H_
-#define ASH_LAUNCHER_ALTERNATE_APP_LIST_BUTTON_H_
+#ifndef ASH_SHELF_ALTERNATE_APP_LIST_BUTTON_H_
+#define ASH_SHELF_ALTERNATE_APP_LIST_BUTTON_H_
 
 #include "ui/views/controls/button/image_button.h"
 
@@ -14,8 +14,6 @@ class ShelfWidget;
 namespace internal {
 
 class LauncherButtonHost;
-
-
 
 // Button used for the AppList icon on the launcher.
 // This class is an alternate implementation to
@@ -32,7 +30,7 @@ class AlternateAppListButton : public views::ImageButton {
   virtual ~AlternateAppListButton();
 
  protected:
-  // View overrides:
+  // views::ImageButton:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -55,4 +53,4 @@ class AlternateAppListButton : public views::ImageButton {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_ALTERNATE_APP_LIST_BUTTON_H_
+#endif  // ASH_SHELF_ALTERNATE_APP_LIST_BUTTON_H_

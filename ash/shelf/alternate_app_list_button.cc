@@ -1,7 +1,8 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "ash/launcher/alternate_app_list_button.h"
+
+#include "ash/shelf/alternate_app_list_button.h"
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher_button_host.h"
