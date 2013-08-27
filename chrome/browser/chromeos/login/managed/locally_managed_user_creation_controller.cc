@@ -21,6 +21,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "crypto/random.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -220,6 +221,10 @@ void LocallyManagedUserCreationController::TokenFetched(
 void LocallyManagedUserCreationController::OnManagedUserFilesStored(
     bool success) {
   timeout_timer_.Stop();
+
+  content::RecordAction(
+      content::UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
+
   if (!success) {
     if (consumer_)
       consumer_->OnCreationError(TOKEN_WRITE_FAILED);
