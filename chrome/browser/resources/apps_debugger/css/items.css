@@ -109,15 +109,15 @@ tabpanel {
   background-image: -webkit-image-set(
       url(../images/search.png) 1x,
       url(../images/2x/search.png) 2x);
-  background-position: 0 8px;
+  background-position: 10px 8px;
   background-repeat: no-repeat;
   border: none;
   font-size: 13px;
   height: 18px;
   position: absolute;
   right: 0;
-  top: 15px;
-  width: 220px;
+  top: 16px;
+  width: 230px;
 }
 
 html[dir='rtl'] #search {
