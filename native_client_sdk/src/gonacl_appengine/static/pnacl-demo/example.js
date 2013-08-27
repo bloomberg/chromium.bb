@@ -186,8 +186,10 @@ function setThreadCount(threads) {
                           'value': value});
 }
 
-// Add event listeners after the NaCl module has loaded.  These listeners will
-// forward messages to the NaCl module via postMessage()
+/**
+ * Add event listeners after the NaCl module has loaded.  These listeners will
+ * forward messages to the NaCl module via postMessage()
+ */
 function attachListeners() {
   $('threadCount').addEventListener('change', setThreadCount);
   $('zoomRange').addEventListener('change',
@@ -204,7 +206,10 @@ function attachListeners() {
     });
 }
 
-// Load a texture and send pixel data down to NaCl module.
+/**
+ * Load a texture and send pixel data down to NaCl module.
+ * @param {string} name
+ */
 function loadTexture(name) {
   // Load image from jpg, decompress into canvas.
   var img = new Image();
@@ -229,7 +234,10 @@ function loadTexture(name) {
   img.src = getDataURL(name);
 }
 
-// Handle a message coming from the NaCl module.
+/**
+ * Handle a message coming from the NaCl module.
+ * @param {Object} message_event
+ */
 function handleMessage(message_event) {
   if (message_event.data['message'] == 'set_zoom') {
     // zoom slider
@@ -247,8 +255,10 @@ function handleMessage(message_event) {
   }
 }
 
-// Listen for the DOM content to be loaded. This event is fired when parsing of
-// the page's document has finished.
+/**
+ * Listen for the DOM content to be loaded. This event is fired when parsing of
+ * the page's document has finished.
+ */
 document.addEventListener('DOMContentLoaded', function() {
   updateStatus('Loading...');
   if (!browserSupportsPNaCl()) {
