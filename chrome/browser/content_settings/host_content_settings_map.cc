@@ -541,9 +541,17 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     return true;
   }
   if (primary_url.SchemeIs(extensions::kExtensionScheme)) {
-    return content_type != CONTENT_SETTINGS_TYPE_PLUGINS &&
-        (content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
-            secondary_url.SchemeIs(extensions::kExtensionScheme));
+    switch (content_type) {
+      case CONTENT_SETTINGS_TYPE_PLUGINS:
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+        return false;
+      case CONTENT_SETTINGS_TYPE_COOKIES:
+        return secondary_url.SchemeIs(extensions::kExtensionScheme);
+      default:
+        return true;
+    }
   }
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          primary_url.SchemeIs(chrome::kChromeInternalScheme) ||

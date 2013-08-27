@@ -43,6 +43,13 @@ bool MediaStreamInfoBarDelegate::Create(
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service) {
+    // Deny the request if there is no place to show the infobar, e.g. when
+    // the request comes from a background extension page.
+    controller->Deny(false);
+    return false;
+  }
+
   scoped_ptr<InfoBarDelegate> infobar(
       new MediaStreamInfoBarDelegate(infobar_service, controller.Pass()));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {

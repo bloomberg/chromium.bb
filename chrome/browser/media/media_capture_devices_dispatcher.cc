@@ -199,9 +199,13 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
     ProcessDesktopCaptureAccessRequest(
         web_contents, request, callback, extension);
-  } else if (extension) {
+  } else if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE ||
+             request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
+    ProcessTabCaptureAccessRequest(
+        web_contents, request, callback, extension);
+  } else if (extension && extension->is_platform_app()) {
     // For extensions access is approved based on extension permissions.
-    ProcessMediaAccessRequestFromExtension(
+    ProcessMediaAccessRequestFromPlatformApp(
         web_contents, request, callback, extension);
   } else {
     ProcessRegularMediaAccessRequest(web_contents, request, callback);
@@ -361,7 +365,49 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   callback.Run(devices, ui.Pass());
 }
 
-void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
+void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    const extensions::Extension* extension) {
+  content::MediaStreamDevices devices;
+  scoped_ptr<content::MediaStreamUI> ui;
+
+#if defined(OS_ANDROID)
+  // Tab capture is not supported on Android.
+  callback.Run(devices, ui.Pass());
+#else  // defined(OS_ANDROID)
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  extensions::TabCaptureRegistry* tab_capture_registry =
+      extensions::TabCaptureRegistryFactory::GetForProfile(profile);
+  bool tab_capture_allowed =
+      tab_capture_registry->VerifyRequest(request.render_process_id,
+                                          request.render_view_id);
+
+  if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
+      tab_capture_allowed &&
+      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+    devices.push_back(content::MediaStreamDevice(
+        content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
+  }
+
+  if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
+      tab_capture_allowed &&
+      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+    devices.push_back(content::MediaStreamDevice(
+        content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
+  }
+
+  if (!devices.empty()) {
+    ui = media_stream_capture_indicator_->RegisterMediaStream(
+        web_contents, devices);
+  }
+  callback.Run(devices, ui.Pass());
+#endif  // !defined(OS_ANDROID)
+}
+
+void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromPlatformApp(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
@@ -370,35 +416,13 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-#if defined(OS_ANDROID)
-  // Tab capture is not supported on Android.
-  bool tab_capture_allowed = false;
-#else
-  extensions::TabCaptureRegistry* tab_capture_registry =
-      extensions::TabCaptureRegistryFactory::GetForProfile(profile);
-  bool tab_capture_allowed =
-      tab_capture_registry->VerifyRequest(request.render_process_id,
-                                          request.render_view_id);
-#endif
-
-  if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
-      tab_capture_allowed &&
-      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
-    devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
-  } else if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
-             extension->HasAPIPermission(
-                 extensions::APIPermission::kAudioCapture)) {
+  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+      extension->HasAPIPermission(extensions::APIPermission::kAudioCapture)) {
     GetDefaultDevicesForProfile(profile, true, false, &devices);
   }
 
-  if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
-      tab_capture_allowed &&
-      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
-    devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
-  } else if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
-       extension->HasAPIPermission(extensions::APIPermission::kVideoCapture)) {
+  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+      extension->HasAPIPermission(extensions::APIPermission::kVideoCapture)) {
     GetDefaultDevicesForProfile(profile, false, true, &devices);
   }
 

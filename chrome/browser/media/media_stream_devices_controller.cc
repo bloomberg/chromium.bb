@@ -22,6 +22,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -424,7 +425,8 @@ bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
 }
 
 bool MediaStreamDevicesController::IsSchemeSecure() const {
-  return (request_.security_origin.SchemeIsSecure());
+  return request_.security_origin.SchemeIsSecure() ||
+      request_.security_origin.SchemeIs(extensions::kExtensionScheme);
 }
 
 bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() const {
