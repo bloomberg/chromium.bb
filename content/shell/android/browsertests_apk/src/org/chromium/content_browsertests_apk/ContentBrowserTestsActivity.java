@@ -7,13 +7,13 @@ package org.chromium.content_browsertests_apk;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.util.Log;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.browser.AndroidBrowserProcess;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.WindowAndroid;
@@ -34,7 +34,7 @@ public class ContentBrowserTestsActivity extends Activity {
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
         }
-        AndroidBrowserProcess.initChromiumBrowserProcessForTests(getApplicationContext());
+        BrowserStartupController.get(getApplicationContext()).initChromiumBrowserProcessForTests();
 
         LayoutInflater inflater =
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);

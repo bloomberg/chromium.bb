@@ -38,10 +38,15 @@ static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
 static jint Start(JNIEnv* env, jclass clazz) {
   TRACE_EVENT0("startup", "content::Start");
 
-  DCHECK(!g_content_runner.Get().get());
-  g_content_runner.Get().reset(ContentMainRunner::Create());
-  g_content_runner.Get()->Initialize(0, NULL,
-                                     g_content_main_delegate.Get().get());
+  // On Android we can have multiple requests to start the browser in process
+  // simultaneously. If we get an asynchonous request followed by a synchronous
+  // request then we have to call this a second time to finish starting the
+  // browser synchronously.
+  if (!g_content_runner.Get().get()) {
+    g_content_runner.Get().reset(ContentMainRunner::Create());
+    g_content_runner.Get()->Initialize(
+        0, NULL, g_content_main_delegate.Get().get());
+  }
   return g_content_runner.Get()->Run();
 }
 

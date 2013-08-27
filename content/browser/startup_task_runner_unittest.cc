@@ -116,20 +116,19 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecution) {
   EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
   EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
 
-  scoped_refptr<StartupTaskRunner> runner =
-      new StartupTaskRunner(false, base::Bind(&Observer), proxy);
+  StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner->AddTask(task1);
+  runner.AddTask(task1);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner->AddTask(task2);
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
-  runner->StartRunningTasks();
+  runner.RunAllTasksNow();
 
   // On an immediate StartupTaskRunner the tasks should now all have run.
   EXPECT_EQ(GetLastTask(), 2);
@@ -145,20 +144,19 @@ TEST_F(StartupTaskRunnerTest, NullObserver) {
   EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
   EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
 
-  scoped_refptr<StartupTaskRunner> runner =
-      new StartupTaskRunner(false, base::Callback<void(int)>(), proxy);
+  StartupTaskRunner runner(base::Callback<void(int)>(), proxy);
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner->AddTask(task1);
+  runner.AddTask(task1);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner->AddTask(task2);
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
-  runner->StartRunningTasks();
+  runner.RunAllTasksNow();
 
   // On an immediate StartupTaskRunner the tasks should now all have run.
   EXPECT_EQ(GetLastTask(), 2);
@@ -173,20 +171,19 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
   EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
   EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
 
-  scoped_refptr<StartupTaskRunner> runner =
-      new StartupTaskRunner(false, base::Bind(&Observer), proxy);
+  StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
   StartupTask task3 =
       base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
-  runner->AddTask(task3);
+  runner.AddTask(task3);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner->AddTask(task2);
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
-  runner->StartRunningTasks();
+  runner.RunAllTasksNow();
 
   // Only the first task should have run, since it failed
   EXPECT_EQ(GetLastTask(), 3);
@@ -207,19 +204,18 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
       .Times(testing::Between(2, 3))
       .WillRepeatedly(WithArg<1>(Invoke(SaveTaskArg)));
 
-  scoped_refptr<StartupTaskRunner> runner =
-      new StartupTaskRunner(true, base::Bind(&Observer), proxy);
+  StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner->AddTask(task1);
+  runner.AddTask(task1);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner->AddTask(task2);
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
-  runner->StartRunningTasks();
+  runner.StartRunningTasksAsync();
 
   // No tasks should have run yet, since we the message loop hasn't run.
   EXPECT_EQ(GetLastTask(), 0);
@@ -248,19 +244,18 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
       .Times(testing::Between(1, 2))
       .WillRepeatedly(WithArg<1>(Invoke(SaveTaskArg)));
 
-  scoped_refptr<StartupTaskRunner> runner =
-      new StartupTaskRunner(true, base::Bind(&Observer), proxy);
+  StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
   StartupTask task3 =
       base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
-  runner->AddTask(task3);
+  runner.AddTask(task3);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner->AddTask(task2);
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
-  runner->StartRunningTasks();
+  runner.StartRunningTasksAsync();
 
   // No tasks should have run yet, since we the message loop hasn't run.
   EXPECT_EQ(GetLastTask(), 0);

@@ -32,7 +32,13 @@ int ChromeMainDelegateAndroid::RunProcess(
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterApplicationNativeMethods(env);
 
-    browser_runner_.reset(content::BrowserMainRunner::Create());
+    // Because the browser process can be started asynchronously as a series of
+    // of UI thread tasks a second request to start it can come in while the
+    // first request is still being processed. We must keep the same
+    // browser runner for the second request.
+    if (!browser_runner_.get()) {
+      browser_runner_.reset(content::BrowserMainRunner::Create());
+    }
     return browser_runner_->Initialize(main_function_params);
   }
 

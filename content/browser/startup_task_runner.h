@@ -8,7 +8,6 @@
 #include <list>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 
 #include "build/build_config.h"
@@ -32,30 +31,31 @@ typedef base::Callback<int(void)> StartupTask;
 // no opportunity to handle UI events between the tasks of a
 // SingleThreadedTaskRunner.
 
-class CONTENT_EXPORT StartupTaskRunner
-    : public base::RefCounted<StartupTaskRunner> {
+class CONTENT_EXPORT StartupTaskRunner {
 
  public:
   // Constructor: Note that |startup_complete_callback| is optional. If it is
   // not null it will be called once all the startup tasks have run.
-  StartupTaskRunner(bool browser_may_start_asynchronously,
-                    base::Callback<void(int)> startup_complete_callback,
+  StartupTaskRunner(base::Callback<void(int)> startup_complete_callback,
                     scoped_refptr<base::SingleThreadTaskRunner> proxy);
 
-  // Add a task to the queue of startup tasks to be run.
-  virtual void AddTask(StartupTask& callback);
+  ~StartupTaskRunner();
 
-  // Start running the tasks.
-  virtual void StartRunningTasks();
+  // Add a task to the queue of startup tasks to be run.
+  void AddTask(StartupTask& callback);
+
+  // Start running the tasks asynchronously.
+  void StartRunningTasksAsync();
+
+  // Run all tasks, or all remaining tasks, synchronously
+  void RunAllTasksNow();
 
  private:
   friend class base::RefCounted<StartupTaskRunner>;
-  virtual ~StartupTaskRunner();
 
   std::list<StartupTask> task_list_;
   void WrappedTask();
 
-  const bool asynchronous_startup_;
   base::Callback<void(int)> startup_complete_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> proxy_;
 

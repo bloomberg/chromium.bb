@@ -527,36 +527,53 @@ int BrowserMainLoop::PreCreateThreads() {
 }
 
 void BrowserMainLoop::CreateStartupTasks() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::CreateStartupTasks")
+  TRACE_EVENT0("startup", "BrowserMainLoop::CreateStartupTasks");
+
+  // First time through, we really want to create all the tasks
+  if (!startup_task_runner_.get()) {
+#if defined(OS_ANDROID)
+    startup_task_runner_ = make_scoped_ptr(new StartupTaskRunner(
+        base::Bind(&BrowserStartupComplete),
+        base::MessageLoop::current()->message_loop_proxy()));
+#else
+    startup_task_runner_ = make_scoped_ptr(new StartupTaskRunner(
+        base::Callback<void(int)>(),
+        base::MessageLoop::current()->message_loop_proxy()));
+#endif
+    StartupTask pre_create_threads =
+        base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
+    startup_task_runner_->AddTask(pre_create_threads);
+
+    StartupTask create_threads =
+        base::Bind(&BrowserMainLoop::CreateThreads, base::Unretained(this));
+    startup_task_runner_->AddTask(create_threads);
+
+    StartupTask browser_thread_started = base::Bind(
+        &BrowserMainLoop::BrowserThreadsStarted, base::Unretained(this));
+    startup_task_runner_->AddTask(browser_thread_started);
+
+    StartupTask pre_main_message_loop_run = base::Bind(
+        &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
+    startup_task_runner_->AddTask(pre_main_message_loop_run);
 
 #if defined(OS_ANDROID)
-  scoped_refptr<StartupTaskRunner> task_runner =
-      new StartupTaskRunner(BrowserMayStartAsynchronously(),
-                            base::Bind(&BrowserStartupComplete),
-                            base::MessageLoop::current()->message_loop_proxy());
-#else
-  scoped_refptr<StartupTaskRunner> task_runner =
-      new StartupTaskRunner(false,
-                            base::Callback<void(int)>(),
-                            base::MessageLoop::current()->message_loop_proxy());
+    if (BrowserMayStartAsynchronously()) {
+      startup_task_runner_->StartRunningTasksAsync();
+    }
 #endif
-  StartupTask pre_create_threads =
-      base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
-  task_runner->AddTask(pre_create_threads);
-
-  StartupTask create_threads =
-      base::Bind(&BrowserMainLoop::CreateThreads, base::Unretained(this));
-  task_runner->AddTask(create_threads);
-
-  StartupTask browser_thread_started = base::Bind(
-      &BrowserMainLoop::BrowserThreadsStarted, base::Unretained(this));
-  task_runner->AddTask(browser_thread_started);
-
-  StartupTask pre_main_message_loop_run = base::Bind(
-      &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
-  task_runner->AddTask(pre_main_message_loop_run);
-
-  task_runner->StartRunningTasks();
+  }
+#if defined(OS_ANDROID)
+  if (!BrowserMayStartAsynchronously()) {
+    // A second request for asynchronous startup can be ignored, so
+    // StartupRunningTasksAsync is only called first time through. If, however,
+    // this is a request for synchronous startup then it must override any
+    // previous call for async startup, so we call RunAllTasksNow()
+    // unconditionally.
+    startup_task_runner_->RunAllTasksNow();
+  }
+#else
+  startup_task_runner_->RunAllTasksNow();
+#endif
 }
 
 int BrowserMainLoop::CreateThreads() {

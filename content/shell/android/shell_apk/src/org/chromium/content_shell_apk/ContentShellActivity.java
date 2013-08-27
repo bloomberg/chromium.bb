@@ -18,7 +18,6 @@ import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
-import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
@@ -47,15 +46,15 @@ public class ContentShellActivity extends ChromiumActivity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     /**
-     * Sending an intent with this action will simulate a memory pressure signal
-     * at a critical level.
+     * Sending an intent with this action will simulate a memory pressure signal at a critical
+     * level.
      */
     private static final String ACTION_LOW_MEMORY =
             "org.chromium.content_shell.action.ACTION_LOW_MEMORY";
 
     /**
-     * Sending an intent with this action will simulate a memory pressure signal
-     * at a moderate level.
+     * Sending an intent with this action will simulate a memory pressure signal at a moderate
+     * level.
      */
     private static final String ACTION_TRIM_MEMORY_MODERATE =
             "org.chromium.content_shell.action.ACTION_TRIM_MEMORY_MODERATE";
@@ -100,11 +99,10 @@ public class ContentShellActivity extends ChromiumActivity {
         }
 
         if (CommandLine.getInstance().hasSwitch(CommandLine.DUMP_RENDER_TREE)) {
-            try {
-                if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
-                    finishInitialization(savedInstanceState);
-                }
-            } catch (ProcessInitException e) {
+            if(BrowserStartupController.get(this).startBrowserProcessesSync(
+                   BrowserStartupController.MAX_RENDERERS_LIMIT)) {
+                finishInitialization(savedInstanceState);
+            } else {
                 initializationFailed();
             }
         } else {

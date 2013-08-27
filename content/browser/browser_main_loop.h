@@ -42,6 +42,7 @@ class BrowserThreadImpl;
 class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
+class StartupTaskRunner;
 class SystemMessageWindowWin;
 struct MainFunctionParams;
 
@@ -68,7 +69,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   void InitializeToolkit();
   void MainMessageLoopStart();
 
-  // Create the tasks we need to complete startup.
+  // Create and start running the tasks we need to complete startup. Note that
+  // this can be called more than once (currently only on Android) if we get a
+  // request for synchronous startup while the tasks created by asynchronous
+  // startup are still running.
   void CreateStartupTasks();
 
   // Perform the default message loop run logic.
@@ -141,6 +145,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
 #endif
+  // The startup task runner is created by CreateStartupTasks()
+  scoped_ptr<StartupTaskRunner> startup_task_runner_;
 
   // Destroy parts_ before main_message_loop_ (required) and before other
   // classes constructed in content (but after main_thread_).

@@ -11,40 +11,50 @@
 namespace content {
 
 StartupTaskRunner::StartupTaskRunner(
-    bool browser_may_start_asynchronously,
     base::Callback<void(int)> const startup_complete_callback,
     scoped_refptr<base::SingleThreadTaskRunner> proxy)
-    : asynchronous_startup_(browser_may_start_asynchronously),
-      startup_complete_callback_(startup_complete_callback),
-      proxy_(proxy) {}
+    : startup_complete_callback_(startup_complete_callback), proxy_(proxy) {}
+
+StartupTaskRunner::~StartupTaskRunner() {}
 
 void StartupTaskRunner::AddTask(StartupTask& callback) {
   task_list_.push_back(callback);
 }
 
-void StartupTaskRunner::StartRunningTasks() {
+void StartupTaskRunner::StartRunningTasksAsync() {
   DCHECK(proxy_);
   int result = 0;
-  if (asynchronous_startup_ && !task_list_.empty()) {
-    const base::Closure next_task =
-        base::Bind(&StartupTaskRunner::WrappedTask, this);
-    proxy_->PostNonNestableTask(FROM_HERE, next_task);
-  } else {
-    for (std::list<StartupTask>::iterator it = task_list_.begin();
-         it != task_list_.end();
-         it++) {
-      result = it->Run();
-      if (result > 0) {
-        break;
-      }
-    }
+  if (task_list_.empty()) {
     if (!startup_complete_callback_.is_null()) {
       startup_complete_callback_.Run(result);
     }
+  } else {
+    const base::Closure next_task =
+        base::Bind(&StartupTaskRunner::WrappedTask, base::Unretained(this));
+    proxy_->PostNonNestableTask(FROM_HERE, next_task);
+  }
+}
+
+void StartupTaskRunner::RunAllTasksNow() {
+  int result = 0;
+  for (std::list<StartupTask>::iterator it = task_list_.begin();
+       it != task_list_.end();
+       it++) {
+    result = it->Run();
+    if (result > 0) break;
+  }
+  if (!startup_complete_callback_.is_null()) {
+    startup_complete_callback_.Run(result);
   }
 }
 
 void StartupTaskRunner::WrappedTask() {
+  if (task_list_.empty()) {
+    // This will happen if the remaining tasks have been run synchronously since
+    // the WrappedTask was created. Any callback will already have been called,
+    // so there is nothing to do
+    return;
+  }
   int result = task_list_.front().Run();
   task_list_.pop_front();
   if (result > 0 || task_list_.empty()) {
@@ -53,11 +63,9 @@ void StartupTaskRunner::WrappedTask() {
     }
   } else {
     const base::Closure next_task =
-        base::Bind(&StartupTaskRunner::WrappedTask, this);
+        base::Bind(&StartupTaskRunner::WrappedTask, base::Unretained(this));
     proxy_->PostNonNestableTask(FROM_HERE, next_task);
   }
 }
-
-StartupTaskRunner::~StartupTaskRunner() {}
 
 }  // namespace content

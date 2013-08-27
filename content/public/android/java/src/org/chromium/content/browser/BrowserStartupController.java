@@ -13,6 +13,8 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.app.ContentMain;
+import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.ProcessInitException;
 
 import java.util.ArrayList;
@@ -55,12 +57,13 @@ public class BrowserStartupController {
 
     private static boolean sBrowserMayStartAsynchronously = false;
 
-    private static void setAsynchronousStartupConfig() {
-        sBrowserMayStartAsynchronously = true;
+    private static void setAsynchronousStartup(boolean enable) {
+        sBrowserMayStartAsynchronously = enable;
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private static boolean browserMayStartAsynchonously() {
+    static boolean browserMayStartAsynchonously() {
         return sBrowserMayStartAsynchronously;
     }
 
@@ -79,13 +82,27 @@ public class BrowserStartupController {
     // The context is set on creation, but the reference is cleared after the browser process
     // initialization has been started, since it is not needed anymore. This is to ensure the
     // context is not leaked.
-    private Context mContext;
+    private final Context mContext;
 
     // Whether the async startup of the browser process has started.
     private boolean mHasStartedInitializingBrowserProcess;
 
     // Whether the async startup of the browser process is complete.
-    private boolean mAsyncStartupDone;
+    private boolean mStartupDone;
+
+    // Use single-process mode that runs the renderer on a separate thread in
+    // the main application.
+    public static final int MAX_RENDERERS_SINGLE_PROCESS = 0;
+
+    // Cap on the maximum number of renderer processes that can be requested.
+    // This is currently set to account for:
+    //  13: The maximum number of sandboxed processes we have available
+    // - 1: The regular New Tab Page
+    // - 1: The incognito New Tab Page
+    // - 1: A regular incognito tab
+    // - 1: Safety buffer (http://crbug.com/251279)
+    public static final int MAX_RENDERERS_LIMIT =
+            ChildProcessLauncher.MAX_REGISTERED_SANDBOXED_SERVICES - 4;
 
     // This field is set after startup has been completed based on whether the startup was a success
     // or not. It is used when later requests to startup come in that happen after the initial set
@@ -124,7 +141,7 @@ public class BrowserStartupController {
      */
     public void startBrowserProcessesAsync(final StartupCallback callback) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
-        if (mAsyncStartupDone) {
+        if (mStartupDone) {
             // Browser process initialization has already been completed, so we can immediately post
             // the callback.
             postStartupCompleted(callback);
@@ -139,62 +156,93 @@ public class BrowserStartupController {
             // flag that indicates that we have kicked off starting the browser process.
             mHasStartedInitializingBrowserProcess = true;
 
-            enableAsynchronousStartup();
+            if (!tryPrepareToStartBrowserProcess(MAX_RENDERERS_LIMIT)) return;
 
-            // Try to initialize the Android browser process.
-            tryToInitializeBrowserProcess();
+            setAsynchronousStartup(true);
+            if (contentStart() > 0) {
+                // Failed. The callbacks may not have run, so run them.
+                enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+            }
         }
     }
 
-    private void tryToInitializeBrowserProcess() {
+    private boolean tryPrepareToStartBrowserProcess(int maxRenderers) {
+        // Make sure that everything is in place to initialize the Android browser process.
         try {
-            assert mContext != null;
-            boolean wasAlreadyInitialized = initializeAndroidBrowserProcess();
-            // The context is not needed anymore, so clear the member field to not leak.
-            mContext = null;
-            if (wasAlreadyInitialized) {
-                // Something has already initialized the browser process before we got to setup the
-                // async startup. This means that we will never get a callback, so manually call
-                // them now, and just assume that the startup was successful.
-                Log.w(TAG, "Browser process was initialized without BrowserStartupController");
-                enqueueCallbackExecution(STARTUP_SUCCESS, ALREADY_STARTED);
-            }
+            prepareToStartBrowserProcess(maxRenderers);
+            return true;
         } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to start browser process.", e);
-            // ProcessInitException could mean one of two things:
-            // 1) The LibraryLoader failed.
-            // 2) ContentMain failed to start.
-            // It is unclear whether the browser tasks have already been started, and in case they
-            // have not, post a message to execute all the callbacks. Whichever call to
-            // executeEnqueuedCallbacks comes first will trigger the callbacks, but since the list
-            // of callbacks is then cleared, they will only be called once.
+            Log.e(TAG, "Unable to load native library.", e);
+            enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+            return false;
+        }
+    }
+
+    /**
+     * Start the browser process synchronously. If the browser is already being started
+     * asynchronously then complete startup synchronously
+     *
+     * <p/>
+     * Note that this can only be called on the UI thread.
+     *
+     * @param max_renderers The maximum number of renderer processes the browser may
+     *                      create. Zero for single process mode.
+     * @return true if successfully started, false otherwise.
+     */
+    public boolean startBrowserProcessesSync(int maxRenderers) {
+        if (mStartupDone) {
+            // Nothing to do
+            return mStartupSuccess;
+        }
+        if (!mHasStartedInitializingBrowserProcess) {
+            if (!tryPrepareToStartBrowserProcess(maxRenderers)) return false;
+        }
+
+        setAsynchronousStartup(false);
+        if (contentStart() > 0) {
+            // Failed. The callbacks may not have run, so run them.
             enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
         }
+
+        // Startup should now be complete
+        assert mStartupDone;
+        return mStartupSuccess;
+    }
+
+    /**
+     * Wrap ContentMain.start() for testing.
+     */
+    @VisibleForTesting
+    int contentStart() {
+        return ContentMain.start();
     }
 
     public void addStartupCompletedObserver(StartupCallback callback) {
         ThreadUtils.assertOnUiThread();
-        if (mAsyncStartupDone)
+        if (mStartupDone) {
             postStartupCompleted(callback);
-        else
+        } else {
             mAsyncStartupCallbacks.add(callback);
+        }
     }
 
     private void executeEnqueuedCallbacks(int startupResult, boolean alreadyStarted) {
         assert ThreadUtils.runningOnUiThread() : "Callback from browser startup from wrong thread.";
-        mAsyncStartupDone = true;
+        mStartupDone = true;
+        mStartupSuccess = (startupResult <= 0);
         for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
-            if (startupResult > 0) {
-                asyncStartupCallback.onFailure();
-            } else {
-                mStartupSuccess = true;
+            if (mStartupSuccess) {
                 asyncStartupCallback.onSuccess(alreadyStarted);
+            } else {
+                asyncStartupCallback.onFailure();
             }
         }
         // We don't want to hold on to any objects after we do not need them anymore.
         mAsyncStartupCallbacks.clear();
     }
 
+    // Queue the callbacks to run. Since running the callbacks clears the list it is safe to call
+    // this more than once.
     private void enqueueCallbackExecution(final int startupFailure, final boolean alreadyStarted) {
         new Handler().post(new Runnable() {
             @Override
@@ -208,28 +256,64 @@ public class BrowserStartupController {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                if (mStartupSuccess)
+                if (mStartupSuccess) {
                     callback.onSuccess(ALREADY_STARTED);
-                else
+                } else {
                     callback.onFailure();
+                }
             }
         });
     }
 
-    /**
-     * Ensure that the browser process will be asynchronously started up. This also ensures that we
-     * get a call to {@link #browserStartupComplete} when the browser startup is complete.
-     */
     @VisibleForTesting
-    void enableAsynchronousStartup() {
-        setAsynchronousStartupConfig();
+    void prepareToStartBrowserProcess(int maxRendererProcesses) throws ProcessInitException {
+        Log.i(TAG, "Initializing chromium process, renderers=" + maxRendererProcesses);
+
+        // Normally Main.java will have kicked this off asynchronously for Chrome. But other
+        // ContentView apps like tests also need them so we make sure we've extracted resources
+        // here. We can still make it a little async (wait until the library is loaded).
+        ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
+        resourceExtractor.startExtractingResources();
+
+        // Normally Main.java will have already loaded the library asynchronously, we only need
+        // to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
+        LibraryLoader.ensureInitialized();
+
+        // TODO(yfriedman): Remove dependency on a command line flag for this.
+        DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);
+
+        Context appContext = mContext.getApplicationContext();
+        // Now we really need to have the resources ready.
+        resourceExtractor.waitForCompletion();
+
+        nativeSetCommandLineFlags(maxRendererProcesses,
+                nativeIsPluginEnabled() ? getPlugins() : null);
+        ContentMain.initApplicationContext(appContext);
     }
 
     /**
-     * @return whether the process was already initialized, so native was not instructed to start.
+     * Initialization needed for tests. Mainly used by content browsertests.
      */
-    @VisibleForTesting
-    boolean initializeAndroidBrowserProcess() throws ProcessInitException {
-        return !AndroidBrowserProcess.init(mContext, AndroidBrowserProcess.MAX_RENDERERS_LIMIT);
+    public void initChromiumBrowserProcessForTests() {
+        ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
+        resourceExtractor.startExtractingResources();
+        resourceExtractor.waitForCompletion();
+
+        // Having a single renderer should be sufficient for tests. We can't have more than
+        // MAX_RENDERERS_LIMIT.
+        nativeSetCommandLineFlags(1 /* maxRenderers */, null);
     }
+
+    private String getPlugins() {
+        return PepperPluginManager.getPlugins(mContext);
+    }
+
+    private static native void nativeSetCommandLineFlags(int maxRenderProcesses,
+            String pluginDescriptor);
+
+    // Is this an official build of Chrome? Only native code knows for sure. Official build
+    // knowledge is needed very early in process startup.
+    private static native boolean nativeIsOfficialBuild();
+
+    private static native boolean nativeIsPluginEnabled();
 }
