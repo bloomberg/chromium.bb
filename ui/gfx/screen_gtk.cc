@@ -49,8 +49,9 @@ bool GetScreenWorkArea(gfx::Rect* out_rect) {
 
 gfx::Rect NativePrimaryMonitorBounds() {
   GdkScreen* screen = gdk_screen_get_default();
+  gint primary_monitor_index = gdk_screen_get_primary_monitor(screen);
   GdkRectangle rect;
-  gdk_screen_get_monitor_geometry(screen, 0, &rect);
+  gdk_screen_get_monitor_geometry(screen, primary_monitor_index, &rect);
   return gfx::Rect(rect);
 }
 
