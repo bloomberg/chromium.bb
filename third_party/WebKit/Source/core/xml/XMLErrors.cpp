@@ -130,8 +130,6 @@ void XMLErrors::insertErrorMessageBlock()
         RefPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
 
-        if (documentElement->attached())
-            documentElement->detach();
         m_document->parserRemoveChild(documentElement.get());
 
         body->parserAppendChild(documentElement);
