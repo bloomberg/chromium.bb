@@ -39,7 +39,8 @@ class MediaDrmBridge {
     private String mSessionId;
     private MediaCrypto mMediaCrypto;
     private String mMimeType;
-    private Handler mhandler;
+    private Handler mHandler;
+    private byte[] mPendingInitData;
 
     private static UUID getUUIDFromBytes(byte[] data) {
         if (data.length != 16) {
@@ -62,8 +63,7 @@ class MediaDrmBridge {
             mMediaDrm = new MediaDrm(schemeUUID);
             mNativeMediaDrmBridge = nativeMediaDrmBridge;
             mMediaDrm.setOnEventListener(new MediaDrmListener());
-            mSessionId = openSession();
-            mhandler = new Handler();
+            mHandler = new Handler();
         } catch (android.media.UnsupportedSchemeException e) {
             Log.e(TAG, "Unsupported DRM scheme " + e.toString());
         }
@@ -153,16 +153,38 @@ class MediaDrmBridge {
      */
     @CalledByNative
     private void generateKeyRequest(byte[] initData, String mime) {
-        if (mSessionId == null) {
+        Log.d(TAG, "generateKeyRequest().");
+
+        if (mMimeType == null) {
+            mMimeType = mime;
+        } else if (!mMimeType.equals(mime)) {
+            onKeyError();
             return;
         }
+
+        if (mSessionId == null) {
+            mSessionId = openSession();
+            if (mSessionId == null) {
+                if (mPendingInitData != null) {
+                    Log.e(TAG, "generateKeyRequest is called when another call is pending.");
+                    onKeyError();
+                    return;
+                }
+                // We assume some event will be fired if openSession() failed.
+                // generateKeyRequest() will be resumed after provisioning is finished.
+                // TODO(xhwang): Double check if this assumption is true. Otherwise we need
+                // to handle the exception in openSession more carefully.
+                mPendingInitData = initData;
+                return;
+            }
+        }
+
         try {
             final byte[] session = mSessionId.getBytes("UTF-8");
-            mMimeType = mime;
             HashMap<String, String> optionalParameters = new HashMap<String, String>();
             final MediaDrm.KeyRequest request = mMediaDrm.getKeyRequest(
                     session, initData, mime, MediaDrm.KEY_TYPE_STREAMING, optionalParameters);
-            mhandler.post(new Runnable(){
+            mHandler.post(new Runnable(){
                 public void run() {
                     nativeOnKeyMessage(mNativeMediaDrmBridge, mSessionId,
                             request.getData(), request.getDefaultUrl());
@@ -170,7 +192,10 @@ class MediaDrmBridge {
             });
             return;
         } catch (android.media.NotProvisionedException e) {
+            // MediaDrm.EVENT_PROVISION_REQUIRED is also fired in this case.
+            // Provisioning is handled in the handler of that event.
             Log.e(TAG, "Cannot get key request " + e.toString());
+            return;
         } catch (java.io.UnsupportedEncodingException e) {
             Log.e(TAG, "Cannot get key request " + e.toString());
         }
@@ -209,7 +234,7 @@ class MediaDrmBridge {
         try {
             final byte[] session = sessionId.getBytes("UTF-8");
             mMediaDrm.provideKeyResponse(session, key);
-            mhandler.post(new Runnable() {
+            mHandler.post(new Runnable() {
                 public void run() {
                     nativeOnKeyAdded(mNativeMediaDrmBridge, mSessionId);
                 }
@@ -239,16 +264,32 @@ class MediaDrmBridge {
      * @param response Response data from the provision server.
      */
     private void onProvisionResponse(byte[] response) {
+        Log.d(TAG, "provide key response.");
+
+        if (response == null || response.length == 0) {
+            Log.e(TAG, "Invalid provision response.");
+            onKeyError();
+            return;
+        }
+
         try {
             mMediaDrm.provideProvisionResponse(response);
         } catch (android.media.DeniedByServerException e) {
-            Log.e(TAG, "failed to provide key response " + e.toString());
+            Log.e(TAG, "failed to provide provision response " + e.toString());
+            onKeyError();
+            return;
+        }
+
+        if (mPendingInitData != null) {
+            byte[] initData = mPendingInitData;
+            mPendingInitData = null;
+            generateKeyRequest(initData, mMimeType);
         }
     }
 
     private void onKeyError() {
         // TODO(qinmin): pass the error code to native.
-        mhandler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             public void run() {
                 nativeOnKeyError(mNativeMediaDrmBridge, mSessionId);
             }
@@ -261,6 +302,7 @@ class MediaDrmBridge {
                 byte[] data) {
             switch(event) {
                 case MediaDrm.EVENT_PROVISION_REQUIRED:
+                    Log.d(TAG, "MediaDrm.EVENT_PROVISION_REQUIRED.");
                     MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
                     PostRequestTask postTask = new PostRequestTask(request.getData());
                     postTask.execute(request.getDefaultUrl());

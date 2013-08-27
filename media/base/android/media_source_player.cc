@@ -522,9 +522,9 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
   if (is_audio_encrypted_) {
     if (drm_bridge_) {
       media_codec = drm_bridge_->GetMediaCrypto();
-      // TODO(qinmin): currently we assume MediaCrypto is available whenever
-      // MediaDrmBridge is constructed. This will change if we want to support
-      // more general uses cases of EME.
+      // TODO(qinmin/xhwang): Currently we assume MediaCrypto is available
+      // whenever MediaDrmBridge is constructed. This is not always true, e.g.
+      // if the device is not provisioned. See http://crbug.com/277700
       DCHECK(!media_codec.is_null());
     } else {
       // Don't create the decoder job if |drm_bridge_| is not set,

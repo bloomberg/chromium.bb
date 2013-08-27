@@ -237,6 +237,7 @@ void MediaDrmBridge::OnKeyAdded(JNIEnv* env, jobject, jstring j_session_id) {
 }
 
 void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
+  // |j_session_id| can be NULL, in which case we'll return an empty string.
   std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
   manager_->OnKeyError(media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
 }
