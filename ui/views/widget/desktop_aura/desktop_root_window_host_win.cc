@@ -28,7 +28,6 @@
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/window_animations.h"
-#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
@@ -372,13 +371,6 @@ void DesktopRootWindowHostWin::InitModalType(ui::ModalType modal_type) {
 
 void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
   message_handler_->FlashFrame(flash_frame);
-}
-
-void DesktopRootWindowHostWin::OnNativeWidgetFocus() {
-  // HWNDMessageHandler will perform the proper updating on its own.
-}
-
-void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -757,16 +749,10 @@ void DesktopRootWindowHostWin::HandleFrameChanged() {
 
 void DesktopRootWindowHostWin::HandleNativeFocus(HWND last_focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnFocus();
 }
 
 void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnBlur();
 }
 
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {

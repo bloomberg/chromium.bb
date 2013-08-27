@@ -69,8 +69,6 @@ TEST_F(InputMethodBridgeTest, DestructTest) {
   child_params.native_widget = new NativeWidgetAura(child);
   child->Init(child_params);
 
-  child->GetInputMethod()->OnFocus();
-
   toplevel->CloseNow();
 
   GetContext()->SetProperty(aura::client::kRootWindowInputMethodKey,

@@ -73,7 +73,8 @@ ui::TextInputClient* TextInputTestHelper::GetTextInputClient() const {
 
 void TextInputTestHelper::OnTextInputTypeChanged(
     const ui::TextInputClient* client) {
-  latest_text_input_type_ = client->GetTextInputType();
+  latest_text_input_type_ =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
     base::MessageLoop::current()->Quit();
 }
@@ -101,7 +102,8 @@ void TextInputTestHelper::OnUntranslatedIMEMessage(
 void TextInputTestHelper::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   ui::Range text_range;
-  if (!GetTextInputClient()->GetTextRange(&text_range) ||
+  if (!GetTextInputClient() || GetTextInputClient() != client ||
+      !GetTextInputClient()->GetTextRange(&text_range) ||
       !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text_) ||
       !GetTextInputClient()->GetSelectionRange(&selection_range_))
       return;

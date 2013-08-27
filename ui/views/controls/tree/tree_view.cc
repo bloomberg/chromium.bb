@@ -22,7 +22,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
-#include "ui/views/ime/input_method.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;
@@ -600,13 +599,10 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
 void TreeView::OnFocus() {
   View::OnFocus();
   SchedulePaintForNode(selected_node_);
-
-  // Notify the InputMethod so that it knows to query the TextInputClient.
-  if (GetInputMethod())
-    GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 void TreeView::OnBlur() {
+  View::OnBlur();
   SchedulePaintForNode(selected_node_);
   if (selector_)
     selector_->OnViewBlur();

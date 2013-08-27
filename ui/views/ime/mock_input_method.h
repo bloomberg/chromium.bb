@@ -24,8 +24,6 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
   // Overridden from InputMethod:
   virtual void Init(Widget* widget) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE;
   virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;

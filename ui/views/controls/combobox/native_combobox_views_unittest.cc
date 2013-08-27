@@ -113,10 +113,6 @@ class NativeComboboxViewsTest : public ViewsTestBase {
 
     input_method_ = new MockInputMethod();
     widget_->ReplaceInputMethod(input_method_);
-
-    // Assumes the Widget is always focused.
-    input_method_->OnFocus();
-
     combobox_->RequestFocus();
   }
 

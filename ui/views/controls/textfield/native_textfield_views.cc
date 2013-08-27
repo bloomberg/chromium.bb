@@ -680,7 +680,6 @@ void NativeTextfieldViews::HandleFocus() {
   GetRenderText()->set_focused(true);
   is_cursor_visible_ = true;
   SchedulePaint();
-  GetInputMethod()->OnFocus();
   OnCaretBoundsChanged();
   // Start blinking cursor.
   base::MessageLoop::current()->PostDelayedTask(
@@ -692,7 +691,6 @@ void NativeTextfieldViews::HandleFocus() {
 
 void NativeTextfieldViews::HandleBlur() {
   GetRenderText()->set_focused(false);
-  GetInputMethod()->OnBlur();
   // Stop blinking cursor.
   cursor_timer_.InvalidateWeakPtrs();
   if (is_cursor_visible_) {
