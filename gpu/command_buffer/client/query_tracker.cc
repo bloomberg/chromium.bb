@@ -112,8 +112,8 @@ void QueryTracker::Query::Begin(GLES2Implementation* gl) {
       // tell service about id, shared memory and count
       gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
       break;
-    case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
-    case GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM:
+    case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
+    case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     default:
       // tell service about id, shared memory and count
       gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
@@ -162,8 +162,8 @@ bool QueryTracker::Query::CheckResultsAvailable(
           result_ = std::min(info_.sync->result - client_begin_time_us_,
                              static_cast<uint64>(0xFFFFFFFFL));
           break;
-        case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
-        case GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM:
+        case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
+        case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
         default:
           result_ = info_.sync->result;
           break;

@@ -431,11 +431,12 @@ QueryManager::Query* QueryManager::CreateQuery(
     case GL_LATENCY_QUERY_CHROMIUM:
       query = new CommandLatencyQuery(this, target, shm_id, shm_offset);
       break;
-    case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
+    case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
+      // Currently async pixel transfer delegates only support uploads.
       query = new AsyncPixelTransfersCompletedQuery(
           this, target, shm_id, shm_offset);
       break;
-    case GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM:
+    case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
       query = new AsyncReadPixelsCompletedQuery(
           this, target, shm_id, shm_offset);
       break;

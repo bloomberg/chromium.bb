@@ -2348,7 +2348,7 @@ void GLRenderer::DoGetFramebufferPixels(
   if (is_async) {
     query = context_->createQueryEXT();
     GLC(context_, context_->beginQueryEXT(
-        GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM,
+        GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
         query));
   }
 
@@ -2389,7 +2389,7 @@ void GLRenderer::DoGetFramebufferPixels(
 
   if (is_async) {
     GLC(context_, context_->endQueryEXT(
-        GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM));
+        GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM));
     SyncPointHelper::SignalQuery(
         context_,
         query,

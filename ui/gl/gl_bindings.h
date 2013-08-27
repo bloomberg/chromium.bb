@@ -124,8 +124,8 @@
 #define GL_LATENCY_QUERY_CHROMIUM                        0x84F4
 
 /* GL_CHROMIUM_async_pixel_transfers */
-#define GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM      0x84F5
-#define GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM          0x84F6
+#define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM         0x84F5
+#define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM           0x84F6
 
 // GL_OES_texure_3D
 #define GL_SAMPLER_3D_OES                                0x8B5F

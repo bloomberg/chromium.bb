@@ -64,9 +64,9 @@ TEST_F(GLReadbackTest, ReadPixelsWithPBOAndQuery) {
                kWidth * kHeight * kBytesPerPixel,
                NULL,
                GL_STREAM_READ);
-  glBeginQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM, q);
+  glBeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, q);
   glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  glEndQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM);
+  glEndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   glFlush();
   WaitForQuery(q);
 

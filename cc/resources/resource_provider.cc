@@ -1167,7 +1167,7 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
     if (!resource->gl_upload_query_id)
       resource->gl_upload_query_id = context3d->createQueryEXT();
     context3d->beginQueryEXT(
-        GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM,
+        GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM,
         resource->gl_upload_query_id);
     if (allocate) {
       context3d->asyncTexImage2DCHROMIUM(GL_TEXTURE_2D,
@@ -1190,7 +1190,7 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
                                             GL_UNSIGNED_BYTE,
                                             NULL);
     }
-    context3d->endQueryEXT(GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM);
+    context3d->endQueryEXT(GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM);
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
   }
 

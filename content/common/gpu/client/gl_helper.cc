@@ -394,11 +394,11 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
                        GL_STREAM_READ);
 
   request->query = context_->createQueryEXT();
-  context_->beginQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM,
+  context_->beginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
                           request->query);
   context_->readPixels(0, 0, dst_size.width(), dst_size.height(),
                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  context_->endQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM);
+  context_->endQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   cc::SyncPointHelper::SignalQuery(
       context_,
