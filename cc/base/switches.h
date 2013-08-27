@@ -37,7 +37,8 @@ CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
 CC_EXPORT extern const char kEnablePinchVirtualViewport[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
-CC_EXPORT extern const char kUseMapImage[];
+CC_EXPORT extern const char kEnableMapImage[];
+CC_EXPORT extern const char kDisableMapImage[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kUIDisablePartialSwap[];
@@ -66,6 +67,7 @@ CC_EXPORT extern const char kUIShowNonOccludingRects[];
 CC_EXPORT extern const char kCCLayerTreeTestNoTimeout[];
 
 CC_EXPORT bool IsImplSidePaintingEnabled();
+CC_EXPORT bool IsMapImageEnabled();
 
 }  // namespace switches
 }  // namespace cc

@@ -125,8 +125,12 @@ const char kUIShowOccludingRects[] = "ui-show-occluding-rects";
 const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
 const char kUIShowNonOccludingRects[] = "ui-show-nonoccluding-rects";
 
-// Enable the codepath that uses images within TileManager.
-const char kUseMapImage[] = "use-map-image";
+// Enable rasterizer that writes directly to GPU memory.
+const char kEnableMapImage[] = "enable-map-image";
+
+// Disable rasterizer that writes directly to GPU memory.
+// Overrides the kEnableMapImage flag.
+const char kDisableMapImage[] = "disable-map-image";
 
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
@@ -144,6 +148,17 @@ bool IsImplSidePaintingEnabled() {
 #else
   return false;
 #endif
+}
+
+bool IsMapImageEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(cc::switches::kDisableMapImage))
+    return false;
+  else if (command_line.HasSwitch(cc::switches::kEnableMapImage))
+    return true;
+
+  return false;
 }
 
 }  // namespace switches

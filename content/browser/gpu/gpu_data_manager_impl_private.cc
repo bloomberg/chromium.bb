@@ -307,7 +307,7 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
 
   // If we are using the MapImage API double the tile size to reduce
   // the number of zero-copy buffers being used.
-  if (command_line->HasSwitch(cc::switches::kUseMapImage))
+  if (command_line->HasSwitch(cc::switches::kEnableMapImage))
     default_tile_size *= 2;
 
   // Set the command line if it isn't already set and we changed

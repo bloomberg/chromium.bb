@@ -6374,6 +6374,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION" desc="Description of about:flags option for delegated renderer.">
         If enabled, the renderer delegates compositing to the browser, merging both compositing passes.
       </message>
+      <message name="IDS_FLAGS_MAP_IMAGE_NAME" desc="Name of about:flags option for map-image rasterizer.">
+        Map-image rasterizer (AKA Zero-copy)
+      </message>
+      <message name="IDS_FLAGS_MAP_IMAGE_DESCRIPTION" desc="Description of about:flags option for map-image rasterizer.">
+        If enabled, raster threads write directly to GPU memory.
+      </message>
       <message name="IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_NAME" desc="Name of about:flags option for tracking active time on a page.">
         Track time spent on each each page
       </message>

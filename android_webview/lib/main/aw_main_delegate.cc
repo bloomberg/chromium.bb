@@ -52,8 +52,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
-  if (!cl->HasSwitch("disable-map-image"))
-    cl->AppendSwitch(cc::switches::kUseMapImage);
+  cl->AppendSwitch(cc::switches::kEnableMapImage);
 
   // WebView uses the Android system's scrollbars and overscroll glow.
   cl->AppendSwitch(switches::kHideScrollbars);

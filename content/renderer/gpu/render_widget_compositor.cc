@@ -260,7 +260,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.strict_layer_property_change_checking =
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 
-  settings.use_map_image = cmd->HasSwitch(cc::switches::kUseMapImage);
+  settings.use_map_image = cc::switches::IsMapImageEnabled();
 
 #if defined(OS_ANDROID)
   // TODO(danakj): Move these to the android code.

@@ -1009,8 +1009,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kCompositeToMailbox,
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableImplSidePainting,
+    cc::switches::kDisableMapImage,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableImplSidePainting,
+    cc::switches::kEnableMapImage,
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePerTilePainting,
     cc::switches::kEnablePinchVirtualViewport,
@@ -1034,7 +1036,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
     cc::switches::kTraceOverdraw,
-    cc::switches::kUseMapImage,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

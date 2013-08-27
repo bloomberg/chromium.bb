@@ -277,6 +277,14 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
     switches::kTabCaptureDownscaleQuality, "best" },
 };
 
+const Experiment::Choice kMapImageChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    cc::switches::kEnableMapImage, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    cc::switches::kDisableMapImage, ""}
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1628,6 +1636,13 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableBatchedShutdown)
   },
+  {
+    "map-image",
+    IDS_FLAGS_MAP_IMAGE_NAME,
+    IDS_FLAGS_MAP_IMAGE_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kMapImageChoices)
+  }
 };
 
 const Experiment* experiments = kExperiments;
