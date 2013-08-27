@@ -1,0 +1,8 @@
+     
+opacity from [0] to [1] was [0] at -0.3
+opacity from [0] to [1] was [0] at 0
+opacity from [0] to [1] was [0.30000001192092896] at 0.3
+opacity from [0] to [1] was [0.6000000238418579] at 0.6
+opacity from [0] to [1] was [1] at 1
+opacity from [0] to [1] was [1] at 1.5
+
