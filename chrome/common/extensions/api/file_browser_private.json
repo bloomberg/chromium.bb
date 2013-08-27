@@ -6,6 +6,7 @@
   {
     "namespace":"fileBrowserPrivate",
     "description": "none",
+    "platforms": ["chromeos"],
     "types": [
       {
         "id": "FileTask",
@@ -539,6 +540,7 @@
                 "name" : "fileSystem",
                 "type": "object",
                 "optional": true,
+                "additionalProperties": { "type": "any" },
                 "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
               }
             ]
@@ -710,6 +712,7 @@
           {
             "name": "options",
             "type": "object",
+            "additionalProperties": { "type": "any" },
             "description": "Name/value pairs for source specific options"
           },
           {
@@ -903,6 +906,7 @@
                 "items": {
                   "type": "object",
                   "isInstanceOf": "Entry",
+                  "additionalProperties": { "type": "any" },
                   "description": "An Entry object which represents a Drive file. The conversion into a kind of FileEntry object is done in file_browser_handler_custom_bindings.cc. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
                 }
               },
@@ -955,6 +959,7 @@
                     "entry": {
                       "type": "object",
                       "isInstanceOf": "Entry",
+                      "additionalProperties": { "type": "any" },
                       "description": "A dictionary object which represents a Drive file. This will be converted into a kind of FileEntry object. See file_browser_handler_custom_bindings.cc for details. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
                     },
                     "highlightedBaseName": {
