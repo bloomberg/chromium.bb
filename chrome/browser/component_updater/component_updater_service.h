@@ -46,7 +46,6 @@ class ComponentInstaller {
   virtual bool GetInstalledFile(const std::string& file,
                                 base::FilePath* installed_file) = 0;
 
- protected:
   virtual ~ComponentInstaller() {}
 };
 
