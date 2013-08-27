@@ -14581,6 +14581,14 @@ other types of suffix sets.
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
+<histogram name="SiteIsolation.AllResponses">
+  <summary>
+    The count of all network responses received by a renderer. Each response is
+    corresponding to one URL requested by a renderer. Incremented when the first
+    network packet of a response of this type is received.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.BrowsingInstanceCount">
   <summary>
     The count of all current BrowsingInstances.  Recorded once per UMA ping.
@@ -14650,6 +14658,332 @@ other types of suffix sets.
   <summary>
     The predicted total process count if we isolated only HTTPS (not HTTP)
     sites, subject to the process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.DataLength" units="byte">
+  <summary>
+    The number of bytes in the first network packet for a response with headers
+    that imply potential illegal cross-site access. Recorded when the first
+    network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having HTML
+    content type header and contents sniffed as HTML. Sampled with value of 1
+    when the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to their HTML contents. Sampled with value
+    1 when the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.) among blocked
+    cross-site document responses due to their HTML contents. Sampled with a
+    resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to having HTML content type and nosniff
+    headers. Sampled with value 1 when the first network packet of a response of
+    this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having HTML content type and nosniff
+    headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.NotBlocked">
+  <summary>
+    The count of not blocked responses despite having an HTML content type
+    header due to the failure of content sniffing. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.HTML.NotBlocked.MaybeJS">
+  <summary>
+    The count of responses that may be parsed as JavaScript among not blocked
+    responses. Sampled with value 1 when the first network packet of a response
+    of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having JSON
+    content type header and contents sniffed as JSON. Sampled with value 1 when
+    the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to their JSON contents. Sampled with value
+    1 when the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their JSON contents. Sampled with a
+    resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to having JSON content type and nosniff
+    headers. Sampled with value 1 when the first network packet of a response of
+    this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having JSON content type and nosniff
+    headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.NotBlocked">
+  <summary>
+    The count of not blocked responses despite having an JSON content type
+    header due to the failure of content sniffing. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.JSON.NotBlocked.MaybeJS">
+  <summary>
+    The count of responses that may be parsed as JavaScript among not blocked
+    responses with a JSON content type header. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.MimeType" enum="SiteIsolationMimeType">
+  <summary>
+    MIME type codes for content type header values of potentially cross-site
+    document responses, excluding same-site or not http(s) urls. Sampled with a
+    MIME type code (0-4) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.HTML.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having Plain
+    content type header and contents sniffed as HTML. Sampled with value 1 when
+    the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    responses due to their Plain.HTML contents. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.HTML contents. Sampled with
+    a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.JSON.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having Plain
+    content type header and contents sniffed as JSON. Sampled with value 1 when
+    the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to their Plain.JSON contents. Sampled with
+    value 1 when the first network packet of a response of this type is
+    received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.JSON contents. Sampled with
+    a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram
+    name="SiteIsolation.XSD.Plain.NoSniffBlocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to having Plain content type and nosniff
+    headers. Sampled with value 1 when the first network packet of a response of
+    this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having Plain content type and nosniff
+    header. Sampled with a resource type (0-14) when the first network packet of
+    a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.NotBlocked">
+  <summary>
+    The count of not blocked responses despite having an Plain content type
+    header due to the failure of content sniffing. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.NotBlocked.MaybeJS">
+  <summary>
+    The count of responses that may be parsed as JavaScript among not blocked
+    responses with a Plain content type header. Sampled with value 1 when the
+    first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.XML.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having Plain
+    content type header and contents sniffed as XML. Sampled with value 1 when
+    the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.XML.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to their Plain.XML contents. Sampled with
+    value 1 when the first network packet of a response of this type is
+    received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with renderable HTTP status codes sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their Plain.XML contents. Sampled with
+    a resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.Blocked">
+  <summary>
+    The count of blocked cross-site document responses due to having XML content
+    type header and contents sniffed as XML. Sampled with value 1 when the first
+    network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.Blocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with nonrenderable HTTP status codes among blocked
+    cross-site document responses due to their XML contents. Sampled with value
+    1 when the first network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.Blocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with renderable HTTP status codes sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to their XML contents. Sampled with a
+    resource type (0-14) when the first network packet of a response of this
+    type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.NonRenderableStatusCode">
+  <summary>
+    The count of responses with a nonrenderable HTTP status code among blocked
+    cross-site document responses due to having XML content type and nosniff
+    headers. Sampled with value 1 when the first network packet of a response of
+    this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode"
+    enum="SiteIsolationResourceType">
+  <summary>
+    The count of responses with a renderable HTTP status code sub-categorized by
+    their requesting context type (e.g., image, script, etc.), among blocked
+    cross-site document responses due to having XML content type and nosniff
+    headers. Sampled with a resource type (0-14) when the first network packet
+    of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.NotBlocked">
+  <summary>
+    The count of not blocked responses despite having an XML content type header
+    due to the failure of content sniffing. Sampled with value 1 when the first
+    network packet of a response of this type is received.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.XML.NotBlocked.MaybeJS">
+  <summary>
+    The count of responses that may be parsed as JavaScript among not blocked
+    responses with an XML content type. Sampled with value 1 when the first
+    network packet of a response of this type is received.
   </summary>
 </histogram>
 
@@ -22580,6 +22914,32 @@ other types of suffix sets.
   <int value="1" label="Stale"/>
   <int value="2" label="Fresh"/>
   <int value="3" label="Fresh index with cache updated since backend start"/>
+</enum>
+
+<enum name="SiteIsolationMimeType" type="int">
+  <int value="0" label="HTML"/>
+  <int value="1" label="XML"/>
+  <int value="2" label="JSON"/>
+  <int value="3" label="Plain"/>
+  <int value="4" label="Others"/>
+</enum>
+
+<enum name="SiteIsolationResourceType" type="int">
+  <int value="0" label="MAIN_FRAME"/>
+  <int value="1" label="SUB_FRAME"/>
+  <int value="2" label="STYLESHEET"/>
+  <int value="3" label="SCRIPT"/>
+  <int value="4" label="IMAGE"/>
+  <int value="5" label="FONT_RESOURCE"/>
+  <int value="6" label="SUB_RESOURCE"/>
+  <int value="7" label="OBJECT"/>
+  <int value="8" label="MEDIA"/>
+  <int value="9" label="WORKER"/>
+  <int value="10" label="SHARED_WORKER"/>
+  <int value="11" label="PREFETCH"/>
+  <int value="12" label="FAVICON"/>
+  <int value="13" label="XHR"/>
+  <int value="14" label="LAST_TYPE"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">
