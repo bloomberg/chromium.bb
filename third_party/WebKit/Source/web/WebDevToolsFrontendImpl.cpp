@@ -153,17 +153,26 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     v8::Handle<v8::Value> inspectorFrontendApiValue = frameContext->Global()->Get(v8::String::New("InspectorFrontendAPI"));
     if (!inspectorFrontendApiValue->IsObject())
         return;
-    v8::Handle<v8::Object> inspectorFrontendApi = v8::Handle<v8::Object>::Cast(inspectorFrontendApiValue);
-    v8::Handle<v8::Value> dispatchFunction = inspectorFrontendApi->Get(v8::String::New("dispatchMessage"));
-     // The frame might have navigated away from the front-end page (which is still weird).
-    if (!dispatchFunction->IsFunction())
-        return;
+    v8::Handle<v8::Object> dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorFrontendApiValue);
+    v8::Handle<v8::Value> dispatchFunction = dispatcherObject->Get(v8::String::New("dispatchMessage"));
+    // The frame might have navigated away from the front-end page (which is still weird),
+    // OR the older version of frontend might have a dispatch method in a different place.
+    // FIXME(kaznacheev): Remove when Chrome for Android M18 is retired.
+    if (!dispatchFunction->IsFunction()) {
+        v8::Handle<v8::Value> inspectorBackendApiValue = frameContext->Global()->Get(v8::String::New("InspectorBackend"));
+        if (!inspectorBackendApiValue->IsObject())
+            return;
+        dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorBackendApiValue);
+        dispatchFunction = dispatcherObject->Get(v8::String::New("dispatch"));
+        if (!dispatchFunction->IsFunction())
+            return;
+    }
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatchFunction);
     Vector< v8::Handle<v8::Value> > args;
     args.append(v8String(message, isolate));
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(frame->frame() ? frame->frame()->document() : 0, function, inspectorFrontendApi, args.size(), args.data());
+    ScriptController::callFunctionWithInstrumentation(frame->frame() ? frame->frame()->document() : 0, function, dispatcherObject, args.size(), args.data());
 }
 
 } // namespace WebKit
