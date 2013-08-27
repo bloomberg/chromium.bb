@@ -75,6 +75,11 @@ class OAuth2TokenServiceTest : public testing::Test {
             message_loop_.message_loop_proxy())));
   }
 
+  virtual void TearDown() OVERRIDE {
+    // Makes sure that all the clean up tasks are run.
+    base::RunLoop().RunUntilIdle();
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory factory_;
