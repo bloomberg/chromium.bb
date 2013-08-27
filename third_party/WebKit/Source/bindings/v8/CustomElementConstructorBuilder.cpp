@@ -90,7 +90,6 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         return false;
     }
     m_prototype = prototypeValue.As<v8::Object>();
-    m_baseConstructor = m_prototype->Get(v8String("constructor", v8::Isolate::GetCurrent())).As<v8::Object>();
 
     V8PerContextData* perContextData;
     if (!(perContextData = V8PerContextData::from(m_context))) {
@@ -195,7 +194,6 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
         CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), es);
         return false;
     }
-    m_constructor->SetPrototype(m_baseConstructor);
 
     const CustomElementDescriptor& descriptor = definition->descriptor();
 

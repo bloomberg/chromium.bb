@@ -1,3 +1,0 @@
-
-PASS generated constructor prototype property 
-
