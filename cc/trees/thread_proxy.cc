@@ -410,11 +410,9 @@ void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
       !scheduler_on_impl_thread_->WillDrawIfNeeded());
 }
 
-void ThreadProxy::OnHasPendingTreeStateChanged(bool has_pending_tree) {
-  DCHECK(IsImplThread());
-  TRACE_EVENT1("cc", "ThreadProxy::OnHasPendingTreeStateChanged",
-               "has_pending_tree", has_pending_tree);
-  scheduler_on_impl_thread_->SetHasPendingTree(has_pending_tree);
+void ThreadProxy::NotifyReadyToActivate() {
+  TRACE_EVENT0("cc", "ThreadProxy::NotifyReadyToActivate");
+  scheduler_on_impl_thread_->NotifyReadyToActivate();
 }
 
 void ThreadProxy::SetNeedsCommitOnImplThread() {
@@ -964,10 +962,10 @@ void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
   layer_tree_host_impl_->UpdateVisibleTiles();
 }
 
-void ThreadProxy::ScheduledActionActivatePendingTreeIfNeeded() {
+void ThreadProxy::ScheduledActionActivatePendingTree() {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivatePendingTreeIfNeeded");
-  layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivatePendingTree");
+  layer_tree_host_impl_->ActivatePendingTree();
 }
 
 void ThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
@@ -1001,11 +999,8 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   base::Time wall_clock_time = layer_tree_host_impl_->CurrentFrameTime();
 
   // TODO(enne): This should probably happen post-animate.
-  if (layer_tree_host_impl_->pending_tree()) {
-    layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
-    if (layer_tree_host_impl_->pending_tree())
-      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
-  }
+  if (layer_tree_host_impl_->pending_tree())
+    layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
   layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 

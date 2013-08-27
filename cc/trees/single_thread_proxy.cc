@@ -237,11 +237,6 @@ void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void SingleThreadProxy::OnHasPendingTreeStateChanged(bool have_pending_tree) {
-  // Thread-only feature.
-  NOTREACHED();
-}
-
 void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
   // Thread-only feature.
   NOTREACHED();
@@ -270,6 +265,11 @@ void SingleThreadProxy::Stop() {
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   DCHECK(Proxy::IsImplThread());
   layer_tree_host_impl_->UpdateBackgroundAnimateTicking(!ShouldComposite());
+}
+
+void SingleThreadProxy::NotifyReadyToActivate() {
+  // Thread-only feature.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {

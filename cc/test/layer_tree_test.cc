@@ -37,14 +37,6 @@ bool TestHooks::PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
   return true;
 }
 
-bool TestHooks::CanActivatePendingTree(LayerTreeHostImpl* host_impl) {
-  return true;
-}
-
-bool TestHooks::CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* host_impl) {
-  return true;
-}
-
 // Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
 class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
  public:
@@ -73,7 +65,14 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           host_impl_client,
                           proxy,
                           stats_instrumentation),
-        test_hooks_(test_hooks) {}
+        test_hooks_(test_hooks),
+        block_notify_ready_to_activate_for_testing_(false),
+        notify_ready_to_activate_was_blocked_(false) {}
+
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {
+    test_hooks_->WillBeginImplFrameOnThread(this, args);
+    LayerTreeHostImpl::BeginFrame(args);
+  }
 
   virtual void BeginCommit() OVERRIDE {
     LayerTreeHostImpl::BeginCommit();
@@ -114,20 +113,22 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 
-  virtual void ActivatePendingTreeIfNeeded() OVERRIDE {
-    if (!pending_tree())
-      return;
+  virtual void NotifyReadyToActivate() OVERRIDE {
+    if (block_notify_ready_to_activate_for_testing_)
+      notify_ready_to_activate_was_blocked_ = true;
+    else
+      client_->NotifyReadyToActivate();
+  }
 
-    if (!test_hooks_->CanActivatePendingTreeIfNeeded(this))
-      return;
-
-    LayerTreeHostImpl::ActivatePendingTreeIfNeeded();
+  virtual void BlockNotifyReadyToActivateForTesting(bool block) OVERRIDE {
+    block_notify_ready_to_activate_for_testing_ = block;
+    if (!block && notify_ready_to_activate_was_blocked_) {
+      NotifyReadyToActivate();
+      notify_ready_to_activate_was_blocked_ = false;
+    }
   }
 
   virtual void ActivatePendingTree() OVERRIDE {
-    if (!test_hooks_->CanActivatePendingTree(this))
-      return;
-
     test_hooks_->WillActivateTreeOnThread(this);
     LayerTreeHostImpl::ActivatePendingTree();
     DCHECK(!pending_tree());
@@ -173,6 +174,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
 
  private:
   TestHooks* test_hooks_;
+  bool block_notify_ready_to_activate_for_testing_;
+  bool notify_ready_to_activate_was_blocked_;
 };
 
 // Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.

@@ -114,8 +114,8 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionUpdateVisibleTiles");
     states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
-  virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE {
-    actions_.push_back("ScheduledActionActivatePendingTreeIfNeeded");
+  virtual void ScheduledActionActivatePendingTree() OVERRIDE {
+    actions_.push_back("ScheduledActionActivatePendingTree");
     states_.push_back(scheduler_->StateAsValueForTesting().release());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {

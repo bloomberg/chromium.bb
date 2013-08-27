@@ -722,8 +722,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
         main_thread_scroll_(40, 5),
         impl_thread_scroll1_(2, -1),
         impl_thread_scroll2_(-3, 10),
-        num_scrolls_(0),
-        can_activate_(true) {}
+        num_scrolls_(0) {}
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->root_layer()->SetScrollable(true);
@@ -748,15 +747,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     }
   }
 
-  virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
-    return can_activate_;
-  }
-
-  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* impl)
-      OVERRIDE {
-    return can_activate_;
-  }
-
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     // We force a second draw here of the first commit before activating
     // the second commit.
@@ -774,7 +764,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         if (!impl->pending_tree()) {
-          can_activate_ = false;
+          impl->BlockNotifyReadyToActivateForTesting(true);
           EXPECT_VECTOR_EQ(root->ScrollDelta(), gfx::Vector2d());
           root->ScrollBy(impl_thread_scroll1_);
 
@@ -786,7 +776,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           // CommitCompleteOnThread will trigger this function again
           // and cause us to take the else clause.
         } else {
-          can_activate_ = true;
+          impl->BlockNotifyReadyToActivateForTesting(false);
           ASSERT_TRUE(pending_root);
           EXPECT_EQ(impl->pending_tree()->source_frame_number(), 1);
 
@@ -828,7 +818,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
   gfx::Vector2d impl_thread_scroll1_;
   gfx::Vector2d impl_thread_scroll2_;
   int num_scrolls_;
-  bool can_activate_;
 };
 
 MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestSimple);

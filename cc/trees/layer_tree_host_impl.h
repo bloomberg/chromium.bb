@@ -61,7 +61,7 @@ class LayerTreeHostImplClient {
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
-  virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) = 0;
+  virtual void NotifyReadyToActivate() = 0;
   virtual void SetNeedsRedrawOnImplThread() = 0;
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
@@ -184,6 +184,11 @@ class CC_EXPORT LayerTreeHostImpl
   // Evict all textures by enforcing a memory policy with an allocation of 0.
   void EvictTexturesForTesting();
 
+  // When blocking, this prevents client_->NotifyReadyToActivate() from being
+  // called. When disabled, it calls client_->NotifyReadyToActivate()
+  // immediately if any notifications had been blocked while blocking.
+  virtual void BlockNotifyReadyToActivateForTesting(bool block);
+
   // RendererClient implementation
   virtual gfx::Rect DeviceViewport() const OVERRIDE;
  private:
@@ -247,7 +252,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   virtual void CreatePendingTree();
   void UpdateVisibleTiles();
-  virtual void ActivatePendingTreeIfNeeded();
+  virtual void ActivatePendingTree();
 
   // Shortcuts to layers on the active tree.
   LayerImpl* RootLayer() const;
@@ -391,7 +396,6 @@ class CC_EXPORT LayerTreeHostImpl
       LayerTreeHostImplClient* client,
       Proxy* proxy,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
-  virtual void ActivatePendingTree();
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time,
@@ -471,7 +475,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<LayerTreeImpl> active_tree_;
 
   // In impl-side painting mode, tree with possibly incomplete rasterized
-  // content. May be promoted to active by ActivatePendingTreeIfNeeded().
+  // content. May be promoted to active by ActivatePendingTree().
   scoped_ptr<LayerTreeImpl> pending_tree_;
 
   // In impl-side painting mode, inert tree with layers that can be recycled

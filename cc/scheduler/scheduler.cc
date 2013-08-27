@@ -44,8 +44,8 @@ void Scheduler::SetCanDraw(bool can_draw) {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetHasPendingTree(bool has_pending_tree) {
-  state_machine_.SetHasPendingTree(has_pending_tree);
+void Scheduler::NotifyReadyToActivate() {
+  state_machine_.NotifyReadyToActivate();
   ProcessScheduledActions();
 }
 
@@ -220,8 +220,8 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_UPDATE_VISIBLE_TILES:
         client_->ScheduledActionUpdateVisibleTiles();
         break;
-      case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
-        client_->ScheduledActionActivatePendingTreeIfNeeded();
+      case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE:
+        client_->ScheduledActionActivatePendingTree();
         break;
       case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE:
         DrawAndSwapIfPossible();

@@ -110,12 +110,8 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
 
     // TODO(enne): This should probably happen post-animate.
     if (layer_tree_host_impl_->pending_tree()) {
-      layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
-
-      if (layer_tree_host_impl_->pending_tree()) {
-        layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
-        layer_tree_host_impl_->ManageTiles();
-      }
+      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
+      layer_tree_host_impl_->ManageTiles();
     }
 
     layer_tree_host_impl_->Animate(
@@ -254,7 +250,10 @@ void LayerTreeHostImpl::CommitComplete() {
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.
-    ManageTiles();
+    if (!tile_manager_ || !manage_tiles_needed_)
+      NotifyReadyToActivate();
+    else
+      ManageTiles();
   } else {
     active_tree_->set_needs_update_draw_properties();
   }
@@ -1026,6 +1025,10 @@ void LayerTreeHostImpl::EvictTexturesForTesting() {
   EnforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
 }
 
+void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
+  NOTREACHED();
+}
+
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 
@@ -1085,10 +1088,7 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
-  if (pending_tree_) {
-    need_to_update_visible_tiles_before_draw_ = true;
-    ActivatePendingTree();
-  }
+  client_->NotifyReadyToActivate();
 }
 
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
@@ -1434,7 +1434,6 @@ void LayerTreeHostImpl::CreatePendingTree() {
   else
     pending_tree_ = LayerTreeImpl::create(this);
   client_->OnCanDrawStateChanged(CanDraw());
-  client_->OnHasPendingTreeStateChanged(pending_tree_);
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree", pending_tree_.get());
   TRACE_EVENT_ASYNC_STEP0("cc",
                           "PendingTree", pending_tree_.get(), "waiting");
@@ -1450,32 +1449,11 @@ void LayerTreeHostImpl::UpdateVisibleTiles() {
   need_to_update_visible_tiles_before_draw_ = false;
 }
 
-void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
-  DCHECK(pending_tree_);
-  CHECK(settings_.impl_side_painting);
-
-  if (!pending_tree_)
-    return;
-
-  // The tile manager is usually responsible for notifying activation.
-  // If there is no tile manager, then we need to manually activate.
-  if (!tile_manager_ || tile_manager_->AreTilesRequiredForActivationReady()) {
-    ActivatePendingTree();
-    return;
-  }
-
-  // Manage tiles in case state affecting tile priority has changed.
-  ManageTiles();
-
-  TRACE_EVENT_ASYNC_STEP1(
-    "cc",
-    "PendingTree", pending_tree_.get(), "activate",
-    "state", TracedValue::FromValue(ActivationStateAsValue().release()));
-}
-
 void LayerTreeHostImpl::ActivatePendingTree() {
   CHECK(pending_tree_);
   TRACE_EVENT_ASYNC_END0("cc", "PendingTree", pending_tree_.get());
+
+  need_to_update_visible_tiles_before_draw_ = true;
 
   active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
   active_tree_->PushPersistedState(pending_tree_.get());
@@ -1510,7 +1488,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   client_->ReduceWastedContentsTextureMemoryOnImplThread();
 
   client_->OnCanDrawStateChanged(CanDraw());
-  client_->OnHasPendingTreeStateChanged(pending_tree_);
   client_->SetNeedsRedrawOnImplThread();
   client_->RenewTreePriority();
 

@@ -21,7 +21,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
       OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
-  virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE {}
+  virtual void NotifyReadyToActivate() OVERRIDE {}
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {}
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) OVERRIDE {}
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE {}

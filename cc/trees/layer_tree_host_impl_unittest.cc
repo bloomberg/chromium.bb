@@ -68,7 +68,7 @@ class LayerTreeHostImplTest : public testing::Test,
         always_main_thread_blocked_(&proxy_),
         did_try_initialize_renderer_(false),
         on_can_draw_state_changed_called_(false),
-        has_pending_tree_(false),
+        did_notify_ready_to_activate_(false),
         did_request_commit_(false),
         did_request_redraw_(false),
         did_upload_visible_tile_(false),
@@ -106,8 +106,9 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {
     on_can_draw_state_changed_called_ = true;
   }
-  virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE {
-    has_pending_tree_ = has_pending_tree;
+  virtual void NotifyReadyToActivate() OVERRIDE {
+    did_notify_ready_to_activate_ = true;
+    host_impl_->ActivatePendingTree();
   }
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {
     did_request_redraw_ = true;
@@ -353,7 +354,7 @@ class LayerTreeHostImplTest : public testing::Test,
   FakeRenderingStatsInstrumentation stats_instrumentation_;
   bool did_try_initialize_renderer_;
   bool on_can_draw_state_changed_called_;
-  bool has_pending_tree_;
+  bool did_notify_ready_to_activate_;
   bool did_request_commit_;
   bool did_request_redraw_;
   bool did_upload_visible_tile_;
@@ -3022,7 +3023,7 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   host_impl_->SetViewportSize(larger_viewport);
   EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
   did_activate_pending_tree_ = false;
-  host_impl_->ActivatePendingTreeIfNeeded();
+  host_impl_->ActivatePendingTree();
   EXPECT_TRUE(did_activate_pending_tree_);
   EXPECT_FALSE(host_impl_->active_tree()->ViewportSizeInvalid());
 

@@ -73,7 +73,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
     ACTION_COMMIT,
     ACTION_UPDATE_VISIBLE_TILES,
-    ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED,
+    ACTION_ACTIVATE_PENDING_TREE,
     ACTION_DRAW_IF_POSSIBLE,
     ACTION_DRAW_FORCED,
     ACTION_DRAW_AND_SWAP_ABORT,
@@ -153,12 +153,9 @@ class CC_EXPORT SchedulerStateMachine {
   // when such behavior would be undesirable.
   void SetCanDraw(bool can);
 
-  // Indicates whether or not there is a pending tree.  This influences
-  // whether or not we can succesfully commit at this time.  If the
-  // last commit is still being processed (but not blocking), it may not
-  // be possible to take another commit yet.  This overrides force commit,
-  // as a commit is already still in flight.
-  void SetHasPendingTree(bool has_pending_tree);
+  // Indicates that the pending tree is ready for activation.
+  void NotifyReadyToActivate();
+
   bool has_pending_tree() const { return has_pending_tree_; }
 
   void DidLoseOutputSurface();
@@ -172,19 +169,24 @@ class CC_EXPORT SchedulerStateMachine {
   bool PendingDrawsShouldBeAborted() const;
 
  protected:
+  // True if we need to force activations to make forward progress.
+  bool PendingActivationsShouldBeForced() const;
+
+  bool ShouldBeginOutputSurfaceCreation() const;
   bool ShouldDrawForced() const;
   bool ShouldDraw() const;
-  bool ShouldAttemptTreeActivation() const;
+  bool ShouldActivatePendingTree() const;
   bool ShouldAcquireLayerTexturesForMainThread() const;
   bool ShouldUpdateVisibleTiles() const;
   bool ShouldSendBeginFrameToMainThread() const;
 
   bool HasDrawnThisFrame() const;
-  bool HasAttemptedTreeActivationThisFrame() const;
+  bool HasActivatedPendingTreeThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
   bool HasSentBeginFrameToMainThreadThisFrame() const;
 
-  void HandleCommitInternal(bool commit_was_aborted);
+  void UpdateStateOnCommit(bool commit_was_aborted);
+  void UpdateStateOnActivation();
   void UpdateStateOnDraw(bool did_swap);
 
   const SchedulerSettings settings_;
@@ -196,7 +198,6 @@ class CC_EXPORT SchedulerStateMachine {
   int current_frame_number_;
   int last_frame_number_where_begin_frame_sent_to_main_thread_;
   int last_frame_number_where_draw_was_called_;
-  int last_frame_number_where_tree_activation_attempted_;
   int last_frame_number_where_update_visible_tiles_was_called_;
   int consecutive_failed_draws_;
   int maximum_number_of_failed_draws_before_draw_is_forced_;
@@ -214,6 +215,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool can_start_;
   bool can_draw_;
   bool has_pending_tree_;
+  bool pending_tree_is_ready_for_activation_;
+  bool active_tree_has_been_drawn_;
   bool draw_if_possible_failed_;
   TextureState texture_state_;
   bool did_create_and_initialize_first_output_surface_;

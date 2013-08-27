@@ -41,7 +41,7 @@ class SchedulerClient {
   ScheduledActionDrawAndSwapForced() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
-  virtual void ScheduledActionActivatePendingTreeIfNeeded() = 0;
+  virtual void ScheduledActionActivatePendingTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
@@ -67,7 +67,7 @@ class CC_EXPORT Scheduler {
 
   void SetVisible(bool visible);
   void SetCanDraw(bool can_draw);
-  void SetHasPendingTree(bool has_pending_tree);
+  void NotifyReadyToActivate();
 
   void SetNeedsCommit();
 

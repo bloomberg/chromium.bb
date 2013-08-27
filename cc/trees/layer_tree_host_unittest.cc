@@ -701,7 +701,8 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
 class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestFrameTimeUpdatesAfterActivationFails() : frame_(0) {}
+  LayerTreeHostTestFrameTimeUpdatesAfterActivationFails()
+      : frame_count_with_pending_tree_(0) {}
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
@@ -710,9 +711,18 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     PostSetNeedsCommitToMainThread();
   }
 
+  virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                          const BeginFrameArgs& args) OVERRIDE {
+    if (host_impl->pending_tree())
+      frame_count_with_pending_tree_++;
+    host_impl->BlockNotifyReadyToActivateForTesting(
+        frame_count_with_pending_tree_ <= 1);
+  }
+
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    if (frame_ >= 1) {
-      EXPECT_NE(first_frame_time_, impl->CurrentFrameTimeTicks());
+    if (frame_count_with_pending_tree_ > 1) {
+      EXPECT_NE(first_frame_time_.ToInternalValue(),
+                impl->CurrentFrameTimeTicks().ToInternalValue());
       EndTest();
       return;
     }
@@ -720,35 +730,15 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     EXPECT_FALSE(impl->settings().impl_side_painting);
     EndTest();
   }
-
-  virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
-    if (frame_ >= 1)
-      return true;
-
-    return false;
-  }
-
-  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* impl)
-      OVERRIDE {
-    frame_++;
-    if (frame_ == 1) {
-      first_frame_time_ = impl->CurrentFrameTimeTicks();
-
-      // Since base::TimeTicks::Now() uses a low-resolution clock on
-      // Windows, we need to make sure that the clock has incremented past
-      // first_frame_time_.
-      while (first_frame_time_ == base::TimeTicks::Now()) {}
-
-      return false;
-    }
-
-    return true;
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (impl->settings().impl_side_painting)
+      EXPECT_NE(frame_count_with_pending_tree_, 1);
   }
 
   virtual void AfterTest() OVERRIDE {}
 
  private:
-  int frame_;
+  int frame_count_with_pending_tree_;
   base::TimeTicks first_frame_time_;
 };
 
