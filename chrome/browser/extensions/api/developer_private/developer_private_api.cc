@@ -128,7 +128,6 @@ namespace GetItemsInfo = api::developer_private::GetItemsInfo;
 namespace Inspect = api::developer_private::Inspect;
 namespace PackDirectory = api::developer_private::PackDirectory;
 namespace Reload = api::developer_private::Reload;
-namespace Restart = api::developer_private::Restart;
 
 DeveloperPrivateAPI* DeveloperPrivateAPI::Get(Profile* profile) {
   return DeveloperPrivateAPIFactory::GetForProfile(profile);
@@ -626,23 +625,6 @@ DeveloperPrivateShowPermissionsDialogFunction::
 
 DeveloperPrivateShowPermissionsDialogFunction::
     ~DeveloperPrivateShowPermissionsDialogFunction() {}
-
-bool DeveloperPrivateRestartFunction::RunImpl() {
-  scoped_ptr<Restart::Params> params(Restart::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  apps::AppLoadService* service = apps::AppLoadService::Get(profile());
-  EXTENSION_FUNCTION_VALIDATE(!params->item_id.empty());
-  ExtensionService* extension_service = profile()->GetExtensionService();
-  // Don't restart disabled applications.
-  if (!extension_service->IsExtensionEnabled(params->item_id))
-    return false;
-
-  service->RestartApplication(params->item_id);
-  return true;
-}
-
-DeveloperPrivateRestartFunction::~DeveloperPrivateRestartFunction() {}
 
 DeveloperPrivateEnableFunction::DeveloperPrivateEnableFunction() {}
 
@@ -1210,7 +1192,6 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsReloadUnpacked",
              IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED);
   SET_STRING("extensionSettingsLaunch", IDS_EXTENSIONS_LAUNCH);
-  SET_STRING("extensionSettingsRestart", IDS_EXTENSIONS_RESTART);
   SET_STRING("extensionSettingsOptions", IDS_EXTENSIONS_OPTIONS_LINK);
   SET_STRING("extensionSettingsPermissions", IDS_EXTENSIONS_PERMISSIONS_LINK);
   SET_STRING("extensionSettingsVisitWebsite", IDS_EXTENSIONS_VISIT_WEBSITE);
@@ -1237,7 +1218,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsShowLogsButton", IDS_EXTENSIONS_SHOW_LOGS);
   SET_STRING("extensionSettingsMoreDetailsButton", IDS_EXTENSIONS_MORE_DETAILS);
   SET_STRING("extensionSettingsVersion", IDS_EXTENSIONS_VERSION);
-  SET_STRING("extensionSettingsDelete", IDS_EXTENSIONS_DELETE);
+  SET_STRING("extensionSettingsDelete", IDS_EXTENSIONS_ADT_DELETE);
   SET_STRING("extensionSettingsPack", IDS_EXTENSIONS_PACK);
 
 // Pack Extension strings

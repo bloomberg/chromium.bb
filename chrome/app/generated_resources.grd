@@ -4587,9 +4587,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_LAUNCH" desc="The link for launching apps.">
         Launch
       </message>
-      <message name="IDS_EXTENSIONS_RESTART" desc="The link for restarting apps.">
-        Restart
-      </message>
       <if expr="is_macosx">
         <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
           Reload (⌘R)
@@ -4872,6 +4869,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_DELETE" desc="Text for the link to delete the extension / app.">
         Delete
+      </message>
+      <message name="IDS_EXTENSIONS_ADT_DELETE" desc="Text for the link to uninstall the extension / app.">
+        Uninstall
       </message>
       <message name="IDS_EXTENSIONS_PACK" desc="Text for the link to pack the extension / app.">
         Pack

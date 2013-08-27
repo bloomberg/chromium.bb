@@ -318,8 +318,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_TERMINATED));
   source->AddString("extensionSettingsLaunch",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LAUNCH));
-  source->AddString("extensionSettingsRestart",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RESTART));
   source->AddString("extensionSettingsReloadUnpacked",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   source->AddString("extensionSettingsOptions",
@@ -417,9 +415,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
       base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("extensionSettingsRestart",
-      base::Bind(&ExtensionSettingsHandler::HandleRestartMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsReload",
       base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
@@ -719,15 +714,6 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
                                                   extension,
                                                   extension_misc::LAUNCH_WINDOW,
                                                   NEW_WINDOW));
-}
-
-void ExtensionSettingsHandler::HandleRestartMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
-  apps::AppLoadService::Get(extension_service_->profile())->RestartApplication(
-      extension_id);
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(

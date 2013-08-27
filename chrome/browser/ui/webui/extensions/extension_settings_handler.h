@@ -146,9 +146,6 @@ class ExtensionSettingsHandler
   // Callback for "launch" message.
   void HandleLaunchMessage(const ListValue* args);
 
-  // Callback for "restart" message.
-  void HandleRestartMessage(const ListValue* args);
-
   // Callback for "reload" message.
   void HandleReloadMessage(const base::ListValue* args);
 

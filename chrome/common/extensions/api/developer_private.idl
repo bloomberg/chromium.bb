@@ -162,9 +162,6 @@ namespace developerPrivate {
     // Reloads a given item with |itemId|.
     static void reload(DOMString itemId, optional VoidCallback callback);
 
-    // Restarts a given item with |itemId|.
-    static void restart(DOMString itemId, optional VoidCallback callback);
-
     // Enable / Disable a given item with id |itemId|.
     static void enable(DOMString itemId,
                        boolean enable,

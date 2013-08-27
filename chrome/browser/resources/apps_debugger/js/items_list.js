@@ -243,15 +243,6 @@ cr.define('apps_dev_tool', function() {
           ItemsList.launchApp(item.id);
         });
         launch.hidden = false;
-
-        // The 'Restart' link.
-        var restart = node.querySelector('.restart-link');
-        restart.addEventListener('click', function(e) {
-          chrome.developerPrivate.restart(item.id, function() {
-            ItemsList.loadItemsInfo();
-          });
-        });
-        restart.hidden = false;
       }
       // The terminated reload link.
       if (!item.terminated)

@@ -207,13 +207,6 @@ cr.define('options', function() {
             chrome.send('extensionSettingsLaunch', [extension.id]);
           });
           launch.hidden = false;
-
-          // The 'Restart' link.
-          var restart = node.querySelector('.restart-link');
-          restart.addEventListener('click', function(e) {
-            chrome.send('extensionSettingsRestart', [extension.id]);
-          });
-          restart.hidden = false;
         }
       }
 
