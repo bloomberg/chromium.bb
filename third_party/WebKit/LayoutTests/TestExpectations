@@ -1216,8 +1216,6 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
-Bug(esprehn) [ Android ] fast/forms/select-initial-position.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
@@ -1238,11 +1236,6 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
-
-crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
-crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background-size-aspect-ratio.htm [ NeedsRebaseline ]
-crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_border_box.htm [ NeedsRebaseline ]
-crbug.com/260691 [ Android ] ietestcenter/css3/bordersbackgrounds/background_repeat_space_content_box.htm [ NeedsRebaseline ]
 
 crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
