@@ -153,8 +153,10 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_WEB_REQUEST;
       break;
     case UNUSED_ACTION_API_BLOCKED:
-      // Here for legacy reasons. It shouldn't be reached, but some people
-      // might have old db entries. Treat it like an API call if that happens.
+    case ACTION_ANY:
+    default:
+      // This shouldn't be reached, but some people might have old or otherwise
+      // weird db entries. Treat it like an API call if that happens.
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_CALL;
       break;
   }

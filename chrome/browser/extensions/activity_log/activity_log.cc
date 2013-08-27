@@ -357,6 +357,20 @@ void ActivityLog::GetActions(
   }
 }
 
+void ActivityLog::GetFilteredActions(
+    const std::string& extension_id,
+    const Action::ActionType type,
+    const std::string& api_name,
+    const std::string& page_url,
+    const std::string& arg_url,
+    const base::Callback
+        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (policy_) {
+    policy_->ReadFilteredData(
+        extension_id, type, api_name, page_url, arg_url, callback);
+  }
+}
+
 void ActivityLog::OnScriptsExecuted(
     const content::WebContents* web_contents,
     const ExecutingScriptsMap& extension_ids,

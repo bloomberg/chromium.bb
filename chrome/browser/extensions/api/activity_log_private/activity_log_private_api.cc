@@ -20,7 +20,9 @@ namespace extensions {
 
 namespace activity_log_private = api::activity_log_private;
 
+using api::activity_log_private::ActivityResultSet;
 using api::activity_log_private::ExtensionActivity;
+using api::activity_log_private::Filter;
 
 const char kActivityLogExtensionId[] = "acldcpdepobcjbdanifkmfndkjoilgba";
 const char kActivityLogTestExtensionId[] = "ajabfgledjhbabeoojlabelaifmakodf";
@@ -93,7 +95,84 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
 }
 
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {
+  scoped_ptr<activity_log_private::GetExtensionActivities::Params> params(
+      activity_log_private::GetExtensionActivities::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Get the arguments in the right format.
+  scoped_ptr<Filter> filter;
+  filter.reset(&params.release()->filter);
+  Action::ActionType action_type = Action::ACTION_API_CALL;
+  switch (filter->activity_type) {
+    case Filter::ACTIVITY_TYPE_API_CALL:
+      action_type = Action::ACTION_API_CALL;
+      break;
+    case Filter::ACTIVITY_TYPE_API_EVENT:
+      action_type = Action::ACTION_API_EVENT;
+      break;
+    case Filter::ACTIVITY_TYPE_CONTENT_SCRIPT:
+      action_type = Action::ACTION_CONTENT_SCRIPT;
+      break;
+    case Filter::ACTIVITY_TYPE_DOM_ACCESS:
+      action_type = Action::ACTION_DOM_ACCESS;
+      break;
+    case Filter::ACTIVITY_TYPE_DOM_EVENT:
+      action_type = Action::ACTION_DOM_EVENT;
+      break;
+    case  Filter::ACTIVITY_TYPE_WEB_REQUEST:
+      action_type = Action::ACTION_WEB_REQUEST;
+      break;
+    case Filter::ACTIVITY_TYPE_ANY:
+    default:
+      action_type = Action::ACTION_ANY;
+  }
+  std::string extension_id =
+      filter->extension_id.get() ? *filter->extension_id : std::string();
+  std::string api_call =
+      filter->api_call.get() ? *filter->api_call : std::string();
+  std::string page_url =
+      filter->page_url.get() ? *filter->page_url : std::string();
+  std::string arg_url =
+      filter->arg_url.get() ? *filter->arg_url : std::string();
+
+  // Call the ActivityLog.
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  DCHECK(activity_log);
+  activity_log->GetFilteredActions(
+      extension_id,
+      action_type,
+      api_call,
+      page_url,
+      arg_url,
+      base::Bind(
+          &ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted,
+          this));
+
   return true;
+}
+
+void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
+    scoped_ptr<std::vector<scoped_refptr<Action> > > activities) {
+  // Convert Actions to ExtensionActivities.
+  std::vector<linked_ptr<ExtensionActivity> > result_arr;
+  for (std::vector<scoped_refptr<Action> >::iterator it = activities->begin();
+       it != activities->end();
+       ++it) {
+    result_arr.push_back(
+        make_linked_ptr(it->get()->ConvertToExtensionActivity().release()));
+  }
+
+  // Populate the return object.
+  // TODO(felt): Implement paging. Right now max_time and more_results are
+  // placeholder values.
+  scoped_ptr<ActivityResultSet> result_set(new ActivityResultSet);
+  result_set->activities = result_arr;
+  result_set->max_time = scoped_ptr<int>(new int(0));
+  result_set->more_results = false;
+  results_ = activity_log_private::GetExtensionActivities::Results::Create(
+      *result_set);
+
+  SendResponse(true);
 }
 
 }  // namespace extensions

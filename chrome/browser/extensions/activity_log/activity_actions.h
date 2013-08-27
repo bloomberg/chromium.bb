@@ -34,6 +34,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_DOM_ACCESS = 4,
     ACTION_DOM_EVENT = 5,
     ACTION_WEB_REQUEST = 6,
+    ACTION_ANY = 1001,              // Used for lookups of unspecified type.
   };
 
   // A useful shorthand for methods that take or return collections of Action

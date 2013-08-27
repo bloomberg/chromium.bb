@@ -286,6 +286,24 @@ testCases.push({
   expected_activity: domExpectedActivityIncognito
 });
 
+testCases.push({
+  func: function checkSavedHistory() {
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.apiCall = 'tabs.onUpdated';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq('pknkgggnfecklokoggaggchhaebkajji',
+              result['activities'][0]['extensionId']);
+          chrome.test.assertEq('tabs.onUpdated',
+              result['activities'][0]['apiCall']);
+          chrome.test.succeed();
+        });
+  }
+});
+
 // Listener to check the expected logging is done in the test cases.
 var testCaseIndx = 0;
 var callIndx = -1;

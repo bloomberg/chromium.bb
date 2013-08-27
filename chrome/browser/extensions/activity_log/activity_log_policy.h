@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/common/extensions/api/activity_log_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -84,6 +85,18 @@ class ActivityLogPolicy {
   virtual void ReadData(
       const std::string& extension_id,
       const int day,
+      const base::Callback
+          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
+
+  // Gets all actions that match the specified fields. URLs are treated like
+  // prefixes; other fields are exact matches. Empty strings are not matched to
+  // anything.
+  virtual void ReadFilteredData(
+      const std::string& extension_id,
+      const Action::ActionType type,
+      const std::string& api_name,
+      const std::string& page_url,
+      const std::string& arg_url,
       const base::Callback
           <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
 

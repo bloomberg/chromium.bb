@@ -100,6 +100,43 @@ class CountingPolicyTest : public testing::Test {
     timeout.Cancel();
   }
 
+  // A helper function to call ReadFilteredData on a policy object and wait for
+  // the results to be processed.
+  void CheckReadFilteredData(
+      ActivityLogPolicy* policy,
+      const std::string& extension_id,
+      const Action::ActionType type,
+      const std::string& api_name,
+      const std::string& page_url,
+      const std::string& arg_url,
+      const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
+    // Submit a request to the policy to read back some data, and call the
+    // checker function when results are available.  This will happen on the
+    // database thread.
+    policy->ReadFilteredData(
+        extension_id,
+        type,
+        api_name,
+        page_url,
+        arg_url,
+        base::Bind(&CountingPolicyTest::CheckWrapper,
+                   checker,
+                   base::MessageLoop::current()->QuitClosure()));
+
+    // Set up a timeout that will trigger after 5 seconds; if we haven't
+    // received any results by then assume that the test is broken.
+    base::CancelableClosure timeout(
+        base::Bind(&CountingPolicyTest::TimeoutCallback));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(5));
+
+    // Wait for results; either the checker or the timeout callbacks should
+    // cause the main loop to exit.
+    base::MessageLoop::current()->Run();
+
+    timeout.Cancel();
+  }
+
   // A helper function which verifies that the string_ids and url_ids tables in
   // the database have the specified sizes.
   static void CheckStringTableSizes(CountingPolicy* policy,
@@ -136,6 +173,16 @@ class CountingPolicyTest : public testing::Test {
   static void TimeoutCallback() {
     base::MessageLoop::current()->QuitWhenIdle();
     FAIL() << "Policy test timed out waiting for results";
+  }
+
+  static void RetrieveActions_FetchFilteredActions1(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(1, static_cast<int>(i->size()));
+  }
+
+  static void RetrieveActions_FetchFilteredActions2(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
   static void Arguments_Stripped(scoped_ptr<Action::ActionVector> i) {
@@ -378,6 +425,97 @@ TEST_F(CountingPolicyTest, GetOlderActions) {
       "punky",
       3,
       base::Bind(&CountingPolicyTest::Arguments_GetOlderActions));
+
+  policy->Close();
+}
+
+TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
+  ActivityLogPolicy* policy = new CountingPolicy(profile_.get());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                       .Set("name", "Test extension")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2))
+          .Build();
+  extension_service_->AddExtension(extension.get());
+  GURL gurl("http://www.google.com");
+
+  // Write some API calls
+  scoped_refptr<Action> action_api = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_API_CALL,
+                                                "tabs.testMethod");
+  action_api->set_args(make_scoped_ptr(new base::ListValue()));
+  policy->ProcessAction(action_api);
+
+  scoped_refptr<Action> action_dom = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_DOM_ACCESS,
+                                                "document.write");
+  action_dom->set_args(make_scoped_ptr(new base::ListValue()));
+  action_dom->set_page_url(gurl);
+  policy->ProcessAction(action_dom);
+
+  CheckReadFilteredData(
+      policy,
+      extension->id(),
+      Action::ACTION_API_CALL,
+      "tabs.testMethod",
+      "",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_DOM_ACCESS,
+      "",
+      "",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_DOM_ACCESS,
+      "",
+      "http://www.google.com/",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_DOM_ACCESS,
+      "",
+      "http://www.google.com",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_DOM_ACCESS,
+      "",
+      "http://www.goo",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  CheckReadFilteredData(
+      policy,
+      extension->id(),
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions2));
 
   policy->Close();
 }

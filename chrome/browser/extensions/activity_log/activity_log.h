@@ -84,6 +84,18 @@ class ActivityLog : public BrowserContextKeyedService,
                       <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>&
                       callback);
 
+  // Gets all actions that match the specified fields. URLs are treated like
+  // prefixes; other fields are exact matches. Empty strings are not matched to
+  // anything.
+  void GetFilteredActions(
+      const std::string& extension_id,
+      const Action::ActionType type,
+      const std::string& api_name,
+      const std::string& page_url,
+      const std::string& arg_url,
+      const base::Callback
+          <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback);
+
   // Extension::InstallObserver
   // We keep track of whether the whitelisted extension is installed; if it is,
   // we want to recompute whether to have logging enabled.

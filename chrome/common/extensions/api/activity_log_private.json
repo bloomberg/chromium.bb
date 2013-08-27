@@ -25,12 +25,15 @@
         }
       },
       {
-        "id": "ActivityFilter",
+        "id": "Filter",
         "type": "object",
-        "description": "The result set will be limited to rows that match the specification. All matches will be exact except for URL fields, which are considered prefixes.",
+        "description": "Used to specify values for a lookup.",
         "properties": {
-          "daysAgo": {"type": "string", "optional": true},
-          "activityDetail": {"$ref": "ExtensionActivity", "optional": true}
+          "extensionId": {"type": "string", "optional": true, "description": "Exact match"},
+          "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request", "any"], "description": "Exact match or any"},
+          "apiCall": {"type": "string", "optional": true, "description": "Exact match"},
+          "pageUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"},
+          "argUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"}
         }
       },
       {
@@ -38,8 +41,7 @@
         "type": "object",
         "description": "This holds the results of a lookup, the filter of the lookup, the time of the lookup, and whether there are more results that match.",
         "properties": {
-          "result": {"type": "array", "items": {"$ref": "ExtensionActivity"}},
-          "filter": {"$ref": "ActivityFilter"},
+          "activities": {"type": "array", "items": {"$ref": "ExtensionActivity"}},
           "maxTime": {"type": "integer", "optional": true},
           "moreResults": {"type": "boolean"}
         }
@@ -53,7 +55,8 @@
         "parameters": [
           {
             "name": "filter",
-            "$ref": "ActivityFilter"
+            "$ref": "Filter",
+            "description": "Fill out the fields that you want to search for in the database."
           },
           {
             "name": "maxTime",

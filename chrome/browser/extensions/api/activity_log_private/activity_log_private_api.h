@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -76,6 +75,10 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void OnLookupCompleted(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > activities);
 };
 
 }  // namespace extensions
