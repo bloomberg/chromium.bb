@@ -266,7 +266,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // TODO(danakj): Move these to the android code.
   settings.can_use_lcd_text = false;
   settings.max_partial_texture_updates = 0;
-  settings.use_linear_fade_scrollbar_animator = true;
+  settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
   settings.solid_color_scrollbars = true;
   settings.solid_color_scrollbar_color =
       cmd->HasSwitch(switches::kHideScrollbars)
@@ -278,7 +278,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       widget->UsingSynchronousRendererCompositor();
 #elif !defined(OS_MACOSX)
   if (cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
-    settings.use_linear_fade_scrollbar_animator = true;
+    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
     settings.solid_color_scrollbars = true;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }

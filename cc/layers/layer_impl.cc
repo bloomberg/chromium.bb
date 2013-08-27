@@ -1098,24 +1098,37 @@ void LayerImpl::SetScrollbarOpacity(float opacity) {
 }
 
 void LayerImpl::DidBecomeActive() {
-  if (!layer_tree_impl_->settings().use_linear_fade_scrollbar_animator)
+  if (layer_tree_impl_->settings().scrollbar_animator ==
+      LayerTreeSettings::NoAnimator) {
     return;
+  }
 
   bool need_scrollbar_animation_controller = horizontal_scrollbar_layer_ ||
                                              vertical_scrollbar_layer_;
-  if (need_scrollbar_animation_controller) {
-    if (!scrollbar_animation_controller_) {
-      base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(
-          layer_tree_impl_->settings().scrollbar_linear_fade_delay_ms);
-      base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(
-          layer_tree_impl_->settings().scrollbar_linear_fade_length_ms);
-      scrollbar_animation_controller_ =
-          ScrollbarAnimationControllerLinearFade::Create(
-              this, fadeout_delay, fadeout_length)
-              .PassAs<ScrollbarAnimationController>();
-    }
-  } else {
+  if (!need_scrollbar_animation_controller) {
     scrollbar_animation_controller_.reset();
+    return;
+  }
+
+  if (scrollbar_animation_controller_)
+    return;
+
+  switch (layer_tree_impl_->settings().scrollbar_animator) {
+  case LayerTreeSettings::LinearFade: {
+    base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(
+        layer_tree_impl_->settings().scrollbar_linear_fade_delay_ms);
+    base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(
+        layer_tree_impl_->settings().scrollbar_linear_fade_length_ms);
+
+    scrollbar_animation_controller_ =
+        ScrollbarAnimationControllerLinearFade::Create(
+            this, fadeout_delay, fadeout_length)
+            .PassAs<ScrollbarAnimationController>();
+    break;
+  }
+  case LayerTreeSettings::NoAnimator:
+    NOTREACHED();
+    break;
   }
 }
 void LayerImpl::SetHorizontalScrollbarLayer(

@@ -1091,7 +1091,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
 
 TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   LayerTreeSettings settings;
-  settings.use_linear_fade_scrollbar_animator = true;
+  settings.scrollbar_animator = LayerTreeSettings::LinearFade;
   settings.scrollbar_linear_fade_delay_ms = 20;
   settings.scrollbar_linear_fade_length_ms = 20;
 

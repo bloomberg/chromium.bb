@@ -33,7 +33,12 @@ class CC_EXPORT LayerTreeSettings {
   bool show_overdraw_in_tracing;
   bool can_use_lcd_text;
   bool should_clear_root_render_pass;
-  bool use_linear_fade_scrollbar_animator;
+
+  enum ScrollbarAnimator {
+    NoAnimator,
+    LinearFade,
+  };
+  ScrollbarAnimator scrollbar_animator;
   int scrollbar_linear_fade_delay_ms;
   int scrollbar_linear_fade_length_ms;
   bool solid_color_scrollbars;
