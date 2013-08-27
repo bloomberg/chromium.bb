@@ -74,13 +74,13 @@ void BufferManager::StopTracking(Buffer* buffer) {
 
 Buffer::Buffer(BufferManager* manager, GLuint service_id)
     : manager_(manager),
+      size_(0),
       deleted_(false),
+      shadowed_(false),
+      is_client_side_array_(false),
       service_id_(service_id),
       target_(0),
-      size_(0),
-      usage_(GL_STATIC_DRAW),
-      shadowed_(false),
-      is_client_side_array_(false) {
+      usage_(GL_STATIC_DRAW) {
   manager_->StartTracking(this);
 }
 

@@ -135,8 +135,22 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // The manager that owns this Buffer.
   BufferManager* manager_;
 
+  // A copy of the data in the buffer. This data is only kept if the target
+  // is backed_ = true.
+  scoped_ptr<int8[]> shadow_;
+
+  // Size of buffer.
+  GLsizeiptr size_;
+
   // True if deleted.
   bool deleted_;
+
+  // Whether or not the data is shadowed.
+  bool shadowed_;
+
+  // Whether or not this Buffer is not uploaded to the GPU but just
+  // sitting in local memory.
+  bool is_client_side_array_;
 
   // Service side buffer id.
   GLuint service_id_;
@@ -146,22 +160,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Once set a buffer can not be used for something else.
   GLenum target_;
 
-  // Size of buffer.
-  GLsizeiptr size_;
-
   // Usage of buffer.
   GLenum usage_;
-
-  // Whether or not the data is shadowed.
-  bool shadowed_;
-
-  // Whether or not this Buffer is not uploaded to the GPU but just
-  // sitting in local memory.
-  bool is_client_side_array_;
-
-  // A copy of the data in the buffer. This data is only kept if the target
-  // is backed_ = true.
-  scoped_ptr<int8[]> shadow_;
 
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;
