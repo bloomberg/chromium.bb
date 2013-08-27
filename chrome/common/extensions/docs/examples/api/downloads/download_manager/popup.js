@@ -501,11 +501,18 @@ DownloadItem.prototype.maybeAccept = function() {
   ratchetWidth(400);
   ratchetHeight(200);
   DownloadItem.prototype.maybeAccept.accepting_danger = true;
-  chrome.downloads.acceptDanger(this.id, function() {
-    DownloadItem.prototype.maybeAccept.accepting_danger = false;
-    arrayFrom(document.getElementById('items').childNodes).forEach(
-      function(item_div) { item_div.item.maybeAccept(); });
-  });
+  // On Mac, window.onload is run while the popup is animating in, before it is
+  // considered "visible". Prompts will not be displayed over an invisible
+  // window, so the popup will become stuck. Just wait a little bit for the
+  // window to finish animating in. http://crbug.com/280107
+  var id = this.id;
+  setTimeout(function() {
+    chrome.downloads.acceptDanger(id, function() {
+      DownloadItem.prototype.maybeAccept.accepting_danger = false;
+      arrayFrom(document.getElementById('items').childNodes).forEach(
+        function(item_div) { item_div.item.maybeAccept(); });
+    });
+  }, 500);
 };
 DownloadItem.prototype.maybeAccept.accepting_danger = false;
 
