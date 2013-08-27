@@ -17,10 +17,6 @@
 #include "net/base/net_export.h"
 #include "url/gurl.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 
 class ProxyScriptFetcher;
@@ -33,9 +29,8 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // |url_request_context| must outlive DhcpProxyScriptAdapterFetcher.
-  // |task_runner| will be used to post tasks to a thread.
-  DhcpProxyScriptAdapterFetcher(URLRequestContext* url_request_context,
-                                scoped_refptr<base::TaskRunner> task_runner);
+  explicit DhcpProxyScriptAdapterFetcher(
+      URLRequestContext* url_request_context);
   virtual ~DhcpProxyScriptAdapterFetcher();
 
   // Starts a fetch.  On completion (but not cancellation), |callback|
@@ -148,9 +143,6 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   void OnTimeout();
   void OnFetcherDone(int result);
   void TransitionToFinish();
-
-  // TaskRunner for posting tasks to a worker thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
 
   // Current state of this state machine.
   State state_;

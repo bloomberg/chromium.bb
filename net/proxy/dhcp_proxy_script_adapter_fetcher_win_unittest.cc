@@ -33,10 +33,8 @@ const char* const kPacUrl = "http://pacserver/script.pac";
 class MockDhcpProxyScriptAdapterFetcher
     : public DhcpProxyScriptAdapterFetcher {
  public:
-  explicit MockDhcpProxyScriptAdapterFetcher(
-      URLRequestContext* context,
-      scoped_refptr<base::TaskRunner> task_runner)
-      : DhcpProxyScriptAdapterFetcher(context, task_runner),
+  explicit MockDhcpProxyScriptAdapterFetcher(URLRequestContext* context)
+      : DhcpProxyScriptAdapterFetcher(context),
         dhcp_delay_(base::TimeDelta::FromMilliseconds(1)),
         timeout_(TestTimeouts::action_timeout()),
         configured_url_(kPacUrl),
@@ -134,16 +132,8 @@ class FetcherClient {
  public:
   FetcherClient()
       : url_request_context_(new TestURLRequestContext()),
-        worker_pool_(
-            new base::SequencedWorkerPool(4, "DhcpAdapterFetcherTest")),
-        fetcher_(new MockDhcpProxyScriptAdapterFetcher(
-            url_request_context_.get(),
-            worker_pool_->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN))) {
-  }
-
-  ~FetcherClient() {
-    worker_pool_->Shutdown();
+        fetcher_(
+            new MockDhcpProxyScriptAdapterFetcher(url_request_context_.get())) {
   }
 
   void WaitForResult(int expected_error) {
@@ -161,7 +151,6 @@ class FetcherClient {
 
   TestCompletionCallback callback_;
   scoped_ptr<URLRequestContext> url_request_context_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   scoped_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
   base::string16 pac_text_;
 };
@@ -264,9 +253,8 @@ class MockDhcpRealFetchProxyScriptAdapterFetcher
     : public MockDhcpProxyScriptAdapterFetcher {
  public:
   explicit MockDhcpRealFetchProxyScriptAdapterFetcher(
-      URLRequestContext* context,
-      scoped_refptr<base::TaskRunner> task_runner)
-      : MockDhcpProxyScriptAdapterFetcher(context, task_runner),
+      URLRequestContext* context)
+      : MockDhcpProxyScriptAdapterFetcher(context),
         url_request_context_(context) {
   }
 
@@ -292,12 +280,9 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
 
   FetcherClient client;
   TestURLRequestContext url_request_context;
-  scoped_refptr<base::TaskRunner> runner =
-      client.worker_pool_->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   client.fetcher_.reset(
       new MockDhcpRealFetchProxyScriptAdapterFetcher(
-          &url_request_context, runner));
+          &url_request_context));
   client.fetcher_->configured_url_ = configured_url.spec();
   client.RunTest();
   client.WaitForResult(OK);

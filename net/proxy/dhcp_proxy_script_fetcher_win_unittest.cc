@@ -156,10 +156,9 @@ TEST(DhcpProxyScriptFetcherWin, RealFetchWithCancel) {
 class DelayingDhcpProxyScriptAdapterFetcher
     : public DhcpProxyScriptAdapterFetcher {
  public:
-  DelayingDhcpProxyScriptAdapterFetcher(
-      URLRequestContext* url_request_context,
-      scoped_refptr<base::TaskRunner> task_runner)
-      : DhcpProxyScriptAdapterFetcher(url_request_context, task_runner) {
+  explicit DelayingDhcpProxyScriptAdapterFetcher(
+      URLRequestContext* url_request_context)
+      : DhcpProxyScriptAdapterFetcher(url_request_context) {
   }
 
   class DelayingDhcpQuery : public DhcpQuery {
@@ -190,8 +189,7 @@ class DelayingDhcpProxyScriptFetcherWin
   }
 
   DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher() OVERRIDE {
-    return new DelayingDhcpProxyScriptAdapterFetcher(url_request_context(),
-                                                     GetTaskRunner());
+    return new DelayingDhcpProxyScriptAdapterFetcher(url_request_context());
   }
 };
 
@@ -214,9 +212,8 @@ TEST(DhcpProxyScriptFetcherWin, RealFetchWithDeferredCancel) {
 class DummyDhcpProxyScriptAdapterFetcher
     : public DhcpProxyScriptAdapterFetcher {
  public:
-  DummyDhcpProxyScriptAdapterFetcher(URLRequestContext* context,
-                                     scoped_refptr<base::TaskRunner> runner)
-      : DhcpProxyScriptAdapterFetcher(context, runner),
+  explicit DummyDhcpProxyScriptAdapterFetcher(URLRequestContext* context)
+      : DhcpProxyScriptAdapterFetcher(context),
         did_finish_(false),
         result_(OK),
         pac_script_(L"bingo"),
@@ -300,8 +297,6 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     ResetTestState();
   }
 
-  using DhcpProxyScriptFetcherWin::GetTaskRunner;
-
   // Adds a fetcher object to the queue of fetchers used by
   // |ImplCreateAdapterFetcher()|, and its name to the list of adapters
   // returned by ImplGetCandidateAdapterNames.
@@ -317,8 +312,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
                                    base::string16 pac_script,
                                    base::TimeDelta fetch_delay) {
     scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
-        new DummyDhcpProxyScriptAdapterFetcher(url_request_context(),
-                                               GetTaskRunner()));
+        new DummyDhcpProxyScriptAdapterFetcher(url_request_context()));
     adapter_fetcher->Configure(
         did_finish, result, pac_script, fetch_delay.InMilliseconds());
     PushBackAdapter(adapter_name, adapter_fetcher.release());
@@ -378,7 +372,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
 };
 
 class FetcherClient {
- public:
+public:
   FetcherClient()
       : context_(new TestURLRequestContext),
         fetcher_(context_.get()),
@@ -420,10 +414,6 @@ class FetcherClient {
     fetcher_.ResetTestState();
   }
 
-  scoped_refptr<base::TaskRunner> GetTaskRunner() {
-    return fetcher_.GetTaskRunner();
-  }
-
   scoped_ptr<URLRequestContext> context_;
   MockDhcpProxyScriptFetcherWin fetcher_;
   bool finished_;
@@ -436,8 +426,7 @@ class FetcherClient {
 void TestNormalCaseURLConfiguredOneAdapter(FetcherClient* client) {
   TestURLRequestContext context;
   scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
-      new DummyDhcpProxyScriptAdapterFetcher(&context,
-                                             client->GetTaskRunner()));
+      new DummyDhcpProxyScriptAdapterFetcher(&context));
   adapter_fetcher->Configure(true, OK, L"bingo", 1);
   client->fetcher_.PushBackAdapter("a", adapter_fetcher.release());
   client->RunTest();
@@ -597,8 +586,7 @@ TEST(DhcpProxyScriptFetcherWin, ShortCircuitLessPreferredAdapters) {
 void TestImmediateCancel(FetcherClient* client) {
   TestURLRequestContext context;
   scoped_ptr<DummyDhcpProxyScriptAdapterFetcher> adapter_fetcher(
-      new DummyDhcpProxyScriptAdapterFetcher(&context,
-                                             client->GetTaskRunner()));
+      new DummyDhcpProxyScriptAdapterFetcher(&context));
   adapter_fetcher->Configure(true, OK, L"bingo", 1);
   client->fetcher_.PushBackAdapter("a", adapter_fetcher.release());
   client->RunTest();
