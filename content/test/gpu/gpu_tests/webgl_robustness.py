@@ -57,10 +57,7 @@ class WebglRobustness(test.Test):
         {
           'url': 'file:///extra/lots-of-polys-example.html',
           'script_to_evaluate_on_commit': robustness_harness_script,
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait', 'javascript': 'webglTestHarness._finished' }
-          ]
+          'wait_for_javascript_expression': 'webglTestHarness._finished'
         }
       ]
     }

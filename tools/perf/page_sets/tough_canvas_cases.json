@@ -2,7 +2,7 @@
   "description": "Self-driven Canvas2D animation examples",
   "archive_data_file": "../data/tough_canvas_cases.json",
   "make_javascript_deterministic": false,
-  "smoothness": { "action": "wait", "seconds": 5 },
+  "smoothness": { "action": "wait", "condition": "duration", "seconds": 5 },
   "pages": [
     { "url":"http://mudcu.be/labs/JS1k/BreathingGalaxies.html" },
     { "url":"http://runway.countlessprojects.com/prototype/performance_test.html" },

@@ -8,29 +8,58 @@
       "url": "https://www.google.com/calendar/",
       "why": "Click forward(4x) and backwards(4x) repeatedly",
       "credentials": "google",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 },
-        { "action": "wait", "condition": "element", "selector":  "div[class~=\"navForward\"]" },
-        { "action": "javascript", "expression": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();" }
-      ],
+      "wait_for_element_with_selector": "div[class~=\"navForward\"]",
+      "post_navigate_javascript_to_execute": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();",
+      "wait_seconds": 2,
       "endure": [
-        { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" }
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navForward\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navForward\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navForward\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navForward\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navBack\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navBack\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navBack\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navBack\"]"
+        },
+        {
+          "action": "click_element",
+          "selector": "div[class~=\"navBack\"]",
+          "wait_seconds": 2,
+          "wait_for_element_with_selector": "div[class~=\"navForward\"]"
+        }
       ]
     }
   ]

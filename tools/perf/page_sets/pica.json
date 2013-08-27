@@ -5,10 +5,7 @@
     { "url": "http://www.polymer-project.org/polymer-all/projects/pica/index.html",
       "script_to_evaluate_on_commit":
           "document.addEventListener('WebComponentsReady', function(){var unused = document.body.offsetHeight; window.__pica_load_time = performance.now(); setTimeout(function(){window.__web_components_ready=true}, 1000)})",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "window.__web_components_ready" }
-      ],
+      "wait_for_javascript_expression": "window.__web_components_ready",
       "smoothness": {
         "action": "tap_element",
         "find_element_expression": "document.querySelector('pi-app').$.Topics.$.topics.$.container.querySelector('.item > .card')",

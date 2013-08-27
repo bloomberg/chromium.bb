@@ -8,38 +8,26 @@
     {
       "url": "https://www.google.com/#hl=en&q=barack+obama",
       "why": "top google property; a google tab is often open",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "condition": "element", "text": "Next" }
-      ]
+      "wait_for_element_with_text": "Next"
     },
     {
       "url": "https://mail.google.com/mail/",
       "why": "productivity, top google properties",
       "credentials": "google",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "window.gmonkey !== undefined && document.getElementById('gb') !== null" }
-      ]
+      "wait_for_javascript_expression": "window.gmonkey !== undefined && document.getElementById('gb') !== null"
     },
     {
       "url": "https://www.google.com/calendar/",
       "why": "productivity, top google properties",
       "credentials": "google",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "javascript", "expression": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();" },
-        { "action": "wait", "seconds": 2 },
-        { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" }
-      ]
+      "wait_for_element_with_selector": "div[class~=\"navForward\"]",
+      "post_navigate_javascript_to_execute": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();",
+      "wait_seconds": 2
     },
     {
       "url": "http://www.youtube.com",
       "why": "#3 (Alexa global)",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
+      "wait_seconds": 2,
       "credentials": "google"
     },
     {
@@ -47,10 +35,7 @@
       "url": "http://www.facebook.com/barackobama",
       "why": "top social,Public profile",
       "credentials": "facebook",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "condition": "element", "text": "About" }
-      ]
+      "wait_for_element_with_text": "About"
     },
     {
       "name": "Wikipedia (1 tab)",

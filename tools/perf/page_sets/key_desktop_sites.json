@@ -620,10 +620,10 @@
       "url": "https://mail.google.com/mail/",
       "credentials": "google",
       "scrollable_element_function": "function(callback) { gmonkey.load('2.0', function(api) { callback(api.getScrollableElement()); }); }",
-      "smoothness": [
-        { "action": "scroll" },
-        { "action": "wait", "javascript": "window.gmonkey !== undefined && document.getElementById('gb') !== null" }
-      ]
+      "smoothness": {
+        "action": "scroll",
+        "wait_for_javascript_expression": "window.gmonkey !== undefined && document.getElementById('gb') !== null"
+      }
     },
     {
       "url": "https://www.google.com/calendar/",
@@ -634,19 +634,19 @@
       "url": "https://drive.google.com",
       "credentials": "google",
       "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('doclistview-list')[0]); }",
-      "smoothness": [
-        { "action": "scroll" },
-        { "action": "wait", "javascript": "document.getElementsByClassName('doclistview-list').length" }
-      ]
+      "smoothness": {
+        "action": "scroll",
+        "wait_for_javascript_expression": "document.getElementsByClassName('doclistview-list').length"
+      }
     },
     {
       "url": "https://docs.google.com/a/google.com/document/d/1XMAtPiVFZfItsMUOYl39v5YA8bcSPe4LDrVO25OdsCU/edit",
       "credentials": "google",
       "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('kix-appview-editor')[0]); }",
-      "smoothness": [
-        { "action": "scroll" },
-        { "action": "wait", "javascript": "document.getElementsByClassName('kix-appview-editor').length" }
-      ]
+      "smoothness": {
+        "action": "scroll",
+        "wait_for_javascript_expression": "document.getElementsByClassName('kix-appview-editor').length"
+      }
     },
     { "url": "https://maps.google.com" },
     { "url": "http://reader.google.com" },
