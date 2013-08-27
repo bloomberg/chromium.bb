@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
@@ -838,16 +839,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * FrameLoader::transitionToCommitted iff the page ever had touch handlers.
      */
     void resetGestureHandlers() {
-        {
-            MotionEvent me = obtainActionCancelMotionEvent();
-            mGestureDetector.onTouchEvent(me);
-            me.recycle();
-        }
-        {
-            MotionEvent me = obtainActionCancelMotionEvent();
-            mZoomManager.processTouchEvent(me);
-            me.recycle();
-        }
+        MotionEvent me = obtainActionCancelMotionEvent();
+        me.setSource(InputDevice.SOURCE_CLASS_POINTER);
+        mGestureDetector.onTouchEvent(me);
+        mZoomManager.processTouchEvent(me);
+        me.recycle();
         mLongPressDetector.cancelLongPress();
     }
 
