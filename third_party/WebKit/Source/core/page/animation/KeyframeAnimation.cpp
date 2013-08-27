@@ -292,17 +292,17 @@ bool KeyframeAnimation::shouldSendEventForListener(Document::ListenerType listen
 
 void KeyframeAnimation::onAnimationStart(double elapsedTime)
 {
-    sendAnimationEvent(eventNames().webkitAnimationStartEvent, elapsedTime);
+    sendAnimationEvent(eventNames().animationstartEvent, elapsedTime);
 }
 
 void KeyframeAnimation::onAnimationIteration(double elapsedTime)
 {
-    sendAnimationEvent(eventNames().webkitAnimationIterationEvent, elapsedTime);
+    sendAnimationEvent(eventNames().animationiterationEvent, elapsedTime);
 }
 
 void KeyframeAnimation::onAnimationEnd(double elapsedTime)
 {
-    sendAnimationEvent(eventNames().webkitAnimationEndEvent, elapsedTime);
+    sendAnimationEvent(eventNames().animationendEvent, elapsedTime);
     // End the animation if we don't fill forwards. Forward filling
     // animations are ended properly in the class destructor.
     if (!m_animation->fillsForwards())
@@ -312,12 +312,12 @@ void KeyframeAnimation::onAnimationEnd(double elapsedTime)
 bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double elapsedTime)
 {
     Document::ListenerType listenerType;
-    if (eventType == eventNames().webkitAnimationIterationEvent)
+    if (eventType == eventNames().animationiterationEvent)
         listenerType = Document::ANIMATIONITERATION_LISTENER;
-    else if (eventType == eventNames().webkitAnimationEndEvent)
+    else if (eventType == eventNames().animationendEvent)
         listenerType = Document::ANIMATIONEND_LISTENER;
     else {
-        ASSERT(eventType == eventNames().webkitAnimationStartEvent);
+        ASSERT(eventType == eventNames().animationstartEvent);
         if (m_startEventDispatched)
             return false;
         m_startEventDispatched = true;
@@ -337,7 +337,7 @@ bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double
         m_compAnim->animationController()->addEventToDispatch(element, eventType, m_keyframes.animationName(), elapsedTime);
 
         // Restore the original (unanimated) style
-        if (eventType == eventNames().webkitAnimationEndEvent && element->renderer())
+        if (eventType == eventNames().animationendEvent && element->renderer())
             setNeedsStyleRecalc(element.get());
 
         return true; // Did dispatch an event

@@ -254,7 +254,7 @@ void CSSAnimations::EventDelegate::onEventCondition(const TimedItem* timedItem, 
         // the elapsedTime for the first iteration in question.
         ASSERT(timedItem->specified().hasIterationDuration);
         const double elapsedTime = timedItem->specified().iterationDuration * (previousIteration + 1);
-        maybeDispatch(Document::ANIMATIONITERATION_LISTENER, eventNames().webkitAnimationIterationEvent, elapsedTime);
+        maybeDispatch(Document::ANIMATIONITERATION_LISTENER, eventNames().animationiterationEvent, elapsedTime);
         return;
     }
     if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore)) {
@@ -262,10 +262,10 @@ void CSSAnimations::EventDelegate::onEventCondition(const TimedItem* timedItem, 
         // The spec states that the elapsed time should be
         // 'delay < 0 ? -delay : 0', but we always use 0 to match the existing
         // implementation. See crbug.com/279611
-        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, 0);
+        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().animationstartEvent, 0);
     }
     if ((isFirstSample || isEarlierPhase(previousPhase, TimedItem::PhaseAfter)) && currentPhase == TimedItem::PhaseAfter)
-        maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().webkitAnimationEndEvent, timedItem->activeDuration());
+        maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().animationendEvent, timedItem->activeDuration());
 }
 
 } // namespace WebCore

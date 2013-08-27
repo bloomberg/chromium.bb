@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/dom/EventTarget.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
@@ -186,10 +187,62 @@ static AtomicString legacyType(const Event* event)
     if (event->type() == eventNames().transitionendEvent)
         return eventNames().webkitTransitionEndEvent;
 
+    if (event->type() == eventNames().animationstartEvent)
+        return eventNames().webkitAnimationStartEvent;
+
+    if (event->type() == eventNames().animationendEvent)
+        return eventNames().webkitAnimationEndEvent;
+
+    if (event->type() == eventNames().animationiterationEvent)
+        return eventNames().webkitAnimationIterationEvent;
+
     if (event->type() == eventNames().wheelEvent)
         return eventNames().mousewheelEvent;
 
     return emptyString();
+}
+
+void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector* listenersVector, EventListenerVector* legacyListenersVector)
+{
+    UseCounter::Feature unprefixedFeature;
+    UseCounter::Feature prefixedFeature;
+    UseCounter::Feature prefixedAndUnprefixedFeature;
+    bool shouldCount = false;
+
+    if (legacyTypeName == eventNames().webkitTransitionEndEvent) {
+        prefixedFeature = UseCounter::PrefixedTransitionEndEvent;
+        unprefixedFeature = UseCounter::UnprefixedTransitionEndEvent;
+        prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedTransitionEndEvent;
+        shouldCount = true;
+    } else if (legacyTypeName == eventNames().webkitAnimationEndEvent) {
+        prefixedFeature = UseCounter::PrefixedAnimationEndEvent;
+        unprefixedFeature = UseCounter::UnprefixedAnimationEndEvent;
+        prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationEndEvent;
+        shouldCount = true;
+    } else if (legacyTypeName == eventNames().webkitAnimationStartEvent) {
+        prefixedFeature = UseCounter::PrefixedAnimationStartEvent;
+        unprefixedFeature = UseCounter::UnprefixedAnimationStartEvent;
+        prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationStartEvent;
+        shouldCount = true;
+    } else if (legacyTypeName == eventNames().webkitAnimationIterationEvent) {
+        prefixedFeature = UseCounter::PrefixedAnimationIterationEvent;
+        unprefixedFeature = UseCounter::UnprefixedAnimationIterationEvent;
+        prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationIterationEvent;
+        shouldCount = true;
+    }
+
+    if (shouldCount) {
+        if (DOMWindow* executingWindow = this->executingWindow()) {
+            if (legacyListenersVector) {
+                if (listenersVector)
+                    UseCounter::count(executingWindow, prefixedAndUnprefixedFeature);
+                else
+                    UseCounter::count(executingWindow, prefixedFeature);
+            } else if (listenersVector) {
+                UseCounter::count(executingWindow, unprefixedFeature);
+            }
+        }
+    }
 }
 
 bool EventTarget::fireEventListeners(Event* event)
@@ -207,6 +260,9 @@ bool EventTarget::fireEventListeners(Event* event)
         legacyListenersVector = d->eventListenerMap.find(legacyTypeName);
 
     EventListenerVector* listenersVector = d->eventListenerMap.find(event->type());
+    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (event->type() == eventNames().animationiterationEvent || event->type() == eventNames().animationendEvent
+        || event->type() == eventNames().animationstartEvent))
+        listenersVector = 0;
 
     if (listenersVector) {
         fireEventListeners(event, d, *listenersVector);
@@ -217,19 +273,7 @@ bool EventTarget::fireEventListeners(Event* event)
         event->setType(unprefixedTypeName);
     }
 
-    if (legacyTypeName == eventNames().webkitTransitionEndEvent) {
-        if (DOMWindow* executingWindow = this->executingWindow()) {
-            if (legacyListenersVector) {
-                if (listenersVector)
-                    UseCounter::count(executingWindow, UseCounter::PrefixedAndUnprefixedTransitionEndEvent);
-                else
-                    UseCounter::count(executingWindow, UseCounter::PrefixedTransitionEndEvent);
-            } else if (listenersVector) {
-                UseCounter::count(executingWindow, UseCounter::UnprefixedTransitionEndEvent);
-            }
-        }
-    }
-
+    countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
     return !event->defaultPrevented();
 }
 

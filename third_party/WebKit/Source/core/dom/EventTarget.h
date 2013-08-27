@@ -139,6 +139,7 @@ namespace WebCore {
 
         DOMWindow* executingWindow();
         void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
+        void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 
         bool clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
 
