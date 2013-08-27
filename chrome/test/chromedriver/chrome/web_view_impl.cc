@@ -320,13 +320,15 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
 }
 
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
-                                              int timeout) {
+                                              const base::TimeDelta& timeout,
+                                              bool stop_load_on_timeout) {
   log_->AddEntry(Log::kLog, "waiting for pending navigations...");
   Status status = client_->HandleEventsUntil(
-      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
+      base::Bind(&WebViewImpl::IsNotPendingNavigation,
+                 base::Unretained(this),
                  frame_id),
-      base::TimeDelta::FromMilliseconds(timeout));
-  if (status.code() == kTimeout) {
+      timeout);
+  if (status.code() == kTimeout && stop_load_on_timeout) {
     log_->AddEntry(Log::kLog, "timed out. stopping navigations...");
     scoped_ptr<base::Value> unused_value;
     EvaluateScript(std::string(), "window.stop();", &unused_value);

@@ -112,10 +112,12 @@ class WebView {
   // If |frame_id| is "", waits for navigations on the main frame.
   // If a modal dialog appears while waiting, kUnexpectedAlertOpen will be
   // returned.
-  // If there are still pending navigations after |timeout|ms,
-  // page load is stopped, and kTimeout status is returned.
+  // If timeout is exceeded, will return a timeout status.
+  // If |stop_load_on_timeout| is true, will attempt to stop the page load on
+  // timeout before returning the timeout status.
   virtual Status WaitForPendingNavigations(const std::string& frame_id,
-                                           int timeout) = 0;
+                                           const base::TimeDelta& timeout,
+                                           bool stop_load_on_timeout) = 0;
 
   // Returns whether the frame is pending navigation.
   virtual Status IsPendingNavigation(

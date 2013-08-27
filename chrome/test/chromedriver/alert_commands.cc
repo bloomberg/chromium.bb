@@ -31,8 +31,8 @@ Status ExecuteAlertCommand(
   if (status.IsError())
     return status;
 
-  status = web_view->WaitForPendingNavigations(session->GetCurrentFrameId(),
-                                               session->page_load_timeout);
+  status = web_view->WaitForPendingNavigations(
+      session->GetCurrentFrameId(), session->page_load_timeout, true);
   if (status.IsError() && status.code() != kUnexpectedAlertOpen)
     return status;
 

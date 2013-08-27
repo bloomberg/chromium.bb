@@ -93,7 +93,7 @@ class ChromeDriver(object):
       }
     }
 
-    self._session_id = self._executor.Execute(
+    self._session_id = self._ExecuteCommand(
         Command.NEW_SESSION, params)['sessionId']
 
   def _WrapValue(self, value):
@@ -126,12 +126,16 @@ class ChromeDriver(object):
     else:
       return value
 
-  def ExecuteCommand(self, command, params={}):
-    params['sessionId'] = self._session_id
+  def _ExecuteCommand(self, command, params={}):
     params = self._WrapValue(params)
     response = self._executor.Execute(command, params)
     if response['status'] != 0:
       raise _ExceptionForResponse(response)
+    return response
+
+  def ExecuteCommand(self, command, params={}):
+    params['sessionId'] = self._session_id
+    response = self._ExecuteCommand(command, params)
     return self._UnwrapValue(response['value'])
 
   def GetWindowHandles(self):

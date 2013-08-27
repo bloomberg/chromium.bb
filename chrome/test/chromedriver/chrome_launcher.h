@@ -42,7 +42,8 @@ namespace internal {
 Status ProcessExtensions(const std::vector<std::string>& extensions,
                          const base::FilePath& temp_dir,
                          bool include_automation_extension,
-                         CommandLine* command);
+                         CommandLine* command,
+                         std::vector<std::string>* bg_pages);
 Status PrepareUserDataDir(
     const base::FilePath& user_data_dir,
     const base::DictionaryValue* custom_prefs,

@@ -91,7 +91,8 @@ Status StubWebView::DeleteCookie(const std::string& name,
 }
 
 Status StubWebView::WaitForPendingNavigations(const std::string& frame_id,
-                                              int timeout) {
+                                              const base::TimeDelta& timeout,
+                                              bool stop_load_on_timeout) {
   return Status(kOk);
 }
 

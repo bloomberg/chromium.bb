@@ -117,6 +117,7 @@ class WebServer(object):
     self._root_dir = os.path.abspath(root_dir)
     self._server = _BaseServer(self._OnRequest, server_cert_and_key_path)
     self._thread = threading.Thread(target=self._server.serve_forever)
+    self._thread.daemon = True
     self._thread.start()
     self._path_data_map = {}
     self._path_data_lock = threading.Lock()

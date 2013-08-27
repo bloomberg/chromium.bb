@@ -36,8 +36,10 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/version.h"
+#include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome/zip.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
+#include "crypto/sha2.h"
 
 namespace {
 
@@ -79,7 +81,8 @@ Status PrepareCommandLine(int port,
                           const Capabilities& capabilities,
                           CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
-                          base::ScopedTempDir* extension_dir) {
+                          base::ScopedTempDir* extension_dir,
+                          std::vector<std::string>* extension_bg_pages) {
   CommandLine command = capabilities.command;
   base::FilePath program = command.GetProgram();
   if (program.empty()) {
@@ -135,8 +138,11 @@ Status PrepareCommandLine(int port,
     return Status(kUnknownError,
                   "cannot create temp dir for unpacking extensions");
   }
-  Status status = internal::ProcessExtensions(
-      capabilities.extensions, extension_dir->path(), true, &command);
+  Status status = internal::ProcessExtensions(capabilities.extensions,
+                                              extension_dir->path(),
+                                              true,
+                                              &command,
+                                              extension_bg_pages);
   if (status.IsError())
     return status;
 
@@ -205,8 +211,13 @@ Status LaunchDesktopChrome(
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
-  Status status = PrepareCommandLine(port, capabilities,
-                                     &command, &user_data_dir, &extension_dir);
+  std::vector<std::string> extension_bg_pages;
+  Status status = PrepareCommandLine(port,
+                                     capabilities,
+                                     &command,
+                                     &user_data_dir,
+                                     &extension_dir,
+                                     &extension_bg_pages);
   if (status.IsError())
     return status;
 
@@ -272,12 +283,25 @@ Status LaunchDesktopChrome(
     }
     return status;
   }
-  chrome->reset(new ChromeDesktopImpl(devtools_client.Pass(),
-                                      devtools_event_listeners,
-                                      log,
-                                      process,
-                                      &user_data_dir,
-                                      &extension_dir));
+  scoped_ptr<ChromeDesktopImpl> chrome_desktop(
+      new ChromeDesktopImpl(devtools_client.Pass(),
+                            devtools_event_listeners,
+                            log,
+                            process,
+                            &user_data_dir,
+                            &extension_dir));
+  for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
+    scoped_ptr<WebView> web_view;
+    Status status = chrome_desktop->WaitForPageToLoad(
+        extension_bg_pages[i], base::TimeDelta::FromSeconds(10), &web_view);
+    if (status.IsError()) {
+      return Status(kUnknownError,
+                    "failed to wait for extension background page to load: " +
+                        extension_bg_pages[i],
+                    status);
+    }
+  }
+  *chrome = chrome_desktop.Pass();
   return Status(kOk);
 }
 
@@ -358,43 +382,137 @@ Status LaunchChrome(
 
 namespace internal {
 
+void ConvertHexadecimalToIDAlphabet(std::string* id) {
+  for (size_t i = 0; i < id->size(); ++i) {
+    int val;
+    if (base::HexStringToInt(base::StringPiece(id->begin() + i,
+                                               id->begin() + i + 1),
+                             &val)) {
+      (*id)[i] = val + 'a';
+    } else {
+      (*id)[i] = 'a';
+    }
+  }
+}
+
+std::string GenerateExtensionId(const std::string& input) {
+  uint8 hash[16];
+  crypto::SHA256HashString(input, hash, sizeof(hash));
+  std::string output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
+  ConvertHexadecimalToIDAlphabet(&output);
+  return output;
+}
+
+Status GetExtensionBackgroundPage(const base::DictionaryValue* manifest,
+                                  const std::string& id,
+                                  std::string* bg_page) {
+  std::string bg_page_name;
+  bool persistent = true;
+  manifest->GetBoolean("background.persistent", &persistent);
+  const base::Value* unused_value;
+  if (manifest->Get("background.scripts", &unused_value))
+    bg_page_name = "_generated_background_page.html";
+  manifest->GetString("background.page", &bg_page_name);
+  manifest->GetString("background_page", &bg_page_name);
+  if (bg_page_name.empty() || !persistent)
+    return Status(kOk);
+  *bg_page = "chrome-extension://" + id + "/" + bg_page_name;
+  return Status(kOk);
+}
+
+Status ProcessExtension(const std::string& extension,
+                        const base::FilePath& temp_dir,
+                        base::FilePath* path,
+                        std::string* bg_page) {
+  // Decodes extension string.
+  // Some WebDriver client base64 encoders follow RFC 1521, which require that
+  // 'encoded lines be no more than 76 characters long'. Just remove any
+  // newlines.
+  std::string extension_base64;
+  RemoveChars(extension, "\n", &extension_base64);
+  std::string decoded_extension;
+  if (!base::Base64Decode(extension_base64, &decoded_extension))
+    return Status(kUnknownError, "cannot base64 decode");
+
+  // Get extension's ID from public key in crx file.
+  // Assumes crx v2. See http://developer.chrome.com/extensions/crx.html.
+  std::string key_len_str = decoded_extension.substr(8, 4);
+  if (key_len_str.size() != 4)
+    return Status(kUnknownError, "cannot extract public key length");
+  uint32 key_len = *reinterpret_cast<const uint32*>(key_len_str.c_str());
+  std::string public_key = decoded_extension.substr(16, key_len);
+  if (key_len != public_key.size())
+    return Status(kUnknownError, "invalid public key length");
+  std::string public_key_base64;
+  if (!base::Base64Encode(public_key, &public_key_base64))
+    return Status(kUnknownError, "cannot base64 encode public key");
+  std::string id = GenerateExtensionId(public_key);
+
+  // Unzip the crx file.
+  base::ScopedTempDir temp_crx_dir;
+  if (!temp_crx_dir.CreateUniqueTempDir())
+    return Status(kUnknownError, "cannot create temp dir");
+  base::FilePath extension_crx = temp_crx_dir.path().AppendASCII("temp.crx");
+  int size = static_cast<int>(decoded_extension.length());
+  if (file_util::WriteFile(extension_crx, decoded_extension.c_str(), size) !=
+      size) {
+    return Status(kUnknownError, "cannot write file");
+  }
+  base::FilePath extension_dir = temp_dir.AppendASCII("extension_" + id);
+  if (!zip::Unzip(extension_crx, extension_dir))
+    return Status(kUnknownError, "cannot unzip");
+
+  // Parse the manifest and set the 'key' if not already present.
+  base::FilePath manifest_path(extension_dir.AppendASCII("manifest.json"));
+  std::string manifest_data;
+  if (!file_util::ReadFileToString(manifest_path, &manifest_data))
+    return Status(kUnknownError, "cannot read manifest");
+  scoped_ptr<base::Value> manifest_value(base::JSONReader::Read(manifest_data));
+  base::DictionaryValue* manifest;
+  if (!manifest_value || !manifest_value->GetAsDictionary(&manifest))
+    return Status(kUnknownError, "invalid manifest");
+  if (!manifest->HasKey("key")) {
+    manifest->SetString("key", public_key_base64);
+    base::JSONWriter::Write(manifest, &manifest_data);
+    if (file_util::WriteFile(
+            manifest_path, manifest_data.c_str(), manifest_data.size()) !=
+        static_cast<int>(manifest_data.size())) {
+      return Status(kUnknownError, "cannot add 'key' to manifest");
+    }
+  }
+
+  // Get extension's background page URL, if there is one.
+  std::string bg_page_tmp;
+  Status status = GetExtensionBackgroundPage(manifest, id, &bg_page_tmp);
+  if (status.IsError())
+    return status;
+
+  *path = extension_dir;
+  if (bg_page_tmp.size())
+    *bg_page = bg_page_tmp;
+  return Status(kOk);
+}
+
 Status ProcessExtensions(const std::vector<std::string>& extensions,
                          const base::FilePath& temp_dir,
                          bool include_automation_extension,
-                         CommandLine* command) {
+                         CommandLine* command,
+                         std::vector<std::string>* bg_pages) {
+  std::vector<std::string> bg_pages_tmp;
   std::vector<base::FilePath::StringType> extension_paths;
-  size_t count = 0;
-  for (std::vector<std::string>::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    std::string extension_base64;
-    // Decodes extension string.
-    // Some WebDriver client base64 encoders follow RFC 1521, which require that
-    // 'encoded lines be no more than 76 characters long'. Just remove any
-    // newlines.
-    RemoveChars(*it, "\n", &extension_base64);
-    std::string decoded_extension;
-    if (!base::Base64Decode(extension_base64, &decoded_extension))
-      return Status(kUnknownError, "failed to base64 decode extension");
-
-    // Writes decoded extension into a temporary .crx file.
-    base::ScopedTempDir temp_crx_dir;
-    if (!temp_crx_dir.CreateUniqueTempDir())
-      return Status(kUnknownError,
-                    "cannot create temp dir for writing extension CRX file");
-    base::FilePath extension_crx = temp_crx_dir.path().AppendASCII("temp.crx");
-    int size = static_cast<int>(decoded_extension.length());
-    if (file_util::WriteFile(extension_crx, decoded_extension.c_str(), size)
-        != size) {
-      return Status(kUnknownError, "failed to write extension file");
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    base::FilePath path;
+    std::string bg_page;
+    Status status = ProcessExtension(extensions[i], temp_dir, &path, &bg_page);
+    if (status.IsError()) {
+      return Status(
+          kUnknownError,
+          base::StringPrintf("cannot process extension #%" PRIuS, i + 1),
+          status);
     }
-
-    // Unzips the temporary .crx file.
-    count++;
-    base::FilePath extension_dir = temp_dir.AppendASCII(
-        base::StringPrintf("extension%" PRIuS, count));
-    if (!zip::Unzip(extension_crx, extension_dir))
-      return Status(kUnknownError, "failed to unzip the extension CRX file");
-    extension_paths.push_back(extension_dir.value());
+    extension_paths.push_back(path.value());
+    if (bg_page.length())
+      bg_pages_tmp.push_back(bg_page);
   }
 
   if (include_automation_extension) {
@@ -415,6 +533,7 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
         extension_paths, FILE_PATH_LITERAL(','));
     command->AppendSwitchNative("load-extension", extension_paths_value);
   }
+  bg_pages->swap(bg_pages_tmp);
   return Status(kOk);
 }
 

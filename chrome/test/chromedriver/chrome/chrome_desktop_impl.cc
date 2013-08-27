@@ -87,42 +87,54 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
   base::CloseProcessHandle(process_);
 }
 
+Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
+                                            const base::TimeDelta& timeout,
+                                            scoped_ptr<WebView>* web_view) {
+  base::Time deadline = base::Time::Now() + timeout;
+  std::string id;
+  while (base::Time::Now() < deadline) {
+    WebViewsInfo views_info;
+    Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
+    if (status.IsError())
+      return status;
+
+    for (size_t i = 0; i < views_info.GetSize(); ++i) {
+      if (views_info.Get(i).url.find(url) == 0) {
+        id = views_info.Get(i).id;
+        break;
+      }
+    }
+    if (!id.empty())
+      break;
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  }
+  if (id.empty())
+    return Status(kUnknownError, "page could not be found: " + url);
+
+  scoped_ptr<WebView> web_view_tmp(new WebViewImpl(
+      id, GetBuildNo(), devtools_http_client_->CreateClient(id), log_));
+  Status status = web_view_tmp->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  status = web_view_tmp->WaitForPendingNavigations(
+      std::string(), deadline - base::Time::Now(), false);
+  if (status.IsOk())
+    *web_view = web_view_tmp.Pass();
+  return status;
+}
+
 Status ChromeDesktopImpl::GetAutomationExtension(
     AutomationExtension** extension) {
   if (!automation_extension_) {
-    base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(10);
-    std::string id;
-    while (base::Time::Now() < deadline) {
-      WebViewsInfo views_info;
-      Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
-      if (status.IsError())
-        return status;
-
-      for (size_t i = 0; i < views_info.GetSize(); ++i) {
-        if (views_info.Get(i).url.find(
-                "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb") == 0) {
-          id = views_info.Get(i).id;
-          break;
-        }
-      }
-      if (!id.empty())
-        break;
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-    }
-    if (id.empty())
-      return Status(kUnknownError, "automation extension cannot be found");
-
-    scoped_ptr<WebView> web_view(new WebViewImpl(
-        id, GetBuildNo(), devtools_http_client_->CreateClient(id), log_));
-    Status status = web_view->ConnectIfNecessary();
+    scoped_ptr<WebView> web_view;
+    Status status = WaitForPageToLoad(
+        "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
+        "_generated_background_page.html",
+        base::TimeDelta::FromSeconds(10),
+        &web_view);
     if (status.IsError())
-      return status;
-
-    // Wait for the extension background page to load.
-    status = web_view->WaitForPendingNavigations(
-        std::string(), 5 * 60 * 1000);
-    if (status.IsError())
-      return status;
+      return Status(kUnknownError, "cannot get automation extension", status);
 
     automation_extension_.reset(new AutomationExtension(web_view.Pass()));
   }

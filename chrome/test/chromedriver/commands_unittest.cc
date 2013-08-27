@@ -338,7 +338,7 @@ class FindElementWebView : public StubWebView {
 TEST(CommandsTest, SuccessfulFindElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
-  session.implicit_wait = 1000;
+  session.implicit_wait = base::TimeDelta::FromSeconds(1);
   session.SwitchToSubFrame("frame_id1", std::string());
   base::DictionaryValue params;
   params.SetString("using", "id");
@@ -367,7 +367,7 @@ TEST(CommandsTest, FailedFindElement) {
 TEST(CommandsTest, SuccessfulFindElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
-  session.implicit_wait = 1000;
+  session.implicit_wait = base::TimeDelta::FromSeconds(1);
   session.SwitchToSubFrame("frame_id2", std::string());
   base::DictionaryValue params;
   params.SetString("using", "name");
@@ -401,7 +401,7 @@ TEST(CommandsTest, FailedFindElements) {
 TEST(CommandsTest, SuccessfulFindChildElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
-  session.implicit_wait = 1000;
+  session.implicit_wait = base::TimeDelta::FromSeconds(1);
   session.SwitchToSubFrame("frame_id3", std::string());
   base::DictionaryValue params;
   params.SetString("using", "tag name");
@@ -439,7 +439,7 @@ TEST(CommandsTest, FailedFindChildElement) {
 TEST(CommandsTest, SuccessfulFindChildElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
-  session.implicit_wait = 1000;
+  session.implicit_wait = base::TimeDelta::FromSeconds(1);
   session.SwitchToSubFrame("frame_id4", std::string());
   base::DictionaryValue params;
   params.SetString("using", "class name");
@@ -480,7 +480,7 @@ TEST(CommandsTest, FailedFindChildElements) {
 TEST(CommandsTest, TimeoutInFindElement) {
   Session session("id");
   FindElementWebView web_view(true, kElementExistsTimeout);
-  session.implicit_wait = 2;
+  session.implicit_wait = base::TimeDelta::FromMilliseconds(2);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");

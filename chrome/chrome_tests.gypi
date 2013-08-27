@@ -950,6 +950,7 @@
         'chrome_devtools_lib',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../ui/ui.gyp:ui',
       ],

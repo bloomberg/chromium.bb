@@ -47,8 +47,7 @@ Status SendKeysToElement(
       return status;
     if (is_focused)
       break;
-    if ((base::Time::Now() - start_time).InMilliseconds() >=
-        session->implicit_wait) {
+    if (base::Time::Now() - start_time >= session->implicit_wait) {
       return Status(kElementNotVisible);
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));

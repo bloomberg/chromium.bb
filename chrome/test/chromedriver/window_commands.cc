@@ -215,18 +215,16 @@ Status ExecuteWindowCommand(
       else
         break;
     }
-    nav_status =
-        web_view->WaitForPendingNavigations(session->GetCurrentFrameId(),
-                                            session->page_load_timeout);
+    nav_status = web_view->WaitForPendingNavigations(
+        session->GetCurrentFrameId(), session->page_load_timeout, true);
     if (nav_status.IsError())
       return nav_status;
 
     status = command.Run(session, web_view, params, value);
   }
 
-  nav_status =
-      web_view->WaitForPendingNavigations(session->GetCurrentFrameId(),
-                                          session->page_load_timeout);
+  nav_status = web_view->WaitForPendingNavigations(
+      session->GetCurrentFrameId(), session->page_load_timeout, true);
 
   if (status.IsOk() && nav_status.IsError() &&
       nav_status.code() != kDisconnected &&
@@ -278,7 +276,7 @@ Status ExecuteExecuteAsyncScript(
 
   return web_view->CallUserAsyncFunction(
       session->GetCurrentFrameId(), "function(){" + script + "}", *args,
-      base::TimeDelta::FromMilliseconds(session->script_timeout), value);
+      session->script_timeout, value);
 }
 
 Status ExecuteSwitchToFrame(

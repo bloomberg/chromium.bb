@@ -12,6 +12,7 @@ import os
 import sys
 import socket
 import tempfile
+import threading
 import time
 import unittest
 
@@ -638,14 +639,32 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
 class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.extensions."""
 
+  def _PackExtension(self, ext_path):
+    return base64.b64encode(open(ext_path, 'rb').read())
+
   def testExtensionsInstall(self):
     """Checks that chromedriver can take the extensions."""
     crx_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.crx')
     crx_2 = os.path.join(_TEST_DATA_DIR, 'ext_test_2.crx')
-    crx_1_encoded = base64.b64encode(open(crx_1, 'rb').read())
-    crx_2_encoded = base64.b64encode(open(crx_2, 'rb').read())
-    extensions = [crx_1_encoded, crx_2_encoded]
-    self.CreateDriver(chrome_extensions=extensions)
+    self.CreateDriver(chrome_extensions=[self._PackExtension(crx_1),
+                                         self._PackExtension(crx_2)])
+
+  def testWaitsForExtensionToLoad(self):
+    did_load_event = threading.Event()
+    server = webserver.SyncWebServer()
+    def RunServer():
+      time.sleep(5)
+      server.RespondWithContent('<html>iframe</html>')
+      did_load_event.set()
+
+    thread = threading.Thread(target=RunServer)
+    thread.daemon = True
+    thread.start()
+    crx = os.path.join(_TEST_DATA_DIR, 'ext_slow_loader.crx')
+    driver = self.CreateDriver(
+        chrome_switches=['user-agent=' + server.GetUrl()],
+        chrome_extensions=[self._PackExtension(crx)])
+    self.assertTrue(did_load_event.is_set())
 
 
 class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):

@@ -271,8 +271,7 @@ Status FindElement(
       }
     }
 
-    if ((base::Time::Now() - start_time).InMilliseconds() >=
-        session->implicit_wait) {
+    if (base::Time::Now() - start_time >= session->implicit_wait) {
       if (only_one) {
         return Status(kNoSuchElement);
       } else {

@@ -212,18 +212,22 @@ Status ExecuteSetTimeout(
   if (!params.GetString("type", &type))
     return Status(kUnknownError, "'type' must be a string");
 
-  int ms = static_cast<int>(ms_double);
+  base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(static_cast<int>(ms_double));
   // TODO(frankf): implicit and script timeout should be cleared
   // if negative timeout is specified.
-  if (type == "implicit")
-    session->implicit_wait = ms;
-  else if (type == "script")
-    session->script_timeout = ms;
-  else if (type == "page load")
+  if (type == "implicit") {
+    session->implicit_wait = timeout;
+  } else if (type == "script") {
+    session->script_timeout = timeout;
+  } else if (type == "page load") {
     session->page_load_timeout =
-        ((ms < 0) ? Session::kDefaultPageLoadTimeoutMs : ms);
-  else
+        ((timeout < base::TimeDelta()) ? base::TimeDelta::FromMilliseconds(
+                                             Session::kDefaultPageLoadTimeoutMs)
+                                       : timeout);
+  } else {
     return Status(kUnknownError, "unknown type of timeout:" + type);
+  }
   return Status(kOk);
 }
 
@@ -234,7 +238,8 @@ Status ExecuteSetScriptTimeout(
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
     return Status(kUnknownError, "'ms' must be a non-negative number");
-  session->script_timeout = static_cast<int>(ms);
+  session->script_timeout =
+      base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
 }
 
@@ -245,7 +250,8 @@ Status ExecuteImplicitlyWait(
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
     return Status(kUnknownError, "'ms' must be a non-negative number");
-  session->implicit_wait = static_cast<int>(ms);
+  session->implicit_wait =
+      base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
 }
 

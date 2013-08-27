@@ -28,10 +28,8 @@ Session::Session(const std::string& id)
       detach(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      implicit_wait(0),
-      page_load_timeout(kDefaultPageLoadTimeoutMs),
-      script_timeout(0) {
-}
+      page_load_timeout(
+          base::TimeDelta::FromMilliseconds(kDefaultPageLoadTimeoutMs)) {}
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
@@ -40,11 +38,9 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      implicit_wait(0),
-      page_load_timeout(kDefaultPageLoadTimeoutMs),
-      script_timeout(0),
-      capabilities(CreateCapabilities()) {
-}
+      page_load_timeout(
+          base::TimeDelta::FromMilliseconds(kDefaultPageLoadTimeoutMs)),
+      capabilities(CreateCapabilities()) {}
 
 Session::~Session() {}
 
