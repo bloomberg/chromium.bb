@@ -181,9 +181,9 @@ cr.define('options', function() {
         this.initializeLanguageCodeToInputMethodIdsMap_();
       }
 
-      var checkbox = $('dont-translate-in-this-language');
+      var checkbox = $('offer-to-translate-in-this-language');
       checkbox.addEventListener('click',
-          this.handleDontTranslateCheckboxClick_.bind(this));
+          this.handleOfferToTranslateCheckboxClick_.bind(this));
 
       Preferences.getInstance().addEventListener(
           TRANSLATE_BLOCKED_LANGUAGES_PREF,
@@ -438,7 +438,7 @@ cr.define('options', function() {
         }
       }
 
-      this.updateDontTranslateCheckbox_(languageCode);
+      this.updateOfferToTranslateCheckbox_(languageCode);
 
       if (cr.isWindows || cr.isChromeOS)
         this.updateUiLanguageButton_(languageCode);
@@ -677,8 +677,8 @@ cr.define('options', function() {
      * @param {string} languageCode Language code (ex. "fr").
      * @private
      */
-    updateDontTranslateCheckbox_: function(languageCode) {
-      var div = $('language-options-dont-translate');
+    updateOfferToTranslateCheckbox_: function(languageCode) {
+      var div = $('language-options-offer-to-translate');
 
       if (!loadTimeData.getBoolean('enableTranslateSettings')) {
         div.hidden = true;
@@ -695,9 +695,9 @@ cr.define('options', function() {
         return;
       }
 
-      var dontTranslate = div.querySelector('div');
+      var offerToTranslate = div.querySelector('div');
       var cannotTranslate = $('cannot-translate-in-this-language');
-      var nodes = [dontTranslate, cannotTranslate];
+      var nodes = [offerToTranslate, cannotTranslate];
 
       var convertedLangCode = this.convertLangCodeForTranslation_(languageCode);
       if (this.translateSupportedLanguages_.indexOf(convertedLangCode) != -1) {
@@ -707,23 +707,23 @@ cr.define('options', function() {
         return;
       }
 
-      var checkbox = $('dont-translate-in-this-language');
+      var checkbox = $('offer-to-translate-in-this-language');
 
       // If the language corresponds to the default target language (in most
-      // cases, the user's locale language), "Don't Translate" checkbox should
-      // be always checked.
+      // cases, the user's locale language), "Offer to translate" checkbox
+      // should be always unchecked.
       var defaultTargetLanguage =
           loadTimeData.getString('defaultTargetLanguage');
       if (convertedLangCode == defaultTargetLanguage) {
         checkbox.disabled = true;
-        checkbox.checked = true;
+        checkbox.checked = false;
         return;
       }
 
       checkbox.disabled = false;
 
       var blockedLanguages = this.translateBlockedLanguages_;
-      var checked = blockedLanguages.indexOf(convertedLangCode) != -1;
+      var checked = blockedLanguages.indexOf(convertedLangCode) == -1;
       checkbox.checked = checked;
     },
 
@@ -822,11 +822,11 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles don't-translate checkbox's click event.
+     * Handles offer-to-translate checkbox's click event.
      * @param {Event} e Click event.
      * @private
      */
-    handleDontTranslateCheckboxClick_: function(e) {
+    handleOfferToTranslateCheckboxClick_: function(e) {
       var checkbox = e.target;
       var checked = checkbox.checked;
 
@@ -834,9 +834,9 @@ cr.define('options', function() {
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
 
       if (checked)
-        this.addBlockedLanguage_(selectedLanguageCode);
-      else
         this.removeBlockedLanguage_(selectedLanguageCode);
+      else
+        this.addBlockedLanguage_(selectedLanguageCode);
     },
 
     /**
@@ -915,7 +915,7 @@ cr.define('options', function() {
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
       this.translateBlockedLanguages_ = e.value.value;
-      this.updateDontTranslateCheckbox_(selectedLanguageCode);
+      this.updateOfferToTranslateCheckbox_(selectedLanguageCode);
     },
 
     /**

@@ -79,8 +79,8 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
     { "addLanguageTitle", IDS_OPTIONS_LANGUAGES_ADD_TITLE },
     { "addLanguageSelectLabel", IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL },
     { "restartButton", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON },
-    { "dontTranslateInThisLanguage",
-      IDS_OPTIONS_LANGUAGES_DONT_TRANSLATE_IN_THIS_LANGUAGE },
+    { "offerToTranslateInThisLanguage",
+      IDS_OPTIONS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE },
     { "cannotTranslateInThisLanguage",
       IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE },
   };
