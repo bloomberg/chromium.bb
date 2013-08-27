@@ -181,7 +181,7 @@ bool AccessibilityTable::isDataTable() const
 
             validCellCount++;
 
-            HTMLTableCellElement* cellElement = static_cast<HTMLTableCellElement*>(cellNode);
+            HTMLTableCellElement* cellElement = toHTMLTableCellElement(cellNode);
 
             bool isTHCell = cellElement->hasTagName(thTag);
             // If the first row is comprised of all <th> tags, assume it is a data table.

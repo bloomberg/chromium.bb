@@ -63,26 +63,20 @@ private:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
-HTMLTableCellElement* toHTMLTableCellElement(Node* node);
-const HTMLTableCellElement* toHTMLTableCellElement(const Node* node);
-
-// This will catch anyone doing an unnecessary cast.
-void toHTMLTableCellElement(const HTMLTableCellElement*);
-
-#ifdef NDEBUG
-
-// The debug versions of these, with assertions, are not inlined.
-
 inline HTMLTableCellElement* toHTMLTableCellElement(Node* node)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::tdTag) || node->hasTagName(HTMLNames::thTag));
     return static_cast<HTMLTableCellElement*>(node);
 }
 
 inline const HTMLTableCellElement* toHTMLTableCellElement(const Node* node)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::tdTag) || node->hasTagName(HTMLNames::thTag));
     return static_cast<const HTMLTableCellElement*>(node);
 }
-#endif
+
+// This will catch anyone doing an unnecessary cast.
+void toHTMLTableCellElement(const HTMLTableCellElement*);
 
 } // namespace
 

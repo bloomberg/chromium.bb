@@ -180,23 +180,7 @@ HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
     if (!cellAboveRenderer)
         return 0;
 
-    return static_cast<HTMLTableCellElement*>(cellAboveRenderer->node());
+    return toHTMLTableCellElement(cellAboveRenderer->node());
 }
-
-#ifndef NDEBUG
-
-HTMLTableCellElement* toHTMLTableCellElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::tdTag) || node->hasTagName(HTMLNames::thTag));
-    return static_cast<HTMLTableCellElement*>(node);
-}
-
-const HTMLTableCellElement* toHTMLTableCellElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::tdTag) || node->hasTagName(HTMLNames::thTag));
-    return static_cast<const HTMLTableCellElement*>(node);
-}
-
-#endif
 
 } // namespace WebCore
