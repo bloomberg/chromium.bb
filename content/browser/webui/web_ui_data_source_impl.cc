@@ -176,6 +176,9 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
   if (EndsWith(path, ".pdf", false))
     return "application/pdf";
 
+  if (EndsWith(path, ".svg", false))
+    return "image/svg+xml";
+
   return "text/html";
 }
 
