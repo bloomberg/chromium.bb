@@ -68,6 +68,10 @@
 #include "ui/gl/io_surface_support_mac.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 // TODO(zmo): we can't include "City.h" due to type def conflicts.
 extern uint64 CityHash64(const char*, size_t);
 
@@ -2720,6 +2724,9 @@ bool GLES2DecoderImpl::MakeCurrent() {
     if (workarounds().exit_on_context_lost) {
       LOG(ERROR) << "Exiting GPU process because some drivers cannot reset"
                  << " a D3D device in the Chrome GPU process sandbox.";
+#if defined(OS_WIN)
+      base::win::SetShouldCrashOnProcessDetach(false);
+#endif
       exit(0);
     }
 
