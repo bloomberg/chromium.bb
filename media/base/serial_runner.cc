@@ -59,9 +59,15 @@ SerialRunner::SerialRunner(
       message_loop_(base::MessageLoopProxy::current()),
       bound_fns_(bound_fns),
       done_cb_(done_cb) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr(),
-      PIPELINE_OK));
+  // Respect both cancellation and calling stack guarantees for |done_cb|
+  // when empty.
+  if (bound_fns_.empty()) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr(), PIPELINE_OK));
+    return;
+  }
+
+  RunNextInSeries(PIPELINE_OK);
 }
 
 SerialRunner::~SerialRunner() {}

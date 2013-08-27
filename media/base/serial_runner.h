@@ -51,6 +51,13 @@ class MEDIA_EXPORT SerialRunner {
   // All bound functions are executed on the thread that Run() is called on,
   // including |done_cb|.
   //
+  // To eliminate an unnecessary posted task, the first function is executed
+  // immediately on the caller's stack. It is *strongly advised* to ensure
+  // the calling code does no more work after the call to Run().
+  //
+  // In all cases, |done_cb| is guaranteed to execute on a separate calling
+  // stack.
+  //
   // Deleting the object will prevent execution of any unstarted bound
   // functions, including |done_cb|.
   static scoped_ptr<SerialRunner> Run(

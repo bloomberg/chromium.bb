@@ -52,9 +52,10 @@ class SerialRunnerTest : public ::testing::Test {
   void RunBoundFunction(PipelineStatus status,
                         size_t index,
                         const PipelineStatusCB& status_cb) {
-    EXPECT_FALSE(inside_start_)
-        << "Bound functions should not run on same stack as "
-        << "SerialRunner::Run()\n" << base::debug::StackTrace().ToString();
+    EXPECT_EQ(index == 0u, inside_start_)
+        << "First bound function should run on same stack as "
+        << "SerialRunner::Run() while all others should not\n"
+        << base::debug::StackTrace().ToString();
 
     called_[index] = true;
     status_cb.Run(status);

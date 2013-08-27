@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -1134,18 +1133,7 @@ class PipelineTeardownTest : public PipelineTest {
   void DoStopOrError(StopOrError stop_or_error) {
     InSequence s;
 
-    // Save the callback and run it after the error teardown path has started
-    // running.
-    //
-    // TODO(scherkus): Remove after https://codereview.chromium.org/22850009
-    // lands.
-    base::Closure stop_cb;
-    if (stop_or_error == kErrorAndStop) {
-      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(SaveArg<0>(&stop_cb));
-    } else {
-      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-    }
-
+    EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
 
@@ -1162,11 +1150,8 @@ class PipelineTeardownTest : public PipelineTest {
         break;
 
       case kErrorAndStop:
-        pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
-        message_loop_.RunUntilIdle();
-        base::ResetAndReturn(&stop_cb).Run();
-
         EXPECT_CALL(callbacks_, OnStop());
+        pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
         pipeline_->Stop(base::Bind(
             &CallbackHelper::OnStop, base::Unretained(&callbacks_)));
         break;
