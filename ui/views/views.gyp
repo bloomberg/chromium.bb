@@ -801,6 +801,11 @@
             ['exclude', 'widget/window_reorderer_unittest.cc']
           ],
         }],
+        ['use_ozone==1', {
+          'sources!': [
+            'corewm/capture_controller_unittest.cc',
+          ],
+        }],
       ],
     },  # target_name: views_unittests
     {
