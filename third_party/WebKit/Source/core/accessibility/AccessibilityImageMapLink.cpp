@@ -72,13 +72,13 @@ AccessibilityObject* AccessibilityImageMapLink::parentObject() const
 AccessibilityRole AccessibilityImageMapLink::roleValue() const
 {
     if (!m_areaElement)
-        return WebCoreLinkRole;
+        return LinkRole;
 
     const AtomicString& ariaRole = getAttribute(roleAttr);
     if (!ariaRole.isEmpty())
         return AccessibilityObject::ariaRoleToWebCoreRole(ariaRole);
 
-    return WebCoreLinkRole;
+    return LinkRole;
 }
 
 Element* AccessibilityImageMapLink::actionElement() const

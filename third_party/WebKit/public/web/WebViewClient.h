@@ -34,6 +34,7 @@
 #include "../platform/WebColor.h"
 #include "../platform/WebGraphicsContext3D.h"
 #include "../platform/WebString.h"
+#include "WebAXEnums.h"
 #include "WebAccessibilityNotification.h"
 #include "WebContentDetectionResult.h"
 #include "WebDragOperation.h"
@@ -311,9 +312,11 @@ public:
 
     // Accessibility -------------------------------------------------------
 
-    // Notifies embedder about an accessibility notification.
-    virtual void postAccessibilityNotification(const WebAccessibilityObject&, WebAccessibilityNotification) { }
+    // Notifies embedder about an accessibility event.
+    virtual void postAccessibilityEvent(const WebAccessibilityObject&, WebAXEvent) { }
 
+    // Deprecated.
+    virtual void postAccessibilityNotification(const WebAccessibilityObject&, WebAccessibilityNotification) { }
 
     // Developer tools -----------------------------------------------------
 

@@ -175,7 +175,7 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         return ariaRole;
 
     if (node()->isLink())
-        return WebCoreLinkRole;
+        return LinkRole;
     if (node()->isTextNode())
         return StaticTextRole;
     if (node()->hasTagName(buttonTag))
@@ -214,7 +214,7 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
     if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
     if (node()->hasTagName(aTag) && isClickable())
-        return WebCoreLinkRole;
+        return LinkRole;
 
     return UnknownRole;
 }
@@ -513,7 +513,7 @@ bool AccessibilityNodeObject::isInputImage() const
 
 bool AccessibilityNodeObject::isLink() const
 {
-    return roleValue() == WebCoreLinkRole;
+    return roleValue() == LinkRole;
 }
 
 bool AccessibilityNodeObject::isMenu() const

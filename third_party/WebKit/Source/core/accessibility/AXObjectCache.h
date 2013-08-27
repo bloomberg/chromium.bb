@@ -150,37 +150,38 @@ public:
 
     enum AXNotification {
         AXActiveDescendantChanged,
+        AXAlert,
+        AXAriaAttributeChanged,
         AXAutocorrectionOccured,
+        AXBlur,
         AXCheckedStateChanged,
         AXChildrenChanged,
         AXFocusedUIElementChanged,
+        AXHide,
+        AXInvalidStatusChanged,
         AXLayoutComplete,
-        AXLoadComplete,
-        AXSelectedChildrenChanged,
-        AXSelectedTextChanged,
-        AXValueChanged,
-        AXScrolledToAnchor,
         AXLiveRegionChanged,
+        AXLoadComplete,
+        AXLocationChanged,
         AXMenuListItemSelected,
         AXMenuListValueChanged,
-        AXRowCountChanged,
         AXRowCollapsed,
+        AXRowCountChanged,
         AXRowExpanded,
-        AXInvalidStatusChanged,
+        AXScrolledToAnchor,
+        AXSelectedChildrenChanged,
+        AXSelectedTextChanged,
+        AXShow,
         AXTextChanged,
-        AXAriaAttributeChanged
+        AXTextInserted,
+        AXTextRemoved,
+        AXValueChanged
     };
 
     void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously);
     void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously);
     void postNotification(AccessibilityObject*, Document*, AXNotification, bool postToElement, PostType = PostAsynchronously);
 
-    enum AXTextChange {
-        AXTextInserted,
-        AXTextDeleted,
-    };
-
-    void nodeTextChangeNotification(Node*, AXTextChange, unsigned offset, const String&);
     bool nodeHasRole(Node*, const AtomicString& role);
 
     void startCachingComputedObjectAttributesUntilTreeMutates();
@@ -190,7 +191,6 @@ public:
 
 protected:
     void postPlatformNotification(AccessibilityObject*, AXNotification);
-    void nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned offset, const String&);
     void textChanged(AccessibilityObject*);
     void labelChanged(Element*);
 

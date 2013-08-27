@@ -36,6 +36,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebAXEnums.h"
 #include "public/web/WebAccessibilityNotification.h"
 #include "public/web/WebDOMMessageEvent.h"
 #include "public/web/WebDataSource.h"
@@ -158,7 +159,7 @@ protected:
     void setWindowRect(const WebKit::WebRect&);
     void show(WebKit::WebNavigationPolicy);
     void didAutoResize(const WebKit::WebSize&);
-    void postAccessibilityNotification(const WebKit::WebAccessibilityObject&, WebKit::WebAccessibilityNotification);
+    void postAccessibilityEvent(const WebKit::WebAccessibilityObject&, WebKit::WebAXEvent);
     void startDragging(WebKit::WebFrame*, const WebKit::WebDragData&, WebKit::WebDragOperationsMask, const WebKit::WebImage&, const WebKit::WebPoint&);
     bool shouldBeginEditing(const WebKit::WebRange&);
     bool shouldEndEditing(const WebKit::WebRange&);
@@ -308,10 +309,10 @@ public:
         WebTestProxyBase::didAutoResize(newSize);
         Base::didAutoResize(newSize);
     }
-    virtual void postAccessibilityNotification(const WebKit::WebAccessibilityObject& object, WebKit::WebAccessibilityNotification notification)
+    virtual void postAccessibilityEvent(const WebKit::WebAccessibilityObject& object, WebKit::WebAXEvent event)
     {
-        WebTestProxyBase::postAccessibilityNotification(object, notification);
-        Base::postAccessibilityNotification(object, notification);
+        WebTestProxyBase::postAccessibilityEvent(object, event);
+        Base::postAccessibilityEvent(object, event);
     }
     virtual void startDragging(WebKit::WebFrame* frame, const WebKit::WebDragData& data, WebKit::WebDragOperationsMask mask, const WebKit::WebImage& image, const WebKit::WebPoint& point)
     {

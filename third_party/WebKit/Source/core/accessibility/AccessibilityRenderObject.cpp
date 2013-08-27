@@ -326,7 +326,7 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->isLink()) {
         if (cssBox && cssBox->isImage())
             return ImageMapRole;
-        return WebCoreLinkRole;
+        return LinkRole;
     }
     if (cssBox && cssBox->isListItem())
         return ListItemRole;
@@ -420,22 +420,22 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
         return FormRole;
 
     if (node && node->hasTagName(articleTag))
-        return DocumentArticleRole;
+        return ArticleRole;
 
     if (node && node->hasTagName(mainTag))
-        return LandmarkMainRole;
+        return MainRole;
 
     if (node && node->hasTagName(navTag))
-        return LandmarkNavigationRole;
+        return NavigationRole;
 
     if (node && node->hasTagName(asideTag))
-        return LandmarkComplementaryRole;
+        return ComplementaryRole;
 
     if (node && node->hasTagName(sectionTag))
-        return DocumentRegionRole;
+        return RegionRole;
 
     if (node && node->hasTagName(addressTag))
-        return LandmarkContentInfoRole;
+        return ContentInfoRole;
 
     // The HTML element should not be exposed as an element. That's what the RenderView element does.
     if (node && isHTMLHtmlElement(node))
@@ -444,12 +444,12 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
     // then it should not be exposed as whole page's banner/contentInfo
     if (node && node->hasTagName(headerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
-        return LandmarkBannerRole;
+        return BannerRole;
     if (node && node->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
         return FooterRole;
 
     if (node && node->hasTagName(aTag) && isClickable())
-        return WebCoreLinkRole;
+        return LinkRole;
 
     if (m_renderer->isBlockFlow())
         return GroupRole;
@@ -972,7 +972,6 @@ String AccessibilityRenderObject::actionVerb() const
     case CheckBoxRole:
         return isChecked() ? AXCheckedCheckBoxActionVerb() : AXUncheckedCheckBoxActionVerb();
     case LinkRole:
-    case WebCoreLinkRole:
         return AXLinkActionVerb();
     default:
         return emptyString();
@@ -1190,14 +1189,14 @@ const AtomicString& AccessibilityRenderObject::ariaLiveRegionStatus() const
     // These roles have implicit live region status.
     if (liveRegionStatus.isEmpty()) {
         switch (roleValue()) {
-        case ApplicationAlertDialogRole:
-        case ApplicationAlertRole:
+        case AlertDialogRole:
+        case AlertRole:
             return liveRegionStatusAssertive;
-        case ApplicationLogRole:
-        case ApplicationStatusRole:
+        case LogRole:
+        case StatusRole:
             return liveRegionStatusPolite;
-        case ApplicationTimerRole:
-        case ApplicationMarqueeRole:
+        case TimerRole:
+        case MarqueeRole:
             return liveRegionStatusOff;
         default:
             break;

@@ -128,6 +128,13 @@ static WebAccessibilityNotification toWebAccessibilityNotification(AXObjectCache
     return static_cast<WebAccessibilityNotification>(notification);
 }
 
+// Converts a WebCore::AXObjectCache::AXNotification to a WebKit::WebAXEvent
+static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
+{
+    // These enums have the same values; enforced in AssertMatchingEnums.cpp.
+    return static_cast<WebAXEvent>(notification);
+}
+
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     : m_webView(webView)
     , m_toolbarsVisible(true)
@@ -801,8 +808,12 @@ void ChromeClientImpl::getPopupMenuInfo(PopupContainer* popupContainer,
 void ChromeClientImpl::postAccessibilityNotification(AccessibilityObject* obj, AXObjectCache::AXNotification notification)
 {
     // Alert assistive technology about the accessibility object notification.
-    if (obj)
-        m_webView->client()->postAccessibilityNotification(WebAccessibilityObject(obj), toWebAccessibilityNotification(notification));
+    if (!obj)
+        return;
+
+    // FIXME: Remove this first call once Chromium has switched over to using the second. (http://crbug.com/269034)
+    m_webView->client()->postAccessibilityNotification(WebAccessibilityObject(obj), toWebAccessibilityNotification(notification));
+    m_webView->client()->postAccessibilityEvent(WebAccessibilityObject(obj), toWebAXEvent(notification));
 }
 
 String ChromeClientImpl::acceptLanguages()

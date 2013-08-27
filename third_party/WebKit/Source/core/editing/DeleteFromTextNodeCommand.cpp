@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 
@@ -57,10 +56,6 @@ void DeleteFromTextNodeCommand::doApply()
     if (es.hadException())
         return;
 
-    // Need to notify this before actually deleting the text
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
-        cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextDeleted, m_offset, m_text);
-
     m_node->deleteData(m_offset, m_count, es, DeprecatedAttachNow);
 }
 
@@ -72,9 +67,6 @@ void DeleteFromTextNodeCommand::doUnapply()
         return;
 
     m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, DeprecatedAttachNow);
-
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
-        cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextInserted, m_offset, m_text);
 }
 
 #ifndef NDEBUG

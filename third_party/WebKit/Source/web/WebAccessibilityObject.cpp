@@ -599,12 +599,21 @@ bool WebAccessibilityObject::press() const
     return m_private->press();
 }
 
+// Deprecated in favor of role().
 WebAccessibilityRole WebAccessibilityObject::roleValue() const
 {
     if (isDetached())
         return WebKit::WebAccessibilityRoleUnknown;
 
     return static_cast<WebAccessibilityRole>(m_private->roleValue());
+}
+
+WebAXRole WebAccessibilityObject::role() const
+{
+    if (isDetached())
+        return WebKit::WebAXRoleUnknown;
+
+    return static_cast<WebAXRole>(m_private->roleValue());
 }
 
 unsigned WebAccessibilityObject::selectionEnd() const

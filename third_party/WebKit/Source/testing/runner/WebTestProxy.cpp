@@ -49,7 +49,7 @@
 #include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestInterfaces.h"
 #include "public/testing/WebTestRunner.h"
-#include "public/web/WebAccessibilityNotification.h"
+#include "public/web/WebAXEnums.h"
 #include "public/web/WebAccessibilityObject.h"
 #include "public/web/WebCachedURLRequest.h"
 #include "public/web/WebConsoleMessage.h"
@@ -828,83 +828,101 @@ void WebTestProxyBase::didAutoResize(const WebSize&)
     invalidateAll();
 }
 
-void WebTestProxyBase::postAccessibilityNotification(const WebKit::WebAccessibilityObject& obj, WebKit::WebAccessibilityNotification notification)
+void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAccessibilityObject& obj, WebKit::WebAXEvent event)
 {
-    if (notification == WebKit::WebAccessibilityNotificationFocusedUIElementChanged)
+    if (event == WebKit::WebAXEventFocus)
         m_testInterfaces->accessibilityController()->setFocusedElement(obj);
 
-    const char* notificationName;
-    switch (notification) {
-    case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
-        notificationName = "ActiveDescendantChanged";
+    const char* eventName;
+    switch (event) {
+    case WebKit::WebAXEventActiveDescendantChanged:
+        eventName = "ActiveDescendantChanged";
         break;
-    case WebKit::WebAccessibilityNotificationAutocorrectionOccured:
-        notificationName = "AutocorrectionOccured";
+    case WebKit::WebAXEventAlert:
+        eventName = "Alert";
         break;
-    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-        notificationName = "CheckedStateChanged";
+    case WebKit::WebAXEventAriaAttributeChanged:
+        eventName = "AriaAttributeChanged";
         break;
-    case WebKit::WebAccessibilityNotificationChildrenChanged:
-        notificationName = "ChildrenChanged";
+    case WebKit::WebAXEventAutocorrectionOccured:
+        eventName = "AutocorrectionOccured";
         break;
-    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-        notificationName = "FocusedUIElementChanged";
+    case WebKit::WebAXEventBlur:
+        eventName = "Blur";
         break;
-    case WebKit::WebAccessibilityNotificationLayoutComplete:
-        notificationName = "LayoutComplete";
+    case WebKit::WebAXEventCheckedStateChanged:
+        eventName = "CheckedStateChanged";
         break;
-    case WebKit::WebAccessibilityNotificationLoadComplete:
-        notificationName = "LoadComplete";
+    case WebKit::WebAXEventChildrenChanged:
+        eventName = "ChildrenChanged";
         break;
-    case WebKit::WebAccessibilityNotificationSelectedChildrenChanged:
-        notificationName = "SelectedChildrenChanged";
+    case WebKit::WebAXEventFocus:
+        eventName = "Focus";
         break;
-    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-        notificationName = "SelectedTextChanged";
+    case WebKit::WebAXEventHide:
+        eventName = "Hide";
         break;
-    case WebKit::WebAccessibilityNotificationValueChanged:
-        notificationName = "ValueChanged";
+    case WebKit::WebAXEventInvalidStatusChanged:
+        eventName = "InvalidStatusChanged";
         break;
-    case WebKit::WebAccessibilityNotificationScrolledToAnchor:
-        notificationName = "ScrolledToAnchor";
+    case WebKit::WebAXEventLayoutComplete:
+        eventName = "LayoutComplete";
         break;
-    case WebKit::WebAccessibilityNotificationLiveRegionChanged:
-        notificationName = "LiveRegionChanged";
+    case WebKit::WebAXEventLiveRegionChanged:
+        eventName = "LiveRegionChanged";
         break;
-    case WebKit::WebAccessibilityNotificationMenuListItemSelected:
-        notificationName = "MenuListItemSelected";
+    case WebKit::WebAXEventLoadComplete:
+        eventName = "LoadComplete";
         break;
-    case WebKit::WebAccessibilityNotificationMenuListValueChanged:
-        notificationName = "MenuListValueChanged";
+    case WebKit::WebAXEventLocationChanged:
+        eventName = "LocationChanged";
         break;
-    case WebKit::WebAccessibilityNotificationRowCountChanged:
-        notificationName = "RowCountChanged";
+    case WebKit::WebAXEventMenuListItemSelected:
+        eventName = "MenuListItemSelected";
         break;
-    case WebKit::WebAccessibilityNotificationRowCollapsed:
-        notificationName = "RowCollapsed";
+    case WebKit::WebAXEventMenuListValueChanged:
+        eventName = "MenuListValueChanged";
         break;
-    case WebKit::WebAccessibilityNotificationRowExpanded:
-        notificationName = "RowExpanded";
+    case WebKit::WebAXEventRowCollapsed:
+        eventName = "RowCollapsed";
         break;
-    case WebKit::WebAccessibilityNotificationInvalidStatusChanged:
-        notificationName = "InvalidStatusChanged";
+    case WebKit::WebAXEventRowCountChanged:
+        eventName = "RowCountChanged";
         break;
-    case WebKit::WebAccessibilityNotificationTextChanged:
-        notificationName = "TextChanged";
+    case WebKit::WebAXEventRowExpanded:
+        eventName = "RowExpanded";
         break;
-    case WebKit::WebAccessibilityNotificationAriaAttributeChanged:
-        notificationName = "AriaAttributeChanged";
+    case WebKit::WebAXEventScrolledToAnchor:
+        eventName = "ScrolledToAnchor";
         break;
-    default:
-        notificationName = "UnknownNotification";
+    case WebKit::WebAXEventSelectedChildrenChanged:
+        eventName = "SelectedChildrenChanged";
+        break;
+    case WebKit::WebAXEventSelectedTextChanged:
+        eventName = "SelectedTextChanged";
+        break;
+    case WebKit::WebAXEventShow:
+        eventName = "Show";
+        break;
+    case WebKit::WebAXEventTextChanged:
+        eventName = "TextChanged";
+        break;
+    case WebKit::WebAXEventTextInserted:
+        eventName = "TextInserted";
+        break;
+    case WebKit::WebAXEventTextRemoved:
+        eventName = "TextRemoved";
+        break;
+    case WebKit::WebAXEventValueChanged:
+        eventName = "ValueChanged";
         break;
     }
 
-    m_testInterfaces->accessibilityController()->notificationReceived(obj, notificationName);
+    m_testInterfaces->accessibilityController()->notificationReceived(obj, eventName);
 
     if (m_testInterfaces->accessibilityController()->shouldLogAccessibilityEvents()) {
         string message("AccessibilityNotification - ");
-        message += notificationName;
+        message += eventName;
 
         WebKit::WebNode node = obj.node();
         if (!node.isNull() && node.isElementNode()) {

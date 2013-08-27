@@ -57,16 +57,16 @@ struct RoleEntry {
 static ARIARoleMap* createARIARoleMap()
 {
     const RoleEntry roles[] = {
-        { "alert", ApplicationAlertRole },
-        { "alertdialog", ApplicationAlertDialogRole },
-        { "application", LandmarkApplicationRole },
-        { "article", DocumentArticleRole },
-        { "banner", LandmarkBannerRole },
+        { "alert", AlertRole },
+        { "alertdialog", AlertDialogRole },
+        { "application", ApplicationRole },
+        { "article", ArticleRole },
+        { "banner", BannerRole },
         { "button", ButtonRole },
         { "checkbox", CheckBoxRole },
-        { "complementary", LandmarkComplementaryRole },
-        { "contentinfo", LandmarkContentInfoRole },
-        { "dialog", ApplicationDialogRole },
+        { "complementary", ComplementaryRole },
+        { "contentinfo", ContentInfoRole },
+        { "dialog", DialogRole },
         { "directory", DirectoryRole },
         { "grid", TableRole },
         { "gridcell", CellRole },
@@ -78,41 +78,41 @@ static ARIARoleMap* createARIARoleMap()
         { "group", GroupRole },
         { "heading", HeadingRole },
         { "img", ImageRole },
-        { "link", WebCoreLinkRole },
+        { "link", LinkRole },
         { "list", ListRole },
         { "listitem", ListItemRole },
         { "listbox", ListBoxRole },
-        { "log", ApplicationLogRole },
+        { "log", LogRole },
         // "option" isn't here because it may map to different roles depending on the parent element's role
-        { "main", LandmarkMainRole },
-        { "marquee", ApplicationMarqueeRole },
-        { "math", DocumentMathRole },
+        { "main", MainRole },
+        { "marquee", MarqueeRole },
+        { "math", MathRole },
         { "menu", MenuRole },
         { "menubar", MenuBarRole },
         { "menuitem", MenuItemRole },
         { "menuitemcheckbox", MenuItemRole },
         { "menuitemradio", MenuItemRole },
-        { "note", DocumentNoteRole },
-        { "navigation", LandmarkNavigationRole },
+        { "note", NoteRole },
+        { "navigation", NavigationRole },
         { "option", ListBoxOptionRole },
         { "presentation", PresentationalRole },
         { "progressbar", ProgressIndicatorRole },
         { "radio", RadioButtonRole },
         { "radiogroup", RadioGroupRole },
-        { "region", DocumentRegionRole },
+        { "region", RegionRole },
         { "row", RowRole },
         { "scrollbar", ScrollBarRole },
-        { "search", LandmarkSearchRole },
+        { "search", SearchRole },
         { "separator", SplitterRole },
         { "slider", SliderRole },
         { "spinbutton", SpinButtonRole },
-        { "status", ApplicationStatusRole },
+        { "status", StatusRole },
         { "tab", TabRole },
         { "tablist", TabListRole },
         { "tabpanel", TabPanelRole },
         { "text", StaticTextRole },
         { "textbox", TextAreaRole },
-        { "timer", ApplicationTimerRole },
+        { "timer", TimerRole },
         { "toolbar", ToolbarRole },
         { "tooltip", UserInterfaceTooltipRole },
         { "tree", TreeRole },
@@ -226,7 +226,6 @@ bool AccessibilityObject::isClickable() const
     case TextAreaRole:
     case TextFieldRole:
     case ToggleButtonRole:
-    case WebCoreLinkRole:
         return true;
     default:
         return false;
@@ -331,7 +330,6 @@ String AccessibilityObject::actionVerb() const
     case CheckBoxRole:
         return isChecked() ? AXCheckedCheckBoxActionVerb() : AXUncheckedCheckBoxActionVerb();
     case LinkRole:
-    case WebCoreLinkRole:
         return AXLinkActionVerb();
     case PopUpButtonRole:
         return AXMenuListActionVerb();

@@ -34,6 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebVector.h"
+#include "WebAXEnums.h"
 #include "WebAccessibilityRole.h"
 
 #if WEBKIT_IMPLEMENTATION
@@ -52,6 +53,7 @@ struct WebPoint;
 struct WebRect;
 
 // A container for passing around a reference to AccessibilityObject.
+// FIXME: rename this to WebAXObject (http://crbug.com/269034).
 class WebAccessibilityObject {
 public:
     ~WebAccessibilityObject() { reset(); }
@@ -135,7 +137,8 @@ public:
     WEBKIT_EXPORT int hierarchicalLevel() const;
     WEBKIT_EXPORT WebAccessibilityObject hitTest(const WebPoint&) const;
     WEBKIT_EXPORT WebString keyboardShortcut() const;
-    WEBKIT_EXPORT WebAccessibilityRole roleValue() const;
+    WEBKIT_EXPORT WebAccessibilityRole roleValue() const; // Deprecated, use role().
+    WEBKIT_EXPORT WebAXRole role() const;
     WEBKIT_EXPORT unsigned selectionEnd() const;
     WEBKIT_EXPORT unsigned selectionEndLineNumber() const;
     WEBKIT_EXPORT unsigned selectionStart() const;

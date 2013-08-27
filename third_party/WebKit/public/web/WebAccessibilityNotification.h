@@ -34,28 +34,36 @@
 namespace WebKit {
 
 // These values must match WebCore::AXObjectCache::AXNotification values.
-// Enforced in AssertMatchingEnums.cpp.
+// DEPRECATED: these will be replaced with the enums defined in
+// WebAXEnums.h (http://crbug.com/269034).
 enum WebAccessibilityNotification {
     WebAccessibilityNotificationActiveDescendantChanged,
+    WebAccessibilityNotificationAlert,
+    WebAccessibilityNotificationAriaAttributeChanged,
     WebAccessibilityNotificationAutocorrectionOccured,
+    WebAccessibilityNotificationBlur,
     WebAccessibilityNotificationCheckedStateChanged,
     WebAccessibilityNotificationChildrenChanged,
     WebAccessibilityNotificationFocusedUIElementChanged,
+    WebAccessibilityNotificationHide,
+    WebAccessibilityNotificationInvalidStatusChanged,
     WebAccessibilityNotificationLayoutComplete,
-    WebAccessibilityNotificationLoadComplete,
-    WebAccessibilityNotificationSelectedChildrenChanged,
-    WebAccessibilityNotificationSelectedTextChanged,
-    WebAccessibilityNotificationValueChanged,
-    WebAccessibilityNotificationScrolledToAnchor,
     WebAccessibilityNotificationLiveRegionChanged,
+    WebAccessibilityNotificationLoadComplete,
+    WebAccessibilityNotificationLocationChanged,
     WebAccessibilityNotificationMenuListItemSelected,
     WebAccessibilityNotificationMenuListValueChanged,
-    WebAccessibilityNotificationRowCountChanged,
     WebAccessibilityNotificationRowCollapsed,
+    WebAccessibilityNotificationRowCountChanged,
     WebAccessibilityNotificationRowExpanded,
-    WebAccessibilityNotificationInvalidStatusChanged,
+    WebAccessibilityNotificationScrolledToAnchor,
+    WebAccessibilityNotificationSelectedChildrenChanged,
+    WebAccessibilityNotificationSelectedTextChanged,
+    WebAccessibilityNotificationShow,
     WebAccessibilityNotificationTextChanged,
-    WebAccessibilityNotificationAriaAttributeChanged
+    WebAccessibilityNotificationTextInserted,
+    WebAccessibilityNotificationTextRemoved,
+    WebAccessibilityNotificationValueChanged
 };
 
 } // namespace WebKit

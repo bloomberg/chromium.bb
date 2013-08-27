@@ -16,7 +16,7 @@ function enableAccessibility()
     }
 
     accessibilityController.addNotificationListener(function (element, notification) {
-        if (notification == 'FocusedUIElementChanged' || notification == 'ValueChanged') {
+        if (notification == 'Focus' || notification == 'ValueChanged') {
             debug(notification + ' ' + element.helpText + '=' + element.valueDescription);
         }
     });

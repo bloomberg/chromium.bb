@@ -728,18 +728,6 @@ void AXObjectCache::selectedChildrenChanged(RenderObject* renderer)
     postNotification(renderer, AXSelectedChildrenChanged, false);
 }
 
-void AXObjectCache::nodeTextChangeNotification(Node* node, AXTextChange textChange, unsigned offset, const String& text)
-{
-    if (!node)
-        return;
-
-    stopCachingComputedObjectAttributes();
-
-    // Delegate on the right platform
-    AccessibilityObject* obj = getOrCreate(node);
-    nodeTextChangePlatformNotification(obj, textChange, offset, text);
-}
-
 void AXObjectCache::handleScrollbarUpdate(ScrollView* view)
 {
     if (!view)
@@ -945,42 +933,15 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
 
     ChromeClient& client = obj->documentFrameView()->frame()->page()->chrome().client();
 
-    switch (notification) {
-    case AXActiveDescendantChanged:
-        if (!obj->document()->focusedElement() || (obj->node() != obj->document()->focusedElement()))
-            break;
-
+    if (notification == AXActiveDescendantChanged
+        && obj->document()->focusedElement()
+        && obj->node() == obj->document()->focusedElement()) {
         // Calling handleFocusedUIElementChanged will focus the new active
         // descendant and send the AXFocusedUIElementChanged notification.
         handleFocusedUIElementChanged(0, obj->document()->focusedElement());
-        break;
-    case AXAriaAttributeChanged:
-    case AXAutocorrectionOccured:
-    case AXCheckedStateChanged:
-    case AXChildrenChanged:
-    case AXFocusedUIElementChanged:
-    case AXInvalidStatusChanged:
-    case AXLayoutComplete:
-    case AXLiveRegionChanged:
-    case AXLoadComplete:
-    case AXMenuListItemSelected:
-    case AXMenuListValueChanged:
-    case AXRowCollapsed:
-    case AXRowCountChanged:
-    case AXRowExpanded:
-    case AXScrolledToAnchor:
-    case AXSelectedChildrenChanged:
-    case AXSelectedTextChanged:
-    case AXTextChanged:
-    case AXValueChanged:
-        break;
     }
 
     client.postAccessibilityNotification(obj, notification);
-}
-
-void AXObjectCache::nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned, const String&)
-{
 }
 
 void AXObjectCache::handleFocusedUIElementChanged(Node*, Node* newFocusedNode)

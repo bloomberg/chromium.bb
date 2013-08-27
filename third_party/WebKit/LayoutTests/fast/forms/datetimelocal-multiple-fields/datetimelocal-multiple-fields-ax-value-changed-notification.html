@@ -14,7 +14,7 @@ if (!window.accessibilityController || !window.eventSender)
     debug('Please run inside DRT or WRT.');
 else {
     accessibilityController.addNotificationListener(function (element, notification) {
-        if (notification == 'FocusedUIElementChanged' || notification == 'ValueChanged') {
+        if (notification == 'Focus' || notification == 'ValueChanged') {
             debug(notification + ' ' + element.helpText + '=' + element.valueDescription);
         }
     });

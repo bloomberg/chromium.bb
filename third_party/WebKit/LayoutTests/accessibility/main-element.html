@@ -12,14 +12,14 @@
 
 <script>
 
-    description("This tests that the HTML5 main element correctly maps to AXLandmarkMain.");
+    description("This tests that the HTML5 main element correctly maps to AXMain.");
 
     if (window.accessibilityController) {
 
           document.getElementById("body").focus();
           var body = accessibilityController.focusedElement;
           var main = accessibilityController.accessibleElementById("main");
-          shouldBe("main.role", "'AXRole: AXLandmarkMain'");
+          shouldBe("main.role", "'AXRole: AXMain'");
 
     }
 

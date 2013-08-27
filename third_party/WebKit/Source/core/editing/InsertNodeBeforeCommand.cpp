@@ -27,7 +27,6 @@
 #include "core/editing/InsertNodeBeforeCommand.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 
 namespace WebCore {
@@ -55,19 +54,12 @@ void InsertNodeBeforeCommand::doApply()
     ASSERT(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable));
 
     parent->insertBefore(m_insertChild.get(), m_refChild.get(), IGNORE_EXCEPTION);
-
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
-        cache->nodeTextChangeNotification(m_insertChild.get(), AXObjectCache::AXTextInserted, 0, m_insertChild->nodeValue());
 }
 
 void InsertNodeBeforeCommand::doUnapply()
 {
     if (!m_insertChild->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
         return;
-
-    // Need to notify this before actually deleting the text
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
-        cache->nodeTextChangeNotification(m_insertChild.get(), AXObjectCache::AXTextDeleted, 0, m_insertChild->nodeValue());
 
     m_insertChild->remove(IGNORE_EXCEPTION);
 }
