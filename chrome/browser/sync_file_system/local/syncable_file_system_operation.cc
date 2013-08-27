@@ -304,20 +304,56 @@ void SyncableFileSystemOperation::CopyInForeignFile(
   completion_callback_ = callback;
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       AsWeakPtr(),
-      base::Bind(&FileSystemOperationImpl::CopyInForeignFile,
+      base::Bind(&FileSystemOperation::CopyInForeignFile,
                  NewOperation()->AsWeakPtr(),
                  src_local_disk_path, dest_url,
                  base::Bind(&self::DidFinish, AsWeakPtr()))));
   operation_runner_->PostOperationTask(task.Pass());
 }
 
+void SyncableFileSystemOperation::RemoveFile(
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  NewOperation()->RemoveFile(url, callback);
+}
+
+void SyncableFileSystemOperation::RemoveDirectory(
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  NewOperation()->RemoveDirectory(url, callback);
+}
+
+void SyncableFileSystemOperation::CopyFileLocal(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  NewOperation()->CopyFileLocal(src_url, dest_url, callback);
+}
+
+void SyncableFileSystemOperation::MoveFileLocal(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  NewOperation()->MoveFileLocal(src_url, dest_url, callback);
+}
+
+base::PlatformFileError SyncableFileSystemOperation::SyncGetPlatformPath(
+    const FileSystemURL& url,
+    base::FilePath* platform_path) {
+  return NewOperation()->SyncGetPlatformPath(url, platform_path);
+}
+
 SyncableFileSystemOperation::SyncableFileSystemOperation(
     const FileSystemURL& url,
     fileapi::FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
-    : FileSystemOperationImpl(url, file_system_context,
-                              operation_context.Pass()),
-      url_(url) {
+    : url_(url),
+      file_system_context_(file_system_context),
+      operation_context_(operation_context.Pass()) {
   DCHECK(file_system_context);
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
@@ -335,7 +371,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
 FileSystemOperationImpl* SyncableFileSystemOperation::NewOperation() {
   DCHECK(operation_context_);
   inflight_operation_.reset(new FileSystemOperationImpl(
-      url_, file_system_context(), operation_context_.Pass()));
+      url_, file_system_context_, operation_context_.Pass()));
   DCHECK(inflight_operation_);
   return inflight_operation_.get();
 }

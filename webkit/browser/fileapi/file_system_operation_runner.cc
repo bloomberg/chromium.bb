@@ -348,14 +348,14 @@ OperationID FileSystemOperationRunner::CopyInForeignFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(
-      dest_url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(dest_url, &error);
   if (!operation) {
     callback.Run(error);
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
-  operation->AsFileSystemOperationImpl()->CopyInForeignFile(
+  operation->CopyInForeignFile(
       src_local_disk_path, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  id, callback));
@@ -366,13 +366,14 @@ OperationID FileSystemOperationRunner::RemoveFile(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(url, &error);
   if (!operation) {
     callback.Run(error);
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
-  operation->AsFileSystemOperationImpl()->RemoveFile(
+  operation->RemoveFile(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  id, callback));
@@ -383,13 +384,14 @@ OperationID FileSystemOperationRunner::RemoveDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(url, &error);
   if (!operation) {
     callback.Run(error);
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
-  operation->AsFileSystemOperationImpl()->RemoveDirectory(
+  operation->RemoveDirectory(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  id, callback));
@@ -401,14 +403,14 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(
-      src_url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(src_url, &error);
   if (!operation) {
     callback.Run(error);
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
-  operation->AsFileSystemOperationImpl()->CopyFileLocal(
+  operation->CopyFileLocal(
       src_url, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  id, callback));
@@ -420,14 +422,14 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(
-      src_url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(src_url, &error);
   if (!operation) {
     callback.Run(error);
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
-  operation->AsFileSystemOperationImpl()->MoveFileLocal(
+  operation->MoveFileLocal(
       src_url, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  id, callback));
@@ -438,12 +440,11 @@ base::PlatformFileError FileSystemOperationRunner::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = CreateFileSystemOperationImpl(url, &error);
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(url, &error);
   if (!operation)
     return error;
-
-  return operation->AsFileSystemOperationImpl()->SyncGetPlatformPath(
-      url, platform_path);
+  return operation->SyncGetPlatformPath(url, platform_path);
 }
 
 FileSystemOperationRunner::FileSystemOperationRunner(
@@ -509,21 +510,6 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   callback.Run(rv, file_info, platform_path, file_ref);
   FinishOperation(id);
-}
-
-FileSystemOperation*
-FileSystemOperationRunner::CreateFileSystemOperationImpl(
-    const FileSystemURL& url, base::PlatformFileError* error) {
-  FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url, error);
-  if (!operation)
-    return NULL;
-  if (!operation->AsFileSystemOperationImpl()) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-    delete operation;
-    return NULL;
-  }
-  return operation;
 }
 
 void FileSystemOperationRunner::PrepareForWrite(OperationID id,

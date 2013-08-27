@@ -139,12 +139,30 @@ class FileSystemOperation {
   // |src_path| is a directory, the contents of |src_path| are copied to
   // |dest_path| recursively. A new file or directory is created at
   // |dest_path| as needed.
+  //
+  // For recursive case this internally creates new FileSystemOperations and
+  // calls:
+  // - ReadDirectory, CopyFileLocal and CreateDirectory
+  //   for same-filesystem case, or
+  // - ReadDirectory and CreateSnapshotFile on source filesystem and
+  //   CopyInForeignFile and CreateDirectory on dest filesystem
+  //   for cross-filesystem case.
+  //
   virtual void Copy(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
                     const StatusCallback& callback) = 0;
 
   // Moves a file or directory from |src_path| to |dest_path|. A new file
   // or directory is created at |dest_path| as needed.
+  //
+  // For recursive case this internally creates new FileSystemOperations and
+  // calls:
+  // - ReadDirectory, MoveFileLocal, CreateDirectory and Remove
+  //   for same-filesystem case, or
+  // - ReadDirectory, CreateSnapshotFile and Remove on source filesystem and
+  //   CopyInForeignFile and CreateDirectory on dest filesystem
+  //   for cross-filesystem case.
+  //
   virtual void Move(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
                     const StatusCallback& callback) = 0;
@@ -230,11 +248,6 @@ class FileSystemOperation {
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) = 0;
 
-  // For downcasting to FileSystemOperationImpl.
-  // TODO(kinuko): this hack should go away once appropriate upload-stream
-  // handling based on element types is supported.
-  virtual FileSystemOperationImpl* AsFileSystemOperationImpl() = 0;
-
   // Creates a local snapshot file for a given |path| and returns the
   // metadata and platform path of the snapshot file via |callback|.
   // In local filesystem cases the implementation may simply return
@@ -245,6 +258,81 @@ class FileSystemOperation {
   // data for |path| it can simply return the path to the cache.
   virtual void CreateSnapshotFile(const FileSystemURL& path,
                                   const SnapshotFileCallback& callback) = 0;
+
+  // Copies in a single file from a different filesystem.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  virtual void CopyInForeignFile(const base::FilePath& src_local_disk_path,
+                                 const FileSystemURL& dest_url,
+                                 const StatusCallback& callback) = 0;
+
+  // Removes a single file.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  //
+  virtual void RemoveFile(const FileSystemURL& url,
+                          const StatusCallback& callback) = 0;
+
+  // Removes a single empty directory.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
+  // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
+  //
+  virtual void RemoveDirectory(const FileSystemURL& url,
+                               const StatusCallback& callback) = 0;
+
+  // Copies a file from |src_url| to |dest_url|.
+  // This must be called for files that belong to the same filesystem
+  // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  virtual void CopyFileLocal(const FileSystemURL& src_url,
+                             const FileSystemURL& dest_url,
+                             const StatusCallback& callback) = 0;
+
+  // Moves a local file from |src_url| to |dest_url|.
+  // This must be called for files that belong to the same filesystem
+  // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  virtual void MoveFileLocal(const FileSystemURL& src_url,
+                             const FileSystemURL& dest_url,
+                             const StatusCallback& callback) = 0;
+
+  // Synchronously gets the platform path for the given |url|.
+  // This may fail if |file_system_context| returns NULL on GetFileUtil().
+  // In such a case, base::PLATFORM_FILE_ERROR_INVALID_OPERATION will be
+  // returned.
+  virtual base::PlatformFileError SyncGetPlatformPath(
+      const FileSystemURL& url,
+      base::FilePath* platform_path) = 0;
 
  protected:
   // Used only for internal assertions.

@@ -237,22 +237,6 @@ void FileSystemOperationImpl::Cancel(const StatusCallback& cancel_callback) {
   }
 }
 
-FileSystemOperationImpl* FileSystemOperationImpl::AsFileSystemOperationImpl() {
-  return this;
-}
-
-base::PlatformFileError FileSystemOperationImpl::SyncGetPlatformPath(
-    const FileSystemURL& url,
-    base::FilePath* platform_path) {
-  DCHECK(SetPendingOperationType(kOperationGetLocalPath));
-  FileSystemFileUtil* file_util = file_system_context()->GetFileUtil(
-      url.type());
-  if (!file_util)
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
-  return base::PLATFORM_FILE_OK;
-}
-
 void FileSystemOperationImpl::CreateSnapshotFile(
     const FileSystemURL& url,
     const SnapshotFileCallback& callback) {
@@ -318,6 +302,18 @@ void FileSystemOperationImpl::MoveFileLocal(
       base::Bind(&FileSystemOperationImpl::DoMoveFileLocal,
                  AsWeakPtr(), src_url, dest_url, callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+}
+
+base::PlatformFileError FileSystemOperationImpl::SyncGetPlatformPath(
+    const FileSystemURL& url,
+    base::FilePath* platform_path) {
+  DCHECK(SetPendingOperationType(kOperationGetLocalPath));
+  FileSystemFileUtil* file_util = file_system_context()->GetFileUtil(
+      url.type());
+  if (!file_util)
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
+  return base::PLATFORM_FILE_OK;
 }
 
 void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
