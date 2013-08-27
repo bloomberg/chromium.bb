@@ -348,9 +348,9 @@ Commands.renameFileCommand = {
 Commands.volumeHelpCommand = {
   execute: function() {
     if (fileManager.isOnDrive())
-      chrome.windows.create({url: FileManager.GOOGLE_DRIVE_HELP});
+      util.visitURL(FileManager.GOOGLE_DRIVE_HELP);
     else
-      chrome.windows.create({url: FileManager.FILES_APP_HELP});
+      util.visitURL(FileManager.FILES_APP_HELP);
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -360,7 +360,7 @@ Commands.volumeHelpCommand = {
  */
 Commands.driveBuySpaceCommand = {
   execute: function() {
-    chrome.windows.create({url: FileManager.GOOGLE_DRIVE_BUY_STORAGE});
+    util.visitURL(FileManager.GOOGLE_DRIVE_BUY_STORAGE);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
@@ -380,7 +380,7 @@ Commands.driveClearCacheCommand = {
  */
 Commands.driveGoToDriveCommand = {
   execute: function() {
-    chrome.windows.create({url: FileManager.GOOGLE_DRIVE_ROOT});
+    util.visitURL(FileManager.GOOGLE_DRIVE_ROOT);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };

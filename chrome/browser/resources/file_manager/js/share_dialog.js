@@ -223,7 +223,7 @@ ShareDialog.prototype.show = function(entry, onFailure) {
     this.webView_.addEventListener('newwindow', function(e) {
       // Discard the window object and reopen in an external window.
       e.window.discard();
-      chrome.windows.create({url: e.targetUrl});
+      util.visitURL(e.targetUrl);
       e.preventDefault();
     });
     cr.ui.dialogs.BaseDialog.prototype.show.call(this, '', null, null, null);

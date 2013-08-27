@@ -1199,3 +1199,19 @@ util.viewFilesInBrowser = function(urls, callback) {
   var taskId = chrome.runtime.id + '|file|view-in-browser';
   chrome.fileBrowserPrivate.executeTask(taskId, urls, callback);
 };
+
+/**
+ * Visit the URL.
+ *
+ * If the browser is opening, the url is opened in a new tag, otherwise the url
+ * is opened in a new window.
+ *
+ * @param {string} url URL to visit.
+ */
+util.visitURL = function(url) {
+  var params = {url: url};
+  chrome.tabs.create(params, function() {
+    if (chrome.runtime.lastError)
+      chrome.windows.create(params);
+  });
+};
