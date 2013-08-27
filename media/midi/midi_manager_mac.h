@@ -8,6 +8,7 @@
 #include <CoreMIDI/MIDIServices.h>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -24,20 +25,19 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
   // MIDIManager implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void SendMIDIData(MIDIManagerClient* client,
-                            int port_index,
-                            const uint8* data,
-                            size_t length,
+                            uint32 port_index,
+                            const std::vector<uint8>& data,
                             double timestamp) OVERRIDE;
 
  private:
   // CoreMIDI callback for MIDI data.
   // Each callback can contain multiple packets, each of which can contain
   // multiple MIDI messages.
-  static void ReadMidiDispatch(
+  static void ReadMIDIDispatch(
       const MIDIPacketList *pktlist,
       void *read_proc_refcon,
       void *src_conn_refcon);
-  virtual void ReadMidi(MIDIEndpointRef source, const MIDIPacketList *pktlist);
+  virtual void ReadMIDI(MIDIEndpointRef source, const MIDIPacketList *pktlist);
 
   // Helper
   static media::MIDIPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint);
@@ -54,7 +54,7 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
   MIDIPacketList* packet_list_;
   MIDIPacket* midi_packet_;
 
-  typedef std::map<MIDIEndpointRef, int> SourceMap;
+  typedef std::map<MIDIEndpointRef, uint32> SourceMap;
 
   // Keeps track of the index (0-based) for each of our sources.
   SourceMap source_map_;

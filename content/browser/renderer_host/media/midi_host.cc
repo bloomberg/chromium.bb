@@ -88,7 +88,7 @@ void MIDIHost::OnStartSession(int client_id) {
        output_ports));
 }
 
-void MIDIHost::OnSendData(int port,
+void MIDIHost::OnSendData(uint32 port,
                           const std::vector<uint8>& data,
                           double timestamp) {
   if (!midi_manager_)
@@ -111,20 +111,19 @@ void MIDIHost::OnSendData(int port,
   // this client access.  We'll likely need to pass a GURL
   // here to compare against our permissions.
   if (data[0] >= kSysExMessage)
-      return;
+    return;
 
   midi_manager_->DispatchSendMIDIData(
       this,
       port,
-      &data[0],
-      data.size(),
+      data,
       timestamp);
 
   sent_bytes_in_flight_ += data.size();
 }
 
 void MIDIHost::ReceiveMIDIData(
-    int port_index,
+    uint32 port,
     const uint8* data,
     size_t length,
     double timestamp) {
@@ -140,7 +139,7 @@ void MIDIHost::ReceiveMIDIData(
 
   // Send to the renderer.
   std::vector<uint8> v(data, data + length);
-  Send(new MIDIMsg_DataReceived(port_index, v, timestamp));
+  Send(new MIDIMsg_DataReceived(port, v, timestamp));
 }
 
 void MIDIHost::AccumulateMIDIBytesSent(size_t n) {

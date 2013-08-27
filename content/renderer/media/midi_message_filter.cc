@@ -153,7 +153,7 @@ MIDIMessageFilter::GetClientFromId(int client_id) {
   return NULL;
 }
 
-void MIDIMessageFilter::OnDataReceived(int port,
+void MIDIMessageFilter::OnDataReceived(uint32 port,
                                        const std::vector<uint8>& data,
                                        double timestamp) {
   TRACE_EVENT0("midi", "MIDIMessageFilter::OnDataReceived");
@@ -170,7 +170,7 @@ void MIDIMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
     unacknowledged_bytes_sent_ -= bytes_sent;
 }
 
-void MIDIMessageFilter::HandleDataReceived(int port,
+void MIDIMessageFilter::HandleDataReceived(uint32 port,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
   TRACE_EVENT0("midi", "MIDIMessageFilter::HandleDataReceived");
@@ -184,7 +184,7 @@ void MIDIMessageFilter::HandleDataReceived(int port,
 #endif
 }
 
-void MIDIMessageFilter::SendMIDIData(int port,
+void MIDIMessageFilter::SendMIDIData(uint32 port,
                                      const uint8* data,
                                      size_t length,
                                      double timestamp) {
@@ -200,7 +200,7 @@ void MIDIMessageFilter::SendMIDIData(int port,
                  port, v, timestamp));
 }
 
-void MIDIMessageFilter::SendMIDIDataOnIOThread(int port,
+void MIDIMessageFilter::SendMIDIDataOnIOThread(uint32 port,
                                                const std::vector<uint8>& data,
                                                double timestamp) {
   size_t n = data.size();

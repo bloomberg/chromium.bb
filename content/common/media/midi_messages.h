@@ -43,7 +43,7 @@ IPC_MESSAGE_CONTROL1(MIDIHostMsg_StartSession,
                      int /* client id */)
 
 IPC_MESSAGE_CONTROL3(MIDIHostMsg_SendData,
-                     int /* port */,
+                     uint32 /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
 
@@ -56,9 +56,9 @@ IPC_MESSAGE_CONTROL4(MIDIMsg_SessionStarted,
                      media::MIDIPortInfoList /* output ports */)
 
 IPC_MESSAGE_CONTROL3(MIDIMsg_DataReceived,
-                     int /* port */,
+                     uint32 /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
 
 IPC_MESSAGE_CONTROL1(MIDIMsg_AcknowledgeSentData,
-                     size_t /* bytes sent */)
+                     uint32 /* bytes sent */)

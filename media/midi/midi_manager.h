@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_MIDI_MANAGER_H_
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -33,7 +34,7 @@ class MEDIA_EXPORT MIDIManagerClient {
   // |data| represents a series of bytes encoding one or more MIDI messages.
   // |length| is the number of bytes in |data|.
   // |timestamp| is the time the data was received, in seconds.
-  virtual void ReceiveMIDIData(int port_index,
+  virtual void ReceiveMIDIData(uint32 port_index,
                                const uint8* data,
                                size_t length,
                                double timestamp) = 0;
@@ -70,9 +71,8 @@ class MEDIA_EXPORT MIDIManager {
   // |timestamp| is the time to send the data, in seconds. A value of 0
   // means send "now" or as soon as possible.
   void DispatchSendMIDIData(MIDIManagerClient* client,
-                            int port_index,
-                            const uint8* data,
-                            size_t length,
+                            uint32 port_index,
+                            const std::vector<uint8>& data,
                             double timestamp);
 
   // input_ports() is a list of MIDI ports for receiving MIDI data.
@@ -90,21 +90,23 @@ class MEDIA_EXPORT MIDIManager {
   virtual bool Initialize() = 0;
 
   // Implements the platform-specific details of sending MIDI data.
+  // This function runs on MIDISendThread.
   virtual void SendMIDIData(MIDIManagerClient* client,
-                            int port_index,
-                            const uint8* data,
-                            size_t length,
+                            uint32 port_index,
+                            const std::vector<uint8>& data,
                             double timestamp) = 0;
 
   void AddInputPort(const MIDIPortInfo& info);
   void AddOutputPort(const MIDIPortInfo& info);
 
   // Dispatches to all clients.
-  void ReceiveMIDIData(
-      int port_index,
-      const uint8* data,
-      size_t length,
-      double timestamp);
+  void ReceiveMIDIData(uint32 port_index,
+                       const uint8* data,
+                       size_t length,
+                       double timestamp);
+
+  // Checks if current thread is MIDISendThread.
+  bool CurrentlyOnMIDISendThread();
 
   bool initialized_;
 

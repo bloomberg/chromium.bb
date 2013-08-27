@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 
 namespace media {
@@ -52,7 +53,7 @@ void MIDIManager::AddOutputPort(const MIDIPortInfo& info) {
 }
 
 void MIDIManager::ReceiveMIDIData(
-    int port_index,
+    uint32 port_index,
     const uint8* data,
     size_t length,
     double timestamp) {
@@ -62,10 +63,13 @@ void MIDIManager::ReceiveMIDIData(
     (*i)->ReceiveMIDIData(port_index, data, length, timestamp);
 }
 
+bool MIDIManager::CurrentlyOnMIDISendThread() {
+  return send_thread_->message_loop() == base::MessageLoop::current();
+}
+
 void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
-                                       int port_index,
-                                       const uint8* data,
-                                       size_t length,
+                                       uint32 port_index,
+                                       const std::vector<uint8>& data,
                                        double timestamp) {
   // Lazily create the thread when first needed.
   if (!send_thread_) {
@@ -77,7 +81,7 @@ void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
   send_message_loop_->PostTask(
      FROM_HERE,
      base::Bind(&MIDIManager::SendMIDIData, base::Unretained(this),
-         client, port_index, data, length, timestamp));
+         client, port_index, data, timestamp));
 }
 
 }  // namespace media

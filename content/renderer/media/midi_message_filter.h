@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/midi/midi_port_info.h"
-#include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
 namespace base {
@@ -37,7 +36,7 @@ class CONTENT_EXPORT MIDIMessageFilter
 
   // A client will only be able to call this method if it has a suitable
   // output port (from addOutputPort()).
-  void SendMIDIData(int port,
+  void SendMIDIData(uint32 port,
                     const uint8* data,
                     size_t length,
                     double timestamp);
@@ -69,7 +68,7 @@ class CONTENT_EXPORT MIDIMessageFilter
 
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
-  void OnDataReceived(int port,
+  void OnDataReceived(uint32 port,
                       const std::vector<uint8>& data,
                       double timestamp);
 
@@ -83,13 +82,13 @@ class CONTENT_EXPORT MIDIMessageFilter
                             media::MIDIPortInfoList inputs,
                             media::MIDIPortInfoList outputs);
 
-  void HandleDataReceived(int port,
+  void HandleDataReceived(uint32 port,
                           const std::vector<uint8>& data,
                           double timestamp);
 
   void StartSessionOnIOThread(int client_id);
 
-  void SendMIDIDataOnIOThread(int port,
+  void SendMIDIDataOnIOThread(uint32 port,
                               const std::vector<uint8>& data,
                               double timestamp);
 
