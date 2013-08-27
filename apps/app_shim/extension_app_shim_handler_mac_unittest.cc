@@ -65,7 +65,7 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   }
   virtual ~TestingExtensionAppShimHandler() {}
 
-  MOCK_METHOD2(OnShimFocus, void(Host* host, AppShimFocusType));
+  MOCK_METHOD2(OnShimFocus, void(Host*, AppShimFocusType));
 
   void RealOnShimFocus(Host* host, AppShimFocusType focus_type) {
     ExtensionAppShimHandler::OnShimFocus(host, focus_type);
@@ -252,10 +252,6 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  // Closing all windows does not quit the shim.
-  handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
-  EXPECT_EQ(0, host_aa_.close_count());
-
   // Return no shell windows for OnShimFocus and OnShimQuit.
   ShellWindowList shell_window_list;
   EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
@@ -276,10 +272,16 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()));
   handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN);
 
-  // Quit closes the shim.
+  // Quit just closes all the windows. This tests that it doesn't terminate,
+  // but we expect closing all windows triggers a OnAppDeactivated from
+  // AppLifetimeMonitor.
+  handler_->OnShimQuit(&host_aa_);
+
+  // Closing all windows closes the shim and checks if Chrome should be
+  // terminated.
   EXPECT_CALL(*delegate_, MaybeTerminate())
       .WillOnce(Return());
-  handler_->OnShimQuit(&host_aa_);
+  handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(1, host_aa_.close_count());
 }
 
@@ -295,21 +297,32 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   handler_->OnShimLaunch(&host_ab_, register_only);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
-  // The following quits should not terminate.
+  // Return empty window list.
   ShellWindowList shell_window_list;
   EXPECT_CALL(*delegate_, GetWindows(_, _))
       .WillRepeatedly(Return(shell_window_list));
+
+  // Quitting when there's another shim should not terminate.
   EXPECT_CALL(*delegate_, MaybeTerminate())
       .Times(0);
+  handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
 
-  // Quit when there are other shims.
-  handler_->OnShimQuit(&host_aa_);
+  // Quitting when it's the last shim should terminate.
+  EXPECT_CALL(*delegate_, MaybeTerminate());
+  handler_->OnAppDeactivated(&profile_a_, kTestAppIdB);
 
-  // Quit after a browser window has opened.
+  // Launch a shim again.
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
+  handler_->OnShimLaunch(&host_aa_, register_only);
+  EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
+
+  // Quitting after a browser window has opened should not terminate.
   handler_->Observe(chrome::NOTIFICATION_BROWSER_OPENED,
                     content::NotificationService::AllSources(),
                     content::NotificationService::NoDetails());
-  handler_->OnShimQuit(&host_ab_);
+  EXPECT_CALL(*delegate_, MaybeTerminate())
+      .Times(0);
+  handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {

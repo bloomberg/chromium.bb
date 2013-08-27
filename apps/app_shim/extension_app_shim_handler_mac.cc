@@ -142,10 +142,6 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -312,12 +308,8 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
        it != windows.end(); ++it) {
     (*it)->GetBaseWindow()->Close();
   }
-
-  DCHECK_NE(0u, hosts_.count(make_pair(profile, app_id)));
-  host->OnAppClosed();
-
-  if (!browser_opened_ever_ && hosts_.empty())
-    delegate_->MaybeTerminate();
+  // Once the last window closes, flow will end up in OnAppDeactivated via
+  // AppLifetimeMonitor.
 }
 
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {
@@ -357,20 +349,6 @@ void ExtensionAppShimHandler::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      std::string app_id;
-      if (type == chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED) {
-        app_id = content::Details<extensions::ExtensionHost>(details).ptr()
-            ->extension_id();
-      } else {
-        app_id = content::Details<extensions::Extension>(details).ptr()->id();
-      }
-      Host* host = FindHost(profile, app_id);
-      if (host)
-        host->OnAppClosed();
-      break;
-    }
     default: {
       NOTREACHED();  // Unexpected notification.
       break;
@@ -399,7 +377,14 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
-                                               const std::string& app_id) {}
+                                               const std::string& app_id) {
+  Host* host = FindHost(profile, app_id);
+  if (host)
+    host->OnAppClosed();
+
+  if (!browser_opened_ever_ && hosts_.empty())
+    delegate_->MaybeTerminate();
+}
 
 void ExtensionAppShimHandler::OnAppStop(Profile* profile,
                                         const std::string& app_id) {}
