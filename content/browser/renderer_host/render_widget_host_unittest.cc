@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
@@ -102,30 +103,6 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   float delta_y_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOverscrollDelegate);
-};
-
-// MockKeyboardListener --------------------------------------------------------
-class MockKeyboardListener : public KeyboardListener {
- public:
-  MockKeyboardListener()
-      : handle_key_press_event_(false) {
-  }
-  virtual ~MockKeyboardListener() {}
-
-  // KeyboardListener:
-  virtual bool HandleKeyPressEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE {
-    return handle_key_press_event_;
-  }
-
-  void set_handle_key_press_event(bool handle) {
-    handle_key_press_event_ = handle;
-  }
-
- private:
-  bool handle_key_press_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockKeyboardListener);
 };
 
 // MockInputRouter -------------------------------------------------------------
@@ -628,9 +605,13 @@ class MockPaintingObserver : public NotificationObserver {
 
 class RenderWidgetHostTest : public testing::Test {
  public:
-  RenderWidgetHostTest() : process_(NULL) {
+  RenderWidgetHostTest() : process_(NULL), handle_key_press_event_(false) {
   }
   virtual ~RenderWidgetHostTest() {
+  }
+
+  bool KeyPressEventCallback(const NativeWebKeyboardEvent& event) {
+    return handle_key_press_event_;
   }
 
  protected:
@@ -835,6 +816,7 @@ class RenderWidgetHostTest : public testing::Test {
   scoped_ptr<MockRenderWidgetHost> host_;
   scoped_ptr<TestView> view_;
   scoped_ptr<gfx::Screen> screen_;
+  bool handle_key_press_event_;
 
  private:
   WebTouchEvent touch_event_;
@@ -2498,32 +2480,30 @@ TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
 
 TEST_F(RenderWidgetHostTest, KeyboardListenerIgnoresEvent) {
   host_->SetupForInputRouterTest();
-
-  scoped_ptr<MockKeyboardListener> keyboard_listener_(new MockKeyboardListener);
-  host_->AddKeyboardListener(keyboard_listener_.get());
-
-  keyboard_listener_->set_handle_key_press_event(false);
+  host_->AddKeyPressEventCallback(
+      base::Bind(&RenderWidgetHostTest::KeyPressEventCallback,
+                 base::Unretained(this)));
+  handle_key_press_event_ = false;
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
-
-  host_->RemoveKeyboardListener(keyboard_listener_.get());
 }
 
 TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
   host_->SetupForInputRouterTest();
 
-  scoped_ptr<MockKeyboardListener> keyboard_listener_(new MockKeyboardListener);
-  host_->AddKeyboardListener(keyboard_listener_.get());
+  host_->AddKeyPressEventCallback(
+      base::Bind(&RenderWidgetHostTest::KeyPressEventCallback,
+                 base::Unretained(this)));
 
-  // KeyboardListener handles the first event
-  keyboard_listener_->set_handle_key_press_event(true);
+  // The callback handles the first event
+  handle_key_press_event_ = true;
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
 
   // Following Char events should be suppressed
-  keyboard_listener_->set_handle_key_press_event(false);
+  handle_key_press_event_ = false;
   SimulateKeyboardEvent(WebInputEvent::Char);
   EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
   SimulateKeyboardEvent(WebInputEvent::Char);
@@ -2536,8 +2516,6 @@ TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
   host_->mock_input_router()->sent_keyboard_event_ = false;
   SimulateKeyboardEvent(WebInputEvent::Char);
   EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
-
-  host_->RemoveKeyboardListener(keyboard_listener_.get());
 }
 
 TEST_F(RenderWidgetHostTest, InputRouterReceivesHandleInputEvent_ACK) {

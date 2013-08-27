@@ -10,10 +10,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "content/public/browser/keyboard_listener.h"
+#include "content/public/browser/render_widget_host.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
+
+namespace content {
+struct NativeWebKeyboardEvent;
+}
 
 namespace gfx {
 class Display;
@@ -31,8 +35,7 @@ class AutofillPopupView;
 // This class is a controller for an AutofillPopupView. It implements
 // AutofillPopupController to allow calls from AutofillPopupView. The
 // other, public functions are available to its instantiator.
-class AutofillPopupControllerImpl : public AutofillPopupController,
-                                    public content::KeyboardListener {
+class AutofillPopupControllerImpl : public AutofillPopupController {
  public:
   // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
   // the construction arguments are the same. |previous| may be invalidated by
@@ -61,9 +64,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // Invoked when the view was destroyed by by someone other than this class.
   virtual void ViewDestroyed() OVERRIDE;
 
-  // KeyboardListener implementation.
-  virtual bool HandleKeyPressEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
@@ -225,6 +226,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   int selected_line_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
+
+  content::RenderWidgetHost::KeyPressEventCallback key_press_event_callback_;
 };
 
 }  // namespace autofill

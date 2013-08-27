@@ -100,7 +100,10 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       container_view_(container_view),
       element_bounds_(element_bounds),
       text_direction_(text_direction),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      key_press_event_callback_(
+          base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
+                     base::Unretained(this))) {
   ClearState();
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
@@ -167,7 +170,7 @@ void AutofillPopupControllerImpl::Show(
     UpdateBoundsAndRedrawPopup();
   }
 
-  delegate_->OnPopupShown(this);
+  delegate_->OnPopupShown(&key_press_event_callback_);
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
@@ -228,7 +231,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 
 void AutofillPopupControllerImpl::Hide() {
   if (delegate_.get())
-    delegate_->OnPopupHidden(this);
+    delegate_->OnPopupHidden(&key_press_event_callback_);
 
   if (view_)
     view_->Hide();

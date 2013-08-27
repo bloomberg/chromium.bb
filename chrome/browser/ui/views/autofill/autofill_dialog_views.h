@@ -29,10 +29,6 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace content {
-class KeyboardListener;
-}
-
 namespace gfx {
 class Image;
 }

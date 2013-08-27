@@ -172,8 +172,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // AutofillPopupDelegate implementation.
-  virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE;
-  virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE;
+  virtual void OnPopupShown(
+      content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE;
+  virtual void OnPopupHidden(
+      content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
   virtual void DidAcceptSuggestion(const string16& value,
                                    int identifier) OVERRIDE;

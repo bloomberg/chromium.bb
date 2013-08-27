@@ -220,6 +220,7 @@
           'dependencies': [
             'autofill_core_common',
             'autofill_core_browser',
+            '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [

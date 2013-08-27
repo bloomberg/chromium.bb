@@ -2013,13 +2013,13 @@ content::WebContents* AutofillDialogControllerImpl::GetWebContents() {
 // AutofillPopupDelegate implementation.
 
 void AutofillDialogControllerImpl::OnPopupShown(
-    content::KeyboardListener* listener) {
+    content::RenderWidgetHost::KeyPressEventCallback* callback) {
   GetMetricLogger().LogDialogPopupEvent(
       GetDialogType(), AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
 void AutofillDialogControllerImpl::OnPopupHidden(
-    content::KeyboardListener* listener) {}
+    content::RenderWidgetHost::KeyPressEventCallback* callback) {}
 
 void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.

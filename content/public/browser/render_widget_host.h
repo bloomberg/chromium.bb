@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/keyboard_listener.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
@@ -289,12 +288,13 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Access to the implementation's IPC::Listener::OnMessageReceived. Intended
   // only for test code.
 
-  // Add a keyboard listener that can handle key presses without requiring
-  // focus.
-  virtual void AddKeyboardListener(KeyboardListener* listener) = 0;
-
-  // Remove a keyboard listener.
-  virtual void RemoveKeyboardListener(KeyboardListener* listener) = 0;
+  // Add/remove a callback that can handle key presses without requiring focus.
+  typedef base::Callback<bool(const NativeWebKeyboardEvent&)>
+      KeyPressEventCallback;
+  virtual void AddKeyPressEventCallback(
+      const KeyPressEventCallback& callback) = 0;
+  virtual void RemoveKeyPressEventCallback(
+      const KeyPressEventCallback& callback) = 0;
 
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) = 0;

@@ -1123,15 +1123,20 @@ ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
 }
 
 
-void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
-  keyboard_listeners_.AddObserver(listener);
+void RenderWidgetHostImpl::AddKeyPressEventCallback(
+    const KeyPressEventCallback& callback) {
+  key_press_event_callbacks_.push_back(callback);
 }
 
-void RenderWidgetHostImpl::RemoveKeyboardListener(
-    KeyboardListener* listener) {
-  // Ensure that the element is actually an observer.
-  DCHECK(keyboard_listeners_.HasObserver(listener));
-  keyboard_listeners_.RemoveObserver(listener);
+void RenderWidgetHostImpl::RemoveKeyPressEventCallback(
+    const KeyPressEventCallback& callback) {
+  for (size_t i = 0; i < key_press_event_callbacks_.size(); ++i) {
+    if (key_press_event_callbacks_[i].Equals(callback)) {
+      key_press_event_callbacks_.erase(
+          key_press_event_callbacks_.begin() + i);
+      return;
+    }
+  }
 }
 
 void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
@@ -1889,10 +1894,8 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
   if (event.skip_in_browser || event.type != WebKeyboardEvent::RawKeyDown)
     return false;
 
-  ObserverList<KeyboardListener>::Iterator it(keyboard_listeners_);
-  KeyboardListener* listener;
-  while ((listener = it.GetNext()) != NULL) {
-    if (listener->HandleKeyPressEvent(event))
+  for (size_t i = 0; i < key_press_event_callbacks_.size(); i++) {
+    if (key_press_event_callbacks_[i].Run(event))
       return true;
   }
 

@@ -173,8 +173,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void WasResized() OVERRIDE;
-  virtual void AddKeyboardListener(KeyboardListener* listener) OVERRIDE;
-  virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
+  virtual void AddKeyPressEventCallback(
+      const KeyPressEventCallback& callback) OVERRIDE;
+  virtual void RemoveKeyPressEventCallback(
+      const KeyPressEventCallback& callback) OVERRIDE;
   virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) OVERRIDE;
   virtual void GetSnapshotFromRenderer(
       const gfx::Rect& src_subrect,
@@ -822,7 +824,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   AccessibilityMode accessibility_mode_;
 
   // Keyboard event listeners.
-  ObserverList<KeyboardListener> keyboard_listeners_;
+  std::vector<KeyPressEventCallback> key_press_event_callbacks_;
 
   // If true, then we should repaint when restoring even if we have a
   // backingstore.  This flag is set to true if we receive a paint message
