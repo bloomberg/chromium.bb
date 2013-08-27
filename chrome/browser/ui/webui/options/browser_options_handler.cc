@@ -510,7 +510,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   values->SetBoolean("enableStickyKeys",
-                     !command_line.HasSwitch(switches::kDisableStickyKeys));
+                     command_line.HasSwitch(switches::kEnableStickyKeys));
 #endif
 
 #if defined(OS_MACOSX)
