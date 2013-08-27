@@ -39,13 +39,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-// FIXME: Remove this when all embedders switch to
-// addEmbedderCustomElementName.
-void WebCustomElement::allowTagName(const WebString& localName)
-{
-    addEmbedderCustomElementName(localName);
-}
-
 void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
 {
     ASSERT(RuntimeEnabledFeatures::embedderCustomElementsEnabled());

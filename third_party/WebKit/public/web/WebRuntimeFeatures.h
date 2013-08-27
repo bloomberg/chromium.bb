@@ -140,8 +140,6 @@ public:
     WEBKIT_EXPORT static void enableHTMLImports(bool);
     WEBKIT_EXPORT static bool isHTMLImportsEnabled();
 
-    // FIXME: Remove this when embedders switch to enableEmbedderCustomElements.
-    WEBKIT_EXPORT static void enableCustomElements(bool);
     WEBKIT_EXPORT static void enableEmbedderCustomElements(bool);
 
     WEBKIT_EXPORT static void enableOverlayScrollbars(bool);

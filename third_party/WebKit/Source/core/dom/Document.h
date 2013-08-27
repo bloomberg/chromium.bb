@@ -1004,8 +1004,7 @@ public:
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionState&);
-    // FIXME: When embedders switch to using WebDocument::registerEmbedderCustomElement, make the default name set StandardNames.
-    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::AllNames);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
     void setImport(HTMLImport*);

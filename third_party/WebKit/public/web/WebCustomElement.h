@@ -39,15 +39,6 @@ class WebString;
 
 class WebCustomElement {
 public:
-    // Subsequent calls to document.register with this local name are
-    // exempt from Custom Element name validity checks. Because Custom
-    // Element processing requires the set of valid names to be known
-    // ahead of time, this method should be called before any elements
-    // with the given tag name are created.
-    // FIXME: Remove this when embedders switch to
-    // addEmbedderCustomElementName.
-    WEBKIT_EXPORT static void allowTagName(const WebString& localName);
-
     // Adds a name to the set of names embedders can use
     // WebDocument::registerEmbedderCustomElement to register their
     // own types for. Because Custom Element processing requires the
