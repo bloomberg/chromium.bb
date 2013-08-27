@@ -136,7 +136,7 @@ void ProcessingInstruction::checkStyleSheet()
             document()->styleSheetCollection()->addPendingSheet();
             FetchRequest request(ResourceRequest(document()->completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
-                m_resource = document()->fetcher()->requestXSLStyleSheet(request);
+                m_resource = document()->fetcher()->fetchXSLStyleSheet(request);
             else
             {
                 String charset = attrs.get("charset");
@@ -144,7 +144,7 @@ void ProcessingInstruction::checkStyleSheet()
                     charset = document()->charset();
                 request.setCharset(charset);
 
-                m_resource = document()->fetcher()->requestCSSStyleSheet(request);
+                m_resource = document()->fetcher()->fetchCSSStyleSheet(request);
             }
             if (m_resource)
                 m_resource->addClient(this);

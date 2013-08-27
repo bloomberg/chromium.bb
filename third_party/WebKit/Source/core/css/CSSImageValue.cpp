@@ -67,7 +67,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const Res
         m_accessedImage = true;
 
         FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
-        if (ResourcePtr<ImageResource> cachedImage = loader->requestImage(request))
+        if (ResourcePtr<ImageResource> cachedImage = loader->fetchImage(request))
             m_image = StyleFetchedImage::create(cachedImage.get());
     }
 

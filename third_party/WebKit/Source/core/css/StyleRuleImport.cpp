@@ -116,9 +116,9 @@ void StyleRuleImport::requestStyleSheet()
 
     FetchRequest request(ResourceRequest(absURL), FetchInitiatorTypeNames::css, m_parentStyleSheet->charset());
     if (m_parentStyleSheet->isUserStyleSheet())
-        m_resource = fetcher->requestUserCSSStyleSheet(request);
+        m_resource = fetcher->fetchUserCSSStyleSheet(request);
     else
-        m_resource = fetcher->requestCSSStyleSheet(request);
+        m_resource = fetcher->fetchCSSStyleSheet(request);
     if (m_resource) {
         // if the import rule is issued dynamically, the sheet may be
         // removed from the pending sheet count, so let the doc know

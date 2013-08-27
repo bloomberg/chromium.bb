@@ -99,7 +99,7 @@ void XSLImportRule::loadSheet()
     }
 
     FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml);
-    m_resource = fetcher->requestXSLStyleSheet(request);
+    m_resource = fetcher->fetchXSLStyleSheet(request);
 
     if (m_resource) {
         m_resource->addClient(this);

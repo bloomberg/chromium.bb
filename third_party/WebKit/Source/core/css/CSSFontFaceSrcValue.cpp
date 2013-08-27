@@ -98,7 +98,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
 {
     if (!m_fetched) {
         FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
-        m_fetched = document->fetcher()->requestFont(request);
+        m_fetched = document->fetcher()->fetchFont(request);
     }
     return m_fetched.get();
 }

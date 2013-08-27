@@ -77,10 +77,10 @@ void SVGFEImageElement::clearResourceReferences()
     document()->accessSVGExtensions()->removeAllTargetReferencesForElement(this);
 }
 
-void SVGFEImageElement::requestImageResource()
+void SVGFEImageElement::fetchImageResource()
 {
     FetchRequest request(ResourceRequest(ownerDocument()->completeURL(hrefCurrentValue())), localName());
-    m_cachedImage = document()->fetcher()->requestImage(request);
+    m_cachedImage = document()->fetcher()->fetchImage(request);
 
     if (m_cachedImage)
         m_cachedImage->addClient(this);
@@ -96,7 +96,7 @@ void SVGFEImageElement::buildPendingResource()
     Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
     if (!target) {
         if (id.isEmpty())
-            requestImageResource();
+            fetchImageResource();
         else {
             document()->accessSVGExtensions()->addPendingResource(id, this);
             ASSERT(hasPendingResources());

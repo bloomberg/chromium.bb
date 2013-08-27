@@ -54,7 +54,7 @@ DocumentResource* CSSSVGDocumentValue::load(ResourceFetcher* loader)
         m_loadRequested = true;
 
         FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), FetchInitiatorTypeNames::css);
-        m_document = loader->requestSVGDocument(request);
+        m_document = loader->fetchSVGDocument(request);
     }
 
     return m_document.get();

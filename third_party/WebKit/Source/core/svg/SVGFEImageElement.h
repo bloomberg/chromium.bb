@@ -54,7 +54,7 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*);
 
     void clearResourceReferences();
-    void requestImageResource();
+    void fetchImageResource();
 
     virtual void buildPendingResource();
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

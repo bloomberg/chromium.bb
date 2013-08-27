@@ -232,7 +232,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_characterEncoding = elementDocument->charset();
 
     if (client->hasSourceAttribute()) {
-        if (!requestScript(client->sourceAttributeValue()))
+        if (!fetchScript(client->sourceAttributeValue()))
             return false;
     }
 
@@ -261,7 +261,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     return true;
 }
 
-bool ScriptLoader::requestScript(const String& sourceUrl)
+bool ScriptLoader::fetchScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
@@ -286,7 +286,7 @@ bool ScriptLoader::requestScript(const String& sourceUrl)
         if (isValidScriptNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
-        m_resource = elementDocument->fetcher()->requestScript(request);
+        m_resource = elementDocument->fetcher()->fetchScript(request);
         m_isExternalScript = true;
     }
 

@@ -421,7 +421,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
 
         FetchRequest newRequest(request, m_options.initiator, options);
         ASSERT(!m_resource);
-        m_resource = m_document->fetcher()->requestRawResource(newRequest);
+        m_resource = m_document->fetcher()->fetchRawResource(newRequest);
         if (m_resource) {
             if (m_resource->loader()) {
                 unsigned long identifier = m_resource->identifier();

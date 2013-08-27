@@ -60,7 +60,7 @@ TEST(ResourceFetcherTest, StartLoadAfterFrameDetach)
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(testURL), FetchInitiatorInfo());
-    ResourcePtr<ImageResource> image = fetcher->requestImage(fetchRequest);
+    ResourcePtr<ImageResource> image = fetcher->fetchImage(fetchRequest);
     EXPECT_EQ(image.get(), static_cast<ImageResource*>(0));
     EXPECT_EQ(memoryCache()->resourceForURL(testURL), static_cast<Resource*>(0));
 }

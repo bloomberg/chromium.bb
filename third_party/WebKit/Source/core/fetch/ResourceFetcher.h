@@ -78,19 +78,19 @@ public:
     using RefCounted<ResourceFetcher>::ref;
     using RefCounted<ResourceFetcher>::deref;
 
-    ResourcePtr<ImageResource> requestImage(FetchRequest&);
-    ResourcePtr<CSSStyleSheetResource> requestCSSStyleSheet(FetchRequest&);
-    ResourcePtr<CSSStyleSheetResource> requestUserCSSStyleSheet(FetchRequest&);
-    ResourcePtr<ScriptResource> requestScript(FetchRequest&);
-    ResourcePtr<FontResource> requestFont(FetchRequest&);
-    ResourcePtr<RawResource> requestRawResource(FetchRequest&);
-    ResourcePtr<RawResource> requestMainResource(FetchRequest&);
-    ResourcePtr<DocumentResource> requestSVGDocument(FetchRequest&);
-    ResourcePtr<XSLStyleSheetResource> requestXSLStyleSheet(FetchRequest&);
-    ResourcePtr<Resource> requestLinkResource(Resource::Type, FetchRequest&);
-    ResourcePtr<TextTrackResource> requestTextTrack(FetchRequest&);
-    ResourcePtr<ShaderResource> requestShader(FetchRequest&);
-    ResourcePtr<RawResource> requestImport(FetchRequest&);
+    ResourcePtr<ImageResource> fetchImage(FetchRequest&);
+    ResourcePtr<CSSStyleSheetResource> fetchCSSStyleSheet(FetchRequest&);
+    ResourcePtr<CSSStyleSheetResource> fetchUserCSSStyleSheet(FetchRequest&);
+    ResourcePtr<ScriptResource> fetchScript(FetchRequest&);
+    ResourcePtr<FontResource> fetchFont(FetchRequest&);
+    ResourcePtr<RawResource> fetchRawResource(FetchRequest&);
+    ResourcePtr<RawResource> fetchMainResource(FetchRequest&);
+    ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
+    ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
+    ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
+    ResourcePtr<TextTrackResource> fetchTextTrack(FetchRequest&);
+    ResourcePtr<ShaderResource> fetchShader(FetchRequest&);
+    ResourcePtr<RawResource> fetchImport(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;

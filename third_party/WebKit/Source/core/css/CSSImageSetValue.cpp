@@ -104,7 +104,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
             FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
-            if (ResourcePtr<ImageResource> cachedImage = loader->requestImage(request)) {
+            if (ResourcePtr<ImageResource> cachedImage = loader->fetchImage(request)) {
                 m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
                 m_accessedBestFitImage = true;
             }

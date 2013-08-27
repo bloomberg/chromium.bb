@@ -613,7 +613,7 @@ void LinkStyle::process()
 
         // Load stylesheets that are not needed for the rendering immediately with low priority.
         FetchRequest request = builder.build(blocking);
-        m_resource = document()->fetcher()->requestCSSStyleSheet(request);
+        m_resource = document()->fetcher()->fetchCSSStyleSheet(request);
 
         if (m_resource)
             m_resource->addClient(this);

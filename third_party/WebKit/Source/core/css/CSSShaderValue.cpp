@@ -66,7 +66,7 @@ StyleFetchedShader* CSSShaderValue::resource(ResourceFetcher* loader)
         m_accessedShader = true;
 
         FetchRequest request(ResourceRequest(completeURL(loader)), FetchInitiatorTypeNames::css);
-        if (ResourcePtr<ShaderResource> resource = loader->requestShader(request))
+        if (ResourcePtr<ShaderResource> resource = loader->fetchShader(request))
             m_shader = StyleFetchedShader::create(resource.get());
     }
 

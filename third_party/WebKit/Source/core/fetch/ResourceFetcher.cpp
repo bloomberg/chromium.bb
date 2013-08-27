@@ -201,7 +201,7 @@ Frame* ResourceFetcher::frame() const
     return 0;
 }
 
-ResourcePtr<ImageResource> ResourceFetcher::requestImage(FetchRequest& request)
+ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
 {
     if (Frame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
@@ -231,32 +231,32 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
         memoryCache()->add(resource);
 }
 
-ResourcePtr<FontResource> ResourceFetcher::requestFont(FetchRequest& request)
+ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
 {
     return static_cast<FontResource*>(requestResource(Resource::Font, request).get());
 }
 
-ResourcePtr<TextTrackResource> ResourceFetcher::requestTextTrack(FetchRequest& request)
+ResourcePtr<TextTrackResource> ResourceFetcher::fetchTextTrack(FetchRequest& request)
 {
     return static_cast<TextTrackResource*>(requestResource(Resource::TextTrack, request).get());
 }
 
-ResourcePtr<ShaderResource> ResourceFetcher::requestShader(FetchRequest& request)
+ResourcePtr<ShaderResource> ResourceFetcher::fetchShader(FetchRequest& request)
 {
     return static_cast<ShaderResource*>(requestResource(Resource::Shader, request).get());
 }
 
-ResourcePtr<RawResource> ResourceFetcher::requestImport(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::fetchImport(FetchRequest& request)
 {
     return static_cast<RawResource*>(requestResource(Resource::ImportResource, request).get());
 }
 
-ResourcePtr<CSSStyleSheetResource> ResourceFetcher::requestCSSStyleSheet(FetchRequest& request)
+ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchCSSStyleSheet(FetchRequest& request)
 {
     return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
 }
 
-ResourcePtr<CSSStyleSheetResource> ResourceFetcher::requestUserCSSStyleSheet(FetchRequest& request)
+ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(FetchRequest& request)
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(request.resourceRequest().url());
 
@@ -270,34 +270,34 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::requestUserCSSStyleSheet(Fet
     return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
 }
 
-ResourcePtr<ScriptResource> ResourceFetcher::requestScript(FetchRequest& request)
+ResourcePtr<ScriptResource> ResourceFetcher::fetchScript(FetchRequest& request)
 {
     return static_cast<ScriptResource*>(requestResource(Resource::Script, request).get());
 }
 
-ResourcePtr<XSLStyleSheetResource> ResourceFetcher::requestXSLStyleSheet(FetchRequest& request)
+ResourcePtr<XSLStyleSheetResource> ResourceFetcher::fetchXSLStyleSheet(FetchRequest& request)
 {
     return static_cast<XSLStyleSheetResource*>(requestResource(Resource::XSLStyleSheet, request).get());
 }
 
-ResourcePtr<DocumentResource> ResourceFetcher::requestSVGDocument(FetchRequest& request)
+ResourcePtr<DocumentResource> ResourceFetcher::fetchSVGDocument(FetchRequest& request)
 {
     return static_cast<DocumentResource*>(requestResource(Resource::SVGDocument, request).get());
 }
 
-ResourcePtr<Resource> ResourceFetcher::requestLinkResource(Resource::Type type, FetchRequest& request)
+ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, FetchRequest& request)
 {
     ASSERT(frame());
     ASSERT(type == Resource::LinkPrefetch || type == Resource::LinkSubresource);
     return requestResource(type, request);
 }
 
-ResourcePtr<RawResource> ResourceFetcher::requestRawResource(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request)
 {
     return static_cast<RawResource*>(requestResource(Resource::Raw, request).get());
 }
 
-ResourcePtr<RawResource> ResourceFetcher::requestMainResource(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request)
 {
     return static_cast<RawResource*>(requestResource(Resource::MainResource, request).get());
 }

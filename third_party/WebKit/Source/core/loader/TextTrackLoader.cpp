@@ -167,7 +167,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     }
 
     ResourceFetcher* fetcher = document->fetcher();
-    m_cachedCueData = fetcher->requestTextTrack(cueRequest);
+    m_cachedCueData = fetcher->fetchTextTrack(cueRequest);
     if (m_cachedCueData)
         m_cachedCueData->addClient(this);
 

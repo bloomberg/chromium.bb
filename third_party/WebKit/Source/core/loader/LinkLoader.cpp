@@ -123,7 +123,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;
         }
-        m_cachedLinkResource = document->fetcher()->requestLinkResource(type, linkRequest);
+        m_cachedLinkResource = document->fetcher()->fetchLinkResource(type, linkRequest);
         if (m_cachedLinkResource)
             m_cachedLinkResource->addClient(this);
     }

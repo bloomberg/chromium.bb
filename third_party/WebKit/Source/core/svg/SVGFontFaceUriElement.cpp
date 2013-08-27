@@ -97,7 +97,7 @@ void SVGFontFaceUriElement::loadFont()
     if (!href.isNull()) {
         ResourceFetcher* fetcher = document()->fetcher();
         FetchRequest request(ResourceRequest(document()->completeURL(href)), localName());
-        m_resource = fetcher->requestFont(request);
+        m_resource = fetcher->fetchFont(request);
         if (m_resource) {
             m_resource->addClient(this);
             m_resource->beginLoadIfNeeded(fetcher);

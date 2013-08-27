@@ -78,7 +78,7 @@ private:
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
 
-    bool requestScript(const String& sourceUrl);
+    bool fetchScript(const String& sourceUrl);
     void stopLoadRequest();
 
     ScriptLoaderClient* client() const;

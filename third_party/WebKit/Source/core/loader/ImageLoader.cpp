@@ -173,7 +173,7 @@ void ImageLoader::updateFromElement()
             document->fetcher()->m_documentResources.set(newImage->url(), newImage.get());
             document->fetcher()->setAutoLoadImages(autoLoadOtherImages);
         } else {
-            newImage = document->fetcher()->requestImage(request);
+            newImage = document->fetcher()->fetchImage(request);
         }
 
         // If we do not have an image here, it means that a cross-site
