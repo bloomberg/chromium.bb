@@ -42,7 +42,7 @@ function onload() {
     $('navigation').appendChild(tabHeader);
   }
   var selectedTabName = window.location.hash.slice(1) || 'devices';
-  selectTab(selectedTabName + '-tab');
+  selectTab(selectedTabName);
   initPortForwarding();
   chrome.send('init-ui');
 }
@@ -61,13 +61,14 @@ function selectTab(id) {
       tabHeader.classList.remove('selected');
     }
   }
+  window.location.hash = id;
 }
 
 function populateLists(data) {
-  removeChildren('pages');
-  removeChildren('extensions');
-  removeChildren('apps');
-  removeChildren('others');
+  removeChildren('pages-list');
+  removeChildren('extensions-list');
+  removeChildren('apps-list');
+  removeChildren('others-list');
 
   for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
@@ -82,7 +83,7 @@ function populateLists(data) {
 }
 
 function populateWorkersList(data) {
-  removeChildren('workers');
+  removeChildren('workers-list');
 
   for (var i = 0; i < data.length; i++)
     addToWorkersList(data[i]);
@@ -112,7 +113,7 @@ function populateDeviceLists(devices) {
     parent.appendChild(child);
   }
 
-  var deviceList = $('devices');
+  var deviceList = $('devices-list');
   if (alreadyDisplayed(deviceList, devices))
     return;
 
@@ -290,25 +291,25 @@ function populateDeviceLists(devices) {
 }
 
 function addToPagesList(data) {
-  addTargetToList(data, $('pages'), ['faviconUrl', 'name', 'url']);
+  addTargetToList(data, $('pages-list'), ['faviconUrl', 'name', 'url']);
 }
 
 function addToExtensionsList(data) {
-  addTargetToList(data, $('extensions'), ['name', 'url']);
+  addTargetToList(data, $('extensions-list'), ['name', 'url']);
 }
 
 function addToAppsList(data) {
-  addTargetToList(data, $('apps'), ['name', 'url']);
+  addTargetToList(data, $('apps-list'), ['name', 'url']);
 }
 
 function addToWorkersList(data) {
-  var row = addTargetToList(data, $('workers'), ['pid', 'url']);
+  var row = addTargetToList(data, $('workers-list'), ['pid', 'url']);
   row.appendChild(createActionLink(
       'terminate', terminate.bind(null, data), data.attached));
 }
 
 function addToOthersList(data) {
-  addTargetToList(data, $('others'), ['url']);
+  addTargetToList(data, $('others-list'), ['url']);
 }
 
 function formatValue(data, property) {
