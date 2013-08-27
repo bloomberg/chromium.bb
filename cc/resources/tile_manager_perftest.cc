@@ -24,7 +24,8 @@ static const int kTimeCheckInterval = 10;
 
 class TileManagerPerfTest : public testing::Test {
  public:
-  typedef std::vector<scoped_refptr<Tile> > TileVector;
+  typedef std::vector<std::pair<scoped_refptr<Tile>, ManagedTileBin> >
+      TileBinVector;
 
   TileManagerPerfTest() : num_runs_(0) {}
 
@@ -80,7 +81,45 @@ class TileManagerPerfTest : public testing::Test {
     return true;
   }
 
-  void CreateBinTiles(int count, TilePriority priority, TileVector* tiles) {
+  TilePriority GetTilePriorityFromBin(ManagedTileBin bin) {
+    switch (bin) {
+      case NOW_AND_READY_TO_DRAW_BIN:
+      case NOW_BIN:
+        return TilePriorityForNowBin();
+      case SOON_BIN:
+        return TilePriorityForSoonBin();
+      case EVENTUALLY_AND_ACTIVE_BIN:
+      case EVENTUALLY_BIN:
+        return TilePriorityForEventualBin();
+      case NEVER_AND_ACTIVE_BIN:
+      case NEVER_BIN:
+        return TilePriority();
+      default:
+        NOTREACHED();
+        return TilePriority();
+    }
+  }
+
+  ManagedTileBin GetNextBin(ManagedTileBin bin) {
+    switch (bin) {
+      case NOW_AND_READY_TO_DRAW_BIN:
+      case NOW_BIN:
+        return SOON_BIN;
+      case SOON_BIN:
+        return EVENTUALLY_BIN;
+      case EVENTUALLY_AND_ACTIVE_BIN:
+      case EVENTUALLY_BIN:
+        return NEVER_BIN;
+      case NEVER_AND_ACTIVE_BIN:
+      case NEVER_BIN:
+        return NOW_BIN;
+      default:
+        NOTREACHED();
+        return NEVER_BIN;
+    }
+  }
+
+  void CreateBinTiles(int count, ManagedTileBin bin, TileBinVector* tiles) {
     for (int i = 0; i < count; ++i) {
       scoped_refptr<Tile> tile =
           make_scoped_refptr(new Tile(tile_manager_.get(),
@@ -92,28 +131,43 @@ class TileManagerPerfTest : public testing::Test {
                                       0,
                                       0,
                                       true));
-      tile->SetPriority(ACTIVE_TREE, priority);
-      tile->SetPriority(PENDING_TREE, priority);
-      tiles->push_back(tile);
+      tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
+      tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
+      tiles->push_back(std::make_pair(tile, bin));
     }
   }
 
-  void CreateTiles(int count, TileVector* tiles) {
+  void CreateTiles(int count, TileBinVector* tiles) {
     // Roughly an equal amount of all bins.
     int count_per_bin = count / NUM_BINS;
-    CreateBinTiles(count_per_bin, TilePriorityForNowBin(), tiles);
-    CreateBinTiles(count_per_bin, TilePriorityForSoonBin(), tiles);
-    CreateBinTiles(count_per_bin, TilePriorityForEventualBin(), tiles);
-    CreateBinTiles(count - 3 * count_per_bin, TilePriority(), tiles);
+    CreateBinTiles(count_per_bin, NOW_BIN, tiles);
+    CreateBinTiles(count_per_bin, SOON_BIN, tiles);
+    CreateBinTiles(count_per_bin, EVENTUALLY_BIN, tiles);
+    CreateBinTiles(count - 3 * count_per_bin, NEVER_BIN, tiles);
   }
 
   void RunManageTilesTest(const std::string test_name,
-                          unsigned tile_count) {
-    start_time_ = base::TimeTicks();
+                          unsigned tile_count,
+                          unsigned priority_change_percent) {
+    DCHECK_GE(100u, tile_count);
+    DCHECK_LE(100u, priority_change_percent);
     num_runs_ = 0;
-    TileVector tiles;
+    TileBinVector tiles;
     CreateTiles(tile_count, &tiles);
+    start_time_ = base::TimeTicks();
     do {
+      if (priority_change_percent) {
+        for (unsigned i = 0;
+             i < tile_count;
+             i += 100 / priority_change_percent) {
+          Tile* tile = tiles[i].first;
+          ManagedTileBin bin = GetNextBin(tiles[i].second);
+          tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
+          tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
+          tiles[i].second = bin;
+        }
+      }
+
       tile_manager_->ManageTiles();
     } while (DidRun());
 
@@ -135,9 +189,15 @@ class TileManagerPerfTest : public testing::Test {
 };
 
 TEST_F(TileManagerPerfTest, ManageTiles) {
-  RunManageTilesTest("manage_tiles_100", 100);
-  RunManageTilesTest("manage_tiles_1000", 1000);
-  RunManageTilesTest("manage_tiles_10000", 10000);
+  RunManageTilesTest("manage_tiles_100_0", 100, 0);
+  RunManageTilesTest("manage_tiles_1000_0", 1000, 0);
+  RunManageTilesTest("manage_tiles_10000_0", 10000, 0);
+  RunManageTilesTest("manage_tiles_100_10", 100, 10);
+  RunManageTilesTest("manage_tiles_1000_10", 1000, 10);
+  RunManageTilesTest("manage_tiles_10000_10", 10000, 10);
+  RunManageTilesTest("manage_tiles_100_100", 100, 100);
+  RunManageTilesTest("manage_tiles_1000_100", 1000, 100);
+  RunManageTilesTest("manage_tiles_10000_100", 10000, 100);
 }
 
 }  // namespace
