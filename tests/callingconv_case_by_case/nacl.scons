@@ -28,10 +28,6 @@ if env.Bit('bitcode'):
 # MODULE0(cc1) -> MODULE0(cc1) -> MODULE1(cc2) -> MODULE2(cc2) -> MODULE3(cc1).
 # For the return test, the dataflow is reversed.
 
-# For x86-64, there is a compatibility flag and calling conv attribute.
-# We use the same framework to test those as well.
-
-
 # List of (4 envs for the modules, link_env, test_name_suffix)
 # to apply to each source. The 4 envs may have different flags.
 test_configurations = []
@@ -52,26 +48,19 @@ def MakeSelfTestEnv(base_env, extra_flags):
   link_env = base_env
   return (envlist, link_env)
 
-def MakeCrossEnvs(base_env, extra_flags1, extra_flags2,
-                  both_clang=False):
+def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
   """ Make a list of four (nearly identical) envs, some of which use gcc
   and some use pnacl, for compiling the four modules to test consistency.
-  if both_clang is true, both environments will use the clang compiler;
-  otherwise one environment will use gcc (extra_flags1) and the other
-  will use clang (extra_flags2)"""
+  """
   envlist = []
   # For module0
   cc1_env = base_env.Clone()
   cc1_env.PNaClForceNative()
-  cc1_env.Append(CCFLAGS=extra_flags2)
+  cc1_env.Append(CCFLAGS=clang_flags)
   envlist.append(cc1_env)
   # For module1
-  if both_clang:
-    cc2_env = base_env.Clone()
-    cc2_env.PNaClForceNative()
-  else:
-    cc2_env = base_env.PNaClGetNNaClEnv()
-  cc2_env.Append(CCFLAGS=extra_flags1)
+  cc2_env = base_env.PNaClGetNNaClEnv()
+  cc2_env.Append(CCFLAGS=gcc_flags)
   envlist.append(cc2_env)
 
   envlist.append(cc2_env.Clone()) # For module2
@@ -91,44 +80,30 @@ if not env.Bit('bitcode'):
   envlist, link_env = MakeSelfTestEnv(env, extra_flags)
   test_configurations.append((envlist, link_env, ''))
 else:
+  # For clang, do a self-consistency + a cross toolchain check.
   envlist, link_env = MakeSelfTestEnv(env, [])
   test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('target_arm'):
-    envlist, link_env = MakeCrossEnvs(env, [],
-        ['--target=armv7a-unknown-nacl-gnueabi',
-         '-mfloat-abi=hard'])
+    envlist, link_env = MakeCrossEnvs(
+        env,
+        gcc_flags=[],
+        clang_flags=['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard'])
     test_configurations.append((envlist, link_env, ''))
   elif env.Bit('target_x86_32'):
-    # For x86-32 there is gcc, but no compatibility flags.
-    envlist, link_env = MakeCrossEnvs(env, ['-msse2'], [])
+    envlist, link_env = MakeCrossEnvs(
+        env,
+        gcc_flags=['-msse2'],
+        clang_flags=['--target=i686-unknown-nacl'])
     test_configurations.append((envlist, link_env, ''))
   elif env.Bit('target_x86_64'):
-    # For x86-64 PNaCl we have more things to test.
-    # First test the command line flag.
-    envlist, link_env = MakeCrossEnvs(env,
-                                      ['-msse2', '-mpnacl-cconv'], [])
+    envlist, link_env = MakeCrossEnvs(
+        env,
+        gcc_flags=['-msse2'],
+        clang_flags=['--target=x86_64-unknown-nacl'])
     test_configurations.append((envlist, link_env, ''))
-    envlist, link_env = MakeCrossEnvs(env,
-                                      ['-msse2', '-DTEST_ATTRIBUTE_VIA_DECL'],
-                                      [])
-    test_configurations.append((envlist, link_env, '_decl'))
-    envlist, link_env = MakeCrossEnvs(env,
-                                      ['-msse2', '-DTEST_ATTRIBUTE_VIA_FP'],
-                                      [])
-    test_configurations.append((envlist, link_env, '_fp'))
-    envlist, link_env = MakeCrossEnvs(env, ['-msse2'],
-        ['--target=x86_64-unknown-nacl'])
-    test_configurations.append((envlist, link_env, '_sysvabi'))
-    envlist, link_env = MakeCrossEnvs(env,
-        ['--target=x86_64-unknown-nacl',
-         '-DTEST_ATTRIBUTE_VIA_DECL'], [], both_clang=True)
-    test_configurations.append((envlist, link_env, '_clangdecl'))
-    envlist, link_env = MakeCrossEnvs(env,
-        ['--target=x86_64-unknown-nacl',
-         '-DTEST_ATTRIBUTE_VIA_FP'], [], both_clang=True)
-    test_configurations.append((envlist, link_env, '_clangfp'))
   else:
     raise "Unknown target architecture!"
+
 
 ######################################################################
 
@@ -147,6 +122,14 @@ for test_source in ['return_structs.cc',
                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
     node = env.CommandSelLdrTestNacl(test_full_name + '.out',
                                      prog)
+    is_broken = False
+    if (env.Bit('target_x86_32') and env.Bit('bitcode') and
+        test_suffix != '_self'):
+      # Alignment and padding may be off:
+      # https://code.google.com/p/nativeclient/issues/detail?id=3650
+      is_broken = True
+
     env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests',
                                   'nonpexe_tests'],
-                           'run_' + test_full_name + '_test')
+                           'run_' + test_full_name + '_test',
+                           is_broken=is_broken)
