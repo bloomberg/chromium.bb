@@ -114,9 +114,11 @@
 #ifndef FF_API_CONTEXT_SIZE
 #define FF_API_CONTEXT_SIZE             (LIBAVUTIL_VERSION_MAJOR < 53)
 #endif
-#ifndef FF_API_PIX_FMT_DESC
-#define FF_API_PIX_FMT_DESC             (LIBAVUTIL_VERSION_MAJOR < 53)
-#endif
+// TODO(dalecurtis): Remove when libavutil > 52.  We don't care about this API,
+// but without this it'll generate spammy deprecation warnings.
+// #ifndef FF_API_PIX_FMT_DESC
+// #define FF_API_PIX_FMT_DESC             (LIBAVUTIL_VERSION_MAJOR < 53)
+// #endif
 #ifndef FF_API_AV_REVERSE
 #define FF_API_AV_REVERSE               (LIBAVUTIL_VERSION_MAJOR < 53)
 #endif

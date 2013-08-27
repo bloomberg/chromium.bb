@@ -50,3 +50,7 @@ preserve_m27_avcodecids.patch
   M27.  This is specific to the M29 roll.
   See https://ffmpeg.org/trac/ffmpeg/ticket/2575
   See also http://crbug.com/241212
+
+disable_pix_fmt_desc_api.patch
+  dalecurtis: Disable unused API to avoid deprecatation warnings.  Remove once
+  libavutil version > 52.
