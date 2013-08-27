@@ -51,6 +51,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
         CreateMainRequestContextGetter(
             content::ProtocolHandlerMap* protocol_handlers) const;
     scoped_refptr<ChromeURLRequestContextGetter>
+        GetExtensionsRequestContextGetter() const;
+    scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedAppRequestContextGetter(
             const base::FilePath& partition_path,
             bool in_memory) const;
@@ -81,6 +83,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     // the ProfileIOData on the IO thread.
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         main_request_context_getter_;
+    mutable scoped_refptr<ChromeURLRequestContextGetter>
+        extensions_request_context_getter_;
     mutable ChromeURLRequestContextGetterMap
         app_request_context_getter_map_;
     OffTheRecordProfileIOData* const io_data_;
@@ -104,6 +108,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   virtual void InitializeInternal(
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE;
+  virtual void InitializeExtensionsRequestContext(
+      ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
@@ -135,6 +141,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

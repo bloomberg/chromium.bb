@@ -7,7 +7,6 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidator.h"
 #include "sync/notifier/invalidation_util.h"
@@ -24,7 +23,6 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateInvalidationService() {
-    thread_bundle_.reset(new content::TestBrowserThreadBundle());
     fake_invalidator_ = new syncer::FakeInvalidator();
     profile_.reset(new TestingProfile());
     invalidation_service_.reset(
@@ -50,7 +48,6 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   syncer::FakeInvalidator* fake_invalidator_;  // owned by the service.
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<TiclInvalidationService> invalidation_service_;
   scoped_ptr<TestingProfile> profile_;
 };

@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
@@ -23,32 +21,25 @@ class BrowsingDataCookieHelperTest : public testing::Test {
       : testing_profile_(new TestingProfile()) {
   }
 
-  net::CookieMonster* GetCookieMonster(const GURL& origin) {
-    using content::BrowserContext;
-    // Since it's a unittest, assume default StoragePartition.
-    return BrowserContext::GetDefaultStoragePartition(testing_profile_.get())->
-        GetCookieStoreForScheme(origin.scheme())->GetCookieMonster();
-  }
-
   void CreateCookiesForTest() {
-    GURL origin1("http://www.google.com");
-    GURL origin2("http://www.gmail.google.com");
-    GetCookieMonster(origin1)->SetCookieWithOptionsAsync(
-        origin1, "A=1", net::CookieOptions(),
+    scoped_refptr<net::CookieMonster> cookie_monster =
+        testing_profile_->GetCookieMonster();
+    cookie_monster->SetCookieWithOptionsAsync(
+        GURL("http://www.google.com"), "A=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
-    GetCookieMonster(origin2)->SetCookieWithOptionsAsync(
-        origin2, "B=1", net::CookieOptions(),
+    cookie_monster->SetCookieWithOptionsAsync(
+        GURL("http://www.gmail.google.com"), "B=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
   }
 
   void CreateCookiesForDomainCookieTest() {
-    GURL origin("http://www.google.com");
-    scoped_refptr<net::CookieMonster> cookie_monster = GetCookieMonster(origin);
+    scoped_refptr<net::CookieMonster> cookie_monster =
+        testing_profile_->GetCookieMonster();
     cookie_monster->SetCookieWithOptionsAsync(
-        origin, "A=1", net::CookieOptions(),
+        GURL("http://www.google.com"), "A=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
     cookie_monster->SetCookieWithOptionsAsync(
-        origin, "A=2; Domain=.www.google.com ",
+        GURL("http://www.google.com"), "A=2; Domain=.www.google.com ",
         net::CookieOptions(), net::CookieMonster::SetCookiesCallback());
   }
 

@@ -12,18 +12,26 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SyncPromoUITest : public testing::Test {
+ public:
+  SyncPromoUITest() {}
+
+  // testing::Test:
+  virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+    profile_.reset(new TestingProfile());
+  }
+
  protected:
   void CreateSigninManager(const std::string& username) {
     SigninManagerBase* signin_manager =
         static_cast<FakeSigninManagerBase*>(
             SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                &profile_,
+                profile_.get(),
                 &FakeSigninManagerBase::Build));
-    signin_manager->Initialize(&profile_, NULL);
+    signin_manager->Initialize(profile_.get(), NULL);
 
     if (!username.empty()) {
       ASSERT_TRUE(signin_manager);
@@ -35,8 +43,10 @@ class SyncPromoUITest : public testing::Test {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncPromoUITest);
 };
 
 // Verifies that ShouldShowSyncPromo returns false if sync is disabled by
@@ -44,7 +54,7 @@ class SyncPromoUITest : public testing::Test {
 TEST_F(SyncPromoUITest, ShouldShowSyncPromoSyncDisabled) {
   CreateSigninManager("");
   DisableSync();
-  EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(&profile_));
+  EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(profile_.get()));
 }
 
 // Verifies that ShouldShowSyncPromo returns true if all conditions to
@@ -53,8 +63,8 @@ TEST_F(SyncPromoUITest, ShouldShowSyncPromoSyncEnabled) {
   CreateSigninManager("");
 #if defined(OS_CHROMEOS)
   // No sync promo on CrOS.
-  EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(&profile_));
+  EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(profile_.get()));
 #else
-  EXPECT_TRUE(SyncPromoUI::ShouldShowSyncPromo(&profile_));
+  EXPECT_TRUE(SyncPromoUI::ShouldShowSyncPromo(profile_.get()));
 #endif
 }

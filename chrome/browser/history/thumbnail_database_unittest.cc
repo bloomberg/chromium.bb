@@ -19,7 +19,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -79,18 +78,26 @@ class ThumbnailDatabaseTest : public testing::Test {
 };
 
 class IconMappingMigrationTest : public HistoryUnitTestBase {
+ public:
+  IconMappingMigrationTest() {
+  }
+  virtual ~IconMappingMigrationTest() {
+  }
+
  protected:
   virtual void SetUp() {
+    profile_.reset(new TestingProfile);
+
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("History");
 
-    history_db_name_ = profile_.GetPath().Append(chrome::kHistoryFilename);
+    history_db_name_ = profile_->GetPath().Append(chrome::kHistoryFilename);
     ASSERT_NO_FATAL_FAILURE(
         ExecuteSQLScript(data_path.AppendASCII("history.20.sql"),
                          history_db_name_));
     thumbnail_db_name_ =
-        profile_.GetPath().Append(chrome::kFaviconsFilename);
+        profile_->GetPath().Append(chrome::kFaviconsFilename);
     ASSERT_NO_FATAL_FAILURE(
         ExecuteSQLScript(data_path.AppendASCII("thumbnails.3.sql"),
                          thumbnail_db_name_));
@@ -101,8 +108,7 @@ class IconMappingMigrationTest : public HistoryUnitTestBase {
   base::FilePath thumbnail_db_name_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 };
 
 TEST_F(ThumbnailDatabaseTest, AddIconMapping) {

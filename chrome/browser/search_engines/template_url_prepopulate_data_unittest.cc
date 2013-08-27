@@ -15,7 +15,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -84,7 +83,6 @@ TEST(TemplateURLPrepopulateDataTest, UniqueIDs) {
       'V'<<8|'N', 'V'<<8|'U', 'W'<<8|'F', 'W'<<8|'S', 'Y'<<8|'E',
       'Y'<<8|'T', 'Z'<<8|'A', 'Z'<<8|'M', 'Z'<<8|'W', -1 };
 
-  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   for (size_t i = 0; i < arraysize(kCountryIds); ++i) {
     profile.GetPrefs()->SetInteger(prefs::kCountryIDAtInstall, kCountryIds[i]);
@@ -104,7 +102,6 @@ TEST(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // Verifies that default search providers from the preferences file
 // override the built-in ones.
 TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
-  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
@@ -194,7 +191,6 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 }
 
 TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
-  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
@@ -248,7 +244,6 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   // Use United States.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kCountry, "US");
-  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   ScopedVector<TemplateURL> t_urls;
   size_t default_index;

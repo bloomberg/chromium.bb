@@ -116,7 +116,6 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -124,7 +123,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptors.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -135,7 +133,6 @@
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
-#include "net/cookies/cookie_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1651,6 +1648,18 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   }
 
   return allow;
+}
+
+net::URLRequestContext*
+ChromeContentBrowserClient::OverrideRequestContextForURL(
+    const GURL& url, content::ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+    return io_data->extensions_request_context();
+  }
+
+  return NULL;
 }
 
 QuotaPermissionContext*

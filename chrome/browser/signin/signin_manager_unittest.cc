@@ -23,9 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
@@ -202,12 +200,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
     manager_->SignOut();
   }
 
-  net::CookieMonster* GetCookieMonster(const GURL& origin) {
-    // Since it's a unittest, assume default StoragePartition.
-    return content::BrowserContext::GetDefaultStoragePartition(profile())->
-        GetCookieStoreForScheme(origin.scheme())->GetCookieMonster();
-  }
-
   net::TestURLFetcherFactory factory_;
   scoped_ptr<SigninManager> manager_;
   content::TestNotificationTracker google_login_success_;
@@ -297,14 +289,14 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordValidCookie) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Set a valid LSID cookie in the test cookie store.
-  GURL origin("https://accounts.google.com");
-  scoped_refptr<net::CookieMonster> cookie_monster = GetCookieMonster(origin);
+  scoped_refptr<net::CookieMonster> cookie_monster =
+      profile()->GetCookieMonster();
   net::CookieOptions options;
   options.set_include_httponly();
   cookie_monster->SetCookieWithOptionsAsync(
-      origin,
-      "LSID=1234; secure; httponly", options,
-      net::CookieMonster::SetCookiesCallback());
+        GURL("https://accounts.google.com"),
+        "LSID=1234; secure; httponly", options,
+        net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, will verify the gaia cookies first.
   manager_->StartSignInWithCredentials(
@@ -342,14 +334,14 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordInValidCookie) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Set an invalid LSID cookie in the test cookie store.
-  GURL origin("https://accounts.google.com");
-  scoped_refptr<net::CookieMonster> cookie_monster = GetCookieMonster(origin);
+  scoped_refptr<net::CookieMonster> cookie_monster =
+      profile()->GetCookieMonster();
   net::CookieOptions options;
   options.set_include_httponly();
   cookie_monster->SetCookieWithOptionsAsync(
-      origin,
-      "LSID=1234; domain=google.com; secure; httponly", options,
-      net::CookieMonster::SetCookiesCallback());
+        GURL("https://accounts.google.com"),
+        "LSID=1234; domain=google.com; secure; httponly", options,
+        net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, must verify the gaia cookies first.
   manager_->StartSignInWithCredentials(

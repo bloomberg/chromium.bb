@@ -7,7 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/value_store/testing_value_store.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/manifest.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
@@ -27,6 +27,7 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
+using content::BrowserThread;
 
 namespace extensions {
 
@@ -204,7 +205,9 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
-      : storage_factory_(new util::ScopedSettingsStorageFactory()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
+        storage_factory_(new util::ScopedSettingsStorageFactory()),
         sync_processor_(new MockSyncChangeProcessor),
         sync_processor_delegate_(new SyncChangeProcessorDelegate(
             sync_processor_.get())) {}
@@ -221,7 +224,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     frontend_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.
-    base::RunLoop().RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
  protected:
@@ -258,7 +261,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<util::MockProfile> profile_;

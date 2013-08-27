@@ -219,7 +219,7 @@ DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
 DiagnosticsTest* MakeSqliteCookiesDbTest() {
   return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_COOKIE_TEST,
-                                 base::FilePath(content::kCookieFilename));
+                                 base::FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest() {

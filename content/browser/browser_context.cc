@@ -93,9 +93,6 @@ void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
 
 }  // namespace
 
-// Choose something that isn't a legal URI scheme for the kDefaultCookieScheme.
-const char BrowserContext::kDefaultCookieScheme[] = "1 default scheme";
-
 // static
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
@@ -274,10 +271,6 @@ BrowserContext::~BrowserContext() {
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
 #endif
-}
-
-bool BrowserContext::IsOffTheRecord() const {
-  return false;
 }
 
 }  // namespace content

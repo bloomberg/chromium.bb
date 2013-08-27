@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_profile.h"
@@ -86,7 +87,8 @@ class ExtensionBluetoothEventRouterTest : public testing::Test {
   ExtensionBluetoothEventRouterTest()
       : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
         test_profile_(new TestingProfile()),
-        router_(test_profile_.get()) {
+        router_(test_profile_.get()),
+        ui_thread_(content::BrowserThread::UI, &message_loop_) {
     router_.SetAdapterForTest(mock_adapter_);
   }
 
@@ -94,17 +96,19 @@ class ExtensionBluetoothEventRouterTest : public testing::Test {
     // Some profile-dependent services rely on UI thread to clean up. We make
     // sure they are properly cleaned up by running the UI message loop until
     // idle.
-    test_profile_.reset();
-    base::RunLoop().RunUntilIdle();
+    test_profile_.reset(NULL);
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
   testing::NiceMock<device::MockBluetoothProfile> mock_audio_profile_;
   testing::NiceMock<device::MockBluetoothProfile> mock_health_profile_;
   scoped_ptr<TestingProfile> test_profile_;
   ExtensionBluetoothEventRouter router_;
+  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(ExtensionBluetoothEventRouterTest, BluetoothEventListener) {

@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -28,10 +27,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::DeleteArg;
@@ -47,13 +47,15 @@ namespace context_menus = api::context_menus;
 class MenuManagerTest : public testing::Test {
  public:
   MenuManagerTest()
-      : manager_(&profile_),
-        prefs_(base::MessageLoopForUI::current()->message_loop_proxy().get()),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        manager_(&profile_),
+        prefs_(message_loop_.message_loop_proxy().get()),
         next_id_(1) {}
 
   virtual void TearDown() OVERRIDE {
     prefs_.pref_service()->CommitPendingWrite();
-    base::RunLoop().RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
   // Returns a test item.
@@ -84,7 +86,9 @@ class MenuManagerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   TestingProfile profile_;
 
   MenuManager manager_;

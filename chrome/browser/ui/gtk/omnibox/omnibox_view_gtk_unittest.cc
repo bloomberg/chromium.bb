@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -42,9 +42,11 @@ class OmniboxEditControllerMock : public OmniboxEditController {
 
 class OmniboxViewGtkTest : public PlatformTest {
  public:
+  OmniboxViewGtkTest() : file_thread_(content::BrowserThread::UI) {}
+
   virtual void SetUp() {
     PlatformTest::SetUp();
-    profile_.reset(new TestingProfile());
+    profile_.reset(new TestingProfile);
     window_ = gtk_window_new(GTK_WINDOW_POPUP);
     controller_.reset(new OmniboxEditControllerMock);
     view_.reset(new OmniboxViewGtk(controller_.get(), NULL, profile_.get(),
@@ -62,12 +64,15 @@ class OmniboxViewGtkTest : public PlatformTest {
     view_->paste_clipboard_requested_ = b;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<OmniboxEditControllerMock> controller_;
   scoped_ptr<TestingProfile> profile_;
   GtkTextBuffer* text_buffer_;
   scoped_ptr<OmniboxViewGtk> view_;
   GtkWidget* window_;
+  content::TestBrowserThread file_thread_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewGtkTest);
 };
 
 TEST_F(OmniboxViewGtkTest, InsertText) {

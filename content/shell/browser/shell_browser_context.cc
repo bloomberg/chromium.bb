@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"

@@ -30,7 +30,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/chrome_midi_permission_context.h"
 #include "chrome/browser/media/chrome_midi_permission_context_factory.h"
-#include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -48,7 +47,6 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -252,24 +250,6 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
       GetDownloadManagerDelegate();
 }
 
-void OffTheRecordProfileImpl::OverrideCookieStoreConfigs(
-    const base::FilePath& partition_path,
-    bool in_memory_partition,
-    bool is_default_partition,
-    CookieSchemeMap* configs) {
-  // The delegate is stateless so it's silly to create more than one per
-  // profile.
-  if (!cookie_delegate_) {
-    cookie_delegate_ = chrome_browser_net::CreateCookieDelegate(this);
-  }
-
-  // Force everything to be to be in-memory.
-  chrome_browser_net::SetCookieStoreConfigs(
-      base::FilePath(), true, is_default_partition,
-      content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-      GetSpecialStoragePolicy(), cookie_delegate_, configs);
-}
-
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
@@ -319,6 +299,11 @@ void OffTheRecordProfileImpl::RequestMIDISysExPermission(
                                       render_view_id,
                                       requesting_frame,
                                       callback);
+}
+
+net::URLRequestContextGetter*
+    OffTheRecordProfileImpl::GetRequestContextForExtensions() {
+  return io_data_.GetExtensionsRequestContextGetter().get();
 }
 
 net::URLRequestContextGetter*

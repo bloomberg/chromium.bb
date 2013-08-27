@@ -46,6 +46,8 @@ class OffTheRecordProfileImpl : public Profile {
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
@@ -87,10 +89,6 @@ class OffTheRecordProfileImpl : public Profile {
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
-  virtual void OverrideCookieStoreConfigs(const base::FilePath& partition_path,
-                                          bool in_memory_partition,
-                                          bool is_default_partition,
-                                          CookieSchemeMap* configs) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
@@ -141,8 +139,6 @@ class OffTheRecordProfileImpl : public Profile {
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
-
-  scoped_refptr<net::CookieMonsterDelegate> cookie_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

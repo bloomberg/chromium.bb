@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -12,7 +12,7 @@
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,9 @@ class ShortcutsBackendTest : public testing::Test,
                              public ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsBackendTest()
-      : load_notified_(false),
+      : ui_thread_(BrowserThread::UI, &ui_message_loop_),
+        db_thread_(BrowserThread::DB),
+        load_notified_(false),
         changed_notified_(false) {}
 
   virtual void SetUp();
@@ -38,16 +40,18 @@ class ShortcutsBackendTest : public testing::Test,
 
   void InitBackend();
 
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_refptr<ShortcutsBackend> backend_;
+  base::MessageLoopForUI ui_message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
 
   bool load_notified_;
   bool changed_notified_;
-  base::RunLoop on_loaded_loop_;
 };
 
 void ShortcutsBackendTest::SetUp() {
+  db_thread_.Start();
   ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &ShortcutsBackendFactory::BuildProfileForTesting);
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
@@ -57,11 +61,12 @@ void ShortcutsBackendTest::SetUp() {
 
 void ShortcutsBackendTest::TearDown() {
   backend_->RemoveObserver(this);
+  db_thread_.Stop();
 }
 
 void ShortcutsBackendTest::OnShortcutsLoaded() {
   load_notified_ = true;
-  on_loaded_loop_.Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void ShortcutsBackendTest::OnShortcutsChanged() {
@@ -74,7 +79,7 @@ void ShortcutsBackendTest::InitBackend() {
   ASSERT_TRUE(backend);
   ASSERT_FALSE(load_notified_);
   ASSERT_FALSE(backend_->initialized());
-  on_loaded_loop_.Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(load_notified_);
   EXPECT_TRUE(backend_->initialized());
 }

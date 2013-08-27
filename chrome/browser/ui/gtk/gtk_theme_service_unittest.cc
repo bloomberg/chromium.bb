@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_utils_gtk.h"
@@ -28,7 +27,6 @@ class GtkThemeServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 
   GtkThemeService* provider_;

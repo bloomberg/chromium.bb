@@ -48,7 +48,6 @@
 #include "chrome/browser/media/chrome_midi_permission_context_factory.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -87,7 +86,6 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -499,6 +497,8 @@ void ProfileImpl::DoFinalInit() {
       g_browser_process->background_mode_manager()->RegisterProfile(this);
   }
 
+  base::FilePath cookie_path = GetPath();
+  cookie_path = cookie_path.Append(chrome::kCookieFilename);
   base::FilePath server_bound_cert_path = GetPath();
   server_bound_cert_path =
       server_bound_cert_path.Append(chrome::kOBCertFilename);
@@ -520,14 +520,28 @@ void ProfileImpl::DoFinalInit() {
   infinite_cache_path =
       infinite_cache_path.Append(FILE_PATH_LITERAL("Infinite Cache"));
 
+#if defined(OS_ANDROID)
+  SessionStartupPref::Type startup_pref_type =
+      SessionStartupPref::GetDefaultStartupType();
+#else
+  SessionStartupPref::Type startup_pref_type =
+      StartupBrowserCreator::GetSessionStartupPref(
+          *CommandLine::ForCurrentProcess(), this).type;
+#endif
+  bool restore_old_session_cookies =
+      (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
+       startup_pref_type == SessionStartupPref::LAST);
+
   InitHostZoomMap();
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(server_bound_cert_path, cache_path,
+  io_data_.Init(cookie_path, server_bound_cert_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
-                GetPath(), infinite_cache_path, predictor_,
+                extensions_cookie_path, GetPath(), infinite_cache_path,
+                predictor_,
+                restore_old_session_cookies,
                 GetSpecialStoragePolicy());
 
 #if defined(ENABLE_PLUGINS)
@@ -545,7 +559,7 @@ void ProfileImpl::DoFinalInit() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRestoreSessionState)) {
     TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk")
-    GetDefaultStoragePartition(this)->
+    content::BrowserContext::GetDefaultStoragePartition(this)->
         GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
   }
 
@@ -659,40 +673,8 @@ scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
       GetPath(), BrowserThread::GetBlockingPool());
 }
 
-void ProfileImpl::OverrideCookieStoreConfigs(
-    const base::FilePath& partition_path,
-    bool in_memory_partition,
-    bool is_default_partition,
-    CookieSchemeMap* configs) {
-  using content::CookieStoreConfig;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // The delegate is stateless so it's silly to create more than one per
-  // profile.
-  if (!cookie_delegate_) {
-    cookie_delegate_ = chrome_browser_net::CreateCookieDelegate(this);
-  }
-
-#if defined(OS_ANDROID)
-  SessionStartupPref::Type startup_pref_type =
-      SessionStartupPref::GetDefaultStartupType();
-#else
-  SessionStartupPref::Type startup_pref_type =
-      StartupBrowserCreator::GetSessionStartupPref(
-          *CommandLine::ForCurrentProcess(), this).type;
-#endif
-
-  CookieStoreConfig::SessionCookieMode session_cookie_mode =
-      CookieStoreConfig::PERSISTANT_SESSION_COOKIES;
-  if (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
-       startup_pref_type == SessionStartupPref::LAST) {
-    session_cookie_mode = CookieStoreConfig::RESTORED_SESSION_COOKIES;
-  }
-
-  chrome_browser_net::SetCookieStoreConfigs(
-      partition_path, in_memory_partition, is_default_partition,
-      session_cookie_mode, GetSpecialStoragePolicy(), cookie_delegate_,
-      configs);
+bool ProfileImpl::IsOffTheRecord() const {
+  return false;
 }
 
 Profile* ProfileImpl::GetOffTheRecordProfile() {
@@ -900,6 +882,10 @@ void ProfileImpl::RequestMIDISysExPermission(
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
+}
+
+net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
+  return io_data_.GetExtensionsRequestContextGetter().get();
 }
 
 net::URLRequestContextGetter*

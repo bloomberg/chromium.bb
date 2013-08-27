@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +27,10 @@ namespace apps {
 // Base class for tests.
 class ShellWindowGeometryCacheTest : public testing::Test {
  public:
-  ShellWindowGeometryCacheTest() {
+  ShellWindowGeometryCacheTest() :
+        ui_thread_(BrowserThread::UI, &ui_message_loop_) {
     prefs_.reset(new extensions::TestExtensionPrefs(
-        base::MessageLoopForUI::current()->message_loop_proxy().get()));
+        ui_message_loop_.message_loop_proxy().get()));
     cache_.reset(new ShellWindowGeometryCache(&profile_, prefs_->prefs()));
     cache_->SetSyncDelayForTests(0);
   }
@@ -49,8 +50,9 @@ class ShellWindowGeometryCacheTest : public testing::Test {
   void UnloadExtension(const std::string& extension_id);
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  base::MessageLoopForUI ui_message_loop_;
+  content::TestBrowserThread ui_thread_;
   scoped_ptr<extensions::TestExtensionPrefs> prefs_;
   scoped_ptr<ShellWindowGeometryCache> cache_;
 };

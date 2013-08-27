@@ -7,13 +7,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ThumbnailServiceTest : public testing::Test {
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-};
+typedef testing::Test ThumbnailServiceTest;
 
 // A mock version of TopSitesImpl, used for testing
 // ShouldAcquirePageThumbnail().

@@ -21,7 +21,7 @@ class MockResourceContext : public ResourceContext {
   MockResourceContext();
 
   // Does not take ownership of |test_request_context|.
-  explicit MockResourceContext(net::URLRequestContext* request_context);
+  explicit MockResourceContext(net::URLRequestContext* test_request_context);
 
   virtual ~MockResourceContext();
 
@@ -42,7 +42,7 @@ class MockResourceContext : public ResourceContext {
   }
 
  private:
-  net::URLRequestContext* request_context_;
+  net::URLRequestContext* test_request_context_;
 
   bool mic_allowed_;
   bool camera_allowed_;

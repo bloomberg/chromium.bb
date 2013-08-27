@@ -29,11 +29,35 @@ void DataDeleter::StartDeleting(Profile* profile,
 
   const GURL& site = Extension::GetBaseURLFromExtensionId(extension_id);
 
-  BrowserContext::GetStoragePartitionForSite(profile, site)->
-      ClearDataForOrigin((StoragePartition::REMOVE_DATA_MASK_ALL &
-                          ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
-                         StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                         storage_origin);
+  StoragePartition* partition =
+      BrowserContext::GetStoragePartitionForSite(profile, site);
+
+  if (storage_origin.SchemeIs(extensions::kExtensionScheme)) {
+    // TODO(ajwong): Cookies are not properly isolated for
+    // chrome-extension:// scheme.  (http://crbug.com/158386).
+    //
+    // However, no isolated apps actually can write to kExtensionScheme
+    // origins. Thus, it is benign to delete from the
+    // RequestContextForExtensions because there's nothing stored there. We
+    // preserve this code path without checking for isolation because it's
+    // simpler than special casing.  This code should go away once we merge
+    // the various URLRequestContexts (http://crbug.com/159193).
+    partition->ClearDataForOrigin(
+        StoragePartition::REMOVE_DATA_MASK_ALL &
+            (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+        storage_origin,
+        profile->GetRequestContextForExtensions());
+  } else {
+    // We don't need to worry about the media request context because that
+    // shares the same cookie store as the main request context.
+    partition->ClearDataForOrigin(
+        StoragePartition::REMOVE_DATA_MASK_ALL &
+            (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+        storage_origin,
+        partition->GetURLRequestContext());
+  }
 
   // Begin removal of the settings for the current extension.
   profile->GetExtensionService()->settings_frontend()->

@@ -21,8 +21,6 @@ CONTENT_EXPORT extern const base::FilePath::CharType kAppCacheDirname[];
 // data is put.
 CONTENT_EXPORT extern const base::FilePath::CharType kPepperDataDirname[];
 
-CONTENT_EXPORT extern const base::FilePath::CharType kCookieFilename[];
-
 // The MIME type used for the browser plugin.
 CONTENT_EXPORT extern const char kBrowserPluginMimeType[];
 

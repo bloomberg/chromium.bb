@@ -12,10 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "content/public/browser/content_browser_client.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace content {
 
 // Base for unit tests that need a ContentBrowserClient.
@@ -27,9 +23,6 @@ class TestContentBrowserClient : public ContentBrowserClient {
   virtual WebContentsViewPort* OverrideCreateWebContentsView(
       WebContents* web_contents,
       RenderViewHostDelegateView** render_view_host_delegate_view) OVERRIDE;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
-      BrowserContext* browser_context,
-      ProtocolHandlerMap* protocol_handlers) OVERRIDE;
   virtual base::FilePath GetDefaultDownloadDirectory() OVERRIDE;
 
  private:

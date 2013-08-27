@@ -28,7 +28,8 @@ class AwNetworkDelegate;
 
 class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  AwURLRequestContextGetter(const base::FilePath& partition_path);
+  AwURLRequestContextGetter(const base::FilePath& partition_path,
+                            net::CookieStore* cookie_store);
 
   void InitializeOnNetworkThread();
 
@@ -52,6 +53,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   void InitializeURLRequestContext();
 
   const base::FilePath partition_path_;
+  scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;

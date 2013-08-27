@@ -57,6 +57,20 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   content::ProtocolHandlerMap protocol_handlers_;
 };
 
+// Factory that creates the ChromeURLRequestContext for extensions.
+class FactoryForExtensions : public ChromeURLRequestContextFactory {
+ public:
+  explicit FactoryForExtensions(const ProfileIOData* profile_io_data)
+      : profile_io_data_(profile_io_data) {}
+
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
+    return profile_io_data_->GetExtensionsRequestContext();
+  }
+
+ private:
+  const ProfileIOData* const profile_io_data_;
+};
+
 // Factory that creates the ChromeURLRequestContext for a given isolated app.
 class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
  public:
@@ -199,6 +213,15 @@ ChromeURLRequestContextGetter::CreateOriginalForMedia(
 
 // static
 ChromeURLRequestContextGetter*
+ChromeURLRequestContextGetter::CreateOriginalForExtensions(
+    Profile* profile, const ProfileIOData* profile_io_data) {
+  DCHECK(!profile->IsOffTheRecord());
+  return new ChromeURLRequestContextGetter(
+      new FactoryForExtensions(profile_io_data));
+}
+
+// static
+ChromeURLRequestContextGetter*
 ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
     Profile* profile,
     const ProfileIOData* profile_io_data,
@@ -238,6 +261,15 @@ ChromeURLRequestContextGetter::CreateOffTheRecord(
   DCHECK(profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       new FactoryForMain(profile_io_data, protocol_handlers));
+}
+
+// static
+ChromeURLRequestContextGetter*
+ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
+    Profile* profile, const ProfileIOData* profile_io_data) {
+  DCHECK(profile->IsOffTheRecord());
+  return new ChromeURLRequestContextGetter(
+      new FactoryForExtensions(profile_io_data));
 }
 
 // static

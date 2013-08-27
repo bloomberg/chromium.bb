@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/about_protocol_handler.h"
+#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -64,6 +65,7 @@
 #include "extensions/common/constants.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -98,6 +100,56 @@ using content::BrowserThread;
 using content::ResourceContext;
 
 namespace {
+
+// ----------------------------------------------------------------------------
+// CookieMonster::Delegate implementation
+// ----------------------------------------------------------------------------
+class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
+ public:
+  explicit ChromeCookieMonsterDelegate(
+      const base::Callback<Profile*(void)>& profile_getter)
+      : profile_getter_(profile_getter) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  }
+
+  // net::CookieMonster::Delegate implementation.
+  virtual void OnCookieChanged(
+      const net::CanonicalCookie& cookie,
+      bool removed,
+      net::CookieMonster::Delegate::ChangeCause cause) OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
+                   this, cookie, removed, cause));
+  }
+
+ private:
+  virtual ~ChromeCookieMonsterDelegate() {}
+
+  void OnCookieChangedAsyncHelper(
+      const net::CanonicalCookie& cookie,
+      bool removed,
+      net::CookieMonster::Delegate::ChangeCause cause) {
+    Profile* profile = profile_getter_.Run();
+    if (profile) {
+      ChromeCookieDetails cookie_details(&cookie, removed, cause);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_COOKIE_CHANGED,
+          content::Source<Profile>(profile),
+          content::Details<ChromeCookieDetails>(&cookie_details));
+    }
+  }
+
+  const base::Callback<Profile*(void)> profile_getter_;
+};
+
+Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
+  if (profile_manager->IsValidProfile(profile))
+    return profile;
+  return NULL;
+}
 
 #if defined(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
@@ -202,6 +254,12 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->ssl_config_service = profile->GetSSLConfigService();
+  base::Callback<Profile*(void)> profile_getter =
+      base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
+                 profile);
+  params->cookie_monster_delegate =
+      new chrome_browser_net::EvictedDomainCookieCounter(
+          new ChromeCookieMonsterDelegate(profile_getter));
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
 
@@ -323,6 +381,12 @@ ProfileIOData::AppRequestContext::AppRequestContext(
                               load_time_stats) {
 }
 
+void ProfileIOData::AppRequestContext::SetCookieStore(
+    net::CookieStore* cookie_store) {
+  cookie_store_ = cookie_store;
+  set_cookie_store(cookie_store);
+}
+
 void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
     scoped_ptr<net::HttpTransactionFactory> http_factory) {
   http_factory_ = http_factory.Pass();
@@ -409,6 +473,8 @@ ProfileIOData::~ProfileIOData() {
   // are already done in the URLRequestContext destructor.
   if (main_request_context_)
     main_request_context_->AssertNoURLRequests();
+  if (extensions_request_context_)
+    extensions_request_context_->AssertNoURLRequests();
 
   current_context = 0;
   for (URLRequestContextMap::iterator it = app_request_context_map_.begin();
@@ -511,6 +577,11 @@ ChromeURLRequestContext* ProfileIOData::GetMediaRequestContext() const {
   ChromeURLRequestContext* context = AcquireMediaRequestContext();
   DCHECK(context);
   return context;
+}
+
+ChromeURLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
+  DCHECK(initialized_);
+  return extensions_request_context_.get();
 }
 
 ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
@@ -692,6 +763,10 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   main_request_context_.reset(
       new ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
                                   load_time_stats_));
+  extensions_request_context_.reset(
+      new ChromeURLRequestContext(
+          ChromeURLRequestContext::CONTEXT_TYPE_EXTENSIONS,
+          load_time_stats_));
 
   ChromeNetworkDelegate* network_delegate =
       new ChromeNetworkDelegate(

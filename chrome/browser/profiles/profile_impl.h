@@ -62,10 +62,6 @@ class ProfileImpl : public Profile {
 
   // content::BrowserContext implementation:
   virtual base::FilePath GetPath() const OVERRIDE;
-  virtual void OverrideCookieStoreConfigs(const base::FilePath& partition_path,
-                                          bool in_memory_partition,
-                                          bool is_default_partition,
-                                          CookieSchemeMap* configs) OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
@@ -93,6 +89,7 @@ class ProfileImpl : public Profile {
   // Note that this implementation returns the Google-services username, if any,
   // not the Chrome user's display name.
   virtual std::string GetProfileName() OVERRIDE;
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
@@ -105,6 +102,8 @@ class ProfileImpl : public Profile {
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetRequestContextForExtensions() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
@@ -254,8 +253,6 @@ class ProfileImpl : public Profile {
 #endif
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-
-  scoped_refptr<net::CookieMonsterDelegate> cookie_delegate_;
 
   // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
   //

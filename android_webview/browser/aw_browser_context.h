@@ -77,11 +77,6 @@ class AwBrowserContext : public content::BrowserContext,
 
   // content::BrowserContext implementation.
   virtual base::FilePath GetPath() const OVERRIDE;
-  virtual void OverrideCookieStoreConfigs(
-      const base::FilePath& partition_path,
-      bool in_memory_partition,
-      bool is_default_partition,
-      CookieSchemeMap* configs) OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(

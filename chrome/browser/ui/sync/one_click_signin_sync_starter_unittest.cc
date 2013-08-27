@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,6 +28,9 @@ class OneClickSigninSyncStarterTest : public testing::Test {
 
   // testing::Test:
   virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+    profile_.reset(new TestingProfile());
+
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
 
@@ -36,9 +38,9 @@ class OneClickSigninSyncStarterTest : public testing::Test {
     SigninManagerBase* signin_manager =
         static_cast<FakeSigninManager*>(
             SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                &profile_,
+                profile_.get(),
                 &OneClickSigninSyncStarterTest::BuildSigninManager));
-    signin_manager->Initialize(&profile_, NULL);
+    signin_manager->Initialize(profile_.get(), NULL);
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
   }
 
@@ -52,7 +54,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
  protected:
   void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback) {
     sync_starter_ = new OneClickSigninSyncStarter(
-      &profile_,
+      profile_.get(),
       NULL,
       std::string(),
       kTestingUsername,
@@ -65,8 +67,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
     );
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 
   // Deletes itself when SigninFailed() or SigninSuccess() is called.
   OneClickSigninSyncStarter* sync_starter_;

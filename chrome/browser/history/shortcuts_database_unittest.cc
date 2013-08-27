@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,13 +52,11 @@ class ShortcutsDatabaseTest : public testing::Test {
 
   void AddAll();
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ShortcutsDatabase> db_;
 };
 
 void ShortcutsDatabaseTest::SetUp() {
-  thread_bundle_.reset(new content::TestBrowserThreadBundle());
   profile_.reset(new TestingProfile());
   db_ = new ShortcutsDatabase(profile_.get());
   ASSERT_TRUE(db_->Init());

@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,14 +55,14 @@ scoped_ptr<const ExtensionError> CreateNewRuntimeError(
 
 class ErrorConsoleUnitTest : public testing::Test {
  public:
-  ErrorConsoleUnitTest()
-      : error_console_(ErrorConsole::Get(&profile_)) {
+  ErrorConsoleUnitTest() :
+      profile_(new TestingProfile),
+      error_console_(ErrorConsole::Get(profile_.get())) {
   }
   virtual ~ErrorConsoleUnitTest() { }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   ErrorConsole* error_console_;
 };
 

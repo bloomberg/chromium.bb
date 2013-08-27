@@ -718,8 +718,6 @@
     'browser/mime_registry_message_filter.h',
     'browser/net/browser_online_state_observer.cc',
     'browser/net/browser_online_state_observer.h',
-    'browser/net/cookie_store_map.cc',
-    'browser/net/cookie_store_map.h',
     'browser/net/sqlite_persistent_cookie_store.cc',
     'browser/net/sqlite_persistent_cookie_store.h',
     'browser/net/view_blob_internals_job_factory.cc',

@@ -682,6 +682,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
   proxy_->AddRequestContextGetter(profile->GetMediaRequestContext());
+  proxy_->AddRequestContextGetter(profile->GetRequestContextForExtensions());
 #if defined(OS_CHROMEOS)
   syslogs_getter_.reset(new SystemLogsGetter(this,
       chromeos::system::SyslogsProvider::GetInstance()));

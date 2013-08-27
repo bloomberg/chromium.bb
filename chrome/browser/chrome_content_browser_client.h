@@ -145,6 +145,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const string16& name,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
+  virtual net::URLRequestContext* OverrideRequestContextForURL(
+      const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual content::QuotaPermissionContext*
       CreateQuotaPermissionContext() OVERRIDE;
   virtual void AllowCertificateError(

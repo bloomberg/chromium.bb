@@ -1148,8 +1148,6 @@
         'browser/net/connect_interceptor.h',
         'browser/net/connection_tester.cc',
         'browser/net/connection_tester.h',
-        'browser/net/cookie_store_util.cc',
-        'browser/net/cookie_store_util.h',
         'browser/net/crl_set_fetcher.cc',
         'browser/net/crl_set_fetcher.h',
         'browser/net/dns_probe_runner.cc',

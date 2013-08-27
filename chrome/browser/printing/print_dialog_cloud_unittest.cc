@@ -22,11 +22,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -149,20 +148,26 @@ class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {
 };
 
 class CloudPrintURLTest : public testing::Test {
+ public:
+  CloudPrintURLTest() {}
+
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  virtual void SetUp() {
+    profile_.reset(new TestingProfile());
+  }
+
+  scoped_ptr<Profile> profile_;
 };
 
 TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
   std::string service_url =
-      CloudPrintURL(&profile_).
+      CloudPrintURL(profile_.get()).
       GetCloudPrintServiceURL().spec();
   EXPECT_THAT(service_url, HasSubstr("www.google.com"));
   EXPECT_THAT(service_url, HasSubstr("cloudprint"));
 
   std::string dialog_url =
-      CloudPrintURL(&profile_).
+      CloudPrintURL(profile_.get()).
       GetCloudPrintServiceDialogURL().spec();
   EXPECT_THAT(dialog_url, HasSubstr("www.google.com"));
   EXPECT_THAT(dialog_url, HasSubstr("/cloudprint/"));
@@ -172,7 +177,7 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
 
   // Repeat to make sure there isn't a transient glitch.
   dialog_url =
-      CloudPrintURL(&profile_).
+      CloudPrintURL(profile_.get()).
       GetCloudPrintServiceDialogURL().spec();
   EXPECT_THAT(dialog_url, HasSubstr("www.google.com"));
   EXPECT_THAT(dialog_url, HasSubstr("/cloudprint/"));
@@ -181,7 +186,7 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
   EXPECT_THAT(dialog_url, HasSubstr("/dialog.html"));
 
   std::string manage_url =
-      CloudPrintURL(&profile_).
+      CloudPrintURL(profile_.get()).
       GetCloudPrintServiceManageURL().spec();
   EXPECT_THAT(manage_url, HasSubstr("www.google.com"));
   EXPECT_THAT(manage_url, HasSubstr("/cloudprint/"));
@@ -208,6 +213,11 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
 
 // Testing for CloudPrintDataSender needs a mock WebUI.
 class CloudPrintDataSenderTest : public testing::Test {
+ public:
+  CloudPrintDataSenderTest()
+      : file_thread_(BrowserThread::FILE, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {}
+
  protected:
   virtual void SetUp() {
     mock_helper_.reset(new MockCloudPrintDataSenderHelper);
@@ -225,7 +235,9 @@ class CloudPrintDataSenderTest : public testing::Test {
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
   scoped_ptr<MockCloudPrintDataSenderHelper> mock_helper_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(CloudPrintDataSenderTest, CanSend) {
@@ -279,6 +291,10 @@ using internal_cloud_print_helpers::MockCloudPrintFlowHandler;
 using internal_cloud_print_helpers::CloudPrintWebDialogDelegate;
 
 class CloudPrintWebDialogDelegateTest : public testing::Test {
+ public:
+  CloudPrintWebDialogDelegateTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+
  protected:
   virtual void SetUp() {
     string16 mock_title;
@@ -300,7 +316,8 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
       delete mock_flow_handler_.get();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
   base::WeakPtr<MockCloudPrintFlowHandler> mock_flow_handler_;
   scoped_ptr<CloudPrintWebDialogDelegate> delegate_;
 };

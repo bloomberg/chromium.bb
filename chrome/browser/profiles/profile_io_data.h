@@ -99,6 +99,7 @@ class ProfileIOData {
 
   ChromeURLRequestContext* GetMainRequestContext() const;
   ChromeURLRequestContext* GetMediaRequestContext() const;
+  ChromeURLRequestContext* GetExtensionsRequestContext() const;
   ChromeURLRequestContext* GetIsolatedAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
@@ -150,6 +151,10 @@ class ProfileIOData {
 
   StringListPrefMember* one_click_signin_rejected_email_list() const {
     return &one_click_signin_rejected_email_list_;
+  }
+
+  ChromeURLRequestContext* extensions_request_context() const {
+    return extensions_request_context_.get();
   }
 
   BooleanPrefMember* safe_browsing_enabled() const {
@@ -220,6 +225,7 @@ class ProfileIOData {
     explicit AppRequestContext(
         chrome_browser_net::LoadTimeStats* load_time_stats);
 
+    void SetCookieStore(net::CookieStore* cookie_store);
     void SetHttpTransactionFactory(
         scoped_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(scoped_ptr<net::URLRequestJobFactory> job_factory);
@@ -227,6 +233,7 @@ class ProfileIOData {
    private:
     virtual ~AppRequestContext();
 
+    scoped_refptr<net::CookieStore> cookie_store_;
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
     scoped_ptr<net::URLRequestJobFactory> job_factory_;
   };
@@ -242,6 +249,7 @@ class ProfileIOData {
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
+    scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
         resource_prefetch_predictor_observer_;
@@ -384,6 +392,9 @@ class ProfileIOData {
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers) const = 0;
 
+  // Initializes the RequestContext for extensions.
+  virtual void InitializeExtensionsRequestContext(
+      ProfileParams* profile_params) const = 0;
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
@@ -499,6 +510,7 @@ class ProfileIOData {
   // These are only valid in between LazyInitialize() and their accessor being
   // called.
   mutable scoped_ptr<ChromeURLRequestContext> main_request_context_;
+  mutable scoped_ptr<ChromeURLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;
   mutable URLRequestContextMap isolated_media_request_context_map_;

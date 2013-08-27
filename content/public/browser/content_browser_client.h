@@ -22,7 +22,6 @@
 #include "content/public/common/window_container_type.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/base/window_open_disposition.h"
@@ -54,12 +53,12 @@ class ImageSkia;
 
 namespace net {
 class CookieOptions;
-class CookieStore;
 class HttpNetworkSession;
 class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
+class URLRequestContext;
 class URLRequestContextGetter;
 class X509Certificate;
 }
@@ -328,6 +327,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       const string16& name,
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views);
+
+  // Allow the embedder to override the request context based on the URL for
+  // certain operations, like cookie access. Returns NULL to indicate the
+  // regular request context should be used.
+  // This is called on the IO thread.
+  virtual net::URLRequestContext* OverrideRequestContextForURL(
+      const GURL& url, ResourceContext* context);
 
   // Allow the embedder to specify a string version of the storage partition
   // config with a site.

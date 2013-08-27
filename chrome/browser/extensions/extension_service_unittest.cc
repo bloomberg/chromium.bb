@@ -22,7 +22,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -4110,8 +4109,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Set a cookie for the extension.
   net::CookieMonster* cookie_monster =
-      BrowserContext::GetDefaultStoragePartition(profile_.get())->
-          GetCookieStoreForScheme(ext_url.scheme())->GetCookieMonster();
+      profile_->GetRequestContextForExtensions()->GetURLRequestContext()->
+      cookie_store()->GetCookieMonster();
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptionsAsync(
@@ -4226,8 +4225,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   // Set a cookie for the extension.
   net::CookieMonster* cookie_monster =
-      BrowserContext::GetDefaultStoragePartition(profile_.get())->
-          GetCookieStoreForScheme(origin1.scheme())->GetCookieMonster();
+      profile_->GetRequestContext()->GetURLRequestContext()->
+      cookie_store()->GetCookieMonster();
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptionsAsync(
@@ -4923,8 +4922,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
-  content::TestBrowserThreadBundle thread_bundle;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
+  content::TestBrowserThreadBundle thread_bundle_;
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService device_settings_service;
   chromeos::ScopedTestCrosSettings cros_settings;

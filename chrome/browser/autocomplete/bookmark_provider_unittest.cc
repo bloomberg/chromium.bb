@@ -18,7 +18,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The bookmark corpus against which we will simulate searches.
@@ -63,7 +62,6 @@ class BookmarkProviderTest : public testing::Test,
  protected:
   virtual void SetUp() OVERRIDE;
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
@@ -73,7 +71,6 @@ class BookmarkProviderTest : public testing::Test,
 };
 
 void BookmarkProviderTest::SetUp() {
-  thread_bundle_.reset(new content::TestBrowserThreadBundle());
   profile_.reset(new TestingProfile());
   DCHECK(profile_.get());
   provider_ = new BookmarkProvider(this, profile_.get());

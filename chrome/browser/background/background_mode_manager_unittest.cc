@@ -6,47 +6,26 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
-#include "ui/message_center/message_center.h"
 
 class BackgroundModeManagerTest : public testing::Test {
- protected:
+ public:
   BackgroundModeManagerTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {
+      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+  virtual ~BackgroundModeManagerTest() {}
+  virtual void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-    CHECK(profile_manager_.SetUp());
-#if defined(OS_CHROMEOS)
-    // Because of the http://crbug.com/119175 workaround in the test
-    // constructor, browser shutdown needs to be reset otherwise
-    // subsequent test will fail.
-    browser_shutdown::SetTryingToQuit(false);
-#endif  // defined(OS_CHROMEOS)
+    ASSERT_TRUE(profile_manager_.SetUp());
   }
-
-  static void SetUpTestCase() {
-    message_center::MessageCenter::Initialize();
-#if defined(OS_CHROMEOS)
-    // Needed to handle http://crbug.com/119175.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableZeroBrowsersOpenForTests);
-#endif  // defined(OS_CHROMEOS)
-  }
-  static void TearDownTestCase() {
-    message_center::MessageCenter::Shutdown();
-  }
-
   scoped_ptr<CommandLine> command_line_;
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
 };
 

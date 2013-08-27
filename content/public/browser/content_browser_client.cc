@@ -163,6 +163,11 @@ QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;
 }
 
+net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
+    const GURL& url, ResourceContext* context) {
+  return NULL;
+}
+
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {

@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -56,7 +55,6 @@ TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
   BookmarkModel model(NULL);
-  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
 
   std::vector<const BookmarkNode*> nodes;
