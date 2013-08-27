@@ -1,24 +1,20 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file provides functions for opening an item (file or directory) using
+// the file manager.
+// TODO(satorux): Rename this to something like open_util.h.
 
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_
-
-#include <string>
-
-#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
 class FilePath;
 }
 
-// File manager helper methods.
 namespace file_manager {
 namespace util {
-
-// Get file dialog title string from its type.
-string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 
 // Opens the file manager for the freshly mounted removable drive specified
 // by |file_path|.

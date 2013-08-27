@@ -304,45 +304,6 @@ void CheckIfDirectoryExists(
 
 }  // namespace
 
-string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
-  string16 title;
-  switch (dialog_type) {
-    case ui::SelectFileDialog::SELECT_NONE:
-      // Full page file manager doesn't need a title.
-      break;
-
-    case ui::SelectFileDialog::SELECT_FOLDER:
-      title = l10n_util::GetStringUTF16(
-          IDS_FILE_BROWSER_SELECT_FOLDER_TITLE);
-      break;
-
-    case ui::SelectFileDialog::SELECT_UPLOAD_FOLDER:
-      title = l10n_util::GetStringUTF16(
-          IDS_FILE_BROWSER_SELECT_UPLOAD_FOLDER_TITLE);
-      break;
-
-    case ui::SelectFileDialog::SELECT_SAVEAS_FILE:
-      title = l10n_util::GetStringUTF16(
-          IDS_FILE_BROWSER_SELECT_SAVEAS_FILE_TITLE);
-      break;
-
-    case ui::SelectFileDialog::SELECT_OPEN_FILE:
-      title = l10n_util::GetStringUTF16(
-          IDS_FILE_BROWSER_SELECT_OPEN_FILE_TITLE);
-      break;
-
-    case ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE:
-      title = l10n_util::GetStringUTF16(
-          IDS_FILE_BROWSER_SELECT_OPEN_MULTI_FILE_TITLE);
-      break;
-
-    default:
-      NOTREACHED();
-  }
-
-  return title;
-}
-
 void OpenRemovableDrive(const base::FilePath& file_path) {
   OpenFileManagerWithInternalActionId(file_path, "auto-open");
 }

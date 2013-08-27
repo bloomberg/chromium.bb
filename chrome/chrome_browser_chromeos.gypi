@@ -344,6 +344,8 @@
         'browser/chromeos/extensions/file_manager/mounted_disk_monitor.h',
         'browser/chromeos/extensions/file_manager/open_with_browser.cc',
         'browser/chromeos/extensions/file_manager/open_with_browser.h',
+        'browser/chromeos/extensions/file_manager/select_file_dialog_util.cc',
+        'browser/chromeos/extensions/file_manager/select_file_dialog_util.h',
         'browser/chromeos/extensions/file_manager/url_util.cc',
         'browser/chromeos/extensions/file_manager/url_util.h',
         'browser/chromeos/extensions/file_manager/zip_file_creator.cc',

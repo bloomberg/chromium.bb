@@ -14,9 +14,8 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -361,7 +360,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       kFileManagerWidth,
       kFileManagerHeight,
 #if defined(USE_AURA)
-      file_manager::util::GetTitleFromType(type),
+      file_manager::util::GetSelectFileDialogTitle(type),
 #else
       // HTML-based header used.
       string16(),
