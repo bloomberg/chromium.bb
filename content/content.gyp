@@ -47,12 +47,12 @@
           'type': 'none',
           'dependencies': [
             'content_browser',
-            'content_child',
             'content_common',
           ],
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
+                'content_child',
                 'content_gpu',
                 'content_plugin',
                 'content_ppapi_plugin',
@@ -152,28 +152,23 @@
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
-        {
-          'target_name': 'content_child',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'includes': [
-            'content_child.gypi',
-          ],
-          'conditions': [
-            ['OS != "ios"', {
-              'dependencies': [
-                'content_resources.gyp:content_resources',
-              ],
-            }],
-          ],
-          # Disable c4267 warnings until we fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        },
-
       ],
       'conditions': [
         ['OS != "ios"', {
           'targets': [
+            {
+              'target_name': 'content_child',
+              'type': 'static_library',
+              'variables': { 'enable_wexit_time_destructors': 1, },
+              'includes': [
+                'content_child.gypi',
+              ],
+              'dependencies': [
+                'content_resources.gyp:content_resources',
+              ],
+              # Disable c4267 warnings until we fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4267, ],
+            },
             {
               'target_name': 'content_gpu',
               'type': 'static_library',
