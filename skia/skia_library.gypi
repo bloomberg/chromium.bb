@@ -61,6 +61,7 @@
   'includes': [
     '../third_party/skia/gyp/core.gypi',
     '../third_party/skia/gyp/effects.gypi',
+    '../third_party/skia/gyp/pdf.gypi',
   ],
 
   'sources': [
@@ -76,31 +77,6 @@
     '../third_party/skia/src/images/SkScaledBitmapSampler.h',
 
     '../third_party/skia/src/opts/opts_check_SSE2.cpp',
-
-    '../third_party/skia/src/pdf/SkPDFCatalog.cpp',
-    '../third_party/skia/src/pdf/SkPDFCatalog.h',
-    '../third_party/skia/src/pdf/SkPDFDevice.cpp',
-    '../third_party/skia/src/pdf/SkPDFDocument.cpp',
-    '../third_party/skia/src/pdf/SkPDFFont.cpp',
-    '../third_party/skia/src/pdf/SkPDFFont.h',
-    '../third_party/skia/src/pdf/SkPDFFormXObject.cpp',
-    '../third_party/skia/src/pdf/SkPDFFormXObject.h',
-    '../third_party/skia/src/pdf/SkPDFGraphicState.cpp',
-    '../third_party/skia/src/pdf/SkPDFGraphicState.h',
-    '../third_party/skia/src/pdf/SkPDFImage.cpp',
-    '../third_party/skia/src/pdf/SkPDFImage.h',
-    '../third_party/skia/src/pdf/SkPDFPage.cpp',
-    '../third_party/skia/src/pdf/SkPDFPage.h',
-    '../third_party/skia/src/pdf/SkPDFResourceDict.cpp',
-    '../third_party/skia/src/pdf/SkPDFResourceDict.h',
-    '../third_party/skia/src/pdf/SkPDFShader.cpp',
-    '../third_party/skia/src/pdf/SkPDFShader.h',
-    '../third_party/skia/src/pdf/SkPDFStream.cpp',
-    '../third_party/skia/src/pdf/SkPDFStream.h',
-    '../third_party/skia/src/pdf/SkPDFTypes.cpp',
-    '../third_party/skia/src/pdf/SkPDFTypes.h',
-    '../third_party/skia/src/pdf/SkPDFUtils.cpp',
-    '../third_party/skia/src/pdf/SkPDFUtils.h',
 
     '../third_party/skia/src/ports/SkPurgeableMemoryBlock_none.cpp',
 
@@ -161,8 +137,6 @@
     '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
     '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
     '../third_party/skia/src/utils/win/SkHRESULT.cpp',
-    '../third_party/skia/include/pdf/SkPDFDevice.h',
-    '../third_party/skia/include/pdf/SkPDFDocument.h',
 
     '../third_party/skia/include/ports/SkTypeface_win.h',
 
