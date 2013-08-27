@@ -349,6 +349,7 @@ def GenerateJavaCoverageReport(options):
   RunCmd(['build/android/generate_emma_html.py',
           '--coverage-dir', options.coverage_dir,
           '--metadata-dir', os.path.join(CHROME_SRC, 'out', options.target),
+          '--cleanup',
           '--output', os.path.join(coverage_html, 'index.html')])
   UploadCoverageData(options, coverage_html, 'java')
 
@@ -384,9 +385,6 @@ def MainTestWrapper(options):
     if options.install:
       test_obj = INSTRUMENTATION_TESTS[options.install]
       InstallApk(options, test_obj, print_step=True)
-
-    if options.coverage_bucket:
-      RunCmd(['rm', '-rf', options.coverage_dir])
 
     if options.test_filter:
       bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)

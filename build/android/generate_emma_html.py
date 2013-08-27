@@ -38,17 +38,19 @@ def _GetFilesWithExt(root_dir, ext):
 
 def main(argv):
   option_parser = optparse.OptionParser()
-  option_parser.add_option('-o', '--output', help='HTML output filename.')
-  option_parser.add_option('-c', '--coverage-dir', default=None,
+  option_parser.add_option('--output', help='HTML output filename.')
+  option_parser.add_option('--coverage-dir', default=None,
                            help=('Root of the directory in which to search for '
                                  'coverage data (.ec) files.'))
-  option_parser.add_option('-m', '--metadata-dir', default=None,
+  option_parser.add_option('--metadata-dir', default=None,
                            help=('Root of the directory in which to search for '
                                  'coverage metadata (.em) files.'))
+  option_parser.add_option('--cleanup', action='store_true',
+                           help='If set, removes coverage/metadata files.')
   options, args = option_parser.parse_args()
 
   if not (options.coverage_dir and options.metadata_dir and options.output):
-    option_parser.error('All arguments are required.')
+    option_parser.error('One or more mandatory options are missing.')
 
   coverage_files = _GetFilesWithExt(options.coverage_dir, 'ec')
   metadata_files = _GetFilesWithExt(options.metadata_dir, 'em')
@@ -87,6 +89,10 @@ def main(argv):
        os.path.join(constants.ANDROID_SDK_ROOT, 'tools', 'lib', 'emma.jar'),
        'emma', 'report', '-r', 'html']
       + input_args + output_args + source_args)
+
+  if options.cleanup:
+    for f in coverage_files + metadata_files:
+      os.remove(f)
 
   if exit_code > 0:
     return exit_code
