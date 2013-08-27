@@ -1,0 +1,8 @@
+Tests animation events with a negative delay.
+
+animation1: Start event: elapsedTime=0
+animation1: End event: elapsedTime=0.1
+animation2: Start event: elapsedTime=0
+animation2: End event: elapsedTime=0.1
+animation3: Start event: elapsedTime=0
+animation3: End event: elapsedTime=0.1

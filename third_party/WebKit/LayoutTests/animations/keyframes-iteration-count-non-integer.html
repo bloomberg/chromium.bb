@@ -37,7 +37,7 @@
     
     document.addEventListener("webkitAnimationEnd", function(event){
         var result;
-        if (event.elapsedTime < 1)
+        if (event.elapsedTime > 0 && event.elapsedTime < 1)
             result = "PASS end of animation";
         else
             result = "FAIL end of animation";

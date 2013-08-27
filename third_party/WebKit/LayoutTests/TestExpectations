@@ -311,6 +311,7 @@ crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-bo
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/empty-keyframe-animation.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
+crbug.com/258896 virtual/web-animations-css/animations/negative-delay-events.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/wrong-keyframe-name.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]

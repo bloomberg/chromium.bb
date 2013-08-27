@@ -39,11 +39,11 @@ namespace {
 
 class TestTimedItemEventDelegate : public TimedItem::EventDelegate {
 public:
-    void onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase phase, double previousIteration, double currentIteration) OVERRIDE
+    void onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE
     {
         m_eventTriggered = true;
-        m_phaseChanged = previousPhase != phase;
-        m_iterationChanged = previousIteration != currentIteration;
+        m_phaseChanged = previousPhase != timedItem->phase();
+        m_iterationChanged = previousIteration != timedItem->currentIteration();
 
     }
     void reset()

@@ -235,24 +235,37 @@ void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listener
         m_target->document()->timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
 }
 
-void CSSAnimations::EventDelegate::onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase currentPhase, double previousIteration, double currentIteration)
+void CSSAnimations::EventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
 {
     // Events for a single document are queued and dispatched as a group at
     // the end of DocumentTimeline::serviceAnimations.
     // FIXME: Events which are queued outside of serviceAnimations should
     // trigger a timer to dispatch when control is released.
-    // FIXME: Receive TimedItem as param in order to produce correct elapsed time value.
-    double elapsedTime = 0;
+    const TimedItem::Phase currentPhase = timedItem->phase();
+    const double currentIteration = timedItem->currentIteration();
+
+    // Note that the elapsedTime is measured from when the animation starts playing.
     if (!isFirstSample && previousPhase == TimedItem::PhaseActive && currentPhase == TimedItem::PhaseActive && previousIteration != currentIteration) {
         ASSERT(!isNull(previousIteration));
         ASSERT(!isNull(currentIteration));
+        // We fire only a single event for all iterations thast terminate
+        // between a single pair of samples. See http://crbug.com/275263. For
+        // compatibility with the existing implementation, this event uses
+        // the elapsedTime for the first iteration in question.
+        ASSERT(timedItem->specified().hasIterationDuration);
+        const double elapsedTime = timedItem->specified().iterationDuration * (previousIteration + 1);
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, eventNames().webkitAnimationIterationEvent, elapsedTime);
         return;
     }
-    if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore))
-        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, elapsedTime);
+    if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore)) {
+        ASSERT(timedItem->specified().startDelay > 0 || isFirstSample);
+        // The spec states that the elapsed time should be
+        // 'delay < 0 ? -delay : 0', but we always use 0 to match the existing
+        // implementation. See crbug.com/279611
+        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, 0);
+    }
     if ((isFirstSample || isEarlierPhase(previousPhase, TimedItem::PhaseAfter)) && currentPhase == TimedItem::PhaseAfter)
-        maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().webkitAnimationEndEvent, elapsedTime);
+        maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().webkitAnimationEndEvent, timedItem->activeDuration());
 }
 
 } // namespace WebCore

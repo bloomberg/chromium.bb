@@ -87,7 +87,7 @@ private:
             , m_name(name)
         {
         }
-        virtual void onEventCondition(bool isFirstSample, TimedItem::Phase previousPhase, TimedItem::Phase currentPhase, double previousIteration, double currentIteration) OVERRIDE;
+        virtual void onEventCondition(const TimedItem*, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE;
     private:
         void maybeDispatch(Document::ListenerType, AtomicString& eventName, double elapsedTime);
         Element* m_target;

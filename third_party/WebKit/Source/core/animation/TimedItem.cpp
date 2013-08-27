@@ -103,7 +103,7 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     // This logic is specific to CSS animation events and assumes that all
     // animations start after the DocumentTimeline has started.
     if (m_eventDelegate && (m_isFirstSample || previousPhase != phase() || (phase() == PhaseActive && previousIteration != currentIteration)))
-        m_eventDelegate->onEventCondition(m_isFirstSample, previousPhase, phase(), previousIteration, currentIteration);
+        m_eventDelegate->onEventCondition(this, m_isFirstSample, previousPhase, previousIteration);
     m_isFirstSample = false;
 
     // FIXME: This probably shouldn't be recursive.
