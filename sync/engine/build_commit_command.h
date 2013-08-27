@@ -48,6 +48,11 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
   // SyncerCommand implementation.
   virtual SyncerError ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
+  // Helper function that takes a snapshot of |meta_entry| and puts it into a
+  // protobuf suitable for use in a commit request message.
+  static void BuildCommitItem(const syncable::Entry& meta_entry,
+                              sync_pb::SyncEntity* sync_entry);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BuildCommitCommandTest, InterpolatePosition);
 

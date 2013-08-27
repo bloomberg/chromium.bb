@@ -10,12 +10,13 @@
 namespace syncer {
 namespace syncable {
 
-Directory* BaseTransaction::directory() const {
-  return directory_;
+// static
+Id BaseTransaction::root_id() {
+  return Id();
 }
 
-Id BaseTransaction::root_id() const {
-  return Id();
+Directory* BaseTransaction::directory() const {
+  return directory_;
 }
 
 void BaseTransaction::Lock() {

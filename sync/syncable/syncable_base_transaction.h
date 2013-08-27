@@ -33,8 +33,9 @@ std::string WriterTagToString(WriterTag writer_tag);
 
 class SYNC_EXPORT BaseTransaction {
  public:
+  static Id root_id();
+
   Directory* directory() const;
-  Id root_id() const;
 
   virtual ~BaseTransaction();
 
