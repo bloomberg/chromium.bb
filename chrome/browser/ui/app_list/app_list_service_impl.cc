@@ -153,10 +153,6 @@ void AppListServiceImpl::SetProfilePath(const base::FilePath& profile_path) {
       profile_path.BaseName().MaybeAsASCII());
 }
 
-AppListControllerDelegate* AppListServiceImpl::CreateControllerDelegate() {
-  return NULL;
-}
-
 void AppListServiceImpl::CreateShortcut() {}
 
 // We need to watch for profile removal to keep kAppListProfile updated.

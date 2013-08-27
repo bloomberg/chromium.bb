@@ -72,6 +72,7 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
+  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
@@ -392,6 +393,10 @@ void AppListServiceMac::CreateShortcut() {
 
 NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
+}
+
+AppListControllerDelegate* AppListServiceMac::CreateControllerDelegate() {
+  return new AppListControllerDelegateCocoa();
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,

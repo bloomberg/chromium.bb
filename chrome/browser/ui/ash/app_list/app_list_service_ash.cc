@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 namespace {
@@ -34,6 +35,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual void DismissAppList() OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
+  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };
@@ -68,6 +70,10 @@ gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
   if (ash::Shell::HasInstance())
     return ash::Shell::GetInstance()->GetAppListWindow();
   return NULL;
+}
+
+AppListControllerDelegate* AppListServiceAsh::CreateControllerDelegate() {
+  return new AppListControllerDelegateAsh();
 }
 
 }  // namespace

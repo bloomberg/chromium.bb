@@ -4,12 +4,17 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,7 +42,27 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerBrowserTest);
 };
 
-#if !defined(OS_CHROMEOS) && !defined(USE_AURA)
+// Test the CreateNewWindow function of the controller delegate.
+IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
+  const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
+  AppListService* service = AppListService::Get();
+  scoped_ptr<AppListControllerDelegate> controller(
+      service->CreateControllerDelegate());
+  ASSERT_TRUE(controller);
+
+  EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile(), desktop));
+  EXPECT_EQ(0U, chrome::GetBrowserCount(
+      browser()->profile()->GetOffTheRecordProfile(), desktop));
+
+  controller->CreateNewWindow(browser()->profile(), false);
+  EXPECT_EQ(2U, chrome::GetBrowserCount(browser()->profile(), desktop));
+
+  controller->CreateNewWindow(browser()->profile(), true);
+  EXPECT_EQ(1U, chrome::GetBrowserCount(
+      browser()->profile()->GetOffTheRecordProfile(), desktop));
+}
+
+#if !defined(OS_CHROMEOS)
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   AppListService* service = AppListService::Get();
@@ -94,4 +119,4 @@ IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
   CreateBrowser(service->GetCurrentAppListProfile());
   service->DismissAppList();
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(USE_AURA)
+#endif  // !defined(OS_CHROMEOS)

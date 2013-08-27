@@ -57,7 +57,6 @@ class AppListServiceImpl : public AppListService,
   virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
