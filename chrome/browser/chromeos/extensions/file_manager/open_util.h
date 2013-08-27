@@ -4,10 +4,9 @@
 //
 // This file provides functions for opening an item (file or directory) using
 // the file manager.
-// TODO(satorux): Rename this to something like open_util.h.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_OPEN_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_OPEN_UTIL_H_
 
 namespace base {
 class FilePath;
@@ -40,4 +39,4 @@ void ShowItemInFolder(const base::FilePath& file_path);
 }  // namespace util
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_OPEN_UTIL_H_
