@@ -11,19 +11,16 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // BluetoothInputClient is used to communicate with objects representing
 // Bluetooth Input (HID) devices.
-class CHROMEOS_EXPORT BluetoothInputClient {
+class CHROMEOS_EXPORT BluetoothInputClient : public DBusClient {
  public:
   // Structure of properties associated with bluetooth input devices.
   struct Properties : public dbus::PropertySet {
@@ -71,8 +68,7 @@ class CHROMEOS_EXPORT BluetoothInputClient {
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
   // Creates the instance.
-  static BluetoothInputClient* Create(DBusClientImplementationType type,
-                                      dbus::Bus* bus);
+  static BluetoothInputClient* Create(DBusClientImplementationType type);
 
  protected:
   BluetoothInputClient();

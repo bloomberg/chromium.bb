@@ -12,6 +12,9 @@ FakeSystemClockClient::FakeSystemClockClient() {
 FakeSystemClockClient::~FakeSystemClockClient() {
 }
 
+void FakeSystemClockClient::Init(dbus::Bus* bus) {
+}
+
 void FakeSystemClockClient::AddObserver(Observer* observer) {
 }
 

@@ -40,11 +40,14 @@ void PassDictionary(
 const char ShillProfileClientStub::kSharedProfilePath[] = "/profile/default";
 
 ShillProfileClientStub::ShillProfileClientStub() {
-  AddProfile(kSharedProfilePath, std::string());
 }
 
 ShillProfileClientStub::~ShillProfileClientStub() {
   STLDeleteValues(&profiles_);
+}
+
+void ShillProfileClientStub::Init(dbus::Bus* bus) {
+  AddProfile(kSharedProfilePath, std::string());
 }
 
 void ShillProfileClientStub::AddPropertyChangedObserver(

@@ -11,18 +11,15 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // BluetoothAgentManagerClient is used to communicate with the agent manager
 // object of the Bluetooth daemon.
-class CHROMEOS_EXPORT BluetoothAgentManagerClient {
+class CHROMEOS_EXPORT BluetoothAgentManagerClient : public DBusClient {
  public:
   virtual ~BluetoothAgentManagerClient();
 
@@ -54,9 +51,8 @@ class CHROMEOS_EXPORT BluetoothAgentManagerClient {
                                    const base::Closure& callback,
                                    const ErrorCallback& error_callback) = 0;
 
- // Creates the instance.
-  static BluetoothAgentManagerClient* Create(DBusClientImplementationType type,
-                                             dbus::Bus* bus);
+  // Creates the instance.
+  static BluetoothAgentManagerClient* Create(DBusClientImplementationType type);
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];

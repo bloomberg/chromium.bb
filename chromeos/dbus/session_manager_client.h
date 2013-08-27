@@ -11,16 +11,13 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // SessionManagerClient is used to communicate with the session manager.
-class CHROMEOS_EXPORT SessionManagerClient {
+class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
  public:
   // Interface for observing changes from the session manager.
   class Observer {
@@ -173,8 +170,7 @@ class CHROMEOS_EXPORT SessionManagerClient {
                                const std::vector<std::string>& flags) = 0;
 
   // Creates the instance.
-  static SessionManagerClient* Create(DBusClientImplementationType type,
-                                      dbus::Bus* bus);
+  static SessionManagerClient* Create(DBusClientImplementationType type);
 
   virtual ~SessionManagerClient();
 

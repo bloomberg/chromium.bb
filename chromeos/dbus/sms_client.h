@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace base {
@@ -17,7 +18,6 @@ class DictionaryValue;
 }
 
 namespace dbus {
-class Bus;
 class ObjectPath;
 }
 
@@ -27,7 +27,7 @@ namespace chromeos {
 // org.freedesktop.ModemManager1.SMS service.  All methods should be
 // called from the origin thread (UI thread) which initializes the
 // DBusThreadManager instance.
-class CHROMEOS_EXPORT SMSClient {
+class CHROMEOS_EXPORT SMSClient : public DBusClient {
  public:
   typedef base::Callback<void(const base::DictionaryValue& sms)> GetAllCallback;
 
@@ -35,8 +35,7 @@ class CHROMEOS_EXPORT SMSClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static SMSClient* Create(DBusClientImplementationType type,
-                           dbus::Bus* bus);
+  static SMSClient* Create(DBusClientImplementationType type);
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
   virtual void GetAll(const std::string& service_name,

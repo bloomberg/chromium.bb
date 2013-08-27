@@ -36,7 +36,8 @@ class CHROMEOS_EXPORT FakeBluetoothInputClient
   FakeBluetoothInputClient();
   virtual ~FakeBluetoothInputClient();
 
-  // BluetoothInputClient override
+  // BluetoothInputClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)

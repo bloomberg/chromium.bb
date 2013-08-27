@@ -8,10 +8,13 @@
 namespace chromeos {
 
 FakePowerManagerClient::FakePowerManagerClient()
-  : request_restart_call_count_(0) {
+    : request_restart_call_count_(0) {
 }
 
 FakePowerManagerClient::~FakePowerManagerClient() {
+}
+
+void FakePowerManagerClient::Init(dbus::Bus* bus) {
 }
 
 void FakePowerManagerClient::AddObserver(Observer* observer) {

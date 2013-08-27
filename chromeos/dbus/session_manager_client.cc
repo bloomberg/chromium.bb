@@ -28,66 +28,9 @@ namespace chromeos {
 // The SessionManagerClient implementation used in production.
 class SessionManagerClientImpl : public SessionManagerClient {
  public:
-  explicit SessionManagerClientImpl(dbus::Bus* bus)
-      : session_manager_proxy_(bus->GetObjectProxy(
-            login_manager::kSessionManagerServiceName,
-            dbus::ObjectPath(login_manager::kSessionManagerServicePath))),
-        blocking_method_caller_(bus, session_manager_proxy_),
-        weak_ptr_factory_(this) {
-    // Signals emitted on Chromium's interface.  Many of these ought to be
-    // method calls instead.
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kOwnerKeySetSignal,
-        base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kPropertyChangeCompleteSignal,
-        base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kLockScreenSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenLockReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kUnlockScreenSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenUnlockReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kLivenessRequestedSignal,
-        base::Bind(&SessionManagerClientImpl::LivenessRequestedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Signals emitted on the session manager's interface.
-    session_manager_proxy_->ConnectToSignal(
-        login_manager::kSessionManagerInterface,
-        login_manager::kScreenIsLockedSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenIsLockedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        login_manager::kSessionManagerInterface,
-        login_manager::kScreenIsUnlockedSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenIsUnlockedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  SessionManagerClientImpl()
+      : session_manager_proxy_(NULL),
+        weak_ptr_factory_(this) {}
 
   virtual ~SessionManagerClientImpl() {
   }
@@ -231,7 +174,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     scoped_ptr<dbus::Response> response =
-        blocking_method_caller_.CallMethodAndBlock(&method_call);
+        blocking_method_caller_->CallMethodAndBlock(&method_call);
     std::string policy;
     ExtractString(login_manager::kSessionManagerRetrievePolicyForUser,
                   response.get(),
@@ -298,6 +241,69 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    session_manager_proxy_ = bus->GetObjectProxy(
+        login_manager::kSessionManagerServiceName,
+        dbus::ObjectPath(login_manager::kSessionManagerServicePath));
+    blocking_method_caller_.reset(
+        new BlockingMethodCaller(bus, session_manager_proxy_));
+
+    // Signals emitted on Chromium's interface.  Many of these ought to be
+    // method calls instead.
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kOwnerKeySetSignal,
+        base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kPropertyChangeCompleteSignal,
+        base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kLockScreenSignal,
+        base::Bind(&SessionManagerClientImpl::ScreenLockReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kUnlockScreenSignal,
+        base::Bind(&SessionManagerClientImpl::ScreenUnlockReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kLivenessRequestedSignal,
+        base::Bind(&SessionManagerClientImpl::LivenessRequestedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Signals emitted on the session manager's interface.
+    session_manager_proxy_->ConnectToSignal(
+        login_manager::kSessionManagerInterface,
+        login_manager::kScreenIsLockedSignal,
+        base::Bind(&SessionManagerClientImpl::ScreenIsLockedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    session_manager_proxy_->ConnectToSignal(
+        login_manager::kSessionManagerInterface,
+        login_manager::kScreenIsUnlockedSignal,
+        base::Bind(&SessionManagerClientImpl::ScreenIsUnlockedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -513,7 +519,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   dbus::ObjectProxy* session_manager_proxy_;
-  BlockingMethodCaller blocking_method_caller_;
+  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
@@ -527,7 +533,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
 // which does nothing.
 class SessionManagerClientStubImpl : public SessionManagerClient {
  public:
-  SessionManagerClientStubImpl() {
+  SessionManagerClientStubImpl() {}
+  virtual ~SessionManagerClientStubImpl() {}
+
+  // SessionManagerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
     // Make sure that there are no keys left over from a previous browser run.
     base::FilePath user_policy_key_dir;
     if (PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
@@ -539,9 +549,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
           false);
     }
   }
-  virtual ~SessionManagerClientStubImpl() {}
 
-  // SessionManagerClient overrides.
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
@@ -664,10 +672,9 @@ SessionManagerClient::~SessionManagerClient() {
 }
 
 SessionManagerClient* SessionManagerClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new SessionManagerClientImpl(bus);
+    return new SessionManagerClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new SessionManagerClientStubImpl();
 }

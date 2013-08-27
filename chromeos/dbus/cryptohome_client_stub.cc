@@ -20,6 +20,9 @@ CryptohomeClientStubImpl::CryptohomeClientStubImpl()
 
 CryptohomeClientStubImpl::~CryptohomeClientStubImpl() {}
 
+void CryptohomeClientStubImpl::Init(dbus::Bus* bus) {
+}
+
 void CryptohomeClientStubImpl::SetAsyncCallStatusHandlers(
     const AsyncCallStatusHandler& handler,
     const AsyncCallStatusWithDataHandler& data_handler) {

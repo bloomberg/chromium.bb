@@ -6,7 +6,9 @@
 
 namespace chromeos {
 
-CrasAudioClientStubImpl::CrasAudioClientStubImpl() {
+CrasAudioClientStubImpl::CrasAudioClientStubImpl() {}
+
+void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
   VLOG(1) << "CrasAudioClientStubImpl is created";
 
   // Fake audio output nodes.

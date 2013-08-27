@@ -12,6 +12,9 @@ FakeShillDeviceClient::FakeShillDeviceClient() {
 FakeShillDeviceClient::~FakeShillDeviceClient() {
 }
 
+void FakeShillDeviceClient::Init(dbus::Bus* bus) {
+}
+
 void FakeShillDeviceClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& device_path,
     ShillPropertyChangedObserver* observer) {

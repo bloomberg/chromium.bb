@@ -12,19 +12,16 @@
 #include "base/callback.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-
-namespace dbus {
-class Bus;
-}
 
 namespace chromeos {
 
 // CryptohomeClient is used to communicate with the Cryptohome service.
 // All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT CryptohomeClient {
+class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
  public:
   // A callback to handle AsyncCallStatus signals.
   typedef base::Callback<void(int async_id,
@@ -52,8 +49,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CryptohomeClient* Create(DBusClientImplementationType type,
-                                  dbus::Bus* bus);
+  static CryptohomeClient* Create(DBusClientImplementationType type);
 
   // Returns the sanitized |username| that the stub implementation would return.
   static std::string GetStubSanitizedUsername(const std::string& username);

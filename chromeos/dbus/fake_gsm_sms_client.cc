@@ -9,9 +9,9 @@
 namespace chromeos {
 
 FakeGsmSMSClient::FakeGsmSMSClient()
-  : test_index_(-1),
-    sms_test_message_switch_present_(false),
-    weak_ptr_factory_(this)  {
+    : test_index_(-1),
+      sms_test_message_switch_present_(false),
+      weak_ptr_factory_(this) {
   test_messages_.push_back("Test Message 0");
   test_messages_.push_back("Test Message 1");
   test_messages_.push_back("Test a relatively long message 2");
@@ -22,7 +22,11 @@ FakeGsmSMSClient::FakeGsmSMSClient()
   test_messages_.push_back("Test Message 6");
 }
 
-FakeGsmSMSClient::~FakeGsmSMSClient() {}
+FakeGsmSMSClient::~FakeGsmSMSClient() {
+}
+
+void FakeGsmSMSClient::Init(dbus::Bus* bus) {
+}
 
 void FakeGsmSMSClient::SetSmsReceivedHandler(
     const std::string& service_name,

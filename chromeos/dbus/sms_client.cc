@@ -31,7 +31,8 @@ namespace {
 // DBusThreadManager instance.
 class SMSClientImpl : public SMSClient {
  public:
-  explicit SMSClientImpl(dbus::Bus* bus) : bus_(bus), weak_ptr_factory_(this) {}
+  SMSClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
+
   virtual ~SMSClientImpl() {}
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
@@ -47,6 +48,11 @@ class SMSClientImpl : public SMSClient {
                        base::Bind(&SMSClientImpl::OnGetAll,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
   }
 
  private:
@@ -83,6 +89,8 @@ class SMSClientStubImpl : public SMSClient {
  public:
   SMSClientStubImpl() : weak_ptr_factory_(this) {}
   virtual ~SMSClientStubImpl() {}
+
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
 
   virtual void GetAll(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
@@ -131,10 +139,9 @@ SMSClient::~SMSClient() {}
 
 
 // static
-SMSClient* SMSClient::Create(DBusClientImplementationType type,
-                             dbus::Bus* bus) {
+SMSClient* SMSClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new SMSClientImpl(bus);
+    return new SMSClientImpl();
   }
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new SMSClientStubImpl();

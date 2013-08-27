@@ -18,7 +18,8 @@ class FakeCryptohomeClient : public CryptohomeClient {
   FakeCryptohomeClient();
   virtual ~FakeCryptohomeClient();
 
-  // CryptohomeClient overrides.
+  // CryptohomeClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void SetAsyncCallStatusHandlers(
       const AsyncCallStatusHandler& handler,
       const AsyncCallStatusWithDataHandler& data_handler) OVERRIDE;

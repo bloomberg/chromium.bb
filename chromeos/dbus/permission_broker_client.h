@@ -10,11 +10,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
@@ -25,7 +22,7 @@ namespace chromeos {
 // which the user the browser runs under normally wouldn't have access to. For
 // more details on the permission broker see:
 // http://git.chromium.org/gitweb/?p=chromiumos/platform/permission_broker.git
-class CHROMEOS_EXPORT PermissionBrokerClient {
+class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
  public:
   // The ResultCallback is used for both the RequestPathAccess and
   // RequestUsbAcess methods. Its boolean parameter represents the result of the
@@ -34,8 +31,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient {
 
   virtual ~PermissionBrokerClient();
 
-  static PermissionBrokerClient* Create(DBusClientImplementationType type,
-                                        dbus::Bus* bus);
+  static PermissionBrokerClient* Create(DBusClientImplementationType type);
 
   // RequestPathAccess requests access to a single device node identified by
   // |path|. If |interface_id| value is passed (different than

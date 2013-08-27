@@ -11,18 +11,15 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // BluetoothProfileManagerClient is used to communicate with the profile
 // manager object of the Bluetooth daemon.
-class CHROMEOS_EXPORT BluetoothProfileManagerClient {
+class CHROMEOS_EXPORT BluetoothProfileManagerClient : public DBusClient {
  public:
   // Species the role of the object within the profile. SYMMETRIC should be
   // usually used unless the profile requires you specify as a CLIENT or as a
@@ -99,8 +96,7 @@ class CHROMEOS_EXPORT BluetoothProfileManagerClient {
 
   // Creates the instance.
   static BluetoothProfileManagerClient* Create(
-      DBusClientImplementationType type,
-      dbus::Bus* bus);
+      DBusClientImplementationType type);
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];

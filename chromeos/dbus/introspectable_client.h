@@ -10,18 +10,15 @@
 
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // IntrospectableClient is used to retrieve the D-Bus introspection data
 // from a remote object.
-class CHROMEOS_EXPORT IntrospectableClient {
+class CHROMEOS_EXPORT IntrospectableClient : public DBusClient {
  public:
   virtual ~IntrospectableClient();
 
@@ -48,8 +45,7 @@ class CHROMEOS_EXPORT IntrospectableClient {
       const std::string& xml_data);
 
   // Creates the instance
-  static IntrospectableClient* Create(DBusClientImplementationType type,
-                                      dbus::Bus* bus);
+  static IntrospectableClient* Create(DBusClientImplementationType type);
 
  protected:
   IntrospectableClient();

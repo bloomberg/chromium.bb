@@ -11,12 +11,9 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
-namespace dbus {
-class Bus;
-}
 
 namespace power_manager {
 class PowerManagementPolicy;
@@ -32,7 +29,7 @@ typedef base::Callback<void(void)> IdleNotificationCallback;
 typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
 
 // PowerManagerClient is used to communicate with the power manager.
-class CHROMEOS_EXPORT PowerManagerClient {
+class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
  public:
   // Interface for observing changes from the power manager.
   class Observer {
@@ -161,8 +158,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
   virtual base::Closure GetSuspendReadinessCallback() = 0;
 
   // Creates the instance.
-  static PowerManagerClient* Create(DBusClientImplementationType type,
-                                    dbus::Bus* bus);
+  static PowerManagerClient* Create(DBusClientImplementationType type);
 
   virtual ~PowerManagerClient();
 

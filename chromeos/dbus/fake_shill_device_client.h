@@ -18,7 +18,8 @@ class FakeShillDeviceClient : public ShillDeviceClient {
   FakeShillDeviceClient();
   virtual ~FakeShillDeviceClient();
 
-  // ShillDeviceClient overrides.
+  // ShillDeviceClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) OVERRIDE;

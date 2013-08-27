@@ -24,37 +24,31 @@ namespace {
 // The ShillManagerClient implementation.
 class ShillManagerClientImpl : public ShillManagerClient {
  public:
-  explicit ShillManagerClientImpl(dbus::Bus* bus)
-      : proxy_(bus->GetObjectProxy(
-          flimflam::kFlimflamServiceName,
-          dbus::ObjectPath(flimflam::kFlimflamServicePath))),
-        helper_(bus, proxy_) {
-    helper_.MonitorPropertyChanged(flimflam::kFlimflamManagerInterface);
-  }
+  ShillManagerClientImpl() : proxy_(NULL) {}
 
   ////////////////////////////////////
   // ShillManagerClient overrides.
   virtual void AddPropertyChangedObserver(
       ShillPropertyChangedObserver* observer) OVERRIDE {
-    helper_.AddPropertyChangedObserver(observer);
+    helper_->AddPropertyChangedObserver(observer);
   }
 
   virtual void RemovePropertyChangedObserver(
       ShillPropertyChangedObserver* observer) OVERRIDE {
-    helper_.RemovePropertyChangedObserver(observer);
+    helper_->RemovePropertyChangedObserver(observer);
   }
 
   virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kGetPropertiesFunction);
-    helper_.CallDictionaryValueMethod(&method_call, callback);
+    helper_->CallDictionaryValueMethod(&method_call, callback);
   }
 
   virtual void GetNetworksForGeolocation(
       const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kGetNetworksForGeolocation);
-    helper_.CallDictionaryValueMethod(&method_call, callback);
+    helper_->CallDictionaryValueMethod(&method_call, callback);
   }
 
   virtual void SetProperty(const std::string& name,
@@ -66,7 +60,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     ShillClientHelper::AppendValueDataAsVariant(&writer, value);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
   }
@@ -78,7 +72,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  flimflam::kRequestScanFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
   }
@@ -91,7 +85,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  flimflam::kEnableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
   }
@@ -104,7 +98,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  flimflam::kDisableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
   }
@@ -117,7 +111,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  flimflam::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallObjectPathMethodWithErrorCallback(&method_call,
+    helper_->CallObjectPathMethodWithErrorCallback(&method_call,
                                                   callback,
                                                   error_callback);
   }
@@ -132,7 +126,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(dbus::ObjectPath(profile_path));
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallObjectPathMethodWithErrorCallback(&method_call,
+    helper_->CallObjectPathMethodWithErrorCallback(&method_call,
                                                   callback,
                                                   error_callback);
   }
@@ -145,7 +139,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  flimflam::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_.CallObjectPathMethodWithErrorCallback(&method_call,
+    helper_->CallObjectPathMethodWithErrorCallback(&method_call,
                                                   callback,
                                                   error_callback);
   }
@@ -163,7 +157,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     writer.AppendString(properties.device_serial);
     writer.AppendString(properties.device_ssid);
     writer.AppendString(properties.device_bssid);
-    helper_.CallBooleanMethodWithErrorCallback(
+    helper_->CallBooleanMethodWithErrorCallback(
         &method_call, callback, error_callback);
   }
 
@@ -183,7 +177,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     writer.AppendString(properties.device_ssid);
     writer.AppendString(properties.device_bssid);
     writer.AppendObjectPath(dbus::ObjectPath(service_path));
-    helper_.CallStringMethodWithErrorCallback(
+    helper_->CallStringMethodWithErrorCallback(
         &method_call, callback, error_callback);
   }
 
@@ -203,7 +197,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
     writer.AppendString(properties.device_ssid);
     writer.AppendString(properties.device_bssid);
     writer.AppendString(data);
-    helper_.CallStringMethodWithErrorCallback(
+    helper_->CallStringMethodWithErrorCallback(
         &method_call, callback, error_callback);
   }
 
@@ -212,7 +206,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kConnectToBestServicesFunction);
-    helper_.CallVoidMethodWithErrorCallback(&method_call,
+    helper_->CallVoidMethodWithErrorCallback(&method_call,
                                             callback,
                                             error_callback);
   }
@@ -221,9 +215,18 @@ class ShillManagerClientImpl : public ShillManagerClient {
     return NULL;
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    proxy_ =
+        bus->GetObjectProxy(flimflam::kFlimflamServiceName,
+                            dbus::ObjectPath(flimflam::kFlimflamServicePath));
+    helper_.reset(new ShillClientHelper(bus, proxy_));
+    helper_->MonitorPropertyChanged(flimflam::kFlimflamManagerInterface);
+  }
+
  private:
   dbus::ObjectProxy* proxy_;
-  ShillClientHelper helper_;
+  scoped_ptr<ShillClientHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillManagerClientImpl);
 };
@@ -236,10 +239,9 @@ ShillManagerClient::~ShillManagerClient() {}
 
 // static
 ShillManagerClient* ShillManagerClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillManagerClientImpl(bus);
+    return new ShillManagerClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillManagerClientStub();
 }

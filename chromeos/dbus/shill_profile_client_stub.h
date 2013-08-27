@@ -21,7 +21,8 @@ class ShillProfileClientStub : public ShillProfileClient,
   ShillProfileClientStub();
   virtual ~ShillProfileClientStub();
 
-  // ShillProfileClient overrides.
+  // ShillProfileClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
       ShillPropertyChangedObserver* observer) OVERRIDE;

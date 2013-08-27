@@ -29,7 +29,8 @@ class ShillServiceClientStub : public ShillServiceClient,
   CHROMEOS_EXPORT static bool IsStubPortalledWifiEnabled(
       const std::string& path);
 
-  // ShillServiceClient overrides.
+  // ShillServiceClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) OVERRIDE;

@@ -17,6 +17,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MockSessionManagerClient();
   virtual ~MockSessionManagerClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD1(HasObserver, bool(Observer*));

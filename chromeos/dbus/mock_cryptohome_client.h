@@ -17,6 +17,7 @@ class MockCryptohomeClient : public CryptohomeClient {
   MockCryptohomeClient();
   virtual ~MockCryptohomeClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD2(SetAsyncCallStatusHandlers,
                void(const AsyncCallStatusHandler& handler,
                     const AsyncCallStatusWithDataHandler& data_handler));

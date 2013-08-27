@@ -12,19 +12,16 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
 // BluetoothDeviceClient is used to communicate with objects representing
 // remote Bluetooth Devices.
-class CHROMEOS_EXPORT BluetoothDeviceClient {
+class CHROMEOS_EXPORT BluetoothDeviceClient : public DBusClient {
  public:
   // Structure of properties associated with bluetooth devices.
   struct Properties : public dbus::PropertySet {
@@ -174,8 +171,7 @@ class CHROMEOS_EXPORT BluetoothDeviceClient {
                              const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
-  static BluetoothDeviceClient* Create(DBusClientImplementationType type,
-                                       dbus::Bus* bus);
+  static BluetoothDeviceClient* Create(DBusClientImplementationType type);
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];

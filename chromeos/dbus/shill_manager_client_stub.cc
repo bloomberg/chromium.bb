@@ -78,12 +78,15 @@ void AppendServicesForType(
 
 ShillManagerClientStub::ShillManagerClientStub()
     : weak_ptr_factory_(this) {
-  SetDefaultProperties();
 }
 
 ShillManagerClientStub::~ShillManagerClientStub() {}
 
 // ShillManagerClient overrides.
+
+void ShillManagerClientStub::Init(dbus::Bus* bus) {
+  SetDefaultProperties();
+}
 
 void ShillManagerClientStub::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {

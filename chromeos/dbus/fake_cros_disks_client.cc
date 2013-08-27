@@ -10,13 +10,17 @@
 namespace chromeos {
 
 FakeCrosDisksClient::FakeCrosDisksClient()
-  : unmount_call_count_(0),
-    unmount_success_(true),
-    format_device_call_count_(0),
-    format_device_success_(true) {
+    : unmount_call_count_(0),
+      unmount_success_(true),
+      format_device_call_count_(0),
+      format_device_success_(true) {
 }
 
-FakeCrosDisksClient::~FakeCrosDisksClient() {}
+FakeCrosDisksClient::~FakeCrosDisksClient() {
+}
+
+void FakeCrosDisksClient::Init(dbus::Bus* bus) {
+}
 
 void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& source_format,
@@ -37,7 +41,7 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
   last_unmount_options_ = options;
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, unmount_success_ ? callback : error_callback);
-  if(!unmount_listener_.is_null())
+  if (!unmount_listener_.is_null())
     unmount_listener_.Run();
 }
 

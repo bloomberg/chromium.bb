@@ -30,7 +30,6 @@ void ErrorFunction(const std::string& error_name,
 }  // namespace
 
 ShillDeviceClientStub::ShillDeviceClientStub() : weak_ptr_factory_(this) {
-  SetDefaultProperties();
 }
 
 ShillDeviceClientStub::~ShillDeviceClientStub() {
@@ -39,6 +38,10 @@ ShillDeviceClientStub::~ShillDeviceClientStub() {
 }
 
 // ShillDeviceClient overrides.
+
+void ShillDeviceClientStub::Init(dbus::Bus* bus) {
+  SetDefaultProperties();
+}
 
 void ShillDeviceClientStub::AddPropertyChangedObserver(
     const dbus::ObjectPath& device_path,

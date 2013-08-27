@@ -8,18 +8,15 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
 #include <string>
 
-namespace dbus {
-class Bus;
-}
-
 namespace chromeos {
 
 // UpdateEngineClient is used to communicate with the update engine.
-class CHROMEOS_EXPORT UpdateEngineClient {
+class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
  public:
   // Edges for state machine
   //    IDLE->CHECKING_FOR_UPDATE
@@ -123,8 +120,7 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   static UpdateCheckCallback EmptyUpdateCheckCallback();
 
   // Creates the instance.
-  static UpdateEngineClient* Create(DBusClientImplementationType type,
-                                    dbus::Bus* bus);
+  static UpdateEngineClient* Create(DBusClientImplementationType type);
 
  protected:
   // Create() should be used instead.

@@ -22,7 +22,8 @@ class ShillManagerClientStub : public ShillManagerClient,
   ShillManagerClientStub();
   virtual ~ShillManagerClientStub();
 
-  // ShillManagerClient overrides.
+  // ShillManagerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       ShillPropertyChangedObserver* observer) OVERRIDE;
   virtual void RemovePropertyChangedObserver(

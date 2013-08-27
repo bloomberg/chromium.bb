@@ -19,63 +19,7 @@ namespace chromeos {
 // The CrasAudioClient implementation used in production.
 class CrasAudioClientImpl : public CrasAudioClient {
  public:
-  explicit CrasAudioClientImpl(dbus::Bus* bus)
-      : cras_proxy_(NULL),
-        weak_ptr_factory_(this) {
-    cras_proxy_ = bus->GetObjectProxy(
-        cras::kCrasServiceName,
-        dbus::ObjectPath(cras::kCrasServicePath));
-
-    // Monitor NameOwnerChanged signal.
-    cras_proxy_->SetNameOwnerChangedCallback(
-        base::Bind(&CrasAudioClientImpl::NameOwnerChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for output mute change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kOutputMuteChanged,
-        base::Bind(&CrasAudioClientImpl::OutputMuteChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for input mute change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kInputMuteChanged,
-        base::Bind(&CrasAudioClientImpl::InputMuteChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for nodes change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kNodesChanged,
-        base::Bind(&CrasAudioClientImpl::NodesChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for active output node change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kActiveOutputNodeChanged,
-        base::Bind(&CrasAudioClientImpl::ActiveOutputNodeChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for active input node change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kActiveInputNodeChanged,
-        base::Bind(&CrasAudioClientImpl::ActiveInputNodeChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  CrasAudioClientImpl() : cras_proxy_(NULL), weak_ptr_factory_(this) {}
 
   virtual ~CrasAudioClientImpl() {
   }
@@ -179,6 +123,62 @@ class CrasAudioClientImpl : public CrasAudioClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    cras_proxy_ = bus->GetObjectProxy(cras::kCrasServiceName,
+                                      dbus::ObjectPath(cras::kCrasServicePath));
+
+    // Monitor NameOwnerChanged signal.
+    cras_proxy_->SetNameOwnerChangedCallback(
+        base::Bind(&CrasAudioClientImpl::NameOwnerChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for output mute change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kOutputMuteChanged,
+        base::Bind(&CrasAudioClientImpl::OutputMuteChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for input mute change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kInputMuteChanged,
+        base::Bind(&CrasAudioClientImpl::InputMuteChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for nodes change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kNodesChanged,
+        base::Bind(&CrasAudioClientImpl::NodesChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for active output node change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kActiveOutputNodeChanged,
+        base::Bind(&CrasAudioClientImpl::ActiveOutputNodeChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for active input node change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kActiveInputNodeChanged,
+        base::Bind(&CrasAudioClientImpl::ActiveInputNodeChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -379,11 +379,9 @@ CrasAudioClient::~CrasAudioClient() {
 }
 
 // static
-CrasAudioClient* CrasAudioClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+CrasAudioClient* CrasAudioClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new CrasAudioClientImpl(bus);
+    return new CrasAudioClientImpl();
   }
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new CrasAudioClientStubImpl();

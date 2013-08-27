@@ -23,6 +23,9 @@ FakeCryptohomeClient::FakeCryptohomeClient() : unmount_result_(false) {
 FakeCryptohomeClient::~FakeCryptohomeClient() {
 }
 
+void FakeCryptohomeClient::Init(dbus::Bus* bus) {
+}
+
 void FakeCryptohomeClient::TpmIsBeingOwned(
     const BoolDBusMethodCallback& callback) {
 }

@@ -27,7 +27,8 @@ class CHROMEOS_EXPORT FakeBluetoothAgentManagerClient
   FakeBluetoothAgentManagerClient();
   virtual ~FakeBluetoothAgentManagerClient();
 
-  // BluetoothAgentManagerClient override
+  // BluetoothAgentManagerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void RegisterAgent(const dbus::ObjectPath& agent_path,
                              const std::string& capability,
                              const base::Closure& callback,

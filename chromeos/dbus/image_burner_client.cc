@@ -20,27 +20,8 @@ namespace {
 // The ImageBurnerClient implementation.
 class ImageBurnerClientImpl : public ImageBurnerClient {
  public:
-  explicit ImageBurnerClientImpl(dbus::Bus* bus)
-      : proxy_(NULL),
-        weak_ptr_factory_(this) {
-    proxy_ = bus->GetObjectProxy(
-        imageburn::kImageBurnServiceName,
-        dbus::ObjectPath(imageburn::kImageBurnServicePath));
-    proxy_->ConnectToSignal(
-        imageburn::kImageBurnServiceInterface,
-        imageburn::kSignalBurnFinishedName,
-        base::Bind(&ImageBurnerClientImpl::OnBurnFinished,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    proxy_->ConnectToSignal(
-        imageburn::kImageBurnServiceInterface,
-        imageburn::kSignalBurnUpdateName,
-        base::Bind(&ImageBurnerClientImpl::OnBurnProgressUpdate,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  ImageBurnerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
+
   virtual ~ImageBurnerClientImpl() {}
 
   // ImageBurnerClient override.
@@ -70,6 +51,27 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   virtual void ResetEventHandlers() OVERRIDE {
     burn_finished_handler_.Reset();
     burn_progress_update_handler_.Reset();
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    proxy_ =
+        bus->GetObjectProxy(imageburn::kImageBurnServiceName,
+                            dbus::ObjectPath(imageburn::kImageBurnServicePath));
+    proxy_->ConnectToSignal(
+        imageburn::kImageBurnServiceInterface,
+        imageburn::kSignalBurnFinishedName,
+        base::Bind(&ImageBurnerClientImpl::OnBurnFinished,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        imageburn::kImageBurnServiceInterface,
+        imageburn::kSignalBurnUpdateName,
+        base::Bind(&ImageBurnerClientImpl::OnBurnProgressUpdate,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -142,10 +144,10 @@ ImageBurnerClient::~ImageBurnerClient() {
 }
 
 // static
-ImageBurnerClient* ImageBurnerClient::Create(DBusClientImplementationType type,
-                                             dbus::Bus* bus) {
+ImageBurnerClient* ImageBurnerClient::Create(
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ImageBurnerClientImpl(bus);
+    return new ImageBurnerClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeImageBurnerClient();
 }

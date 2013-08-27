@@ -18,7 +18,8 @@ class ShillIPConfigClientStub : public ShillIPConfigClient {
   ShillIPConfigClientStub();
   virtual ~ShillIPConfigClientStub();
 
-  // ShillIPConfigClient overrides:
+  // ShillIPConfigClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) OVERRIDE;

@@ -54,14 +54,13 @@ static bool g_dbus_thread_manager_set_for_testing = false;
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
  public:
-  explicit DBusThreadManagerImpl(DBusClientImplementationType client_type)
-      : client_type_(client_type),
-        client_type_override_(client_type) {
+  explicit DBusThreadManagerImpl(DBusClientImplementationType client_type) {
+    DBusClientImplementationType client_type_override = client_type;
     // If --dbus-stub was requested, pass STUB to specific components;
     // Many components like login are not useful with a stub implementation.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kDbusStub)) {
-      client_type_override_ = STUB_DBUS_CLIENT_IMPLEMENTATION;
+      client_type_override = STUB_DBUS_CLIENT_IMPLEMENTATION;
     }
 
     // Create the D-Bus thread.
@@ -76,46 +75,34 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     system_bus_options.connection_type = dbus::Bus::PRIVATE;
     system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
+
+    CreateDefaultClients(client_type, client_type_override);
   }
 
   // InitializeClients gets called after g_dbus_thread_manager is set.
-  // NOTE: Clients that access other clients in their constructor must be
-  // construced in the correct order.
+  // NOTE: Clients that access other clients in their Init() must be
+  // initialized in the correct order. This is the only place where Clients'
+  // Init() should be called if DBusThreadManager is being used.
   void InitializeClients() {
-    bluetooth_adapter_client_.reset(
-        BluetoothAdapterClient::Create(client_type_, system_bus_.get()));
-    bluetooth_agent_manager_client_.reset(
-        BluetoothAgentManagerClient::Create(client_type_, system_bus_.get()));
-    bluetooth_device_client_.reset(
-        BluetoothDeviceClient::Create(client_type_, system_bus_.get()));
-    bluetooth_input_client_.reset(
-        BluetoothInputClient::Create(client_type_, system_bus_.get()));
-    bluetooth_profile_manager_client_.reset(
-        BluetoothProfileManagerClient::Create(client_type_, system_bus_.get()));
-    cras_audio_client_.reset(CrasAudioClient::Create(
-        client_type_, system_bus_.get()));
-    cros_disks_client_.reset(
-        CrosDisksClient::Create(client_type_, system_bus_.get()));
-    cryptohome_client_.reset(
-        CryptohomeClient::Create(client_type_, system_bus_.get()));
-    debug_daemon_client_.reset(
-        DebugDaemonClient::Create(client_type_, system_bus_.get()));
+    InitClient(bluetooth_adapter_client_.get());
+    InitClient(bluetooth_agent_manager_client_.get());
+    InitClient(bluetooth_device_client_.get());
+    InitClient(bluetooth_input_client_.get());
+    InitClient(bluetooth_profile_manager_client_.get());
+    InitClient(cras_audio_client_.get());
+    InitClient(cros_disks_client_.get());
+    InitClient(cryptohome_client_.get());
+    InitClient(debug_daemon_client_.get());
 
-    // Construction order of the Stub implementations of the Shill clients
-    // matters; stub clients may only have construction dependencies on clients
-    // previously constructed.
-    shill_manager_client_.reset(
-        ShillManagerClient::Create(client_type_override_, system_bus_.get()));
-    shill_device_client_.reset(
-        ShillDeviceClient::Create(client_type_override_, system_bus_.get()));
-    shill_ipconfig_client_.reset(
-        ShillIPConfigClient::Create(client_type_override_, system_bus_.get()));
-    shill_service_client_.reset(
-        ShillServiceClient::Create(client_type_override_, system_bus_.get()));
-    shill_profile_client_.reset(
-        ShillProfileClient::Create(client_type_override_, system_bus_.get()));
-    gsm_sms_client_.reset(
-        GsmSMSClient::Create(client_type_override_, system_bus_.get()));
+    // Initialization order of the Stub implementations of the Shill clients
+    // matters; stub clients may only have initialization dependencies on
+    // clients previously initialized.
+    InitClient(shill_manager_client_.get());
+    InitClient(shill_device_client_.get());
+    InitClient(shill_ipconfig_client_.get());
+    InitClient(shill_service_client_.get());
+    InitClient(shill_profile_client_.get());
+    InitClient(gsm_sms_client_.get());
 
     // If the Service client has a TestInterface, add the default services.
     ShillServiceClient::TestInterface* service_client_test =
@@ -123,24 +110,15 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     if (service_client_test)
       service_client_test->AddDefaultServices();
 
-    image_burner_client_.reset(ImageBurnerClient::Create(client_type_,
-                                                         system_bus_.get()));
-    introspectable_client_.reset(
-        IntrospectableClient::Create(client_type_, system_bus_.get()));
-    modem_messaging_client_.reset(
-        ModemMessagingClient::Create(client_type_, system_bus_.get()));
-    permission_broker_client_.reset(
-        PermissionBrokerClient::Create(client_type_, system_bus_.get()));
-    power_manager_client_.reset(
-        PowerManagerClient::Create(client_type_override_, system_bus_.get()));
-    session_manager_client_.reset(
-        SessionManagerClient::Create(client_type_, system_bus_.get()));
-    sms_client_.reset(
-        SMSClient::Create(client_type_, system_bus_.get()));
-    system_clock_client_.reset(
-        SystemClockClient::Create(client_type_, system_bus_.get()));
-    update_engine_client_.reset(
-        UpdateEngineClient::Create(client_type_, system_bus_.get()));
+    InitClient(image_burner_client_.get());
+    InitClient(introspectable_client_.get());
+    InitClient(modem_messaging_client_.get());
+    InitClient(permission_broker_client_.get());
+    InitClient(power_manager_client_.get());
+    InitClient(session_manager_client_.get());
+    InitClient(sms_client_.get());
+    InitClient(system_clock_client_.get());
+    InitClient(update_engine_client_.get());
 
     // PowerPolicyController is dependent on PowerManagerClient, so
     // initialize it after the main list of clients.
@@ -365,8 +343,52 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return ibus_panel_service_.get();
   }
 
-  DBusClientImplementationType client_type_;
-  DBusClientImplementationType client_type_override_;
+ private:
+  // Initializes |client| with the |system_bus_|.
+  void InitClient(DBusClient* client) {
+    client->Init(system_bus_.get());
+  }
+
+  // Constructs all clients -- stub or real implementation according to
+  // |client_type| and |client_type_override| -- and stores them in the
+  // respective *_client_ member variable.
+  void CreateDefaultClients(DBusClientImplementationType client_type,
+                            DBusClientImplementationType client_type_override) {
+    bluetooth_adapter_client_.reset(
+        BluetoothAdapterClient::Create(client_type));
+    bluetooth_agent_manager_client_.reset(
+        BluetoothAgentManagerClient::Create(client_type));
+    bluetooth_device_client_.reset(BluetoothDeviceClient::Create(client_type));
+    bluetooth_input_client_.reset(BluetoothInputClient::Create(client_type));
+    bluetooth_profile_manager_client_.reset(
+        BluetoothProfileManagerClient::Create(client_type));
+    cras_audio_client_.reset(CrasAudioClient::Create(client_type));
+    cros_disks_client_.reset(CrosDisksClient::Create(client_type));
+    cryptohome_client_.reset(CryptohomeClient::Create(client_type));
+    debug_daemon_client_.reset(DebugDaemonClient::Create(client_type));
+    shill_manager_client_.reset(
+        ShillManagerClient::Create(client_type_override));
+    shill_device_client_.reset(
+        ShillDeviceClient::Create(client_type_override));
+    shill_ipconfig_client_.reset(
+        ShillIPConfigClient::Create(client_type_override));
+    shill_service_client_.reset(
+        ShillServiceClient::Create(client_type_override));
+    shill_profile_client_.reset(
+        ShillProfileClient::Create(client_type_override));
+    gsm_sms_client_.reset(GsmSMSClient::Create(client_type_override));
+    image_burner_client_.reset(ImageBurnerClient::Create(client_type));
+    introspectable_client_.reset(IntrospectableClient::Create(client_type));
+    modem_messaging_client_.reset(ModemMessagingClient::Create(client_type));
+    permission_broker_client_.reset(
+        PermissionBrokerClient::Create(client_type));
+    power_manager_client_.reset(
+        PowerManagerClient::Create(client_type_override));
+    session_manager_client_.reset(SessionManagerClient::Create(client_type));
+    sms_client_.reset(SMSClient::Create(client_type));
+    system_clock_client_.reset(SystemClockClient::Create(client_type));
+    update_engine_client_.reset(UpdateEngineClient::Create(client_type));
+  }
 
   // Note: Keep this before other members so they can call AddObserver() in
   // their c'tors.

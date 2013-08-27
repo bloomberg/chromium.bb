@@ -19,6 +19,9 @@ FakeBluetoothAgentManagerClient::FakeBluetoothAgentManagerClient()
 FakeBluetoothAgentManagerClient::~FakeBluetoothAgentManagerClient() {
 }
 
+void FakeBluetoothAgentManagerClient::Init(dbus::Bus* bus) {
+}
+
 void FakeBluetoothAgentManagerClient::RegisterAgent(
     const dbus::ObjectPath& agent_path,
     const std::string& capability,

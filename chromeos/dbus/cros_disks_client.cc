@@ -79,12 +79,7 @@ DeviceType DeviceMediaTypeToDeviceType(uint32 media_type_uint32) {
 // The CrosDisksClient implementation.
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
-  explicit CrosDisksClientImpl(dbus::Bus* bus)
-      : proxy_(bus->GetObjectProxy(
-          cros_disks::kCrosDisksServiceName,
-          dbus::ObjectPath(cros_disks::kCrosDisksServicePath))),
-        weak_ptr_factory_(this) {
-  }
+  CrosDisksClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
   // CrosDisksClient override.
   virtual void Mount(const std::string& source_path,
@@ -221,6 +216,13 @@ class CrosDisksClientImpl : public CrosDisksClient {
                    mount_completed_handler),
         base::Bind(&CrosDisksClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    proxy_ = bus->GetObjectProxy(
+        cros_disks::kCrosDisksServiceName,
+        dbus::ObjectPath(cros_disks::kCrosDisksServicePath));
   }
 
  private:
@@ -363,6 +365,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual ~CrosDisksClientStubImpl() {}
 
   // CrosDisksClient overrides:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
@@ -693,10 +696,9 @@ CrosDisksClient::CrosDisksClient() {}
 CrosDisksClient::~CrosDisksClient() {}
 
 // static
-CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type,
-                                         dbus::Bus* bus) {
+CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new CrosDisksClientImpl(bus);
+    return new CrosDisksClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new CrosDisksClientStubImpl();
 }

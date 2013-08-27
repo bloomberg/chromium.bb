@@ -24,6 +24,9 @@ ShillIPConfigClientStub::ShillIPConfigClientStub() : weak_ptr_factory_(this) {
 ShillIPConfigClientStub::~ShillIPConfigClientStub() {
 }
 
+void ShillIPConfigClientStub::Init(dbus::Bus* bus) {
+}
+
 void ShillIPConfigClientStub::AddPropertyChangedObserver(
     const dbus::ObjectPath& ipconfig_path,
     ShillPropertyChangedObserver* observer) {

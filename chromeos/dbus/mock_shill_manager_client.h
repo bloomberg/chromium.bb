@@ -17,6 +17,7 @@ class MockShillManagerClient : public ShillManagerClient {
   MockShillManagerClient();
   virtual ~MockShillManagerClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD1(AddPropertyChangedObserver,
                void(ShillPropertyChangedObserver* observer));
   MOCK_METHOD1(RemovePropertyChangedObserver,

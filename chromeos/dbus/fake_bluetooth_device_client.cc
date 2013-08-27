@@ -62,7 +62,7 @@ void SimulatedProfileSocket(int fd) {
   close(fd);
 }
 
-}
+}  // namespace
 
 namespace chromeos {
 
@@ -188,7 +188,6 @@ void FakeBluetoothDeviceClient::Properties::Set(
   }
 }
 
-
 FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
     : simulation_interval_ms_(kSimulationIntervalMs),
       discovery_simulation_step_(0),
@@ -220,6 +219,9 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
 FakeBluetoothDeviceClient::~FakeBluetoothDeviceClient() {
   // Clean up Properties structures
   STLDeleteValues(&properties_map_);
+}
+
+void FakeBluetoothDeviceClient::Init(dbus::Bus* bus) {
 }
 
 void FakeBluetoothDeviceClient::AddObserver(Observer* observer) {

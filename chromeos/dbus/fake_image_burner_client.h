@@ -17,7 +17,8 @@ class FakeImageBurnerClient : public ImageBurnerClient {
   FakeImageBurnerClient();
   virtual ~FakeImageBurnerClient();
 
-  // ImageBurnerClient overrides.
+  // ImageBurnerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
                          const ErrorCallback& error_callback) OVERRIDE;

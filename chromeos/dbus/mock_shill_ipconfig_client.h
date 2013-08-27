@@ -18,6 +18,7 @@ class MockShillIPConfigClient : public ShillIPConfigClient {
   MockShillIPConfigClient();
   virtual ~MockShillIPConfigClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD2(AddPropertyChangedObserver,
                void(const dbus::ObjectPath& ipconfig_path,
                     ShillPropertyChangedObserver* observer));

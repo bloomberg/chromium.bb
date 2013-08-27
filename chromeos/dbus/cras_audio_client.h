@@ -9,17 +9,14 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_node.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/volume_state.h"
-
-namespace dbus {
-class Bus;
-}
 
 namespace chromeos {
 
 // CrasAudioClient is used to communicate with the cras audio dbus interface.
-class CHROMEOS_EXPORT CrasAudioClient {
+class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
  public:
   // Interface for observing changes from the cras audio changes.
   class Observer {
@@ -93,8 +90,7 @@ class CHROMEOS_EXPORT CrasAudioClient {
   virtual void SetActiveInputNode(uint64 node_id) = 0;
 
   // Creates the instance.
-  static CrasAudioClient* Create(DBusClientImplementationType type,
-                                 dbus::Bus* bus);
+  static CrasAudioClient* Create(DBusClientImplementationType type);
 
  protected:
   // Create() should be used instead.

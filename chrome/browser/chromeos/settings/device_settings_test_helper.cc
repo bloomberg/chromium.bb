@@ -96,6 +96,8 @@ bool DeviceSettingsTestHelper::HasPendingOperations() const {
   return false;
 }
 
+void DeviceSettingsTestHelper::Init(dbus::Bus* bus) {}
+
 void DeviceSettingsTestHelper::AddObserver(Observer* observer) {}
 
 void DeviceSettingsTestHelper::RemoveObserver(Observer* observer) {}

@@ -24,7 +24,7 @@ namespace {
 // The ShillIPConfigClient implementation.
 class ShillIPConfigClientImpl : public ShillIPConfigClient {
  public:
-  explicit ShillIPConfigClientImpl(dbus::Bus* bus);
+  ShillIPConfigClientImpl();
 
   ////////////////////////////////////
   // ShillIPConfigClient overrides.
@@ -55,6 +55,11 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE;
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -80,8 +85,8 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
   DISALLOW_COPY_AND_ASSIGN(ShillIPConfigClientImpl);
 };
 
-ShillIPConfigClientImpl::ShillIPConfigClientImpl(dbus::Bus* bus)
-    : bus_(bus),
+ShillIPConfigClientImpl::ShillIPConfigClientImpl()
+    : bus_(NULL),
       helpers_deleter_(&helpers_) {
 }
 
@@ -178,10 +183,9 @@ ShillIPConfigClient::~ShillIPConfigClient() {}
 
 // static
 ShillIPConfigClient* ShillIPConfigClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillIPConfigClientImpl(bus);
+    return new ShillIPConfigClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillIPConfigClientStub();
 }

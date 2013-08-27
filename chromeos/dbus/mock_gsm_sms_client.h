@@ -19,6 +19,7 @@ class MockGsmSMSClient : public GsmSMSClient {
   MockGsmSMSClient();
   virtual ~MockGsmSMSClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD3(SetSmsReceivedHandler, void(const std::string& service_name,
                                            const dbus::ObjectPath& object_path,
                                            const SmsReceivedHandler& handler));

@@ -28,27 +28,7 @@ static const char kUserIdStubHashSuffix[] = "-hash";
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
-  explicit CryptohomeClientImpl(dbus::Bus* bus)
-      : proxy_(bus->GetObjectProxy(
-            cryptohome::kCryptohomeServiceName,
-            dbus::ObjectPath(cryptohome::kCryptohomeServicePath))),
-        blocking_method_caller_(bus, proxy_),
-        weak_ptr_factory_(this) {
-    proxy_->ConnectToSignal(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kSignalAsyncCallStatus,
-        base::Bind(&CryptohomeClientImpl::OnAsyncCallStatus,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    proxy_->ConnectToSignal(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kSignalAsyncCallStatusWithData,
-        base::Bind(&CryptohomeClientImpl::OnAsyncCallStatusWithData,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  CryptohomeClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
   // CryptohomeClient override.
   virtual void SetAsyncCallStatusHandlers(
@@ -128,7 +108,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);
     scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(&method_call));
+        blocking_method_caller_->CallMethodAndBlock(&method_call));
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
@@ -163,7 +143,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(username);
 
     scoped_ptr<dbus::Response> response =
-        blocking_method_caller_.CallMethodAndBlock(&method_call);
+        blocking_method_caller_->CallMethodAndBlock(&method_call);
 
     std::string sanitized_username;
     if (response) {
@@ -324,7 +304,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmClearStoredPassword);
     scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(&method_call));
+        blocking_method_caller_->CallMethodAndBlock(&method_call));
     return response.get() != NULL;
   }
 
@@ -358,7 +338,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(&method_call));
+        blocking_method_caller_->CallMethodAndBlock(&method_call));
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
@@ -661,6 +641,29 @@ class CryptohomeClientImpl : public CryptohomeClient {
     CallBoolMethod(&method_call, callback);
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    proxy_ = bus->GetObjectProxy(
+        cryptohome::kCryptohomeServiceName,
+        dbus::ObjectPath(cryptohome::kCryptohomeServicePath));
+
+    blocking_method_caller_.reset(new BlockingMethodCaller(bus, proxy_));
+
+    proxy_->ConnectToSignal(cryptohome::kCryptohomeInterface,
+                            cryptohome::kSignalAsyncCallStatus,
+                            base::Bind(&CryptohomeClientImpl::OnAsyncCallStatus,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                            base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                                       weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kSignalAsyncCallStatusWithData,
+        base::Bind(&CryptohomeClientImpl::OnAsyncCallStatusWithData,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
  private:
   // Handles the result of AsyncXXX methods.
   void OnAsyncMethodCall(const AsyncMethodCallback& callback,
@@ -698,7 +701,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   bool CallBoolMethodAndBlock(dbus::MethodCall* method_call,
                               bool* result) {
     scoped_ptr<dbus::Response> response(
-        blocking_method_caller_.CallMethodAndBlock(method_call));
+        blocking_method_caller_->CallMethodAndBlock(method_call));
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
@@ -829,7 +832,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   dbus::ObjectProxy* proxy_;
-  BlockingMethodCaller blocking_method_caller_;
+  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
   AsyncCallStatusWithDataHandler async_call_status_data_handler_;
 
@@ -850,10 +853,9 @@ CryptohomeClient::CryptohomeClient() {}
 CryptohomeClient::~CryptohomeClient() {}
 
 // static
-CryptohomeClient* CryptohomeClient::Create(DBusClientImplementationType type,
-                                           dbus::Bus* bus) {
+CryptohomeClient* CryptohomeClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new CryptohomeClientImpl(bus);
+    return new CryptohomeClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new CryptohomeClientStubImpl();
 }

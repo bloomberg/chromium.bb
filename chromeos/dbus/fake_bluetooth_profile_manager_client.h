@@ -30,7 +30,8 @@ class CHROMEOS_EXPORT FakeBluetoothProfileManagerClient
   FakeBluetoothProfileManagerClient();
   virtual ~FakeBluetoothProfileManagerClient();
 
-  // BluetoothProfileManagerClient override
+  // BluetoothProfileManagerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void RegisterProfile(const dbus::ObjectPath& profile_path,
                                const std::string& uuid,
                                const Options& options,

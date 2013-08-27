@@ -12,6 +12,9 @@ FakeImageBurnerClient::FakeImageBurnerClient() {
 FakeImageBurnerClient::~FakeImageBurnerClient() {
 }
 
+void FakeImageBurnerClient::Init(dbus::Bus* bus) {
+}
+
 void FakeImageBurnerClient::ResetEventHandlers() {
 }
 

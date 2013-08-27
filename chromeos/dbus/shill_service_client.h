@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
@@ -22,7 +23,6 @@ class DictionaryValue;
 
 namespace dbus {
 
-class Bus;
 class ObjectPath;
 
 }  // namespace dbus
@@ -33,7 +33,7 @@ namespace chromeos {
 // service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class CHROMEOS_EXPORT ShillServiceClient {
+class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
@@ -85,8 +85,7 @@ class CHROMEOS_EXPORT ShillServiceClient {
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillServiceClient* Create(DBusClientImplementationType type,
-                                    dbus::Bus* bus);
+  static ShillServiceClient* Create(DBusClientImplementationType type);
 
   // Adds a property changed |observer| to the service at |service_path|.
   virtual void AddPropertyChangedObserver(
@@ -184,6 +183,8 @@ class CHROMEOS_EXPORT ShillServiceClient {
   virtual TestInterface* GetTestInterface() = 0;
 
  protected:
+  friend class ShillServiceClientTest;
+
   // Create() should be used instead.
   ShillServiceClient();
 

@@ -19,7 +19,8 @@ class FakeCrosDisksClient : public CrosDisksClient {
   FakeCrosDisksClient();
   virtual ~FakeCrosDisksClient();
 
-  // CrosDisksClient overrides.
+  // CrosDisksClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,

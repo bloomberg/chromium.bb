@@ -66,6 +66,9 @@ bool ShillServiceClientStub::IsStubPortalledWifiEnabled(
 
 // ShillServiceClient overrides.
 
+void ShillServiceClientStub::Init(dbus::Bus* bus) {
+}
+
 void ShillServiceClientStub::AddPropertyChangedObserver(
     const dbus::ObjectPath& service_path,
     ShillPropertyChangedObserver* observer) {

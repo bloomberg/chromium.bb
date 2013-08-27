@@ -9,13 +9,10 @@
 #include "base/platform_file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
 #include <map>
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace metrics {
 class PerfDataProto;
@@ -24,7 +21,7 @@ class PerfDataProto;
 namespace chromeos {
 
 // DebugDaemonClient is used to communicate with the debug daemon.
-class CHROMEOS_EXPORT DebugDaemonClient {
+class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
  public:
   virtual ~DebugDaemonClient();
 
@@ -146,8 +143,8 @@ class CHROMEOS_EXPORT DebugDaemonClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static DebugDaemonClient* Create(DBusClientImplementationType type,
-                                   dbus::Bus* bus);
+  static DebugDaemonClient* Create(DBusClientImplementationType type);
+
  protected:
   // Create() should be used instead.
   DebugDaemonClient();

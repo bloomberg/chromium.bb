@@ -39,7 +39,8 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
   FakeBluetoothAdapterClient();
   virtual ~FakeBluetoothAdapterClient();
 
-  // BluetoothAdapterClient override
+  // BluetoothAdapterClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE;

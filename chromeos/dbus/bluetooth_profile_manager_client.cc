@@ -33,15 +33,7 @@ BluetoothProfileManagerClient::Options::~Options() {
 class BluetoothProfileManagerClientImpl
     : public BluetoothProfileManagerClient {
  public:
-  explicit BluetoothProfileManagerClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        weak_ptr_factory_(this) {
-    DCHECK(bus_);
-    object_proxy_ = bus_->GetObjectProxy(
-        bluetooth_profile_manager::kBluetoothProfileManagerServiceName,
-        dbus::ObjectPath(
-            bluetooth_profile_manager::kBluetoothProfileManagerServicePath));
-  }
+  BluetoothProfileManagerClientImpl() : weak_ptr_factory_(this) {}
 
   virtual ~BluetoothProfileManagerClientImpl() {
   }
@@ -191,6 +183,15 @@ class BluetoothProfileManagerClientImpl
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    DCHECK(bus);
+    object_proxy_ = bus->GetObjectProxy(
+        bluetooth_profile_manager::kBluetoothProfileManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_profile_manager::kBluetoothProfileManagerServicePath));
+  }
+
  private:
   // Called when a response for successful method call is received.
   void OnSuccess(const base::Closure& callback,
@@ -216,7 +217,6 @@ class BluetoothProfileManagerClientImpl
     error_callback.Run(error_name, error_message);
   }
 
-  dbus::Bus* bus_;
   dbus::ObjectProxy* object_proxy_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
@@ -235,10 +235,9 @@ BluetoothProfileManagerClient::~BluetoothProfileManagerClient() {
 }
 
 BluetoothProfileManagerClient* BluetoothProfileManagerClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new BluetoothProfileManagerClientImpl(bus);
+    return new BluetoothProfileManagerClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothProfileManagerClient();
 }

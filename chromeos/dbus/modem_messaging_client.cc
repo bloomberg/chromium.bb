@@ -135,12 +135,11 @@ class ModemMessagingProxy {
 
 class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
  public:
-  explicit ModemMessagingClientImpl(dbus::Bus *bus)
-      : bus_(bus),
+  ModemMessagingClientImpl()
+      : bus_(NULL),
         proxies_deleter_(&proxies_) {
   }
 
-  // ModemMessagingClient override.
   virtual void SetSmsReceivedHandler(
       const std::string& service_name,
       const dbus::ObjectPath& object_path,
@@ -148,14 +147,12 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
     GetProxy(service_name, object_path)->SetSmsReceivedHandler(handler);
   }
 
-  // ModemMessagingClient override.
   virtual void ResetSmsReceivedHandler(
       const std::string& service_name,
       const dbus::ObjectPath& object_path) OVERRIDE {
     GetProxy(service_name, object_path)->ResetSmsReceivedHandler();
   }
 
-  // ModemMessagingClient override.
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       const dbus::ObjectPath& sms_path,
@@ -163,12 +160,16 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
     GetProxy(service_name, object_path)->Delete(sms_path, callback);
   }
 
-  // ModemMessagingClient override.
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
                     const ListCallback& callback) OVERRIDE {
     GetProxy(service_name, object_path)->List(callback);
   }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
+  };
 
  private:
   typedef std::map<std::pair<std::string, std::string>, ModemMessagingProxy*>
@@ -203,6 +204,7 @@ class CHROMEOS_EXPORT ModemMessagingClientStubImpl
   virtual ~ModemMessagingClientStubImpl() {}
 
   // ModemMessagingClient override.
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void SetSmsReceivedHandler(
       const std::string& service_name,
       const dbus::ObjectPath& object_path,
@@ -268,10 +270,9 @@ ModemMessagingClient::~ModemMessagingClient() {}
 
 // static
 ModemMessagingClient* ModemMessagingClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new ModemMessagingClientImpl(bus);
+    return new ModemMessagingClientImpl();
   }
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ModemMessagingClientStubImpl();

@@ -59,31 +59,8 @@ bool IsValidChannel(const std::string& channel) {
 // The UpdateEngineClient implementation used in production.
 class UpdateEngineClientImpl : public UpdateEngineClient {
  public:
-  explicit UpdateEngineClientImpl(dbus::Bus* bus)
-      : update_engine_proxy_(NULL),
-        last_status_(),
-        weak_ptr_factory_(this) {
-    update_engine_proxy_ = bus->GetObjectProxy(
-        update_engine::kUpdateEngineServiceName,
-        dbus::ObjectPath(update_engine::kUpdateEngineServicePath));
-
-    // Monitor the D-Bus signal for brightness changes. Only the power
-    // manager knows the actual brightness level. We don't cache the
-    // brightness level in Chrome as it will make things less reliable.
-    update_engine_proxy_->ConnectToSignal(
-        update_engine::kUpdateEngineInterface,
-        update_engine::kStatusUpdate,
-        base::Bind(&UpdateEngineClientImpl::StatusUpdateReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&UpdateEngineClientImpl::StatusUpdateConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Get update engine status for the initial status. Update engine won't
-    // send StatusUpdate signal unless there is a status change. If chrome
-    // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
-    // restarted chrome would not get this status. See crbug.com/154104.
-    GetUpdateEngineStatus();
-  }
+  UpdateEngineClientImpl()
+      : update_engine_proxy_(NULL), last_status_(), weak_ptr_factory_(this) {}
 
   virtual ~UpdateEngineClientImpl() {
   }
@@ -176,6 +153,30 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
         base::Bind(&UpdateEngineClientImpl::OnGetChannel,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
+  }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    update_engine_proxy_ = bus->GetObjectProxy(
+        update_engine::kUpdateEngineServiceName,
+        dbus::ObjectPath(update_engine::kUpdateEngineServicePath));
+
+    // Monitor the D-Bus signal for brightness changes. Only the power
+    // manager knows the actual brightness level. We don't cache the
+    // brightness level in Chrome as it will make things less reliable.
+    update_engine_proxy_->ConnectToSignal(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kStatusUpdate,
+        base::Bind(&UpdateEngineClientImpl::StatusUpdateReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&UpdateEngineClientImpl::StatusUpdateConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    // Get update engine status for the initial status. Update engine won't
+    // send StatusUpdate signal unless there is a status change. If chrome
+    // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
+    // restarted chrome would not get this status. See crbug.com/154104.
+    GetUpdateEngineStatus();
   }
 
  private:
@@ -320,6 +321,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 // which does nothing.
 class UpdateEngineClientStubImpl : public UpdateEngineClient {
   // UpdateEngineClient implementation:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
@@ -358,10 +360,9 @@ UpdateEngineClient::EmptyUpdateCheckCallback() {
 
 // static
 UpdateEngineClient* UpdateEngineClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new UpdateEngineClientImpl(bus);
+    return new UpdateEngineClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new UpdateEngineClientStubImpl();
 }

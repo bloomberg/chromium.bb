@@ -7,16 +7,13 @@
 
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-
-namespace dbus {
-class Bus;
-}  // namespace
 
 namespace chromeos {
 
 // SystemClockClient is used to communicate with the system clock.
-class CHROMEOS_EXPORT SystemClockClient {
+class CHROMEOS_EXPORT SystemClockClient : public DBusClient {
  public:
   // Interface for observing changes from the system clock.
   class Observer {
@@ -36,8 +33,7 @@ class CHROMEOS_EXPORT SystemClockClient {
   virtual bool HasObserver(Observer* observer) = 0;
 
   // Creates the instance.
-  static SystemClockClient* Create(DBusClientImplementationType type,
-                                   dbus::Bus* bus);
+  static SystemClockClient* Create(DBusClientImplementationType type);
 
  protected:
   // Create() should be used instead.

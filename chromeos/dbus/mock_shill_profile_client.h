@@ -20,6 +20,7 @@ class MockShillProfileClient : public ShillProfileClient {
   MockShillProfileClient();
   virtual ~MockShillProfileClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD2(AddPropertyChangedObserver,
                void(const dbus::ObjectPath& profile_path,
                     ShillPropertyChangedObserver* observer));

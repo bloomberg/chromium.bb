@@ -18,6 +18,7 @@ class MockShillDeviceClient : public ShillDeviceClient {
   MockShillDeviceClient();
   virtual ~MockShillDeviceClient();
 
+  MOCK_METHOD1(Init, void(dbus::Bus* bus));
   MOCK_METHOD2(AddPropertyChangedObserver,
                void(const dbus::ObjectPath& device_path,
                     ShillPropertyChangedObserver* observer));

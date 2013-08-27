@@ -23,9 +23,8 @@ namespace {
 
 class ShillProfileClientImpl : public ShillProfileClient {
  public:
-  explicit ShillProfileClientImpl(dbus::Bus* bus);
+  ShillProfileClientImpl();
 
-  // ShillProfileClient overrides.
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
       ShillPropertyChangedObserver* observer) OVERRIDE {
@@ -37,6 +36,7 @@ class ShillProfileClientImpl : public ShillProfileClient {
       ShillPropertyChangedObserver* observer) OVERRIDE {
     GetHelper(profile_path)->RemovePropertyChangedObserver(observer);
   }
+
   virtual void GetProperties(
       const dbus::ObjectPath& profile_path,
       const DictionaryValueCallbackWithoutStatus& callback,
@@ -54,6 +54,11 @@ class ShillProfileClientImpl : public ShillProfileClient {
     return NULL;
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -67,8 +72,8 @@ class ShillProfileClientImpl : public ShillProfileClient {
   DISALLOW_COPY_AND_ASSIGN(ShillProfileClientImpl);
 };
 
-ShillProfileClientImpl::ShillProfileClientImpl(dbus::Bus* bus)
-    : bus_(bus),
+ShillProfileClientImpl::ShillProfileClientImpl()
+    : bus_(NULL),
       helpers_deleter_(&helpers_) {
 }
 
@@ -131,10 +136,9 @@ ShillProfileClient::~ShillProfileClient() {}
 
 // static
 ShillProfileClient* ShillProfileClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillProfileClientImpl(bus);
+    return new ShillProfileClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillProfileClientStub();
 }

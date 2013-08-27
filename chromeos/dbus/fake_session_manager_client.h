@@ -17,12 +17,13 @@ namespace chromeos {
 
 // A fake implementation of session_manager. Accepts policy blobs to be set and
 // returns them unmodified.
-class FakeSessionManagerClient : public chromeos::SessionManagerClient {
+class FakeSessionManagerClient : public SessionManagerClient {
  public:
   FakeSessionManagerClient();
   virtual ~FakeSessionManagerClient();
 
-  // SessionManagerClient:
+  // SessionManagerClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool HasObserver(Observer* observer) OVERRIDE;

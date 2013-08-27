@@ -51,16 +51,7 @@ class BluetoothAdapterClientImpl
     : public BluetoothAdapterClient,
       public dbus::ObjectManager::Interface {
  public:
-  explicit BluetoothAdapterClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        weak_ptr_factory_(this) {
-    object_manager_ = bus_->GetObjectManager(
-        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
-        dbus::ObjectPath(
-            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
-    object_manager_->RegisterInterface(
-        bluetooth_adapter::kBluetoothAdapterInterface, this);
-  }
+  BluetoothAdapterClientImpl() : weak_ptr_factory_(this) {}
 
   virtual ~BluetoothAdapterClientImpl() {
     object_manager_->UnregisterInterface(
@@ -186,6 +177,16 @@ class BluetoothAdapterClientImpl
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    object_manager_ = bus->GetObjectManager(
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
+    object_manager_->RegisterInterface(
+        bluetooth_adapter::kBluetoothAdapterInterface, this);
+  }
+
  private:
   // Called by dbus::ObjectManager when an object with the adapter interface
   // is created. Informs observers.
@@ -236,7 +237,6 @@ class BluetoothAdapterClientImpl
     error_callback.Run(error_name, error_message);
   }
 
-  dbus::Bus* bus_;
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
@@ -259,10 +259,9 @@ BluetoothAdapterClient::~BluetoothAdapterClient() {
 }
 
 BluetoothAdapterClient* BluetoothAdapterClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new BluetoothAdapterClientImpl(bus);
+    return new BluetoothAdapterClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothAdapterClient();
 }

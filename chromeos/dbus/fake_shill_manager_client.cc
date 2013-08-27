@@ -12,6 +12,9 @@ FakeShillManagerClient::FakeShillManagerClient() {
 FakeShillManagerClient::~FakeShillManagerClient() {
 }
 
+void FakeShillManagerClient::Init(dbus::Bus* bus) {
+}
+
 void FakeShillManagerClient::RequestScan(const std::string& type,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {

@@ -13,12 +13,15 @@
 namespace chromeos {
 
 FakeSessionManagerClient::FakeSessionManagerClient()
-  : emit_login_prompt_ready_call_count_(0) ,
-    notify_lock_screen_shown_call_count_(0),
-    notify_lock_screen_dismissed_call_count_(0){
+    : emit_login_prompt_ready_call_count_(0),
+      notify_lock_screen_shown_call_count_(0),
+      notify_lock_screen_dismissed_call_count_(0) {
 }
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
+}
+
+void FakeSessionManagerClient::Init(dbus::Bus* bus) {
 }
 
 void FakeSessionManagerClient::AddObserver(Observer* observer) {

@@ -56,6 +56,9 @@ FakeBluetoothInputClient::~FakeBluetoothInputClient() {
   STLDeleteValues(&properties_map_);
 }
 
+void FakeBluetoothInputClient::Init(dbus::Bus* bus) {
+}
+
 void FakeBluetoothInputClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

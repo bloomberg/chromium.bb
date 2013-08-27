@@ -7,11 +7,14 @@
 namespace chromeos {
 
 FakeUpdateEngineClient::FakeUpdateEngineClient()
-  : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
-    reboot_after_update_call_count_(0) {
+    : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
+      reboot_after_update_call_count_(0) {
 }
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() {
+}
+
+void FakeUpdateEngineClient::Init(dbus::Bus* bus) {
 }
 
 void FakeUpdateEngineClient::AddObserver(Observer* observer) {

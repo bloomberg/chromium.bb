@@ -24,8 +24,8 @@ namespace {
 // The ShillDeviceClient implementation.
 class ShillDeviceClientImpl : public ShillDeviceClient {
  public:
-  explicit ShillDeviceClientImpl(dbus::Bus* bus)
-      : bus_(bus) {
+  explicit ShillDeviceClientImpl()
+      : bus_(NULL) {
   }
 
   virtual ~ShillDeviceClientImpl() {
@@ -196,6 +196,11 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     return NULL;
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -231,10 +236,9 @@ ShillDeviceClient::~ShillDeviceClient() {}
 
 // static
 ShillDeviceClient* ShillDeviceClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillDeviceClientImpl(bus);
+    return new ShillDeviceClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillDeviceClientStub();
 }

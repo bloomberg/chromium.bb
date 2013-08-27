@@ -13,11 +13,12 @@
 
 namespace chromeos {
 
-class CryptohomeClientStubImpl : public CryptohomeClient {
+class CHROMEOS_EXPORT CryptohomeClientStubImpl : public CryptohomeClient {
  public:
   CryptohomeClientStubImpl();
   virtual ~CryptohomeClientStubImpl();
 
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void SetAsyncCallStatusHandlers(
       const AsyncCallStatusHandler& handler,
       const AsyncCallStatusWithDataHandler& data_handler) OVERRIDE;

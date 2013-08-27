@@ -52,13 +52,11 @@ void OnGetDictionaryError(
 // The ShillServiceClient implementation.
 class ShillServiceClientImpl : public ShillServiceClient {
  public:
-  explicit ShillServiceClientImpl(dbus::Bus* bus)
-      : bus_(bus),
+  explicit ShillServiceClientImpl()
+      : bus_(NULL),
         helpers_deleter_(&helpers_) {
   }
 
-  /////////////////////////////////////
-  // ShillServiceClient overrides.
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) OVERRIDE {
@@ -219,6 +217,11 @@ class ShillServiceClientImpl : public ShillServiceClient {
     return NULL;
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    bus_ = bus;
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -252,10 +255,9 @@ ShillServiceClient::~ShillServiceClient() {}
 
 // static
 ShillServiceClient* ShillServiceClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillServiceClientImpl(bus);
+    return new ShillServiceClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new ShillServiceClientStub();
 }

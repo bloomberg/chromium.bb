@@ -20,7 +20,8 @@ class ShillDeviceClientStub : public ShillDeviceClient,
   ShillDeviceClientStub();
   virtual ~ShillDeviceClientStub();
 
-  // ShillDeviceClient overrides.
+  // ShillDeviceClient overrides
+  virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) OVERRIDE;

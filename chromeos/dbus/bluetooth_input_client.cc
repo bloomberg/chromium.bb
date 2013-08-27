@@ -35,16 +35,7 @@ class BluetoothInputClientImpl
     : public BluetoothInputClient,
       public dbus::ObjectManager::Interface {
  public:
-  explicit BluetoothInputClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        weak_ptr_factory_(this) {
-    object_manager_ = bus_->GetObjectManager(
-        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
-        dbus::ObjectPath(
-            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
-    object_manager_->RegisterInterface(
-        bluetooth_input::kBluetoothInputInterface, this);
-  }
+  BluetoothInputClientImpl() : weak_ptr_factory_(this) {}
 
   virtual ~BluetoothInputClientImpl() {
     object_manager_->UnregisterInterface(
@@ -88,6 +79,16 @@ class BluetoothInputClientImpl
             bluetooth_input::kBluetoothInputInterface));
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE {
+    object_manager_ = bus->GetObjectManager(
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
+    object_manager_->RegisterInterface(
+        bluetooth_input::kBluetoothInputInterface, this);
+  }
+
  private:
   // Called by dbus::ObjectManager when an object with the input interface
   // is created. Informs observers.
@@ -114,7 +115,6 @@ class BluetoothInputClientImpl
                       InputPropertyChanged(object_path, property_name));
   }
 
-  dbus::Bus* bus_;
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
@@ -136,10 +136,9 @@ BluetoothInputClient::~BluetoothInputClient() {
 }
 
 BluetoothInputClient* BluetoothInputClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new BluetoothInputClientImpl(bus);
+    return new BluetoothInputClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothInputClient();
 }

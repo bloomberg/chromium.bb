@@ -32,10 +32,7 @@ namespace chromeos {
 // The IntrospectableClient implementation used in production.
 class IntrospectableClientImpl : public IntrospectableClient {
  public:
-  explicit IntrospectableClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        weak_ptr_factory_(this) {
-  }
+  IntrospectableClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
 
   virtual ~IntrospectableClientImpl() {
   }
@@ -56,6 +53,9 @@ class IntrospectableClientImpl : public IntrospectableClient {
                    weak_ptr_factory_.GetWeakPtr(),
                    service_name, object_path, callback));
   }
+
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE { bus_ = bus; }
 
  private:
   // Called by dbus:: when a response for Introspect() is recieved.
@@ -96,6 +96,7 @@ class IntrospectableClientImpl : public IntrospectableClient {
 class IntrospectableClientStubImpl : public IntrospectableClient {
  public:
   // IntrospectableClient override.
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void Introspect(const std::string& service_name,
                           const dbus::ObjectPath& object_path,
                           const IntrospectCallback& callback) OVERRIDE {
@@ -145,10 +146,9 @@ IntrospectableClient::GetInterfacesFromIntrospectResult(
 
 // static
 IntrospectableClient* IntrospectableClient::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus) {
+    DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new IntrospectableClientImpl(bus);
+    return new IntrospectableClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new IntrospectableClientStubImpl();
 }

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
@@ -22,7 +23,6 @@ class DictionaryValue;
 
 namespace dbus {
 
-class Bus;
 class ObjectPath;
 
 }  // namespace dbus
@@ -34,7 +34,7 @@ class ShillPropertyChangedObserver;
 // ShillProfileClient is used to communicate with the Shill Profile
 // service.  All methods should be called from the origin thread which
 // initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT ShillProfileClient {
+class CHROMEOS_EXPORT ShillProfileClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallbackWithoutStatus
@@ -75,8 +75,7 @@ class CHROMEOS_EXPORT ShillProfileClient {
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillProfileClient* Create(DBusClientImplementationType type,
-                                    dbus::Bus* bus);
+  static ShillProfileClient* Create(DBusClientImplementationType type);
 
   // Adds a property changed |observer| for the profile at |profile_path|.
   virtual void AddPropertyChangedObserver(
@@ -113,6 +112,8 @@ class CHROMEOS_EXPORT ShillProfileClient {
   virtual TestInterface* GetTestInterface() = 0;
 
  protected:
+  friend class ShillProfileClientTest;
+
   // Create() should be used instead.
   ShillProfileClient();
 

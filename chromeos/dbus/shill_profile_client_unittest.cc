@@ -41,8 +41,8 @@ class ShillProfileClientTest : public ShillClientUnittestBase {
   virtual void SetUp() {
     ShillClientUnittestBase::SetUp();
     // Create a client with the mock bus.
-    client_.reset(ShillProfileClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                             mock_bus_.get()));
+    client_.reset(ShillProfileClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
+    client_->Init(mock_bus_.get());
     // Run the message loop to run the signal connection result callback.
     message_loop_.RunUntilIdle();
   }

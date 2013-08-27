@@ -165,10 +165,7 @@ class SMSProxy {
 // The GsmSMSClient implementation.
 class GsmSMSClientImpl : public GsmSMSClient {
  public:
-  explicit GsmSMSClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        proxies_deleter_(&proxies_) {
-  }
+  GsmSMSClientImpl() : bus_(NULL), proxies_deleter_(&proxies_) {}
 
   // GsmSMSClient override.
   virtual void SetSmsReceivedHandler(
@@ -213,6 +210,9 @@ class GsmSMSClientImpl : public GsmSMSClient {
                              const dbus::ObjectPath& object_path) OVERRIDE {
   }
 
+ protected:
+  virtual void Init(dbus::Bus* bus) OVERRIDE { bus_ = bus; }
+
  private:
   typedef std::map<std::pair<std::string, std::string>, SMSProxy*> ProxyMap;
 
@@ -247,10 +247,9 @@ GsmSMSClient::GsmSMSClient() {}
 GsmSMSClient::~GsmSMSClient() {}
 
 // static
-GsmSMSClient* GsmSMSClient::Create(DBusClientImplementationType type,
-                                   dbus::Bus* bus) {
+GsmSMSClient* GsmSMSClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new GsmSMSClientImpl(bus);
+    return new GsmSMSClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
 
   FakeGsmSMSClient* fake = new FakeGsmSMSClient();
