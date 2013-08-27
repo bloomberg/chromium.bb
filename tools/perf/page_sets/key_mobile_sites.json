@@ -148,15 +148,6 @@
       }
     },
     {
-      "url": "https://www.google.com/calendar/",
-      "why": "productivity, top google properties",
-      "credentials": "google",
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('scrolltimedeventswk')); }"
-      }
-    },
-    {
       "url": "http://mlb.mlb.com/index.jsp",
       "why": "#6 Alexa sports"
     },
@@ -203,24 +194,12 @@
     {
       "url": "http://groupcloned.com",
       "why": "crbug.com/172906",
-      "wait_for_javascript_expression": "document.getElementById('element-19') !== null && document.getElementById('element-19').contentDocument.getElementById('element-22') !== null",
+      "wait_for_javascript_expression": "document.getElementById('element-19') !== null && document.getElementById('element-19').contentDocument.getElementById('element-22') !== null && document.getElementById('element-19').contentDocument.getElementsByClassName('container list-item gc-list-item stretched').length !== 0",
       "wait_seconds": 5,
       "smoothness": {
         "action": "scroll",
         "scroll_requires_touch": true,
         "remaining_scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-19').contentDocument.getElementById('element-22').getBoundingClientRect().top); }"
-      }
-    },
-    {
-      "url": "http://mobile-news.sandbox.google.com/news/p#2",
-      "why": "crbug.com/223726",
-      "wait_for_javascript_expression": "document.getElementById(':h') !== null",
-      "wait_seconds": 5,
-      "smoothness": {
-        "action": "scroll",
-        "scroll_requires_touch": true,
-        "scrollable_element_function": "function(callback) { callback(document.getElementById(':5')); }",
-        "remaining_scroll_distance_function": "function() { return Math.max(0, 1500 + document.getElementById(':h').getBoundingClientRect().top); }"
       }
     },
     {
