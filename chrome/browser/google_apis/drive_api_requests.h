@@ -117,6 +117,78 @@ class FilesGetRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
 
+//============================== FilesPatchRequest ============================
+
+// This class performs the request for patching file metadata.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/patch
+class FilesPatchRequest : public GetDataRequest {
+ public:
+  FilesPatchRequest(RequestSender* sender,
+                    const DriveApiUrlGenerator& url_generator,
+                    const FileResourceCallback& callback);
+  virtual ~FilesPatchRequest();
+
+  // Required parameter.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+
+  // Optional parameter.
+  bool set_modified_date() const { return set_modified_date_; }
+  void set_set_modified_date(bool set_modified_date) {
+    set_modified_date_ = set_modified_date;
+  }
+
+  bool update_viewed_date() const { return update_viewed_date_; }
+  void set_update_viewed_date(bool update_viewed_date) {
+    update_viewed_date_ = update_viewed_date;
+  }
+
+  // Optional request body.
+  // Note: "Files: patch" accepts any "Files resource" data, but this class
+  // only supports limited members of it for now. We can extend it upon
+  // requirments.
+  const std::string& title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
+
+  const base::Time& modified_date() const { return modified_date_; }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
+  }
+
+  const base::Time& last_viewed_by_me_date() const {
+    return last_viewed_by_me_date_;
+  }
+  void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
+    last_viewed_by_me_date_ = last_viewed_by_me_date;
+  }
+
+  const std::vector<std::string>& parents() const { return parents_; }
+  void add_parent(const std::string& parent) { parents_.push_back(parent); }
+
+ protected:
+  // UrlFetchRequestBase overrides.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  std::string file_id_;
+  bool set_modified_date_;
+  bool update_viewed_date_;
+
+  std::string title_;
+  base::Time modified_date_;
+  base::Time last_viewed_by_me_date_;
+  std::vector<std::string> parents_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesPatchRequest);
+};
+
 //============================== AboutGetRequest =============================
 
 // This class performs the request for fetching About data.

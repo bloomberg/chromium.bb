@@ -56,6 +56,11 @@ class DriveApiUrlGenerator {
   // Returns a URL to fetch a file content.
   GURL GetFilesGetUrl(const std::string& file_id) const;
 
+  // Returns a URL to patch file metadata.
+  GURL GetFilesPatchUrl(const std::string& file_id,
+                        bool set_modified_date,
+                        bool update_viewed_date) const;
+
   // Returns a URL to copy a file specified by |resource_id|.
   GURL GetFileCopyUrl(const std::string& resource_id) const;
 

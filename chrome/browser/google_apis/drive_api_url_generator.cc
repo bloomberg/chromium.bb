@@ -101,6 +101,23 @@ GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
 }
 
+GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
+                                            bool set_modified_date,
+                                            bool update_viewed_date) const {
+  GURL url =
+      base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+
+  // setModifiedDate is "false" by default.
+  if (set_modified_date)
+    url = net::AppendOrReplaceQueryParameter(url, "setModifiedDate", "true");
+
+  // updateViewedDate is "true" by default.
+  if (!update_viewed_date)
+    url = net::AppendOrReplaceQueryParameter(url, "updateViewedDate", "false");
+
+  return url;
+}
+
 GURL DriveApiUrlGenerator::GetFileCopyUrl(
     const std::string& resource_id) const {
   return base_url_.Resolve(

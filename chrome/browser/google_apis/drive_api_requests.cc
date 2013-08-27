@@ -135,6 +135,75 @@ GURL FilesGetRequest::GetURL() const {
   return url_generator_.GetFilesGetUrl(file_id_);
 }
 
+//============================== FilesPatchRequest ============================
+
+FilesPatchRequest::FilesPatchRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator),
+      set_modified_date_(false),
+      update_viewed_date_(true) {
+  DCHECK(!callback.is_null());
+}
+
+FilesPatchRequest::~FilesPatchRequest() {}
+
+net::URLFetcher::RequestType FilesPatchRequest::GetRequestType() const {
+  return net::URLFetcher::PATCH;
+}
+
+std::vector<std::string> FilesPatchRequest::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(util::kIfMatchAllHeader);
+  return headers;
+}
+
+GURL FilesPatchRequest::GetURL() const {
+  return url_generator_.GetFilesPatchUrl(
+      file_id_, set_modified_date_, update_viewed_date_);
+}
+
+bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
+                                       std::string* upload_content) {
+  if (title_.empty() &&
+      modified_date_.is_null() &&
+      last_viewed_by_me_date_.is_null() &&
+      parents_.empty())
+    return false;
+
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  if (!title_.empty())
+    root.SetString("title", title_);
+
+  if (!modified_date_.is_null())
+    root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
+
+  if (!last_viewed_by_me_date_.is_null()) {
+    root.SetString("lastViewedByMeDate",
+                   util::FormatTimeAsString(last_viewed_by_me_date_));
+  }
+
+  if (!parents_.empty()) {
+    base::ListValue* parents_value = new base::ListValue;
+    for (size_t i = 0; i < parents_.size(); ++i) {
+      base::DictionaryValue* parent = new base::DictionaryValue;
+      parent->SetString("id", parents_[i]);
+      parents_value->Append(parent);
+    }
+    root.Set("parents", parents_value);
+  }
+
+  base::JSONWriter::Write(&root, upload_content);
+  DVLOG(1) << "FilesPatch data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
 //============================== AboutGetRequest =============================
 
 AboutGetRequest::AboutGetRequest(

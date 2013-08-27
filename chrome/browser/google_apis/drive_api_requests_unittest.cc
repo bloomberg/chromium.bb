@@ -345,6 +345,56 @@ class DriveApiRequestsTest : public testing::Test {
   int64 content_length_;
 };
 
+TEST_F(DriveApiRequestsTest, FilesPatchRequest) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/file_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+
+  {
+    base::RunLoop run_loop;
+    drive::FilesPatchRequest* request = new drive::FilesPatchRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request->set_file_id("resource_id");
+    request->set_set_modified_date(true);
+    request->set_update_viewed_date(false);
+
+    request->set_title("new title");
+    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
+    request->set_last_viewed_by_me_date(
+        base::Time::FromUTCExploded(kLastViewedByMeDate));
+    request->add_parent("parent_resource_id");
+
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id"
+            "?setModifiedDate=true&updateViewedDate=false",
+            http_request_.relative_url);
+
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
+            "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
+            "\"parents\":[{\"id\":\"parent_resource_id\"}],"
+            "\"title\":\"new title\"}",
+            http_request_.content);
+  EXPECT_TRUE(file_resource);
+}
+
 TEST_F(DriveApiRequestsTest, AboutGetRequest_ValidJson) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(

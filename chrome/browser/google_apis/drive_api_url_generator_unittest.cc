@@ -112,6 +112,71 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
             test_url_generator_.GetFilesGetUrl("file:file_id").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
+  struct TestPattern {
+    bool set_modified_date;
+    bool update_viewed_date;
+    const std::string expected_query;
+  };
+  const TestPattern kTestPatterns[] = {
+    { false, true, "" },
+    { true, true, "?setModifiedDate=true" },
+    { false, false, "?updateViewedDate=false" },
+    { true, false, "?setModifiedDate=true&updateViewedDate=false" },
+  };
+
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_EQ(
+        "https://www.googleapis.com/drive/v2/files/0ADK06pfg" +
+            kTestPatterns[i].expected_query,
+        url_generator_.GetFilesPatchUrl(
+            "0ADK06pfg",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+
+    EXPECT_EQ(
+        "https://www.googleapis.com/drive/v2/files/0Bz0bd074" +
+            kTestPatterns[i].expected_query,
+        url_generator_.GetFilesPatchUrl(
+            "0Bz0bd074",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+
+    EXPECT_EQ(
+        "https://www.googleapis.com/drive/v2/files/file%3Afile_id" +
+            kTestPatterns[i].expected_query,
+        url_generator_.GetFilesPatchUrl(
+            "file:file_id",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+
+
+    EXPECT_EQ(
+        "http://127.0.0.1:12345/drive/v2/files/0ADK06pfg" +
+            kTestPatterns[i].expected_query,
+        test_url_generator_.GetFilesPatchUrl(
+            "0ADK06pfg",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+
+    EXPECT_EQ(
+        "http://127.0.0.1:12345/drive/v2/files/0Bz0bd074" +
+            kTestPatterns[i].expected_query,
+        test_url_generator_.GetFilesPatchUrl(
+            "0Bz0bd074",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+
+    EXPECT_EQ(
+        "http://127.0.0.1:12345/drive/v2/files/file%3Afile_id" +
+            kTestPatterns[i].expected_query,
+        test_url_generator_.GetFilesPatchUrl(
+            "file:file_id",
+            kTestPatterns[i].set_modified_date,
+            kTestPatterns[i].update_viewed_date).spec());
+  }
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GetFileCopyUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/copy",
