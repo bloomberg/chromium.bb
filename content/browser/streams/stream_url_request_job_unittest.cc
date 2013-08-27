@@ -83,6 +83,7 @@ class StreamURLRequestJobTest : public testing::Test {
 
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());
+    ASSERT_TRUE(request_->response_headers());
     EXPECT_EQ(expected_status_code,
               request_->response_headers()->response_code());
     EXPECT_EQ(expected_response, delegate.data_received());
