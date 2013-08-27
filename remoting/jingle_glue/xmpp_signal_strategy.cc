@@ -11,12 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/chrome_async_socket.h"
+#include "jingle/glue/resolving_client_socket_factory.h"
 #include "jingle/glue/task_pump.h"
-#include "jingle/glue/xmpp_client_socket_factory.h"
 #include "jingle/notifier/base/gaia_constants.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
@@ -38,11 +37,9 @@ XmppSignalStrategy::XmppServerConfig::XmppServerConfig() {}
 XmppSignalStrategy::XmppServerConfig::~XmppServerConfig() {}
 
 XmppSignalStrategy::XmppSignalStrategy(
-    net::ClientSocketFactory* socket_factory,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_ptr<jingle_glue::ResolvingClientSocketFactory> socket_factory,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config)
-    : socket_factory_(socket_factory),
-      request_context_getter_(request_context_getter),
+    : socket_factory_(socket_factory.Pass()),
       resource_name_(kDefaultResourceName),
       xmpp_client_(NULL),
       xmpp_server_config_(xmpp_server_config),
@@ -82,11 +79,8 @@ void XmppSignalStrategy::Connect() {
   settings.set_use_tls(
       xmpp_server_config_.use_tls ? buzz::TLS_ENABLED : buzz::TLS_DISABLED);
 
-  scoped_ptr<jingle_glue::XmppClientSocketFactory> xmpp_socket_factory(
-      new jingle_glue::XmppClientSocketFactory(
-          socket_factory_, net::SSLConfig(), request_context_getter_, false));
   buzz::AsyncSocket* socket = new jingle_glue::ChromeAsyncSocket(
-    xmpp_socket_factory.release(), kReadBufferSize, kWriteBufferSize);
+    socket_factory_.release(), kReadBufferSize, kWriteBufferSize);
 
   task_runner_.reset(new jingle_glue::TaskPump());
   xmpp_client_ = new buzz::XmppClient(task_runner_.get());

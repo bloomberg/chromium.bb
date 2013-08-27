@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
+#include "jingle/glue/xmpp_client_socket_factory.h"
 #include "net/base/net_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/auth_token_util.h"
@@ -331,10 +332,12 @@ void HostNPScriptObject::It2MeImpl::FinishConnect() {
   host_key_pair_ = RsaKeyPair::Generate();
 
   // Create XMPP connection.
+  scoped_ptr<jingle_glue::ResolvingClientSocketFactory> socket_factory(
+      new jingle_glue::XmppClientSocketFactory(
+          net::ClientSocketFactory::GetDefaultFactory(), net::SSLConfig(),
+          host_context_->url_request_context_getter(), false));
   scoped_ptr<SignalStrategy> signal_strategy(
-      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
-                             host_context_->url_request_context_getter(),
-                             xmpp_server_config_));
+      new XmppSignalStrategy(socket_factory.Pass(), xmpp_server_config_));
 
   // Request registration of the host for support.
   scoped_ptr<RegisterSupportHostRequest> register_request(

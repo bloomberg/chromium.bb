@@ -1,8 +1,9 @@
 include_rules = [
+  "+jingle/glue",
   "+net",
   "+remoting/codec",
-  "+remoting/protocol",
   "+remoting/jingle_glue",
+  "+remoting/protocol",
   "+third_party/jsoncpp",
   "+third_party/modp_b64",
   "+third_party/npapi",
