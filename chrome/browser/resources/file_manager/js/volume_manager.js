@@ -116,6 +116,144 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
 };
 
 /**
+ * The order of the volume list based on root type.
+ * @type {Array.<string>}
+ * @const
+ * @private
+ */
+volumeManagerUtil.volumeListOrder_ = [
+  RootType.DRIVE, RootType.DOWNLOADS, RootType.ARCHIVE, RootType.REMOVABLE
+];
+
+/**
+ * Compares mount paths to sort the volume list order.
+ * @param {string} mountPath1 The mount path for the first volume.
+ * @param {string} mountPath2 The mount path for the second volume.
+ * @return {number} 0 if mountPath1 and mountPath2 are same, -1 if VolumeInfo
+ *     mounted at mountPath1 should be listed before the one mounted at
+ *     mountPath2, otherwise 1.
+ */
+volumeManagerUtil.compareMountPath = function(mountPath1, mountPath2) {
+  var order1 = volumeManagerUtil.volumeListOrder_.indexOf(
+      PathUtil.getRootType(mountPath1));
+  var order2 = volumeManagerUtil.volumeListOrder_.indexOf(
+      PathUtil.getRootType(mountPath2));
+  if (order1 != order2)
+    return order1 < order2 ? -1 : 1;
+
+  if (mountPath1 != mountPath2)
+    return mountPath1 < mountPath2 ? -1 : 1;
+
+  // The path is same.
+  return 0;
+};
+
+/**
+ * The container of the VolumeInfo for each mounted volume.
+ * @constructor
+ */
+function VolumeInfoList() {
+  /**
+   * Holds VolumeInfo instances.
+   * @type {cr.ui.ArrayDataModel}
+   * @private
+   */
+  this.model_ = new cr.ui.ArrayDataModel([]);
+
+  Object.freeze(this);
+}
+
+VolumeInfoList.prototype = {
+  get length() { return this.model_.length; }
+};
+
+/**
+ * Adds the event listener to listen the change of volume info.
+ * @param {string} type The name of the event.
+ * @param {function(cr.Event)} handler The handler for the event.
+ */
+VolumeInfoList.prototype.addEventListener = function(type, handler) {
+  this.model_.addEventListener(type, handler);
+};
+
+/**
+ * Removes the event listener.
+ * @param {string} type The name of the event.
+ * @param {function(cr.Event)} handler The handler to be removed.
+ */
+VolumeInfoList.prototype.removeEventListener = function(type, handler) {
+  this.model_.removeEventListener(type, handler);
+};
+
+/**
+ * Adds the volumeInfo to the appropriate position. If there already exists,
+ * just replaces it.
+ * @param {VolumeInfo} volumeInfo The information of the new volume.
+ */
+VolumeInfoList.prototype.add = function(volumeInfo) {
+  var index = this.findLowerBoundIndex_(volumeInfo.mountPath);
+  if (index < this.length &&
+      this.item(index).mountPath == volumeInfo.mountPath) {
+    // Replace the VolumeInfo.
+    this.model_.splice(index, 1, volumeInfo);
+  } else {
+    // Insert the VolumeInfo.
+    this.model_.splice(index, 0, volumeInfo);
+  }
+};
+
+/**
+ * Removes the VolumeInfo of the volume mounted at mountPath.
+ * @param {string} mountPath The path to the location where the volume is
+ *     mounted.
+ */
+VolumeInfoList.prototype.remove = function(mountPath) {
+  var index = this.findLowerBoundIndex_(mountPath);
+  if (index < this.length && this.item(index).mountPath == mountPath)
+    this.model_.splice(index, 1);
+};
+
+/**
+ * Searches the information of the volume mounted at mountPath.
+ * @param {string} mountPath The path to the location where the volume is
+ *     mounted.
+ * @return {VolumeInfo} The volume's information, or null if not found.
+ */
+VolumeInfoList.prototype.find = function(mountPath) {
+  var index = this.findLowerBoundIndex_(mountPath);
+  if (index < this.length && this.item(index).mountPath == mountPath)
+    return this.item(index);
+
+  // Not found.
+  return null;
+};
+
+/**
+ * @param {string} mountPath The mount path of searched volume.
+ * @return {number} The index of the volumee if found, or the inserting
+ *     position of the volume.
+ * @private
+ */
+VolumeInfoList.prototype.findLowerBoundIndex_ = function(mountPath) {
+  // Assuming the number of elements in the array data model is very small
+  // in most cases, use simple linear search, here.
+  for (var i = 0; i < this.length; i++) {
+    if (volumeManagerUtil.compareMountPath(
+            this.item(i).mountPath, mountPath) >= 0)
+      return i;
+  }
+  return this.length;
+};
+
+/**
+ * @param {number} index The index of the volume in the list.
+ * @return {VolumeInfo} The VolumeInfo instance.
+ */
+VolumeInfoList.prototype.item = function(index) {
+  return this.model_.item(index);
+};
+
+/**
  * VolumeManager is responsible for tracking list of mounted volumes.
  *
  * @param {Entry} root The root of file system.
@@ -140,11 +278,10 @@ function VolumeManager(root) {
   this.requests_ = {};
 
   /**
-   * TODO(hidehiko): Replace Object with cr.ui.ArrayDataModel.
-   * @type {Object.<string, VolumeInfo>}
-   * @private
+   * The list of VolumeInfo instances for each mounted volume.
+   * @type {VolumeInfoList}
    */
-  this.mountedVolumes_ = {};
+  this.volumeInfoList = new VolumeInfoList();
 
   /**
    * True, if mount points have been initialized.
@@ -348,7 +485,7 @@ VolumeManager.prototype.getDriveStatus = function() {
  */
 VolumeManager.prototype.isMounted = function(mountPath) {
   volumeManagerUtil.validateMountPath(mountPath);
-  return mountPath in this.mountedVolumes_;
+  return !!this.volumeInfoList.find(mountPath);
 };
 
 /**
@@ -386,7 +523,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
         volumeManagerUtil.createVolumeInfo(
             '/' + mountPoint.mountPath, error,
             function(volumeInfo) {
-              this.mountedVolumes_[volumeInfo.mountPath] = volumeInfo;
+              this.volumeInfoList.add(volumeInfo);
               callback();
             }.bind(this));
       }.bind(this, mountPoint, error));
@@ -429,7 +566,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       var error = event.status == 'success' ? '' : event.status;
       volumeManagerUtil.createVolumeInfo(
           event.mountPath, error, function(volume) {
-            this.mountedVolumes_[volume.mountPath] = volume;
+            this.volumeInfoList.add(volume);
             this.finishRequest_(requestKey, event.status, event.mountPath);
             cr.dispatchSimpleEvent(this, 'change');
           }.bind(this));
@@ -448,7 +585,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     var requestKey = this.makeRequestKey_('unmount', '', event.mountPath);
     var requested = requestKey in this.requests_;
     if (event.status == 'success' && !requested &&
-        mountPath in this.mountedVolumes_) {
+        this.volumeInfoList.find(mountPath)) {
       console.warn('Mounted volume without a request: ', mountPath);
       var e = new cr.Event('externally-unmounted');
       e.mountPath = mountPath;
@@ -457,7 +594,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     this.finishRequest_(requestKey, status);
 
     if (event.status == 'success') {
-      delete this.mountedVolumes_[mountPath];
+      this.volumeInfoList.remove(mountPath);
       cr.dispatchSimpleEvent(this, 'change');
     }
   }
@@ -584,7 +721,7 @@ VolumeManager.prototype.unmount = function(mountPath,
     return;
   }
 
-  var volumeInfo = this.mountedVolumes_[mountPath];
+  var volumeInfo = this.volumeInfoList.find(mountPath);
   if (!volumeInfo) {
     errorCallback(VolumeManager.Error.NOT_MOUNTED);
     return;
@@ -601,7 +738,7 @@ VolumeManager.prototype.unmount = function(mountPath,
  */
 VolumeManager.prototype.getVolumeInfo = function(mountPath) {
   volumeManagerUtil.validateMountPath(mountPath);
-  return this.mountedVolumes_[mountPath];
+  return this.volumeInfoList.find(mountPath);
 };
 
 /**
