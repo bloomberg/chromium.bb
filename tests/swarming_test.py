@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,7 +18,13 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import run_isolated
-import swarm_get_results
+import swarming
+
+
+FILE_NAME = u'test.isolated'
+FILE_HASH = u'1' * 40
+TEST_NAME = u'unit_tests'
+STDOUT_FOR_TRIGGER_LEN = 188
 
 
 TEST_CASE_SUCCESS = (
@@ -133,9 +139,7 @@ def get_swarm_results(keys):
 
   The timeout is hard-coded to 10 seconds.
   """
-  return list(
-      swarm_get_results.yield_results(
-          'http://host:9001', keys, 10., None))
+  return list(swarming.yield_results('http://host:9001', keys, 10., None))
 
 
 class TestCase(auto_stub.TestCase):
@@ -144,9 +148,7 @@ class TestCase(auto_stub.TestCase):
     super(TestCase, self).setUp()
     self._lock = threading.Lock()
     self.requests = []
-    self.mock(
-        swarm_get_results.run_isolated, 'url_open',
-        self._url_open)
+    self.mock(swarming.run_isolated, 'url_open', self._url_open)
 
   def tearDown(self):
     try:
@@ -171,7 +173,7 @@ class TestCase(auto_stub.TestCase):
 
 class TestGetTestKeys(TestCase):
   def test_no_keys(self):
-    self.mock(swarm_get_results.time, 'sleep', lambda x: x)
+    self.mock(swarming.time, 'sleep', lambda x: x)
     self.requests = [
       (
         'http://host:9001/get_matching_test_cases?name=my_test',
@@ -180,16 +182,16 @@ class TestGetTestKeys(TestCase):
       ) for _ in range(run_isolated.URL_OPEN_MAX_ATTEMPTS)
     ]
     try:
-      swarm_get_results.get_test_keys('http://host:9001', 'my_test')
+      swarming.get_test_keys('http://host:9001', 'my_test')
       self.fail()
-    except swarm_get_results.Failure as e:
+    except swarming.Failure as e:
       msg = (
           'Error: Unable to find any tests with the name, my_test, on swarm '
           'server')
       self.assertEqual(msg, e.args[0])
 
   def test_no_keys_on_first_attempt(self):
-    self.mock(swarm_get_results.time, 'sleep', lambda x: x)
+    self.mock(swarming.time, 'sleep', lambda x: x)
     keys = ['key_1', 'key_2']
     self.requests = [
       (
@@ -203,7 +205,7 @@ class TestGetTestKeys(TestCase):
         StringIO.StringIO(json.dumps(keys)),
       ),
     ]
-    actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test')
+    actual = swarming.get_test_keys('http://host:9001', 'my_test')
     self.assertEqual(keys, actual)
 
   def test_find_keys(self):
@@ -215,7 +217,7 @@ class TestGetTestKeys(TestCase):
         StringIO.StringIO(json.dumps(keys)),
       ),
     ]
-    actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test')
+    actual = swarming.get_test_keys('http://host:9001', 'my_test')
     self.assertEqual(keys, actual)
 
 
@@ -270,10 +272,10 @@ class TestGetSwarmResults(TestCase):
       with lock:
         return now.setdefault(t, range(12)).pop(0)
     self.mock(
-        swarm_get_results.run_isolated.HttpService,
+        swarming.run_isolated.HttpService,
         'sleep_before_retry',
         staticmethod(lambda _x, _y: None))
-    self.mock(swarm_get_results, 'now', get_now)
+    self.mock(swarming, 'now', get_now)
     # The actual number of requests here depends on 'now' progressing to 10
     # seconds. It's called twice per loop.
     self.requests = [
@@ -355,6 +357,246 @@ class TestGetSwarmResults(TestCase):
     ]
     actual = get_swarm_results(['key1', 'key1-repeat', 'key2', 'key3'])
     self.assertEqual(expected, sorted(actual))
+
+
+def chromium_tasks(retrieval_url):
+  return [
+    {
+      u'action': [
+        u'python', u'run_isolated.py',
+        u'--hash', FILE_HASH,
+        u'--remote', retrieval_url + u'default-gzip/',
+      ],
+      u'decorate_output': False,
+      u'test_name': u'Run Test',
+      u'time_out': 600,
+    },
+    {
+      u'action' : [
+          u'python', u'swarm_cleanup.py',
+      ],
+      u'decorate_output': False,
+      u'test_name': u'Clean Up',
+      u'time_out': 600,
+    }
+  ]
+
+
+def generate_expected_json(
+    shards,
+    slave_os,
+    working_dir,
+    isolate_server,
+    profile):
+  retrieval_url = isolate_server + '/content/retrieve/'
+  os_value = unicode(swarming.PLATFORM_MAPPING[slave_os])
+  expected = {
+    u'cleanup': u'root',
+    u'configurations': [
+      {
+        u'config_name': os_value,
+        u'dimensions': {
+          u'os': os_value,
+        },
+        u'min_instances': shards,
+      },
+    ],
+    u'data': [[retrieval_url + u'default/', u'swarm_data.zip']],
+    u'env_vars': {},
+    u'restart_on_failure': True,
+    u'test_case_name': TEST_NAME,
+    u'tests': chromium_tasks(retrieval_url),
+    u'working_dir': unicode(working_dir),
+    u'priority': 101,
+  }
+  if shards > 1:
+    expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'
+    expected[u'env_vars'][u'GTEST_TOTAL_SHARDS'] = u'%(num_instances)s'
+  if profile:
+    expected[u'tests'][0][u'action'].append(u'--verbose')
+  return expected
+
+
+class MockZipFile(object):
+  def __init__(self, filename, mode):
+    pass
+
+  def write(self, source, dest=None):
+    pass
+
+  def close(self):
+    pass
+
+
+def MockUrlOpen(url, _data, has_return_value):
+  if '/content/contains' in url:
+    return StringIO.StringIO(has_return_value)
+  return StringIO.StringIO('{}')
+
+
+def MockUrlOpenHasZip(url, data=None, content_type=None):
+  assert content_type in (None, 'application/json', 'application/octet-stream')
+  return MockUrlOpen(url, data, has_return_value=chr(1))
+
+
+def MockUrlOpenNoZip(url, data=None, content_type=None):
+  assert content_type in (None, 'application/json', 'application/octet-stream')
+  return MockUrlOpen(url, data, has_return_value=chr(0))
+
+
+class ManifestTest(auto_stub.TestCase):
+  def setUp(self):
+    self.mock(swarming.time, 'sleep', lambda x: None)
+    self.mock(swarming.zipfile, 'ZipFile', MockZipFile)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(sys, 'stderr', StringIO.StringIO())
+
+  def tearDown(self):
+    if not self.has_failed():
+      self._check_output('', '')
+    super(ManifestTest, self).tearDown()
+
+  def _check_output(self, out, err):
+    self.assertEqual(out, sys.stdout.getvalue())
+    self.assertEqual(err, sys.stderr.getvalue())
+
+    # Flush their content by mocking them again.
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(sys, 'stderr', StringIO.StringIO())
+
+  def test_basic_manifest(self):
+    manifest = swarming.Manifest(
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=2,
+        test_filter='*',
+        slave_os='win32',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        verbose=False,
+        profile=False,
+        priority=101)
+
+    swarming.chromium_setup(manifest)
+    manifest_json = json.loads(manifest.to_json())
+
+    expected = generate_expected_json(
+        shards=2,
+        slave_os='win32',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        profile=False)
+    self.assertEqual(expected, manifest_json)
+
+  def test_basic_linux(self):
+    """A basic linux manifest test to ensure that windows specific values
+       aren't used.
+    """
+    manifest = swarming.Manifest(
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        verbose=False,
+        profile=False,
+        priority=101)
+
+    swarming.chromium_setup(manifest)
+    manifest_json = json.loads(manifest.to_json())
+
+    expected = generate_expected_json(
+        shards=1,
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        profile=False)
+    self.assertEqual(expected, manifest_json)
+
+  def test_basic_linux_profile(self):
+    manifest = swarming.Manifest(
+        manifest_hash=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        verbose=False,
+        profile=True,
+        priority=101)
+
+    swarming.chromium_setup(manifest)
+    manifest_json = json.loads(manifest.to_json())
+
+    expected = generate_expected_json(
+        shards=1,
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        profile=True)
+    self.assertEqual(expected, manifest_json)
+
+  def test_process_manifest_success(self):
+    self.mock(swarming.run_isolated, 'url_open', MockUrlOpenNoZip)
+
+    result = swarming.process_manifest(
+        file_sha1_or_isolated=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        swarming='http://localhost:8082',
+        verbose=False,
+        profile=False,
+        priority=101)
+    self.assertEqual(0, result)
+
+    # Just assert it printed enough, since it contains variable output.
+    out = sys.stdout.getvalue()
+    self.assertTrue(
+        len(out) > STDOUT_FOR_TRIGGER_LEN,
+        (out, sys.stderr.getvalue()))
+    self.assertTrue('Zip file not on server, starting uploading.' in out)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+
+  def test_process_manifest_success_zip_already_uploaded(self):
+    self.mock(swarming.run_isolated, 'url_open', MockUrlOpenHasZip)
+
+    result = swarming.process_manifest(
+        file_sha1_or_isolated=FILE_HASH,
+        test_name=TEST_NAME,
+        shards=1,
+        test_filter='*',
+        slave_os='linux2',
+        working_dir='swarm_tests',
+        isolate_server='http://localhost:8081',
+        swarming='http://localhost:8082',
+        verbose=False,
+        profile=False,
+        priority=101)
+    self.assertEqual(0, result)
+
+    # Just assert it printed enough, since it contains variable output.
+    out = sys.stdout.getvalue()
+    self.assertTrue(len(out) > STDOUT_FOR_TRIGGER_LEN)
+    self.assertTrue('Zip file already on server, no need to reupload.' in out)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+
+  def test_no_request(self):
+    try:
+      swarming.main(['trigger'])
+      self.fail()
+    except SystemExit as e:
+      self.assertEqual(2, e.code)
+      self._check_output(
+          '',
+          'Usage: swarming.py trigger [options]\n\n'
+          'swarming.py: error: At least one --task is required.\n')
 
 
 if __name__ == '__main__':

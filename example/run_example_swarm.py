@@ -17,11 +17,9 @@ import sys
 import tempfile
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(ROOT_DIR))
 
-
-# Default servers.
-ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
-SWARM_SERVER = 'https://chromium-swarm.appspot.com/'
+import swarming
 
 
 def run(cmd, verbose):
@@ -34,22 +32,43 @@ def run(cmd, verbose):
   subprocess.check_call(cmd)
 
 
-def main():
-  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
-  parser.add_option(
-      '-i', '--isolate-server',
-      default=ISOLATE_SERVER,
-      help='Isolate server to use default:%default')
-  parser.add_option(
-      '-s', '--swarm-server',
-      default=SWARM_SERVER,
-      help='Isolate server to use default:%default')
-  parser.add_option('-v', '--verbose', action='store_true')
-  options, args = parser.parse_args()
-  if args:
-    parser.error('Unsupported argument %s' % args)
-  prefix = getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-'
+def simple(isolate_server, swarming_server, prefix, verbose):
+  try:
+    # All the files are put in a temporary directory. This is optional and
+    # simply done so the current directory doesn't have the following files
+    # created:
+    # - hello_world.isolated
+    # - hello_world.isolated.state
+    tempdir = tempfile.mkdtemp(prefix='hello_world')
+    isolated = os.path.join(tempdir, 'hello_world.isolated')
 
+    run(
+        [
+          'isolate.py',
+          'check',
+          '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
+          '--isolated', isolated,
+        ],
+        verbose)
+
+    run(
+        [
+          'swarming.py',
+          'run',
+          '--os', sys.platform,
+          '--swarming', swarming_server,
+          '--task-prefix', prefix,
+          '--isolate-server', isolate_server,
+          isolated,
+        ],
+        verbose)
+    return 0
+  finally:
+    shutil.rmtree(tempdir)
+
+
+def involved(isolate_server, swarming_server, prefix, verbose):
+  """Runs all the steps involved individually, for demonstration purposes."""
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files
@@ -66,40 +85,68 @@ def main():
           'hashtable',
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
           '--isolated', isolated,
-          '--outdir', options.isolate_server,
+          '--outdir', isolate_server,
         ],
-        options.verbose)
-
-    # Note that swarm_trigger_and_get_results.py could be used to run and get
-    # results as a single call.
-    print('\nRunning')
+        verbose)
     hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
-    run(
-        [
-          'swarm_trigger_step.py',
-          '--os_image', sys.platform,
-          '--swarm-url', options.swarm_server,
-          '--test-name-prefix', prefix,
-          '--data-server', options.isolate_server,
-          '--run_from_hash', hashval,
-          'hello_world',
-          # Number of shards.
-          '1',
-          '*',
-        ],
-        options.verbose)
-
-    print('\nGetting results')
-    run(
-        [
-          'swarm_get_results.py',
-          '--url', options.swarm_server,
-          prefix + 'hello_world',
-        ],
-        options.verbose)
   finally:
     shutil.rmtree(tempdir)
+
+  print('\nRunning')
+  run(
+      [
+        'swarming.py',
+        'trigger',
+        '--os', sys.platform,
+        '--isolate-server', isolate_server,
+        '--swarming', swarming_server,
+        '--task-prefix', prefix,
+        '--task',
+        hashval,
+        'hello_world',
+        # Number of shards.
+        '1',
+        '*',
+      ],
+      verbose)
+
+  print('\nGetting results')
+  run(
+      [
+        'swarming.py',
+        'collect',
+        '--swarming', swarming_server,
+        prefix + 'hello_world',
+      ],
+      verbose)
   return 0
+
+
+def main():
+  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option(
+      '-I', '--isolate-server',
+      default=swarming.ISOLATE_SERVER,
+      help='Isolate server to use default: %default')
+  parser.add_option(
+      '-S', '--swarming',
+      default=swarming.SWARM_SERVER,
+      help='Isolate server to use default: %default')
+  parser.add_option('-v', '--verbose', action='store_true')
+  parser.add_option(
+      '--short', action='store_true',
+      help='Use \'swarming.py run\' instead of running each step manually')
+  options, args = parser.parse_args()
+  if args:
+    parser.error('Unsupported argument %s' % args)
+
+  prefix = getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-'
+  if options.short:
+    return simple(
+        options.isolate_server, options.swarming, prefix, options.verbose)
+  else:
+    return involved(
+        options.isolate_server, options.swarming, prefix, options.verbose)
 
 
 if __name__ == '__main__':

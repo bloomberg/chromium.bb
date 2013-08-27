@@ -31,7 +31,7 @@ def CommonChecks(input_api, output_api):
     # is not whitelisted so only run these on commit.
     integation_tests = [
       r'.*isolateserver_archive_smoke_test\.py$',
-      r'.*swarm_get_results_smoke_test\.py$',
+      r'.*swarming_smoke_test\.py$',
     ]
 
   output.extend(
