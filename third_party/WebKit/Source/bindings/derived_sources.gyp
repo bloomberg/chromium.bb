@@ -59,9 +59,9 @@
         'templates/attributes.cpp',
         'templates/callback_interface.cpp',
         'templates/callback_interface.h',
-        'templates/constants.cpp',
         'templates/interface.cpp',
         'templates/interface.h',
+        'templates/interface_macros.cpp',
     ],
 
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',

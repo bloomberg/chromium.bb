@@ -19,7 +19,7 @@
 */
 
 {% from 'attributes.cpp' import attribute_getter, attribute_getter_callback, class_attributes with context %}
-{% from 'constants.cpp' import class_constants, install_constants with context %}
+{% from 'interface_macros.cpp' import install_constants with context %}
 #include "config.h"
 {% if conditional_string %}
 #if {{conditional_string}}
@@ -67,10 +67,6 @@ template <typename T> void V8_USE(T) { }
 {% if attributes %}
 {{class_attributes()}}
 {% endif %}
-{# FIXME: Move down and merge with install constants #}
-{% if constants %}
-{{class_constants()}}
-{% endif %}
 static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -87,7 +83,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     UNUSED_PARAM(proto);
 {% endif %}
 {% if constants %}
-{{install_constants()}}
+    {{install_constants() | indent}}
 {% endif %}
 
     // Custom toString template

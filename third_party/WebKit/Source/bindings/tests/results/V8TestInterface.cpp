@@ -1075,34 +1075,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
-static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-#if ENABLE(Condition22) || ENABLE(Condition23)
-    {"IMPLEMENTSCONSTANT1", 1},
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition22) || ENABLE(Condition23)
-    {"IMPLEMENTSCONSTANT2", 2},
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"SUPPLEMENTALCONSTANT1", 1},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"SUPPLEMENTALCONSTANT2", 2},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-};
-
-#if ENABLE(Condition22) || ENABLE(Condition23)
-COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TestInterfaceEnumIMPLEMENTSCONSTANT1IsWrongUseDoNotCheckConstants);
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition22) || ENABLE(Condition23)
-COMPILE_ASSERT(2 == TestImplements::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TestInterfaceEnumSUPPLEMENTALCONSTANT1IsWrongUseDoNotCheckConstants);
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-COMPILE_ASSERT(2 == TestPartialInterface::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
 void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
@@ -1152,7 +1124,17 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
+    static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+        {"IMPLEMENTSCONSTANT1", 1},
+        {"IMPLEMENTSCONSTANT2", 2},
+        {"SUPPLEMENTALCONSTANT1", 1},
+        {"SUPPLEMENTALCONSTANT2", 2},
+    };
     V8DOMConfiguration::installConstants(desc, proto, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
+    COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TheValueOfTestInterface_IMPLEMENTSCONSTANT1DoesntMatchWithImplementation);
+    COMPILE_ASSERT(2 == TestImplements::CONST_IMPL, TheValueOfTestInterface_CONST_IMPLDoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TheValueOfTestInterface_SUPPLEMENTALCONSTANT1DoesntMatchWithImplementation);
+    COMPILE_ASSERT(2 == TestPartialInterface::CONST_IMPL, TheValueOfTestInterface_CONST_IMPLDoesntMatchWithImplementation);
     desc->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
 #if ENABLE(Condition22) || ENABLE(Condition23)
 

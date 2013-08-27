@@ -182,8 +182,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [Conditional=Condition1&Condition2] attribute TestObjectectBConstructor conditionalAttr5;
     [Conditional=Condition1|Condition2] attribute TestObjectectCConstructor conditionalAttr6;
 
-    [Conditional=Condition1] const unsigned short CONDITIONAL_CONST = 0;
-
     readonly attribute any cachedAttribute1;
     readonly attribute any cachedAttribute2;
 

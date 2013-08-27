@@ -162,8 +162,7 @@ def generate_constants(interface):
 
 
 def generate_constant(constant):
-    # Extended Attributes: Conditional, DeprecateAs, EnabledAtRuntime, Reflect
-    # FIXME: Conditional only used in tests, so remove
+    # Extended Attributes: DeprecateAs, EnabledAtRuntime, Reflect
     # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
     # in C++.
     if constant.data_type == 'DOMString':
@@ -177,8 +176,6 @@ def generate_constant(constant):
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': reflected_name,
         'value': value,
-        # FIXME: remove conditional: only used in tests
-        'conditional_string': generate_conditional_string(constant),
         'enabled_at_runtime': 'EnabledAtRuntime' in constant.extended_attributes,
         'runtime_enable_function_name': runtime_enable_function_name(constant),
     }
@@ -381,20 +378,22 @@ class CodeGeneratorV8:
         }
 
     def generate_interface(self):
+        interface = self.interface
         self.header_includes = INTERFACE_H_INCLUDES
         self.header_includes |= includes_for_cpp_class(cpp_class_name(self.interface), self.relative_dir_posix)
         self.cpp_includes = INTERFACE_CPP_INCLUDES
 
         template_contents = {
-            'interface_name': self.interface.name,
-            'cpp_class_name': cpp_class_name(self.interface),
-            'v8_class_name': v8_class_name(self.interface),
-            'attributes': [self.generate_attribute(attribute) for attribute in self.interface.attributes],
+            'interface_name': interface.name,
+            'cpp_class_name': cpp_class_name(interface),
+            'v8_class_name': v8_class_name(interface),
+            'attributes': [self.generate_attribute(attribute) for attribute in interface.attributes],
             # Size 0 constant array is not allowed in VC++
-            'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name(self.interface) if self.interface.attributes else '0',
-            'attribute_templates': v8_class_name(self.interface) + 'Attributes' if self.interface.attributes else '0',
+            'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name(interface) if interface.attributes else '0',
+            'attribute_templates': v8_class_name(interface) + 'Attributes' if interface.attributes else '0',
+            'constants': generate_constants(interface),
+            'do_not_check_constants': 'DoNotCheckConstants' in interface.extended_attributes,
         }
-        template_contents['constants'] = generate_constants(self.interface)
         # Add includes afterwards, as they are modified by generate_attribute etc.
         template_contents['header_includes'] = sorted(list(self.header_includes))
         template_contents['cpp_includes'] = sorted(list(self.cpp_includes))

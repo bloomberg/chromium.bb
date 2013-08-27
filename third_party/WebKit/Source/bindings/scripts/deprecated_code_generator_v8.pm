@@ -4128,38 +4128,9 @@ END
     $code .= "};\n\n"  if $has_callbacks;
     $implementation{nameSpaceWebCore}->add($code);
 
-    # Setup constants
     my $has_constants = 0;
-    my @constantsEnabledAtRuntime;
-    $code = "";
     if (@{$interface->constants}) {
         $has_constants = 1;
-        $code .= "static const V8DOMConfiguration::ConstantConfiguration ${v8ClassName}Constants[] = {\n";
-    }
-    foreach my $constant (@{$interface->constants}) {
-        my $name = $constant->name;
-        my $value = $constant->value;
-        my $attrExt = $constant->extendedAttributes;
-        my $implementedBy = $attrExt->{"ImplementedBy"};
-        if ($implementedBy) {
-            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-        }
-        if ($attrExt->{"EnabledAtRuntime"}) {
-            push(@constantsEnabledAtRuntime, $constant);
-        } else {
-            my $conditionalString = GenerateConditionalString($constant);
-            $code .= "#if ${conditionalString}\n" if $conditionalString;
-            $code .= <<END;
-    {"${name}", $value},
-END
-            $code .= "#endif // $conditionalString\n" if $conditionalString;
-        }
-    }
-    if ($has_constants) {
-        $code .= "};\n\n";
-        $code .= join "", GenerateCompileTimeCheckForEnumsIfNeeded($interface);
-        $implementation{nameSpaceWebCore}->add($code);
     }
 
     if (!HasCustomConstructor($interface)) {
@@ -4279,26 +4250,43 @@ END
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
     }
 
-    # Setup the enable-at-runtime constants if we have them
-    foreach my $runtime_const (@constantsEnabledAtRuntime) {
-        my $enable_function = GetRuntimeEnableFunctionName($runtime_const);
-        my $conditionalString = GenerateConditionalString($runtime_const);
-        my $name = $runtime_const->name;
-        my $value = $runtime_const->value;
-        $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-        $code .= "    if (${enable_function}()) {\n";
-        $code .= <<END;
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
-        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
-END
-        $code .= "    }\n";
-        $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
-    }
-
+    my @constantsEnabledAtRuntime;
     if ($has_constants) {
+        $code .= "    static const V8DOMConfiguration::ConstantConfiguration ${v8ClassName}Constants[] = {\n";
+        foreach my $constant (@{$interface->constants}) {
+            my $name = $constant->name;
+            my $value = $constant->value;
+            my $attrExt = $constant->extendedAttributes;
+            my $implementedBy = $attrExt->{"ImplementedBy"};
+            if ($implementedBy) {
+                my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+                AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
+            }
+            if ($attrExt->{"EnabledAtRuntime"}) {
+                push(@constantsEnabledAtRuntime, $constant);
+            } else {
+                $code .= <<END;
+        {"${name}", $value},
+END
+            }
+        }
+        $code .= "    };\n";
         $code .= <<END;
     V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
 END
+        # Setup the enable-at-runtime constants if we have them
+        foreach my $runtime_const (@constantsEnabledAtRuntime) {
+            my $enable_function = GetRuntimeEnableFunctionName($runtime_const);
+            my $name = $runtime_const->name;
+            my $value = $runtime_const->value;
+            $code .= "    if (${enable_function}()) {\n";
+            $code .= <<END;
+        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
+        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
+END
+            $code .= "    }\n";
+        }
+        $code .= join "", GenerateCompileTimeCheckForEnumsIfNeeded($interface);
     }
 
     $code .= GenerateImplementationIndexedPropertyAccessors($interface);
@@ -5971,19 +5959,14 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
             my $reflect = $constant->extendedAttributes->{"Reflect"};
             my $name = $reflect ? $reflect : $constant->name;
             my $value = $constant->value;
-            my $conditionalString = GenerateConditionalString($constant);
-            push(@checks, "#if ${conditionalString}\n") if $conditionalString;
 
             if ($constant->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedByImplName = GetImplNameFromImplementedBy($constant->extendedAttributes->{"ImplementedBy"});
-                push(@checks, "COMPILE_ASSERT($value == " . $implementedByImplName . "::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
+                push(@checks, "    COMPILE_ASSERT($value == " . $implementedByImplName . "::$name, TheValueOf${implClassName}_${name}DoesntMatchWithImplementation);\n");
             } else {
-                push(@checks, "COMPILE_ASSERT($value == ${implClassName}::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
+                push(@checks, "    COMPILE_ASSERT($value == ${implClassName}::$name, TheValueOf${implClassName}_${name}DoesntMatchWithImplementation);\n");
             }
-
-            push(@checks, "#endif // $conditionalString\n") if $conditionalString;
         }
-        push(@checks, "\n");
     }
     return @checks;
 }

@@ -62,52 +62,6 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestConstantsV8Internal
 
-static const V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
-    {"CONST_VALUE_0", 0},
-    {"CONST_VALUE_1", 1},
-    {"CONST_VALUE_2", 2},
-    {"CONST_VALUE_4", 4},
-    {"CONST_VALUE_8", 8},
-    {"CONST_VALUE_9", -1},
-    {"CONST_VALUE_10", "my constant string"},
-    {"CONST_VALUE_11", 0xffffffff},
-    {"CONST_VALUE_12", 0x01},
-    {"CONST_VALUE_13", 0X20},
-    {"CONST_VALUE_14", 0x1abc},
-    {"CONST_VALUE_15", 010},
-    {"CONST_VALUE_16", -010},
-    {"CONST_VALUE_16", -0x1A},
-    {"CONST_VALUE_17", -0X1a},
-#if ENABLE(Condition)
-    {"CONDITIONAL_CONST", 0},
-#endif // ENABLE(Condition)
-    {"DEPRECATED_CONSTANT", 1},
-    {"CONST_JAVASCRIPT", 1},
-};
-
-COMPILE_ASSERT(0 == TestConstants::CONST_VALUE_0, TestConstantsEnumCONST_VALUE_0IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(1 == TestConstants::CONST_VALUE_1, TestConstantsEnumCONST_VALUE_1IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(2 == TestConstants::CONST_VALUE_2, TestConstantsEnumCONST_VALUE_2IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(4 == TestConstants::CONST_VALUE_4, TestConstantsEnumCONST_VALUE_4IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(8 == TestConstants::CONST_VALUE_8, TestConstantsEnumCONST_VALUE_8IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(-1 == TestConstants::CONST_VALUE_9, TestConstantsEnumCONST_VALUE_9IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT("my constant string" == TestConstants::CONST_VALUE_10, TestConstantsEnumCONST_VALUE_10IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0xffffffff == TestConstants::CONST_VALUE_11, TestConstantsEnumCONST_VALUE_11IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0x01 == TestConstants::CONST_VALUE_12, TestConstantsEnumCONST_VALUE_12IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0X20 == TestConstants::CONST_VALUE_13, TestConstantsEnumCONST_VALUE_13IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(0x1abc == TestConstants::CONST_VALUE_14, TestConstantsEnumCONST_VALUE_14IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(010 == TestConstants::CONST_VALUE_15, TestConstantsEnumCONST_VALUE_15IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(-010 == TestConstants::CONST_VALUE_16, TestConstantsEnumCONST_VALUE_16IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(-0x1A == TestConstants::CONST_VALUE_16, TestConstantsEnumCONST_VALUE_16IsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(-0X1a == TestConstants::CONST_VALUE_17, TestConstantsEnumCONST_VALUE_17IsWrongUseDoNotCheckConstants);
-#if ENABLE(Condition)
-COMPILE_ASSERT(0 == TestConstants::CONDITIONAL_CONST, TestConstantsEnumCONDITIONAL_CONSTIsWrongUseDoNotCheckConstants);
-#endif // ENABLE(Condition)
-COMPILE_ASSERT(1 == TestConstants::DEPRECATED_CONSTANT, TestConstantsEnumDEPRECATED_CONSTANTIsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(1 == TestConstants::RUNTIME_ENABLED_CONST, TestConstantsEnumRUNTIME_ENABLED_CONSTIsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(1 == TestConstants::FEATURE_ENABLED_CONST, TestConstantsEnumFEATURE_ENABLED_CONSTIsWrongUseDoNotCheckConstants);
-COMPILE_ASSERT(1 == TestConstants::CONST_IMPL, TestConstantsEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
-
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -121,6 +75,26 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
+    static const V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
+        {"CONST_VALUE_0", 0},
+        {"CONST_VALUE_1", 1},
+        {"CONST_VALUE_2", 2},
+        {"CONST_VALUE_4", 4},
+        {"CONST_VALUE_8", 8},
+        {"CONST_VALUE_9", -1},
+        {"CONST_VALUE_10", "my constant string"},
+        {"CONST_VALUE_11", 0xffffffff},
+        {"CONST_VALUE_12", 0x01},
+        {"CONST_VALUE_13", 0X20},
+        {"CONST_VALUE_14", 0x1abc},
+        {"CONST_VALUE_15", 010},
+        {"CONST_VALUE_16", -010},
+        {"CONST_VALUE_16", -0x1A},
+        {"CONST_VALUE_17", -0X1a},
+        {"DEPRECATED_CONSTANT", 1},
+        {"CONST_JAVASCRIPT", 1},
+    };
+    V8DOMConfiguration::installConstants(desc, proto, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants), isolate);
     if (RuntimeEnabledFeatures::rUNTIME_ENABLED_CONSTEnabled()) {
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"RUNTIME_ENABLED_CONST", static_cast<signed int>(1)};
         V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
@@ -129,7 +103,25 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", static_cast<signed int>(1)};
         V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
     }
-    V8DOMConfiguration::installConstants(desc, proto, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants), isolate);
+    COMPILE_ASSERT(0 == TestConstants::CONST_VALUE_0, TheValueOfTestConstants_CONST_VALUE_0DoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestConstants::CONST_VALUE_1, TheValueOfTestConstants_CONST_VALUE_1DoesntMatchWithImplementation);
+    COMPILE_ASSERT(2 == TestConstants::CONST_VALUE_2, TheValueOfTestConstants_CONST_VALUE_2DoesntMatchWithImplementation);
+    COMPILE_ASSERT(4 == TestConstants::CONST_VALUE_4, TheValueOfTestConstants_CONST_VALUE_4DoesntMatchWithImplementation);
+    COMPILE_ASSERT(8 == TestConstants::CONST_VALUE_8, TheValueOfTestConstants_CONST_VALUE_8DoesntMatchWithImplementation);
+    COMPILE_ASSERT(-1 == TestConstants::CONST_VALUE_9, TheValueOfTestConstants_CONST_VALUE_9DoesntMatchWithImplementation);
+    COMPILE_ASSERT("my constant string" == TestConstants::CONST_VALUE_10, TheValueOfTestConstants_CONST_VALUE_10DoesntMatchWithImplementation);
+    COMPILE_ASSERT(0xffffffff == TestConstants::CONST_VALUE_11, TheValueOfTestConstants_CONST_VALUE_11DoesntMatchWithImplementation);
+    COMPILE_ASSERT(0x01 == TestConstants::CONST_VALUE_12, TheValueOfTestConstants_CONST_VALUE_12DoesntMatchWithImplementation);
+    COMPILE_ASSERT(0X20 == TestConstants::CONST_VALUE_13, TheValueOfTestConstants_CONST_VALUE_13DoesntMatchWithImplementation);
+    COMPILE_ASSERT(0x1abc == TestConstants::CONST_VALUE_14, TheValueOfTestConstants_CONST_VALUE_14DoesntMatchWithImplementation);
+    COMPILE_ASSERT(010 == TestConstants::CONST_VALUE_15, TheValueOfTestConstants_CONST_VALUE_15DoesntMatchWithImplementation);
+    COMPILE_ASSERT(-010 == TestConstants::CONST_VALUE_16, TheValueOfTestConstants_CONST_VALUE_16DoesntMatchWithImplementation);
+    COMPILE_ASSERT(-0x1A == TestConstants::CONST_VALUE_16, TheValueOfTestConstants_CONST_VALUE_16DoesntMatchWithImplementation);
+    COMPILE_ASSERT(-0X1a == TestConstants::CONST_VALUE_17, TheValueOfTestConstants_CONST_VALUE_17DoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestConstants::DEPRECATED_CONSTANT, TheValueOfTestConstants_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestConstants::RUNTIME_ENABLED_CONST, TheValueOfTestConstants_RUNTIME_ENABLED_CONSTDoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestConstants::FEATURE_ENABLED_CONST, TheValueOfTestConstants_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
+    COMPILE_ASSERT(1 == TestConstants::CONST_IMPL, TheValueOfTestConstants_CONST_IMPLDoesntMatchWithImplementation);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
