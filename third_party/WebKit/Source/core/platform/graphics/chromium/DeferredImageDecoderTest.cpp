@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
 #include "SkBitmapDevice.h"
@@ -36,6 +35,7 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;

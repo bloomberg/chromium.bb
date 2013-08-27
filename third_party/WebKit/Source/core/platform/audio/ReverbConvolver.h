@@ -38,6 +38,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

@@ -45,6 +45,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 

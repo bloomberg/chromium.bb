@@ -35,6 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 

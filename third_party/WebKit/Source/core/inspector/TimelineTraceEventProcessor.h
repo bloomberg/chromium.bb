@@ -36,6 +36,7 @@
 #include "core/platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"

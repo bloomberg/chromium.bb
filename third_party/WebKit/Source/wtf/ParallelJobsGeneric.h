@@ -32,6 +32,7 @@
 
 #include "wtf/RefCounted.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {

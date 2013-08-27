@@ -28,7 +28,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 

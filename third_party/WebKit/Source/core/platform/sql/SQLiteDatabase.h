@@ -28,6 +28,7 @@
 #define SQLiteDatabase_h
 
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

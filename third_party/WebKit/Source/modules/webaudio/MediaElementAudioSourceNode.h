@@ -33,7 +33,7 @@
 #include "modules/webaudio/AudioSourceNode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 

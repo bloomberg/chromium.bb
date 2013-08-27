@@ -34,6 +34,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/StringExtras.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextCodecICU.h"
 #include "wtf/text/TextCodecLatin1.h"

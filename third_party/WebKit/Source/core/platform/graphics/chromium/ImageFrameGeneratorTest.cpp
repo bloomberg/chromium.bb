@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/test/MockImageDecoder.h"
+#include "wtf/Threading.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;

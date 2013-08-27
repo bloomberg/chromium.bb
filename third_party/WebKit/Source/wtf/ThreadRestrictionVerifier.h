@@ -31,6 +31,8 @@
 #ifndef ThreadRestrictionVerifier_h
 #define ThreadRestrictionVerifier_h
 
+#ifndef NDEBUG
+
 #include "wtf/Assertions.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -38,8 +40,6 @@
 #if HAVE(DISPATCH_H)
 #include <dispatch/dispatch.h>
 #endif
-
-#ifndef NDEBUG
 
 namespace WTF {
 
@@ -171,5 +171,5 @@ private:
 
 }
 
-#endif
-#endif
+#endif // !NDEBUG
+#endif // ThreadRestrictionVerifier_h
