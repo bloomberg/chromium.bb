@@ -104,7 +104,7 @@ class CopyOperation {
                             const FileOperationCallback& callback);
 
   // Part of CopyResourceOnServer. Called after server side copy is done.
-  void CopyResourceOnServerAfterServerCopy(
+  void CopyResourceOnServerAfterServerSideCopy(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
@@ -154,25 +154,29 @@ class CopyOperation {
       std::string* resource_id,
       FileError error);
 
-  // Copies a hosted document with |resource_id| to |dest_path|
-  void CopyHostedDocumentToDirectory(const base::FilePath& dest_path,
-                                     const std::string& resource_id,
-                                     const FileOperationCallback& callback);
+  // Copies the hosted document with |resource_id| to the |dest_path|.
+  // This method is designed based on GData WAPI. It cannot create a copy in
+  // any directory but my drive root. So, this method creates the copy at
+  // my drive root first, then move it into the destination directory.
+  // For Drive API v2, this should work, but CopyResourceOnServer should work
+  // more efficiently.
+  void CopyHostedDocument(const std::string& resource_id,
+                          const base::FilePath& dest_path,
+                          const FileOperationCallback& callback);
 
-  // Callback for handling document copy attempt.
-  void OnCopyHostedDocumentCompleted(
+  // Part of CopyHostedDocument(). Called after server side copy is done.
+  void CopyHostedDocumentAfterServerSideCopy(
       const base::FilePath& dest_path,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  // Moves a file or directory at |file_path| in the root directory to
-  // |dest_path|. This function does nothing if |dest_path| points to a
-  // resource directly under the root directory.
-  void MoveEntryFromRootDirectory(const base::FilePath& dest_path,
-                                  const FileOperationCallback& callback,
-                                  FileError error,
-                                  const base::FilePath& file_path);
+  // Part of CopyHostedDocument(). Called after the local metadata is updated.
+  void CopyHostedDocumentAfterUpdateLocalState(
+      const base::FilePath& dest_path,
+      const FileOperationCallback& callback,
+      base::FilePath* file_path,
+      FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

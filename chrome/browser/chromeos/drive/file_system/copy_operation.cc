@@ -60,7 +60,7 @@ int64 GetFileSize(const base::FilePath& file_path) {
 }
 
 // Stores the copied entry and returns its path.
-FileError UpdateLocalStateForCopyResourceOnServer(
+FileError UpdateLocalStateForServerSideCopy(
     internal::ResourceMetadata* metadata,
     const ResourceEntry& entry,
     base::FilePath* file_path) {
@@ -72,6 +72,7 @@ FileError UpdateLocalStateForCopyResourceOnServer(
 
   if (error == FILE_ERROR_OK)
     *file_path = metadata->GetFilePath(entry.resource_id());
+
   return error;
 }
 
@@ -218,11 +219,11 @@ void CopyOperation::CopyAfterPrepare(
   // Here after GData WAPI's code.
   if (src_entry->file_specific_info().is_hosted_document()) {
     // For hosted documents, GData WAPI copies it on server.
-    CopyHostedDocumentToDirectory(
+    CopyHostedDocument(
+        src_entry->resource_id(),
         // Drop the document extension, which should not be in the title.
         // TODO(yoshiki): Remove this code with crbug.com/223304.
         dest_file_path.RemoveExtension(),
-        src_entry->resource_id(),
         callback);
     return;
   }
@@ -307,12 +308,12 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 
   // TODO(hidehiko): Use CopyResource for Drive API v2.
 
-  CopyHostedDocumentToDirectory(
+  CopyHostedDocument(
+      canonicalized_resource_id,
       // Drop the document extension, which should not be
       // in the document title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.
       remote_dest_path.RemoveExtension(),
-      canonicalized_resource_id,
       callback);
 }
 
@@ -326,12 +327,12 @@ void CopyOperation::CopyResourceOnServer(
 
   scheduler_->CopyResource(
       resource_id, parent_resource_id, new_title,
-      base::Bind(&CopyOperation::CopyResourceOnServerAfterServerCopy,
+      base::Bind(&CopyOperation::CopyResourceOnServerAfterServerSideCopy,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void CopyOperation::CopyResourceOnServerAfterServerCopy(
+void CopyOperation::CopyResourceOnServerAfterServerSideCopy(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -361,7 +362,7 @@ void CopyOperation::CopyResourceOnServerAfterServerCopy(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&UpdateLocalStateForCopyResourceOnServer,
+      base::Bind(&UpdateLocalStateForServerSideCopy,
                  metadata_, entry, file_path),
       base::Bind(&CopyOperation::CopyResourceOnServerAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -488,9 +489,9 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
   callback.Run(error);
 }
 
-void CopyOperation::CopyHostedDocumentToDirectory(
-    const base::FilePath& dest_path,
+void CopyOperation::CopyHostedDocument(
     const std::string& resource_id,
+    const base::FilePath& dest_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -498,11 +499,11 @@ void CopyOperation::CopyHostedDocumentToDirectory(
   scheduler_->CopyHostedDocument(
       resource_id,
       dest_path.BaseName().AsUTF8Unsafe(),
-      base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
+      base::Bind(&CopyOperation::CopyHostedDocumentAfterServerSideCopy,
                  weak_ptr_factory_.GetWeakPtr(), dest_path, callback));
 }
 
-void CopyOperation::OnCopyHostedDocumentCompleted(
+void CopyOperation::CopyHostedDocumentAfterServerSideCopy(
     const base::FilePath& dest_path,
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
@@ -515,8 +516,8 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
     callback.Run(error);
     return;
   }
-  DCHECK(resource_entry);
 
+  DCHECK(resource_entry);
   ResourceEntry entry;
   std::string parent_resource_id;
   if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
@@ -527,29 +528,30 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
   entry.set_parent_local_id(parent_resource_id);
 
-  // The entry was added in the root directory on the server, so we should
-  // first add it to the root to mirror the state and then move it to the
-  // destination directory by MoveEntryFromRootDirectory().
-  metadata_->AddEntryOnUIThread(
-      entry,
-      base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
-                 weak_ptr_factory_.GetWeakPtr(), dest_path, callback));
+  // The document is copied into the root directory (temporarily) on the server,
+  // so we should first update the local metadata, then move it to the
+  // destination directory.
+  base::FilePath* file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&UpdateLocalStateForServerSideCopy,
+                 metadata_, entry, file_path),
+      base::Bind(&CopyOperation::CopyHostedDocumentAfterUpdateLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dest_path, callback, base::Owned(file_path)));
 }
 
-void CopyOperation::MoveEntryFromRootDirectory(
+void CopyOperation::CopyHostedDocumentAfterUpdateLocalState(
     const base::FilePath& dest_path,
     const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& file_path) {
+    base::FilePath* file_path,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Depending on timing, the metadata may have inserted via change list
-  // already. So, FILE_ERROR_EXISTS is not an error.
-  if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
-
-  // Return if there is an error or |dir_path| is the root directory.
+  // If an error is found, or the destination directory is mydrive root
+  // (i.e. it is unnecessary to move the copied document), return the status.
   if (error != FILE_ERROR_OK ||
       dest_path.DirName() == util::GetDriveMyDriveRootPath()) {
     callback.Run(error);
@@ -557,9 +559,9 @@ void CopyOperation::MoveEntryFromRootDirectory(
   }
 
   DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
-            file_path.DirName().value()) << file_path.value();
+            file_path->DirName().value()) << file_path->value();
 
-  move_operation_->Move(file_path, dest_path, callback);
+  move_operation_->Move(*file_path, dest_path, callback);
 }
 
 }  // namespace file_system
