@@ -204,13 +204,17 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 }
 
 - (void)close {
-  web_modal::WebContentsModalDialogManager* modalDialogManager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(
-          host_->host_contents());
-  if (!modalDialogManager ||
-      !modalDialogManager->IsShowingDialog()) {
-    [super close];
+  // |windowWillClose:| could have already been called. http://crbug.com/279505
+  if (host_) {
+    web_modal::WebContentsModalDialogManager* modalDialogManager =
+        web_modal::WebContentsModalDialogManager::FromWebContents(
+            host_->host_contents());
+    if (modalDialogManager &&
+        modalDialogManager->IsShowingDialog()) {
+      return;
+    }
   }
+  [super close];
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
@@ -222,21 +226,24 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
-  // When a modal dialog is opened on top of the popup and when it's closed, it
-  // steals key-ness from the popup. Don't close the popup when this happens.
-  // There's an extra windowDidResignKey: notification after the modal dialog
-  // closes that should also be ignored.
-  web_modal::WebContentsModalDialogManager* modalDialogManager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(
-          host_->host_contents());
-  if (modalDialogManager &&
-      modalDialogManager->IsShowingDialog()) {
-    ignoreWindowDidResignKey_ = YES;
-    return;
-  }
-  if (ignoreWindowDidResignKey_) {
-    ignoreWindowDidResignKey_ = NO;
-    return;
+  // |windowWillClose:| could have already been called. http://crbug.com/279505
+  if (host_) {
+    // When a modal dialog is opened on top of the popup and when it's closed,
+    // it steals key-ness from the popup. Don't close the popup when this
+    // happens. There's an extra windowDidResignKey: notification after the
+    // modal dialog closes that should also be ignored.
+    web_modal::WebContentsModalDialogManager* modalDialogManager =
+        web_modal::WebContentsModalDialogManager::FromWebContents(
+            host_->host_contents());
+    if (modalDialogManager &&
+        modalDialogManager->IsShowingDialog()) {
+      ignoreWindowDidResignKey_ = YES;
+      return;
+    }
+    if (ignoreWindowDidResignKey_) {
+      ignoreWindowDidResignKey_ = NO;
+      return;
+    }
   }
   if (!beingInspected_)
     [super windowDidResignKey:notification];
