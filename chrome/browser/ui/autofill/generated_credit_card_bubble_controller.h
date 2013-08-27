@@ -60,8 +60,8 @@ class GeneratedCreditCardBubbleController
   // Show a bubble to educate the user about generated (fronting) cards and how
   // they are used to bill their original (backing) card.
   static void Show(content::WebContents* contents,
-                   const base::string16& backing_card_name,
-                   const base::string16& fronting_card_name);
+                   const base::string16& fronting_card_name,
+                   const base::string16& backing_card_name);
 
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(

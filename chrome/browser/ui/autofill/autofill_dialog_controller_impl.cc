@@ -3497,8 +3497,8 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
 #if !defined(OS_ANDROID)
   GeneratedCreditCardBubbleController::Show(
       web_contents(),
-      backing_last_four,
-      full_wallet_->TypeAndLastFourDigits());
+      full_wallet_->TypeAndLastFourDigits(),
+      backing_last_four);
 #endif
 }
 

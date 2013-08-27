@@ -104,8 +104,8 @@ class GeneratedCreditCardBubbleControllerTest : public testing::Test {
   void Show() {
     ASSERT_TRUE(controller()->IsInstalled());
     TestGeneratedCreditCardBubbleController::Show(test_web_contents_.get(),
-                                                  BackingCard(),
-                                                  FrontingCard());
+                                                  FrontingCard(),
+                                                  BackingCard());
   }
 
   void Navigate() {
@@ -173,10 +173,10 @@ TEST_F(GeneratedCreditCardBubbleControllerTest, ContentsTextRanges) {
 
   ASSERT_EQ(3U, ranges.size());
 
-  EXPECT_EQ(BackingCard(), RangeOfString(contents_text, ranges[0].range));
+  EXPECT_EQ(FrontingCard(), RangeOfString(contents_text, ranges[0].range));
   EXPECT_FALSE(ranges[0].is_link);
 
-  EXPECT_EQ(FrontingCard(), RangeOfString(contents_text, ranges[1].range));
+  EXPECT_EQ(BackingCard(), RangeOfString(contents_text, ranges[1].range));
   EXPECT_FALSE(ranges[1].is_link);
 
   EXPECT_TRUE(ranges[2].is_link);
