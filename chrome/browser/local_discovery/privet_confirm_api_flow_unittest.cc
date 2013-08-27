@@ -29,7 +29,6 @@ const char kFailedConfirmResponse[] = "{"
     "   \"success\": false"
     "}";
 
-
 const char kFailedConfirmResponseBadJson[] = "["
     "   \"success\""
     "]";
@@ -85,11 +84,13 @@ class PrivetConfirmApiFlowTest : public testing::Test {
   MockableConfirmCallback callback_;
 };
 
-TEST_F(PrivetConfirmApiFlowTest, Success) {
+TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
+
+  confirm_flow.Start();
 
   confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -115,11 +116,43 @@ TEST_F(PrivetConfirmApiFlowTest, Success) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
+TEST_F(PrivetConfirmApiFlowTest, SuccessCookies) {
+  PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
+                                        1,
+                                        "SomeToken",
+                                        GURL("http://SoMeUrL.com?token=tkn"),
+                                        callback_.callback());
+
+  confirm_flow.Start();
+
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+
+  EXPECT_EQ(GURL("http://SoMeUrL.com?token=tkn&xsrf=SomeToken&user=1"),
+            fetcher->GetOriginalURL());
+
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string proxy;
+  EXPECT_TRUE(headers.GetHeader("X-Cloudprint-Proxy", &proxy));
+  EXPECT_EQ("Chrome", proxy);
+
+  fetcher->SetResponseString(kSampleConfirmResponse);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(callback_, ConfirmCallback(PrivetConfirmApiCallFlow::SUCCESS));
+
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
 TEST_F(PrivetConfirmApiFlowTest, BadToken) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
+
+  confirm_flow.Start();
 
   EXPECT_CALL(callback_,
               ConfirmCallback(PrivetConfirmApiCallFlow::ERROR_TOKEN));
@@ -132,6 +165,8 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
                                         &token_service_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
+
+  confirm_flow.Start();
 
   confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -154,6 +189,8 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
                                         &token_service_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
+
+  confirm_flow.Start();
 
   confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);

@@ -16,6 +16,7 @@ namespace local_discovery {
 
 namespace {
 const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
+const char kCookieURLFormat[] = "%s&xsrf=%s&user=%d";
 }
 
 PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
@@ -29,28 +30,52 @@ PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
       callback_(callback) {
 }
 
+PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
+    net::URLRequestContextGetter* request_context,
+    int  user_index,
+    const std::string& xsrf_token,
+    const GURL& automated_claim_url,
+    const ResponseCallback& callback)
+    : request_context_(request_context),
+      token_service_(NULL),
+      user_index_(user_index),
+      xsrf_token_(xsrf_token),
+      automated_claim_url_(automated_claim_url),
+      callback_(callback) {
+}
+
 PrivetConfirmApiCallFlow::~PrivetConfirmApiCallFlow() {
 }
 
 void PrivetConfirmApiCallFlow::Start() {
-  OAuth2TokenService::ScopeSet oauth_scopes;
-  oauth_scopes.insert(cloud_print::kCloudPrintAuth);
-  oauth_request_ = token_service_->StartRequest(oauth_scopes, this);
+  if (UseOAuth2()) {
+    OAuth2TokenService::ScopeSet oauth_scopes;
+    oauth_scopes.insert(cloud_print::kCloudPrintAuth);
+    oauth_request_ = token_service_->StartRequest(oauth_scopes, this);
+  } else {
+    GURL cookie_url(
+        base::StringPrintf(kCookieURLFormat,
+                           automated_claim_url_.spec().c_str(),
+                           xsrf_token_.c_str(),
+                           user_index_));
+
+    CreateRequest(cookie_url);
+
+    url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+
+    url_fetcher_->Start();
+  }
 }
 
 void PrivetConfirmApiCallFlow::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  url_fetcher_.reset(net::URLFetcher::Create(automated_claim_url_,
-                                             net::URLFetcher::GET,
-                                             this));
-  url_fetcher_->SetRequestContext(request_context_.get());
+  CreateRequest(automated_claim_url_);
+
   std::string authorization_header =
       base::StringPrintf(kCloudPrintOAuthHeaderFormat, access_token.c_str());
 
-  url_fetcher_->AddExtraRequestHeader(
-      cloud_print::kChromeCloudPrintProxyHeader);
   url_fetcher_->AddExtraRequestHeader(authorization_header);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);
@@ -61,6 +86,17 @@ void PrivetConfirmApiCallFlow::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   callback_.Run(ERROR_TOKEN);
+}
+
+void PrivetConfirmApiCallFlow::CreateRequest(const GURL& url) {
+  url_fetcher_.reset(net::URLFetcher::Create(url,
+                                             net::URLFetcher::GET,
+                                             this));
+
+  url_fetcher_->SetRequestContext(request_context_.get());
+
+  url_fetcher_->AddExtraRequestHeader(
+      cloud_print::kChromeCloudPrintProxyHeader);
 }
 
 void PrivetConfirmApiCallFlow::OnURLFetchComplete(

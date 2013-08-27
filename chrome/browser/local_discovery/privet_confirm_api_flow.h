@@ -30,10 +30,19 @@ class PrivetConfirmApiCallFlow : public net::URLFetcherDelegate,
   };
   typedef base::Callback<void(Status /*success*/)> ResponseCallback;
 
+  // Create an OAuth2-based confirmation
   PrivetConfirmApiCallFlow(net::URLRequestContextGetter* request_context,
                            OAuth2TokenService* token_service_,
                            const GURL& automated_claim_url,
                            const ResponseCallback& callback);
+
+  // Create a cookie-based confirmation
+  PrivetConfirmApiCallFlow(net::URLRequestContextGetter* request_context,
+                           int  user_index,
+                           const std::string& xsrf_token,
+                           const GURL& automated_claim_url,
+                           const ResponseCallback& callback);
+
   virtual ~PrivetConfirmApiCallFlow();
 
   void Start();
@@ -49,10 +58,16 @@ class PrivetConfirmApiCallFlow : public net::URLFetcherDelegate,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
+  bool UseOAuth2() { return token_service_ != NULL; }
+
+  void CreateRequest(const GURL& url);
+
   scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> oauth_request_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   OAuth2TokenService* token_service_;
+  int user_index_;
+  std::string xsrf_token_;
   GURL automated_claim_url_;
   ResponseCallback callback_;
 };
