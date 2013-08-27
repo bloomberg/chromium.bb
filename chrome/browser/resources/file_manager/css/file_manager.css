@@ -256,7 +256,7 @@ div.splitter {
 
 /* TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
    back. crbug.com/276132. */
-#volume-list li[item-type=shortcut].root-item {
+#volume-list li.root-item.fadein {
   -webkit-animation: fadeIn 150ms ease-in-out;
 }
 

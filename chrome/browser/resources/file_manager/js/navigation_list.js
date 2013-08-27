@@ -373,9 +373,6 @@ NavigationListItem.prototype.setModelItem =
 
   this.modelItem_ = modelItem;
 
-  this.setAttribute('item-type',
-                    modelItem.isShortcut() ? 'shortcut' : 'volume');
-
   var rootType = PathUtil.getRootType(modelItem.path);
   this.iconDiv_.setAttribute('volume-type-icon', rootType);
   if (opt_deviceType) {
@@ -400,6 +397,14 @@ NavigationListItem.prototype.setModelItem =
 
     this.appendChild(this.eject_);
   }
+};
+
+/**
+ * Add/remove fade-in animation.
+ * @param {boolean} animation True if adding animation, false if removing.
+ */
+NavigationListItem.prototype.setFadeinAnimation = function(animation) {
+  this.classList.toggle('fadein', animation);
 };
 
 /**
@@ -505,6 +510,23 @@ NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
 };
 
 /**
+ * This overrides cr.ui.List.measureItem().
+ * In the method, a temporary element is added/removed from the list, and we
+ * need to omit animations for such temporary items.
+ *
+ * @param {ListItem=} opt_item The list item to be measured.
+ * @return {{height: number, marginTop: number, marginBottom:number,
+ *     width: number, marginLeft: number, marginRight:number}} Size.
+ * @override
+ */
+NavigationList.prototype.measureItem = function(opt_item) {
+  this.measuringTemporaryItemNow_ = true;
+  var result = cr.ui.List.prototype.measureItem.call(this, opt_item);
+  this.measuringTemporaryItemNow_ = false;
+  return result;
+};
+
+/**
  * This overrides Node.removeChild().
  * Instead of just removing the given child, this method adds a fade-out
  * animation and removes the child after animation completes.
@@ -515,7 +537,7 @@ NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
 NavigationList.prototype.removeChild = function(item) {
   // TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
   // back. crbug.com/276132.
-  if (!item.modelItem.isShortcut()) {
+  if (!item.modelItem.isShortcut() || this.measuringTemporaryItemNow_) {
     Node.prototype.removeChild.call(this, item);
     return;
   }
@@ -547,6 +569,11 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
       PathUtil.isRootPath(modelItem.path) &&
       this.volumeManager_.getVolumeInfo(modelItem.path);
   item.setModelItem(modelItem, volumeInfo && volumeInfo.deviceType);
+
+  // TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
+  // back. crbug.com/276132.
+  item.setFadeinAnimation(modelItem.isShortcut() &&
+                          !this.measuringTemporaryItemNow_);
 
   var handleClick = function() {
     if (item.selected &&
