@@ -6,7 +6,6 @@ package org.chromium.content.browser.input;
 
 import android.test.suitebuilder.annotation.LargeTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
@@ -22,8 +21,9 @@ import java.util.concurrent.TimeUnit;
 public class SelectPopupTest extends ContentShellTestBase {
     private static final int WAIT_TIMEOUT_SECONDS = 2;
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><body>" +
-            "Which animal is the strongest:<br/>" +
+            "<html><head><meta name=\"viewport\"" +
+            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "<body>Which animal is the strongest:<br/>" +
             "<select id=\"select\">" +
             "<option>Black bear</option>" +
             "<option>Polar bear</option>" +
@@ -49,22 +49,22 @@ public class SelectPopupTest extends ContentShellTestBase {
         }
     }
 
-    public SelectPopupTest() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        launchContentShellWithUrl(SELECT_URL);
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
+        assertWaitForPageScaleFactorMatch(1);
     }
 
     /**
      * Tests that showing a select popup and having the page reload while the popup is showing does
      * not assert.
-     * @LargeTest
-     * @Feature({"Browser"})
-     * BUG 172967
      */
-    @DisabledTest
+    @LargeTest
+    @Feature({"Browser"})
     public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
-        // Load the test page.
-        launchContentShellWithUrl(SELECT_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
-
         // The popup should be hidden before the click.
         assertTrue("The select popup is shown after load.",
                 CriteriaHelper.pollForCriteria(new PopupHiddenCriteria()));
