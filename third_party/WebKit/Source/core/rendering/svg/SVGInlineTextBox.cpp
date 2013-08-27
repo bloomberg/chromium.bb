@@ -638,14 +638,14 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     }
 
     if (hasShadow) {
-        RefPtr<DrawLooper> drawLooper(new DrawLooper);
+        DrawLooper drawLooper;
         do {
             FloatSize offset(shadow->x(), shadow->y());
-            drawLooper->addShadow(offset, shadow->blur(), textRenderer->resolveColor(shadow->color(), Color::stdShadowColor),
+            drawLooper.addShadow(offset, shadow->blur(), textRenderer->resolveColor(shadow->color(), Color::stdShadowColor),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowRespectsAlpha);
         } while ((shadow = shadow->next()));
-        drawLooper->addUnmodifiedContent();
-        context->setDrawLooper(drawLooper.release());
+        drawLooper.addUnmodifiedContent();
+        context->setDrawLooper(drawLooper);
     }
 
     if (prepareGraphicsContextForTextPainting(context, scalingFactor, textRun, style)) {

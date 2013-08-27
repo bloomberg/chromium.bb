@@ -116,7 +116,7 @@ private:
     RefPtr<Pattern> m_fillPattern;
 
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
-    RefPtr<DrawLooper> m_looper;
+    RefPtr<SkDrawLooper> m_looper;
 
     // Text. (See TextModeFill & friends.)
     TextDrawingModeFlags m_textDrawingMode;

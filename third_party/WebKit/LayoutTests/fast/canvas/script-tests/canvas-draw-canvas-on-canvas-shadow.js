@@ -19,7 +19,7 @@ function shouldBeAround(a, b)
         evalA = e;
     }
 
-    if (Math.abs(evalA - b) < 20)
+    if (Math.abs(evalA - b) < 15)
         print("PASS " + a + " is around " + b , "green")
     else
         print("FAIL " + a + " is not around " + b + " (actual: " + evalA + ")", "red");
