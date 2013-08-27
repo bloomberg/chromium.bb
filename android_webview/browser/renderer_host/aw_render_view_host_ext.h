@@ -72,6 +72,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // the meta viewport tag.
   void SetInitialPageScale(double page_scale_factor);
   void SetBackgroundColor(SkColor c);
+  void SetJsOnlineProperty(bool network_up);
 
  private:
   // content::WebContentsObserver implementation.

@@ -780,4 +780,10 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
   browser_view_renderer_->EnableOnNewPicture(enabled);
 }
 
+void AwContents::SetJsOnlineProperty(JNIEnv* env,
+                                     jobject obj,
+                                     jboolean network_up) {
+  render_view_host_ext_->SetJsOnlineProperty(network_up);
+}
+
 }  // namespace android_webview

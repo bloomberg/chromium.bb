@@ -392,4 +392,29 @@ public class AwContentsTest extends AwTestBase {
             if (webServer != null) webServer.shutdown();
         }
     }
+
+    @Feature({"AndroidWebView", "setNetworkAvailable"})
+    @SmallTest
+    public void testSetNetworkAvailable() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+        String SCRIPT = "navigator.onLine";
+
+        enableJavaScriptOnUiThread(awContents);
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+
+        // Default to "online".
+        assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
+              SCRIPT));
+
+        // Forcing "offline".
+        awContents.setNetworkAvailable(false);
+        assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
+              SCRIPT));
+
+        // Forcing "online".
+        awContents.setNetworkAvailable(true);
+        assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
+              SCRIPT));
+    }
 }

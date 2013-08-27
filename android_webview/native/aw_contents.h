@@ -173,6 +173,9 @@ class AwContents : public FindHelper::Listener,
 
   // Sets the java delegate
   void SetAwAutofillManagerDelegate(jobject delegate);
+
+  void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
+
  private:
   void InitAutofillIfNecessary(bool enabled);
 

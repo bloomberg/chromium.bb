@@ -71,6 +71,9 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_SetInitialPageScale,
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetBackgroundColor,
                     SkColor);
 
+IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
+                     bool /* network_up */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.
@@ -87,4 +90,3 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
 // Sent whenever the page scale factor (as seen by RenderView) is changed.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
                     float /* page_scale_factor */)
-

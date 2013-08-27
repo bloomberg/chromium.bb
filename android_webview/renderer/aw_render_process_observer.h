@@ -24,6 +24,7 @@ class AwRenderProcessObserver : public content::RenderProcessObserver {
 
  private:
   void OnClearCache();
+  void OnSetJsOnlineProperty(bool network_up);
 
   bool webkit_initialized_;
 };
