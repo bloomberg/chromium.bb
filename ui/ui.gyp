@@ -79,6 +79,7 @@
         'base/animation/throb_animation.h',
         'base/animation/tween.cc',
         'base/animation/tween.h',
+        'base/base_window.cc',
         'base/base_window.h',
         'base/clipboard/clipboard.cc',
         'base/clipboard/clipboard.h',

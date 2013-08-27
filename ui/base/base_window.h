@@ -19,7 +19,7 @@ namespace ui {
 
 // Provides an interface to perform actions on windows, and query window
 // state.
-class BaseWindow {
+class UI_EXPORT BaseWindow {
  public:
   // Returns true if the window is currently the active/focused window.
   virtual bool IsActive() const = 0;
@@ -32,6 +32,10 @@ class BaseWindow {
 
   // Returns true if the window is full screen.
   virtual bool IsFullscreen() const = 0;
+
+  // Returns true if the window is fully restored (not Fullscreen, Maximized,
+  // Minimized).
+  static bool IsRestored(const BaseWindow& window);
 
   // Return a platform dependent identifier for this window.
   virtual gfx::NativeWindow GetNativeWindow() = 0;

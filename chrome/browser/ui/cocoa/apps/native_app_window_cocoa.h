@@ -102,6 +102,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
   // the draggable region.
   bool IsWithinDraggableRegion(NSPoint point) const;
 
+  NSRect restored_bounds() const { return restored_bounds_; }
   bool use_system_drag() const { return use_system_drag_; }
 
  protected:
@@ -153,6 +154,9 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
       const extensions::DraggableRegion* draggable_area);
   void UpdateDraggableRegionsForCustomDrag(
       const std::vector<extensions::DraggableRegion>& regions);
+
+  // Cache |restored_bounds_| only if the window is currently restored.
+  void UpdateRestoredBounds();
 
   apps::ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
 
