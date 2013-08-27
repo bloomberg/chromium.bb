@@ -319,6 +319,10 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
+  "short_name": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "signature": {
     "channel": "stable",
     "extension_types": "all"

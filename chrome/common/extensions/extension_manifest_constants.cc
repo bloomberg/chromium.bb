@@ -364,6 +364,8 @@ const char kInvalidSandboxedPagesCSP[] =
     "Invalid value for 'sandbox.content_security_policy'.";
 const char kInvalidScriptBadge[] =
     "Invalid value for 'script_badge'.";
+const char kInvalidShortName[] =
+    "Invalid value for 'short_name'.";
 const char kInvalidSignature[] =
     "Value 'signature' is missing or invalid.";
 const char kInvalidSpellcheck[] =

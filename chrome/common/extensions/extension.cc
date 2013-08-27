@@ -736,7 +736,8 @@ bool Extension::LoadExtent(const char* key,
 
 bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
-      !ManifestHandler::ParseExtension(this, error))
+      !ManifestHandler::ParseExtension(this, error) ||
+      !LoadShortName(error))
     return false;
 
   return true;
@@ -776,6 +777,23 @@ bool Extension::LoadManifestVersion(string16* error) {
     return false;
   }
 
+  return true;
+}
+
+bool Extension::LoadShortName(string16* error) {
+  if (manifest_->HasKey(keys::kShortName)) {
+    string16 localized_short_name;
+    if (!manifest_->GetString(keys::kShortName, &localized_short_name) ||
+        localized_short_name.empty()) {
+      *error = ASCIIToUTF16(errors::kInvalidShortName);
+      return false;
+    }
+
+    base::i18n::AdjustStringForLocaleDirection(&localized_short_name);
+    short_name_ = UTF16ToUTF8(localized_short_name);
+  } else {
+    short_name_ = name_;
+  }
   return true;
 }
 

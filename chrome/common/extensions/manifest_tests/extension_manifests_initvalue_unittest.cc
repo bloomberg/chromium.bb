@@ -71,6 +71,10 @@ TEST_F(InitValueManifestTest, InitFromValueInvalid) {
              errors::kInvalidMinimumChromeVersion),
     Testcase("init_invalid_chrome_version_too_low.json",
              errors::kChromeVersionTooLow),
+    Testcase("init_invalid_short_name_empty.json",
+             errors::kInvalidShortName),
+    Testcase("init_invalid_short_name_type.json",
+             errors::kInvalidShortName),
   };
 
   RunTestcases(testcases, arraysize(testcases),
@@ -88,6 +92,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   EXPECT_EQ("1.0.0.0", extension->VersionString());
   EXPECT_EQ("my extension", extension->name());
+  EXPECT_EQ(extension->name(), extension->short_name());
   EXPECT_EQ(extension->id(), extension->url().host());
   EXPECT_EQ(extension->path(), path);
   EXPECT_EQ(path, extension->path());
@@ -103,6 +108,11 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
             ManifestURL::GetOptionsPage(extension.get()).scheme());
   EXPECT_EQ("/options.html",
             ManifestURL::GetOptionsPage(extension.get()).path());
+
+  // Test optional short_name field.
+  extension = LoadAndExpectSuccess("init_valid_short_name.json");
+  EXPECT_EQ("a very descriptive extension name", extension->name());
+  EXPECT_EQ("concise name", extension->short_name());
 
   Testcase testcases[] = {
     // Test that an empty list of page actions does not stop a browser action

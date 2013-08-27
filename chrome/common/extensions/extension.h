@@ -274,6 +274,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const base::Version* version() const { return version_.get(); }
   const std::string VersionString() const;
   const std::string& name() const { return name_; }
+  const std::string& short_name() const { return short_name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }
   // Base64-encoded version of the key used to sign this extension.
   // In pseudocode, returns
@@ -367,6 +368,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
+  bool LoadShortName(string16* error);
 
   bool CheckMinimumChromeVersion(string16* error) const;
 
@@ -379,6 +381,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // A non-localized version of the extension's name. This is useful for
   // debug output.
   std::string non_localized_name_;
+
+  // A short version of the extension's name. This can be used as an alternative
+  // to the name where there is insufficient space to display the full name. If
+  // an extension has not explicitly specified a short name, the value of this
+  // member variable will be the full name rather than an empty string.
+  std::string short_name_;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system.

@@ -111,6 +111,7 @@ const char kSandboxedPagesCSP[] = "sandbox.content_security_policy";
 const char kScriptBadge[] = "script_badge";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
+const char kShortName[] = "short_name";
 const char kSignature[] = "signature";
 const char kSpellcheck[] = "spellcheck";
 const char kSpellcheckDictionaryFormat[] = "dictionary_format";
