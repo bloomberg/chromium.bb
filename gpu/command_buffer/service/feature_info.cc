@@ -605,9 +605,10 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
         !have_arb_occlusion_query2;
   }
 
-  if (extensions.Contains("GL_ANGLE_instanced_arrays") ||
-      (extensions.Contains("GL_ARB_instanced_arrays") &&
-       extensions.Contains("GL_ARB_draw_instanced"))) {
+  if (!workarounds_.disable_angle_instanced_arrays &&
+      (extensions.Contains("GL_ANGLE_instanced_arrays") ||
+       (extensions.Contains("GL_ARB_instanced_arrays") &&
+        extensions.Contains("GL_ARB_draw_instanced")))) {
     AddExtensionString("GL_ANGLE_instanced_arrays");
     feature_flags_.angle_instanced_arrays = true;
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
