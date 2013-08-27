@@ -334,6 +334,8 @@ class SingleTestRunner(object):
                 diff, err_str = self._port.diff_image(reference_driver_output.image, actual_driver_output.image)
                 if not diff:
                     failures.append(test_failures.FailureReftestMismatchDidNotOccur(reference_filename))
+                elif err_str:
+                    _log.error(err_str)
                 else:
                     _log.warning("  %s -> ref test hashes matched but diff failed" % self._test_name)
 
@@ -341,6 +343,8 @@ class SingleTestRunner(object):
             diff, err_str = self._port.diff_image(reference_driver_output.image, actual_driver_output.image)
             if diff:
                 failures.append(test_failures.FailureReftestMismatch(reference_filename))
+            elif err_str:
+                _log.error(err_str)
             else:
                 _log.warning("  %s -> ref test hashes didn't match but diff passed" % self._test_name)
 
