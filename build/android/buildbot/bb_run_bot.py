@@ -171,7 +171,8 @@ def GetBotStepMap():
         H(std_build_steps,
           extra_args=['--build-targets=android_builder_webrtc'],
           extra_gyp='include_tests=1 enable_tracing=1')),
-      B('webrtc-tests', H(std_test_steps), T(['webrtc'], [flakiness_server])),
+      B('webrtc-tests', H(['download_webrtc_resources'] + std_test_steps),
+        T(['webrtc'], [flakiness_server])),
 
       # Generic builder config (for substring match).
       B('builder', H(std_build_steps)),
