@@ -76,7 +76,7 @@ class GtkPrinterList {
  private:
   // Callback function used by gtk_enumerate_printers() to get all printer.
   static gboolean SetPrinter(GtkPrinter* printer, gpointer data) {
-    GtkPrinterList *printer_list = (GtkPrinterList*)data;
+    GtkPrinterList* printer_list = reinterpret_cast<GtkPrinterList*>(data);
     if (gtk_printer_is_default(printer))
       printer_list->default_printer_ = printer;
 
@@ -300,6 +300,10 @@ void PrintDialogGtk::ReleaseDialog() {
 }
 
 void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  int num_matched_handlers = g_signal_handlers_disconnect_by_func(
+      dialog_, reinterpret_cast<gpointer>(&OnResponseThunk), this);
+  CHECK_EQ(1, num_matched_handlers);
+
   gtk_widget_hide(dialog_);
 
   switch (response_id) {
