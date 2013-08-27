@@ -1030,13 +1030,22 @@ void IndexedDBDatabase::OpenCursorOperation(
 
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
   if (params->index_id == IndexedDBIndexMetadata::kInvalidId) {
-    DCHECK_NE(params->cursor_type, indexed_db::CURSOR_KEY_ONLY);
-    backing_store_cursor = backing_store_->OpenObjectStoreCursor(
-        transaction->BackingStoreTransaction(),
-        id(),
-        params->object_store_id,
-        *params->key_range,
+    if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+      DCHECK_EQ(params->task_type, IndexedDBDatabase::NORMAL_TASK);
+      backing_store_cursor = backing_store_->OpenObjectStoreKeyCursor(
+          transaction->BackingStoreTransaction(),
+          id(),
+          params->object_store_id,
+          *params->key_range,
+          params->direction);
+    } else {
+      backing_store_cursor = backing_store_->OpenObjectStoreCursor(
+          transaction->BackingStoreTransaction(),
+          id(),
+          params->object_store_id,
+          *params->key_range,
         params->direction);
+    }
   } else {
     DCHECK_EQ(params->task_type, IndexedDBDatabase::NORMAL_TASK);
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
