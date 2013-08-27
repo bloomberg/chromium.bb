@@ -7,12 +7,29 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace extensions {
 namespace {
+
+const char kDeclarativeContentManifest[] =
+    "{\n"
+    "  \"name\": \"Declarative Content apitest\",\n"
+    "  \"version\": \"0.1\",\n"
+    "  \"manifest_version\": 2,\n"
+    "  \"description\": \n"
+    "      \"end-to-end browser test for the declarative Content API\",\n"
+    "  \"background\": {\n"
+    "    \"scripts\": [\"background.js\"]\n"
+    "  },\n"
+    "  \"permissions\": [\n"
+    "    \"declarativeContent\"\n"
+    "  ],\n"
+    "  \"page_action\": {}\n"
+    "}\n";
 
 class DeclarativeContentApiTest : public ExtensionApiTest {
  public:
@@ -24,12 +41,36 @@ class DeclarativeContentApiTest : public ExtensionApiTest {
   virtual ~DeclarativeContentApiTest() {}
 
   extensions::ScopedCurrentChannel current_channel_;
+  TestExtensionDir ext_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      "var declarative = chrome.declarative;\n"
+      "\n"
+      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+      "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+      "\n"
+      "var rule0 = {\n"
+      "  conditions: [new PageStateMatcher({pageUrl: {hostPrefix: "
+      "\"test1\"}}),\n"
+      "               new PageStateMatcher({css: "
+      "[\"input[type='password']\"]})],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}\n"
+      "\n"
+      "var testEvent = chrome.declarativeContent.onPageChanged;\n"
+      "\n"
+      "testEvent.removeRules(undefined, function() {\n"
+      "  testEvent.addRules([rule0], function() {\n"
+      "    chrome.test.sendMessage(\"ready\", function(reply) {\n"
+      "    })\n"
+      "  });\n"
+      "});\n");
   ExtensionTestMessageListener ready("ready", true);
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("declarative_content/overview"));
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
   ASSERT_TRUE(extension);
   const ExtensionAction* page_action =
       ExtensionActionManager::Get(browser()->profile())->
