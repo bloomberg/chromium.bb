@@ -132,24 +132,35 @@ def CleanObjectFiles(object_files):
   blacklist = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
       'libavcodec/file_open.o', # Includes libavutil/file_open.c
-      'libavformat/file_open.o', # Includes libavutil/file_open.c
       'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
       'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
+      'libavformat/file_open.o', # Includes libavutil/file_open.c
 
       # The following files are removed to trim down on binary size.
       # TODO(ihf): Warning, it is *easy* right now to remove more files
       # than is healthy and end up with a library that the linker does
       # not complain about but that can't be loaded. Add some verification!
+      'libavcodec/audioconvert.o',
       'libavcodec/resample.o',
       'libavcodec/resample2.o',
       'libavcodec/x86/dnxhd_mmx.o',
       'libavformat/sdp.o',
+      'libavutil/adler32.o',
+      'libavutil/audio_fifo.o',
       'libavutil/aes.o',
+      'libavutil/blowfish.o',
       'libavutil/des.o',
       'libavutil/file.o',
+      'libavutil/hash.o',
+      'libavutil/hmac.o',
       'libavutil/lls.o',
+      'libavutil/murmur3.o',
       'libavutil/rc4.o',
+      'libavutil/ripemd.o',
+      'libavutil/sha512.o',
       'libavutil/tree.o',
+      'libavutil/xtea.o',
+      'libavutil/xga_font_data.o',
   ]
   for name in blacklist:
     name = name.replace('/', os.sep)
