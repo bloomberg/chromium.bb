@@ -15,11 +15,14 @@ from object_store_creator import ObjectStoreCreator
 from permissions_data_source import PermissionsDataSource
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
+from test_branch_utility import TestBranchUtility
 from test_util import DisableLogging
-from third_party.handlebar import Handlebar
 from servlet import Request
+from third_party.handlebar import Handlebar
+
 
 class _FakeFactory(object):
+
   def __init__(self, input_dict=None):
     if input_dict is None:
       self._input_dict = {}
@@ -29,7 +32,9 @@ class _FakeFactory(object):
   def Create(self, *args, **optargs):
     return self._input_dict
 
+
 class TemplateDataSourceTest(unittest.TestCase):
+
   def setUp(self):
     self._base_path = os.path.join(sys.path[0],
                                    'test_data',
@@ -54,9 +59,11 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def _CreateTemplateDataSource(self, compiled_fs_factory, api_data=None):
     if api_data is None:
-      api_data_factory = APIDataSource.Factory(compiled_fs_factory,
-                                               'fake_path',
-                                               _FakeFactory())
+      api_data_factory = APIDataSource.Factory(
+      compiled_fs_factory,
+      'fake_path',
+      _FakeFactory(),
+      TestBranchUtility.CreateWithCannedData())
     else:
       api_data_factory = _FakeFactory(api_data)
     reference_resolver_factory = ReferenceResolver.Factory(

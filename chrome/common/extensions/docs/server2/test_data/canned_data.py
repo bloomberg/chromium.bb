@@ -3,41 +3,45 @@
 # found in the LICENSE file.
 
 import json
+from third_party.json_schema_compiler.json_parse import OrderedDict
 
-CANNED_CHANNELS = {
-  'trunk': 'trunk',
-  'dev': 28,
-  'beta': 27,
-  'stable': 26
-}
 
-CANNED_BRANCHES = {
-  'trunk': 'trunk',
-  28: 1500,
-  27: 1453,
-  26: 1410,
-  25: 1364,
-  24: 1312,
-  23: 1271,
-  22: 1229,
-  21: 1180,
-  20: 1132,
-  19: 1084,
-  18: 1025,
-  17: 963,
-  16: 912,
-  15: 874,
-  14: 835,
-  13: 782,
-  12: 742,
-  11: 696,
-  10: 648,
-   9: 597,
-   8: 552,
-   7: 544,
-   6: 495,
-   5: 396
-}
+CANNED_CHANNELS = OrderedDict([
+  ('trunk', 'trunk'),
+  ('dev', 28),
+  ('beta', 27),
+  ('stable', 26)
+])
+
+
+CANNED_BRANCHES = OrderedDict([
+  ('trunk', 'trunk'),
+  (28, 1500),
+  (27, 1453),
+  (26, 1410),
+  (25, 1364),
+  (24, 1312),
+  (23, 1271),
+  (22, 1229),
+  (21, 1180),
+  (20, 1132),
+  (19, 1084),
+  (18, 1025),
+  (17, 963),
+  (16, 912),
+  (15, 874),
+  (14, 835),
+  (13, 782),
+  (12, 742),
+  (11, 696),
+  (10, 648),
+  ( 9, 597),
+  ( 8, 552),
+  ( 7, 544),
+  ( 6, 495),
+  ( 5, 396)
+])
+
 
 CANNED_TEST_FILE_SYSTEM_DATA = {
   'api': {
@@ -59,11 +63,20 @@ CANNED_TEST_FILE_SYSTEM_DATA = {
       },
       'json': {
         'api_availabilities.json': json.dumps({
-          'tester': {
-              'channel': 'stable',
-              'version': 42
-            }
-          }),
+          'trunk_api': {
+            'channel': 'trunk'
+          },
+          'dev_api': {
+            'channel': 'dev'
+          },
+          'beta_api': {
+            'channel': 'beta'
+          },
+          'stable_api': {
+            'channel': 'stable',
+            'version': 20
+          }
+        }),
         'intro_tables.json': json.dumps({
           'tester': {
             'Permissions': [
@@ -93,6 +106,7 @@ CANNED_TEST_FILE_SYSTEM_DATA = {
   }
 }
 
+
 CANNED_API_FILE_SYSTEM_DATA = {
   'trunk': {
     'api': {
@@ -105,11 +119,23 @@ CANNED_API_FILE_SYSTEM_DATA = {
         },
         'extension': {
           'channel': 'stable'
+        },
+        'systemInfo.cpu': {
+          'channel': 'stable'
+        },
+        'systemInfo.stuff': {
+          'channel': 'dev'
         }
       }),
       '_manifest_features.json': json.dumps({
         'history': {
           'channel': 'beta'
+        },
+        'notifications': {
+          'channel': 'beta'
+        },
+        'page_action': {
+          'channel': 'stable'
         },
         'runtime': {
           'channel': 'stable'
@@ -119,6 +145,9 @@ CANNED_API_FILE_SYSTEM_DATA = {
         },
         'sync': {
           'channel': 'trunk'
+        },
+        'web_request': {
+          'channel': 'stable'
         }
       }),
       '_permission_features.json': json.dumps({
@@ -144,6 +173,9 @@ CANNED_API_FILE_SYSTEM_DATA = {
         ],
         'falseBetaAPI': {
           'channel': 'beta'
+        },
+        'systemInfo.display': {
+          'channel': 'stable'
         },
         'trunkAPI': {
           'channel': 'trunk'
@@ -190,6 +222,9 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'extension': {
           'channel': 'stable'
         },
+        'systemInfo.cpu': {
+          'channel': 'stable'
+        },
         'systemInfo.stuff': {
           'channel': 'dev'
         }
@@ -201,6 +236,9 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'notifications': {
           'channel': 'beta'
         },
+        'page_action': {
+          'channel': 'stable'
+        },
         'runtime': {
           'channel': 'stable'
         },
@@ -209,6 +247,12 @@ CANNED_API_FILE_SYSTEM_DATA = {
         },
         'sync': {
           'channel': 'trunk'
+        },
+        'system_info_display': {
+          'channel': 'stable'
+        },
+        'web_request': {
+          'channel': 'stable'
         }
       }),
       '_permission_features.json': json.dumps({
@@ -263,11 +307,20 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'notifications': {
           'channel': 'dev'
         },
+        'page_action': {
+          'channel': 'stable'
+        },
         'runtime': {
           'channel': 'stable'
         },
         'storage': {
           'channel': 'dev'
+        },
+        'system_info_display': {
+          'channel': 'stable'
+        },
+        'web_request': {
+          'channel': 'stable'
         }
       }),
       '_permission_features.json': json.dumps({

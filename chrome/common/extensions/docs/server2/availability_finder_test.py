@@ -11,49 +11,40 @@ from availability_finder import AvailabilityFinder
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from fake_url_fetcher import FakeUrlFetcher
+from host_file_system_iterator import HostFileSystemIterator
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 
+
 class FakeHostFileSystemCreator(object):
+
   def Create(self, branch):
     return TestFileSystem(CANNED_API_FILE_SYSTEM_DATA[str(branch)])
 
+
 class AvailabilityFinderTest(unittest.TestCase):
+
   def setUp(self):
-    self._avail_finder_factory = AvailabilityFinder.Factory(
-        ObjectStoreCreator.ForTest(),
-        CompiledFileSystem.Factory(
-            TestFileSystem(CANNED_API_FILE_SYSTEM_DATA['trunk']),
-            ObjectStoreCreator.ForTest()),
-        BranchUtility(
-            os.path.join('branch_utility', 'first.json'),
-            os.path.join('branch_utility', 'second.json'),
-            FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
-            ObjectStoreCreator.ForTest()),
-        FakeHostFileSystemCreator())
-    self._avail_finder = self._avail_finder_factory.Create()
+    branch_utility = BranchUtility(
+        os.path.join('branch_utility', 'first.json'),
+        os.path.join('branch_utility', 'second.json'),
+        FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
+        ObjectStoreCreator.ForTest())
+    fake_host_file_system_creator = FakeHostFileSystemCreator()
+    file_system_iterator = HostFileSystemIterator(
+      fake_host_file_system_creator,
+      fake_host_file_system_creator.Create('trunk'),
+      branch_utility)
+    self._avail_finder = AvailabilityFinder(file_system_iterator,
+                                            ObjectStoreCreator.ForTest(),
+                                            branch_utility)
 
   def testGetApiAvailability(self):
     # Key: Using 'channel' (i.e. 'beta') to represent an availability listing
     # for an API in a _features.json file, and using |channel| (i.e. |dev|) to
     # represent the development channel, or phase of development, where an API's
     # availability is being checked.
-
-    # Testing the predetermined APIs found in
-    # templates/json/api_availabilities.json.
-    self.assertEqual('stable',
-        self._avail_finder.GetApiAvailability('jsonAPI1').channel)
-    self.assertEqual(10,
-        self._avail_finder.GetApiAvailability('jsonAPI1').version)
-    self.assertEqual('trunk',
-        self._avail_finder.GetApiAvailability('jsonAPI2').channel)
-    self.assertEqual('trunk',
-        self._avail_finder.GetApiAvailability('jsonAPI2').version)
-    self.assertEqual('dev',
-        self._avail_finder.GetApiAvailability('jsonAPI3').channel)
-    self.assertEqual(28,
-        self._avail_finder.GetApiAvailability('jsonAPI3').version)
 
     # Testing whitelisted API
     self.assertEquals('beta',

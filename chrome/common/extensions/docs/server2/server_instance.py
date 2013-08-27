@@ -11,6 +11,7 @@ from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
 from host_file_system_creator import HostFileSystemCreator
+from host_file_system_iterator import HostFileSystemIterator
 from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
@@ -24,7 +25,9 @@ from template_data_source import TemplateDataSource
 from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
 
+
 class ServerInstance(object):
+
   def __init__(self,
                object_store_creator,
                host_file_system,
@@ -43,11 +46,15 @@ class ServerInstance(object):
 
     self.host_file_system_creator = host_file_system_creator
 
-    self.availability_finder_factory = AvailabilityFinder.Factory(
+    self.host_file_system_iterator = HostFileSystemIterator(
+        host_file_system_creator,
+        host_file_system,
+        branch_utility)
+
+    self.availability_finder = AvailabilityFinder(
+        self.host_file_system_iterator,
         object_store_creator,
-        self.compiled_host_fs_factory,
-        branch_utility,
-        host_file_system_creator)
+        branch_utility)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
@@ -58,7 +65,8 @@ class ServerInstance(object):
     self.api_data_source_factory = APIDataSource.Factory(
         self.compiled_host_fs_factory,
         svn_constants.API_PATH,
-        self.availability_finder_factory)
+        self.availability_finder,
+        branch_utility)
 
     self.ref_resolver_factory = ReferenceResolver.Factory(
         self.api_data_source_factory,

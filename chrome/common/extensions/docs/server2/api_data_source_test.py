@@ -15,37 +15,42 @@ from api_data_source import (_JSCModel,
                              _DetectInlineableTypes,
                              _InlineDocs,
                              _GetAddRulesDefinitionFromEvents)
+from branch_utility import ChannelInfo
 from collections import namedtuple
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
+from test_branch_utility import TestBranchUtility
 from test_data.canned_data import CANNED_TEST_FILE_SYSTEM_DATA
 from test_file_system import TestFileSystem
 import third_party.json_schema_compiler.json_parse as json_parse
 
+
 def _MakeLink(href, text):
   return '<a href="%s">%s</a>' % (href, text)
+
 
 def _GetType(dict_, name):
   for type_ in dict_['types']:
     if type_['name'] == name:
       return type_
 
+
 class FakeAvailabilityFinder(object):
-  AvailabilityInfo = namedtuple('AvailabilityInfo', 'channel version')
 
   def GetApiAvailability(self, version):
-    return FakeAvailabilityFinder.AvailabilityInfo('trunk', 'trunk')
+    return ChannelInfo('stable', 396, 5)
 
-  def StringifyAvailability(self, availability):
-    return availability.channel
 
 class FakeSamplesDataSource(object):
+
   def Create(self, request):
     return {}
 
+
 class FakeAPIAndListDataSource(object):
+
   def __init__(self, json_data):
     self._json = json_data
 
@@ -60,11 +65,15 @@ class FakeAPIAndListDataSource(object):
   def GetAllNames(self):
     return self._json.keys()
 
+
 class FakeTemplateDataSource(object):
+
   def get(self, key):
     return 'handlebar %s' % key
 
+
 class APIDataSourceTest(unittest.TestCase):
+
   def setUp(self):
     self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
     self._compiled_fs_factory = CompiledFileSystem.Factory(
@@ -96,6 +105,7 @@ class APIDataSourceTest(unittest.TestCase):
                       self._CreateRefResolver('test_file_data_source.json'),
                       False,
                       FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
                       FakeTemplateDataSource(),
                       None).ToDict()
@@ -115,6 +125,7 @@ class APIDataSourceTest(unittest.TestCase):
                       self._CreateRefResolver('test_file_data_source.json'),
                       False,
                       FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
                       FakeTemplateDataSource(),
                       None).ToDict()
@@ -130,6 +141,7 @@ class APIDataSourceTest(unittest.TestCase):
                       self._CreateRefResolver('ref_test_data_source.json'),
                       False,
                       FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
                       FakeTemplateDataSource(),
                       None).ToDict()
@@ -149,11 +161,44 @@ class APIDataSourceTest(unittest.TestCase):
     _RemoveNoDocs(d)
     self.assertEquals(self._LoadJSON('expected_nodoc.json'), d)
 
+  def testGetApiAvailability(self):
+    model = _JSCModel(self._LoadJSON('test_file.json')[0],
+                      self._CreateRefResolver('test_file_data_source.json'),
+                      False,
+                      FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
+                      self._json_cache,
+                      FakeTemplateDataSource(),
+                      None)
+    # The model namespace is "tester". No predetermined availability is found,
+    # so the FakeAvailabilityFinder instance is used to find availability.
+    self.assertEqual(ChannelInfo('stable', 396, 5),
+                     model._GetApiAvailability())
+
+    # These APIs have predetermined availabilities in the
+    # api_availabilities.json file within CANNED_DATA.
+    model._namespace.name = 'trunk_api'
+    self.assertEqual(ChannelInfo('trunk', 'trunk', 'trunk'),
+                     model._GetApiAvailability())
+
+    model._namespace.name = 'dev_api'
+    self.assertEqual(ChannelInfo('dev', 1500, 28),
+                     model._GetApiAvailability())
+
+    model._namespace.name = 'beta_api'
+    self.assertEqual(ChannelInfo('beta', 1453, 27),
+                     model._GetApiAvailability())
+
+    model._namespace.name = 'stable_api'
+    self.assertEqual(ChannelInfo('stable', 1132, 20),
+                     model._GetApiAvailability())
+
   def testGetIntroList(self):
     model = _JSCModel(self._LoadJSON('test_file.json')[0],
                       self._CreateRefResolver('test_file_data_source.json'),
                       False,
                       FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
                       FakeTemplateDataSource(),
                       None)
@@ -165,8 +210,8 @@ class APIDataSourceTest(unittest.TestCase):
       },
       { 'title': 'Availability',
         'content': [
-          { 'partial': 'handlebar intro_tables/trunk_message.html',
-            'version': 'trunk'
+          { 'partial': 'handlebar intro_tables/stable_message.html',
+            'version': 5
           }
         ]
       },
@@ -327,6 +372,7 @@ class APIDataSourceTest(unittest.TestCase):
                       self._CreateRefResolver('test_file_data_source.json'),
                       False,
                       FakeAvailabilityFinder(),
+                      TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
                       FakeTemplateDataSource(),
                       self._FakeLoadAddRulesSchema).ToDict()

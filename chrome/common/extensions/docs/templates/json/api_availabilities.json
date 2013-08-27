@@ -19,6 +19,10 @@
     "channel": "stable",
     "version": 21
   },
+  "mediaGalleries": {
+    "channel": "stable",
+    "version": 23
+  },
   "notifications": {
     "channel": "stable",
     "version": 28

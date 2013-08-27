@@ -5,15 +5,17 @@
 from branch_utility import BranchUtility, ChannelInfo
 from test_data.canned_data import (CANNED_BRANCHES, CANNED_CHANNELS)
 
+
 class TestBranchUtility(object):
   '''Mimics BranchUtility to return valid-ish data without needing omahaproxy
   data.
   '''
-  def __init__(self, branches, channels):
-    ''' Parameters: |branches| is a mapping of versions to branches, and
+
+  def __init__(self, versions, channels):
+    ''' Parameters: |version| is a mapping of versions to branches, and
     |channels| is a mapping of channels to versions.
     '''
-    self._branches = branches
+    self._versions = versions
     self._channels = channels
 
   @staticmethod
@@ -24,17 +26,42 @@ class TestBranchUtility(object):
     return TestBranchUtility(CANNED_BRANCHES, CANNED_CHANNELS)
 
   def GetAllChannelInfo(self):
-    return [self.GetChannelInfo(channel)
-            for channel in BranchUtility.GetAllChannelNames()]
+    return tuple(self.GetChannelInfo(channel)
+            for channel in BranchUtility.GetAllChannelNames())
 
   def GetChannelInfo(self, channel):
     version = self._channels[channel]
     return ChannelInfo(channel, self.GetBranchForVersion(version), version)
 
+  def GetStableChannelInfo(self, version):
+    return ChannelInfo('stable', self.GetBranchForVersion(version), version)
+
   def GetBranchForVersion(self, version):
-    return self._branches[version]
+    return self._versions[version]
 
   def GetChannelForVersion(self, version):
+    if version <= self._channels['stable']:
+      return 'stable'
     for channel in self._channels.iterkeys():
       if self._channels[channel] == version:
         return channel
+
+  def Older(self, channel_info):
+    versions = self._versions.keys()
+    index = versions.index(channel_info.version)
+    if index == len(versions) - 1:
+      return None
+    version = versions[index + 1]
+    return ChannelInfo(self.GetChannelForVersion(version),
+                       self.GetBranchForVersion(version),
+                       version)
+
+  def Newer(self, channel_info):
+    versions = self._versions.keys()
+    index = versions.index(channel_info.version)
+    if not index:
+      return None
+    version = versions[index - 1]
+    return ChannelInfo(self.GetChannelForVersion(version),
+                       self.GetBranchForVersion(version),
+                       version)

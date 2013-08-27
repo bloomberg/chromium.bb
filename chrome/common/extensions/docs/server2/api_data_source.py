@@ -3,17 +3,18 @@
 # found in the LICENSE file.
 
 import copy
+import json
 import logging
 import os
 from collections import defaultdict, Mapping
 
-from branch_utility import BranchUtility
 import svn_constants
-from third_party.handlebar import Handlebar
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
+from third_party.handlebar import Handlebar
+
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -31,10 +32,11 @@ def _RemoveNoDocs(item):
       item.remove(i)
   return False
 
+
 def _DetectInlineableTypes(schema):
-  """Look for documents that are only referenced once and mark them as inline.
+  '''Look for documents that are only referenced once and mark them as inline.
   Actual inlining is done by _InlineDocs.
-  """
+  '''
   if not schema.get('types'):
     return
 
@@ -57,9 +59,10 @@ def _DetectInlineableTypes(schema):
       if refcounts[type_['id']] == 1:
         type_['inline_doc'] = True
 
+
 def _InlineDocs(schema):
-  """Replace '$ref's that refer to inline_docs with the json for those docs.
-  """
+  '''Replace '$ref's that refer to inline_docs with the json for those docs.
+  '''
   types = schema.get('types')
   if types is None:
     return
@@ -91,21 +94,24 @@ def _InlineDocs(schema):
 
   apply_inline(schema)
 
+
 def _CreateId(node, prefix):
   if node.parent is not None and not isinstance(node.parent, model.Namespace):
     return '-'.join([prefix, node.parent.simple_name, node.simple_name])
   return '-'.join([prefix, node.simple_name])
 
+
 def _FormatValue(value):
-  """Inserts commas every three digits for integer values. It is magic.
-  """
+  '''Inserts commas every three digits for integer values. It is magic.
+  '''
   s = str(value)
   return ','.join([s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1])
 
+
 def _GetAddRulesDefinitionFromEvents(events):
-  """Parses the dictionary |events| to find the definition of the method
+  '''Parses the dictionary |events| to find the definition of the method
   addRules among functions of the type Event.
-  """
+  '''
   assert 'types' in events, \
       'The dictionary |events| must contain the key "types".'
   event_list = [t for t in events['types']
@@ -119,15 +125,18 @@ def _GetAddRulesDefinitionFromEvents(events):
       'Exactly one function must be called "addRules".'
   return result_list[0]
 
+
 class _JSCModel(object):
-  """Uses a Model from the JSON Schema Compiler and generates a dict that
+  '''Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
-  """
+  '''
+
   def __init__(self,
                json,
                ref_resolver,
                disable_refs,
                availability_finder,
+               branch_utility,
                parse_cache,
                template_data_source,
                add_rules_schema_function,
@@ -135,6 +144,9 @@ class _JSCModel(object):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
     self._availability_finder = availability_finder
+    self._branch_utility = branch_utility
+    self._api_availabilities = parse_cache.GetFromFile(
+        '%s/api_availabilities.json' % svn_constants.JSON_PATH)
     self._intro_tables = parse_cache.GetFromFile(
         '%s/intro_tables.json' % svn_constants.JSON_PATH)
     self._api_features = parse_cache.GetFromFile(
@@ -183,127 +195,14 @@ class _JSCModel(object):
           (item['name'], item) for item in as_dict[item_type])
     return as_dict
 
-  def _GetIntroTableList(self):
-    """Create a generic data structure that can be traversed by the templates
-    to create an API intro table.
-    """
-    intro_rows = [
-      self._GetIntroDescriptionRow(),
-      self._GetIntroAvailabilityRow()
-    ] + self._GetIntroDependencyRows()
-
-    # Add rows using data from intro_tables.json, overriding any existing rows
-    # if they share the same 'title' attribute.
-    row_titles = [row['title'] for row in intro_rows]
-    for misc_row in self._GetMiscIntroRows():
-      if misc_row['title'] in row_titles:
-        intro_rows[row_titles.index(misc_row['title'])] = misc_row
-      else:
-        intro_rows.append(misc_row)
-
-    return intro_rows
-
-  def _GetIntroDescriptionRow(self):
-    """ Generates the 'Description' row data for an API intro table.
-    """
-    return {
-      'title': 'Description',
-      'content': [
-        { 'text': self._FormatDescription(self._namespace.description) }
-      ]
-    }
-
-  def _GetIntroAvailabilityRow(self):
-    """ Generates the 'Availability' row data for an API intro table.
-    """
-    if self._IsExperimental():
-      status = 'experimental'
-      version = None
-    else:
-      availability = self._GetApiAvailability()
-      status = availability.channel
-      version = availability.version
-    return {
-      'title': 'Availability',
-      'content': [{
-        'partial': self._template_data_source.get(
-            'intro_tables/%s_message.html' % status),
-        'version': version
-      }]
-    }
-
-  def _GetIntroDependencyRows(self):
-    # Devtools aren't in _api_features. If we're dealing with devtools, bail.
-    if 'devtools' in self._namespace.name:
-      return []
-    feature = self._api_features.get(self._namespace.name)
-    assert feature, ('"%s" not found in _api_features.json.'
-                     % self._namespace.name)
-
-    dependencies = feature.get('dependencies')
-    if dependencies is None:
-      return []
-
-    def make_code_node(text):
-      return { 'class': 'code', 'text': text }
-
-    permissions_content = []
-    manifest_content = []
-
-    def categorize_dependency(dependency):
-      context, name = dependency.split(':', 1)
-      if context == 'permission':
-        permissions_content.append(make_code_node('"%s"' % name))
-      elif context == 'manifest':
-        manifest_content.append(make_code_node('"%s": {...}' % name))
-      elif context == 'api':
-        transitive_dependencies = (
-            self._api_features.get(name, {}).get('dependencies', []))
-        for transitive_dependency in transitive_dependencies:
-          categorize_dependency(transitive_dependency)
-      else:
-        raise ValueError('Unrecognized dependency for %s: %s' % (
-            self._namespace.name, context))
-
-    for dependency in dependencies:
-      categorize_dependency(dependency)
-
-    dependency_rows = []
-    if permissions_content:
-      dependency_rows.append({
-        'title': 'Permissions',
-        'content': permissions_content
-      })
-    if manifest_content:
-      dependency_rows.append({
-        'title': 'Manifest',
-        'content': manifest_content
-      })
-    return dependency_rows
-
-  def _GetMiscIntroRows(self):
-    """ Generates miscellaneous intro table row data, such as 'Permissions',
-    'Samples', and 'Learn More', using intro_tables.json.
-    """
-    misc_rows = []
-    # Look up the API name in intro_tables.json, which is structured
-    # similarly to the data structure being created. If the name is found, loop
-    # through the attributes and add them to this structure.
-    table_info = self._intro_tables.get(self._namespace.name)
-    if table_info is None:
-      return misc_rows
-
-    for category in table_info.keys():
-      content = copy.deepcopy(table_info[category])
-      for node in content:
-        # If there is a 'partial' argument and it hasn't already been
-        # converted to a Handlebar object, transform it to a template.
-        if 'partial' in node:
-          node['partial'] = self._template_data_source.get(node['partial'])
-      misc_rows.append({ 'title': category, 'content': content })
-    return misc_rows
-
   def _GetApiAvailability(self):
+    # Check for a predetermined availability for this API.
+    api_info = self._api_availabilities.get(self._namespace.name)
+    if api_info is not None:
+      channel = api_info['channel']
+      if channel == 'stable':
+        return self._branch_utility.GetStableChannelInfo(api_info['version'])
+      return self._branch_utility.GetChannelInfo(channel)
     return self._availability_finder.GetApiAvailability(self._namespace.name)
 
   def _GetChannelWarning(self):
@@ -499,10 +398,132 @@ class _JSCModel(object):
     else:
       dst_dict['simple_type'] = type_.property_type.name.lower()
 
+  def _GetIntroTableList(self):
+    '''Create a generic data structure that can be traversed by the templates
+    to create an API intro table.
+    '''
+    intro_rows = [
+      self._GetIntroDescriptionRow(),
+      self._GetIntroAvailabilityRow()
+    ] + self._GetIntroDependencyRows()
+
+    # Add rows using data from intro_tables.json, overriding any existing rows
+    # if they share the same 'title' attribute.
+    row_titles = [row['title'] for row in intro_rows]
+    for misc_row in self._GetMiscIntroRows():
+      if misc_row['title'] in row_titles:
+        intro_rows[row_titles.index(misc_row['title'])] = misc_row
+      else:
+        intro_rows.append(misc_row)
+
+    return intro_rows
+
+  def _GetIntroDescriptionRow(self):
+    ''' Generates the 'Description' row data for an API intro table.
+    '''
+    return {
+      'title': 'Description',
+      'content': [
+        { 'text': self._FormatDescription(self._namespace.description) }
+      ]
+    }
+
+  def _GetIntroAvailabilityRow(self):
+    ''' Generates the 'Availability' row data for an API intro table.
+    '''
+    if self._IsExperimental():
+      status = 'experimental'
+      version = None
+    else:
+      availability = self._GetApiAvailability()
+      status = availability.channel
+      version = availability.version
+    return {
+      'title': 'Availability',
+      'content': [{
+        'partial': self._template_data_source.get(
+            'intro_tables/%s_message.html' % status),
+        'version': version
+      }]
+    }
+
+  def _GetIntroDependencyRows(self):
+    # Devtools aren't in _api_features. If we're dealing with devtools, bail.
+    if 'devtools' in self._namespace.name:
+      return []
+    feature = self._api_features.get(self._namespace.name)
+    assert feature, ('"%s" not found in _api_features.json.'
+                     % self._namespace.name)
+
+    dependencies = feature.get('dependencies')
+    if dependencies is None:
+      return []
+
+    def make_code_node(text):
+      return { 'class': 'code', 'text': text }
+
+    permissions_content = []
+    manifest_content = []
+
+    def categorize_dependency(dependency):
+      context, name = dependency.split(':', 1)
+      if context == 'permission':
+        permissions_content.append(make_code_node('"%s"' % name))
+      elif context == 'manifest':
+        manifest_content.append(make_code_node('"%s": {...}' % name))
+      elif context == 'api':
+        transitive_dependencies = (
+            self._api_features.get(name, {}).get('dependencies', []))
+        for transitive_dependency in transitive_dependencies:
+          categorize_dependency(transitive_dependency)
+      else:
+        raise ValueError('Unrecognized dependency for %s: %s' % (
+            self._namespace.name, context))
+
+    for dependency in dependencies:
+      categorize_dependency(dependency)
+
+    dependency_rows = []
+    if permissions_content:
+      dependency_rows.append({
+        'title': 'Permissions',
+        'content': permissions_content
+      })
+    if manifest_content:
+      dependency_rows.append({
+        'title': 'Manifest',
+        'content': manifest_content
+      })
+    return dependency_rows
+
+  def _GetMiscIntroRows(self):
+    ''' Generates miscellaneous intro table row data, such as 'Permissions',
+    'Samples', and 'Learn More', using intro_tables.json.
+    '''
+    misc_rows = []
+    # Look up the API name in intro_tables.json, which is structured
+    # similarly to the data structure being created. If the name is found, loop
+    # through the attributes and add them to this structure.
+    table_info = self._intro_tables.get(self._namespace.name)
+    if table_info is None:
+      return misc_rows
+
+    for category in table_info.keys():
+      content = copy.deepcopy(table_info[category])
+      for node in content:
+        # If there is a 'partial' argument and it hasn't already been
+        # converted to a Handlebar object, transform it to a template.
+        if 'partial' in node:
+          node['partial'] = self._template_data_source.get(node['partial'])
+      misc_rows.append({ 'title': category, 'content': content })
+    return misc_rows
+
+
 class _LazySamplesGetter(object):
-  """This class is needed so that an extensions API page does not have to fetch
+  '''This class is needed so that an extensions API page does not have to fetch
   the apps samples page and vice versa.
-  """
+  '''
+
   def __init__(self, api_name, samples):
     self._api_name = api_name
     self._samples = samples
@@ -510,15 +531,18 @@ class _LazySamplesGetter(object):
   def get(self, key):
     return self._samples.FilterSamples(key, self._api_name)
 
+
 class APIDataSource(object):
-  """This class fetches and loads JSON APIs from the FileSystem passed in with
+  '''This class fetches and loads JSON APIs from the FileSystem passed in with
   |compiled_fs_factory|, so the APIs can be plugged into templates.
-  """
+  '''
+
   class Factory(object):
     def __init__(self,
                  compiled_fs_factory,
                  base_path,
-                 availability_finder_factory):
+                 availability_finder,
+                 branch_utility):
       def create_compiled_fs(fn, category):
         return compiled_fs_factory.Create(fn, APIDataSource, category=category)
 
@@ -543,7 +567,8 @@ class APIDataSource(object):
       self._names_cache = create_compiled_fs(self._GetAllNames, 'names')
 
       self._base_path = base_path
-      self._availability_finder = availability_finder_factory.Create()
+      self._availability_finder = availability_finder
+      self._branch_utility = branch_utility
       self._parse_cache = create_compiled_fs(
           lambda _, json: json_parse.Parse(json),
           'intro-cache')
@@ -565,10 +590,10 @@ class APIDataSource(object):
       self._template_data_source = template_data_source_factory.Create(None, '')
 
     def Create(self, request, disable_refs=False):
-      """Create an APIDataSource. |disable_refs| specifies whether $ref's in
+      '''Create an APIDataSource. |disable_refs| specifies whether $ref's in
       APIs being processed by the |ToDict| method of _JSCModel follows $ref's
       in the API. This prevents endless recursion in ReferenceResolver.
-      """
+      '''
       if self._samples_data_source_factory is None:
         # Only error if there is a request, which means this APIDataSource is
         # actually being used to render a page.
@@ -606,6 +631,7 @@ class APIDataSource(object):
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs,
           self._availability_finder,
+          self._branch_utility,
           self._parse_cache,
           self._template_data_source,
           self._LoadAddRulesSchema).ToDict()
@@ -617,6 +643,7 @@ class APIDataSource(object):
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs,
           self._availability_finder,
+          self._branch_utility,
           self._parse_cache,
           self._template_data_source,
           self._LoadAddRulesSchema,
