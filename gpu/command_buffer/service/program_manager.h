@@ -191,6 +191,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Return true if such cases are detected.
   bool DetectUniformsMismatch() const;
 
+  // Return true if a varying is statically used in fragment shader, but it
+  // is not declared in vertex shader.
+  bool DetectVaryingsMismatch() const;
+
   // Visible for testing
   const LocationMap& bind_attrib_location_map() const {
     return bind_attrib_location_map_;

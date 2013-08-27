@@ -36,13 +36,16 @@ class ShaderTranslatorInterface {
     VariableInfo()
         : type(0),
           size(0),
-          precision(SH_PRECISION_MEDIUMP) {
+          precision(SH_PRECISION_UNDEFINED),
+          static_use(0) {
     }
 
-    VariableInfo(int _type, int _size, int _precision, std::string _name)
+    VariableInfo(int _type, int _size, int _precision,
+                 int _static_use, std::string _name)
         : type(_type),
           size(_size),
           precision(_precision),
+          static_use(_static_use),
           name(_name) {
     }
     bool operator==(
@@ -56,6 +59,7 @@ class ShaderTranslatorInterface {
     int type;
     int size;
     int precision;
+    int static_use;
     std::string name;  // name in the original shader source.
   };
 
