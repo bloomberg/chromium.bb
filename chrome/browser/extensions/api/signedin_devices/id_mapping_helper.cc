@@ -4,11 +4,15 @@
 
 #include "chrome/browser/extensions/api/signedin_devices/id_mapping_helper.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-
+#include "chrome/browser/extensions/api/signedin_devices/signedin_devices_api.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/common/extensions/extension.h"
 
 using base::DictionaryValue;
 using base::Value;
@@ -78,6 +82,26 @@ void CreateMappingForUnmappedDevices(
     }
     device->set_public_id(local_id);
   }
+}
+
+scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
+    const std::string& client_id,
+    const std::string& extension_id,
+    Profile* profile) {
+  DCHECK(Extension::IdIsValid(extension_id)) << extension_id
+                                             << " is not valid";
+  ScopedVector<DeviceInfo> devices = GetAllSignedinDevices(extension_id,
+                                                           profile);
+  for (ScopedVector<DeviceInfo>::iterator it = devices.begin();
+       it != devices.end();
+       ++it) {
+    if ((*it)->guid() == client_id) {
+      scoped_ptr<DeviceInfo> device(*it);
+      devices.weak_erase(it);
+      return device.Pass();
+    }
+  }
+  return scoped_ptr<DeviceInfo>();
 }
 
 }  // namespace  extensions
