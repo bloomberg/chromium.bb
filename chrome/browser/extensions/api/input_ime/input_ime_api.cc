@@ -95,8 +95,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
+    scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(engine_id));
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnActivate::kEventName, args.Pass());
@@ -106,8 +105,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnDeactivated::Create(engine_id));
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnDeactivated::kEventName, args.Pass());
@@ -118,12 +117,11 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    dict->SetInteger("contextID", context.id);
-    dict->SetString("type", context.type);
+    input_ime::InputContext context_value;
+    context_value.context_id = context.id;
+    context_value.type = input_ime::InputContext::ParseType(context.type);
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(dict);
+    scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnFocus::kEventName, args.Pass());
@@ -133,8 +131,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::FundamentalValue(context_id));
+    scoped_ptr<base::ListValue> args(input_ime::OnBlur::Create(context_id));
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnBlur::kEventName, args.Pass());
@@ -145,12 +142,12 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    dict->SetInteger("contextID", context.id);
-    dict->SetString("type", context.type);
+    input_ime::InputContext context_value;
+    context_value.context_id = context.id;
+    context_value.type = input_ime::InputContext::ParseType(context.type);
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(dict);
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnInputContextUpdate::Create(context_value));
 
     DispatchEventToExtension(profile_,
                              extension_id_,
@@ -169,19 +166,18 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
         extensions::InputImeEventRouter::GetInstance()->AddRequest(engine_id,
                                                                    key_data);
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    dict->SetString("type", event.type);
-    dict->SetString("requestId", request_id);
-    dict->SetString("key", event.key);
-    dict->SetString("code", event.code);
-    dict->SetBoolean("altKey", event.alt_key);
-    dict->SetBoolean("ctrlKey", event.ctrl_key);
-    dict->SetBoolean("shiftKey", event.shift_key);
-    dict->SetBoolean("capsLock", event.caps_lock);
+    input_ime::KeyboardEvent key_data_value;
+    key_data_value.type = input_ime::KeyboardEvent::ParseType(event.type);
+    key_data_value.request_id = request_id;
+    key_data_value.key = event.key;
+    key_data_value.code = event.code;
+    key_data_value.alt_key.reset(new bool(event.alt_key));
+    key_data_value.ctrl_key.reset(new bool(event.ctrl_key));
+    key_data_value.shift_key.reset(new bool(event.shift_key));
+    key_data_value.caps_lock.reset(new bool(event.caps_lock));
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
-    args->Append(dict);
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnKeyEvent::Create(engine_id, key_data_value));
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnKeyEvent::kEventName, args.Pass());
@@ -194,24 +190,28 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
-    args->Append(new base::FundamentalValue(candidate_id));
+    input_ime::OnCandidateClicked::Button button_enum =
+        input_ime::OnCandidateClicked::BUTTON_NONE;
     switch (button) {
       case chromeos::InputMethodEngine::MOUSE_BUTTON_MIDDLE:
-        args->Append(new base::StringValue("middle"));
+        button_enum = input_ime::OnCandidateClicked::BUTTON_MIDDLE;
         break;
 
       case chromeos::InputMethodEngine::MOUSE_BUTTON_RIGHT:
-        args->Append(new base::StringValue("right"));
+        button_enum = input_ime::OnCandidateClicked::BUTTON_RIGHT;
         break;
 
       case chromeos::InputMethodEngine::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
-        args->Append(new base::StringValue("left"));
+        button_enum = input_ime::OnCandidateClicked::BUTTON_LEFT;
         break;
     }
+
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnCandidateClicked::Create(engine_id,
+                                              candidate_id,
+                                              button_enum));
 
     DispatchEventToExtension(profile_,
                              extension_id_,
@@ -224,9 +224,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
-    args->Append(new base::StringValue(menu_id));
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnMenuItemActivated::Create(engine_id, menu_id));
 
     DispatchEventToExtension(profile_,
                              extension_id_,
@@ -240,14 +239,13 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                         int anchor_pos) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    dict->SetString("text", text);
-    dict->SetInteger("focus", cursor_pos);
-    dict->SetInteger("anchor", anchor_pos);
 
-    scoped_ptr<ListValue> args(new base::ListValue);
-    args->Append(new base::StringValue(engine_id));
-    args->Append(dict);
+    input_ime::OnSurroundingTextChanged::SurroundingInfo info;
+    info.text = text;
+    info.focus = cursor_pos;
+    info.anchor = anchor_pos;
+    scoped_ptr<base::ListValue> args(
+        input_ime::OnSurroundingTextChanged::Create(engine_id, info));
 
     DispatchEventToExtension(profile_,
                              extension_id_,
@@ -258,8 +256,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   virtual void OnReset(const std::string& engine_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(engine_id));
+
+    scoped_ptr<base::ListValue> args(input_ime::OnReset::Create(engine_id));
 
     DispatchEventToExtension(profile_,
                              extension_id_,
