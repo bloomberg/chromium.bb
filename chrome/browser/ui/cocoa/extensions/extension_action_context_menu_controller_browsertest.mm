@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -25,12 +25,24 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/test/test_utils.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 using extensions::Extension;
 
-class ExtensionActionContextMenuTest : public ExtensionBrowserTest {
-public:
-  ExtensionActionContextMenuTest() : extension_(NULL), action_(NULL) {}
+namespace {
+
+NSMenuItem* GetInspectItem(NSMenu* menu) {
+  return [menu itemWithTitle:
+      l10n_util::GetNSStringWithFixup(IDS_EXTENSION_ACTION_INSPECT_POPUP)];
+}
+
+}  // namespace
+
+class ExtensionActionContextMenuControllerTest : public ExtensionBrowserTest {
+ public:
+  ExtensionActionContextMenuControllerTest() : extension_(NULL), action_(NULL) {
+  }
 
  protected:
   void SetupPageAction() {
@@ -62,25 +74,28 @@ public:
   ExtensionAction* action_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuControllerTest, BasicTest) {
   SetupPageAction();
-  base::scoped_nsobject<ExtensionActionContextMenu> menu;
-  menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
-                                                           browser:browser()
-                                                   extensionAction:action_]);
+  base::scoped_nsobject<ExtensionActionContextMenuController> controller(
+      [[ExtensionActionContextMenuController alloc] initWithExtension:extension_
+                                                              browser:browser()
+                                                      extensionAction:action_]);
 
-  NSMenuItem* inspectItem = [menu itemWithTag:
-        extension_action_context_menu::kExtensionContextInspect];
-  EXPECT_TRUE(inspectItem);
 
   PrefService* service = browser()->profile()->GetPrefs();
   bool original = service->GetBoolean(prefs::kExtensionsUIDeveloperMode);
 
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-  EXPECT_FALSE([inspectItem isHidden]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  [controller populateMenu:menu];
+  EXPECT_GT([menu numberOfItems], 0);
+  EXPECT_TRUE(GetInspectItem(menu));
 
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
-  EXPECT_TRUE([inspectItem isHidden]);
+  [menu removeAllItems];
+  [controller populateMenu:menu];
+  EXPECT_GT([menu numberOfItems], 0);
+  EXPECT_FALSE(GetInspectItem(menu));
 
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, original);
 }
@@ -88,11 +103,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
 // Test that browser action context menus work. Browser actions have their
 // menus created during browser initialization, when there is no tab. This
 // test simulates that and checks the menu is operational.
-IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
-  extension_ = InstallExtension(
-      test_data_dir_.AppendASCII("browsertest")
-                    .AppendASCII("browser_action_popup"),
-      1);
+IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuControllerTest,
+                       BrowserAction) {
+  extension_ =
+      InstallExtension(test_data_dir_.AppendASCII("browsertest").AppendASCII(
+                           "browser_action_popup"),
+                       1);
   EXPECT_TRUE(extension_);
   extensions::ExtensionActionManager* action_manager =
       extensions::ExtensionActionManager::Get(browser()->profile());
@@ -103,15 +119,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
        new Browser(Browser::CreateParams(browser()->profile(),
                                          browser()->host_desktop_type())));
 
-  base::scoped_nsobject<ExtensionActionContextMenu> menu;
-  menu.reset([[ExtensionActionContextMenu alloc]
-      initWithExtension:extension_
-                browser:empty_browser
-        extensionAction:action_]);
-
-  NSMenuItem* inspectItem = [menu itemWithTag:
-        extension_action_context_menu::kExtensionContextInspect];
-  EXPECT_TRUE(inspectItem);
+  base::scoped_nsobject<ExtensionActionContextMenuController> controller(
+      [[ExtensionActionContextMenuController alloc]
+          initWithExtension:extension_
+                    browser:empty_browser
+            extensionAction:action_]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  [controller populateMenu:menu];
+  EXPECT_GT([menu numberOfItems], 0);
 
   // Close the empty browser. Can't just free it directly because there are
   // dangling references in the various native controllers that must be
@@ -156,22 +171,23 @@ class DevToolsAttachedObserver {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(
-    ExtensionActionContextMenuTest, DISABLED_RunInspectPopup) {
+    ExtensionActionContextMenuControllerTest, DISABLED_RunInspectPopup) {
   SetupPageAction();
-  base::scoped_nsobject<ExtensionActionContextMenu> menu;
-  menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
-                                                           browser:browser()
-                                                   extensionAction:action_]);
-
-  NSMenuItem* inspectItem = [menu itemWithTag:
-        extension_action_context_menu::kExtensionContextInspect];
-  EXPECT_TRUE(inspectItem);
+  base::scoped_nsobject<ExtensionActionContextMenuController> controller(
+      [[ExtensionActionContextMenuController alloc] initWithExtension:extension_
+                                                              browser:browser()
+                                                      extensionAction:action_]);
 
   PrefService* service = browser()->profile()->GetPrefs();
   bool original = service->GetBoolean(prefs::kExtensionsUIDeveloperMode);
 
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-  EXPECT_FALSE([inspectItem isHidden]);
+
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  [controller populateMenu:menu];
+  EXPECT_GT([menu numberOfItems], 0);
+  NSMenuItem* inspectItem = GetInspectItem(menu);
+  EXPECT_TRUE(inspectItem);
 
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);

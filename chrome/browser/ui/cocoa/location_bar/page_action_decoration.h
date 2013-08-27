@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
-@class ExtensionActionContextMenu;
+@class ExtensionActionContextMenuController;
 class Browser;
 class LocationBarViewMac;
 
@@ -106,8 +106,9 @@ class PageActionDecoration : public ImageDecoration,
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;
 
-  // The context menu for the Page Action.
-  base::scoped_nsobject<ExtensionActionContextMenu> menu_;
+  // The context menu controller for the Page Action.
+  base::scoped_nsobject<
+      ExtensionActionContextMenuController> contextMenuController_;
 
   // This is used for post-install visual feedback. The page_action
   // icon is briefly shown even if it hasn't been enabled by its

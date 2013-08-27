@@ -12,7 +12,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/common/extensions/extension.h"
@@ -153,17 +153,17 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
         delegate_->AsExtensionInfoBarDelegate()->extension_host();
     Browser* browser =
         chrome::FindBrowserWithWebContents(owner->web_contents());
-    contextMenu_.reset([[ExtensionActionContextMenu alloc]
+    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
         initWithExtension:extensionHost->extension()
                   browser:browser
           extensionAction:NULL]);
+
+    base::scoped_nsobject<NSMenu> contextMenu(
+        [[NSMenu alloc] initWithTitle:@""]);
+    [contextMenu setDelegate:self];
     // See menu_button.h for documentation on why this is needed.
-    NSMenuItem* dummyItem =
-        [[[NSMenuItem alloc] initWithTitle:@""
-                                    action:nil
-                             keyEquivalent:@""] autorelease];
-    [contextMenu_ insertItem:dummyItem atIndex:0];
-    [dropdownButton_ setAttachedMenu:contextMenu_.get()];
+    [contextMenu addItemWithTitle:@"" action:NULL keyEquivalent:@""];
+    [dropdownButton_ setAttachedMenu:contextMenu];
 
     bridge_.reset(new InfobarBridge(self));
   }
@@ -237,7 +237,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 }
 
 - (void)infobarWillClose {
-  [self disablePopUpMenu:contextMenu_.get()];
+  [self disablePopUpMenu:[dropdownButton_ menu]];
   [super infobarWillClose];
 }
 
@@ -270,6 +270,11 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 - (void)setButtonImage:(NSImage*)image {
   [dropdownButton_ setImage:image];
+}
+
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  [menu removeAllItems];
+  [contextMenuController_ populateMenu:menu];
 }
 
 @end

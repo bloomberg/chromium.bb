@@ -13,6 +13,7 @@
 
 class Browser;
 class ExtensionAction;
+@class ExtensionActionContextMenuController;
 class ExtensionActionIconFactoryBridge;
 
 namespace extensions {
@@ -24,7 +25,7 @@ extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
 extern NSString* const kBrowserActionButtonDragEndNotification;
 
-@interface BrowserActionButton : NSButton {
+@interface BrowserActionButton : NSButton<NSMenuDelegate> {
  @private
   // Bridge to proxy Chrome notifications to the Obj-C class as well as load the
   // extension's icon.
@@ -50,6 +51,9 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   // The point where the mouse down event occurred. Used to prevent a drag from
   // starting until it moves at least kMinimumDragDistance.
   NSPoint dragStartPoint_;
+
+  base::scoped_nsobject<
+      ExtensionActionContextMenuController> contextMenuController_;
 }
 
 - (id)initWithFrame:(NSRect)frame

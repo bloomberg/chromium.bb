@@ -17,7 +17,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -232,12 +232,15 @@ NSMenu* PageActionDecoration::GetMenu() {
   DCHECK(extension);
   if (!extension)
     return nil;
-  menu_.reset([[ExtensionActionContextMenu alloc]
+
+  contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
       initWithExtension:extension
                 browser:browser_
         extensionAction:page_action_]);
 
-  return menu_.get();
+  base::scoped_nsobject<NSMenu> contextMenu([[NSMenu alloc] initWithTitle:@""]);
+  [contextMenuController_ populateMenu:contextMenu];
+  return contextMenu.autorelease();
 }
 
 void PageActionDecoration::ShowPopup(const NSRect& frame,
