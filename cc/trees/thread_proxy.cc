@@ -1400,7 +1400,7 @@ void ThreadProxy::CommitPendingOnImplThreadForTesting(
 
 scoped_ptr<base::Value> ThreadProxy::SchedulerStateAsValueForTesting() {
   if (IsImplThread())
-    return scheduler_on_impl_thread_->StateAsValueForTesting().Pass();
+    return scheduler_on_impl_thread_->StateAsValue().Pass();
 
   SchedulerStateRequest scheduler_state_request;
   {
@@ -1418,7 +1418,7 @@ scoped_ptr<base::Value> ThreadProxy::SchedulerStateAsValueForTesting() {
 void ThreadProxy::SchedulerStateAsValueOnImplThreadForTesting(
     SchedulerStateRequest* request) {
   DCHECK(IsImplThread());
-  request->state = scheduler_on_impl_thread_->StateAsValueForTesting();
+  request->state = scheduler_on_impl_thread_->StateAsValue();
   request->completion.Signal();
 }
 

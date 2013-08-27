@@ -83,17 +83,17 @@ class FakeSchedulerClient : public SchedulerClient {
   // Scheduler Implementation.
   virtual void SetNeedsBeginFrameOnImplThread(bool enable) OVERRIDE {
     actions_.push_back("SetNeedsBeginFrameOnImplThread");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
     needs_begin_frame_ = enable;
   }
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionSendBeginFrameToMainThread");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
     num_draws_++;
     return ScheduledActionDrawAndSwapResult(draw_will_happen_,
                                             draw_will_happen_ &&
@@ -102,29 +102,29 @@ class FakeSchedulerClient : public SchedulerClient {
   virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
       OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
     return ScheduledActionDrawAndSwapResult(true,
                                             swap_will_happen_if_draw_happens_);
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE {
     actions_.push_back("ScheduledActionUpdateVisibleTiles");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void ScheduledActionActivatePendingTree() OVERRIDE {
     actions_.push_back("ScheduledActionActivatePendingTree");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionAcquireLayerTexturesForMainThread");
-    states_.push_back(scheduler_->StateAsValueForTesting().release());
+    states_.push_back(scheduler_->StateAsValue().release());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE {

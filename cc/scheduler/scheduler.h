@@ -105,7 +105,7 @@ class CC_EXPORT Scheduler {
 
   void BeginFrame(const BeginFrameArgs& args);
 
-  scoped_ptr<base::Value> StateAsValueForTesting() {
+  scoped_ptr<base::Value> StateAsValue() {
     return state_machine_.AsValue().Pass();
   }
 
