@@ -273,7 +273,7 @@ bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
     bool result;
     switch (event.type()) {
     case PlatformEvent::MouseMoved:
-        result = eventHandler->mouseMoved(event);
+        result = eventHandler->handleMouseMoveEvent(event);
         break;
     case PlatformEvent::MousePressed:
         result = eventHandler->handleMousePressEvent(event);

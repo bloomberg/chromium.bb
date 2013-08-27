@@ -1428,13 +1428,13 @@ ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer)
     return 0;
 }
 
-bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
+bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 {
     RefPtr<FrameView> protector(m_frame->view());
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
     HitTestResult hoveredNode = HitTestResult(LayoutPoint());
-    bool result = handleMouseMoveEvent(event, &hoveredNode);
+    bool result = handleMouseMoveOrLeaveEvent(event, &hoveredNode);
 
     Page* page = m_frame->page();
     if (!page)
@@ -1455,13 +1455,19 @@ bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
     return result;
 }
 
+void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
+{
+    RefPtr<FrameView> protector(m_frame->view());
+    handleMouseMoveOrLeaveEvent(event);
+}
+
 static Cursor& syntheticTouchCursor()
 {
     DEFINE_STATIC_LOCAL(Cursor, c, (Image::loadPlatformResource("syntheticTouchCursor").get(), IntPoint(10, 10)));
     return c;
 }
 
-bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
+bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
 {
     ASSERT(m_frame);
     ASSERT(m_frame->view());
@@ -2332,7 +2338,7 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
-    mouseMoved(fakeMouseMove);
+    handleMouseMoveEvent(fakeMouseMove);
 
     int tapCount = 1;
     // FIXME: deletaX is overloaded to mean different things for different gestures.
@@ -2877,7 +2883,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     bool metaKey;
     PlatformKeyboardEvent::getCurrentModifierState(shiftKey, ctrlKey, altKey, metaKey);
     PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, NoButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey, metaKey, currentTime());
-    mouseMoved(fakeMouseMoveEvent);
+    handleMouseMoveEvent(fakeMouseMoveEvent);
 }
 
 void EventHandler::cancelFakeMouseMoveEvent()
@@ -3794,7 +3800,7 @@ bool EventHandler::passMouseMoveEventToSubframe(MouseEventWithHitTestResults& me
 {
     if (m_mouseDownMayStartDrag && !m_mouseDownWasInSubframe)
         return false;
-    subframe->eventHandler()->handleMouseMoveEvent(mev.event(), hoveredNode);
+    subframe->eventHandler()->handleMouseMoveOrLeaveEvent(mev.event(), hoveredNode);
     return true;
 }
 

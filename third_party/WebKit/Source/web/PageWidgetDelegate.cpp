@@ -186,15 +186,12 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
 
 void PageWidgetEventHandler::handleMouseMove(Frame& mainFrame, const WebMouseEvent& event)
 {
-    // We call mouseMoved here instead of handleMouseMovedEvent because we need
-    // our ChromeClientImpl to receive changes to the mouse position and tooltip
-    // text, and mouseMoved handles all of that.
-    mainFrame.eventHandler()->mouseMoved(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler()->handleMouseMoveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseLeave(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->mouseMoved(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler()->handleMouseLeaveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)

@@ -643,6 +643,7 @@ private:
     void pointerLockMouseEvent(const WebInputEvent&);
 
     // PageWidgetEventHandler functions
+    virtual void handleMouseLeave(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
     virtual void handleMouseDown(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
     virtual void handleMouseUp(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
     virtual bool handleMouseWheel(WebCore::Frame&, const WebMouseWheelEvent&) OVERRIDE;
