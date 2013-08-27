@@ -13,7 +13,7 @@
           (drawsContent 1)
         )
         (GraphicsLayer
-          (children 1
+          (children 2
             (GraphicsLayer
               (bounds 785.00 3700.00)
               (children 1
@@ -22,6 +22,8 @@
                   (drawsContent 1)
                 )
               )
+            )
+            (GraphicsLayer
             )
           )
         )

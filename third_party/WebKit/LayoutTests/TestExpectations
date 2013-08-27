@@ -1237,25 +1237,6 @@ crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] edi
 
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
-# Rebaseline using composited overscroll regions.
-crbug.com/133097 compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-e.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-n.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-ne.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-nw.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-s.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-se.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-size-change.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-sw.html [ NeedsRebaseline ]
-crbug.com/133097 compositing/rubberbanding/transform-overhang-w.html [ NeedsRebaseline ]
-crbug.com/133097 fast/events/scale-and-scroll-iframe-body.html [ NeedsRebaseline ]
-crbug.com/133097 fast/events/scale-and-scroll-iframe-window.html [ NeedsRebaseline ]
-crbug.com/133097 fast/frames/frame-set-rotation-hit.html [ NeedsRebaseline ]
-crbug.com/133097 fast/frames/frame-set-scaling-hit.html [ NeedsRebaseline ]
-crbug.com/133097 fast/repaint/background-scaling.html [ NeedsRebaseline ]
-crbug.com/133097 fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
-crbug.com/133097 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]
-
 crbug.com/280203 [ Mac ] compositing/overflow/nested-scrolling.html [ ImageOnlyFailure ]
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/nested-scrolling.html [ ImageOnlyFailure ]
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/overflow-scroll.html [ ImageOnlyFailure ]
