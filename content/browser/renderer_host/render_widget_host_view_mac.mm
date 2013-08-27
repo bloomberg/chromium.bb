@@ -1787,6 +1787,10 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
     // Also note that it is necessary that clearDrawable be called if
     // overlapping views are not allowed, e.g, for content shell.
     // http://crbug.com/178408
+    // Disable screen updates so that the changes of flashes is minimized.
+    // http://crbug.com/279472
+    if (!use_core_animation_)
+      [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
     if (allow_overlapping_views_)
       DestroyCompositedIOSurfaceAndLayer(kLeaveContextBoundToView);
     else
