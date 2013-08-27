@@ -62,11 +62,12 @@ cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
 cp "${LLVM_LIB_DIR}/libprofile_rt.${SO_EXT}" $PDIR/lib
 
 # Copy built-in headers (lib/clang/3.2/include).
-# libcompiler-rt puts all kinds of libraries there too, but we want only ASan.
+# libcompiler-rt puts all kinds of libraries there too, but we want only some.
 if [ "$(uname -s)" = "Darwin" ]; then
-  # Keep only Release+Asserts/lib/clang/3.2/lib/darwin/libclang_rt.asan_osx.a
-  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/darwin*' | grep -v asan | \
-       xargs rm
+  # Keep only
+  # Release+Asserts/lib/clang/*/lib/darwin/libclang_rt.{asan,profile}_osx*
+  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/darwin*' \
+       ! -name '*asan_osx*' ! -name '*profile_osx*' | xargs rm
   # Fix LC_ID_DYLIB for the ASan dynamic library to be relative to
   # @executable_path.
   # TODO(glider): this is transitional. We'll need to fix the dylib name
@@ -76,11 +77,9 @@ if [ "$(uname -s)" = "Darwin" ]; then
   install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
 else
   # Keep only
-  # Release+Asserts/lib/clang/3.2/lib/linux/libclang_rt.{a,t,m}san-x86_64.a
-  # TODO(thakis): Make sure the 32bit version of ASan runtime is kept too once
-  # that's built. TSan and MSan runtimes exist only for 64 bits.
-  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' | \
-       grep -v "asan\|tsan\|msan" | xargs rm
+  # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,profile}-*.a
+  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' \
+       ! -name '*[atm]san*' ! -name '*profile*' | xargs rm
 fi
 
 cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
