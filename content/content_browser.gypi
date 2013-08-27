@@ -396,11 +396,12 @@
     'browser/device_orientation/data_fetcher_impl_win.h',
     'browser/device_orientation/data_fetcher_orientation_android.cc',
     'browser/device_orientation/data_fetcher_orientation_android.h',
+    'browser/device_orientation/data_fetcher_shared_memory.h',
     'browser/device_orientation/data_fetcher_shared_memory_android.cc',
     'browser/device_orientation/data_fetcher_shared_memory_base.cc',
     'browser/device_orientation/data_fetcher_shared_memory_base.h',
     'browser/device_orientation/data_fetcher_shared_memory_default.cc',
-    'browser/device_orientation/data_fetcher_shared_memory.h',
+    'browser/device_orientation/data_fetcher_shared_memory_mac.cc',
     'browser/device_orientation/device_data.h',
     'browser/device_orientation/device_inertial_sensor_service.cc',
     'browser/device_orientation/device_inertial_sensor_service.h',
@@ -1400,6 +1401,9 @@
         '../third_party/mozilla/NSString+Utils.mm',
         '../third_party/mozilla/NSURL+Utils.h',
         '../third_party/mozilla/NSURL+Utils.m',
+      ],
+      'sources/': [
+        ['exclude', '^browser/device_orientation/data_fetcher_shared_memory_default.cc$'],
       ],
       'dependencies': [
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',

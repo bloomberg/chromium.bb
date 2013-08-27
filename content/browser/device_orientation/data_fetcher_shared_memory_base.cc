@@ -21,7 +21,9 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
   PollingThread(const char* name, DataFetcherSharedMemoryBase* fetcher);
   virtual ~PollingThread();
 
-  void SetConsumers(int consumers_bitmask);
+  void AddConsumer(ConsumerType consumer_type);
+  void RemoveConsumer(ConsumerType consumer_type);
+
   unsigned GetConsumersBitmask() const { return consumers_bitmask_; }
 
  private:
@@ -45,13 +47,13 @@ DataFetcherSharedMemoryBase::PollingThread::PollingThread(
 DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {
 }
 
-void DataFetcherSharedMemoryBase::PollingThread::SetConsumers(
-    int consumers_bitmask) {
-  consumers_bitmask_ = consumers_bitmask;
-  if (!consumers_bitmask_) {
-    timer_.reset(); // will also stop the timer.
+void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
+    ConsumerType consumer_type) {
+  DCHECK(fetcher_);
+  if (!fetcher_->Start(consumer_type))
     return;
-  }
+
+  consumers_bitmask_ |= consumer_type;
 
   if (!timer_)
     timer_.reset(new base::RepeatingTimer<PollingThread>());
@@ -59,6 +61,18 @@ void DataFetcherSharedMemoryBase::PollingThread::SetConsumers(
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds),
                 this, &PollingThread::DoPoll);
+}
+
+void DataFetcherSharedMemoryBase::PollingThread::RemoveConsumer(
+    ConsumerType consumer_type) {
+  DCHECK(fetcher_);
+  if (!fetcher_->Stop(consumer_type))
+    return;
+
+  consumers_bitmask_ ^= consumer_type;
+
+  if (!consumers_bitmask_)
+    timer_.reset(); // will also stop the timer.
 }
 
 void DataFetcherSharedMemoryBase::PollingThread::DoPoll() {
@@ -90,23 +104,21 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
   if (started_consumers_ & consumer_type)
     return true;
 
-  if (!Start(consumer_type))
-    return false;
+  if (IsPolling()) {
+    if (!InitAndStartPollingThreadIfNecessary())
+      return false;
+    polling_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&PollingThread::AddConsumer,
+                   base::Unretained(polling_thread_.get()),
+                   consumer_type));
+  } else {
+    if (!Start(consumer_type))
+      return false;
+  }
 
   started_consumers_ |= consumer_type;
 
-  if (IsPolling()) {
-    if (!InitAndStartPollingThreadIfNecessary()) {
-      Stop(consumer_type);
-      started_consumers_ ^= consumer_type;
-      return false;
-    }
-    polling_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PollingThread::SetConsumers,
-                   base::Unretained(polling_thread_.get()),
-                   started_consumers_));
-  }
   return true;
 }
 
@@ -115,18 +127,19 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
   if (!(started_consumers_ & consumer_type))
     return true;
 
-  if (!Stop(consumer_type))
-    return false;
-
-  started_consumers_ ^= consumer_type;
-
   if (IsPolling()) {
     polling_thread_->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&PollingThread::SetConsumers,
+        base::Bind(&PollingThread::RemoveConsumer,
                    base::Unretained(polling_thread_.get()),
-                   started_consumers_));
+                   consumer_type));
+  } else {
+    if (!Stop(consumer_type))
+      return false;
   }
+
+  started_consumers_ ^= consumer_type;
+
   return true;
 }
 
@@ -170,12 +183,13 @@ base::SharedMemory* DataFetcherSharedMemoryBase::InitSharedMemory(
   if (it != shared_memory_map_.end())
     return it->second;
 
-  base::SharedMemory* new_shared_mem = new base::SharedMemory;
+  scoped_ptr<base::SharedMemory> new_shared_mem(new base::SharedMemory);
   if (new_shared_mem->CreateAndMapAnonymous(buffer_size)) {
     if (void* mem = new_shared_mem->memory()) {
       memset(mem, 0, buffer_size);
-      shared_memory_map_[consumer_type] = new_shared_mem;
-      return new_shared_mem;
+      base::SharedMemory* shared_mem = new_shared_mem.release();
+      shared_memory_map_[consumer_type] = shared_mem;
+      return shared_mem;
     }
   }
   LOG(ERROR) << "Failed to initialize shared memory";

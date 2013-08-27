@@ -147,18 +147,20 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   virtual ~FakePollingDataFetcher() { }
 
   virtual bool Start(ConsumerType consumer_type) OVERRIDE {
+    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
     Init(consumer_type);
     start_.Signal();
     return true;
   }
 
   virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
+    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
     stop_.Signal();
     return true;
   }
 
   virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
-    DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
 
     if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
       UpdateOrientation();
@@ -179,65 +181,61 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
-    FakeNonPollingDataFetcher* mock_data_fetcher =
-      new FakeNonPollingDataFetcher();
-  EXPECT_FALSE(mock_data_fetcher->IsPolling());
+  FakeNonPollingDataFetcher mock_data_fetcher;
+  EXPECT_FALSE(mock_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher->StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
-  mock_data_fetcher->WaitForStart();
+  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
+  mock_data_fetcher.WaitForStart();
 
   EXPECT_EQ(kPeriodInMilliseconds,
-      mock_data_fetcher->GetMotionBuffer()->data.interval);
+      mock_data_fetcher.GetMotionBuffer()->data.interval);
 
-  mock_data_fetcher->StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
-  mock_data_fetcher->WaitForStop();
+  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  mock_data_fetcher.WaitForStop();
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
-  FakeNonPollingDataFetcher* mock_data_fetcher =
-      new FakeNonPollingDataFetcher();
-  EXPECT_FALSE(mock_data_fetcher->IsPolling());
+  FakeNonPollingDataFetcher mock_data_fetcher;
+  EXPECT_FALSE(mock_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher->StartFetchingDeviceData(
+  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
-  mock_data_fetcher->WaitForStart();
+  mock_data_fetcher.WaitForStart();
 
-  EXPECT_EQ(1, mock_data_fetcher->GetOrientationBuffer()->data.alpha);
+  EXPECT_EQ(1, mock_data_fetcher.GetOrientationBuffer()->data.alpha);
 
-  mock_data_fetcher->StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
-  mock_data_fetcher->WaitForStop();
+  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  mock_data_fetcher.WaitForStop();
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
-    FakePollingDataFetcher* mock_data_fetcher =
-      new FakePollingDataFetcher();
-  EXPECT_TRUE(mock_data_fetcher->IsPolling());
+  FakePollingDataFetcher mock_data_fetcher;
+  EXPECT_TRUE(mock_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher->StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
-  mock_data_fetcher->WaitForStart();
-  mock_data_fetcher->WaitForUpdateMotion();
+  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
+  mock_data_fetcher.WaitForStart();
+  mock_data_fetcher.WaitForUpdateMotion();
 
   EXPECT_EQ(kPeriodInMilliseconds,
-      mock_data_fetcher->GetMotionBuffer()->data.interval);
+      mock_data_fetcher.GetMotionBuffer()->data.interval);
 
-  mock_data_fetcher->StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
-  mock_data_fetcher->WaitForStop();
+  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  mock_data_fetcher.WaitForStop();
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
-  FakePollingDataFetcher* mock_data_fetcher =
-      new FakePollingDataFetcher();
-  EXPECT_TRUE(mock_data_fetcher->IsPolling());
+  FakePollingDataFetcher mock_data_fetcher;
+  EXPECT_TRUE(mock_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher->StartFetchingDeviceData(
+  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
-  mock_data_fetcher->WaitForStart();
-  mock_data_fetcher->WaitForUpdateOrientation();
+  mock_data_fetcher.WaitForStart();
+  mock_data_fetcher.WaitForUpdateOrientation();
 
-  EXPECT_EQ(1, mock_data_fetcher->GetOrientationBuffer()->data.alpha);
+  EXPECT_EQ(1, mock_data_fetcher.GetOrientationBuffer()->data.alpha);
 
-  mock_data_fetcher->StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
-  mock_data_fetcher->WaitForStop();
+  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  mock_data_fetcher.WaitForStop();
 }
 
 }  // namespace

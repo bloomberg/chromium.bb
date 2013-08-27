@@ -59,8 +59,9 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   // fetch the sensor data.
   virtual bool IsPolling() const;
 
-  // Start() method should call InitSharedMemoryBuffer() and cache the obtained
-  // pointer for efficienty and thread-safety.
+  // Start() method should call InitSharedMemoryBuffer() to get the shared
+  // memory pointer. If IsPolling() is true both Start() and Stop() methods
+  // are called from the |polling_thread_|.
   virtual bool Start(ConsumerType consumer_type) = 0;
   virtual bool Stop(ConsumerType consumer_type) = 0;
 
