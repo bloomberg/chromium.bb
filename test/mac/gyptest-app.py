@@ -10,7 +10,18 @@ Verifies that app bundles are built correctly.
 
 import TestGyp
 
+import os
 import sys
+
+
+def ls(path):
+  '''Returns a list of all files in a directory, relative to the directory.'''
+  result = []
+  for dirpath, _, files in os.walk(path):
+    for f in files:
+      result.append(os.path.join(dirpath, f)[len(path) + 1:])
+  return result
+
 
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
@@ -44,5 +55,14 @@ if sys.platform == 'darwin':
   test.built_file_must_match('Test App Gyp.app/Contents/PkgInfo', 'APPLause',
                              chdir='app-bundle')
 
+  # Check that no other files get added to the bundle.
+  if set(ls(test.built_file_path('Test App Gyp.app', chdir='app-bundle'))) != \
+     set(['Contents/MacOS/Test App Gyp',
+          'Contents/Info.plist',
+          'Contents/Resources/English.lproj/InfoPlist.strings',
+          'Contents/Resources/English.lproj/MainMenu.nib',
+          'Contents/PkgInfo',
+          ]):
+    test.fail_test()
 
   test.pass_test()
