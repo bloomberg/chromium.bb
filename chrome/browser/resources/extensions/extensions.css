@@ -2,18 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-html,
-body {
-  height: 100%;
-  overflow: hidden;
-}
-
-@media print {
-  body {
-    height: auto;
-  }
-}
-
 html.loading * {
   -webkit-transition-duration: 0 !important;
 }
@@ -22,6 +10,10 @@ html:not(.focus-outline-visible)
 :enabled:focus:-webkit-any(input[type='checkbox'], input[type='radio']) {
   /* Cancel border-color for :focus specified in widgets.css. */
   border-color: rgba(0, 0, 0, 0.25);
+}
+
+.no-scroll {
+  overflow-y: hidden;
 }
 
 /* Developer mode */
@@ -101,11 +93,6 @@ html:not(.focus-outline-visible)
 }
 
 /* Contents */
-
-#page-container {
-  height: 100%;
-  overflow-y: auto;
-}
 
 #extension-settings {
   max-width: 738px;

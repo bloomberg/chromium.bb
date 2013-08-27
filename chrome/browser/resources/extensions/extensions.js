@@ -356,6 +356,15 @@ cr.define('extensions', function() {
    *     are hidden.
    */
   ExtensionSettings.showOverlay = function(node) {
+    var pageDiv = $('extension-settings');
+    if (node) {
+      pageDiv.style.width = window.getComputedStyle(pageDiv).width;
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+      pageDiv.style.width = '';
+    }
+
     var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
     if (currentlyShowingOverlay)
       currentlyShowingOverlay.classList.remove('showing');

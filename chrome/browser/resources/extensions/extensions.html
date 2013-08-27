@@ -54,62 +54,60 @@
   </div>
 </div>
 
-<div id="page-container">
-  <div class="page" id="extension-settings">
-    <header id="page-header"><h1 i18n-content="extensionSettings"></h1>
-      <div id="header-controls" class="header-extras">
-        <div id="dev-toggle" class="checkbox">
-          <label>
-            <input id="toggle-dev-on" type="checkbox">
-            <span i18n-content="extensionSettingsDeveloperMode"></span>
-          </label>
-        </div>
+<div class="page" id="extension-settings">
+  <header id="page-header"><h1 i18n-content="extensionSettings"></h1>
+    <div id="header-controls" class="header-extras">
+      <div id="dev-toggle" class="checkbox">
+        <label>
+          <input id="toggle-dev-on" type="checkbox">
+          <span i18n-content="extensionSettingsDeveloperMode"></span>
+        </label>
       </div>
-      <div class="page-banner profile-is-managed-banner">
-        <div class="page-banner-gradient">
-          <span class="page-banner-text"
-              i18n-content="extensionSettingsManagedMode"></span>
-        </div>
+    </div>
+    <div class="page-banner profile-is-managed-banner">
+      <div class="page-banner-gradient">
+        <span class="page-banner-text"
+            i18n-content="extensionSettingsManagedMode"></span>
       </div>
-    </header>
-    <div id="dev-controls" hidden>
-      <div id="apps-dev-tool-banner">
-        <div class="apps-dev-tool-banner-text"
-            i18n-content="extensionSettingsUseAppsDevTools"></div>
-        <button id="open-apps-dev-tools"
-            i18n-content="extensionSettingsOpenAppsDevTools"></button>
-      </div>
-      <div class="buttons-container">
-        <button id="load-unpacked"
-            i18n-content="extensionSettingsLoadUnpackedButton"></button>
-        <button id="pack-extension"
-            i18n-content="extensionSettingsPackButton"></button>
+    </div>
+  </header>
+  <div id="dev-controls" hidden>
+    <div id="apps-dev-tool-banner">
+      <div class="apps-dev-tool-banner-text"
+          i18n-content="extensionSettingsUseAppsDevTools"></div>
+      <button id="open-apps-dev-tools"
+          i18n-content="extensionSettingsOpenAppsDevTools"></button>
+    </div>
+    <div class="buttons-container">
+      <button id="load-unpacked"
+          i18n-content="extensionSettingsLoadUnpackedButton"></button>
+      <button id="pack-extension"
+          i18n-content="extensionSettingsPackButton"></button>
 <if expr="pp_ifdef('chromeos')">
-        <button id="add-kiosk-app"
-            i18n-content="addKioskAppButton" hidden></button>
+      <button id="add-kiosk-app"
+          i18n-content="addKioskAppButton" hidden></button>
 </if>
-        <div id="dev-controls-spacer"></div>
-        <button id="update-extensions-now"
-            i18n-content="extensionSettingsUpdateButton"></button>
-      </div>
+      <div id="dev-controls-spacer"></div>
+      <button id="update-extensions-now"
+          i18n-content="extensionSettingsUpdateButton"></button>
     </div>
-    <div id="extension-settings-list" class="empty-extension-list"></div>
-    <div id="no-extensions">
-      <span id="no-extensions-message"
-          i18n-content="extensionSettingsNoExtensions"></span>
-      <span id="suggest-gallery" class="more-extensions-link"
-          i18n-values=".innerHTML:extensionSettingsSuggestGallery">
-      </span>
-    </div>
-    <div id="footer-section">
-      <a target="_blank" class="more-extensions-link"
-          i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
-          i18n-content="extensionSettingsGetMoreExtensions"></a>
-      <a target="_blank" hidden
-          class="extension-commands-config"
-          i18n-content="extensionSettingsCommandsLink"
-          href="#"></a>
-    </div>
+  </div>
+  <div id="extension-settings-list" class="empty-extension-list"></div>
+  <div id="no-extensions">
+    <span id="no-extensions-message"
+        i18n-content="extensionSettingsNoExtensions"></span>
+    <span id="suggest-gallery" class="more-extensions-link"
+        i18n-values=".innerHTML:extensionSettingsSuggestGallery">
+    </span>
+  </div>
+  <div id="footer-section">
+    <a target="_blank" class="more-extensions-link"
+        i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
+        i18n-content="extensionSettingsGetMoreExtensions"></a>
+    <a target="_blank" hidden
+        class="extension-commands-config"
+        i18n-content="extensionSettingsCommandsLink"
+        href="#"></a>
   </div>
 </div>
 
