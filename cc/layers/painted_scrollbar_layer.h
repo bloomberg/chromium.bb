@@ -71,9 +71,13 @@ class CC_EXPORT PaintedScrollbarLayer : public ContentsScalingLayer {
 
   scoped_ptr<Scrollbar> scrollbar_;
 
+  // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
+  // PushPropertiesTo.
   int thumb_thickness_;
   int thumb_length_;
+  gfx::Point location_;
   gfx::Rect track_rect_;
+
   int scroll_layer_id_;
 
   scoped_ptr<ScopedUIResource> track_resource_;

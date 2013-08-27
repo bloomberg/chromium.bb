@@ -116,11 +116,11 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetThumbLength(thumb_length_);
   if (Orientation() == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(
-        track_rect_.x() - scrollbar_->Location().x());
+        track_rect_.x() - location_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
     scrollbar_layer->SetTrackStart(
-        track_rect_.y() - scrollbar_->Location().y());
+        track_rect_.y() - location_.y());
     scrollbar_layer->SetTrackLength(track_rect_.height());
   }
 
@@ -177,6 +177,7 @@ gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   track_rect_ = scrollbar_->TrackRect();
+  location_ = scrollbar_->Location();
   if (scrollbar_->HasThumb()) {
     thumb_thickness_ = scrollbar_->ThumbThickness();
     thumb_length_ = scrollbar_->ThumbLength();
@@ -188,7 +189,7 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
   UpdateThumbAndTrackGeometry();
 
   gfx::Rect scaled_track_rect = ScrollbarLayerRectToContentRect(
-      gfx::Rect(scrollbar_->Location(), bounds()));
+      gfx::Rect(location_, bounds()));
 
   if (layer_tree_host()->settings().solid_color_scrollbars ||
       track_rect_.IsEmpty() || scaled_track_rect.IsEmpty())
