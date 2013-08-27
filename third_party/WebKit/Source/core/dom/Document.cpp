@@ -2342,7 +2342,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, Document* navigatingDoc
     m_loadEventProgress = BeforeUnloadEventCompleted;
     if (!beforeUnloadEvent->defaultPrevented())
         defaultEventHandler(beforeUnloadEvent.get());
-    if (beforeUnloadEvent->result().isNull())
+    if (beforeUnloadEvent->returnValue().isNull())
         return true;
 
     if (navigatingDocument->m_didAllowNavigationViaBeforeUnloadConfirmationPanel) {
@@ -2350,7 +2350,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, Document* navigatingDoc
         return true;
     }
 
-    String text = displayStringModifiedByEncoding(beforeUnloadEvent->result());
+    String text = displayStringModifiedByEncoding(beforeUnloadEvent->returnValue());
     if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
         navigatingDocument->m_didAllowNavigationViaBeforeUnloadConfirmationPanel = true;
         return true;
