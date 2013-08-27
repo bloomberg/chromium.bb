@@ -10,6 +10,9 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "chrome/common/extensions/api/serial.h"
+
+namespace serial = extensions::api::serial;
 
 namespace extensions {
 
@@ -27,8 +30,12 @@ ApiResourceManager<SerialConnection>::GetFactoryInstance() {
 }
 
 SerialConnection::SerialConnection(const std::string& port, int bitrate,
+                                   serial::DataBit databit,
+                                   serial::ParityBit parity,
+                                   serial::StopBit stopbit,
                                    const std::string& owner_extension_id)
     : ApiResource(owner_extension_id), port_(port), bitrate_(bitrate),
+      databit_(databit), parity_(parity), stopbit_(stopbit),
       file_(base::kInvalidPlatformFileValue) {
   CHECK_GE(bitrate, 0);
 }

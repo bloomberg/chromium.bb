@@ -9,6 +9,67 @@
 
 namespace extensions {
 
+namespace {
+  int getBaudRate(int bitrate_) {
+    switch (bitrate_) {
+      case 0:
+        return B0;
+      case 50:
+        return B50;
+      case 75:
+        return B75;
+      case 110:
+        return B110;
+      case 134:
+        return B134;
+      case 150:
+        return B150;
+      case 200:
+        return B200;
+      case 300:
+        return B300;
+      case 600:
+        return B600;
+      case 1200:
+        return B1200;
+      case 1800:
+        return B1800;
+      case 2400:
+        return B2400;
+      case 4800:
+        return B4800;
+      case 9600:
+        return B9600;
+      case 19200:
+        return B19200;
+      case 38400:
+        return B38400;
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      case 57600:
+        return B57600;
+      case 115200:
+        return B115200;
+      case 230400:
+        return B230400;
+      case 460800:
+        return B460800;
+      case 576000:
+        return B576000;
+      case 921600:
+        return B921600;
+      default:
+        return B9600;
+#else
+// MACOSX doesn't define constants bigger than 38400.
+// So if it is MACOSX and the value doesn't fit any of the defined constants
+// It will setup the bitrate with 'bitrate_' (just forwarding the value)
+      default:
+        return bitrate_;
+#endif
+    }
+  }
+}  // namespace
+
 bool SerialConnection::PostOpen() {
   struct termios options;
 
@@ -17,95 +78,44 @@ bool SerialConnection::PostOpen() {
 
   // Bitrate (sometimes erroneously referred to as baud rate).
   if (bitrate_ >= 0) {
-    int bitrate_opt_;
-    switch (bitrate_) {
-      case 0:
-        bitrate_opt_ = B0;
-        break;
-      case 50:
-        bitrate_opt_ = B50;
-        break;
-      case 75:
-        bitrate_opt_ = B75;
-        break;
-      case 110:
-        bitrate_opt_ = B110;
-        break;
-      case 134:
-        bitrate_opt_ = B134;
-        break;
-      case 150:
-        bitrate_opt_ = B150;
-        break;
-      case 200:
-        bitrate_opt_ = B200;
-        break;
-      case 300:
-        bitrate_opt_ = B300;
-        break;
-      case 600:
-        bitrate_opt_ = B600;
-        break;
-      case 1200:
-        bitrate_opt_ = B1200;
-        break;
-      case 1800:
-        bitrate_opt_ = B1800;
-        break;
-      case 2400:
-        bitrate_opt_ = B2400;
-        break;
-      case 4800:
-        bitrate_opt_ = B4800;
-        break;
-      case 9600:
-        bitrate_opt_ = B9600;
-        break;
-      case 19200:
-        bitrate_opt_ = B19200;
-        break;
-      case 38400:
-        bitrate_opt_ = B38400;
-        break;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      case 57600:
-        bitrate_opt_ = B57600;
-        break;
-      case 115200:
-        bitrate_opt_ = B115200;
-        break;
-      case 230400:
-        bitrate_opt_ = B230400;
-        break;
-      case 460800:
-        bitrate_opt_ = B460800;
-        break;
-      case 576000:
-        bitrate_opt_ = B576000;
-        break;
-      case 921600:
-        bitrate_opt_ = B921600;
-        break;
-      default:
-        bitrate_opt_ = B9600;
-#else
-// MACOSX doesn't define constants bigger than 38400.
-// So if it is MACOSX and the value doesn't fit any of the defined constants
-// It will setup the bitrate with 'bitrate_' (just forwarding the value)
-      default:
-        bitrate_opt_ = bitrate_;
-#endif
-    }
+    int bitrate_opt_ = getBaudRate(bitrate_);
 
     cfsetispeed(&options, bitrate_opt_);
     cfsetospeed(&options, bitrate_opt_);
   }
 
-  // 8N1
-  options.c_cflag &= ~PARENB;
-  options.c_cflag &= ~CSTOPB;
   options.c_cflag &= ~CSIZE;
-  options.c_cflag |= CS8;
+  switch (databit_) {
+    case serial::DATA_BIT_SEVENBIT:
+      options.c_cflag |= CS7;
+      break;
+    case serial::DATA_BIT_EIGHTBIT:
+    default:
+      options.c_cflag |= CS8;
+      break;
+  }
+  switch (stopbit_) {
+    case serial::STOP_BIT_TWOSTOPBIT:
+      options.c_cflag |= CSTOPB;
+      break;
+    case serial::STOP_BIT_ONESTOPBIT:
+    default:
+      options.c_cflag &= ~CSTOPB;
+      break;
+  }
+  switch (parity_) {
+    case serial::PARITY_BIT_EVENPARITY:
+      options.c_cflag |= PARENB;
+      options.c_cflag &= ~PARODD;
+      break;
+    case serial::PARITY_BIT_ODDPARITY:
+      options.c_cflag |= (PARENB | PARODD);
+      break;
+    case serial::PARITY_BIT_NOPARITY:
+    default:
+      options.c_cflag &= ~(PARENB | PARODD);
+      break;
+  }
   options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 
   // Enable receiver and set local mode

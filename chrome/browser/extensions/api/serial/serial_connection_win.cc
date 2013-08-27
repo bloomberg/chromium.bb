@@ -10,6 +10,60 @@
 
 namespace extensions {
 
+namespace {
+int getBaudRate(int bitrate_) {
+  switch (bitrate_) {
+    case 110: return CBR_110;
+    case 300: return CBR_300;
+    case 600: return CBR_600;
+    case 1200: return CBR_1200;
+    case 2400: return CBR_2400;
+    case 4800: return CBR_4800;
+    case 9600: return CBR_9600;
+    case 14400: return CBR_14400;
+    case 19200: return CBR_19200;
+    case 38400: return CBR_38400;
+    case 57600: return CBR_57600;
+    case 115200: return CBR_115200;
+    case 128000: return CBR_128000;
+    case 256000: return CBR_256000;
+    default: return CBR_9600;
+  }
+}
+
+int getDataBit(serial::DataBit databit) {
+  switch (databit) {
+    case serial::DATA_BIT_SEVENBIT:
+      return 7;
+    case serial::DATA_BIT_EIGHTBIT:
+    default:
+      return 8;
+  }
+}
+
+int getParity(serial::ParityBit parity) {
+  switch (parity) {
+    case serial::PARITY_BIT_EVENPARITY:
+      return EVENPARITY;
+    case serial::PARITY_BIT_ODDPARITY:
+      return SPACEPARITY;
+    case serial::PARITY_BIT_NOPARITY:
+    default:
+      return NOPARITY;
+  }
+}
+
+int getStopBit(serial::StopBit stopbit) {
+  switch (stopbit) {
+    case serial::STOP_BIT_TWOSTOPBIT:
+      return TWOSTOPBITS;
+    case serial::STOP_BIT_ONESTOPBIT:
+    default:
+      return ONESTOPBIT;
+  }
+}
+}  // namespace
+
 bool SerialConnection::PostOpen() {
   // Set timeouts so that reads return immediately with whatever could be read
   // without blocking.
@@ -23,32 +77,11 @@ bool SerialConnection::PostOpen() {
   if (!GetCommState(file_, &dcb))
     return false;
 
-  if (bitrate_ >= 0) {
-    bool speed_found = true;
-    DWORD speed = CBR_9600;
-    switch (bitrate_) {
-      case 110: speed = CBR_110; break;
-      case 300: speed = CBR_300; break;
-      case 600: speed = CBR_600; break;
-      case 1200: speed = CBR_1200; break;
-      case 2400: speed = CBR_2400; break;
-      case 4800: speed = CBR_4800; break;
-      case 9600: speed = CBR_9600; break;
-      case 14400: speed = CBR_14400; break;
-      case 19200: speed = CBR_19200; break;
-      case 38400: speed = CBR_38400; break;
-      case 57600: speed = CBR_57600; break;
-      case 115200: speed = CBR_115200; break;
-      case 128000: speed = CBR_128000; break;
-      case 256000: speed = CBR_256000; break;
-      default: speed_found = false; break;
-    }
-    if (speed_found)
-      dcb.BaudRate = speed;
-  }
-  dcb.ByteSize = 8;
-  dcb.StopBits = ONESTOPBIT;
-  dcb.Parity = NOPARITY;
+  dcb.BaudRate = getBaudRate(bitrate_);
+  dcb.ByteSize = getDataBit(databit_);
+  dcb.Parity = getParity(parity_);
+  dcb.StopBits = getStopBit(stopbit_);
+
   if (!SetCommState(file_, &dcb))
     return false;
 

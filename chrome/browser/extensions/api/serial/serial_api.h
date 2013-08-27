@@ -13,6 +13,8 @@
 #include "chrome/common/extensions/api/serial.h"
 #include "net/base/io_buffer.h"
 
+namespace serial = extensions::api::serial;
+
 namespace extensions {
 
 class SerialConnection;
@@ -69,12 +71,19 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       int bitrate,
+      serial::DataBit databit,
+      serial::ParityBit parity,
+      serial::StopBit stopbit,
       const std::string& owner_extension_id);
+
   virtual bool DoesPortExist(const std::string& port);
 
  private:
   scoped_ptr<api::serial::Open::Params> params_;
   int bitrate_;
+  api::serial::DataBit databit_;
+  api::serial::ParityBit parity_;
+  api::serial::StopBit stopbit_;
 };
 
 class SerialCloseFunction : public SerialAsyncApiFunction {

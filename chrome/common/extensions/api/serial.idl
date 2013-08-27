@@ -8,14 +8,25 @@ namespace serial {
 
   callback GetPortsCallback = void (DOMString[] ports);
 
+  enum DataBit { sevenbit, eightbit };
+  enum ParityBit { noparity, oddparity, evenparity };
+  enum StopBit { onestopbit, twostopbit };
+
   dictionary OpenOptions {
     // The requested bitrate of the connection to be opened. For compatibility
     // with the widest range of hardware, this number should match one of
     // commonly-available bitrates, such as 110, 300, 1200, 2400, 4800, 9600,
     // 14400, 19200, 38400, 57600, 115200. There is no guarantee, of course,
     // that the device connected to the serial port will support the requested
-    // bitrate, even if the port itself supports that bitrate.
-    long bitrate;
+    // bitrate, even if the port itself supports that bitrate. <code>9600</code>
+    // will be passed by default.
+    long? bitrate;
+    // <code>"eightbit"</code> will be passed by default.
+    DataBit? dataBit;
+    // <code>"noparity"</code> will be passed by default.
+    ParityBit? parityBit;
+    // <code>"onestopbit"</code> will be passed by default.
+    StopBit? stopBit;
   };
 
   dictionary OpenInfo {

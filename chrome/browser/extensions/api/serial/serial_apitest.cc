@@ -22,6 +22,8 @@ using testing::Return;
 
 using content::BrowserThread;
 
+namespace serial = extensions::api::serial;
+
 namespace {
 
 class SerialApiTest : public ExtensionApiTest {
@@ -52,8 +54,12 @@ class FakeEchoSerialConnection : public SerialConnection {
   explicit FakeEchoSerialConnection(
       const std::string& port,
       int bitrate,
+      serial::DataBit databit,
+      serial::ParityBit parity,
+      serial::StopBit stopbit,
       const std::string& owner_extension_id)
-      : SerialConnection(port, bitrate, owner_extension_id),
+      : SerialConnection(port, bitrate, databit, parity, stopbit,
+                        owner_extension_id),
         opened_(true) {
     Flush();
     opened_ = false;
@@ -118,9 +124,13 @@ class FakeSerialOpenFunction : public SerialOpenFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       int bitrate,
+      serial::DataBit databit,
+      serial::ParityBit parity,
+      serial::StopBit stopbit,
       const std::string& owner_extension_id) OVERRIDE {
     FakeEchoSerialConnection* serial_connection =
-        new FakeEchoSerialConnection(port, bitrate, owner_extension_id);
+        new FakeEchoSerialConnection(port, bitrate, databit, parity, stopbit,
+                                     owner_extension_id);
     EXPECT_CALL(*serial_connection, GetControlSignals(_)).
         Times(1).WillOnce(Return(true));
     EXPECT_CALL(*serial_connection, SetControlSignals(_)).
