@@ -44,12 +44,18 @@ UI_EXPORT gfx::Size DIPToScreenSize(const gfx::Size& dip_size);
 // GetSystemMetrics for the given |metric|, then converts the result to DIP.
 UI_EXPORT int GetSystemMetricsInDIP(int metric);
 
-// The OS secretly scales apps that are not DPIAware. This is not visible
-// through standard OS calls like GetWindowPos(), or through GetDPIScale().
+// Sometimes the OS secretly scales apps that are not DPIAware. This is not
+// visible through standard OS calls like GetWindowPos(), or through
+// GetDPIScale().
 // Returns the scale factor of the display, where 96 DPI is 1.0.
 // (Avoid this function... use GetDPIScale() instead.)
 // TODO(girard): Remove this once DPIAware is enabled - http://crbug.com/149881
 UI_EXPORT double GetUndocumentedDPIScale();
+
+// Win7 and Win8 send touch events scaled according to the current DPI
+// scaling. Win8.1 corrects this, and sends touch events in DPI units.
+// This function returns the appropriate scaling factor for touch events.
+UI_EXPORT double GetUndocumentedDPITouchScale();
 
 }  // namespace win
 

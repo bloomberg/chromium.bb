@@ -2068,9 +2068,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       if (touch_event_type != ui::ET_UNKNOWN) {
         POINT point;
         point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
-            ui::win::GetUndocumentedDPIScale();
+            ui::win::GetUndocumentedDPITouchScale();
         point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
-            ui::win::GetUndocumentedDPIScale();
+            ui::win::GetUndocumentedDPITouchScale();
 
         ScreenToClient(hwnd(), &point);
 

@@ -143,8 +143,10 @@ LRESULT HWNDSubclass::OnWndProc(HWND hwnd,
     if (GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param), 1,
                                  &point, sizeof(TOUCHINPUT))) {
       POINT touch_location = {
-        TOUCH_COORD_TO_PIXEL(point.x) / ui::win::GetUndocumentedDPIScale(),
-        TOUCH_COORD_TO_PIXEL(point.y) / ui::win::GetUndocumentedDPIScale()};
+          TOUCH_COORD_TO_PIXEL(point.x) /
+          ui::win::GetUndocumentedDPITouchScale(),
+          TOUCH_COORD_TO_PIXEL(point.y) /
+          ui::win::GetUndocumentedDPITouchScale()};
       HWND actual_target = WindowFromPoint(touch_location);
       if (actual_target != hwnd) {
         return SendMessage(actual_target, message, w_param, l_param);

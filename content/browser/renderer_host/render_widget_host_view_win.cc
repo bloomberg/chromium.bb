@@ -2169,18 +2169,20 @@ bool WebTouchState::UpdateTouchPoint(
     WebKit::WebTouchPoint* touch_point,
     TOUCHINPUT* touch_input) {
   CPoint coordinates(
-    TOUCH_COORD_TO_PIXEL(touch_input->x) / ui::win::GetUndocumentedDPIScale(),
-    TOUCH_COORD_TO_PIXEL(touch_input->y) / ui::win::GetUndocumentedDPIScale());
+      TOUCH_COORD_TO_PIXEL(touch_input->x) /
+      ui::win::GetUndocumentedDPITouchScale(),
+      TOUCH_COORD_TO_PIXEL(touch_input->y) /
+      ui::win::GetUndocumentedDPITouchScale());
   int radius_x = 1;
   int radius_y = 1;
   if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
     // Some touch drivers send a contact area of "-1", yet flag it as valid.
     radius_x = std::max(1,
         static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cxContact) /
-                         ui::win::GetUndocumentedDPIScale()));
+                         ui::win::GetUndocumentedDPITouchScale()));
     radius_y = std::max(1,
         static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cyContact) /
-                         ui::win::GetUndocumentedDPIScale()));
+                         ui::win::GetUndocumentedDPITouchScale()));
   }
 
   // Detect and exclude stationary moves.
@@ -2243,8 +2245,10 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
   if (total == 1 && (points[0].dwFlags & TOUCHEVENTF_DOWN)) {
     pointer_down_context_ = true;
     last_touch_location_ = gfx::Point(
-        TOUCH_COORD_TO_PIXEL(points[0].x) / ui::win::GetUndocumentedDPIScale(),
-        TOUCH_COORD_TO_PIXEL(points[0].y) / ui::win::GetUndocumentedDPIScale());
+        TOUCH_COORD_TO_PIXEL(points[0].x) /
+        ui::win::GetUndocumentedDPITouchScale(),
+        TOUCH_COORD_TO_PIXEL(points[0].y) /
+        ui::win::GetUndocumentedDPITouchScale());
   }
 
   bool should_forward = render_widget_host_->ShouldForwardTouchEvent() &&

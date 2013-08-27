@@ -7,6 +7,7 @@
 #include <windows.h>
 #include "base/command_line.h"
 #include "base/win/scoped_hdc.h"
+#include "base/win/windows_version.h"
 #include "ui/base/layout.h"
 #include "base/win/registry.h"
 #include "ui/base/ui_base_switches.h"
@@ -161,6 +162,15 @@ double GetUndocumentedDPIScale() {
   }
   return scale;
 }
+
+
+double GetUndocumentedDPITouchScale() {
+  static double scale =
+      (base::win::GetVersion() < base::win::VERSION_WIN8_1) ?
+      GetUndocumentedDPIScale() : 1.0;
+  return scale;
+}
+
 
 }  // namespace win
 
