@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -16,8 +15,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
@@ -277,8 +277,7 @@ class PrerenderTest : public testing::Test {
   static const int kDefaultChildId = -1;
   static const int kDefaultRenderViewRouteId = -1;
 
-  PrerenderTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                    prerender_manager_(new UnitTestPrerenderManager(
+  PrerenderTest() : prerender_manager_(new UnitTestPrerenderManager(
                         &profile_, prerender_tracker())),
                     prerender_link_manager_(
                         new PrerenderLinkManager(prerender_manager_.get())),
@@ -347,9 +346,8 @@ class PrerenderTest : public testing::Test {
   }
 
   // Needed to pass PrerenderManager's DCHECKs.
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
   scoped_ptr<UnitTestPrerenderManager> prerender_manager_;
   scoped_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;

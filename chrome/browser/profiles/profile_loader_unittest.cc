@@ -12,9 +12,18 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_loader.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -69,8 +78,30 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 MockCallback::MockCallback() {}
 MockCallback::~MockCallback() {}
 
-TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
-  TestingProfile profile;
+class ProfileLoaderTest : public testing::Test {
+ protected:
+  static void SetUpTestCase() {
+#if defined(OS_CHROMEOS)
+    // Needed to handle http://crbug.com/119175.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableZeroBrowsersOpenForTests);
+#endif  // defined(OS_CHROMEOS)
+    message_center::MessageCenter::Initialize();
+  }
+
+  static void TearDownTestCase() {
+    message_center::MessageCenter::Shutdown();
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(profile_manager.SetUp());
+  TestingProfile* profile =
+      profile_manager.CreateTestingProfile("TestProfile");
   base::FilePath fake_profile_path_1 =
       base::FilePath::FromUTF8Unsafe("fake/profile 1");
   base::FilePath fake_profile_path_2 =
@@ -90,7 +121,7 @@ TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
   // path_2 loads after the first request.
   EXPECT_CALL(loader, GetProfileByPath(fake_profile_path_2))
       .WillOnce(Return(static_cast<Profile*>(NULL)))
-      .WillRepeatedly(Return(&profile));
+      .WillRepeatedly(Return(profile));
   EXPECT_CALL(loader,
               CreateProfileAsync(fake_profile_path_2, _, _, _, std::string()))
       .WillRepeatedly(WithArgs<0, 1>(
@@ -102,7 +133,7 @@ TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
   // path_2_load is called both times.
   StrictMock<MockCallback>* path_1_load = new StrictMock<MockCallback>();
   StrictMock<MockCallback>* path_2_load = new StrictMock<MockCallback>();
-  EXPECT_CALL(*path_2_load, Run(&profile))
+  EXPECT_CALL(*path_2_load, Run(profile))
       .Times(2);
 
   // Try to load path_1.
@@ -115,9 +146,9 @@ TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
       fake_profile_path_2, base::Bind(&MockCallback::Run, path_2_load));
 
   // Finish the load request for path_1, then for path_2.
-  loader.RunCreateCallback(fake_profile_path_1, &profile,
+  loader.RunCreateCallback(fake_profile_path_1, profile,
                            Profile::CREATE_STATUS_INITIALIZED);
-  loader.RunCreateCallback(fake_profile_path_2, &profile,
+  loader.RunCreateCallback(fake_profile_path_2, profile,
                            Profile::CREATE_STATUS_INITIALIZED);
   EXPECT_FALSE(loader.IsAnyProfileLoading());
 

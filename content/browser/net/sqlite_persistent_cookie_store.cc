@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -28,6 +29,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -1194,28 +1196,60 @@ SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   // a reference if the background runner has not run Close() yet.
 }
 
-net::CookieStore* CreatePersistentCookieStore(
+CookieStoreConfig::CookieStoreConfig(
     const base::FilePath& path,
-    bool restore_old_session_cookies,
+    SessionCookieMode session_cookie_mode,
     quota::SpecialStoragePolicy* storage_policy,
-    net::CookieMonster::Delegate* cookie_monster_delegate) {
+    net::CookieMonsterDelegate* cookie_delegate)
+  : path(path),
+    session_cookie_mode(session_cookie_mode),
+    storage_policy(storage_policy),
+    cookie_delegate(cookie_delegate) {
+  CHECK(!path.empty() || session_cookie_mode == EPHEMERAL_SESSION_COOKIES);
+}
+
+CookieStoreConfig::CookieStoreConfig()
+  : session_cookie_mode(EPHEMERAL_SESSION_COOKIES) {
+  // Default to an in-memory cookie store.
+}
+
+CookieStoreConfig::~CookieStoreConfig() {
+}
+
+net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
+  if (config.path.empty()) {
+    return new net::CookieMonster(NULL, config.cookie_delegate);
+  }
+
   SQLitePersistentCookieStore* persistent_store =
       new SQLitePersistentCookieStore(
-          path,
+          config.path,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
               BrowserThread::GetBlockingPool()->GetSequenceToken()),
-          restore_old_session_cookies,
-          storage_policy);
+          (config.session_cookie_mode ==
+           CookieStoreConfig::RESTORED_SESSION_COOKIES),
+          config.storage_policy);
   net::CookieMonster* cookie_monster =
-      new net::CookieMonster(persistent_store, cookie_monster_delegate);
+      new net::CookieMonster(persistent_store, config.cookie_delegate);
+  if ((config.session_cookie_mode ==
+       CookieStoreConfig::PERSISTANT_SESSION_COOKIES) ||
+      (config.session_cookie_mode ==
+       CookieStoreConfig::RESTORED_SESSION_COOKIES)) {
+    cookie_monster->SetPersistSessionCookies(true);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFileCookies)) {
+    cookie_monster->SetEnableFileScheme(true);
+  }
 
   const std::string cookie_priority_experiment_group =
       base::FieldTrialList::FindFullName("CookieRetentionPriorityStudy");
   cookie_monster->SetPriorityAwareGarbageCollection(
       cookie_priority_experiment_group == "ExperimentOn");
 
-  return cookie_monster;
+ return cookie_monster;
 }
 
 }  // namespace content

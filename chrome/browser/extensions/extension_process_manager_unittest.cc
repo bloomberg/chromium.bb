@@ -7,6 +7,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -34,6 +35,7 @@ TEST_F(ExtensionProcessManagerTest, ProcessGrouping) {
   // Extensions in different profiles should always be different SiteInstances.
   // Note: we don't initialize these, since we're not testing that
   // functionality.  This means we can get away with a NULL UserScriptMaster.
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile1;
   scoped_ptr<ExtensionProcessManager> manager1(
       ExtensionProcessManager::Create(&profile1));

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -207,34 +208,23 @@ class SuggestionsSourceStub : public SuggestionsSource {
 };
 
 class SuggestionsCombinerTest : public testing::Test {
- public:
-  SuggestionsCombinerTest() {
-  }
-
  protected:
-  Profile* profile_;
-  SuggestionsHandler* suggestions_handler_;
-  SuggestionsCombiner* combiner_;
+  virtual void SetUp() {
+    thread_bundle_.reset(new content::TestBrowserThreadBundle());
+    profile_.reset(new TestingProfile());
+    suggestions_handler_.reset(new SuggestionsHandler());
+    Reset();
+  }
 
   void Reset() {
-    delete combiner_;
-    combiner_ = new SuggestionsCombiner(suggestions_handler_, profile_);
+    combiner_.reset(
+        new SuggestionsCombiner(suggestions_handler_.get(), profile_.get()));
   }
 
- private:
-  virtual void SetUp() {
-    profile_ = new TestingProfile();
-    suggestions_handler_ = new SuggestionsHandler();
-    combiner_ = new SuggestionsCombiner(suggestions_handler_, profile_);
-  }
-
-  virtual void TearDown() {
-    delete combiner_;
-    delete suggestions_handler_;
-    delete profile_;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionsCombinerTest);
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  scoped_ptr<Profile> profile_;
+  scoped_ptr<SuggestionsHandler> suggestions_handler_;
+  scoped_ptr<SuggestionsCombiner> combiner_;
 };
 
 TEST_F(SuggestionsCombinerTest, NoSource) {

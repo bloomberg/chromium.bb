@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -20,7 +20,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/blob_storage_controller.h"
@@ -42,11 +42,6 @@ const char kFakeContentType[] = "fake/type";
 }  // namespace
 
 class FileAPIMessageFilterTest : public testing::Test {
- public:
-  FileAPIMessageFilterTest()
-      : io_browser_thread_(BrowserThread::IO, &message_loop_) {
-  }
-
  protected:
   virtual void SetUp() OVERRIDE {
     file_system_context_ =
@@ -72,7 +67,7 @@ class FileAPIMessageFilterTest : public testing::Test {
         stream_context_);
 
     // Complete initialization.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Tests via OnMessageReceived(const IPC::Message&). The channel proxy calls
@@ -84,8 +79,7 @@ class FileAPIMessageFilterTest : public testing::Test {
     return casted_filter->OnMessageReceived(message);
   }
 
-  base::MessageLoop message_loop_;
-  TestBrowserThread io_browser_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 
   TestBrowserContext browser_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
@@ -134,7 +128,7 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   filter->OnChannelConnected(0);
 
   // Complete initialization.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   IPC::ChannelProxy::MessageFilter* casted_filter =
       static_cast<IPC::ChannelProxy::MessageFilter*>(filter.get());
@@ -148,7 +142,7 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   filter->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
@@ -170,7 +164,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelConnected(1);
 
   // Complete initialization.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   IPC::ChannelProxy::MessageFilter* casted_filter =
       static_cast<IPC::ChannelProxy::MessageFilter*>(filter1.get());
@@ -184,7 +178,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
@@ -227,7 +221,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   EXPECT_EQ(0, bytes_read);
 
   // Run loop to finish transfer.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(Stream::STREAM_COMPLETE,
             stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
@@ -257,7 +251,7 @@ TEST_F(FileAPIMessageFilterTest, BuildNonEmptyStream) {
   EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;
@@ -305,7 +299,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;

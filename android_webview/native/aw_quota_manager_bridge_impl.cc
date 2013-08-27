@@ -208,8 +208,7 @@ void AwQuotaManagerBridgeImpl::DeleteOrigin(
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY,
-      GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
-      storage_partition->GetURLRequestContext());
+      GURL(base::android::ConvertJavaStringToUTF16(env, origin)));
 }
 
 void AwQuotaManagerBridgeImpl::GetOrigins(

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "url/gurl.h"
@@ -39,6 +40,7 @@ class ExtensionCookiesTest : public testing::Test {
 };
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile::Builder profile_builder;
   TestingProfile::Builder otr_profile_builder;
   otr_profile_builder.SetIncognito();
@@ -110,6 +112,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   ASSERT_TRUE(cookie2->expiration_date.get());
   EXPECT_EQ(10000, *cookie2->expiration_date);
 
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   base::ListValue* tab_ids_list = new base::ListValue();
   std::vector<int> tab_ids;

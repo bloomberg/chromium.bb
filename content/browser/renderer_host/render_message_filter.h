@@ -60,12 +60,12 @@ struct MediaLogEvent;
 }
 
 namespace net {
-class URLRequestContext;
 class URLRequestContextGetter;
 }
 
 namespace content {
 class BrowserContext;
+class CookieStoreMap;
 class DOMStorageContextWrapper;
 class MediaInternals;
 class PluginServiceImpl;
@@ -85,6 +85,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       PluginServiceImpl * plugin_service,
                       BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
+                      const CookieStoreMap& cookie_store_map,
                       RenderWidgetHelper* render_widget_helper,
                       media::AudioManager* audio_manager,
                       MediaInternals* media_internals,
@@ -104,11 +105,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   bool OffTheRecord() const;
 
   int render_process_id() const { return render_process_id_; }
-
-  // Returns the correct net::URLRequestContext depending on what type of url is
-  // given.
-  // Only call on the IO thread.
-  net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
   friend class BrowserThread;
@@ -271,6 +267,12 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // Map of schemes to the CookieStore instance that services those schemes.
+  // We store a clone of the CookieStoreMap passed in the constructor in
+  // order to avoid having 2 threads access the same object. Is is assumed
+  // that the source map never changes after we make the clone.
+  scoped_ptr<CookieStoreMap> cookie_store_map_;
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;

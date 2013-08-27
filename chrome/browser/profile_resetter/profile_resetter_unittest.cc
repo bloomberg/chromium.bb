@@ -25,7 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -176,17 +176,13 @@ class ConfigParserTest : public testing::Test {
 
   MOCK_METHOD0(Callback, void(void));
 
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   URLFetcherRequestListener request_listener_;
   net::FakeURLFetcherFactory factory_;
 };
 
 ConfigParserTest::ConfigParserTest()
-    : loop_(base::MessageLoop::TYPE_IO),
-      ui_thread_(content::BrowserThread::UI, &loop_),
-      io_thread_(content::BrowserThread::IO, &loop_),
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       factory_(NULL, base::Bind(&ConfigParserTest::CreateFakeURLFetcher,
                                 base::Unretained(this))) {
 }

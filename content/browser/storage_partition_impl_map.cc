@@ -18,6 +18,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/net/cookie_store_map.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream.h"
@@ -28,10 +29,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/blob/blob_url_request_job_factory.h"
@@ -346,6 +349,14 @@ void BlockingGarbageCollect(
       base::Bind(base::IgnoreResult(&base::DeleteFile), trash_directory, true));
 }
 
+void AttachDefaultCookieStoreOnIOThread(
+    const scoped_refptr<net::URLRequestContextGetter>& url_request_context,
+    const scoped_refptr<net::CookieStore> cookie_store) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  url_request_context->GetURLRequestContext()->set_cookie_store(
+      cookie_store.get());
+}
+
 }  // namespace
 
 // static
@@ -403,9 +414,16 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   base::FilePath partition_path =
       browser_context_->GetPath().Append(
           GetStoragePartitionPath(partition_domain, partition_name));
+
+  // Create the cookie stores.
+  scoped_ptr<CookieStoreMap> cookie_store_map(
+      CreateCookieStores(partition_path,
+                         in_memory,
+                         partition_domain.empty()));
+
   StoragePartitionImpl* partition =
       StoragePartitionImpl::Create(browser_context_, in_memory,
-                                   partition_path);
+                                   partition_path, cookie_store_map.Pass());
   partitions_[partition_config] = partition;
 
   ChromeBlobStorageContext* blob_storage_context =
@@ -568,8 +586,29 @@ void StoragePartitionImplMap::PostCreateInitialization(
     InitializeResourceContext(browser_context_);
   }
 
-  // Check first to avoid memory leak in unittests.
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+  // In unittests, BrowserThread::IO may not be valid which would yield a
+  // memory leak on a PostTask. Also, in content_unittests, the
+  // URLRequestContext is NULL.
+  //
+  // TODO(ajwong): Should default ContentBrowserClient return a non-null
+  // URLRequestContext?
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+      partition->GetURLRequestContext()) {
+    // The main URLRequestContextGetter was first created just before
+    // PostCreateInitialization() is called thus attaching the CookieStore here
+    // is guaranteed to occur before anyone else can see the main request
+    // context including the media request context.
+    //
+    // We pass the cookie store for chrome::kHttpScheme because we know this
+    // will return the default cookie store.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&AttachDefaultCookieStoreOnIOThread,
+                   make_scoped_refptr(partition->GetURLRequestContext()),
+                   make_scoped_refptr(
+                       partition->GetCookieStoreMap().GetForScheme(
+                           chrome::kHttpScheme))));
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
@@ -581,12 +620,55 @@ void StoragePartitionImplMap::PostCreateInitialization(
                    make_scoped_refptr(
                        browser_context_->GetSpecialStoragePolicy())));
 
-    // We do not call InitializeURLRequestContext() for media contexts because,
+    // We do not initialize the AppCacheService for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing
     // objects as their associated "normal" request context.  Thus, the previous
     // call serves to initialize the media request context for this storage
     // partition as well.
   }
+}
+
+scoped_ptr<CookieStoreMap> StoragePartitionImplMap::CreateCookieStores(
+    const base::FilePath& partition_path,
+    bool in_memory_partition,
+    bool is_default_partition) {
+  scoped_ptr<CookieStoreMap> cookie_store_map(new CookieStoreMap());
+  std::map<std::string, CookieStoreConfig> cookie_store_configs;
+  cookie_store_configs[BrowserContext::kDefaultCookieScheme] =
+      CookieStoreConfig();
+
+  browser_context_->OverrideCookieStoreConfigs(
+      partition_path, in_memory_partition, is_default_partition,
+      &cookie_store_configs);
+
+  for (std::map<std::string, CookieStoreConfig>::const_iterator it =
+           cookie_store_configs.begin();
+       it != cookie_store_configs.end();
+       ++it) {
+    scoped_refptr<net::CookieStore> cookie_store =
+        CreateCookieStore(it->second);
+    if (it->first == BrowserContext::kDefaultCookieScheme) {
+      cookie_store_map->SetForScheme(chrome::kHttpScheme, cookie_store);
+      cookie_store_map->SetForScheme(content::kHttpsScheme, cookie_store);
+
+      // If file scheme is enabled, share the same cookie store as http. This is
+      // legacy behavior. A complete valid, alternate approach is to use a
+      // different cookie database. See comments inside CookieMonster about
+      // separating out file cookies into their own CookieMonster.
+      if ((cookie_store_configs.find(chrome::kFileScheme) ==
+           cookie_store_configs.end())
+          && cookie_store->GetCookieMonster()->IsCookieableScheme(
+              chrome::kFileScheme)) {
+        cookie_store_map->SetForScheme(chrome::kFileScheme, cookie_store);
+      }
+    } else {
+      const char* schemes[] = { it->first.c_str() };
+      cookie_store->GetCookieMonster()->SetCookieableSchemes(schemes, 1);
+      cookie_store_map->SetForScheme(it->first, cookie_store);
+    }
+  }
+
+  return cookie_store_map.Pass();
 }
 
 }  // namespace content

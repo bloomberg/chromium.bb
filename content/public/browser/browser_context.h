@@ -38,10 +38,14 @@ class IndexedDBContext;
 class ResourceContext;
 class SiteInstance;
 class StoragePartition;
+struct CookieStoreConfig;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
 // thread.
+//
+// TODO(jam): Pure virtual methods should be converted to ones with empty or
+// trivial default implementations.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
@@ -71,8 +75,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       scoped_ptr<base::hash_set<base::FilePath> > active_paths,
       const base::Closure& done);
 
-  // DON'T USE THIS. GetDefaultStoragePartition() is going away.
-  // Use GetStoragePartition() instead. Ask ajwong@ if you have problems.
+  // Prefer GetStoragePartition() or GetStoragePartitionForSite() above. Only
+  // use this if it is 100% certain that the cookie store, cache, etc., that
+  // is returned by this will be the correct one.
   static content::StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
@@ -96,7 +101,23 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual base::FilePath GetPath() const = 0;
 
   // Return whether this context is incognito. Default is false.
-  virtual bool IsOffTheRecord() const = 0;
+  virtual bool IsOffTheRecord() const;
+
+  // kDefaultCookieScheme is used in place of a scheme to specify the
+  // CookieStoreConfig for the http, https, and possibly file scheme.
+  //
+  // The http and https scheme must share a single cookie jar in order for
+  // the web to function properly. The legacy setup also has the file scheme
+  // share the same cookie jar when file cookies are enabled.
+  static const char kDefaultCookieScheme[];
+  typedef std::map<std::string, CookieStoreConfig> CookieSchemeMap;
+
+  // Allows embedder to change how the Cookie stores are configured.
+  virtual void OverrideCookieStoreConfigs(
+      const base::FilePath& partition_path,
+      bool in_memory_partition,
+      bool is_default_partition,
+      CookieSchemeMap* configs) {}
 
   // Returns the request context information associated with this context.  Call
   // this only on the UI thread, since it can send notifications that should

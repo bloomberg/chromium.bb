@@ -8,6 +8,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/net/cookie_store_map.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -109,8 +110,8 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
   EXPECT_EQ(1u, Size());
 
   TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      cache_path(), NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  StoragePartitionImpl sp(cache_path(), NULL, NULL, NULL, NULL, NULL, NULL,
+                          scoped_ptr<CookieStoreMap>(), NULL);
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearData, &sp, clear_cb.callback()));
   clear_cb.WaitForResult();

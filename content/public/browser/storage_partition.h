@@ -21,6 +21,7 @@ class FileSystemContext;
 }
 
 namespace net {
+class CookieStore;
 class URLRequestContextGetter;
 }
 
@@ -35,8 +36,9 @@ class DatabaseTracker;
 namespace content {
 
 class BrowserContext;
-class IndexedDBContext;
+class CookieStoreMap;
 class DOMStorageContext;
+class IndexedDBContext;
 
 // Defines what persistent state a child process can access.
 //
@@ -55,6 +57,8 @@ class StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
+  virtual net::CookieStore* GetCookieStoreForScheme(
+      const std::string& scheme) = 0;
 
   enum RemoveDataMask {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,
@@ -86,16 +90,9 @@ class StoragePartition {
   // inside this StoragePartition for the given |storage_origin|.
   // Note session dom storage is not cleared even if you specify
   // REMOVE_DATA_MASK_LOCAL_STORAGE.
-  //
-  // TODO(ajwong): Right now, the embedder may have some
-  // URLRequestContextGetter objects that the StoragePartition does not know
-  // about.  This will no longer be the case when we resolve
-  // http://crbug.com/159193. Remove |request_context_getter| when that bug
-  // is fixed.
   virtual void ClearDataForOrigin(uint32 remove_mask,
                                   uint32 quota_storage_remove_mask,
-                                  const GURL& storage_origin,
-                                  net::URLRequestContextGetter* rq_context) = 0;
+                                  const GURL& storage_origin) = 0;
 
   // Similar to ClearDataForOrigin(), but deletes all data out of the
   // StoragePartition rather than just the data related to this origin.

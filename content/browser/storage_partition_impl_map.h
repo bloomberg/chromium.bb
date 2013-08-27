@@ -118,6 +118,11 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   void PostCreateInitialization(StoragePartitionImpl* partition,
                                 bool in_memory);
 
+  scoped_ptr<CookieStoreMap> CreateCookieStores(
+      const base::FilePath& partition_path,
+      bool in_memory_partition,
+      bool is_default_partition);
+
   BrowserContext* browser_context_;  // Not Owned.
   scoped_refptr<base::SequencedTaskRunner> file_access_runner_;
   PartitionMap partitions_;

@@ -23,7 +23,7 @@ struct ChromeCookieDetails {
 
   const net::CanonicalCookie* cookie;
   bool removed;
-  net::CookieMonster::Delegate::ChangeCause cause;
+  net::CookieMonsterDelegate::ChangeCause cause;
 };
 
 #endif  // CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_

@@ -16,8 +16,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
@@ -121,9 +121,8 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
-    const base::FilePath& partition_path, net::CookieStore* cookie_store)
+    const base::FilePath& partition_path)
     : partition_path_(partition_path),
-      cookie_store_(cookie_store),
       proxy_config_service_(net::ProxyService::CreateSystemProxyConfigService(
           GetNetworkTaskRunner(),
           NULL /* Ignored on Android */)) {
@@ -169,7 +168,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
-  url_request_context_->set_cookie_store(cookie_store_);
 
   job_factory_ = CreateJobFactory(&protocol_handlers_);
   url_request_context_->set_job_factory(job_factory_.get());

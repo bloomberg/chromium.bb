@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -86,6 +87,7 @@ class ManagedUserSyncServiceTest : public ::testing::Test {
   MockChangeProcessor* change_processor() { return change_processor_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   ManagedUserSyncService* service_;
 

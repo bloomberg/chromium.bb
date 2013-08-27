@@ -299,15 +299,16 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 
 void SafeBrowsingService::InitURLRequestContextOnIOThread(
     net::URLRequestContextGetter* system_url_request_context_getter) {
+  using content::CookieStoreConfig;
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!url_request_context_.get());
 
   scoped_refptr<net::CookieStore> cookie_store(
-      content::CreatePersistentCookieStore(
-          CookieFilePath(),
-          false,
-          NULL,
-          NULL));
+      CreateCookieStore(
+          CookieStoreConfig(CookieFilePath(),
+                            CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+                            NULL, NULL)));
 
   url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.

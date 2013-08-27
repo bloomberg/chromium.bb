@@ -11,6 +11,9 @@ const base::FilePath::CharType kAppCacheDirname[] =
 const base::FilePath::CharType kPepperDataDirname[] =
     FILE_PATH_LITERAL("Pepper Data");
 
+const base::FilePath::CharType kCookieFilename[] =
+    FILE_PATH_LITERAL("Cookies");
+
 const char kBrowserPluginMimeType[] = "application/browser-plugin";
 
 const char kFlashPluginName[] = "Shockwave Flash";

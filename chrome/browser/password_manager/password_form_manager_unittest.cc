@@ -5,7 +5,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/password_form.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -78,8 +78,6 @@ class TestPasswordFormManager : public PasswordFormManager {
 
 class PasswordFormManagerTest : public testing::Test {
  public:
-  PasswordFormManagerTest() {
-  }
   virtual void SetUp() {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("http://accounts.google.com/a/Login");
@@ -96,11 +94,6 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.other_possible_usernames.push_back(
         ASCIIToUTF16("test2@gmail.com"));
-    profile_ = new TestingProfile();
-  }
-
-  virtual void TearDown() {
-    delete profile_;
   }
 
   PasswordForm* GetPendingCredentials(PasswordFormManager* p) {
@@ -141,7 +134,7 @@ class PasswordFormManagerTest : public testing::Test {
     return p->IgnoreResult(*form);
   }
 
-  Profile* profile() { return profile_; }
+  Profile* profile() { return &profile_; }
 
   PasswordForm* observed_form() { return &observed_form_; }
   PasswordForm* saved_match() { return &saved_match_; }
@@ -153,9 +146,10 @@ class PasswordFormManagerTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   PasswordForm observed_form_;
   PasswordForm saved_match_;
-  Profile* profile_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
@@ -337,8 +331,6 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
 }
 
 TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
-  // Need a MessageLoop for callbacks.
-  base::MessageLoop message_loop;
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       profile(), &TestPasswordStore::Create);
   scoped_refptr<TestPasswordStore> password_store =

@@ -21,6 +21,9 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
+#include "content/public/common/url_constants.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 
 namespace android_webview {
@@ -95,16 +98,11 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 }
 
 void AwBrowserContext::PreMainMessageLoopRun() {
-  cookie_store_ = content::CreatePersistentCookieStore(
-      GetPath().Append(FILE_PATH_LITERAL("Cookies")),
-      true,
-      NULL,
-      NULL);
-  cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
-  url_request_context_getter_ =
-      new AwURLRequestContextGetter(GetPath(), cookie_store_.get());
+  url_request_context_getter_ = new AwURLRequestContextGetter(GetPath());
 
-  DidCreateCookieMonster(cookie_store_->GetCookieMonster());
+  DidCreateCookieMonster(
+      GetDefaultStoragePartition(this)->GetCookieStoreForScheme(
+          chrome::kHttpScheme)->GetCookieMonster());
 
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
@@ -180,6 +178,22 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
 
 base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
+}
+
+void AwBrowserContext::OverrideCookieStoreConfigs(
+    const base::FilePath& partition_path,
+    bool in_memory_partition,
+    bool is_default_partition,
+    CookieSchemeMap* configs) {
+  using content::CookieStoreConfig;
+  configs->clear();
+  // By default session cookies are always restored. An Android application can
+  // control this policy by calling CookieManager.removeSessionCookie() when
+  // Activity.onCreate() is called with savedInstanceState == null.
+  (*configs)[content::BrowserContext::kDefaultCookieScheme] =
+      CookieStoreConfig(partition_path.Append(content::kCookieFilename),
+                        CookieStoreConfig::RESTORED_SESSION_COOKIES,
+                        NULL, NULL);
 }
 
 bool AwBrowserContext::IsOffTheRecord() const {

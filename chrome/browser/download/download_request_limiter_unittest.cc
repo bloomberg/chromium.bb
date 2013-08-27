@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
@@ -37,7 +38,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         &DownloadRequestLimiterTest::FakeCreate, base::Unretained(this));
     DownloadRequestInfoBarDelegate::SetCallbackForTesting(
         &fake_create_callback_);
-    content_settings_ = new HostContentSettingsMap(profile_.GetPrefs(), false);
+    content_settings_ = new HostContentSettingsMap(
+        Profile::FromBrowserContext(browser_context())->GetPrefs(), false);
     DownloadRequestLimiter::SetContentSettingsForTesting(
         content_settings_.get());
   }
@@ -139,7 +141,9 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
-  TestingProfile profile_;
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    return new TestingProfile();
+  }
 };
 
 TEST_F(DownloadRequestLimiterTest,

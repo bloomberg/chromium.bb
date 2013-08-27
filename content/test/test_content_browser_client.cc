@@ -8,7 +8,9 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/test/test_web_contents_view.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace content {
 
@@ -28,6 +30,13 @@ WebContentsViewPort* TestContentBrowserClient::OverrideCreateWebContentsView(
   *render_view_host_delegate_view = rv;
   return rv;
 #endif
+}
+
+net::URLRequestContextGetter* TestContentBrowserClient::CreateRequestContext(
+    BrowserContext* browser_context,
+    ProtocolHandlerMap* protocol_handlers) {
+  return new net::TestURLRequestContextGetter(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
 base::FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {

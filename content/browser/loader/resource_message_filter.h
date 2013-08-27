@@ -32,6 +32,7 @@ class ResourceContext;
 class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
  public:
   // Allows selecting the net::URLRequestContext used to service requests.
+  // TODO(ajwong): Delete class after http://crbug.com/159193 is resolved.
   class URLRequestContextSelector {
    public:
     URLRequestContextSelector() {}

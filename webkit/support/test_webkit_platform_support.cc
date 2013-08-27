@@ -96,8 +96,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   SetThemeEngine(NULL);
 #endif
 
-  net::CookieMonster::EnableFileScheme();
-
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
 }

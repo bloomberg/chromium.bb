@@ -192,6 +192,10 @@ class TestingProfile : public Profile {
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
+  virtual void OverrideCookieStoreConfigs(const base::FilePath& partition_path,
+                                          bool in_memory_partition,
+                                          bool is_default_partition,
+                                          CookieSchemeMap* configs) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
@@ -235,10 +239,6 @@ class TestingProfile : public Profile {
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  // TODO(ajwong): Remove this API in favor of directly retrieving the
-  // CookieStore from the StoragePartition after ExtensionURLRequestContext
-  // has been removed.
-  net::CookieMonster* GetCookieMonster();
 
   virtual PrefService* GetPrefs() OVERRIDE;
 
@@ -248,8 +248,6 @@ class TestingProfile : public Profile {
   virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
-  virtual net::URLRequestContextGetter*
-      GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,

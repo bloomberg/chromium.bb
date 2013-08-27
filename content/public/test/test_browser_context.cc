@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/test/null_task_runner.h"
+#include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/mock_resource_context.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -70,10 +72,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  if (!request_context_.get()) {
-    request_context_ = new TestContextURLRequestContextGetter();
-  }
-  return request_context_.get();
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
@@ -109,8 +108,7 @@ void TestBrowserContext::RequestMIDISysExPermission(
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
-    resource_context_.reset(new MockResourceContext(
-        GetRequestContext()->GetURLRequestContext()));
+    resource_context_.reset(new MockResourceContext());
   return resource_context_.get();
 }
 

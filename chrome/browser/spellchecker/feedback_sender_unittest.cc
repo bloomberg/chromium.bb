@@ -20,7 +20,7 @@
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +61,7 @@ int CountOccurences(const std::string& haystack, const std::string& needle) {
 // A test fixture to help keep tests simple.
 class FeedbackSenderTest : public testing::Test {
  public:
-  FeedbackSenderTest() : ui_thread_(content::BrowserThread::UI, &loop_) {
+  FeedbackSenderTest() {
     // The command-line switch and the field trial are temporary.
     // TODO(rouslan): Remove the command-line switch and the field trial.
     // http://crbug.com/247726
@@ -125,9 +125,8 @@ class FeedbackSenderTest : public testing::Test {
   scoped_ptr<spellcheck::FeedbackSender> feedback_;
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
   net::TestURLFetcherFactory fetchers_;

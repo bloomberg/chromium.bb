@@ -12,6 +12,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/net/cookie_store_map.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -31,12 +32,12 @@ class StoragePartitionImpl : public StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual DOMStorageContextWrapper* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
-
+  virtual net::CookieStore* GetCookieStoreForScheme(
+      const std::string& scheme) OVERRIDE;
   virtual void ClearDataForOrigin(
       uint32 remove_mask,
       uint32 quota_storage_remove_mask,
-      const GURL& storage_origin,
-      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+      const GURL& storage_origin) OVERRIDE;
   virtual void ClearDataForUnboundedRange(
       uint32 remove_mask,
       uint32 quota_storage_remove_mask) OVERRIDE;
@@ -47,6 +48,7 @@ class StoragePartitionImpl : public StoragePartition {
                                  const base::Closure& callback) OVERRIDE;
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
+  CONTENT_EXPORT const CookieStoreMap& GetCookieStoreMap();
 
   struct DataDeletionHelper;
   struct QuotaManagedDataDeletionHelper;
@@ -58,12 +60,14 @@ class StoragePartitionImpl : public StoragePartition {
   // The |partition_path| is the absolute path to the root of this
   // StoragePartition's on-disk storage.
   //
-  // If |in_memory| is true, the |partition_path| is (ab)used as a way of
+  // If |in_memory| is true, the |profile_path| is (ab)used as a way of
   // distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
-  static StoragePartitionImpl* Create(BrowserContext* context,
-                                      bool in_memory,
-                                      const base::FilePath& profile_path);
+  static StoragePartitionImpl* Create(
+      BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& profile_path,
+      scoped_ptr<CookieStoreMap> cookie_store_map);
 
   // Quota managed data uses a different bitmask for types than
   // StoragePartition uses. This method generates that mask.
@@ -77,12 +81,13 @@ class StoragePartitionImpl : public StoragePartition {
       webkit_database::DatabaseTracker* database_tracker,
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
+      scoped_ptr<CookieStoreMap> cookie_store_map,
       WebRTCIdentityStore* webrtc_identity_store);
 
+  // Use an empty |remove_origin| to delete data from all origins.
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
                      const GURL& remove_origin,
-                     net::URLRequestContextGetter* rq_context,
                      const base::Time begin,
                      const base::Time end,
                      const base::Closure& callback);
@@ -112,6 +117,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_ptr<CookieStoreMap> cookie_store_map_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);

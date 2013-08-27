@@ -33,6 +33,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
@@ -182,13 +183,14 @@ class MockURLRequestContextSelector
 class ForwardingFilter : public ResourceMessageFilter {
  public:
   explicit ForwardingFilter(IPC::Sender* dest,
-                            ResourceContext* resource_context)
+                            ResourceContext* resource_context,
+                            net::URLRequestContextGetter* request_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
         PROCESS_TYPE_RENDERER,
         resource_context, NULL, NULL, NULL,
         new MockURLRequestContextSelector(
-            resource_context->GetRequestContext())),
+            request_context->GetURLRequestContext())),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
   }
@@ -533,7 +535,8 @@ class ResourceDispatcherHostTest : public testing::Test,
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     message_loop_.RunUntilIdle();
     filter_ = new ForwardingFilter(
-        this, browser_context_->GetResourceContext());
+        this, browser_context_->GetResourceContext(),
+        browser_context_->GetRequestContext());
   }
 
   virtual ~ResourceDispatcherHostTest() {
@@ -1050,8 +1053,9 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
 // pending and some canceled.
 class TestFilter : public ForwardingFilter {
  public:
-  explicit TestFilter(ResourceContext* resource_context)
-      : ForwardingFilter(NULL, resource_context),
+  explicit TestFilter(ResourceContext* resource_context,
+                      net::URLRequestContextGetter* url_request_context)
+      : ForwardingFilter(NULL, resource_context, url_request_context),
         has_canceled_(false),
         received_after_canceled_(0) {
   }
@@ -1075,7 +1079,8 @@ class TestFilter : public ForwardingFilter {
 // Tests CancelRequestsForProcess
 TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   scoped_refptr<TestFilter> test_filter = new TestFilter(
-      browser_context_->GetResourceContext());
+      browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   // request 1 goes to the test delegate
   ResourceHostMsg_Request request = CreateResourceRequest(
@@ -1218,7 +1223,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   host_.BlockRequestsForRoute(second_filter->child_id(), 0);
 
@@ -1255,7 +1261,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   host_.BlockRequestsForRoute(filter_->child_id(), 1);
   host_.BlockRequestsForRoute(filter_->child_id(), 2);
@@ -1322,7 +1329,8 @@ TEST_F(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   // Saturate the number of outstanding requests for our process.
   for (size_t i = 0; i < kMaxRequests; ++i) {
@@ -1386,9 +1394,11 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 
   // Needed to emulate additional processes.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
   scoped_refptr<ForwardingFilter> third_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   // Saturate the number of outstanding requests for our process.
   for (size_t i = 0; i < kMaxRequestsPerProcess; ++i) {
@@ -1728,7 +1738,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   int new_render_view_id = 1;
   int new_request_id = 2;
@@ -1789,7 +1800,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
-      this, browser_context_->GetResourceContext());
+      this, browser_context_->GetResourceContext(),
+      browser_context_->GetRequestContext());
 
   int new_render_view_id = 1;
   int new_request_id = 2;

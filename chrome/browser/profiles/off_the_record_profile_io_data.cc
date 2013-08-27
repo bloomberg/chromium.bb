@@ -85,18 +85,6 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
 }
 
 scoped_refptr<ChromeURLRequestContextGetter>
-OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
-  if (!extensions_request_context_getter_.get()) {
-    extensions_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
-            profile_, io_data_);
-  }
-  return extensions_request_context_getter_;
-}
-
-scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
     const base::FilePath& partition_path,
     bool in_memory) const {
@@ -203,9 +191,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
 
-  main_context->set_cookie_store(new net::CookieMonster(
-      NULL, profile_params->cookie_monster_delegate.get()));
-
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
   net::HttpNetworkSession::Params network_session_params;
@@ -230,52 +215,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       network_delegate(),
       ftp_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
-
-#if defined(ENABLE_EXTENSIONS)
-  InitializeExtensionsRequestContext(profile_params);
-#endif
-}
-
-void OffTheRecordProfileIOData::
-    InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
-  ChromeURLRequestContext* extensions_context = extensions_request_context();
-
-  IOThread* const io_thread = profile_params->io_thread;
-  IOThread::Globals* const io_thread_globals = io_thread->globals();
-
-  ApplyProfileParamsToContext(extensions_context);
-
-  extensions_context->set_transport_security_state(transport_security_state());
-
-  extensions_context->set_net_log(io_thread->net_log());
-
-  extensions_context->set_throttler_manager(
-      io_thread_globals->throttler_manager.get());
-
-  // All we care about for extensions is the cookie store. For incognito, we
-  // use a non-persistent cookie store.
-  net::CookieMonster* extensions_cookie_store =
-      new net::CookieMonster(NULL, NULL);
-  // Enable cookies for devtools and extension URLs.
-  const char* schemes[] = {chrome::kChromeDevToolsScheme,
-                           extensions::kExtensionScheme};
-  extensions_cookie_store->SetCookieableSchemes(schemes, 2);
-  extensions_context->set_cookie_store(extensions_cookie_store);
-
-  scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
-      new net::URLRequestJobFactoryImpl());
-  // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
-  // Without a network_delegate, this protocol handler will never
-  // handle file: requests, but as a side effect it makes
-  // job_factory::IsHandledProtocol return true, which prevents attempts to
-  // handle the protocol externally. We pass NULL in to
-  // SetUpJobFactoryDefaults() to get this effect.
-  extensions_job_factory_ = SetUpJobFactoryDefaults(
-      extensions_job_factory.Pass(),
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(),
-      NULL,
-      ftp_factory_.get());
-  extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
 ChromeURLRequestContext*
@@ -289,11 +228,6 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
-
-  // Use a separate in-memory cookie store for the app.
-  // TODO(creis): We should have a cookie delegate for notifying the cookie
-  // extensions API, but we need to update it to understand isolated apps first.
-  context->SetCookieStore(new net::CookieMonster(NULL, NULL));
 
   // Use a separate in-memory cache for the app.
   net::HttpCache::BackendFactory* app_backend =

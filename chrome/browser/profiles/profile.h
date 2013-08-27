@@ -230,10 +230,6 @@ class Profile : public content::BrowserContext {
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  // Returns the request context used for extension-related requests.  This
-  // is only used for a separate cookie store currently.
-  virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
-
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 

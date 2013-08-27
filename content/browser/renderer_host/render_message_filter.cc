@@ -22,6 +22,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/net/cookie_store_map.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -84,8 +85,6 @@
 #if defined(OS_ANDROID)
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
-
-using net::CookieStore;
 
 namespace content {
 namespace {
@@ -292,6 +291,7 @@ RenderMessageFilter::RenderMessageFilter(
     PluginServiceImpl* plugin_service,
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
+    const CookieStoreMap& cookie_store_map,
     RenderWidgetHelper* render_widget_helper,
     media::AudioManager* audio_manager,
     MediaInternals* media_internals,
@@ -300,6 +300,7 @@ RenderMessageFilter::RenderMessageFilter(
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
       request_context_(request_context),
+      cookie_store_map_(cookie_store_map.Clone()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
@@ -541,9 +542,15 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
           url, first_party_for_cookies, cookie,
           resource_context_, render_process_id_, message.routing_id(),
           &options)) {
-    net::URLRequestContext* context = GetRequestContextForURL(url);
     // Pass a null callback since we don't care about when the 'set' completes.
-    context->cookie_store()->SetCookieWithOptionsAsync(
+    net::CookieStore* cookie_store =
+        cookie_store_map_->GetForScheme(url.scheme());
+
+    // Handle requests for non-cookieable schemes.
+    if (!cookie_store)
+      return;
+
+    cookie_store->SetCookieWithOptionsAsync(
         url, cookie, options, net::CookieMonster::SetCookiesCallback());
   }
 }
@@ -564,10 +571,15 @@ void RenderMessageFilter::OnGetCookies(const GURL& url,
   base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  net::CookieMonster* cookie_monster =
-      context->cookie_store()->GetCookieMonster();
-  cookie_monster->GetAllCookiesForURLAsync(
+  // Handle requests for non-cookieable schemes.
+  net::CookieStore* cookie_store = cookie_store_map_->GetForScheme(
+      url.scheme());
+  if (!cookie_store) {
+    SendGetCookiesResponse(reply_msg, std::string());
+    return;
+  }
+
+  cookie_store->GetCookieMonster()->GetAllCookiesForURLAsync(
       url, base::Bind(&RenderMessageFilter::CheckPolicyForCookies, this, url,
                       first_party_for_cookies, reply_msg));
 }
@@ -582,19 +594,24 @@ void RenderMessageFilter::OnGetRawCookies(
   // not targeted to an an external host like ChromeFrame.
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
+  //
+  // We check policy here to avoid sending back cookies that would not normally
+  // be applied to outbound requests for the given URL.  Since this cookie info
+  // is visible in the developer tools, it is helpful to make it match reality.
   if (!policy->CanReadRawCookies(render_process_id_) ||
       !policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
     SendGetRawCookiesResponse(reply_msg, net::CookieList());
     return;
   }
 
-  // We check policy here to avoid sending back cookies that would not normally
-  // be applied to outbound requests for the given URL.  Since this cookie info
-  // is visible in the developer tools, it is helpful to make it match reality.
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  net::CookieMonster* cookie_monster =
-      context->cookie_store()->GetCookieMonster();
-  cookie_monster->GetAllCookiesForURLAsync(
+  // Handle requests for non-cookieable schemes.
+  net::CookieStore* cookie_store =
+      cookie_store_map_->GetForScheme(url.scheme());
+  if (!cookie_store) {
+    SendGetRawCookiesResponse(reply_msg, net::CookieList());
+    return;
+  }
+  cookie_store->GetCookieMonster()->GetAllCookiesForURLAsync(
       url, base::Bind(&RenderMessageFilter::SendGetRawCookiesResponse,
                       this, reply_msg));
 }
@@ -606,8 +623,12 @@ void RenderMessageFilter::OnDeleteCookie(const GURL& url,
   if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
     return;
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->DeleteCookieAsync(url, cookie_name, base::Closure());
+  // Handle requests for non-cookieable schemes.
+  net::CookieStore* cookie_store =
+      cookie_store_map_->GetForScheme(url.scheme());
+  if (!cookie_store)
+    return;
+  cookie_store->DeleteCookieAsync(url, cookie_name, base::Closure());
 }
 
 void RenderMessageFilter::OnCookiesEnabled(
@@ -866,19 +887,6 @@ void RenderMessageFilter::OnAllocateSharedMemory(
       buffer_size, PeerHandle(), handle);
 }
 
-net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
-    const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  net::URLRequestContext* context =
-      GetContentClient()->browser()->OverrideRequestContextForURL(
-          url, resource_context_);
-  if (!context)
-    context = request_context_->GetURLRequestContext();
-
-  return context;
-}
-
 #if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
 void RenderMessageFilter::OnAllocTransportDIB(
     uint32 size, bool cache_in_browser, TransportDIB::Handle* handle) {
@@ -1025,14 +1033,15 @@ void RenderMessageFilter::CheckPolicyForCookies(
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg,
     const net::CookieList& cookie_list) {
-  net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
   if (GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, reply_msg->routing_id())) {
+    net::CookieStore* cookie_store =
+        cookie_store_map_->GetForScheme(url.scheme());
     // Gets the cookies from cookie store if allowed.
-    context->cookie_store()->GetCookiesWithOptionsAsync(
+    cookie_store->GetCookiesWithOptionsAsync(
         url, net::CookieOptions(),
         base::Bind(&RenderMessageFilter::SendGetCookiesResponse,
                    this, reply_msg));

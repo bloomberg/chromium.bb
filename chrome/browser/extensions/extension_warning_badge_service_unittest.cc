@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -66,6 +67,7 @@ const ExtensionWarning::WarningType warning_2 =
 // Check that no badge appears if it has been suppressed for a specific
 // warning.
 TEST(ExtensionWarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   TestExtensionWarningSet warnings(&profile);
   TestExtensionWarningBadgeService badge_service(&profile, &warnings);

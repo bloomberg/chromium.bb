@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -201,7 +202,6 @@ TEST_F(WalletSigninHelperTest, PassiveUserInfoFailedUserInfo) {
 
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
   EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue("gdToken"));
-  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(
@@ -212,9 +212,12 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
 
   net::CookieList cookie_list;
   cookie_list.push_back(*cookie);
+
+  net::CookieMonster* cookie_monster =
+      content::BrowserContext::GetDefaultStoragePartition(&browser_context_)->
+          GetCookieStoreForScheme(GetPassiveAuthUrl().scheme())->
+              GetCookieMonster();
   cookie_monster->InitializeFrom(cookie_list);
-  browser_context_.GetRequestContext()->GetURLRequestContext()
-      ->set_cookie_store(cookie_monster);
   signin_helper_->StartWalletCookieValueFetch();
   base::RunLoop().RunUntilIdle();
 }

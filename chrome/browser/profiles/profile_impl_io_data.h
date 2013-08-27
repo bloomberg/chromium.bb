@@ -36,17 +36,14 @@ class ProfileImplIOData : public ProfileIOData {
 
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(const base::FilePath& cookie_path,
-              const base::FilePath& server_bound_cert_path,
+    void Init(const base::FilePath& server_bound_cert_path,
               const base::FilePath& cache_path,
               int cache_max_size,
               const base::FilePath& media_cache_path,
               int media_cache_max_size,
-              const base::FilePath& extensions_cookie_path,
               const base::FilePath& profile_path,
               const base::FilePath& infinite_cache_path,
               chrome_browser_net::Predictor* predictor,
-              bool restore_old_session_cookies,
               quota::SpecialStoragePolicy* special_storage_policy);
 
     // These Create*ContextGetter() functions are only exposed because the
@@ -70,8 +67,6 @@ class ProfileImplIOData : public ProfileIOData {
     content::ResourceContext* GetResourceContextNoInit() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMediaRequestContextGetter() const;
-    scoped_refptr<ChromeURLRequestContextGetter>
-        GetExtensionsRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedMediaRequestContextGetter(
             const base::FilePath& partition_path,
@@ -129,15 +124,12 @@ class ProfileImplIOData : public ProfileIOData {
     ~LazyParams();
 
     // All of these parameters are intended to be read on the IO thread.
-    base::FilePath cookie_path;
     base::FilePath server_bound_cert_path;
     base::FilePath cache_path;
     int cache_max_size;
     base::FilePath media_cache_path;
     int media_cache_max_size;
-    base::FilePath extensions_cookie_path;
     base::FilePath infinite_cache_path;
-    bool restore_old_session_cookies;
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
 
@@ -150,8 +142,6 @@ class ProfileImplIOData : public ProfileIOData {
   virtual void InitializeInternal(
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE;
-  virtual void InitializeExtensionsRequestContext(
-      ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,

@@ -37,6 +37,7 @@
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -62,6 +63,7 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -109,38 +111,6 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   virtual ~QuittingHistoryDBTask() {}
 
   DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
-};
-
-class TestExtensionURLRequestContext : public net::URLRequestContext {
- public:
-  TestExtensionURLRequestContext() {
-    net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
-    const char* schemes[] = {extensions::kExtensionScheme};
-    cookie_monster->SetCookieableSchemes(schemes, 1);
-    set_cookie_store(cookie_monster);
-  }
-
-  virtual ~TestExtensionURLRequestContext() {}
-};
-
-class TestExtensionURLRequestContextGetter
-    : public net::URLRequestContextGetter {
- public:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    if (!context_.get())
-      context_.reset(new TestExtensionURLRequestContext());
-    return context_.get();
-  }
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  }
-
- protected:
-  virtual ~TestExtensionURLRequestContextGetter() {}
-
- private:
-  scoped_ptr<net::URLRequestContext> context_;
 };
 
 BrowserContextKeyedService* CreateTestDesktopNotificationService(
@@ -592,13 +562,6 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
   return extension_special_storage_policy_.get();
 }
 
-net::CookieMonster* TestingProfile::GetCookieMonster() {
-  if (!GetRequestContext())
-    return NULL;
-  return GetRequestContext()->GetURLRequestContext()->cookie_store()->
-      GetCookieMonster();
-}
-
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
@@ -643,6 +606,18 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return NULL;
 }
 
+void TestingProfile::OverrideCookieStoreConfigs(
+    const base::FilePath& partition_path,
+    bool in_memory_partition,
+    bool is_default_partition,
+    CookieSchemeMap* configs) {
+  // Force this to be in-memory.
+  chrome_browser_net::SetCookieStoreConfigs(
+      base::FilePath(), true, is_default_partition,
+      content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+      GetSpecialStoragePolicy(), NULL, configs);
+}
+
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
@@ -684,12 +659,6 @@ void TestingProfile::RequestMIDISysExPermission(
       const MIDISysExPermissionCallback& callback) {
   // Always reject requests for testing.
   callback.Run(false);
-}
-
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
-  if (!extensions_request_context_.get())
-    extensions_request_context_ = new TestExtensionURLRequestContextGetter();
-  return extensions_request_context_.get();
 }
 
 net::SSLConfigService* TestingProfile::GetSSLConfigService() {

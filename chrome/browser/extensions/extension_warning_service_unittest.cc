@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,6 +48,7 @@ const ExtensionWarning::WarningType warning_2 =
 // Check that inserting a warning triggers notifications, whereas inserting
 // the same warning again is silent.
 TEST(ExtensionWarningServiceTest, SetWarning) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   TestExtensionWarningService warning_service(&profile);
   MockObserver observer;
@@ -69,6 +71,7 @@ TEST(ExtensionWarningServiceTest, SetWarning) {
 // Check that ClearWarnings deletes exactly the specified warnings and
 // triggers notifications where appropriate.
 TEST(ExtensionWarningServiceTest, ClearWarnings) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   TestExtensionWarningService warning_service(&profile);
   MockObserver observer;

@@ -554,7 +554,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           NULL,
 #endif
           GetBrowserContext(),
-          GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
+          storage_partition_impl_->GetURLRequestContext(),
+          storage_partition_impl_->GetCookieStoreMap(),
           widget_helper_.get(),
           audio_manager,
           media_internals,

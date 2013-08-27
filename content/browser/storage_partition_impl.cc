@@ -9,6 +9,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/net/cookie_store_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -41,40 +43,6 @@ int GenerateQuotaClientMask(uint32 remove_mask) {
     quota_client_mask |= quota::QuotaClient::kIndexedDatabase;
 
   return quota_client_mask;
-}
-
-void OnClearedCookies(const base::Closure& callback, int num_deleted) {
-  // The final callback needs to happen from UI thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&OnClearedCookies, callback, num_deleted));
-    return;
-  }
-
-  callback.Run();
-}
-
-void ClearCookiesOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context,
-    const base::Time begin,
-    const base::Time end,
-    const GURL& remove_origin,
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieStore* cookie_store = rq_context->
-      GetURLRequestContext()->cookie_store();
-  if (remove_origin.is_empty()) {
-    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenAsync(
-        begin,
-        end,
-        base::Bind(&OnClearedCookies, callback));
-  } else {
-    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenForHostAsync(
-        begin,
-        end,
-        remove_origin, base::Bind(&OnClearedCookies, callback));
-  }
 }
 
 void OnQuotaManagedOriginDeleted(const GURL& origin,
@@ -248,7 +216,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
                            uint32 quota_storage_remove_mask,
                            const GURL& remove_origin,
                            const base::FilePath& path,
-                           net::URLRequestContextGetter* rq_context,
+                           CookieStoreMap* cookie_store_map,
                            DOMStorageContextWrapper* dom_storage_context,
                            quota::QuotaManager* quota_manager,
                            WebRTCIdentityStore* webrtc_identity_store,
@@ -284,6 +252,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
+    scoped_ptr<CookieStoreMap> cookie_store_map,
     WebRTCIdentityStore* webrtc_identity_store)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
@@ -292,7 +261,9 @@ StoragePartitionImpl::StoragePartitionImpl(
       database_tracker_(database_tracker),
       dom_storage_context_(dom_storage_context),
       indexed_db_context_(indexed_db_context),
-      webrtc_identity_store_(webrtc_identity_store) {}
+      cookie_store_map_(cookie_store_map.Pass()),
+      webrtc_identity_store_(webrtc_identity_store) {
+}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   // These message loop checks are just to avoid leaks in unittests.
@@ -316,7 +287,8 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 StoragePartitionImpl* StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
-    const base::FilePath& partition_path) {
+    const base::FilePath& partition_path,
+    scoped_ptr<CookieStoreMap> cookie_store_map) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -380,6 +352,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   database_tracker.get(),
                                   dom_storage_context.get(),
                                   indexed_db_context.get(),
+                                  cookie_store_map.Pass(),
                                   webrtc_identity_store.get());
 }
 
@@ -420,11 +393,15 @@ IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_.get();
 }
 
+net::CookieStore* StoragePartitionImpl::GetCookieStoreForScheme(
+    const std::string& scheme) {
+  return GetCookieStoreMap().GetForScheme(scheme);
+}
+
 void StoragePartitionImpl::ClearDataImpl(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
     const GURL& remove_origin,
-    net::URLRequestContextGetter* rq_context,
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
@@ -434,7 +411,7 @@ void StoragePartitionImpl::ClearDataImpl(
   // DataDeletionHelper::DecrementTaskCountOnUI().
   helper->ClearDataOnUIThread(
       remove_mask, quota_storage_remove_mask, remove_origin,
-      GetPath(), rq_context, dom_storage_context_, quota_manager_,
+      GetPath(), cookie_store_map_.get(), dom_storage_context_, quota_manager_,
       webrtc_identity_store_, begin, end);
 }
 
@@ -547,7 +524,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     uint32 quota_storage_remove_mask,
     const GURL& remove_origin,
     const base::FilePath& path,
-    net::URLRequestContextGetter* rq_context,
+    CookieStoreMap* cookie_store_map,
     DOMStorageContextWrapper* dom_storage_context,
     quota::QuotaManager* quota_manager,
     WebRTCIdentityStore* webrtc_identity_store,
@@ -563,11 +540,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   if (remove_mask & REMOVE_DATA_MASK_COOKIES) {
     // Handle the cookies.
     IncrementTaskCountOnUI();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearCookiesOnIOThread,
-                   make_scoped_refptr(rq_context), begin, end, remove_origin,
-                   decrement_callback));
+    cookie_store_map->DeleteCookies(remove_origin, begin, end,
+                                    decrement_callback);
   }
 
   if (remove_mask & REMOVE_DATA_MASK_INDEXEDDB ||
@@ -626,20 +600,17 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 void StoragePartitionImpl::ClearDataForOrigin(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
-    const GURL& storage_origin,
-    net::URLRequestContextGetter* request_context_getter) {
+    const GURL& storage_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                request_context_getter, base::Time(), base::Time::Max(),
-                base::Bind(&base::DoNothing));
+                base::Time(), base::Time::Max(), base::Bind(&base::DoNothing));
 }
 
 void StoragePartitionImpl::ClearDataForUnboundedRange(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(),
-                GetURLRequestContext(), base::Time(), base::Time::Max(),
-                base::Bind(&base::DoNothing));
+                base::Time(), base::Time::Max(), base::Bind(&base::DoNothing));
 }
 
 void StoragePartitionImpl::ClearDataForRange(uint32 remove_mask,
@@ -647,12 +618,16 @@ void StoragePartitionImpl::ClearDataForRange(uint32 remove_mask,
                                              const base::Time& begin,
                                              const base::Time& end,
                                              const base::Closure& callback) {
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(),
-                GetURLRequestContext(), begin, end, callback);
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), begin, end,
+                callback);
 }
 
 WebRTCIdentityStore* StoragePartitionImpl::GetWebRTCIdentityStore() {
   return webrtc_identity_store_.get();
+}
+
+const CookieStoreMap& StoragePartitionImpl::GetCookieStoreMap() {
+  return *cookie_store_map_;
 }
 
 void StoragePartitionImpl::SetURLRequestContext(
