@@ -640,6 +640,10 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Enables not sending touch events to renderer while scrolling.
+const char kNoTouchToRendererWhileScrolling[] =
+    "no-touch-to-renderer-while-scrolling";
+
 // Enables or disables history navigation in response to horizontal overscroll.
 // Set the value to '1' to enable the feature, and set to '0' to disable.
 // Defaults to enabled.
@@ -788,10 +792,6 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
-
-// Enables not sending touch events to renderer while scrolling.
-const char kNoTouchToRendererWhileScrolling[] =
-    "no-touch-to-renderer-while-scrolling";
 
 // Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
 // specify the specific trace categories to include (e.g.
