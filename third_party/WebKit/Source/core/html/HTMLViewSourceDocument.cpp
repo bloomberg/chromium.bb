@@ -69,21 +69,17 @@ void HTMLViewSourceDocument::createContainingTable()
     html->lazyAttach();
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(this);
     html->parserAppendChild(body);
-    body->lazyAttach();
 
     // Create a line gutter div that can be used to make sure the gutter extends down the height of the whole
     // document.
     RefPtr<HTMLDivElement> div = HTMLDivElement::create(this);
     div->setAttribute(classAttr, "webkit-line-gutter-backdrop");
     body->parserAppendChild(div);
-    div->lazyAttach();
 
     RefPtr<HTMLTableElement> table = HTMLTableElement::create(this);
     body->parserAppendChild(table);
-    table->lazyAttach();
     m_tbody = HTMLTableSectionElement::create(tbodyTag, this);
     table->parserAppendChild(m_tbody);
-    m_tbody->lazyAttach();
     m_current = m_tbody;
     m_lineNumber = 0;
 }
@@ -181,7 +177,6 @@ PassRefPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicStr
     RefPtr<HTMLElement> span = HTMLElement::create(spanTag, this);
     span->setAttribute(classAttr, className);
     m_current->parserAppendChild(span);
-    span->lazyAttach();
     return span.release();
 }
 
@@ -190,20 +185,17 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className)
     // Create a table row.
     RefPtr<HTMLTableRowElement> trow = HTMLTableRowElement::create(this);
     m_tbody->parserAppendChild(trow);
-    trow->lazyAttach();
 
     // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
     RefPtr<HTMLTableCellElement> td = HTMLTableCellElement::create(tdTag, this);
     td->setAttribute(classAttr, "webkit-line-number");
     td->setAttribute(valueAttr, String::number(++m_lineNumber));
     trow->parserAppendChild(td);
-    td->lazyAttach();
 
     // Create a second cell for the line contents
     td = HTMLTableCellElement::create(tdTag, this);
     td->setAttribute(classAttr, "webkit-line-content");
     trow->parserAppendChild(td);
-    td->lazyAttach();
     m_current = m_td = td;
 
 #ifdef DEBUG_LINE_NUMBERS
@@ -225,7 +217,6 @@ void HTMLViewSourceDocument::finishLine()
     if (!m_current->hasChildNodes()) {
         RefPtr<HTMLBRElement> br = HTMLBRElement::create(this);
         m_current->parserAppendChild(br);
-        br->lazyAttach();
     }
     m_current = m_tbody;
 }
@@ -251,7 +242,6 @@ void HTMLViewSourceDocument::addText(const String& text, const AtomicString& cla
         }
         RefPtr<Text> t = Text::create(this, substring);
         m_current->parserAppendChild(t);
-        t->lazyAttach();
         if (i < size - 1)
             finishLine();
     }
@@ -281,7 +271,6 @@ PassRefPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
     RefPtr<HTMLBaseElement> base = HTMLBaseElement::create(baseTag, this);
     base->setAttribute(hrefAttr, href);
     m_current->parserAppendChild(base);
-    base->lazyAttach();
     return base.release();
 }
 
@@ -301,7 +290,6 @@ PassRefPtr<Element> HTMLViewSourceDocument::addLink(const AtomicString& url, boo
     anchor->setAttribute(targetAttr, "_blank");
     anchor->setAttribute(hrefAttr, url);
     m_current->parserAppendChild(anchor);
-    anchor->lazyAttach();
     return anchor.release();
 }
 

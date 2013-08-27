@@ -373,7 +373,7 @@ void XMLDocumentParser::enterText()
     ASSERT(m_bufferedText.size() == 0);
     ASSERT(!m_leafTextNode);
     m_leafTextNode = Text::create(m_currentNode->document(), "");
-    m_currentNode->parserAppendChild(m_leafTextNode.get());
+    m_currentNode->parserAppendChild(m_leafTextNode.get(), DeprecatedAttachNow);
 }
 
 void XMLDocumentParser::exitText()
@@ -384,14 +384,8 @@ void XMLDocumentParser::exitText()
     if (!m_leafTextNode)
         return;
 
-    m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()));
-    Vector<xmlChar> empty;
-    m_bufferedText.swap(empty);
-
-    if (m_view && m_leafTextNode->parentNode() && m_leafTextNode->parentNode()->attached()
-        && !m_leafTextNode->attached())
-        m_leafTextNode->attach();
-
+    m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()), DeprecatedAttachNow);
+    m_bufferedText.clear();
     m_leafTextNode = 0;
 }
 
@@ -991,16 +985,13 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     if (scriptLoader)
         m_scriptStartPosition = textPosition();
 
-    m_currentNode->parserAppendChild(newElement.get());
+    m_currentNode->parserAppendChild(newElement.get(), DeprecatedAttachNow);
 
     const ContainerNode* currentNode = m_currentNode;
     if (newElement->hasTagName(HTMLNames::templateTag))
         pushCurrentNode(toHTMLTemplateElement(newElement.get())->content());
     else
         pushCurrentNode(newElement.get());
-
-    if (m_view && currentNode->attached() && !newElement->attached())
-        newElement->attach();
 
     if (isHTMLHtmlElement(newElement.get()))
         toHTMLHtmlElement(newElement.get())->insertedByParser();
@@ -1148,9 +1139,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     pi->setCreatedByParser(true);
 
-    m_currentNode->parserAppendChild(pi.get());
-    if (m_view && !pi->attached())
-        pi->attach();
+    m_currentNode->parserAppendChild(pi.get(), DeprecatedAttachNow);
 
     pi->finishParsingChildren();
 
@@ -1174,9 +1163,7 @@ void XMLDocumentParser::cdataBlock(const String& text)
     exitText();
 
     RefPtr<CDATASection> newNode = CDATASection::create(m_currentNode->document(), text);
-    m_currentNode->parserAppendChild(newNode.get());
-    if (m_view && !newNode->attached())
-        newNode->attach();
+    m_currentNode->parserAppendChild(newNode.get(), DeprecatedAttachNow);
 }
 
 void XMLDocumentParser::comment(const String& text)
@@ -1192,9 +1179,7 @@ void XMLDocumentParser::comment(const String& text)
     exitText();
 
     RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), text);
-    m_currentNode->parserAppendChild(newNode.get());
-    if (m_view && !newNode->attached())
-        newNode->attach();
+    m_currentNode->parserAppendChild(newNode.get(), DeprecatedAttachNow);
 }
 
 enum StandaloneInfo {
@@ -1237,7 +1222,7 @@ void XMLDocumentParser::internalSubset(const String& name, const String& externa
     }
 
     if (document())
-        document()->parserAppendChild(DocumentType::create(document(), name, externalID, systemID));
+        document()->parserAppendChild(DocumentType::create(document(), name, externalID, systemID), DeprecatedAttachNow);
 }
 
 static inline XMLDocumentParser* getParser(void* closure)

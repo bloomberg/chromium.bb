@@ -87,11 +87,7 @@ static inline bool isAllWhitespace(const String& string)
     return string.isAllSpecialCharacters<isHTMLSpace>();
 }
 
-// The |lazyAttach| parameter to this function exists for historical reasons.
-// There used to be two code paths, one that used lazyAttach and one that
-// didn't. We should make the two code paths consistent and either use
-// lazyAttach or non-lazyAttach, but we wanted to make that change separately.
-static inline void insert(HTMLConstructionSiteTask& task, bool lazyAttach)
+static inline void insert(HTMLConstructionSiteTask& task, AttachBehavior attachBehavior = AttachLazily)
 {
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
@@ -100,26 +96,16 @@ static inline void insert(HTMLConstructionSiteTask& task, bool lazyAttach)
         parent->parserRemoveChild(task.child.get());
 
     if (task.nextChild)
-        task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
+        task.parent->parserInsertBefore(task.child.get(), task.nextChild.get(), attachBehavior);
     else
-        task.parent->parserAppendChild(task.child.get());
-
-    // JavaScript run from beforeload (or DOM Mutation or event handlers)
-    // might have removed the child, in which case we should not attach it.
-
-    if (task.child->parentNode() && task.parent->attached() && !task.child->attached()) {
-        if (lazyAttach)
-            task.child->lazyAttach();
-        else
-            task.child->attach();
-    }
+        task.parent->parserAppendChild(task.child.get(), attachBehavior);
 }
 
 static inline void executeInsertTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
 
-    insert(task, false);
+    insert(task, DeprecatedAttachNow);
 
     task.child->beginParsingChildren();
 
@@ -135,16 +121,13 @@ static inline void executeReparentTask(HTMLConstructionSiteTask& task)
         parent->parserRemoveChild(task.child.get());
 
     task.parent->parserAppendChild(task.child);
-
-    if (task.child->parentElement()->attached() && !task.child->attached())
-        task.child->lazyAttach();
 }
 
 static inline void executeInsertAlreadyParsedChildTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::InsertAlreadyParsedChild);
 
-    insert(task, true);
+    insert(task);
 }
 
 static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task)

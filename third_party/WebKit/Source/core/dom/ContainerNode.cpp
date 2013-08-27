@@ -63,6 +63,17 @@ ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 unsigned NoEventDispatchAssertion::s_count = 0;
 #endif
 
+static inline void attachAfterInsertion(Node* node, AttachBehavior attachBehavior = AttachLazily)
+{
+    if (node->attached() || !node->parentNode() || !node->parentNode()->attached())
+        return;
+
+    if (attachBehavior == AttachLazily)
+        node->lazyAttach();
+    else
+        node->attach();
+}
+
 static void collectChildrenAndRemoveFromOldParent(Node* node, NodeVector& nodes, ExceptionState& es)
 {
     if (node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE) {
@@ -106,13 +117,11 @@ void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
             children[i]->detach();
         // FIXME: We need a no mutation event version of adoptNode.
         RefPtr<Node> child = document()->adoptNode(children[i].release(), ASSERT_NO_EXCEPTION);
-        parserAppendChild(child.get());
         // FIXME: Together with adoptNode above, the tree scope might get updated recursively twice
         // (if the document changed or oldParent was in a shadow tree, AND *this is in a shadow tree).
         // Can we do better?
         treeScope()->adoptIfNeeded(child.get());
-        if (attached() && !child->attached())
-            child->attach();
+        parserAppendChild(child.get(), DeprecatedAttachNow);
     }
 }
 
@@ -305,7 +314,7 @@ void ContainerNode::insertBeforeCommon(Node* nextChild, Node* newChild)
     newChild->setNextSibling(nextChild);
 }
 
-void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChild)
+void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChild, AttachBehavior attachBehavior)
 {
     ASSERT(newChild);
     ASSERT(nextChild);
@@ -326,7 +335,10 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     ChildListMutationScope(this).childAdded(newChild.get());
 
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
+
     ChildNodeInsertionNotifier(this).notify(newChild.get());
+
+    attachAfterInsertion(newChild.get(), attachBehavior);
 }
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
@@ -641,7 +653,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
+void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild, AttachBehavior attachBehavior)
 {
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
@@ -665,6 +677,8 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
 
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
+
+    attachAfterInsertion(newChild.get(), attachBehavior);
 }
 
 void ContainerNode::suspendPostAttachCallbacks()
@@ -1026,10 +1040,8 @@ static void updateTreeAfterInsertion(ContainerNode* parent, Node* child)
 
     ChildNodeInsertionNotifier(parent).notify(child);
 
-    // FIXME: Attachment should be the first operation in this function, but some code
-    // (for example, HTMLFormControlElement's autofocus support) requires this ordering.
-    if (parent->attached() && !child->attached() && child->parentNode() == parent)
-        child->lazyAttach();
+    // FIXME: Decide if it's safe to go through ::insertedInto while aleady attached() and then move this first.
+    attachAfterInsertion(child);
 
     dispatchChildInsertionEvents(child);
 }

@@ -123,7 +123,6 @@ void XMLErrors::insertErrorMessageBlock()
         RefPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
         m_document->parserAppendChild(rootElement);
-        rootElement->lazyAttach();
         documentElement = body.get();
     } else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
         RefPtr<Element> rootElement = m_document->createElement(htmlTag, true);
@@ -134,7 +133,6 @@ void XMLErrors::insertErrorMessageBlock()
 
         body->parserAppendChild(documentElement);
         m_document->parserAppendChild(rootElement);
-        rootElement->lazyAttach();
 
         documentElement = body.get();
     }
@@ -156,8 +154,6 @@ void XMLErrors::insertErrorMessageBlock()
         documentElement->parserInsertBefore(reportElement, documentElement->firstChild());
     else
         documentElement->parserAppendChild(reportElement);
-
-    reportElement->lazyAttach();
 
     // FIXME: Why do we need to call this manually?
     m_document->updateStyleIfNeeded();
