@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 
+#include "base/logging.h"
 #include "cc/animation/transform_operation.h"
 #include "ui/gfx/box_f.h"
 #include "ui/gfx/vector3d_f.h"
@@ -293,9 +294,14 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
     case TransformOperation::TransformOperationIdentity:
       *bounds = box;
       return true;
-    default:
+    case TransformOperation::TransformOperationRotate:
+    case TransformOperation::TransformOperationSkew:
+    case TransformOperation::TransformOperationPerspective:
+    case TransformOperation::TransformOperationMatrix:
       return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace cc

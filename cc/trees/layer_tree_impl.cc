@@ -616,7 +616,7 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
       case UIResourceRequest::UIResourceDelete:
         layer_tree_host_impl_->DeleteUIResource(req.id);
         break;
-      default:
+      case UIResourceRequest::UIResourceInvalidRequest:
         NOTREACHED();
         break;
     }

@@ -21,7 +21,6 @@ scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
     case LOW_QUALITY_RASTER_MODE:
       return scoped_ptr<base::Value>(
           base::Value::CreateStringValue("LOW_QUALITY_RASTER_MODE"));
-    case NUM_RASTER_MODES:
     default:
       NOTREACHED() << "Unrecognized RasterMode value " << raster_mode;
       return scoped_ptr<base::Value>(

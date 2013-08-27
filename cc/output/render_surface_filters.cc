@@ -226,9 +226,13 @@ bool GetColorMatrix(const FilterOperation& op, SkScalar matrix[20]) {
       memcpy(matrix, op.matrix(), sizeof(SkScalar[20]));
       return true;
     }
-    default:
+    case FilterOperation::BLUR:
+    case FilterOperation::DROP_SHADOW:
+    case FilterOperation::ZOOM:
       return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 class FilterBufferState {

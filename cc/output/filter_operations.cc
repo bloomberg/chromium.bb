@@ -86,7 +86,16 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
       case FilterOperation::DROP_SHADOW:
       case FilterOperation::ZOOM:
         return true;
-      default:
+      case FilterOperation::OPACITY:
+      case FilterOperation::COLOR_MATRIX:
+      case FilterOperation::GRAYSCALE:
+      case FilterOperation::SEPIA:
+      case FilterOperation::SATURATE:
+      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::INVERT:
+      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::CONTRAST:
+      case FilterOperation::SATURATING_BRIGHTNESS:
         break;
     }
   }
@@ -104,10 +113,22 @@ bool FilterOperations::HasFilterThatAffectsOpacity() const {
         return true;
       case FilterOperation::COLOR_MATRIX: {
         const SkScalar* matrix = op.matrix();
-        return matrix[15] || matrix[16] || matrix[17] || matrix[18] != 1 ||
-               matrix[19];
+        if (matrix[15] ||
+            matrix[16] ||
+            matrix[17] ||
+            matrix[18] != 1 ||
+            matrix[19])
+          return true;
+        break;
       }
-      default:
+      case FilterOperation::GRAYSCALE:
+      case FilterOperation::SEPIA:
+      case FilterOperation::SATURATE:
+      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::INVERT:
+      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::CONTRAST:
+      case FilterOperation::SATURATING_BRIGHTNESS:
         break;
     }
   }

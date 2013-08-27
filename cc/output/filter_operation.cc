@@ -147,10 +147,9 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
       return FilterOperation::CreateZoomFilter(1.f, 0);
     case FilterOperation::SATURATING_BRIGHTNESS:
       return FilterOperation::CreateSaturatingBrightnessFilter(0.f);
-    default:
-      NOTREACHED();
-      return FilterOperation::CreateEmptyFilter();
   }
+  NOTREACHED();
+  return FilterOperation::CreateEmptyFilter();
 }
 
 static float ClampAmountForFilterType(float amount,
@@ -173,10 +172,11 @@ static float ClampAmountForFilterType(float amount,
     case FilterOperation::SATURATING_BRIGHTNESS:
       return amount;
     case FilterOperation::COLOR_MATRIX:
-    default:
       NOTREACHED();
       return amount;
   }
+  NOTREACHED();
+  return amount;
 }
 
 // static

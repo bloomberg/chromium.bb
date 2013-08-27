@@ -26,19 +26,16 @@ class PlatformColor {
 
   // Returns the most efficient texture format for this platform.
   static GLenum BestTextureFormat(bool supports_bgra8888) {
-    GLenum texture_format = GL_RGBA;
     switch (Format()) {
-      case SOURCE_FORMAT_RGBA8:
-        break;
       case SOURCE_FORMAT_BGRA8:
         if (supports_bgra8888)
-          texture_format = GL_BGRA_EXT;
-        break;
-      default:
-        NOTREACHED();
-        break;
+          return GL_BGRA_EXT;
+        return GL_RGBA;
+      case SOURCE_FORMAT_RGBA8:
+        return GL_RGBA;
     }
-    return texture_format;
+    NOTREACHED();
+    return GL_RGBA;
   }
 
   // Return true if the given texture format has the same component order
@@ -49,10 +46,9 @@ class PlatformColor {
         return texture_format == GL_RGBA;
       case SOURCE_FORMAT_BGRA8:
         return texture_format == GL_BGRA_EXT;
-      default:
-        NOTREACHED();
-        return false;
     }
+    NOTREACHED();
+    return false;
   }
 
  private:

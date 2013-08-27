@@ -227,6 +227,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     const ManagedTileState::TileVersion& tile_version =
         iter->GetTileVersionForDrawing();
+    scoped_ptr<DrawQuad> draw_quad;
     switch (tile_version.mode()) {
       case ManagedTileState::TileVersion::RESOURCE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
@@ -244,7 +245,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      texture_rect,
                      iter.texture_size(),
                      tile_version.contents_swizzled());
-        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+        draw_quad = quad.PassAs<DrawQuad>();
         break;
       }
       case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
@@ -267,7 +268,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      iter->contents_scale(),
                      draw_direct_to_backbuffer,
                      pile_);
-        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+        draw_quad = quad.PassAs<DrawQuad>();
         break;
       }
       case ManagedTileState::TileVersion::SOLID_COLOR_MODE: {
@@ -276,12 +277,13 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      geometry_rect,
                      tile_version.get_solid_color(),
                      false);
-        quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+        draw_quad = quad.PassAs<DrawQuad>();
         break;
       }
-      default:
-        NOTREACHED();
     }
+
+    DCHECK(draw_quad);
+    quad_sink->Append(draw_quad.Pass(), append_quads_data);
 
     if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());

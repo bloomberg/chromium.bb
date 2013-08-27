@@ -48,8 +48,7 @@ class CC_EXPORT ManagedTileState {
       enum Mode {
         RESOURCE_MODE,
         SOLID_COLOR_MODE,
-        PICTURE_PILE_MODE,
-        NUM_MODES
+        PICTURE_PILE_MODE
       };
 
       TileVersion();

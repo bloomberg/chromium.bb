@@ -545,9 +545,6 @@ void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
         case AnimationEvent::PropertyUpdate:
           (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
           break;
-
-        default:
-          NOTREACHED();
       }
     }
   }

@@ -87,10 +87,9 @@ bool ManagedTileState::TileVersion::IsReadyToDraw() const {
     case SOLID_COLOR_MODE:
     case PICTURE_PILE_MODE:
       return true;
-    default:
-      NOTREACHED();
-      return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 size_t ManagedTileState::TileVersion::GPUMemoryUsageInBytes() const {
