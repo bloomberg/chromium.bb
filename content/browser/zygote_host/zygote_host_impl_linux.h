@@ -40,7 +40,11 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   // Unfortunately the Zygote can not accurately figure out if a process
   // is already dead without waiting synchronously for it.
   // |known_dead| should be set to true when we already know that the process
-  // is dead.
+  // is dead. When |known_dead| is false, processes could be seen as
+  // still running, even when they're not. When |known_dead| is true, the
+  // process will be SIGKILL-ed first (which should have no effect if it was
+  // really dead). This is to prevent a waiting waitpid() from blocking in
+  // a single-threaded Zygote. See crbug.com/157458.
   base::TerminationStatus GetTerminationStatus(base::ProcessHandle handle,
                                                bool known_dead,
                                                int* exit_code);

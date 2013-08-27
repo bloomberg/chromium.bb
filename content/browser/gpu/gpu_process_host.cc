@@ -520,7 +520,8 @@ GpuProcessHost::~GpuProcessHost() {
   std::string message;
   if (!in_process_) {
     int exit_code;
-    base::TerminationStatus status = process_->GetTerminationStatus(&exit_code);
+    base::TerminationStatus status = process_->GetTerminationStatus(
+        false /* known_dead */, &exit_code);
     UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
                               status,
                               base::TERMINATION_STATUS_MAX_ENUM);
@@ -1045,7 +1046,7 @@ void GpuProcessHost::OnProcessLaunched() {
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
   SendOutstandingReplies();
   GpuDataManagerImpl::GetInstance()->ProcessCrashed(
-      process_->GetTerminationStatus(NULL));
+      process_->GetTerminationStatus(true /* known_dead */, NULL));
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {

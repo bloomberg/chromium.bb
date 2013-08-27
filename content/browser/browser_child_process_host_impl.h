@@ -51,7 +51,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       CommandLine* cmd_line) OVERRIDE;
   virtual const ChildProcessData& GetData() const OVERRIDE;
   virtual ChildProcessHost* GetHost() const OVERRIDE;
-  virtual base::TerminationStatus GetTerminationStatus(int* exit_code) OVERRIDE;
+  virtual base::TerminationStatus GetTerminationStatus(
+      bool known_dead, int* exit_code) OVERRIDE;
   virtual void SetName(const string16& name) OVERRIDE;
   virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
 

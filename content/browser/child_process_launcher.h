@@ -58,6 +58,11 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // Call this when the child process exits to know what happened to it.
   // |known_dead| can be true if we already know the process is dead as it can
   // help the implemention figure the proper TerminationStatus.
+  // On Linux, the use of |known_dead| is subtle and can be crucial if an
+  // accurate status is important. With |known_dead| set to false, a dead
+  // process could be seen as running. With |known_dead| set to true, the
+  // process will be killed if it was still running. See ZygoteHostImpl for
+  // more discussion of Linux implementation details.
   // |exit_code| is the exit code of the process if it exited (e.g. status from
   // waitpid if on posix, from GetExitCodeProcess on Windows). |exit_code| may
   // be NULL.

@@ -266,10 +266,10 @@ NaClProcessHost::~NaClProcessHost() {
   // Report exit status only if the process was successfully started.
   if (process_->GetData().handle != base::kNullProcessHandle) {
     int exit_code = 0;
-    process_->GetTerminationStatus(&exit_code);
+    process_->GetTerminationStatus(false /* known_dead */, &exit_code);
     std::string message =
         base::StringPrintf("NaCl process exited with status %i (0x%x)",
-                         exit_code, exit_code);
+                           exit_code, exit_code);
     if (exit_code == 0) {
       LOG(INFO) << message;
     } else {

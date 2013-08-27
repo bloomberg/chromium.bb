@@ -223,11 +223,11 @@ void BrowserChildProcessHostImpl::NotifyProcessInstanceCreated(
 }
 
 base::TerminationStatus BrowserChildProcessHostImpl::GetTerminationStatus(
-    int* exit_code) {
+    bool known_dead, int* exit_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!child_process_)  // If the delegate doesn't use Launch() helper.
     return base::GetTerminationStatus(data_.handle, exit_code);
-  return child_process_->GetChildTerminationStatus(false /* known_dead */,
+  return child_process_->GetChildTerminationStatus(known_dead,
                                                    exit_code);
 }
 
@@ -264,7 +264,8 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   if (child_process_.get() || data_.handle) {
     DCHECK(data_.handle != base::kNullProcessHandle);
     int exit_code;
-    base::TerminationStatus status = GetTerminationStatus(&exit_code);
+    base::TerminationStatus status = GetTerminationStatus(
+        true /* known_dead */, &exit_code);
     switch (status) {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
