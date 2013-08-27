@@ -9,6 +9,7 @@
  * flush storage", or "mounted zip archive" etc.
  *
  * @param {string} mountPath Where the volume is mounted.
+ * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
  * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
  *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
@@ -16,20 +17,17 @@
  * @param {boolean} isReadOnly True if the volume is read only.
  * @constructor
  */
-function VolumeInfo(mountPath, error, deviceType, isReadOnly) {
+function VolumeInfo(mountPath, root, error, deviceType, isReadOnly) {
   // TODO(hidehiko): This should include FileSystem instance.
-  this.mountPath_ = mountPath;
-  this.error_ = error;
-  this.deviceType_ = deviceType;
-  this.isReadOnly_ = !!isReadOnly;
-}
+  this.mountPath = mountPath;
+  this.root = root;
+  this.error = error;
+  this.deviceType = deviceType;
+  this.isReadOnly = isReadOnly;
 
-VolumeInfo.prototype = {
-  get mountPath() { return this.mountPath_; },
-  get error() { return this.error_; },
-  get deviceType() { return this.deviceType_; },
-  get isReadOnly() { return this.isReadOnly_; },
-};
+  // VolumeInfo is immutable.
+  Object.freeze(this);
+}
 
 /**
  * Utilities for volume manager implementation.
@@ -93,10 +91,27 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
       function(metadata) {
         if (chrome.runtime.lastError && !error)
           error = VolumeManager.Error.UNKNOWN;
-        callback(new VolumeInfo(
-            mountPath, error,
-            metadata && metadata.deviceType,
-            !!metadata && metadata.isReadOnly));
+
+        var deviceType = null;
+        var isReadOnly = false;
+        if (metadata) {
+          deviceType = metadata.deviceType;
+          isReadOnly = metadata.isReadOnly;
+        }
+
+        // TODO(hidehiko): After multi-filesystem is supported,
+        // FileSystem object holds its root entry. So, we won't need this
+        // resolving.
+        webkitResolveLocalFileSystemURL(
+            util.makeFilesystemUrl(mountPath),
+            function(entry) {
+              callback(new VolumeInfo(
+                  mountPath, entry, error, deviceType, isReadOnly));
+            },
+            function(error) {
+              callback(new VolumeInfo(
+                  mountPath, null, error, deviceType, isReadOnly));
+            });
       });
 };
 
