@@ -155,8 +155,8 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
     }
   }
 
-  integration_service->file_system()->GetCacheEntryByResourceId(
-      entry->resource_id(),
+  integration_service->file_system()->GetCacheEntryByPath(
+      file_path_,
       base::Bind(&GetDriveEntryPropertiesFunction::CacheStateReceived, this));
 }
 

@@ -96,6 +96,26 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
+// Used to implement GetCacheEntryByPath.
+bool GetCacheEntryByPathInternal(internal::ResourceMetadata* resource_metadata,
+                                 internal::FileCache* cache,
+                                 const base::FilePath& drive_file_path,
+                                 FileCacheEntry* cache_entry) {
+  std::string id;
+  if (resource_metadata->GetIdByPath(drive_file_path, &id) != FILE_ERROR_OK)
+    return false;
+
+  return cache->GetCacheEntry(id, cache_entry);
+}
+
+// Runs the callback with arguments.
+void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
+                              const FileCacheEntry* cache_entry,
+                              bool success) {
+  DCHECK(!callback.is_null());
+  callback.Run(success, *cache_entry);
+}
+
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
 void OnGetLargestChangestamp(
@@ -906,14 +926,24 @@ void FileSystem::MarkCacheFileAsUnmounted(
   cache_->MarkAsUnmountedOnUIThread(cache_file_path, callback);
 }
 
-void FileSystem::GetCacheEntryByResourceId(
-    const std::string& resource_id,
+void FileSystem::GetCacheEntryByPath(
+    const base::FilePath& drive_file_path,
     const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
 
-  cache_->GetCacheEntryOnUIThread(resource_id, callback);
+  FileCacheEntry* cache_entry = new FileCacheEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&GetCacheEntryByPathInternal,
+                 resource_metadata_,
+                 cache_,
+                 drive_file_path,
+                 cache_entry),
+      base::Bind(&RunGetCacheEntryCallback,
+                 callback,
+                 base::Owned(cache_entry)));
 }
 
 void FileSystem::OnDisableDriveHostedFilesChanged() {
