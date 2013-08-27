@@ -106,6 +106,13 @@ void WindowSelector::OnEvent(ui::Event* event) {
   ui::EventHandler::OnEvent(event);
 }
 
+void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->type() != ui::ET_KEY_PRESSED)
+    return;
+  if (event->key_code() == ui::VKEY_ESCAPE)
+    delegate_->OnSelectionCanceled();
+}
+
 void WindowSelector::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_RELEASED)
     return;
