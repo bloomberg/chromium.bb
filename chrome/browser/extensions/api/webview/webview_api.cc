@@ -74,6 +74,7 @@ uint32 WebviewClearDataFunction::GetRemovalMask() {
 // TODO(lazyboy): Parameters in this extension function are similar (or a
 // sub-set) to BrowsingDataRemoverFunction. How can we share this code?
 bool WebviewClearDataFunction::RunImpl() {
+  content::RecordAction(content::UserMetricsAction("WebView.ClearData"));
   int instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
 
@@ -209,6 +210,7 @@ WebviewGoFunction::~WebviewGoFunction() {
 }
 
 bool WebviewGoFunction::RunImpl() {
+  content::RecordAction(content::UserMetricsAction("WebView.Go"));
   scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -228,6 +230,7 @@ WebviewReloadFunction::~WebviewReloadFunction() {
 }
 
 bool WebviewReloadFunction::RunImpl() {
+  content::RecordAction(content::UserMetricsAction("WebView.Reload"));
   scoped_ptr<webview::Reload::Params> params(
       webview::Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -271,6 +274,7 @@ WebviewStopFunction::~WebviewStopFunction() {
 }
 
 bool WebviewStopFunction::RunImpl() {
+  content::RecordAction(content::UserMetricsAction("WebView.Stop"));
   scoped_ptr<webview::Stop::Params> params(
       webview::Stop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -291,6 +295,7 @@ WebviewTerminateFunction::~WebviewTerminateFunction() {
 }
 
 bool WebviewTerminateFunction::RunImpl() {
+  content::RecordAction(content::UserMetricsAction("WebView.Terminate"));
   scoped_ptr<webview::Terminate::Params> params(
       webview::Terminate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
