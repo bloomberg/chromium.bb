@@ -73,7 +73,7 @@ public:
     virtual void didReceiveCachedMetadata(WebKit::WebURLLoader*, const char* data, int length) OVERRIDE;
     virtual void didFinishLoading(WebKit::WebURLLoader*, double finishTime) OVERRIDE;
     virtual void didFail(WebKit::WebURLLoader*, const WebKit::WebURLError&) OVERRIDE;
-    virtual void didDownloadData(WebKit::WebURLLoader*, int) OVERRIDE;
+    virtual void didDownloadData(WebKit::WebURLLoader*, int, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); }
     bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }

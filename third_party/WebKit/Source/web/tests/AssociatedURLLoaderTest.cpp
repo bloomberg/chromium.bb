@@ -155,7 +155,7 @@ public:
         EXPECT_EQ(m_expectedResponse.httpStatusCode(), response.httpStatusCode());
     }
 
-    void didDownloadData(WebURLLoader* loader, int dataLength)
+    void didDownloadData(WebURLLoader* loader, int dataLength, int encodedDataLength)
     {
         m_didDownloadData = true;
         EXPECT_EQ(m_expectedLoader, loader);

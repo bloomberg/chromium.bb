@@ -162,7 +162,7 @@ void ResourceLoader::setDefersLoading(bool defers)
     }
 }
 
-void ResourceLoader::didDownloadData(WebKit::WebURLLoader*, int length)
+void ResourceLoader::didDownloadData(WebKit::WebURLLoader*, int length, int encodedDataLength)
 {
     RefPtr<ResourceLoader> protect(this);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
