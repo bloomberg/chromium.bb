@@ -62,7 +62,6 @@ void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderSty
 
 void RenderSVGGradientStop::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     clearNeedsLayout();
 }
 

@@ -75,7 +75,6 @@ void RenderReplaced::styleDidChange(StyleDifference diff, const RenderStyle* old
 
 void RenderReplaced::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());

@@ -139,7 +139,6 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
 
 void RenderSVGShape::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) && selfNeedsLayout());
     SVGGraphicsElement* element = toSVGGraphicsElement(node());
 

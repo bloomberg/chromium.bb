@@ -402,7 +402,6 @@ void RenderTable::simplifiedNormalFlowLayout()
 
 void RenderTable::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
 
     if (simplifiedLayout())

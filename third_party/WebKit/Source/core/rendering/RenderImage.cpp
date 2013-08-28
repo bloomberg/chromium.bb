@@ -579,7 +579,6 @@ void RenderImage::updateAltText()
 
 void RenderImage::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     RenderReplaced::layout();
     updateInnerContentRect();
 }

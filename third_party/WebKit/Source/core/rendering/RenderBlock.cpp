@@ -1377,7 +1377,6 @@ void RenderBlock::updateScrollInfoAfterLayout()
 
 void RenderBlock::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     OverflowEventDispatcher dispatcher(this);
 
     // Update our first letter info now.

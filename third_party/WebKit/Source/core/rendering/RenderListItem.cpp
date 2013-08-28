@@ -302,7 +302,6 @@ void RenderListItem::updateMarkerLocation()
 
 void RenderListItem::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
 
     updateMarkerLocation();

@@ -38,11 +38,11 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RandomNumberSeed.h"
-#include "wtf/StackStats.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/ThreadFunctionInvocation.h"
 #include "wtf/ThreadIdentifierDataPthreads.h"
 #include "wtf/ThreadSpecific.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/dtoa.h"
@@ -123,7 +123,6 @@ void initializeThreading()
     threadMapMutex();
     initializeRandomNumberGenerator();
     ThreadIdentifierData::initializeOnce();
-    StackStats::initialize();
     wtfThreadData();
     s_dtoaP5Mutex = new Mutex;
     initializeDates();

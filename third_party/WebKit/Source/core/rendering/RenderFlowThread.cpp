@@ -193,8 +193,6 @@ void RenderFlowThread::validateRegions()
 
 void RenderFlowThread::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
-
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
 
     // In case this is the second pass of the normal phase we need to update the auto-height regions to their initial value.

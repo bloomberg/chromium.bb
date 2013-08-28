@@ -226,7 +226,6 @@ void RenderTableCell::layout()
 {
     ASSERT(needsLayout());
 
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     updateFirstLetter();
 
     int oldCellBaseline = cellBaselinePosition();

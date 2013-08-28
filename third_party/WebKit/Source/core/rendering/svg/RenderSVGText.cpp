@@ -345,7 +345,6 @@ static inline void updateFontInAllDescendants(RenderObject* start, SVGTextLayout
 
 void RenderSVGText::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
 

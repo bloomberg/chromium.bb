@@ -90,7 +90,6 @@ LayoutUnit RenderTextControlSingleLine::computeLogicalHeightLimit() const
 
 void RenderTextControlSingleLine::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     SubtreeLayoutScope layoutScope(this);
 
     // FIXME: We should remove the height-related hacks in layout() and

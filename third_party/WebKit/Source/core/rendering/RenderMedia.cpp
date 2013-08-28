@@ -57,7 +57,6 @@ HTMLMediaElement* RenderMedia::mediaElement() const
 
 void RenderMedia::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     LayoutSize oldSize = contentBoxRect().size();
 
     RenderImage::layout();

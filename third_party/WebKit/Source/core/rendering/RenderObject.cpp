@@ -2793,7 +2793,6 @@ void RenderObject::scheduleRelayout()
 
 void RenderObject::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     ASSERT(needsLayout());
     RenderObject* child = firstChild();
     while (child) {

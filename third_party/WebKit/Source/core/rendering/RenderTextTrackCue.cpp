@@ -40,7 +40,6 @@ RenderTextTrackCue::RenderTextTrackCue(TextTrackCueBox* element)
 
 void RenderTextTrackCue::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     RenderBlock::layout();
 
 #if ENABLE(WEBVTT_REGIONS)

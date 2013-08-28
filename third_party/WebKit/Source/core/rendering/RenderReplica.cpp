@@ -56,7 +56,6 @@ RenderReplica::~RenderReplica()
 
 void RenderReplica::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     setFrameRect(parentBox()->borderBoxRect());
     updateLayerTransform();
     clearNeedsLayout();

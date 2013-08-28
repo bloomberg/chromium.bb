@@ -242,7 +242,6 @@ void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& stat
 
 void RenderView::layout()
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     if (!document()->paginated())
         setPageLogicalHeight(0);
 

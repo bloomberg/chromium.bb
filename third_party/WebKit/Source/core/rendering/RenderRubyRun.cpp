@@ -216,7 +216,6 @@ RenderRubyRun* RenderRubyRun::staticCreateRubyRun(const RenderObject* parentRuby
 
 RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     // Don't bother positioning the RenderRubyRun yet.
     RenderRubyText* rt = rubyText();
     if (!rt)

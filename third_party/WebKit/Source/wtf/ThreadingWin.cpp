@@ -88,24 +88,23 @@
 
 #if OS(WINDOWS)
 
-#include "DateMath.h"
-#include "dtoa.h"
-#include "dtoa/cached-powers.h"
-
-#include "MainThread.h"
-#include "ThreadFunctionInvocation.h"
-#include "ThreadSpecific.h"
-#include <windows.h>
 #include "wtf/CurrentTime.h"
+#include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RandomNumberSeed.h"
+#include "wtf/ThreadFunctionInvocation.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/WTFThreadData.h"
-
+#include "wtf/dtoa.h"
+#include "wtf/dtoa/cached-powers.h"
 #include <errno.h>
 #include <process.h>
+#include <windows.h>
 
 namespace WTF {
 

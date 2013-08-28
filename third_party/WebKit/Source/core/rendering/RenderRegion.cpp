@@ -277,7 +277,6 @@ void RenderRegion::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
 
 void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
 {
-    StackStats::LayoutCheckPoint layoutCheckPoint;
     RenderBlock::layoutBlock(relayoutChildren);
 
     if (isValid()) {
