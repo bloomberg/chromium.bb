@@ -901,7 +901,7 @@ crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pa
 
 crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
-crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 
 crbug.com/249580 svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
