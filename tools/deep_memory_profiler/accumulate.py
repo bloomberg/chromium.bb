@@ -150,7 +150,7 @@ def flatten_all_category_trees(category_trees):
   return flattened_labels, flattened_table
 
 
-def output_csv(output, category_trees, data, first_time):
+def output_csv(output, category_trees, data, first_time, output_exponent):
   flattened_labels, flattened_table = flatten_all_category_trees(category_trees)
 
   sorted_flattened_labels = sorted(flattened_labels)
@@ -159,7 +159,12 @@ def output_csv(output, category_trees, data, first_time):
     values = [str(data['snapshots'][index]['time'] - first_time)]
     for label in sorted_flattened_labels:
       if label in row:
-        values.append(str(row[label] / 1024.0 / 1024.0))
+        divisor = 1
+        if output_exponent.upper() == 'K':
+          divisor = 1024.0
+        elif output_exponent.upper() == 'M':
+          divisor = 1024.0 * 1024.0
+        values.append(str(row[label] / divisor))
       else:
         values.append('0')
     print >> output, ','.join(values)
@@ -194,11 +199,15 @@ def output_tree(output, category_trees):
     print >> output, ''
 
 
-def do_main(cat_input, output, template_label, output_format):
+def do_main(cat_input, output, template_label, output_format, output_exponent):
   """Does the main work: accumulate for every snapshot and print a result."""
   if output_format not in ['csv', 'json', 'tree']:
     raise NotImplementedError('The output format \"%s\" is not implemented.' %
                               output_format)
+
+  if output_exponent.upper() not in ['B', 'K', 'M']:
+    raise NotImplementedError('The exponent \"%s\" is not implemented.' %
+                              output_exponent)
 
   data = json.loads(cat_input.read(), object_pairs_hook=OrderedDict)
 
@@ -229,7 +238,7 @@ def do_main(cat_input, output, template_label, output_format):
     category_trees.append(category_tree)
 
   if output_format == 'csv':
-    output_csv(output, category_trees, data, first_time)
+    output_csv(output, category_trees, data, first_time, output_exponent)
   elif output_format == 'json':
     output_json(output, category_trees, data, first_time, template_label)
   elif output_format == 'tree':
@@ -250,9 +259,12 @@ def main():
                     help='Apply TEMPLATE to list up.')
   parser.add_option('-f', '--format', dest='format', default='csv',
                     help='Specify the output format: csv, json or tree.')
+  parser.add_option('-e', '--exponent', dest='exponent', default='M',
+                    help='Specify B (bytes), K (kilobytes) or M (megabytes).')
 
   options, _ = parser.parse_args(sys.argv)
-  do_main(sys.stdin, sys.stdout, options.template, options.format)
+  do_main(sys.stdin, sys.stdout,
+          options.template, options.format, options.exponent)
 
 
 if __name__ == '__main__':
