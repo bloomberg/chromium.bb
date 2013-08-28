@@ -18,7 +18,6 @@
 #include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/overflow_bubble.h"
 #include "ash/launcher/overflow_button.h"
-#include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/alternate_app_list_button.h"
@@ -906,21 +905,6 @@ void LauncherView::AnimateToIdealBounds() {
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
   switch (item.type) {
-    case TYPE_TABBED: {
-      TabbedLauncherButton* button =
-          TabbedLauncherButton::Create(
-              this,
-              this,
-              tooltip_->shelf_layout_manager(),
-              item.is_incognito ?
-                  TabbedLauncherButton::STATE_INCOGNITO :
-                  TabbedLauncherButton::STATE_NOT_INCOGNITO);
-      button->SetTabImage(item.image);
-      ReflectItemStatus(item, button);
-      view = button;
-      break;
-    }
-
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
@@ -1165,16 +1149,17 @@ void LauncherView::FinalizeRipOffDrag(bool cancel) {
 bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
   switch (typea) {
-    case TYPE_TABBED:
-    case TYPE_PLATFORM_APP:
-      return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
     case TYPE_APP_SHORTCUT:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
+    case TYPE_PLATFORM_APP:
     case TYPE_WINDOWED_APP:
     case TYPE_APP_LIST:
     case TYPE_APP_PANEL:
       return typeb == typea;
+    case TYPE_UNDEFINED:
+      NOTREACHED() << "LauncherItemType must be set.";
+      return false;
   }
   NOTREACHED();
   return false;
@@ -1445,17 +1430,6 @@ void LauncherView::LauncherItemChanged(int model_index,
 
   views::View* view = view_model_->view_at(model_index);
   switch (item.type) {
-    case TYPE_TABBED: {
-      TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
-      gfx::Size pref = button->GetPreferredSize();
-      button->SetTabImage(item.image);
-      if (pref != button->GetPreferredSize())
-        AnimateToIdealBounds();
-      else
-        button->SchedulePaint();
-      ReflectItemStatus(item, button);
-      break;
-    }
     case TYPE_BROWSER_SHORTCUT:
       // Fallthrough for the new Launcher since it needs to show the activation
       // change as well.
@@ -1635,8 +1609,11 @@ void LauncherView::ButtonPressed(views::Button* sender,
             UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
         break;
 
-      case TYPE_TABBED:
       case TYPE_APP_PANEL:
+        break;
+
+      case TYPE_UNDEFINED:
+        NOTREACHED() << "LauncherItemType must be set.";
         break;
     }
 

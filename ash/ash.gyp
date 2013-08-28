@@ -165,8 +165,6 @@
         'launcher/overflow_button.cc',
         'launcher/overflow_button.h',
         'launcher/scoped_observer_with_duplicated_sources.h',
-        'launcher/tabbed_launcher_button.cc',
-        'launcher/tabbed_launcher_button.h',
         'magnifier/magnification_controller.cc',
         'magnifier/magnification_controller.h',
         'magnifier/magnifier_constants.h',

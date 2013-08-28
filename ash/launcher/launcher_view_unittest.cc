@@ -224,7 +224,6 @@ class LauncherViewTest : public AshTestBase {
   LauncherID AddBrowserShortcut() {
     LauncherItem browser_shortcut;
     browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-    browser_shortcut.is_incognito = false;
 
     LauncherID id = model_->next_id();
     model_->AddAt(0, browser_shortcut);
@@ -239,22 +238,6 @@ class LauncherViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
-    test_api_->RunMessageLoopUntilAnimationsDone();
-    return id;
-  }
-
-  LauncherID AddTabbedBrowserNoWait() {
-    LauncherItem item;
-    item.type = TYPE_TABBED;
-    item.status = STATUS_RUNNING;
-
-    LauncherID id = model_->next_id();
-    model_->Add(item);
-    return id;
-  }
-
-  LauncherID AddTabbedBrowser() {
-    LauncherID id = AddTabbedBrowserNoWait();
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -439,7 +422,7 @@ class LauncherViewTextDirectionTest
 // Checks that the ideal item icon bounds match the view's bounds in the screen
 // in both LTR and RTL.
 TEST_P(LauncherViewTextDirectionTest, IdealBoundsOfItemIcon) {
-  LauncherID id = AddTabbedBrowser();
+  LauncherID id = AddPlatformApp();
   internal::LauncherButton* button = GetButtonByID(id);
   gfx::Rect item_bounds = button->GetBoundsInScreen();
   gfx::Point icon_offset = button->GetIconBounds().origin();
@@ -454,14 +437,6 @@ TEST_P(LauncherViewTextDirectionTest, IdealBoundsOfItemIcon) {
 
 // Checks that launcher view contents are considered in the correct drag group.
 TEST_F(LauncherViewTest, EnforceDragType) {
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_TABBED, TYPE_TABBED));
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_TABBED, TYPE_PLATFORM_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_TABBED, TYPE_APP_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_TABBED, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_TABBED, TYPE_WINDOWED_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_TABBED, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_TABBED, TYPE_APP_PANEL));
-
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_PLATFORM_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP,
@@ -495,21 +470,21 @@ TEST_F(LauncherViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_PANEL, TYPE_APP_PANEL));
 }
 
-// Adds browser button until overflow and verifies that the last added browser
-// button is hidden.
+// Adds platform app button until overflow and verifies that the last added
+// platform app button is hidden.
 TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser until overflow.
+  // Add platform app button until overflow.
   int items_added = 0;
-  LauncherID last_added = AddTabbedBrowser();
+  LauncherID last_added = AddPlatformApp();
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(last_added)->visible());
 
-    last_added = AddTabbedBrowser();
+    last_added = AddPlatformApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -518,15 +493,15 @@ TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(last_added)->visible());
 }
 
-// Adds one browser button then adds app shortcut until overflow. Verifies that
-// the browser button gets hidden on overflow and last added app shortcut is
-// still visible.
+// Adds one platform app button then adds app shortcut until overflow. Verifies
+// that the browser button gets hidden on overflow and last added app shortcut
+// is still visible.
 TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  LauncherID browser_button_id = AddTabbedBrowser();
+  LauncherID browser_button_id = AddPlatformApp();
 
   // Add app shortcut until overflow.
   int items_added = 0;
@@ -542,21 +517,22 @@ TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 
   // The last added app short button should be visible.
   EXPECT_TRUE(GetButtonByID(last_added)->visible());
-  // And the browser button is invisible.
+  // And the platform app button is invisible.
   EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
 }
 
-TEST_F(LauncherViewTest, AddPanelHidesTabbedBrowser) {
+TEST_F(LauncherViewTest, AddPanelHidesPlatformAppButton) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser until overflow, remember last visible tabbed browser.
+  // Add platform app button until overflow, remember last visible platform app
+  // button.
   int items_added = 0;
-  LauncherID first_added = AddTabbedBrowser();
+  LauncherID first_added = AddPlatformApp();
   EXPECT_TRUE(GetButtonByID(first_added)->visible());
   LauncherID last_visible = first_added;
   while (true) {
-    LauncherID added = AddTabbedBrowser();
+    LauncherID added = AddPlatformApp();
     if (test_api_->IsOverflowButtonVisible()) {
       EXPECT_FALSE(GetButtonByID(added)->visible());
       break;
@@ -574,17 +550,17 @@ TEST_F(LauncherViewTest, AddPanelHidesTabbedBrowser) {
   EXPECT_TRUE(GetButtonByID(last_visible)->visible());
 }
 
-// When there are more panels then browsers we should hide panels rather
-// than browsers.
-TEST_F(LauncherViewTest, BrowserHidesExcessPanels) {
+// When there are more panels then platform app buttons we should hide panels
+// rather than platform apps.
+TEST_F(LauncherViewTest, PlatformAppHidesExcessPanels) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser.
-  LauncherID browser = AddTabbedBrowser();
+  // Add platform app button.
+  LauncherID platform_app = AddPlatformApp();
   LauncherID first_panel = AddPanel();
 
-  EXPECT_TRUE(GetButtonByID(browser)->visible());
+  EXPECT_TRUE(GetButtonByID(platform_app)->visible());
   EXPECT_TRUE(GetButtonByID(first_panel)->visible());
 
   // Add panels until there is an overflow.
@@ -596,22 +572,23 @@ TEST_F(LauncherViewTest, BrowserHidesExcessPanels) {
     ASSERT_LT(items_added, 10000);
   }
 
-  // The first panel should now be hidden by the new browsers needing space.
+  // The first panel should now be hidden by the new platform apps needing
+  // space.
   EXPECT_FALSE(GetButtonByID(first_panel)->visible());
   EXPECT_TRUE(GetButtonByID(last_panel)->visible());
-  EXPECT_TRUE(GetButtonByID(browser)->visible());
+  EXPECT_TRUE(GetButtonByID(platform_app)->visible());
 
-  // Adding browsers should eventually begin to hide browsers. We will add
-  // browsers until either the last panel or browser is hidden.
+  // Adding platform apps should eventually begin to hide platform apps. We will
+  // add platform apps until either the last panel or platform app is hidden.
   items_added = 0;
-  while (GetButtonByID(browser)->visible() &&
+  while (GetButtonByID(platform_app)->visible() &&
          GetButtonByID(last_panel)->visible()) {
-    browser = AddTabbedBrowser();
+    platform_app = AddPlatformApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
   EXPECT_TRUE(GetButtonByID(last_panel)->visible());
-  EXPECT_FALSE(GetButtonByID(browser)->visible());
+  EXPECT_FALSE(GetButtonByID(platform_app)->visible());
 }
 
 // Adds button until overflow then removes first added one. Verifies that
@@ -622,12 +599,12 @@ TEST_F(LauncherViewTest, RemoveButtonRevealsOverflowed) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser until overflow.
+  // Add platform app buttons until overflow.
   int items_added = 0;
-  LauncherID first_added = AddTabbedBrowser();
+  LauncherID first_added = AddPlatformApp();
   LauncherID last_added = first_added;
   while (!test_api_->IsOverflowButtonVisible()) {
-    last_added = AddTabbedBrowser();
+    last_added = AddPlatformApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -652,11 +629,11 @@ TEST_F(LauncherViewTest, RemoveLastOverflowed) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser until overflow.
+  // Add platform app button until overflow.
   int items_added = 0;
-  LauncherID last_added = AddTabbedBrowser();
+  LauncherID last_added = AddPlatformApp();
   while (!test_api_->IsOverflowButtonVisible()) {
-    last_added = AddTabbedBrowser();
+    last_added = AddPlatformApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -665,17 +642,17 @@ TEST_F(LauncherViewTest, RemoveLastOverflowed) {
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
 }
 
-// Adds browser button without waiting for animation to finish and verifies
+// Adds platform app button without waiting for animation to finish and verifies
 // that all added buttons are visible.
 TEST_F(LauncherViewTest, AddButtonQuickly) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add a few tabbed browser quickly without wait for animation.
+  // Add a few platform buttons quickly without wait for animation.
   int added_count = 0;
   while (!test_api_->IsOverflowButtonVisible()) {
-    AddTabbedBrowserNoWait();
+    AddPlatformAppNoWait();
     ++added_count;
     ASSERT_LT(added_count, 10000);
   }
@@ -843,8 +820,8 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser.
-  LauncherID last_added = AddTabbedBrowser();
+  // Add platform app button.
+  LauncherID last_added = AddPlatformApp();
   LauncherItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   internal::LauncherButton* button = GetButtonByID(last_added);
@@ -862,7 +839,7 @@ TEST_F(LauncherViewTest, LauncherItemPositionReflectedOnStateChanged) {
             test_api_->GetButtonCount());
 
   // Add 2 items to the launcher.
-  LauncherID item1_id = AddTabbedBrowser();
+  LauncherID item1_id = AddPlatformApp();
   LauncherID item2_id = AddPlatformAppNoWait();
   internal::LauncherButton* item1_button = GetButtonByID(item1_id);
   internal::LauncherButton* item2_button = GetButtonByID(item2_id);
@@ -908,7 +885,7 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
-  // Add tabbed browser.
+  // Add platform app button.
   LauncherID last_added = AddPlatformApp();
   LauncherItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
@@ -941,10 +918,10 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
 
   // Prepare some items to the launcher.
   LauncherID app_button_id = AddAppShortcut();
-  LauncherID tab_button_id = AddTabbedBrowser();
+  LauncherID platform_button_id = AddPlatformApp();
 
   internal::LauncherButton* app_button = GetButtonByID(app_button_id);
-  internal::LauncherButton* tab_button = GetButtonByID(tab_button_id);
+  internal::LauncherButton* platform_button = GetButtonByID(platform_button_id);
 
   internal::LauncherButtonHost* button_host = launcher_view_;
   internal::LauncherTooltipManager* tooltip_manager =
@@ -966,24 +943,24 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
 
   // When entered to another item, it switches to the new item.  There is no
   // delay for the visibility.
-  button_host->MouseEnteredButton(tab_button);
+  button_host->MouseEnteredButton(platform_button);
   EXPECT_TRUE(tooltip_manager->IsVisible());
-  EXPECT_EQ(tab_button, GetTooltipAnchorView());
+  EXPECT_EQ(platform_button, GetTooltipAnchorView());
 
-  button_host->MouseExitedButton(tab_button);
+  button_host->MouseExitedButton(platform_button);
   tooltip_manager->Close();
 
   // Next time: enter app_button -> move immediately to tab_button.
   button_host->MouseEnteredButton(app_button);
   button_host->MouseExitedButton(app_button);
-  button_host->MouseEnteredButton(tab_button);
+  button_host->MouseEnteredButton(platform_button);
   EXPECT_FALSE(tooltip_manager->IsVisible());
-  EXPECT_EQ(tab_button, GetTooltipAnchorView());
+  EXPECT_EQ(platform_button, GetTooltipAnchorView());
 }
 
 TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   LauncherID app_button_id = AddAppShortcut();
-  LauncherID tab_button_id = AddTabbedBrowser();
+  LauncherID platform_button_id = AddPlatformApp();
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {
@@ -1003,10 +980,11 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
   gfx::Rect app_button_rect = GetButtonByID(app_button_id)->GetMirroredBounds();
-  gfx::Rect tab_button_rect = GetButtonByID(tab_button_id)->GetMirroredBounds();
-  ASSERT_FALSE(app_button_rect.Intersects(tab_button_rect));
+  gfx::Rect platform_button_rect =
+      GetButtonByID(platform_button_id)->GetMirroredBounds();
+  ASSERT_FALSE(app_button_rect.Intersects(platform_button_rect));
   EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
-      gfx::UnionRects(app_button_rect, tab_button_rect).CenterPoint()));
+      gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint()));
 
   // The tooltip should hide if it's outside of all buttons.
   gfx::Rect all_area;
@@ -1104,10 +1082,10 @@ TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
   // Add buttons until overflow. Let the non-overflow add animations finish but
   // leave the last running.
   int items_added = 0;
-  AddTabbedBrowserNoWait();
+  AddPlatformAppNoWait();
   while (!test_api_->IsOverflowButtonVisible()) {
     test_api_->RunMessageLoopUntilAnimationsDone();
-    AddTabbedBrowserNoWait();
+    AddPlatformAppNoWait();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }

@@ -29,7 +29,6 @@
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/aura/window_observer.h"
@@ -37,6 +36,7 @@
 class AppSyncUIState;
 class Browser;
 class BrowserShortcutLauncherItemController;
+class BrowserStatusMonitor;
 class ExtensionEnableFlow;
 class GURL;
 class LauncherItemController;
@@ -84,7 +84,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                                  public PrefServiceSyncableObserver,
                                  public AppSyncUIStateObserver,
                                  public ExtensionEnableFlowDelegate,
-                                 public chrome::BrowserListObserver,
                                  public ash::ShelfLayoutManagerObserver {
  public:
   // Indicates if a launcher item is incognito or not.
@@ -361,15 +360,15 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // If |web_contents| has not loaded, returns "Net Tab".
   string16 GetAppListTitle(content::WebContents* web_contents) const;
 
-  // Overridden from chrome::BrowserListObserver.
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
-
   // Returns true when the given |browser| is listed in the browser application
   // list.
   bool IsBrowserRepresentedInBrowserList(Browser* browser);
 
   // Returns the LauncherItemController of BrowserShortcut.
   LauncherItemController* GetBrowserShortcutLauncherItemController();
+
+  // Updates the activation state of the Broswer item.
+  void UpdateBrowserItemStatus();
 
  protected:
   // Creates a new app shortcut item and controller on the launcher at |index|.
@@ -400,9 +399,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
       const std::string& app_id,
       int index,
       ash::LauncherItemType launcher_item_type);
-
-  // Updates the activation state of the Broswer item.
-  void UpdateBrowserItemStatus();
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
@@ -512,6 +508,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // The owned browser shortcut item.
   scoped_ptr<BrowserShortcutLauncherItemController> browser_item_controller_;
+
+  // The owned browser status monitor.
+  scoped_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;

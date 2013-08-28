@@ -29,9 +29,8 @@ using ash::internal::LauncherButton;
 
 namespace ash {
 
-// Confirm that launching a browser gets the appropriate state reflected in
-// its button.
-TEST_F(LauncherTest, OpenBrowser) {
+// Confirms that LauncherItem reflects the appropriated state.
+TEST_F(LauncherTest, StatusReflection) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
@@ -41,9 +40,9 @@ TEST_F(LauncherTest, OpenBrowser) {
   // Initially we have the app list and chrome icon.
   int button_count = test.GetButtonCount();
 
-  // Add running tab.
+  // Add running platform app.
   LauncherItem item;
-  item.type = TYPE_TABBED;
+  item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
   int index = model->Add(item);
   ASSERT_EQ(++button_count, test.GetButtonCount());
@@ -67,9 +66,9 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   // Initially we have the app list and chrome icon.
   int button_count = test.GetButtonCount();
 
-  // Add running tab.
+  // Add running platform app.
   LauncherItem item;
-  item.type = TYPE_TABBED;
+  item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
   int index = model->Add(item);
   ASSERT_EQ(++button_count, test.GetButtonCount());
@@ -92,11 +91,11 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
   LauncherModel* model = launcher_view->model();
   LauncherID first_item_id = model->next_id();
 
-  // Add tabbed browser until overflow.
+  // Add platform app button until overflow.
   int items_added = 0;
   while (!test.IsOverflowButtonVisible()) {
     LauncherItem item;
-    item.type = TYPE_TABBED;
+    item.type = TYPE_PLATFORM_APP;
     item.status = STATUS_RUNNING;
     model->Add(item);
 

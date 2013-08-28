@@ -83,6 +83,7 @@ TEST(LauncherModel, BasicAssertions) {
   // Add an item.
   model.AddObserver(&observer);
   LauncherItem item;
+  item.type = TYPE_APP_SHORTCUT;
   int index = model.Add(item);
   EXPECT_EQ(2, model.item_count());
   EXPECT_EQ("added=1", observer.StateStringAndClear());
@@ -93,12 +94,13 @@ TEST(LauncherModel, BasicAssertions) {
     ids.insert(model.items()[i].id);
   EXPECT_EQ(model.item_count(), static_cast<int>(ids.size()));
 
-  // Change a tabbed image.
+  // Change to a platform app item.
   LauncherID original_id = model.items()[index].id;
-  model.Set(index, LauncherItem());
+  item.type = TYPE_PLATFORM_APP;
+  model.Set(index, item);
   EXPECT_EQ(original_id, model.items()[index].id);
   EXPECT_EQ("changed=1", observer.StateStringAndClear());
-  EXPECT_EQ(TYPE_TABBED, model.items()[index].type);
+  EXPECT_EQ(TYPE_PLATFORM_APP, model.items()[index].type);
 
   // Remove the item.
   model.RemoveItemAt(index);
@@ -143,16 +145,17 @@ TEST(LauncherModel, AddIndices) {
   int browser_shortcut_index = model.Add(browser_shortcut);
   EXPECT_EQ(0, browser_shortcut_index);
 
-  // Tabbed items should be after browser shortcut.
+  // platform app items should be after browser shortcut.
   LauncherItem item;
-  int tabbed_index1 = model.Add(item);
-  EXPECT_EQ(1, tabbed_index1);
+  item.type = TYPE_PLATFORM_APP;
+  int platform_app_index1 = model.Add(item);
+  EXPECT_EQ(1, platform_app_index1);
 
-  // Add another tabbed item, it should follow first.
-  int tabbed_index2 = model.Add(item);
-  EXPECT_EQ(2, tabbed_index2);
+  // Add another platform app item, it should follow first.
+  int platform_app_index2 = model.Add(item);
+  EXPECT_EQ(2, platform_app_index2);
 
-  // APP_SHORTCUT's priority is higher than TABBED but same as
+  // APP_SHORTCUT's priority is higher than PLATFORM_APP but same as
   // BROWSER_SHORTCUT. So APP_SHORTCUT is located after BROWSER_SHORCUT.
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index1 = model.Add(item);
@@ -181,26 +184,27 @@ TEST(LauncherModel, AddIndices) {
   // Before there are any panels, no icons should be right aligned.
   EXPECT_EQ(model.item_count(), model.FirstPanelIndex());
 
-  // Check that AddAt() figures out the correct indexes for tabs and panels.
-  item.type = TYPE_TABBED;
-  int tabbed_index3 = model.AddAt(2, item);
-  EXPECT_EQ(6, tabbed_index3);
+  // Check that AddAt() figures out the correct indexes for platform apps and
+  // panels.
+  item.type = TYPE_PLATFORM_APP;
+  int platform_app_index3 = model.AddAt(2, item);
+  EXPECT_EQ(6, platform_app_index3);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index1 = model.AddAt(2, item);
   EXPECT_EQ(10, app_panel_index1);
 
-  item.type = TYPE_TABBED;
-  int tabbed_index4 = model.AddAt(11, item);
-  EXPECT_EQ(9, tabbed_index4);
+  item.type = TYPE_PLATFORM_APP;
+  int platform_app_index4 = model.AddAt(11, item);
+  EXPECT_EQ(9, platform_app_index4);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index2 = model.AddAt(12, item);
   EXPECT_EQ(12, app_panel_index2);
 
-  item.type = TYPE_TABBED;
-  int tabbed_index5 = model.AddAt(7, item);
-  EXPECT_EQ(7, tabbed_index5);
+  item.type = TYPE_PLATFORM_APP;
+  int platform_app_index5 = model.AddAt(7, item);
+  EXPECT_EQ(7, platform_app_index5);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index3 = model.AddAt(13, item);
@@ -236,7 +240,7 @@ TEST(LauncherModel, LauncherIDTests) {
 
   // Adding another item to the list should also produce a new ID.
   LauncherItem item;
-  item.type = TYPE_TABBED;
+  item.type = TYPE_PLATFORM_APP;
   model.Add(item);
   EXPECT_NE(model.next_id(), id2);
 }

@@ -61,10 +61,6 @@ class TopContainerView;
 class JumpList;
 #endif
 
-#if defined(USE_ASH)
-class BrowserLauncherItemController;
-#endif
-
 namespace autofill {
 class PasswordGenerator;
 }
@@ -255,17 +251,6 @@ class BrowserView : public BrowserWindow,
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
-
-#if defined(USE_ASH)
-  // Test support.
-  // Note: This is only needed to be BrowserLauncherItemController instead of
-  // LauncherItemController because of the "favicon_loader" member - to be more
-  // exact that member function is the only one being called.
-  // TODO(skuhne): Remove once per-app is default.
-  BrowserLauncherItemController* launcher_item_controller() const {
-    return launcher_item_controller_.get();
-  }
-#endif
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -583,9 +568,6 @@ class BrowserView : public BrowserWindow,
   void UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
                                 int command_id);
 
-  // Create an icon for this window in the launcher (currently only for Ash).
-  void CreateLauncherIcon();
-
   // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste,
   // first trying the content WebContents, then the devtools WebContents, and
   // lastly the Views::Textfield if one is focused.
@@ -743,13 +725,6 @@ class BrowserView : public BrowserWindow,
 
   // The custom JumpList for Windows 7.
   scoped_refptr<JumpList> jumplist_;
-#endif
-
-#if defined(USE_ASH)
-  // Needs to be BrowserLauncerItemController for
-  // "BrowserActivationStateChanged" and "favicon_loader".
-  // TODO(skuhne): Remove once per-app is default.
-  scoped_ptr<BrowserLauncherItemController> launcher_item_controller_;
 #endif
 
   // The timer used to update frames for the Loading Animation.

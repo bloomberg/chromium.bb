@@ -27,7 +27,6 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
     // Button has mouse hovering on it.
     STATE_HOVERED   = 1 << 0,
     // Underlying LauncherItem has a running instance.
-    //   e.g. A TYPE_TABBED item that has a window.
     STATE_RUNNING   = 1 << 1,
     // Underlying LauncherItem is active (i.e. has focus).
     STATE_ACTIVE    = 1 << 2,

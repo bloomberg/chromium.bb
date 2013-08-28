@@ -23,9 +23,6 @@ ASH_EXPORT extern const int kLauncherBackgroundAlpha;
 
 // Type the LauncherItem represents.
 enum LauncherItemType {
-  // Represents a tabbed browser.
-  TYPE_TABBED,
-
   // Represents a running app panel.
   TYPE_APP_PANEL,
 
@@ -43,6 +40,9 @@ enum LauncherItemType {
 
   // Represents a windowed V1 browser app.
   TYPE_WINDOWED_APP,
+
+  // Default value.
+  TYPE_UNDEFINED,
 };
 
 // Represents the status of pinned or running app launcher items.
@@ -63,12 +63,7 @@ struct ASH_EXPORT LauncherItem {
 
   LauncherItemType type;
 
-  // Whether it is drawn as an incognito icon or not. Only used if this is
-  // TYPE_TABBED. Note: This cannot be used for identifying incognito windows.
-  bool is_incognito;
-
-  // Image to display in the launcher. If this item is TYPE_TABBED the image is
-  // a favicon image.
+  // Image to display in the launcher.
   gfx::ImageSkia image;
 
   // Assigned by the model when the item is added.

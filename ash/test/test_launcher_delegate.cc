@@ -27,7 +27,6 @@ TestLauncherDelegate::TestLauncherDelegate(LauncherModel* model)
   ash::LauncherItemDelegateManager* manager =
       ash::Shell::GetInstance()->launcher_item_delegate_manager();
   manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
-  manager->RegisterLauncherItemDelegate(ash::TYPE_TABBED, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_APP_SHORTCUT, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
@@ -49,7 +48,7 @@ void TestLauncherDelegate::AddLauncherItem(
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
     item.type = ash::TYPE_APP_PANEL;
   else
-    item.type = ash::TYPE_TABBED;
+    item.type = ash::TYPE_PLATFORM_APP;
   DCHECK(window_to_id_.find(window) == window_to_id_.end());
   window_to_id_[window] = model_->next_id();
   item.status = status;

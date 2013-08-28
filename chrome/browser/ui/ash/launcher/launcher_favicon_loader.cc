@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
+#include "ash/launcher/launcher_types.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

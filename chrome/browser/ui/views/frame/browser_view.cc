@@ -132,7 +132,6 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #endif
 
 #if defined(USE_AURA)
@@ -422,12 +421,6 @@ BrowserView::BrowserView()
 }
 
 BrowserView::~BrowserView() {
-#if defined(USE_ASH)
-  // Destroy BrowserLauncherItemController early on as it listens to the
-  // TabstripModel, which is destroyed by the browser.
-  launcher_item_controller_.reset();
-#endif
-
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
@@ -634,8 +627,6 @@ void BrowserView::Show() {
     return;
   }
 
-  CreateLauncherIcon();
-
   // Showing the window doesn't make the browser window active right away.
   // This can cause SetFocusToLocationBar() to skip setting focus to the
   // location bar. To avoid this we explicilty let SetFocusToLocationBar()
@@ -666,7 +657,6 @@ void BrowserView::Show() {
 void BrowserView::ShowInactive() {
   if (frame_->IsVisible())
     return;
-  CreateLauncherIcon();
   frame_->ShowInactive();
 }
 
@@ -1656,11 +1646,6 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
 
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
-#if defined(USE_ASH)
-  if (launcher_item_controller_.get())
-    launcher_item_controller_->BrowserActivationStateChanged();
-#endif
-
   if (active)
     BrowserList::SetLastActive(browser_.get());
 }
@@ -2522,16 +2507,6 @@ void BrowserView::UpdateAcceleratorMetrics(
       break;
   }
 #endif
-}
-
-void BrowserView::CreateLauncherIcon() {
-#if defined(USE_ASH)
-  if (chrome::IsNativeWindowInAsh(GetNativeWindow()) &&
-      !launcher_item_controller_.get()) {
-    launcher_item_controller_.reset(
-        BrowserLauncherItemController::Create(browser_.get()));
-  }
-#endif  // defined(USE_ASH)
 }
 
 // static

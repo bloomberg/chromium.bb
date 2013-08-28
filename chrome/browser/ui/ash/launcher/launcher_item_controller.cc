@@ -48,8 +48,6 @@ ash::LauncherItemType LauncherItemController::GetLauncherItemType() const {
       return ash::TYPE_PLATFORM_APP;
     case LauncherItemController::TYPE_APP_PANEL:
       return ash::TYPE_APP_PANEL;
-    case LauncherItemController::TYPE_TABBED:
-      return ash::TYPE_TABBED;
   }
   NOTREACHED();
   return ash::TYPE_APP_SHORTCUT;

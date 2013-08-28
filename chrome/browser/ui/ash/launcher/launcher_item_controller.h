@@ -32,7 +32,6 @@ class LauncherItemController {
     TYPE_APP,
     TYPE_APP_PANEL,
     TYPE_SHORTCUT,
-    TYPE_TABBED,
     TYPE_WINDOWED_APP
   };
 

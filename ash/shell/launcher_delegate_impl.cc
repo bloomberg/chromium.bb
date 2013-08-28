@@ -21,8 +21,8 @@ LauncherDelegateImpl::LauncherDelegateImpl(WindowWatcher* watcher)
     : watcher_(watcher) {
   ash::LauncherItemDelegateManager* manager =
       ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  manager->RegisterLauncherItemDelegate(ash::TYPE_TABBED, this);
   manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
 }
 
 LauncherDelegateImpl::~LauncherDelegateImpl() {
