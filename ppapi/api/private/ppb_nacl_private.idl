@@ -6,6 +6,10 @@
 /* This file contains NaCl private interfaces. This interface is not versioned
  * and is for internal Chrome use. It may change without notice. */
 
+label Chrome {
+  M25 = 1.0
+};
+
 #inline c
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_instance_private.h"

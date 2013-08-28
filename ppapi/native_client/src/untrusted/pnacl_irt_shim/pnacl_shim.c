@@ -2806,72 +2806,72 @@ static void Pnacl_M13_PPB_Instance_Private_ExecuteScript(struct PP_Var* _struct_
 
 /* Begin wrapper methods for PPB_NaCl_Private_1_0 */
 
-static PP_ExternalPluginResult Pnacl_M13_PPB_NaCl_Private_LaunchSelLdr(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message) {
+static PP_ExternalPluginResult Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->LaunchSelLdr(instance, alleged_url, uses_irt, uses_ppapi, enable_ppapi_dev, enable_dyncode_syscalls, enable_exception_handling, enable_crash_throttling, imc_handle, error_message);
 }
 
-static PP_ExternalPluginResult Pnacl_M13_PPB_NaCl_Private_StartPpapiProxy(PP_Instance instance) {
+static PP_ExternalPluginResult Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->StartPpapiProxy(instance);
 }
 
-static int32_t Pnacl_M13_PPB_NaCl_Private_UrandomFD(void) {
+static int32_t Pnacl_M25_PPB_NaCl_Private_UrandomFD(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->UrandomFD();
 }
 
-static PP_Bool Pnacl_M13_PPB_NaCl_Private_Are3DInterfacesDisabled(void) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_Are3DInterfacesDisabled(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->Are3DInterfacesDisabled();
 }
 
-static int32_t Pnacl_M13_PPB_NaCl_Private_BrokerDuplicateHandle(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options) {
+static int32_t Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->BrokerDuplicateHandle(source_handle, process_id, target_handle, desired_access, options);
 }
 
-static int32_t Pnacl_M13_PPB_NaCl_Private_EnsurePnaclInstalled(PP_Instance instance, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M25_PPB_NaCl_Private_EnsurePnaclInstalled(PP_Instance instance, struct PP_CompletionCallback* callback) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->EnsurePnaclInstalled(instance, *callback);
 }
 
-static PP_FileHandle Pnacl_M13_PPB_NaCl_Private_GetReadonlyPnaclFd(const char* filename) {
+static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_GetReadonlyPnaclFd(const char* filename) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetReadonlyPnaclFd(filename);
 }
 
-static PP_FileHandle Pnacl_M13_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance instance) {
+static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->CreateTemporaryFile(instance);
 }
 
-static int32_t Pnacl_M13_PPB_NaCl_Private_GetNexeFd(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M25_PPB_NaCl_Private_GetNexeFd(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback* callback) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetNexeFd(instance, pexe_url, abi_version, opt_level, last_modified, etag, is_hit, nexe_handle, *callback);
 }
 
-static void Pnacl_M13_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
+static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->ReportTranslationFinished(instance, success);
 }
 
-static PP_Bool Pnacl_M13_PPB_NaCl_Private_IsOffTheRecord(void) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_IsOffTheRecord(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->IsOffTheRecord();
 }
 
-static PP_Bool Pnacl_M13_PPB_NaCl_Private_IsPnaclEnabled(void) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_IsPnaclEnabled(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->IsPnaclEnabled();
 }
 
-static PP_ExternalPluginResult Pnacl_M13_PPB_NaCl_Private_ReportNaClError(PP_Instance instance, PP_NaClError message_id) {
+static PP_ExternalPluginResult Pnacl_M25_PPB_NaCl_Private_ReportNaClError(PP_Instance instance, PP_NaClError message_id) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->ReportNaClError(instance, message_id);
 }
 
-static PP_FileHandle Pnacl_M13_PPB_NaCl_Private_OpenNaClExecutable(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi) {
+static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->OpenNaClExecutable(instance, file_url, file_token_lo, file_token_hi);
 }
@@ -4650,20 +4650,20 @@ struct PPB_Instance_Private_0_1 Pnacl_Wrappers_PPB_Instance_Private_0_1 = {
 };
 
 struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
-    .LaunchSelLdr = (PP_ExternalPluginResult (*)(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message))&Pnacl_M13_PPB_NaCl_Private_LaunchSelLdr,
-    .StartPpapiProxy = (PP_ExternalPluginResult (*)(PP_Instance instance))&Pnacl_M13_PPB_NaCl_Private_StartPpapiProxy,
-    .UrandomFD = (int32_t (*)(void))&Pnacl_M13_PPB_NaCl_Private_UrandomFD,
-    .Are3DInterfacesDisabled = (PP_Bool (*)(void))&Pnacl_M13_PPB_NaCl_Private_Are3DInterfacesDisabled,
-    .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M13_PPB_NaCl_Private_BrokerDuplicateHandle,
-    .EnsurePnaclInstalled = (int32_t (*)(PP_Instance instance, struct PP_CompletionCallback callback))&Pnacl_M13_PPB_NaCl_Private_EnsurePnaclInstalled,
-    .GetReadonlyPnaclFd = (PP_FileHandle (*)(const char* filename))&Pnacl_M13_PPB_NaCl_Private_GetReadonlyPnaclFd,
-    .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M13_PPB_NaCl_Private_CreateTemporaryFile,
-    .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M13_PPB_NaCl_Private_GetNexeFd,
-    .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M13_PPB_NaCl_Private_ReportTranslationFinished,
-    .IsOffTheRecord = (PP_Bool (*)(void))&Pnacl_M13_PPB_NaCl_Private_IsOffTheRecord,
-    .IsPnaclEnabled = (PP_Bool (*)(void))&Pnacl_M13_PPB_NaCl_Private_IsPnaclEnabled,
-    .ReportNaClError = (PP_ExternalPluginResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M13_PPB_NaCl_Private_ReportNaClError,
-    .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M13_PPB_NaCl_Private_OpenNaClExecutable
+    .LaunchSelLdr = (PP_ExternalPluginResult (*)(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message))&Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr,
+    .StartPpapiProxy = (PP_ExternalPluginResult (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy,
+    .UrandomFD = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_UrandomFD,
+    .Are3DInterfacesDisabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_Are3DInterfacesDisabled,
+    .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
+    .EnsurePnaclInstalled = (int32_t (*)(PP_Instance instance, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_EnsurePnaclInstalled,
+    .GetReadonlyPnaclFd = (PP_FileHandle (*)(const char* filename))&Pnacl_M25_PPB_NaCl_Private_GetReadonlyPnaclFd,
+    .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile,
+    .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_GetNexeFd,
+    .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
+    .IsOffTheRecord = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsOffTheRecord,
+    .IsPnaclEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsPnaclEnabled,
+    .ReportNaClError = (PP_ExternalPluginResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M25_PPB_NaCl_Private_ReportNaClError,
+    .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable
 };
 
 struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
