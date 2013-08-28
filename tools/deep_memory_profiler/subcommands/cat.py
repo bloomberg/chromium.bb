@@ -64,7 +64,7 @@ class CatCommand(SubCommand):
       for sorter in sorters.iter_world(world):
         order = []
         for rule in sorter.iter_rule():
-          if (not order) or (rule.name != order[-1]):
+          if rule.name not in order:
             order.append(rule.name)
         orders['worlds'][world]['breakdown'][sorter.name] = order
     json_root['orders'] = orders
