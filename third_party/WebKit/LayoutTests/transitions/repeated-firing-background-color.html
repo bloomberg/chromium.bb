@@ -15,7 +15,7 @@
         document.getElementById('result').innerHTML = "This test must be run in DRT."
         return;
       }
-        
+
       var current = internals.numberOfActiveAnimations();
       if (current == 0)
         document.getElementById('result').innerHTML = "Number of active transitions is (0) as expected";
@@ -35,6 +35,8 @@
 <div id="foo">This should not be continually firing transitions</span>
 
 <script type="text/javascript" charset="utf-8">
+    // Force a layout so that changing the classname below causes an animation.
+    document.body.offsetHeight;
 
     document.getElementById('foo').addEventListener('webkitTransitionEnd', function() {
         checkRunning()

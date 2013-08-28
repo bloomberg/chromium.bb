@@ -13,7 +13,7 @@
                 color: white;
             }
             .animation {
-                transition: all 0.25s linear;    
+                transition: all 0.25s linear;
             }
         </style>
         <script src="../js/resources/js-test-pre.js"></script>
@@ -32,6 +32,9 @@
             if (window.testRunner)
                 testRunner.waitUntilDone();
 
+            // Force a layout so that changing the classname below causes an animation.
+            document.body.offsetHeight;
+
             var elements = document.getElementsByClassName('circle');
             for (var el, i = 0; el = elements[i]; i++) {
                 el.style.color = el.dataset.from;
@@ -41,11 +44,11 @@
                 el.addEventListener('transitionend', onTransitionend, false /* capture */ );
                 el.style.color = el.dataset.to;
             }
-            
+
             var RGB_REGEXP = /rgb\([0-9]+, [0-9]+, [0-9]+\)/;
             var elementColors = {};
             var timer;
-            
+
             function onTransitionend(e)
             {
                 var style = window.getComputedStyle(e.target);
@@ -63,7 +66,7 @@
                 else
                     testFailed(id + ' has ' + actualColor + ' shadow, expected ' + expectedColor + '.');
             }
-            
+
             function finish()
             {
                 testColor('circle1');

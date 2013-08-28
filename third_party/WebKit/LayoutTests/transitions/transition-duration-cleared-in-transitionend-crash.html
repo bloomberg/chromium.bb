@@ -1,12 +1,16 @@
 <html>
     <body>
         This tests that we don't crash if we clear a transitions duration during the transition end callback.
-        <div id="t" style="background-color:#000">test</div> 
+        <div id="t" style="background-color:#000">test</div>
         <script>
             if (window.testRunner) {
                 testRunner.dumpAsText();
                 testRunner.waitUntilDone();
             }
+
+            // Force a layout so that changing the cssText below causes an animation.
+            document.body.offsetHeight;
+
             var el = document.getElementById('t');
             el.addEventListener('webkitTransitionEnd', function(){
                 el.style.webkitTransitionDuration = '';

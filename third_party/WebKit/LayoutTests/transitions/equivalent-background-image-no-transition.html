@@ -28,6 +28,9 @@
 
     var finished = false;
 
+    // Force a layout so that changing the classname below causes an animation.
+    document.body.offsetHeight;
+
     document.getElementById('foo').addEventListener('webkitTransitionEnd', function(evt) {
         if(evt.propertyName == "background-image" && !finished) {
             document.getElementById('result').innerHTML = ("FAIL: saw a background-image transition");
