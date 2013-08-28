@@ -335,6 +335,9 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user) {
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     ids.insert((*iter)->id());
+    NotificationDelegate* delegate = (*iter)->delegate();
+    if (delegate)
+      delegate->Close(by_user);
   }
   notification_list_->RemoveAllNotifications();
 
