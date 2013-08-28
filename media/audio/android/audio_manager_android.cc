@@ -59,11 +59,16 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
 
 AudioParameters AudioManagerAndroid::GetInputStreamParameters(
     const std::string& device_id) {
+  // Use mono as preferred number of input channels on Android to save
+  // resources. Using mono also avoids a driver issue seen on Samsung
+  // Galaxy S3 and S4 devices. See http://crbug.com/256851 for details.
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_MONO;
   int buffer_size = Java_AudioManagerAndroid_getMinInputFrameSize(
-      base::android::AttachCurrentThread(), GetNativeOutputSampleRate(), 2);
+      base::android::AttachCurrentThread(), GetNativeOutputSampleRate(),
+      ChannelLayoutToChannelCount(channel_layout));
 
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
       GetNativeOutputSampleRate(), 16,
       buffer_size <= 0 ? kDefaultInputBufferSize : buffer_size);
 }
