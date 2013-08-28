@@ -17,7 +17,7 @@
 
 namespace ppapi {
 
-struct PPB_FileRef_CreateInfo;
+struct FileRefCreateInfo;
 
 namespace proxy {
 
@@ -56,7 +56,7 @@ class PPAPI_PROXY_EXPORT FileChooserResource
  private:
   void OnPluginMsgShowReply(
       const ResourceMessageReplyParams& params,
-      const std::vector<PPB_FileRef_CreateInfo>& chosen_files);
+      const std::vector<FileRefCreateInfo>& chosen_files);
 
   int32_t ShowInternal(PP_Bool save_as,
                        const PP_Var& suggested_file_name,

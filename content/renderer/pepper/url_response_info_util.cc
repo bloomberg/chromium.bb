@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
-#include "content/renderer/pepper/ppb_file_ref_impl.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "ipc/ipc_message.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -43,13 +46,29 @@ bool IsRedirect(int32_t status) {
   return status >= 300 && status <= 399;
 }
 
+void DidCreateResourceHosts(const ppapi::URLResponseInfoData& in_data,
+                            const base::FilePath& external_path,
+                            const DataFromWebURLResponseCallback& callback,
+                            const std::vector<int>& pending_resource_ids) {
+  DCHECK(pending_resource_ids.size() == 1);
+  int pending_resource_id = 0;
+
+  if (pending_resource_ids.size() == 1)
+    pending_resource_id = pending_resource_ids[0];
+
+  ppapi::URLResponseInfoData data = in_data;
+  data.body_as_file_ref = ppapi::MakeExternalFileRefCreateInfo(
+      external_path, std::string(), pending_resource_id);
+  callback.Run(data);
+}
+
 }  // namespace
 
-void DataFromWebURLResponse(PP_Instance pp_instance,
+void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
+                            PP_Instance pp_instance,
                             const WebURLResponse& response,
                             const DataFromWebURLResponseCallback& callback) {
   ppapi::URLResponseInfoData data;
-
   data.url = response.url().spec();
   data.status_code = response.httpStatusCode();
   data.status_text = response.httpStatusText().utf8();
@@ -64,18 +83,18 @@ void DataFromWebURLResponse(PP_Instance pp_instance,
 
   WebString file_path = response.downloadFilePath();
   if (!file_path.isEmpty()) {
-    scoped_refptr<PPB_FileRef_Impl> file_ref(
-        PPB_FileRef_Impl::CreateExternal(
-            pp_instance,
-            base::FilePath::FromUTF16Unsafe(file_path),
-            std::string()));
-    data.body_as_file_ref = file_ref->GetCreateInfo();
-    file_ref->GetReference();  // The returned data has one ref for the plugin.
+    base::FilePath external_path = base::FilePath::FromUTF16Unsafe(file_path);
+    std::vector<IPC::Message> create_msgs;
+    create_msgs.push_back(PpapiHostMsg_FileRef_CreateExternal(external_path));
+    host_impl->CreateBrowserResourceHosts(
+        pp_instance,
+        create_msgs,
+        base::Bind(&DidCreateResourceHosts, data, external_path, callback));
+  } else {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, data));
   }
-
-  // We post data to a callback instead of returning it here because the new
-  // implementation for FileRef is asynchronous when creating the resource.
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, data));
 }
 
 }  // namespace content

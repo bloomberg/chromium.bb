@@ -347,8 +347,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual const GURL& GetPluginURL() OVERRIDE;
   virtual base::FilePath GetModulePath() OVERRIDE;
-  virtual PP_Resource CreateExternalFileReference(
-      const base::FilePath& external_file_path) OVERRIDE;
   virtual PP_Resource CreateImage(gfx::ImageSkia* source_image,
                                   float scale) OVERRIDE;
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(

@@ -19,6 +19,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/file_io_state_manager.h"
+#include "ppapi/shared_impl/file_ref_detailed_info.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
@@ -26,6 +27,7 @@
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
+class PepperPluginInstanceImpl;
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
@@ -79,6 +81,11 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int32_t OnHostMsgWillSetLength(ppapi::host::HostMessageContext* context,
                                  int64_t length);
 
+  void DidGetFileRefInfo(
+      ppapi::host::ReplyMessageContext reply_context,
+      int flags,
+      const std::vector<ppapi::FileRefDetailedInfo>& infos);
+
   // Callback handlers. These mostly convert the PlatformFileError to the
   // PP_Error code and send back the reply. Note that the argument
   // ReplyMessageContext is copied so that we have a closure containing all
@@ -105,7 +112,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
                                     int bytes_written);
 
   RendererPpapiHost* renderer_ppapi_host_;
-
+  PepperPluginInstanceImpl* plugin_instance_;
   base::PlatformFile file_;
 
   // The file system type specified in the Open() call. This will be

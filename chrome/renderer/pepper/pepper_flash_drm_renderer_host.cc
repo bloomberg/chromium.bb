@@ -12,7 +12,6 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_file_ref_proxy.h"
 
 namespace chrome {
 
@@ -28,7 +27,8 @@ PepperFlashDRMRendererHost::PepperFlashDRMRendererHost(
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host) {
+      renderer_ppapi_host_(host),
+      weak_factory_(this) {
 }
 
 PepperFlashDRMRendererHost::~PepperFlashDRMRendererHost() {
@@ -56,13 +56,35 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
   base::FilePath voucher_file = plugin_dir.Append(
       base::FilePath(kVoucherFilename));
 
-  ppapi::PPB_FileRef_CreateInfo create_info;
-  ppapi::proxy::PPB_FileRef_Proxy::SerializeFileRef(
-      plugin_instance->CreateExternalFileReference(voucher_file),
-      &create_info);
-  context->reply_msg =
-      PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info);
-  return PP_OK;
+  std::vector<IPC::Message> create_msgs;
+  create_msgs.push_back(PpapiHostMsg_FileRef_CreateExternal(voucher_file));
+
+  renderer_ppapi_host_->CreateBrowserResourceHosts(
+      pp_instance(),
+      create_msgs,
+      base::Bind(&PepperFlashDRMRendererHost::DidCreateFileRefHosts,
+                 weak_factory_.GetWeakPtr(),
+                 context->MakeReplyMessageContext(),
+                 voucher_file));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperFlashDRMRendererHost::DidCreateFileRefHosts(
+    const ppapi::host::ReplyMessageContext& reply_context,
+    const base::FilePath& external_path,
+    const std::vector<int>& pending_resource_ids) {
+  DCHECK(pending_resource_ids.size() == 1);
+
+  int pending_resource_id = 0;
+  if (pending_resource_ids.size() == 1)
+    pending_resource_id = pending_resource_ids[0];
+
+  ppapi::FileRefCreateInfo create_info =
+      ppapi::MakeExternalFileRefCreateInfo(external_path,
+                                           std::string(),
+                                           pending_resource_id);
+  host()->SendReply(reply_context,
+                    PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info));
 }
 
 }  // namespace chrome

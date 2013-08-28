@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
-#include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 
 namespace ppapi {
 
@@ -32,19 +34,12 @@ struct PPAPI_SHARED_EXPORT URLRequestInfoData {
 
     std::string data;
 
-    // Is is_file is set, these variables are set. Note that the resource
-    // may still be NULL in some cases, such as deserialization errors.
-    //
-    // This is a bit tricky. In the plugin side of the proxy, both the file ref
-    // and the file_ref_host_resource will be set and valid. The scoped_refptr
-    // ensures that the resource is alive for as long as the BodyItem is.
-    //
-    // When we deserialize this in the renderer, only the
-    // file_ref_host_resource's are serialized over IPC. The file_refs won't be
-    // valid until the host resources are converted to Resource pointers in the
-    // PPB_URLRequestInfo_Impl.
-    scoped_refptr<Resource> file_ref;
-    HostResource file_ref_host_resource;
+    // Only set on the plugin-side, for refcounting purposes. Only valid when
+    // |is_file| is set.
+    scoped_refptr<Resource> file_ref_resource;
+    // This struct holds no ref to this resource. Only valid when |is_file| is
+    // set.
+    PP_Resource file_ref_pp_resource;
 
     int64_t start_offset;
     int64_t number_of_bytes;
