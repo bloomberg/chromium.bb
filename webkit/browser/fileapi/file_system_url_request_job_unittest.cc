@@ -28,9 +28,9 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 
 namespace fileapi {
@@ -124,48 +124,23 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
-    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
-        kFileSystemTypeTemporary);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(dir_name));
-
-    FileSystemOperationContext context(file_system_context_.get());
-    context.set_allowed_bytes_growth(1024);
-
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
-        &context,
-        url,
-        false /* exclusive */,
-        false /* recursive */));
+    ASSERT_EQ(base::PLATFORM_FILE_OK, AsyncFileTestHelper::CreateDirectory(
+        file_system_context_, url));
   }
 
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
-    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
-        kFileSystemTypeTemporary);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
-
-    FileSystemOperationContext context(file_system_context_.get());
-    context.set_allowed_bytes_growth(1024);
-
-    base::PlatformFile handle = base::kInvalidPlatformFileValue;
-    bool created = false;
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateOrOpen(
-        &context,
-        url,
-        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-        &handle,
-        &created));
-    EXPECT_TRUE(created);
-    ASSERT_NE(base::kInvalidPlatformFileValue, handle);
-    ASSERT_EQ(buf_size,
-        base::WritePlatformFile(handle, 0 /* offset */, buf, buf_size));
-    base::ClosePlatformFile(handle);
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              AsyncFileTestHelper::CreateFileWithData(
+                  file_system_context_, url, buf, buf_size));
   }
 
   GURL CreateFileSystemURL(const std::string& path) {

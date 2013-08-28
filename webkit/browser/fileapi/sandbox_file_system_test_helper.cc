@@ -136,7 +136,7 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
   DCHECK(file_system_context_.get());
   DCHECK(file_system_context_->sandbox_backend()->CanHandleType(type_));
 
-  file_util_ = file_system_context_->GetFileUtil(type_);
+  file_util_ = file_system_context_->sandbox_delegate()->sync_file_util();
   DCHECK(file_util_);
 
   // Prepare the origin's root directory.

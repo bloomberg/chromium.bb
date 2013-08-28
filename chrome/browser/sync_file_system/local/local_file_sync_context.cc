@@ -667,7 +667,8 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
 
   base::FilePath platform_path;
   base::PlatformFileInfo file_info;
-  FileSystemFileUtil* file_util = file_system_context->GetFileUtil(url.type());
+  FileSystemFileUtil* file_util =
+      file_system_context->sandbox_delegate()->sync_file_util();
   DCHECK(file_util);
   base::PlatformFileError file_error = file_util->GetFileInfo(
       make_scoped_ptr(

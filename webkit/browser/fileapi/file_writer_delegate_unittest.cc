@@ -17,9 +17,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
@@ -80,10 +79,6 @@ class FileWriterDelegateTest : public PlatformTest {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  FileSystemFileUtil* file_util() {
-    return file_system_context_->GetFileUtil(kFileSystemType);
-  }
-
   int64 usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
         ->GetOriginUsageOnFileThread(
@@ -98,25 +93,15 @@ class FileWriterDelegateTest : public PlatformTest {
 
     FileSystemURL url = GetFileSystemURL(test_file_path);
     base::PlatformFileInfo file_info;
-    base::FilePath platform_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_util()->GetFileInfo(NewOperationContext().get(), url,
-                                       &file_info, &platform_path));
+              AsyncFileTestHelper::GetMetadata(
+                  file_system_context_, url, &file_info));
     return file_info.size;
   }
 
   FileSystemURL GetFileSystemURL(const char* file_name) const {
     return file_system_context_->CreateCrackedFileSystemURL(
         kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
-  }
-
-  scoped_ptr<FileSystemOperationContext> NewOperationContext() {
-    FileSystemOperationContext* context =
-        new FileSystemOperationContext(file_system_context_.get());
-    context->set_update_observers(
-        *file_system_context_->GetUpdateObservers(kFileSystemType));
-    context->set_root_path(dir_.path());
-    return make_scoped_ptr(context);
   }
 
   FileWriterDelegate* CreateWriterDelegate(
@@ -231,16 +216,9 @@ void FileWriterDelegateTest::SetUp() {
 
   file_system_context_ = CreateFileSystemContextForTesting(
       NULL, dir_.path());
-
-  bool created = false;
-  scoped_ptr<FileSystemOperationContext> context = NewOperationContext();
-  context->set_allowed_bytes_growth(kint64max);
-  base::PlatformFileError error = file_util()->EnsureFileExists(
-      context.get(),
-      GetFileSystemURL("test"),
-      &created);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-  ASSERT_TRUE(created);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::CreateFile(
+                file_system_context_, GetFileSystemURL("test")));
   net::URLRequest::Deprecated::RegisterProtocolFactory("blob", &Factory);
 }
 
@@ -336,11 +314,9 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   scoped_ptr<FileWriterDelegate> file_writer_delegate2;
   scoped_ptr<net::URLRequest> request2;
 
-  bool created = false;
-  file_util()->EnsureFileExists(NewOperationContext().get(),
-                                GetFileSystemURL("test2"),
-                                &created);
-  ASSERT_TRUE(created);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::CreateFile(
+                file_system_context_, GetFileSystemURL("test2")));
 
   const GURL kBlobURL("blob:nolimitconcurrent");
   const GURL kBlobURL2("blob:nolimitconcurrent2");

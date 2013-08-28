@@ -218,7 +218,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
     return status;
 
   FileSystemFileUtil* file_util =
-      file_system_context->GetFileUtil(fileapi::kFileSystemTypeSyncable);
+      file_system_context->sandbox_delegate()->sync_file_util();
   DCHECK(file_util);
   scoped_ptr<FileSystemOperationContext> context(
       new FileSystemOperationContext(file_system_context));

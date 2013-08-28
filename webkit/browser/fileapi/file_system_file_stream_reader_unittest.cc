@@ -15,10 +15,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 
 namespace fileapi {
@@ -102,32 +102,16 @@ class FileSystemFileStreamReaderTest : public testing::Test {
                  const char* buf,
                  int buf_size,
                  base::Time* modification_time) {
-    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
-        kFileSystemTypeTemporary);
     FileSystemURL url = GetFileSystemURL(file_name);
 
-    FileSystemOperationContext context(file_system_context_.get());
-    context.set_allowed_bytes_growth(1024);
-
-    base::PlatformFile handle = base::kInvalidPlatformFileValue;
-    bool created = false;
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateOrOpen(
-        &context,
-        url,
-        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-        &handle,
-        &created));
-    EXPECT_TRUE(created);
-    ASSERT_NE(base::kInvalidPlatformFileValue, handle);
-    ASSERT_EQ(buf_size,
-              base::WritePlatformFile(handle, 0 /* offset */, buf, buf_size));
-    base::ClosePlatformFile(handle);
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              fileapi::AsyncFileTestHelper::CreateFileWithData(
+                  file_system_context_, url, buf, buf_size));
 
     base::PlatformFileInfo file_info;
-    base::FilePath platform_path;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              file_util->GetFileInfo(&context, url, &file_info,
-                                     &platform_path));
+              AsyncFileTestHelper::GetMetadata(
+                  file_system_context_, url, &file_info));
     if (modification_time)
       *modification_time = file_info.last_modified;
   }

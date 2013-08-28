@@ -199,7 +199,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return file_system_context_->GetFileUtil(kFileSystemTypeTemporary);
+    return file_system_context_->sandbox_delegate()->sync_file_util();
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
