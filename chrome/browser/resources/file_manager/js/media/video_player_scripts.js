@@ -17,6 +17,7 @@
 
 //<include src="../async_util.js"/>
 //<include src="../util.js"/>
+//<include src="../path_util.js"/>
 //<include src="../file_type.js"/>
 //<include src="../volume_manager.js">
 //<include src="../metadata/metadata_cache.js"/>

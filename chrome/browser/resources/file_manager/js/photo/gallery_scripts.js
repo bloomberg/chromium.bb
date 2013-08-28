@@ -34,6 +34,7 @@
 //<include src="../file_type.js">
 //<include src="../async_util.js">
 //<include src="../util.js">
+//<include src="../path_util.js">
 //<include src="../volume_manager.js">
 
 //<include src="../image_editor/image_util.js"/>
