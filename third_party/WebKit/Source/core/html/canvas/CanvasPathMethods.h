@@ -47,6 +47,7 @@ public:
     void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
     void arcTo(float x0, float y0, float x1, float y1, float radius, ExceptionState&);
     void arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState&);
+    void ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState&);
     void rect(float x, float y, float width, float height);
 
     virtual bool isTransformInvertible() const { return true; }

@@ -38,6 +38,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -184,6 +185,114 @@ void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, fl
 
     float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
     m_path.addArc(FloatPoint(x, y), radius, startAngle, adjustedEndAngle, anticlockwise);
+}
+
+inline static void lineToFloatPoint(CanvasPathMethods* path, const FloatPoint& p)
+{
+    path->lineTo(p.x(), p.y());
+}
+
+inline static FloatPoint getPointOnEllipse(float radiusX, float radiusY, float theta)
+{
+    return FloatPoint(radiusX * cosf(theta), radiusY * sinf(theta));
+}
+
+inline static void canonicalizeAngle(float* startAngle, float* endAngle)
+{
+    // Make 0 <= startAngle < 2*PI
+    float twoPi = 2 * piFloat;
+    float newStartAngle = *startAngle;
+    if (newStartAngle < 0)
+        newStartAngle = twoPi + fmodf(newStartAngle, -twoPi);
+    else
+        newStartAngle = fmodf(newStartAngle, twoPi);
+
+    float delta = newStartAngle - *startAngle;
+    *startAngle = newStartAngle;
+    *endAngle = *endAngle + delta;
+}
+
+/*
+ * degenerateEllipse() handles a degenerated ellipse using several lines.
+ *
+ * Let's see a following example: line to ellipse to line.
+ *        _--^\
+ *       (     )
+ * -----(      )
+ *            )
+ *           /--------
+ *
+ * If radiusX becomes zero, the ellipse of the example is degenerated.
+ *         _
+ *        // P
+ *       //
+ * -----//
+ *      /
+ *     /--------
+ *
+ * To draw the above example, need to get P that is a local maximum point.
+ * Angles for P are 0.5Pi and 1.5Pi in the ellipse coordinates.
+ *
+ * If radiusY becomes zero, the result is as follows.
+ * -----__
+ *        --_
+ *          ----------
+ *            ``P
+ * Angles for P are 0 and Pi in the ellipse coordinates.
+ *
+ * To handle both cases, degenerateEllipse() lines to start angle, local maximum points(every 0.5Pi), and end angle.
+ * NOTE: Before ellipse() calls this function, adjustEndAngle() is called, so endAngle - startAngle must be less than 4Pi.
+ */
+static void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
+{
+    ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
+
+    FloatPoint center(x, y);
+    AffineTransform rotationMatrix;
+    rotationMatrix.rotate(rad2deg(rotation));
+    // First, if the object's path has any subpaths, then the method must add a straight line from the last point in the subpath to the start point of the arc.
+    lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, startAngle)));
+    if ((!radiusX && !radiusY) || startAngle == endAngle)
+        return;
+
+    canonicalizeAngle(&startAngle, &endAngle);
+    ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
+
+    float halfPiFloat = piFloat * 0.5;
+    if (!anticlockwise) {
+        // startAngle - fmodf(startAngle, halfPiFloat) + halfPiFloat is the one of (0, 0.5Pi, Pi, 1.5Pi, 2Pi)
+        // that is the closest to startAngle on the clockwise direction.
+        for (float angle = startAngle - fmodf(startAngle, halfPiFloat) + halfPiFloat; angle < endAngle; angle += halfPiFloat)
+            lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, angle)));
+    } else {
+        for (float angle = startAngle - fmodf(startAngle, halfPiFloat); angle > endAngle; angle -= halfPiFloat)
+            lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, angle)));
+    }
+
+    lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, endAngle)));
+}
+
+void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
+{
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radiusX) || !std::isfinite(radiusY) || !std::isfinite(rotation) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
+        return;
+
+    if (radiusX < 0 || radiusY < 0) {
+        es.throwDOMException(IndexSizeError);
+        return;
+    }
+
+    if (!isTransformInvertible())
+        return;
+
+    float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
+    if (!radiusX || !radiusY || startAngle == adjustedEndAngle) {
+        // The ellipse is empty but we still need to draw the connecting line to start point.
+        degenerateEllipse(this, x, y, radiusX, radiusY, rotation, startAngle, adjustedEndAngle, anticlockwise);
+        return;
+    }
+
+    m_path.addEllipse(FloatPoint(x, y), radiusX, radiusY, rotation, startAngle, adjustedEndAngle, anticlockwise);
 }
 
 void CanvasPathMethods::rect(float x, float y, float width, float height)

@@ -318,6 +318,32 @@ void Path::addRect(const FloatRect& rect)
     m_path.addRect(rect);
 }
 
+void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
+{
+    // Optimize the common case of an entire ellipse.
+    SkScalar twoPiScalar = WebCoreFloatToSkScalar(2 * piFloat);
+    SkScalar endAngleScalar = WebCoreFloatToSkScalar(endAngle);
+    if (!rotation && !startAngle && SkScalarNearlyEqual(twoPiScalar, SkScalarAbs(endAngleScalar))) {
+        FloatRect boundingRect(p - FloatSize(radiusX, radiusY), FloatSize(2 * radiusX, 2 * radiusY));
+        if (anticlockwise && SkScalarNearlyEqual(twoPiScalar, -endAngleScalar)) {
+            m_path.addOval(boundingRect, SkPath::kCCW_Direction);
+            return;
+        }
+        if (!anticlockwise && SkScalarNearlyEqual(twoPiScalar, endAngleScalar)) {
+            m_path.addOval(boundingRect);
+            return;
+        }
+    }
+
+    // Add an arc after the relevant transform.
+    AffineTransform ellipseTransform = AffineTransform::translation(p.x(), p.y()).rotate(rad2deg(rotation)).scale(radiusX, radiusY);
+    ASSERT(ellipseTransform.isInvertible());
+    AffineTransform inverseEllipseTransform = ellipseTransform.inverse();
+    transform(inverseEllipseTransform);
+    addArc(FloatPoint::zero(), 1 /* unit circle */, startAngle, endAngle, anticlockwise);
+    transform(ellipseTransform);
+}
+
 void Path::addEllipse(const FloatRect& rect)
 {
     m_path.addOval(rect);

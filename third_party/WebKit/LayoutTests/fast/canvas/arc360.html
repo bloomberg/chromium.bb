@@ -8,13 +8,10 @@ if (window.testRunner)
 var canvas = document.getElementById('mycanvas');
 var ctx = canvas.getContext('2d');
 var cx = 200, cy = 200, radius = 100;
-function deg2rad(x) {
-  return x * 3.141592653589 / 180;
-}
 ctx.lineWidth = 10;
 ctx.beginPath();
 ctx.moveTo(0, 100);
-ctx.arc(cx, cy, radius, deg2rad(-180), deg2rad(180), false);
+ctx.arc(cx, cy, radius, -Math.PI, Math.PI, false);
 ctx.lineTo(0, 300);
 ctx.stroke();
 </script>
