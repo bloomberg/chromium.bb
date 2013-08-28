@@ -230,10 +230,14 @@ enum ReservedVariationID {
   COOKIE_RETENTION_PRIORITY_STUDY_EXPERIMENT_OFF = 3310869,
   COOKIE_RETENTION_PRIORITY_STUDY_EXPERIMENT_ON = 3310870,
 
+  // QUIC field trial.
+  QUIC_FIELD_TRIAL_ID_MIN = 3311871,
+  QUIC_FIELD_TRIAL_ID_MAX = 3311920,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3311871,
+  NEXT_ID = 3311921,
 
   // USABLE IDs END HERE.
   //
