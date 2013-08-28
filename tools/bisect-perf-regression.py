@@ -85,18 +85,15 @@ DEPOT_DEPS_NAME = {
     "src" : "src/v8",
     "recurse" : True,
     "depends" : None,
-    # Bisecting into v8 is broken at the moment.
-    # crbug.com/274818
-    #"build_with": 'v8_bleeding_edge',
     "from" : 'chromium',
     "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8
   },
   'v8_bleeding_edge' : {
     "src" : "src/v8_bleeding_edge",
-    "recurse" : False,
+    "recurse" : True,
     "depends" : None,
     "svn": "https://v8.googlecode.com/svn/branches/bleeding_edge",
-    "from" : 'chromium'
+    "from" : 'v8',
   },
   'skia/src' : {
     "src" : "src/third_party/skia/src",
@@ -815,7 +812,8 @@ class BisectPerformanceMetrics(object):
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
 
-      self.depot_cwd[d] = self.src_cwd + DEPOT_DEPS_NAME[d]['src'][3:]
+      self.depot_cwd[d] = os.path.join(
+          self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
 
   def PerformCleanup(self):
     """Performs cleanup when script is finished."""
@@ -862,7 +860,7 @@ class BisectPerformanceMetrics(object):
 
     return revision_work_list
 
-  def Get3rdPartyRevisionsFromCurrentRevision(self, depot):
+  def Get3rdPartyRevisionsFromCurrentRevision(self, depot, revision):
     """Parses the DEPS file to determine WebKit/v8/etc... versions.
 
     Returns:
@@ -929,6 +927,39 @@ class BisectPerformanceMetrics(object):
           os.chdir(cwd)
 
           results['chromium'] = output.strip()
+    elif depot == 'v8':
+      results['v8_bleeding_edge'] = None
+
+      svn_revision = self.source_control.SVNFindRev(revision)
+
+      if IsStringInt(svn_revision):
+        # V8 is tricky to bisect, in that there are only a few instances when
+        # we can dive into bleeding_edge and get back a meaningful result.
+        # Try to detect a V8 "business as usual" case, which is when:
+        #  1. trunk revision N has description "Version X.Y.Z"
+        #  2. bleeding_edge revision (N-1) has description "Prepare push to
+        #     trunk. Now working on X.Y.(Z+1)."
+        self.ChangeToDepotWorkingDirectory(depot)
+
+        revision_info = self.source_control.QueryRevisionInfo(revision)
+
+        version_re = re.compile("Version (?P<values>[0-9,.]+)")
+
+        regex_results = version_re.search(revision_info['subject'])
+
+        if regex_results:
+          version = regex_results.group('values')
+
+          self.ChangeToDepotWorkingDirectory('v8_bleeding_edge')
+
+          git_revision = self.source_control.ResolveToRevision(
+              int(svn_revision) - 1, 'v8_bleeding_edge', -1)
+
+          if git_revision:
+            revision_info = self.source_control.QueryRevisionInfo(git_revision)
+
+            if 'Prepare push to trunk' in revision_info['subject']:
+              results['v8_bleeding_edge'] = git_revision
 
     return results
 
@@ -1370,11 +1401,11 @@ class BisectPerformanceMetrics(object):
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
 
-          if results[1] == 0 and sync_client:
+          if results[1] == 0:
             external_revisions = self.Get3rdPartyRevisionsFromCurrentRevision(
-                depot)
+                depot, revision)
 
-            if external_revisions:
+            if not external_revisions is None:
               return (results[0], results[1], external_revisions)
             else:
               return ('Failed to parse DEPS file for external revisions.',
@@ -1425,6 +1456,37 @@ class BisectPerformanceMetrics(object):
                     ' was added without proper support?' %\
                     (depot_name,)
 
+  def FindNextDepotToBisect(self, current_revision, min_revision_data,
+      max_revision_data):
+    """Given the state of the bisect, decides which depot the script should
+    dive into next (if any).
+
+    Args:
+      current_revision: Current revision synced to.
+      min_revision_data: Data about the earliest revision in the bisect range.
+      max_revision_data: Data about the latest revision in the bisect range.
+
+    Returns:
+      The depot to bisect next, or None.
+    """
+    external_depot = None
+    for current_depot in DEPOT_NAMES:
+      if not (DEPOT_DEPS_NAME[current_depot]["recurse"] and
+          DEPOT_DEPS_NAME[current_depot]['from'] ==
+          min_revision_data['depot']):
+        continue
+
+      if (min_revision_data['external'][current_depot] ==
+          max_revision_data['external'][current_depot]):
+        continue
+
+      if (min_revision_data['external'][current_depot] and
+          max_revision_data['external'][current_depot]):
+        external_depot = current_depot
+        break
+
+    return external_depot
+
   def PrepareToBisectOnDepot(self,
                              current_depot,
                              end_revision,
@@ -1447,57 +1509,38 @@ class BisectPerformanceMetrics(object):
     """
     # Change into working directory of external library to run
     # subsequent commands.
-    old_cwd = os.getcwd()
-    os.chdir(self.depot_cwd[current_depot])
+    self.ChangeToDepotWorkingDirectory(current_depot)
 
     # V8 (and possibly others) is merged in periodically. Bisecting
     # this directory directly won't give much good info.
-    if DEPOT_DEPS_NAME[current_depot].has_key('build_with'):
-      if (DEPOT_DEPS_NAME[current_depot].has_key('custom_deps') and
-          previous_depot == 'chromium'):
-        config_path = os.path.join(self.src_cwd, '..')
-        if bisect_utils.RunGClientAndCreateConfig(self.opts,
-            DEPOT_DEPS_NAME[current_depot]['custom_deps'], cwd=config_path):
-          return []
-        if bisect_utils.RunGClient(
-            ['sync', '--revision', previous_revision], cwd=self.src_cwd):
-          return []
+    if DEPOT_DEPS_NAME[current_depot].has_key('custom_deps'):
+      config_path = os.path.join(self.src_cwd, '..')
+      if bisect_utils.RunGClientAndCreateConfig(self.opts,
+          DEPOT_DEPS_NAME[current_depot]['custom_deps'], cwd=config_path):
+        return []
+      if bisect_utils.RunGClient(
+          ['sync', '--revision', previous_revision], cwd=self.src_cwd):
+        return []
 
-      new_depot = DEPOT_DEPS_NAME[current_depot]['build_with']
+    if current_depot == 'v8_bleeding_edge':
+      self.ChangeToDepotWorkingDirectory('chromium')
 
-      svn_start_revision = self.source_control.SVNFindRev(start_revision)
-      svn_end_revision = self.source_control.SVNFindRev(end_revision)
-      os.chdir(self.depot_cwd[new_depot])
+      shutil.move('v8', 'v8.bak')
+      shutil.move('v8_bleeding_edge', 'v8')
 
-      start_revision = self.source_control.ResolveToRevision(
-          svn_start_revision, new_depot, -1000)
-      end_revision = self.source_control.ResolveToRevision(
-          svn_end_revision, new_depot, -1000)
+      self.cleanup_commands.append(['mv', 'v8', 'v8_bleeding_edge'])
+      self.cleanup_commands.append(['mv', 'v8.bak', 'v8'])
 
-      old_name = DEPOT_DEPS_NAME[current_depot]['src'][4:]
-      new_name = DEPOT_DEPS_NAME[new_depot]['src'][4:]
+      self.depot_cwd['v8_bleeding_edge'] = os.path.join(self.src_cwd, 'v8')
+      self.depot_cwd['v8'] = os.path.join(self.src_cwd, 'v8.bak')
 
-      os.chdir(self.src_cwd)
-
-      shutil.move(old_name, old_name + '.bak')
-      shutil.move(new_name, old_name)
-      os.chdir(self.depot_cwd[current_depot])
-
-      self.cleanup_commands.append(['mv', old_name, new_name])
-      self.cleanup_commands.append(['mv', old_name + '.bak', old_name])
-
-      os.chdir(self.depot_cwd[current_depot])
-
-    if current_depot == 'v8':
-      self.warnings.append('Unfortunately, V8 bisection is broken at '
-          'the moment. The script won\'t be able to narrow down the range '
-          'past major releases of V8.')
+      self.ChangeToDepotWorkingDirectory(current_depot)
 
     depot_revision_list = self.GetRevisionList(current_depot,
                                                end_revision,
                                                start_revision)
 
-    os.chdir(old_cwd)
+    self.ChangeToDepotWorkingDirectory('chromium')
 
     return depot_revision_list
 
@@ -1822,31 +1865,28 @@ class BisectPerformanceMetrics(object):
         max_revision_data = revision_data[revision_list[max_revision]]
 
         if max_revision - min_revision <= 1:
+          current_depot = min_revision_data['depot']
           if min_revision_data['passed'] == '?':
             next_revision_index = min_revision
           elif max_revision_data['passed'] == '?':
             next_revision_index = max_revision
-          elif min_revision_data['depot'] == 'chromium' or\
-               min_revision_data['depot'] == 'cros':
+          elif current_depot in ['cros', 'chromium', 'v8']:
+            previous_revision = revision_list[min_revision]
             # If there were changes to any of the external libraries we track,
             # should bisect the changes there as well.
-            external_depot = None
-
-            for current_depot in DEPOT_NAMES:
-              if DEPOT_DEPS_NAME[current_depot]["recurse"] and\
-                 DEPOT_DEPS_NAME[current_depot]['from'] ==\
-                 min_revision_data['depot']:
-                if min_revision_data['external'][current_depot] !=\
-                   max_revision_data['external'][current_depot]:
-                  external_depot = current_depot
-                  break
+            external_depot = self.FindNextDepotToBisect(
+                previous_revision, min_revision_data, max_revision_data)
 
             # If there was no change in any of the external depots, the search
             # is over.
             if not external_depot:
+              if current_depot == 'v8':
+                self.warnings.append('Unfortunately, V8 bisection couldn\'t '
+                    'continue any further. The script can only bisect into '
+                    'V8\'s bleeding_edge repository if both the current and '
+                    'previous revisions in trunk map directly to revisions in '
+                    'bleeding_edge.')
               break
-
-            previous_revision = revision_list[min_revision]
 
             earliest_revision = max_revision_data['external'][external_depot]
             latest_revision = min_revision_data['external'][external_depot]
@@ -1860,7 +1900,7 @@ class BisectPerformanceMetrics(object):
             if not new_revision_list:
               results['error'] = 'An error occurred attempting to retrieve'\
                                  ' revision range: [%s..%s]' %\
-                                 (depot_rev_range[1], depot_rev_range[0])
+                                 (earliest_revision, latest_revision)
               return results
 
             self.AddRevisionsIntoRevisionData(new_revision_list,
@@ -1979,7 +2019,7 @@ class BisectPerformanceMetrics(object):
         else:
           build_status = 'Bad'
 
-      print '  %8s  %40s  %s' % (current_data['depot'],
+      print '  %20s  %40s  %s' % (current_data['depot'],
                                  current_id, build_status)
     print
 
@@ -2002,7 +2042,7 @@ class BisectPerformanceMetrics(object):
 
     print
     print 'Tested commits:'
-    print '  %8s  %40s  %12s %14s %13s' % ('Depot'.center(8, ' '),
+    print '  %20s  %40s  %12s %14s %13s' % ('Depot'.center(20, ' '),
         'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
         'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
     state = 0
@@ -2023,8 +2063,9 @@ class BisectPerformanceMetrics(object):
         std_error = ('+-%.02f' %
             current_data['value']['std_err']).center(14, ' ')
         mean = ('%.02f' % current_data['value']['mean']).center(12, ' ')
-        print '  %8s  %40s  %12s %14s %13s' % (
-            current_data['depot'], current_id, mean, std_error, state_str)
+        print '  %20s  %40s  %12s %14s %13s' % (
+            current_data['depot'].center(20, ' '), current_id, mean,
+            std_error, state_str)
 
     if last_broken_revision != None and first_working_revision != None:
       # Give a "confidence" in the bisect. At the moment we use how distinct the
