@@ -325,11 +325,18 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
       CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
           window->parent()->parent()));
       break;
-    case ui::SHOW_STATE_FULLSCREEN:
+
+    case ui::SHOW_STATE_FULLSCREEN: {
       MoveToDisplayForRestore(window);
-      SetChildBoundsDirect(window, ScreenAsh::GetDisplayBoundsInParent(
-          window->parent()->parent()));
+      gfx::Rect new_bounds = ScreenAsh::GetDisplayBoundsInParent(
+          window->parent()->parent());
+      if (window->GetProperty(kAnimateToFullscreenKey))
+        CrossFadeToBounds(window, new_bounds);
+      else
+        SetChildBoundsDirect(window, new_bounds);
       break;
+    }
+
     default:
       break;
   }

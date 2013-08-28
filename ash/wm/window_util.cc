@@ -141,6 +141,10 @@ void SetWindowPositionManaged(aura::Window* window, bool managed) {
   window->SetProperty(ash::internal::kWindowPositionManagedKey, managed);
 }
 
+void SetAnimateToFullscreen(aura::Window* window, bool animate) {
+  window->SetProperty(ash::internal::kAnimateToFullscreenKey, animate);
+}
+
 bool HasUserChangedWindowPositionOrSize(const aura::Window* window) {
   return window->GetProperty(
       ash::internal::kUserChangedWindowPositionOrSizeKey);

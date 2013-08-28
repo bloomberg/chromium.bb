@@ -23,6 +23,10 @@ class RootWindowController;
 
 // Alphabetical sort.
 
+//  A property key to suppress the cross-fade animation for the transition to
+// the fullscreen state.
+extern const aura::WindowProperty<bool>* const kAnimateToFullscreenKey;
+
 // A property key to indicate that an in progress drag should be continued
 // after the window is reparented to another container.
 extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;

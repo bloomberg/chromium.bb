@@ -14,6 +14,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::RootWindowController*);
 
 namespace ash {
 namespace internal {
+DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimateToFullscreenKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kContinueDragAfterReparent, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kFullscreenUsesMinimalChromeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoreSoloWindowFramePainterPolicy, false);

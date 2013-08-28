@@ -91,6 +91,9 @@ ASH_EXPORT bool IsWindowPositionManaged(const aura::Window* window);
 // Change the |window|'s position manageability to |managed|.
 ASH_EXPORT void SetWindowPositionManaged(aura::Window* window, bool managed);
 
+// Change the availability of animation to the fullscreen of the |window|.
+ASH_EXPORT void SetAnimateToFullscreen(aura::Window* window, bool animate);
+
 // Returns true if the user has changed the |window|'s position or size.
 ASH_EXPORT bool HasUserChangedWindowPositionOrSize(const aura::Window* window);
 

@@ -101,6 +101,9 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
   GetNativeWindow()->SetName(kWindowName);
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 #if defined(USE_ASH)
+  if (browser_view->browser()->is_type_tabbed())
+    ash::wm::SetAnimateToFullscreen(GetNativeWindow(), false);
+
   // Turn on auto window management if we don't need an explicit bounds.
   // This way the requested bounds are honored.
   if (!browser_view->browser()->bounds_overridden() &&
