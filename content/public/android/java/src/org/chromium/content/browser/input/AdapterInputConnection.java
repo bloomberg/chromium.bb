@@ -335,6 +335,15 @@ public class AdapterInputConnection extends BaseInputConnection {
                             Character.toString((char)unicodeChar));
                 }
             }
+        } else if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
+            if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                beginBatchEdit();
+                finishComposingText();
+                mImeAdapter.translateAndSendNativeEvents(event);
+                endBatchEdit();
+                return true;
+            }
         }
         mImeAdapter.translateAndSendNativeEvents(event);
         return true;

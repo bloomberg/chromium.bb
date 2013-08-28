@@ -11,6 +11,7 @@ import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -263,6 +264,39 @@ public class ImeTest extends ContentShellTestBase {
 
         mConnection.commitText("\n", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "h\nllo ", 2, 2, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testEnterKeyEventWhileComposingText() throws Throwable {
+        // Focus the textarea. We need to do the following steps because we are focusing using JS.
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
+        assertWaitForKeyboardStatus(false);
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "textarea");
+        assertWaitForKeyboardStatus(false);
+        performShowImeIfNeeded();
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        mConnection.setComposingText("hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mConnection.sendKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                mConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+            }
+        });
+
+        // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 5, 5, -1, -1);
+        // The second new line is not a user visible/editable one, it is a side-effect of Blink
+        // using <br> internally.
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hello\n\n", 6, 6, -1, -1);
     }
 
     private void performShowImeIfNeeded() {
