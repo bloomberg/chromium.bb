@@ -278,7 +278,7 @@
         "parameters": [
           {
             "type": "object",
-            "name": "deails",
+            "name": "details",
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
