@@ -190,7 +190,7 @@ AM_CONDITIONAL([ENABLE_FBDEV_COMPOSITOR],
                [test x$enable_fbdev_compositor = xyes])
 AS_IF([test x$enable_fbdev_compositor = xyes], [
   AC_DEFINE([BUILD_FBDEV_COMPOSITOR], [1], [Build the fbdev compositor])
-  PKG_CHECK_MODULES([FBDEV_COMPOSITOR], [libudev >= 136 mtdev >= 1.1.0])
+  PKG_CHECK_MODULES([FBDEV_COMPOSITOR], [libudev >= 136 mtdev >= 1.1.0 libdrm >= 2.4.30])
 ])
 
 AC_ARG_ENABLE([rdp-compositor], [  --enable-rdp-compositor],,
