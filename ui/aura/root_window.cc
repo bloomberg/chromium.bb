@@ -827,7 +827,7 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
 
 void RootWindow::CleanupGestureRecognizerState(Window* window) {
   gesture_recognizer_->CleanupStateForConsumer(window);
-  Windows windows = window->children();
+  const Windows& windows = window->children();
   for (Windows::const_iterator iter = windows.begin();
       iter != windows.end();
       ++iter) {
