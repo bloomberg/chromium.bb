@@ -33,13 +33,35 @@ _ISOLATE_FILE_PATHS = {
     'content_browsertests': 'content/content_browsertests.isolate',
     'content_unittests': 'content/content_unittests.isolate',
     'media_unittests': 'media/media_unittests.isolate',
-    'modules_unittests': 'third_party/webrtc/modules/modules_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
     'ui_unittests': 'ui/ui_unittests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
     'webkit_unit_tests':
       'third_party/WebKit/Source/web/WebKitUnitTests.isolate',
 }
+
+# Paths relative to third_party/webrtc/ (kept separate for readability).
+_WEBRTC_ISOLATE_FILE_PATHS = {
+    'audio_decoder_unittests':
+      'modules/audio_coding/neteq4/audio_decoder_unittests.isolate',
+    'common_audio_unittests': 'common_audio/common_audio_unittests.isolate',
+    'common_video_unittests': 'common_video/common_video_unittests.isolate',
+    'metrics_unittests': 'test/metrics_unittests.isolate',
+    'modules_tests': 'modules/modules_tests.isolate',
+    'modules_unittests': 'modules/modules_unittests.isolate',
+    'neteq_unittests': 'modules/audio_coding/neteq/neteq_unittests.isolate',
+    'system_wrappers_unittests':
+      'system_wrappers/source/system_wrappers_unittests.isolate',
+    'test_support_unittests': 'test/test_support_unittests.isolate',
+    'tools_unittests': 'tools/tools_unittests.isolate',
+    'video_engine_core_unittests':
+      'video_engine/video_engine_core_unittests.isolate',
+    'voice_engine_unittests': 'voice_engine/voice_engine_unittests.isolate',
+}
+
+# Append the WebRTC tests with the full path from Chromium's src/ root.
+for test,isolate_path in _WEBRTC_ISOLATE_FILE_PATHS.items():
+  _ISOLATE_FILE_PATHS[test] = 'third_party/webrtc/%s' % isolate_path
 
 # Used for filtering large data deps at a finer grain than what's allowed in
 # isolate files since pushing deps to devices is expensive.
