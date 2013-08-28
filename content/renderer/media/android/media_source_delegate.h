@@ -35,7 +35,7 @@ class WebMediaPlayerProxyAndroid;
 
 class MediaSourceDelegate : public media::DemuxerHost {
  public:
-  typedef base::Callback<void(WebKit::WebMediaSourceNew*)>
+  typedef base::Callback<void(WebKit::WebMediaSource*)>
       MediaSourceOpenedCB;
   typedef base::Callback<void(WebKit::WebMediaPlayer::NetworkState)>
       UpdateNetworkStateCB;

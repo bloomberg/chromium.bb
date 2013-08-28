@@ -11,12 +11,12 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using ::WebKit::WebString;
-using ::WebKit::WebMediaSourceNew;
+using ::WebKit::WebMediaSource;
 
 namespace content {
 
 #define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
-  COMPILE_ASSERT(static_cast<int>(WebMediaSourceNew::webkit_name) == \
+  COMPILE_ASSERT(static_cast<int>(WebMediaSource::webkit_name) == \
                  static_cast<int>(media::ChunkDemuxer::chromium_name),  \
                  mismatching_status_enums)
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusOk, kOk);
@@ -33,7 +33,7 @@ WebMediaSourceImpl::WebMediaSourceImpl(
 
 WebMediaSourceImpl::~WebMediaSourceImpl() {}
 
-WebMediaSourceNew::AddStatus WebMediaSourceImpl::addSourceBuffer(
+WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
     const WebKit::WebString& type,
     const WebKit::WebVector<WebKit::WebString>& codecs,
     WebKit::WebSourceBuffer** source_buffer) {
@@ -41,11 +41,11 @@ WebMediaSourceNew::AddStatus WebMediaSourceImpl::addSourceBuffer(
   std::vector<std::string> new_codecs(codecs.size());
   for (size_t i = 0; i < codecs.size(); ++i)
     new_codecs[i] = codecs[i].utf8().data();
-  WebMediaSourceNew::AddStatus result =
-      static_cast<WebMediaSourceNew::AddStatus>(
+  WebMediaSource::AddStatus result =
+      static_cast<WebMediaSource::AddStatus>(
           demuxer_->AddId(id, type.utf8().data(), new_codecs));
 
-  if (result == WebMediaSourceNew::AddStatusOk)
+  if (result == WebMediaSource::AddStatusOk)
     *source_buffer = new WebSourceBufferImpl(id, demuxer_);
 
   return result;
@@ -61,16 +61,16 @@ void WebMediaSourceImpl::setDuration(double new_duration) {
 }
 
 void WebMediaSourceImpl::markEndOfStream(
-    WebMediaSourceNew::EndOfStreamStatus status) {
+    WebMediaSource::EndOfStreamStatus status) {
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
   switch (status) {
-    case WebMediaSourceNew::EndOfStreamStatusNoError:
+    case WebMediaSource::EndOfStreamStatusNoError:
       break;
-    case WebMediaSourceNew::EndOfStreamStatusNetworkError:
+    case WebMediaSource::EndOfStreamStatusNetworkError:
       pipeline_status = media::PIPELINE_ERROR_NETWORK;
       break;
-    case WebMediaSourceNew::EndOfStreamStatusDecodeError:
+    case WebMediaSource::EndOfStreamStatusDecodeError:
       pipeline_status = media::PIPELINE_ERROR_DECODE;
       break;
     default:

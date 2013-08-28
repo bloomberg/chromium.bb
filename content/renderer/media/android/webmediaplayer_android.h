@@ -220,7 +220,7 @@ class WebMediaPlayerAndroid
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
 
-  void OnMediaSourceOpened(WebKit::WebMediaSourceNew* web_media_source);
+  void OnMediaSourceOpened(WebKit::WebMediaSource* web_media_source);
 
   void OnNeedKey(const std::string& type,
                  const std::string& session_id,

@@ -17,12 +17,12 @@ class ChunkDemuxer;
 
 namespace content {
 
-class WebMediaSourceImpl : public WebKit::WebMediaSourceNew {
+class WebMediaSourceImpl : public WebKit::WebMediaSource {
  public:
   WebMediaSourceImpl(media::ChunkDemuxer* demuxer, media::LogCB log_cb);
   virtual ~WebMediaSourceImpl();
 
-  // WebKit::WebMediaSourceNew implementation.
+  // WebKit::WebMediaSource implementation.
   virtual AddStatus addSourceBuffer(
       const WebKit::WebString& type,
       const WebKit::WebVector<WebKit::WebString>& codecs,

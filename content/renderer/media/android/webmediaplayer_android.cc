@@ -1123,7 +1123,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
 }
 
 void WebMediaPlayerAndroid::OnMediaSourceOpened(
-    WebKit::WebMediaSourceNew* web_media_source) {
+    WebKit::WebMediaSource* web_media_source) {
   client_->mediaSourceOpened(web_media_source);
 }
 
