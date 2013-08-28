@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/base/user_input_monitor.h"
 
 // An AudioInputController controls an AudioInputStream and records data
 // from this input stream. The two main methods are Record() and Close() and
@@ -73,10 +72,11 @@
 //
 namespace media {
 
+class UserInputMonitor;
+
 class MEDIA_EXPORT AudioInputController
     : public base::RefCountedThreadSafe<AudioInputController>,
-      public AudioInputStream::AudioInputCallback,
-      public UserInputMonitor::KeyStrokeListener {
+      public AudioInputStream::AudioInputCallback {
  public:
   // An event handler that receives events from the AudioInputController. The
   // following methods are all called on the audio thread.
@@ -203,9 +203,6 @@ class MEDIA_EXPORT AudioInputController
 
   bool LowLatencyMode() const { return sync_writer_ != NULL; }
 
-  // Impl of KeyStrokeListener.
-  virtual void OnKeyStroke() OVERRIDE;
-
  protected:
   friend class base::RefCountedThreadSafe<AudioInputController>;
 
@@ -287,8 +284,7 @@ class MEDIA_EXPORT AudioInputController
 
   UserInputMonitor* user_input_monitor_;
 
-  // True if any key has been pressed after the last OnData call.
-  bool key_pressed_;
+  size_t prev_key_down_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputController);
 };

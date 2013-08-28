@@ -5,16 +5,10 @@
 #ifndef MEDIA_BASE_USER_INPUT_MONITOR_H_
 #define MEDIA_BASE_USER_INPUT_MONITOR_H_
 
-#include <set>
-
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 struct SkIPoint;
 
@@ -28,6 +22,8 @@ namespace media {
 // Thread safe. The thread on which the listenters are called is not guaranteed.
 // The callers should not perform expensive/blocking tasks in the callback since
 // it might be called on the browser UI/IO threads.
+// The object must outlive the browser UI/IO threads to make sure the callbacks
+// will not access a deleted object.
 class MEDIA_EXPORT UserInputMonitor {
  public:
   // The interface to receive mouse movement events.
@@ -39,18 +35,8 @@ class MEDIA_EXPORT UserInputMonitor {
    protected:
     virtual ~MouseEventListener() {}
   };
-  // The interface to receive key stroke events.
-  class MEDIA_EXPORT KeyStrokeListener {
-   public:
-    // Called when any key is pressed. Called only once until the key is
-    // released, i.e. holding down a key for a long period will generate one
-    // callback just when the key is pressed down.
-    virtual void OnKeyStroke() = 0;
 
-   protected:
-    virtual ~KeyStrokeListener() {}
-  };
-
+  UserInputMonitor();
   virtual ~UserInputMonitor();
 
   // Creates a platform-specific instance of UserInputMonitor.
@@ -65,16 +51,24 @@ class MEDIA_EXPORT UserInputMonitor {
   // destroyed.
   void AddMouseListener(MouseEventListener* listener);
   void RemoveMouseListener(MouseEventListener* listener);
-  void AddKeyStrokeListener(KeyStrokeListener* listener);
-  void RemoveKeyStrokeListener(KeyStrokeListener* listener);
+
+  // A caller must call EnableKeyPressMonitoring and
+  // DisableKeyPressMonitoring in pair.
+  void EnableKeyPressMonitoring();
+  void DisableKeyPressMonitoring();
+
+  // Returns the number of keypresses. The starting point from when it is
+  // counted is not guaranteed, but consistent within the pair of calls of
+  // EnableKeyPressMonitoring and DisableKeyPressMonitoring. So a caller can
+  // use the difference between the values returned at two times to get the
+  // number of keypresses happened within that time period, but should not make
+  // any assumption on the initial value.
+  virtual size_t GetKeyPressCount() const = 0;
 
  protected:
-  UserInputMonitor();
-
   // Called by the platform-specific sub-classes to propagate the events to the
   // listeners.
   void OnMouseEvent(const SkIPoint& position);
-  void OnKeyboardEvent(ui::EventType event, ui::KeyboardCode key_code);
 
  private:
   virtual void StartMouseMonitoring() = 0;
@@ -84,12 +78,8 @@ class MEDIA_EXPORT UserInputMonitor {
 
   base::Lock lock_;
   ObserverList<MouseEventListener, true> mouse_listeners_;
-  ObserverList<KeyStrokeListener, true> key_stroke_listeners_;
   bool monitoring_mouse_;
-  bool monitoring_keyboard_;
-  // The set of keys currently held down. Used for convering raw keyboard events
-  // into KeyStrokeListener callbacks.
-  std::set<ui::KeyboardCode> pressed_keys_;
+  size_t key_press_counter_references_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitor);
 };

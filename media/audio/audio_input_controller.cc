@@ -8,6 +8,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "media/base/limits.h"
 #include "media/base/scoped_histogram_timer.h"
+#include "media/base/user_input_monitor.h"
 
 namespace {
 const int kMaxInputChannels = 2;
@@ -46,7 +47,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
       sync_writer_(sync_writer),
       max_volume_(0.0),
       user_input_monitor_(user_input_monitor),
-      key_pressed_(false) {
+      prev_key_down_count_(0) {
   DCHECK(creator_loop_.get());
 }
 
@@ -218,6 +219,11 @@ void AudioInputController::DoCreateForStream(
 
   state_ = kCreated;
   handler_->OnCreated(this);
+
+  if (user_input_monitor_) {
+    user_input_monitor_->EnableKeyPressMonitoring();
+    prev_key_down_count_ = user_input_monitor_->GetKeyPressCount();
+  }
 }
 
 void AudioInputController::DoRecord() {
@@ -240,9 +246,6 @@ void AudioInputController::DoRecord() {
 
   stream_->Start(this);
   handler_->OnRecording(this);
-
-  if (user_input_monitor_)
-    user_input_monitor_->AddKeyStrokeListener(this);
 }
 
 void AudioInputController::DoClose() {
@@ -263,7 +266,7 @@ void AudioInputController::DoClose() {
     state_ = kClosed;
 
     if (user_input_monitor_)
-      user_input_monitor_->RemoveKeyStrokeListener(this);
+      user_input_monitor_->DisableKeyPressMonitoring();
   }
 }
 
@@ -330,16 +333,23 @@ void AudioInputController::DoCheckForNoData() {
       base::Unretained(this)));
 }
 
-void AudioInputController::OnData(AudioInputStream* stream, const uint8* data,
-                                  uint32 size, uint32 hardware_delay_bytes,
+void AudioInputController::OnData(AudioInputStream* stream,
+                                  const uint8* data,
+                                  uint32 size,
+                                  uint32 hardware_delay_bytes,
                                   double volume) {
-  bool key_pressed = false;
   {
     base::AutoLock auto_lock(lock_);
     if (state_ != kRecording)
       return;
+  }
 
-    std::swap(key_pressed, key_pressed_);
+  bool key_pressed = false;
+  if (user_input_monitor_) {
+    size_t current_count = user_input_monitor_->GetKeyPressCount();
+    key_pressed = current_count != prev_key_down_count_;
+    prev_key_down_count_ = current_count;
+    DVLOG_IF(6, key_pressed) << "Detected keypress.";
   }
 
   // Mark data as active to ensure that the periodic calls to
@@ -367,11 +377,6 @@ void AudioInputController::OnError(AudioInputStream* stream) {
   // Handle error on the audio-manager thread.
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioInputController::DoReportError, this));
-}
-
-void AudioInputController::OnKeyStroke() {
-  base::AutoLock auto_lock(lock_);
-  key_pressed_ = true;
 }
 
 void AudioInputController::DoStopCloseAndClearStream(
