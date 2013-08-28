@@ -475,6 +475,18 @@ base::DictionaryValue* GetStandardMenuItemsText() {
   return standard_menu_items_text;
 }
 
+// Gets the icon class for a given |error_domain| and |error_code|.
+const char* GetIconClassForError(const std::string& error_domain,
+                                 int error_code) {
+  if ((error_code == net::ERR_INTERNET_DISCONNECTED &&
+       error_domain == net::kErrorDomain) ||
+      (error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET &&
+       error_domain == chrome_common_net::kDnsProbeErrorDomain))
+    return "icon-offline";
+
+  return "icon-generic";
+}
+
 }  // namespace
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
@@ -529,10 +541,7 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   error_strings->SetString("heading",
       l10n_util::GetStringUTF16(options.heading_resource_id));
 
-  std::string icon_class = (error_code == net::ERR_INTERNET_DISCONNECTED &&
-                            error_domain == net::kErrorDomain)
-                               ? "icon-offline"
-                               : "icon-generic";
+  std::string icon_class = GetIconClassForError(error_domain, error_code);
   error_strings->SetString("iconClass", icon_class);
 
   base::DictionaryValue* summary = new base::DictionaryValue;

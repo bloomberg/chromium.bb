@@ -27,10 +27,30 @@ function diagnoseErrors() {
 if (window.top.location != window.location)
   document.documentElement.setAttribute('subframe', '');
 
+// Re-renders the error page using |strings| as the dictionary of values.
+// Used by NetErrorTabHelper to update DNS error pages with probe results.
 function updateForDnsProbe(strings) {
+  i18nTemplate.process(document, strings);
   var context = new JsEvalContext(strings);
-  jstProcess(context, document.getElementById('help-box-outer'));
-  jstProcess(context, document.getElementById('details'));
+  jstProcess(context, document.getElementById('t'));
+}
+
+// Given the classList property of an element, adds an icon class to the list
+// and removes the previously-
+function updateIconClass(classList, newClass) {
+  var oldClass;
+
+  if (classList.hasOwnProperty('last_icon_class')) {
+    oldClass = classList['last_icon_class']
+    if (oldClass == newClass)
+      return;
+  }
+
+  classList.add(newClass);
+  if (oldClass !== undefined)
+    classList.remove(oldClass);
+
+  classList['last_icon_class'] = newClass;
 }
 
 <if expr="is_macosx or is_ios or is_linux or is_android">
