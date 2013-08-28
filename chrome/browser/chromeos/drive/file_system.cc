@@ -53,8 +53,13 @@ FileError GetLocallyStoredResourceEntry(
     internal::FileCache* cache,
     const base::FilePath& file_path,
     ResourceEntry* entry) {
+  std::string local_id;
   FileError error =
-      resource_metadata->GetResourceEntryByPath(file_path, entry);
+      resource_metadata->GetIdByPath(file_path, &local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  error = resource_metadata->GetResourceEntryById(local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -66,13 +71,12 @@ FileError GetLocallyStoredResourceEntry(
 
   // When no dirty cache is found, use the original resource entry as is.
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(entry->resource_id(), &cache_entry) ||
-      !cache_entry.is_dirty())
+  if (!cache->GetCacheEntry(local_id, &cache_entry) || !cache_entry.is_dirty())
     return FILE_ERROR_OK;
 
   // If the cache is dirty, obtain the file info from the cache file itself.
   base::FilePath local_cache_path;
-  error = cache->GetFile(entry->resource_id(), &local_cache_path);
+  error = cache->GetFile(local_id, &local_cache_path);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -94,6 +98,61 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
   if (error != FILE_ERROR_OK)
     entry.reset();
   callback.Run(error, entry.Pass());
+}
+
+// Used to implement Pin().
+FileError PinInternal(internal::ResourceMetadata* resource_metadata,
+                      internal::FileCache* cache,
+                      const base::FilePath& file_path,
+                      std::string* local_id) {
+  FileError error = resource_metadata->GetIdByPath(file_path, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  ResourceEntry entry;
+  error = resource_metadata->GetResourceEntryById(*local_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // TODO(hashimoto): Support pinning directories. crbug.com/127831
+  if (entry.file_info().is_directory())
+    return FILE_ERROR_NOT_A_FILE;
+
+  return cache->Pin(*local_id);
+}
+
+// Used to implement Unpin().
+FileError UnpinInternal(internal::ResourceMetadata* resource_metadata,
+                        internal::FileCache* cache,
+                        const base::FilePath& file_path,
+                        std::string* local_id) {
+  FileError error = resource_metadata->GetIdByPath(file_path, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  return cache->Unpin(*local_id);
+}
+
+// Used to implement MarkCacheFileAsMounted().
+FileError MarkCacheFileAsMountedInternal(
+    internal::ResourceMetadata* resource_metadata,
+    internal::FileCache* cache,
+    const base::FilePath& drive_file_path,
+    base::FilePath* cache_file_path) {
+  std::string local_id;
+  FileError error = resource_metadata->GetIdByPath(drive_file_path, &local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  return cache->MarkAsMounted(local_id, cache_file_path);
+}
+
+// Runs the callback with arguments.
+void RunMarkMountedCallback(const MarkMountedCallback& callback,
+                            base::FilePath* cache_file_path,
+                            FileError error) {
+  DCHECK(!callback.is_null());
+  callback.Run(error, *cache_file_path);
 }
 
 // Used to implement GetCacheEntryByPath.
@@ -412,44 +471,29 @@ void FileSystem::Pin(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceEntryByPath(file_path,
-                         base::Bind(&FileSystem::PinAfterGetResourceEntryByPath,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    callback));
-}
-
-void FileSystem::PinAfterGetResourceEntryByPath(
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // TODO(hashimoto): Support pinning directories. crbug.com/127831
-  if (entry && entry->file_info().is_directory())
-    error = FILE_ERROR_NOT_A_FILE;
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-  DCHECK(entry);
-
-  cache_->PinOnUIThread(entry->resource_id(),
-                        base::Bind(&FileSystem::FinishPin,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   callback,
-                                   entry->resource_id()));
+  std::string* local_id = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&PinInternal,
+                 resource_metadata_,
+                 cache_,
+                 file_path,
+                 local_id),
+      base::Bind(&FileSystem::FinishPin,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(local_id)));
 }
 
 void FileSystem::FinishPin(const FileOperationCallback& callback,
-                           const std::string& resource_id,
+                           const std::string* local_id,
                            FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
-    sync_client_->AddFetchTask(resource_id);
+    sync_client_->AddFetchTask(*local_id);
   callback.Run(error);
 }
 
@@ -458,45 +502,29 @@ void FileSystem::Unpin(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceEntryByPath(
-      file_path,
-      base::Bind(&FileSystem::UnpinAfterGetResourceEntryByPath,
+  std::string* local_id = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&UnpinInternal,
+                 resource_metadata_,
+                 cache_,
+                 file_path,
+                 local_id),
+      base::Bind(&FileSystem::FinishUnpin,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void FileSystem::UnpinAfterGetResourceEntryByPath(
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // TODO(hashimoto): Support pinning directories. crbug.com/127831
-  if (entry && entry->file_info().is_directory())
-    error = FILE_ERROR_NOT_A_FILE;
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-  DCHECK(entry);
-
-  cache_->UnpinOnUIThread(entry->resource_id(),
-                          base::Bind(&FileSystem::FinishUnpin,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     callback,
-                                     entry->resource_id()));
+                 callback,
+                 base::Owned(local_id)));
 }
 
 void FileSystem::FinishUnpin(const FileOperationCallback& callback,
-                             const std::string& resource_id,
+                             const std::string* local_id,
                              FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
-    sync_client_->RemoveFetchTask(resource_id);
+    sync_client_->RemoveFetchTask(*local_id);
   callback.Run(error);
 }
 
@@ -891,26 +919,18 @@ void FileSystem::MarkCacheFileAsMounted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceEntryByPath(
-      drive_file_path,
-      base::Bind(&FileSystem::MarkCacheFileAsMountedAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void FileSystem::MarkCacheFileAsMountedAfterGetResourceEntry(
-    const MarkMountedCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
-    return;
-  }
-
-  DCHECK(entry);
-  cache_->MarkAsMountedOnUIThread(entry->resource_id(), callback);
+  base::FilePath* cache_file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&MarkCacheFileAsMountedInternal,
+                 resource_metadata_,
+                 cache_,
+                 drive_file_path,
+                 cache_file_path),
+      base::Bind(&RunMarkMountedCallback,
+                 callback,
+                 base::Owned(cache_file_path)));
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(

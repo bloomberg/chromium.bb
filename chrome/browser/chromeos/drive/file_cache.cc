@@ -340,6 +340,35 @@ void FileCache::MarkAsMountedOnUIThread(
           RunGetFileFromCacheCallback, callback, base::Owned(cache_file_path)));
 }
 
+FileError FileCache::MarkAsMounted(const std::string& id,
+                                   base::FilePath* cache_file_path) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(cache_file_path);
+
+  // Get cache entry associated with the id and md5
+  FileCacheEntry cache_entry;
+  if (!storage_->GetCacheEntry(id, &cache_entry))
+    return FILE_ERROR_NOT_FOUND;
+
+  if (mounted_files_.count(id))
+    return FILE_ERROR_INVALID_OPERATION;
+
+  // Ensure the file is readable to cros_disks. See crbug.com/236994.
+  base::FilePath path = GetCacheFilePath(id);
+  if (!file_util::SetPosixFilePermissions(
+          path,
+          file_util::FILE_PERMISSION_READ_BY_USER |
+          file_util::FILE_PERMISSION_WRITE_BY_USER |
+          file_util::FILE_PERMISSION_READ_BY_GROUP |
+          file_util::FILE_PERMISSION_READ_BY_OTHERS))
+    return FILE_ERROR_FAILED;
+
+  mounted_files_.insert(id);
+
+  *cache_file_path = path;
+  return FILE_ERROR_OK;
+}
+
 void FileCache::MarkAsUnmountedOnUIThread(
     const base::FilePath& file_path,
     const FileOperationCallback& callback) {
@@ -542,35 +571,6 @@ FileError FileCache::StoreInternal(const std::string& id,
   cache_entry.set_is_dirty(false);
   return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
-}
-
-FileError FileCache::MarkAsMounted(const std::string& id,
-                                   base::FilePath* cache_file_path) {
-  AssertOnSequencedWorkerPool();
-  DCHECK(cache_file_path);
-
-  // Get cache entry associated with the id and md5
-  FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(id, &cache_entry))
-    return FILE_ERROR_NOT_FOUND;
-
-  if (mounted_files_.count(id))
-    return FILE_ERROR_INVALID_OPERATION;
-
-  // Ensure the file is readable to cros_disks. See crbug.com/236994.
-  base::FilePath path = GetCacheFilePath(id);
-  if (!file_util::SetPosixFilePermissions(
-          path,
-          file_util::FILE_PERMISSION_READ_BY_USER |
-          file_util::FILE_PERMISSION_WRITE_BY_USER |
-          file_util::FILE_PERMISSION_READ_BY_GROUP |
-          file_util::FILE_PERMISSION_READ_BY_OTHERS))
-    return FILE_ERROR_FAILED;
-
-  mounted_files_.insert(id);
-
-  *cache_file_path = path;
-  return FILE_ERROR_OK;
 }
 
 FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {

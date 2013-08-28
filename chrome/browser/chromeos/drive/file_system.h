@@ -190,20 +190,12 @@ class FileSystem : public FileSystemInterface,
                                 const FileOperationCallback& callback,
                                 FileError load_error);
 
-  // Used to implement Pin().
-  void PinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
-                                      FileError error,
-                                      scoped_ptr<ResourceEntry> entry);
   void FinishPin(const FileOperationCallback& callback,
-                 const std::string& resource_id,
+                 const std::string* local_id,
                  FileError error);
 
-  // Used to implement Unpin().
-  void UnpinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
-                                        FileError error,
-                                        scoped_ptr<ResourceEntry> entry);
   void FinishUnpin(const FileOperationCallback& callback,
-                   const std::string& resource_id,
+                   const std::string* local_id,
                    FileError error);
 
   // Callback for handling about resource fetch.
@@ -256,13 +248,6 @@ class FileSystem : public FileSystemInterface,
       const ReadDirectoryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
-
-  // Part of MarkCacheFileAsMounted. Called after GetResourceEntryByPath is
-  // completed. |callback| must not be null.
-  void MarkCacheFileAsMountedAfterGetResourceEntry(
-      const MarkMountedCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.

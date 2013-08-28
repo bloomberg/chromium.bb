@@ -166,12 +166,16 @@ class FileCache {
   // Unpins the specified entry.
   FileError Unpin(const std::string& id);
 
-  // Sets the state of the cache entry corresponding to |id| as
-  // mounted.
+  // Runs MarkAsMounted() on |blocking_task_runner_|, and calls |callback| with
+  // the result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void MarkAsMountedOnUIThread(const std::string& id,
                                const GetFileFromCacheCallback& callback);
+
+  // Sets the state of the cache entry corresponding to |id| as mounted.
+  FileError MarkAsMounted(const std::string& id,
+                          base::FilePath* cache_file_path);
 
   // Set the state of the cache entry corresponding to file_path as unmounted.
   // |callback| must not be null.
@@ -242,10 +246,6 @@ class FileCache {
                           const std::string& md5,
                           const base::FilePath& source_path,
                           FileOperationType file_operation_type);
-
-  // Used to implement MarkAsMountedOnUIThread.
-  FileError MarkAsMounted(const std::string& id,
-                          base::FilePath* cache_file_path);
 
   // Used to implement MarkAsUnmountedOnUIThread.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
