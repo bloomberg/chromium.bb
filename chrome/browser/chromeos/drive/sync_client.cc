@@ -188,7 +188,7 @@ void SyncClient::StartTask(SyncType type, const std::string& local_id) {
     case UPLOAD:
     case UPLOAD_NO_CONTENT_CHECK:
       DVLOG(1) << "Uploading " << local_id;
-      update_operation_->UpdateFileByResourceId(
+      update_operation_->UpdateFileByLocalId(
           local_id,
           ClientContext(BACKGROUND),
           type == UPLOAD ? file_system::UpdateOperation::RUN_CONTENT_CHECK

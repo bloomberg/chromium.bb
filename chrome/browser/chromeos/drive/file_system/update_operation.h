@@ -56,15 +56,15 @@ class UpdateOperation {
     RUN_CONTENT_CHECK,
   };
 
-  // Updates a file by the given |resource_id| on the Drive server by
+  // Updates a file by the given |local_id| on the Drive server by
   // uploading an updated version. Used for uploading dirty files. The file
   // should already be present in the cache.
   //
   // |callback| must not be null.
-  void UpdateFileByResourceId(const std::string& resource_id,
-                              const ClientContext& context,
-                              ContentCheckMode check,
-                              const FileOperationCallback& callback);
+  void UpdateFileByLocalId(const std::string& local_id,
+                           const ClientContext& context,
+                           ContentCheckMode check,
+                           const FileOperationCallback& callback);
 
   struct LocalState;
 
@@ -76,6 +76,7 @@ class UpdateOperation {
 
   void UpdateFileAfterUpload(
       const FileOperationCallback& callback,
+      const std::string& local_id,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 

@@ -28,7 +28,7 @@ class UpdateOperationTest : public OperationTestBase {
  scoped_ptr<UpdateOperation> operation_;
 };
 
-TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
+TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
   const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
@@ -64,10 +64,9 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
 
   int64 original_changestamp = fake_service()->largest_changestamp();
 
-  // The callback will be called upon completion of
-  // UpdateFileByResourceId().
+  // The callback will be called upon completion of UpdateFileByLocalId().
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByResourceId(
+  operation_->UpdateFileByLocalId(
       kResourceId,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
@@ -101,9 +100,9 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
-TEST_F(UpdateOperationTest, UpdateFileByResourceId_NonexistentFile) {
+TEST_F(UpdateOperationTest, UpdateFileByLocalId_NonexistentFile) {
   FileError error = FILE_ERROR_OK;
-  operation_->UpdateFileByResourceId(
+  operation_->UpdateFileByLocalId(
       "file:nonexistent_resource_id",
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
@@ -112,7 +111,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_NonexistentFile) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
-TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
+TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
   const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
@@ -140,10 +139,9 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
 
   int64 original_changestamp = fake_service()->largest_changestamp();
 
-  // The callback will be called upon completion of
-  // UpdateFileByResourceId().
+  // The callback will be called upon completion of UpdateFileByLocalId().
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByResourceId(
+  operation_->UpdateFileByLocalId(
       kResourceId,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
@@ -184,12 +182,12 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  // And call UpdateFileByResourceId again.
+  // And call UpdateFileByLocalId again.
   // In this case, although the file is marked as dirty, but the content
   // hasn't been changed. Thus, the actual uploading should be skipped.
   original_changestamp = fake_service()->largest_changestamp();
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByResourceId(
+  operation_->UpdateFileByLocalId(
       kResourceId,
       ClientContext(USER_INITIATED),
       UpdateOperation::RUN_CONTENT_CHECK,
@@ -216,12 +214,12 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  // And call UpdateFileByResourceId again.
+  // And call UpdateFileByLocalId again.
   // In this case, NO_CONTENT_CHECK is set, so the actual uploading should run
   // no matter the content is changed or not.
   original_changestamp = fake_service()->largest_changestamp();
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByResourceId(
+  operation_->UpdateFileByLocalId(
       kResourceId,
       ClientContext(USER_INITIATED),
       UpdateOperation::NO_CONTENT_CHECK,

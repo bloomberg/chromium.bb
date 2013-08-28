@@ -23,6 +23,7 @@ struct UpdateOperation::LocalState {
   LocalState() : content_is_same(false) {
   }
 
+  std::string local_id;
   ResourceEntry entry;
   base::FilePath drive_file_path;
   base::FilePath cache_file_path;
@@ -34,10 +35,9 @@ namespace {
 // Gets locally stored information about the specified file.
 FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             internal::FileCache* cache,
-                            const std::string& resource_id,
                             UpdateOperation::ContentCheckMode check,
                             UpdateOperation::LocalState* local_state) {
-  FileError error = metadata->GetResourceEntryById(resource_id,
+  FileError error = metadata->GetResourceEntryById(local_state->local_id,
                                                    &local_state->entry);
   if (error != FILE_ERROR_OK)
     return error;
@@ -45,11 +45,11 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
   if (local_state->entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
-  local_state->drive_file_path = metadata->GetFilePath(resource_id);
+  local_state->drive_file_path = metadata->GetFilePath(local_state->local_id);
   if (local_state->drive_file_path.empty())
     return FILE_ERROR_NOT_FOUND;
 
-  error = cache->GetFile(resource_id, &local_state->cache_file_path);
+  error = cache->GetFile(local_state->local_id, &local_state->cache_file_path);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -58,7 +58,7 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
     local_state->content_is_same =
         (md5 == local_state->entry.file_specific_info().md5());
     if (local_state->content_is_same)
-      cache->ClearDirty(resource_id, md5);
+      cache->ClearDirty(local_state->local_id, md5);
   } else {
     local_state->content_is_same = false;
   }
@@ -70,6 +70,7 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
 FileError UpdateFileLocalState(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
+    const std::string& local_id,
     scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* drive_file_path) {
   ResourceEntry entry;
@@ -77,20 +78,23 @@ FileError UpdateFileLocalState(
   if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
     return FILE_ERROR_NOT_A_FILE;
 
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
+  std::string parent_local_id;
+  FileError error = metadata->GetIdByResourceId(parent_resource_id,
+                                                &parent_local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+  entry.set_parent_local_id(parent_local_id);
 
-  FileError error = metadata->RefreshEntry(entry.resource_id(), entry);
+  error = metadata->RefreshEntry(local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  *drive_file_path = metadata->GetFilePath(entry.resource_id());
+  *drive_file_path = metadata->GetFilePath(local_id);
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
   // Clear the dirty bit if we have updated an existing file.
-  return cache->ClearDirty(entry.resource_id(),
-                           entry.file_specific_info().md5());
+  return cache->ClearDirty(local_id, entry.file_specific_info().md5());
 }
 
 }  // namespace
@@ -114,8 +118,8 @@ UpdateOperation::~UpdateOperation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void UpdateOperation::UpdateFileByResourceId(
-    const std::string& resource_id,
+void UpdateOperation::UpdateFileByLocalId(
+    const std::string& local_id,
     const ClientContext& context,
     ContentCheckMode check,
     const FileOperationCallback& callback) {
@@ -123,13 +127,13 @@ void UpdateOperation::UpdateFileByResourceId(
   DCHECK(!callback.is_null());
 
   LocalState* local_state = new LocalState;
+  local_state->local_id = local_id;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&GetFileLocalState,
                  metadata_,
                  cache_,
-                 resource_id,
                  check,
                  local_state),
       base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
@@ -161,11 +165,13 @@ void UpdateOperation::UpdateFileAfterGetLocalState(
       context,
       base::Bind(&UpdateOperation::UpdateFileAfterUpload,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 callback,
+                 local_state->local_id));
 }
 
 void UpdateOperation::UpdateFileAfterUpload(
     const FileOperationCallback& callback,
+    const std::string& local_id,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -184,6 +190,7 @@ void UpdateOperation::UpdateFileAfterUpload(
       base::Bind(&UpdateFileLocalState,
                  metadata_,
                  cache_,
+                 local_id,
                  base::Passed(&resource_entry),
                  drive_file_path),
       base::Bind(&UpdateOperation::UpdateFileAfterUpdateLocalState,
