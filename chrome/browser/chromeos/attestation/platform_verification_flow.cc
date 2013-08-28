@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -38,11 +39,13 @@ PlatformVerificationFlow::PlatformVerificationFlow(
     cryptohome::AsyncMethodCaller* async_caller,
     CryptohomeClient* cryptohome_client,
     UserManager* user_manager,
+    system::StatisticsProvider* statistics_provider,
     Delegate* delegate)
     : attestation_flow_(attestation_flow),
       async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
       user_manager_(user_manager),
+      statistics_provider_(statistics_provider),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -72,6 +75,28 @@ void PlatformVerificationFlow::ChallengePlatformKey(
                  callback),
       base::Bind(callback, INTERNAL_ERROR, std::string(), std::string()));
   cryptohome_client_->TpmAttestationIsEnrolled(dbus_callback);
+}
+
+void PlatformVerificationFlow::CheckPlatformState(
+    const base::Callback<void(bool result)>& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::string stat_value;
+  if (!statistics_provider_->GetMachineStatistic(system::kDevSwitchBootMode,
+                                                 &stat_value)) {
+    LOG(ERROR) << __func__ << ": Failed to get boot mode statistic.";
+    callback.Run(false);
+    return;
+  }
+  if (stat_value != "0") {
+    LOG(INFO) << __func__ << ": Statistic indicates developer mode.";
+    callback.Run(false);
+    return;
+  }
+  BoolDBusMethodCallback dbus_callback = base::Bind(
+      &DBusCallback,
+      callback,
+      base::Bind(callback, false));
+  cryptohome_client_->TpmAttestationIsPrepared(dbus_callback);
 }
 
 void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,

@@ -25,6 +25,10 @@ namespace chromeos {
 class CryptohomeClient;
 class UserManager;
 
+namespace system {
+class StatisticsProvider;
+}
+
 namespace attestation {
 
 class AttestationFlow;
@@ -119,6 +123,7 @@ class PlatformVerificationFlow {
                            cryptohome::AsyncMethodCaller* async_caller,
                            CryptohomeClient* cryptohome_client,
                            UserManager* user_manager,
+                           system::StatisticsProvider* statistics_provider,
                            Delegate* delegate);
 
   virtual ~PlatformVerificationFlow();
@@ -137,6 +142,13 @@ class PlatformVerificationFlow {
                             const std::string& service_id,
                             const std::string& challenge,
                             const ChallengeCallback& callback);
+
+  // Performs a quick check to see if platform verification is reasonably
+  // expected to succeed.  The result of the check will be sent to the given
+  // |callback|.  If the |result| is true, then platform verification is
+  // expected to succeed.  However, this result is not authoritative either true
+  // or false.  If an error occurs, |result| will be false.
+  void CheckPlatformState(const base::Callback<void(bool result)>& callback);
 
  private:
   // Checks whether we need to prompt the user for consent before proceeding and
@@ -189,6 +201,7 @@ class PlatformVerificationFlow {
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
   UserManager* user_manager_;
+  system::StatisticsProvider* statistics_provider_;
   Delegate* delegate_;
   scoped_ptr<Delegate> default_delegate_;
 
