@@ -44,7 +44,7 @@ namespace {
 
 // A lazily created thread local storage for quick access to a thread's message
 // loop, if one exists.  This should be safe and free of static constructors.
-LazyInstance<base::ThreadLocalPointer<MessageLoop> > lazy_tls_ptr =
+LazyInstance<base::ThreadLocalPointer<MessageLoop> >::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
 
 // Logical events for Histogram profiling. Run with -message-loop-histogrammer
