@@ -28,46 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoResult_h
-#define CryptoResult_h
+#include "config.h"
+#include "modules/crypto/KeyPair.h"
 
-#include "bindings/v8/ScriptObject.h"
-#include "public/platform/WebCrypto.h"
-#include "wtf/Forward.h"
-#include "wtf/ThreadSafeRefCounted.h"
+#include "modules/crypto/Key.h"
+#include "public/platform/WebCryptoKey.h"
 
 namespace WebCore {
 
-class ScriptPromiseResolver;
+PassRefPtr<KeyPair> KeyPair::create(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
+{
+    ASSERT(publicKey.type() == WebKit::WebCryptoKeyTypePublic);
+    ASSERT(privateKey.type() == WebKit::WebCryptoKeyTypePrivate);
+    return adoptRef(new KeyPair(Key::create(publicKey), Key::create(privateKey)));
+}
 
-// Wrapper around a Promise to notify completion of the crypto operation.
-class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
-public:
-    ~CryptoResult();
-
-    static PassRefPtr<CryptoResult> create();
-
-    void completeWithError();
-    void completeWithBuffer(const WebKit::WebArrayBuffer&);
-    void completeWithBoolean(bool);
-    void completeWithKey(const WebKit::WebCryptoKey&);
-    void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey);
-
-    WebKit::WebCryptoResult result()
-    {
-        return WebKit::WebCryptoResult(this);
-    }
-
-    ScriptObject promise();
-
-private:
-    CryptoResult();
-    void finish();
-
-    RefPtr<ScriptPromiseResolver> m_promiseResolver;
-    bool m_finished;
-};
+KeyPair::KeyPair(const PassRefPtr<Key>& publicKey, const PassRefPtr<Key>& privateKey)
+    : m_publicKey(publicKey)
+    , m_privateKey(privateKey)
+{
+    ASSERT(publicKey);
+    ASSERT(privateKey);
+    ScriptWrappable::init(this);
+}
 
 } // namespace WebCore
-
-#endif

@@ -32,6 +32,7 @@
 #include "modules/crypto/CryptoResult.h"
 
 #include "V8Key.h" // Must precede ScriptPromiseResolver.h
+#include "V8KeyPair.h" // Must precede ScriptPromiseResolver.h
 #include "bindings/v8/custom/V8ArrayBufferCustom.h" // Must precede ScriptPromiseResolver.h
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "modules/crypto/Key.h"
@@ -75,6 +76,12 @@ void CryptoResult::completeWithBoolean(bool b)
 void CryptoResult::completeWithKey(const WebKit::WebCryptoKey& key)
 {
     m_promiseResolver->fulfill(Key::create(key));
+    finish();
+}
+
+void CryptoResult::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
+{
+    m_promiseResolver->fulfill(KeyPair::create(publicKey, privateKey));
     finish();
 }
 

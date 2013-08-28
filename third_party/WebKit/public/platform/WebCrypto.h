@@ -69,6 +69,7 @@ public:
     WEBKIT_EXPORT void completeWithBuffer(const void*, size_t);
     WEBKIT_EXPORT void completeWithBoolean(bool);
     WEBKIT_EXPORT void completeWithKey(const WebCryptoKey&);
+    WEBKIT_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
 
 #if WEBKIT_IMPLEMENTATION
     explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);

@@ -70,6 +70,12 @@ void WebCryptoResult::completeWithKey(const WebCryptoKey& key)
     reset();
 }
 
+void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey)
+{
+    m_impl->completeWithKeyPair(publicKey, privateKey);
+    reset();
+}
+
 WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
     : m_impl(impl)
 {

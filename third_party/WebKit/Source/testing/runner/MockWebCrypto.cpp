@@ -104,7 +104,11 @@ void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, const un
 
 void MockWebCrypto::generateKey(const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
 {
-    result.completeWithKey(WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePrivate, extractable, algorithm, usages));
+    if (algorithm.id() == WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5) {
+        result.completeWithKeyPair(WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePublic, extractable, algorithm, usages), WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePrivate, extractable, algorithm, usages));
+    } else {
+        result.completeWithKey(WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePrivate, extractable, algorithm, usages));
+    }
 }
 
 void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
