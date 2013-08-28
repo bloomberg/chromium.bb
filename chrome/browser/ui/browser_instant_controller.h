@@ -80,6 +80,9 @@ class BrowserInstantController : public SearchModelObserver {
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
+  // Sets the current query to prefetch if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
   // Notifies |instant_| to toggle voice search.
   void ToggleVoiceSearch();
 

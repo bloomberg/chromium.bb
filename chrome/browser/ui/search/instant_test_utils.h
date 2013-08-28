@@ -37,13 +37,14 @@ class InstantTestBase {
       : https_test_server_(
             net::SpawnedTestServer::TYPE_HTTPS,
             net::BaseTestServer::SSLOptions(),
-            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+        init_suggestions_url_(false) {
   }
   virtual ~InstantTestBase() {}
 
  protected:
   void SetupInstant(Browser* browser);
-  void Init(const GURL& instant_url);
+  void Init(const GURL& instant_url, bool init_suggestions_url);
 
   void SetInstantURL(const std::string& url);
 
@@ -108,6 +109,9 @@ class InstantTestBase {
 
   // HTTPS Testing server, started on demand.
   net::SpawnedTestServer https_test_server_;
+
+  // Set to true to initialize suggestions URL in default search provider.
+  bool init_suggestions_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTestBase);
 };

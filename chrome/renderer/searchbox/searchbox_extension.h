@@ -37,6 +37,7 @@ class SearchBoxExtension {
   static void DispatchMarginChange(WebKit::WebFrame* frame);
   static void DispatchMostVisitedChanged(WebKit::WebFrame* frame);
   static void DispatchSubmit(WebKit::WebFrame* frame);
+  static void DispatchSuggestionChange(WebKit::WebFrame* frame);
   static void DispatchThemeChange(WebKit::WebFrame* frame);
   static void DispatchToggleVoiceSearch(WebKit::WebFrame* frame);
 
