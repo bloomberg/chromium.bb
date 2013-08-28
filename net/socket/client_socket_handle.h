@@ -122,6 +122,9 @@ class NET_EXPORT ClientSocketHandle {
                          LoadTimingInfo* load_timing_info) const;
 
   // Used by ClientSocketPool to initialize the ClientSocketHandle.
+  //
+  // SetSocket() may also be used if this handle is used as simply for
+  // socket storage (e.g., http://crbug.com/37810).
   void SetSocket(scoped_ptr<StreamSocket> s);
   void set_is_reused(bool is_reused) { is_reused_ = is_reused; }
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
@@ -149,9 +152,13 @@ class NET_EXPORT ClientSocketHandle {
     return pending_http_proxy_connection_.release();
   }
 
-  // These may only be used if is_initialized() is true.
-  scoped_ptr<StreamSocket> PassSocket();
   StreamSocket* socket() { return socket_.get(); }
+
+  // SetSocket() must be called with a new socket before this handle
+  // is destroyed if is_initialized() is true.
+  scoped_ptr<StreamSocket> PassSocket();
+
+  // These may only be used if is_initialized() is true.
   const std::string& group_name() const { return group_name_; }
   int id() const { return pool_id_; }
   bool is_reused() const { return is_reused_; }

@@ -34,22 +34,29 @@ void ClientSocketHandle::Reset() {
 }
 
 void ClientSocketHandle::ResetInternal(bool cancel) {
-  if (group_name_.empty())  // Was Init called?
-    return;
-  if (is_initialized()) {
-    // Because of http://crbug.com/37810 we may not have a pool, but have
-    // just a raw socket.
-    socket_->NetLog().EndEvent(NetLog::TYPE_SOCKET_IN_USE);
-    if (pool_)
-      // If we've still got a socket, release it back to the ClientSocketPool so
-      // it can be deleted or reused.
-      pool_->ReleaseSocket(group_name_, PassSocket(), pool_id_);
-  } else if (cancel) {
-    // If we did not get initialized yet, we've got a socket request pending.
-    // Cancel it.
-    pool_->CancelRequest(group_name_, this);
+  // Was Init called?
+  if (!group_name_.empty()) {
+    // If so, we must have a pool.
+    CHECK(pool_);
+    if (is_initialized()) {
+      if (socket_) {
+        socket_->NetLog().EndEvent(NetLog::TYPE_SOCKET_IN_USE);
+        // Release the socket back to the ClientSocketPool so it can be
+        // deleted or reused.
+        pool_->ReleaseSocket(group_name_, socket_.Pass(), pool_id_);
+      } else {
+        // If the handle has been initialized, we should still have a
+        // socket.
+        NOTREACHED();
+      }
+    } else if (cancel) {
+      // If we did not get initialized yet and we have a socket
+      // request pending, cancel it.
+      pool_->CancelRequest(group_name_, this);
+    }
   }
   is_initialized_ = false;
+  socket_.reset();
   group_name_.clear();
   is_reused_ = false;
   user_callback_.Reset();
