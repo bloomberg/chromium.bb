@@ -43,7 +43,8 @@ views::View* InputMethodBase::GetFocusedView() const {
 void InputMethodBase::OnTextInputTypeChanged(View* view) {}
 
 ui::TextInputClient* InputMethodBase::GetTextInputClient() const {
-  return GetFocusedView() ? GetFocusedView()->GetTextInputClient() : NULL;
+  return (widget_ && widget_->IsActive() && GetFocusedView()) ?
+      GetFocusedView()->GetTextInputClient() : NULL;
 }
 
 ui::TextInputType InputMethodBase::GetTextInputType() const {

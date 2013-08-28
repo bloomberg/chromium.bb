@@ -31,6 +31,7 @@
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/cursor_manager.h"
 #include "ui/views/corewm/focus_controller.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
@@ -533,6 +534,15 @@ void DesktopRootWindowHostX11::InitModalType(ui::ModalType modal_type) {
 void DesktopRootWindowHostX11::FlashFrame(bool flash_frame) {
   // TODO(erg):
   NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostX11::OnNativeWidgetFocus() {
+  native_widget_delegate_->AsWidget()->GetInputMethod()->OnFocus();
+}
+
+void DesktopRootWindowHostX11::OnNativeWidgetBlur() {
+  if (xwindow_)
+    native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

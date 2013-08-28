@@ -51,6 +51,11 @@ class VIEWS_EXPORT InputMethod {
   // The |widget| must already be initialized.
   virtual void Init(Widget* widget) = 0;
 
+  // Called when the top-level Widget gains or loses keyboard focus.
+  // These should only be called by the Widget that owns this InputMethod.
+  virtual void OnFocus() = 0;
+  virtual void OnBlur() = 0;
+
   // Called when the focused window receives native IME messages that are not
   // translated into other predefined event callbacks. Currently this method is
   // used only for IME functionalities specific to Windows.

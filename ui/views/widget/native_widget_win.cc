@@ -737,10 +737,16 @@ void NativeWidgetWin::HandleFrameChanged() {
 
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
   delegate_->OnNativeFocus(last_focused_window);
+  InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->OnFocus();
 }
 
 void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
+  InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->OnBlur();
 }
 
 bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {

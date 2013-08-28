@@ -41,7 +41,8 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
 
  protected:
-  // Return the widget's focused view.
+  internal::InputMethodDelegate* delegate() const { return delegate_; }
+  Widget* widget() const { return widget_; }
   View* GetFocusedView() const;
 
   // Returns true only if the View is focused and its Widget is active.

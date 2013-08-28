@@ -9,6 +9,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -45,6 +46,10 @@ MockInputMethod::~MockInputMethod() {
 void MockInputMethod::Init(Widget* widget) {
   InputMethodBase::Init(widget);
 }
+
+void MockInputMethod::OnFocus() {}
+
+void MockInputMethod::OnBlur() {}
 
 bool MockInputMethod::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
