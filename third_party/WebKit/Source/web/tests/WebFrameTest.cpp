@@ -2080,7 +2080,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
 
     mainFrame->resetMatchCount();
@@ -2199,7 +2199,7 @@ TEST_F(WebFrameTest, FindInPageSkipsHiddenFrames)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
 
     mainFrame->resetMatchCount();
@@ -2231,8 +2231,8 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
-    WebFrameImpl* secondFrame = static_cast<WebFrameImpl*>(mainFrame->traverseNext(false));
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
+    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
 
     // Detach the frame before finding.
@@ -2274,8 +2274,8 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
-    WebFrameImpl* secondFrame = static_cast<WebFrameImpl*>(mainFrame->traverseNext(false));
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
+    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -2317,8 +2317,8 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
-    WebFrameImpl* secondFrame = static_cast<WebFrameImpl*>(mainFrame->traverseNext(false));
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
+    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -2611,14 +2611,14 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
 {
     registerMockedHttpURLLoad("select_range_span_editable.html");
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_span_editable.html");
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
     WebCore::RenderObject* renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_div_editable.html");
-    mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    mainFrame = toWebFrameImpl(m_webView->mainFrame());
     renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
@@ -3050,7 +3050,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     SpellCheckClient spellcheck;
     m_webView->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(m_webView->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -3083,7 +3083,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     SpellCheckClient spellcheck;
     m_webView->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(m_webView->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -3115,7 +3115,7 @@ TEST_F(WebFrameTest, MarkerHashIdentifiers) {
     SpellCheckClient spellcheck(kHash);
     m_webView->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(m_webView->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -3173,7 +3173,7 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition)
     StubbornSpellCheckClient spellcheck;
     m_webView->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(m_webView->mainFrame());
     WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
@@ -3205,7 +3205,7 @@ TEST_F(WebFrameTest, CancelSpellingRequestCrash)
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "spell.html");
     m_webView->setSpellCheckClient(0);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(m_webView->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -3323,7 +3323,7 @@ public:
         if (frame->parent())
             return;
         EXPECT_FALSE(m_didScrollMainFrame);
-        WebCore::FrameView* view = static_cast<WebFrameImpl*>(frame)->frameView();
+        WebCore::FrameView* view = toWebFrameImpl(frame)->frameView();
         // FrameView can be scrolled in FrameView::setFixedVisibleContentRect
         // which is called from Frame::createView (before the frame is associated
         // with the the view).
@@ -3508,7 +3508,7 @@ public:
 
     virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
     {
-        if (static_cast<WebFrameImpl*>(frame)->frame()->loader()->loadType() == WebCore::FrameLoadTypeSame)
+        if (toWebFrameImpl(frame)->frame()->loader()->loadType() == WebCore::FrameLoadTypeSame)
             m_frameLoadTypeSameSeen = true;
     }
 

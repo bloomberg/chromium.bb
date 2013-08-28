@@ -2592,7 +2592,7 @@ WebFrame* WebViewImpl::findFrameByName(
 {
     if (!relativeToFrame)
         relativeToFrame = mainFrame();
-    Frame* frame = static_cast<WebFrameImpl*>(relativeToFrame)->frame();
+    Frame* frame = toWebFrameImpl(relativeToFrame)->frame();
     frame = frame->tree()->find(name);
     return WebFrameImpl::fromFrame(frame);
 }
@@ -2611,8 +2611,7 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
             frame->selection()->setFocused(false);
         return;
     }
-    WebFrameImpl* frameImpl = static_cast<WebFrameImpl*>(frame);
-    Frame* webcoreFrame = frameImpl->frame();
+    Frame* webcoreFrame = toWebFrameImpl(frame)->frame();
     webcoreFrame->page()->focusController().setFocusedFrame(webcoreFrame);
 }
 

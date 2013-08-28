@@ -50,11 +50,11 @@ class RenderTableCellDeathTest : public testing::Test {
         static WebView* webView;
 
         if (webView)
-            return static_cast<WebFrameImpl*>(webView->mainFrame())->frame();
+            return toWebFrameImpl(webView->mainFrame())->frame();
 
         webView = FrameTestHelpers::createWebViewAndLoad("about:blank");
         webView->setFocus(true);
-        return static_cast<WebFrameImpl*>(webView->mainFrame())->frame();
+        return toWebFrameImpl(webView->mainFrame())->frame();
     }
 
     static Document* document()

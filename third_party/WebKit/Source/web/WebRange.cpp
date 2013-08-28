@@ -116,7 +116,7 @@ WebRange WebRange::expandedToParagraph() const
 // static
 WebRange WebRange::fromDocumentRange(WebFrame* frame, int start, int length)
 {
-    WebCore::Frame* webFrame = static_cast<WebFrameImpl*>(frame)->frame();
+    WebCore::Frame* webFrame = toWebFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection()->rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
     return TextIterator::rangeFromLocationAndLength(scope, start, length);

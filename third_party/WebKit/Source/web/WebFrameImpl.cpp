@@ -636,7 +636,7 @@ WebFrame* WebFrameImpl::opener() const
 
 void WebFrameImpl::setOpener(const WebFrame* webFrame)
 {
-    frame()->loader()->setOpener(webFrame ? static_cast<const WebFrameImpl*>(webFrame)->frame() : 0);
+    frame()->loader()->setOpener(webFrame ? toWebFrameImpl(webFrame)->frame() : 0);
 }
 
 WebFrame* WebFrameImpl::parent() const
@@ -1885,7 +1885,7 @@ void WebFrameImpl::updateFindMatchRects()
     // Invalidate the rects in child frames. Will be updated later during traversal.
     if (!m_findMatchRectsAreValid)
         for (WebFrame* child = firstChild(); child; child = child->nextSibling())
-            static_cast<WebFrameImpl*>(child)->m_findMatchRectsAreValid = false;
+            toWebFrameImpl(child)->m_findMatchRectsAreValid = false;
 
     m_findMatchRectsAreValid = true;
 }
@@ -1905,7 +1905,7 @@ void WebFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
     ASSERT(!parent());
 
     Vector<WebFloatRect> matchRects;
-    for (WebFrameImpl* frame = this; frame; frame = static_cast<WebFrameImpl*>(frame->traverseNext(false)))
+    for (WebFrameImpl* frame = this; frame; frame = toWebFrameImpl(frame->traverseNext(false)))
         frame->appendFindMatchRects(matchRects);
 
     outputRects = matchRects;
@@ -1929,7 +1929,7 @@ int WebFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* se
     int indexInBestFrame = -1;
     float distanceInBestFrame = FLT_MAX;
 
-    for (WebFrameImpl* frame = this; frame; frame = static_cast<WebFrameImpl*>(frame->traverseNext(false))) {
+    for (WebFrameImpl* frame = this; frame; frame = toWebFrameImpl(frame->traverseNext(false))) {
         float distanceInFrame;
         int indexInFrame = frame->nearestFindMatch(point, distanceInFrame);
         if (distanceInFrame < distanceInBestFrame) {
@@ -2376,7 +2376,7 @@ int WebFrameImpl::ordinalOfFirstMatchForFrame(WebFrameImpl* frame) const
     WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
     // Iterate from the main frame up to (but not including) |frame| and
     // add up the number of matches found so far.
-    for (WebFrameImpl* it = mainFrameImpl; it != frame; it = static_cast<WebFrameImpl*>(it->traverseNext(true))) {
+    for (WebFrameImpl* it = mainFrameImpl; it != frame; it = toWebFrameImpl(it->traverseNext(true))) {
         if (it->m_lastMatchCount > 0)
             ordinal += it->m_lastMatchCount;
     }

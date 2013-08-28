@@ -100,7 +100,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8(path.c_str()));
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(baseURL + path);
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
 
     WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();

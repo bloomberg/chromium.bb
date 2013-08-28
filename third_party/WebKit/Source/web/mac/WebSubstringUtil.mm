@@ -57,7 +57,7 @@ namespace WebKit {
 
 NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
 {
-    Frame* frame = static_cast<WebFrameImpl*>(webFrame)->frame();
+    Frame* frame = toWebFrameImpl(webFrame)->frame();
     if (frame->view()->needsLayout())
         frame->view()->layout();
 

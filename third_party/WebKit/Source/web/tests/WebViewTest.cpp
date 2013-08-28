@@ -265,7 +265,7 @@ TEST_F(WebViewTest, FocusIsInactive)
 
     webView->setFocus(true);
     webView->setIsActive(true);
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
     WebCore::HTMLDocument* document = static_cast<WebCore::HTMLDocument*>(frame->frame()->document());
@@ -340,7 +340,7 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(url, true, 0, &client);
     client.testData().setWebView(webView);
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     WebCore::FrameView* frameView = frame->frame()->view();
     frameView->layout();
     EXPECT_FALSE(frameView->layoutPending());
@@ -481,7 +481,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html");
     webView->setInitialFocus(false);
     webView->setEditableSelectionOffsets(5, 13);
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_EQ("56789abc", frame->selectionAsText());
     WebTextInputInfo info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value);
@@ -495,7 +495,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "content_editable_populated.html");
     webView->setInitialFocus(false);
     webView->setEditableSelectionOffsets(8, 19);
-    frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_EQ("89abcdefghi", frame->selectionAsText());
     info = webView->textInputInfo();
     EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value);
@@ -939,7 +939,7 @@ TEST_F(WebViewTest, LongPressSelection)
 
     WebString target = WebString::fromUTF8("target");
     WebString onselectstartfalse = WebString::fromUTF8("onselectstartfalse");
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
 
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, onselectstartfalse));
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
@@ -959,7 +959,7 @@ TEST_F(WebViewTest, SelectionOnDisabledInput)
 
     std::string testWord = "This text should be selected.";
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_EQ(testWord, std::string(frame->selectionAsText().utf8().data()));
 
     size_t location;
@@ -981,7 +981,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput)
 
     std::string testWord = "This text should be selected.";
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_EQ(testWord, std::string(frame->selectionAsText().utf8().data()));
 
     size_t location;
@@ -1139,7 +1139,7 @@ TEST_F(WebViewTest, HelperPlugin)
     HelperPluginCreatingWebViewClient client;
     WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebView(true, 0, &client));
 
-    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webViewImpl->mainFrame());
+    WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
     client.setWebFrameClient(frame->client());
 
     WebHelperPluginImpl* helperPlugin = webViewImpl->createHelperPlugin("dummy-plugin-type", frame->document());

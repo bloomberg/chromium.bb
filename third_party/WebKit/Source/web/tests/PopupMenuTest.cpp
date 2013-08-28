@@ -187,7 +187,7 @@ protected:
     {
         m_webView = toWebViewImpl(WebView::create(&m_webviewClient));
         m_webView->initializeMainFrame(&m_webFrameClient);
-        m_popupMenu = adoptRef(new PopupMenuChromium(*static_cast<WebFrameImpl*>(m_webView->mainFrame())->frame(), &m_popupMenuClient));
+        m_popupMenu = adoptRef(new PopupMenuChromium(*toWebFrameImpl(m_webView->mainFrame())->frame(), &m_popupMenuClient));
     }
 
     virtual void TearDown()
@@ -407,7 +407,7 @@ TEST_F(SelectPopupMenuTest, DISABLED_SelectItemEventFire)
     loadFrame(m_webView->mainFrame(), "select_event.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
 
     showPopup();
 
@@ -452,7 +452,7 @@ TEST_F(SelectPopupMenuTest, FLAKY_SelectItemKeyEvent)
     loadFrame(m_webView->mainFrame(), "select_event.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
 
     showPopup();
 
@@ -474,7 +474,7 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnChange)
     loadFrame(m_webView->mainFrame(), "select_event_remove_on_change.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
 
     showPopup();
 
@@ -496,7 +496,7 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnClick)
     loadFrame(m_webView->mainFrame(), "select_event_remove_on_click.html");
     serveRequests();
 
-    m_popupMenuClient.setFocusedNode(static_cast<WebFrameImpl*>(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
+    m_popupMenuClient.setFocusedNode(toWebFrameImpl(m_webView->mainFrame())->frameView()->frame()->document()->focusedElement());
 
     showPopup();
 

@@ -70,8 +70,7 @@ public:
     {
         m_webView = WebView::create(0);
         m_webView->initializeMainFrame(&m_webFrameClient);
-        WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
-        m_frameLoaderClientImpl = static_cast<FrameLoaderClientImpl*>(frame->frame()->loader()->client());
+        m_frameLoaderClientImpl = static_cast<FrameLoaderClientImpl*>(toWebFrameImpl(m_webView->mainFrame())->frame()->loader()->client());
     }
 
     void TearDown()

@@ -446,7 +446,7 @@ WebPageSerializerImpl::WebPageSerializerImpl(WebFrame* frame,
 {
     // Must specify available webframe.
     ASSERT(frame);
-    m_specifiedWebFrameImpl = static_cast<WebFrameImpl*>(frame);
+    m_specifiedWebFrameImpl = toWebFrameImpl(frame);
     // Make sure we have non 0 client.
     ASSERT(client);
     // Build local resources map.

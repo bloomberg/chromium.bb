@@ -102,7 +102,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
 WebSharedWorkerImpl::~WebSharedWorkerImpl()
 {
     ASSERT(m_webView);
-    WebFrameImpl* webFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
     if (webFrame)
         webFrame->setClient(0);
     m_webView->close();
@@ -129,7 +129,7 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     // is created (similar to RenderThread::OnCreateNewView).
     m_webView->initializeMainFrame(this);
 
-    WebFrameImpl* webFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
 
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.

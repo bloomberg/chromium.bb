@@ -239,7 +239,7 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
                                              const WebVector<WebCString>& supportedSchemes,
                                              WebVector<WebURL>* resourceURLs,
                                              WebVector<WebURL>* frameURLs) {
-    WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(view->mainFrame());
+    WebFrameImpl* mainFrame = toWebFrameImpl(view->mainFrame());
     if (!mainFrame)
         return false;
 
