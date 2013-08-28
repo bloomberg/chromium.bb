@@ -54,7 +54,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     static final String DELTA = "Delta";
 
-    private final Bundle mExtraParamBundle;
+    private final Bundle mExtraParamBundleSingleTap;
+    private final Bundle mExtraParamBundleFling;
+    private final Bundle mExtraParamBundleScroll;
+    private final Bundle mExtraParamBundleDoubleTapDragZoom;
+    private final Bundle mExtraParamBundlePinchBy;
     private GestureDetector mGestureDetector;
     private final ZoomManager mZoomManager;
     private LongPressDetector mLongPressDetector;
@@ -291,6 +295,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
          * @param lastInputEventForVSync Indicates that this gesture event is the last input
          * to be event sent during the current vsync interval.
          * @param extraParams A bundle that holds specific extra parameters for certain gestures.
+         *                    This is read-only and should not be modified in this function.
          * Refer to gesture type definition for more information.
          * @return Whether the gesture was sent successfully.
          */
@@ -320,7 +325,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
     ContentViewGestureHandler(
             Context context, MotionEventDelegate delegate, ZoomManager zoomManager,
             int inputEventDeliveryMode) {
-        mExtraParamBundle = new Bundle();
+        mExtraParamBundleSingleTap = new Bundle();
+        mExtraParamBundleFling = new Bundle();
+        mExtraParamBundleScroll = new Bundle();
+        mExtraParamBundleDoubleTapDragZoom = new Bundle();
+        mExtraParamBundlePinchBy = new Bundle();
+
         mLongPressDetector = new LongPressDetector(context, this);
         mMotionEventDelegate = delegate;
         mZoomManager = zoomManager;
@@ -418,12 +428,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         int dy = (int) (distanceY + mAccumulatedScrollErrorY);
                         mAccumulatedScrollErrorX = distanceX + mAccumulatedScrollErrorX - dx;
                         mAccumulatedScrollErrorY = distanceY + mAccumulatedScrollErrorY - dy;
-                        mExtraParamBundle.clear();
-                        mExtraParamBundle.putInt(DISTANCE_X, dx);
-                        mExtraParamBundle.putInt(DISTANCE_Y, dy);
+
+                        mExtraParamBundleScroll.putInt(DISTANCE_X, dx);
+                        mExtraParamBundleScroll.putInt(DISTANCE_Y, dy);
+                        assert mExtraParamBundleScroll.size() == 2;
+
                         if ((dx | dy) != 0) {
                             sendLastGestureForVSync(GESTURE_SCROLL_BY,
-                                    e2.getEventTime(), x, y, mExtraParamBundle);
+                                    e2.getEventTime(), x, y, mExtraParamBundleScroll);
                         }
 
                         mMotionEventDelegate.invokeZoomPicker();
@@ -479,10 +491,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                 // for double tap timeout.
                                 float x = e.getX();
                                 float y = e.getY();
-                                mExtraParamBundle.clear();
-                                mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
+                                mExtraParamBundleSingleTap.putBoolean(SHOW_PRESS,
+                                        mShowPressIsCalled);
+                                assert mExtraParamBundleSingleTap.size() == 1;
+
                                 if (sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
-                                        mExtraParamBundle)) {
+                                        mExtraParamBundleSingleTap)) {
                                     mIgnoreSingleTap = true;
                                 }
                                 setClickXAndY((int) x, (int) y);
@@ -506,10 +520,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                         int x = (int) e.getX();
                         int y = (int) e.getY();
-                        mExtraParamBundle.clear();
-                        mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
+                        mExtraParamBundleSingleTap.putBoolean(SHOW_PRESS, mShowPressIsCalled);
                         sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
-                            mExtraParamBundle);
+                            mExtraParamBundleSingleTap);
+                        assert mExtraParamBundleSingleTap.size() == 1;
+
                         setClickXAndY(x, y);
                         return true;
                     }
@@ -542,9 +557,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                         mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_ZOOM;
                                     }
                                 } else if (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_ZOOM) {
-                                    mExtraParamBundle.clear();
+                                    assert mExtraParamBundleDoubleTapDragZoom.isEmpty();
                                     sendGesture(GESTURE_SCROLL_BY, e.getEventTime(),
-                                            (int) e.getX(), (int) e.getY(), mExtraParamBundle);
+                                            (int) e.getX(), (int) e.getY(),
+                                            mExtraParamBundleDoubleTapDragZoom);
 
                                     float dy = mDoubleTapY - e.getY();
                                     pinchBy(e.getEventTime(),
@@ -650,10 +666,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         mFlingMayBeActive = true;
 
-        mExtraParamBundle.clear();
-        mExtraParamBundle.putInt(VELOCITY_X, velocityX);
-        mExtraParamBundle.putInt(VELOCITY_Y, velocityY);
-        sendGesture(GESTURE_FLING_START, timeMs, x, y, mExtraParamBundle);
+        mExtraParamBundleFling.putInt(VELOCITY_X, velocityX);
+        mExtraParamBundleFling.putInt(VELOCITY_Y, velocityY);
+        assert mExtraParamBundleFling.size() == 2;
+        sendGesture(GESTURE_FLING_START, timeMs, x, y, mExtraParamBundleFling);
     }
 
     /**
@@ -730,9 +746,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param delta The percentage to pinch by.
      */
     void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
-        mExtraParamBundle.clear();
-        mExtraParamBundle.putFloat(DELTA, delta);
-        sendLastGestureForVSync(GESTURE_PINCH_BY, timeMs, anchorX, anchorY, mExtraParamBundle);
+        mExtraParamBundlePinchBy.putFloat(DELTA, delta);
+        assert mExtraParamBundlePinchBy.size() == 1;
+        sendLastGestureForVSync(
+                GESTURE_PINCH_BY, timeMs, anchorX, anchorY, mExtraParamBundlePinchBy);
         mPinchInProgress = true;
     }
 
