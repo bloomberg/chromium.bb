@@ -345,13 +345,6 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
       base::DictionaryValue* dict;
       if (!item || !item->GetAsDictionary(&dict))
         continue;
-#if defined(DEBUG_DEVTOOLS)
-      if (browser->device()->serial().empty()) {
-        std::string page_type;
-        if (!dict->GetString("type", &page_type) || page_type != "page")
-          continue;  // Discover only regular tabs.
-      }
-#endif  // defined(DEBUG_DEVTOOLS)
       browser->AddPage(new DevToolsAdbBridge::RemotePage(
           bridge_, browser->device(), browser->socket(), *dict));
     }

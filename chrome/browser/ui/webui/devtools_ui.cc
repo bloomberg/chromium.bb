@@ -40,7 +40,8 @@ const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
 #if defined(DEBUG_DEVTOOLS)
 // Local frontend url provided by InspectUI.
-const char kLocalFrontendURLPrefix[] = "https://localhost:9222/";
+const char kLocalFrontendURL[] =
+    "chrome-devtools://devtools/bundled/devtools.html";
 #endif  // defined(DEBUG_DEVTOOLS)
 
 class FetchRequest : public net::URLFetcherDelegate {
@@ -190,19 +191,8 @@ class DevToolsDataSource : public content::URLDataSource {
 GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
   GURL url(frontend_url);
 #if defined(DEBUG_DEVTOOLS)
-  if (frontend_url.find(kLocalFrontendURLPrefix) == 0) {
-    std::string path = url.path();
-    std::string local_path_prefix = "/";
-    local_path_prefix += chrome::kChromeUIDevToolsHost;
-    local_path_prefix += "/";
-    if (StartsWithASCII(path, local_path_prefix, false)) {
-      std::string local_path = path.substr(local_path_prefix.length());
-      return GURL(base::StringPrintf("%s://%s/%s/%s",
-                                     chrome::kChromeDevToolsScheme,
-                                     chrome::kChromeUIDevToolsHost,
-                                     chrome::kChromeUIDevToolsBundledPath,
-                                     local_path.c_str()));
-    }
+  if (!url.is_valid() || url.host() != kRemoteFrontendDomain) {
+    return GURL(kLocalFrontendURL);
   }
 #endif  // defined(DEBUG_DEVTOOLS)
   CHECK(url.is_valid());
