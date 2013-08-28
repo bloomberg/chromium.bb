@@ -1380,13 +1380,19 @@ bool PepperPluginInstanceImpl::PluginHasFocus() const {
 }
 
 void PepperPluginInstanceImpl::SendFocusChangeNotification() {
-  // This call can happen during PepperPluginIn>stanceImpl destruction, because
-  // WebKit informs the plugin it's losing focus. See crbug.com/236574
-  if (!instance_interface_)
-    return;
+  // Keep a reference on the stack. RenderViewImpl::PepperFocusChanged may
+  // remove the <embed> from the DOM, which will make the PepperWebPluginImpl
+  // drop its reference, usually the last one. This is similar to possible
+  // plugin behavior described at the NOTE above Delete().
+  scoped_refptr<PepperPluginInstanceImpl> ref(this);
+
   bool has_focus = PluginHasFocus();
   render_view_->PepperFocusChanged(this, has_focus);
-  instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
+
+  // instance_interface_ may have been cleared in Delete() if the
+  // PepperWebPluginImpl is destroyed.
+  if (instance_interface_)
+    instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
 }
 
 void PepperPluginInstanceImpl::UpdateTouchEventRequest() {
