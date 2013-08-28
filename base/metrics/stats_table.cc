@@ -397,9 +397,9 @@ int StatsTable::GetRowValue(int index, int pid) const {
 
   int rv = 0;
   int* row = impl_->row(index);
-  for (int slot_id = 0; slot_id < impl_->max_threads(); slot_id++) {
+  for (int slot_id = 1; slot_id <= impl_->max_threads(); slot_id++) {
     if (pid == 0 || *impl_->thread_pid(slot_id) == pid)
-      rv += row[slot_id];
+      rv += row[slot_id-1];
   }
   return rv;
 }
