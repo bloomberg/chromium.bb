@@ -30,7 +30,6 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
-#include <stdlib.h>
 #include <string.h>
 
 #define UNIMPLEMENTED ASSERT_NOT_REACHED

@@ -29,8 +29,6 @@
 #ifndef AudioFileReader_h
 #define AudioFileReader_h
 
-#include <stdlib.h>
-#include "wtf/RefPtr.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

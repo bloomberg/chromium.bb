@@ -23,7 +23,6 @@
 #ifndef WTF_UNICODE_ICU_H
 #define WTF_UNICODE_ICU_H
 
-#include <stdlib.h>
 #include <unicode/uchar.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>

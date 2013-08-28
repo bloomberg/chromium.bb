@@ -33,8 +33,9 @@
 #include "wtf/StringExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <unicode/ucol.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unicode/ucol.h>
 
 #if OS(DARWIN)
 #include "wtf/RetainPtr.h"

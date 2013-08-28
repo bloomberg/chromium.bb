@@ -31,12 +31,11 @@
 #ifndef LayoutUnit_h
 #define LayoutUnit_h
 
+#include "wtf/MathExtras.h"
+#include "wtf/SaturatedArithmetic.h"
 #include <limits.h>
 #include <limits>
 #include <math.h>
-#include <stdlib.h>
-#include "wtf/MathExtras.h"
-#include "wtf/SaturatedArithmetic.h"
 
 namespace WebCore {
 

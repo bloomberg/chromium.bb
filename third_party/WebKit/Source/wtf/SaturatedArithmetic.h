@@ -33,7 +33,6 @@
 
 #include <limits>
 #include <stdint.h>
-#include <stdlib.h>
 
 inline int32_t saturatedAddition(int32_t a, int32_t b)
 {

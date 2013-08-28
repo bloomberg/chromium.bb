@@ -33,7 +33,6 @@
 #include <float.h>
 #include <limits>
 #include <stdint.h>
-#include <stdlib.h>
 
 #if OS(OPENBSD)
 #include <sys/types.h>
