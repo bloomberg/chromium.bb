@@ -43,8 +43,6 @@ PassRefPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionSta
 {
     const String& encodingLabel = utfLabel.isNull() ? String("utf-8") : utfLabel;
 
-    // FIXME: Types don't match Encoding spec, e.g. "ascii" => "US-ASCII" not "UTF-8".
-
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
         es.throwTypeError();
@@ -72,7 +70,9 @@ TextEncoder::~TextEncoder()
 
 String TextEncoder::encoding() const
 {
-    return String(m_encoding.name()).lower();
+    String name = String(m_encoding.name()).lower();
+    ASSERT(name == "utf-8" || name == "utf-16le" || name == "utf-16be");
+    return name;
 }
 
 PassRefPtr<Uint8Array> TextEncoder::encode(const String& input, const Dictionary& options)

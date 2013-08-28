@@ -171,21 +171,21 @@ PASS new TextDecoder("windows-1251").encoding is "windows-1251"
 PASS new TextDecoder("x-cp1251").encoding is "windows-1251"
 
 name = "windows-1252"
-FAIL new TextDecoder("ansi_x3.4-1968").encoding should be windows-1252. Was us-ascii.
-FAIL new TextDecoder("ascii").encoding should be windows-1252. Was us-ascii.
+PASS new TextDecoder("ansi_x3.4-1968").encoding is "windows-1252"
+PASS new TextDecoder("ascii").encoding is "windows-1252"
 PASS new TextDecoder("cp1252").encoding is "windows-1252"
-FAIL new TextDecoder("cp819").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("csisolatin1").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("ibm819").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("iso-8859-1").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("iso-ir-100").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("iso8859-1").encoding should be windows-1252. Was iso-8859-1.
+PASS new TextDecoder("cp819").encoding is "windows-1252"
+PASS new TextDecoder("csisolatin1").encoding is "windows-1252"
+PASS new TextDecoder("ibm819").encoding is "windows-1252"
+PASS new TextDecoder("iso-8859-1").encoding is "windows-1252"
+PASS new TextDecoder("iso-ir-100").encoding is "windows-1252"
+PASS new TextDecoder("iso8859-1").encoding is "windows-1252"
 FAIL new TextDecoder("iso88591").encoding should be windows-1252. Threw exception TypeError: Type error
 FAIL new TextDecoder("iso_8859-1").encoding should be windows-1252. Threw exception TypeError: Type error
-FAIL new TextDecoder("iso_8859-1:1987").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("l1").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("latin1").encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder("us-ascii").encoding should be windows-1252. Was us-ascii.
+PASS new TextDecoder("iso_8859-1:1987").encoding is "windows-1252"
+PASS new TextDecoder("l1").encoding is "windows-1252"
+PASS new TextDecoder("latin1").encoding is "windows-1252"
+PASS new TextDecoder("us-ascii").encoding is "windows-1252"
 PASS new TextDecoder("windows-1252").encoding is "windows-1252"
 FAIL new TextDecoder("x-cp1252").encoding should be windows-1252. Threw exception TypeError: Type error
 

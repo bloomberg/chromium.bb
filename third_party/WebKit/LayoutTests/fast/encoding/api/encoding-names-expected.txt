@@ -12,10 +12,10 @@ PASS new TextDecoder('utf-16le').encoding is "utf-16le"
 PASS new TextDecoder('UTF-16LE').encoding is "utf-16le"
 PASS new TextDecoder('utf-16be').encoding is "utf-16be"
 PASS new TextDecoder('UTF-16BE').encoding is "utf-16be"
-FAIL new TextDecoder('ascii').encoding should be windows-1252. Was us-ascii.
-FAIL new TextDecoder('ASCII').encoding should be windows-1252. Was us-ascii.
-FAIL new TextDecoder('iso-8859-1').encoding should be windows-1252. Was iso-8859-1.
-FAIL new TextDecoder('ISO-8859-1').encoding should be windows-1252. Was iso-8859-1.
+PASS new TextDecoder('ascii').encoding is "windows-1252"
+PASS new TextDecoder('ASCII').encoding is "windows-1252"
+PASS new TextDecoder('iso-8859-1').encoding is "windows-1252"
+PASS new TextDecoder('ISO-8859-1').encoding is "windows-1252"
 PASS successfullyParsed is true
 
 TEST COMPLETE
