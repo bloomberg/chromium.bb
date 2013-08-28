@@ -200,6 +200,10 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   if (!cross_navigation_pending_)
     return true;
 
+  // We should always have a pending RVH when there's a cross-process navigation
+  // in progress.  Sanity check this for http://crbug.com/276333.
+  CHECK(pending_render_view_host_);
+
   // If the tab becomes unresponsive during {before}unload while doing a
   // cross-site navigation, proceed with the navigation.  (This assumes that
   // the pending RenderViewHost is still responsive.)
