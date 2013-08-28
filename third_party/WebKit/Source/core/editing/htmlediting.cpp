@@ -427,9 +427,6 @@ bool isSpecialElement(const Node *n)
     if (renderer->style()->isFloating())
         return true;
 
-    if (renderer->style()->position() != StaticPosition)
-        return true;
-
     return false;
 }
 
