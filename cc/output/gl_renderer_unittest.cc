@@ -462,7 +462,7 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
 
   renderer_->SetVisible(true);
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 
   SwapBuffers();
@@ -476,7 +476,7 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible) {
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
 
   char pixels[4];
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 
   renderer_->GetFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
@@ -490,7 +490,7 @@ TEST_F(GLRendererTest, ExternalStencil) {
   renderer_client_.EnableExternalStencilTest();
   renderer_client_.root_render_pass()->has_transparent_background = false;
 
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   EXPECT_TRUE(renderer_->stencil_enabled());
 }
 
@@ -736,7 +736,7 @@ TEST(GLRendererTest2, OpaqueBackground) {
 
   EXPECT_TRUE(renderer.Initialize());
 
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 
 // On DEBUG builds, render passes with opaque background clear to blue to
 // easily see regions that were not drawn on the screen.
@@ -767,7 +767,7 @@ TEST(GLRendererTest2, TransparentBackground) {
 
   EXPECT_TRUE(renderer.Initialize());
 
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 
   EXPECT_EQ(1, context->clear_count());
 }
@@ -848,7 +848,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
   // RenderClient and the Context by giving them both a pointer to a variable on
   // the stack.
   renderer.SetVisible(true);
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
   renderer.SetVisible(false);
   EXPECT_TRUE(context->last_call_was_set_visibility());
 }
@@ -1027,7 +1027,7 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
 
   renderer.DecideRenderPassAllocationsForFrame(
       *renderer_client.render_passes_in_draw_order());
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 
   // In multiple render passes all but the root pass should clear the
   // framebuffer.
@@ -1099,7 +1099,7 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
 
   renderer.DecideRenderPassAllocationsForFrame(
       *renderer_client.render_passes_in_draw_order());
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 }
 
 class NonReshapableOutputSurface : public FakeOutputSurface {
@@ -1184,7 +1184,7 @@ TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
 
   renderer.DecideRenderPassAllocationsForFrame(
       *renderer_client.render_passes_in_draw_order());
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order());
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 }
 
 TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
@@ -1246,7 +1246,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassProgram();
 
   // RenderPassColorMatrixProgram
@@ -1262,7 +1262,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassColorMatrixProgram();
 
   // RenderPassMaskProgram
@@ -1282,7 +1282,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassMaskProgram();
 
   // RenderPassMaskColorMatrixProgram
@@ -1298,7 +1298,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassMaskColorMatrixProgram();
 
   // RenderPassProgramAA
@@ -1318,7 +1318,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassProgramAA();
 
   // RenderPassColorMatrixProgramAA
@@ -1334,7 +1334,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassColorMatrixProgramAA();
 
   // RenderPassMaskProgramAA
@@ -1351,7 +1351,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassMaskProgramAA();
 
   // RenderPassMaskColorMatrixProgramAA
@@ -1367,7 +1367,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
   TestRenderPassMaskColorMatrixProgramAA();
 }
 
@@ -1415,7 +1415,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
 
   // If use_aa incorrectly ignores clipping, it will use the
   // RenderPassProgramAA shader instead of the RenderPassProgram.
@@ -1445,7 +1445,7 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order());
+  renderer_->DrawFrame(renderer_client_.render_passes_in_draw_order(), NULL);
 
   TestSolidColorProgramAA();
 }
@@ -1530,7 +1530,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     renderer_->DecideRenderPassAllocationsForFrame(
         *render_passes_in_draw_order());
-    renderer_->DrawFrame(render_passes_in_draw_order());
+    renderer_->DrawFrame(render_passes_in_draw_order(), NULL);
   }
 
   OutputSurfaceMockContext* Context() {

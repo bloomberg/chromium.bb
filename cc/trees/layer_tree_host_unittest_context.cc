@@ -476,9 +476,9 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     // the active context.
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
 
-    cc::ContextProvider* contexts =
-        host_impl->resource_provider()->offscreen_context_provider();
+    cc::ContextProvider* contexts = host_impl->offscreen_context_provider();
     if (use_surface_) {
+      ASSERT_TRUE(contexts);
       EXPECT_TRUE(contexts->Context3d());
       // TODO(danakj): Make a fake GrContext.
       // EXPECT_TRUE(contexts->GrContext());
@@ -597,8 +597,7 @@ class LayerTreeHostContextTestOffscreenContextFails
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    cc::ContextProvider* contexts =
-        host_impl->resource_provider()->offscreen_context_provider();
+    cc::ContextProvider* contexts = host_impl->offscreen_context_provider();
     EXPECT_FALSE(contexts);
 
     // This did not lead to create failure.

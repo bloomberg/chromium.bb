@@ -66,7 +66,6 @@ class LayerTreeHostImplTest : public testing::Test,
       : proxy_(),
         always_impl_thread_(&proxy_),
         always_main_thread_blocked_(&proxy_),
-        did_try_initialize_renderer_(false),
         on_can_draw_state_changed_called_(false),
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
@@ -94,11 +93,6 @@ class LayerTreeHostImplTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {}
 
-  virtual void DidTryInitializeRendererOnImplThread(
-      bool success,
-      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
-    did_try_initialize_renderer_ = true;
-  }
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
@@ -352,7 +346,6 @@ class LayerTreeHostImplTest : public testing::Test,
 
   scoped_ptr<LayerTreeHostImpl> host_impl_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
-  bool did_try_initialize_renderer_;
   bool on_can_draw_state_changed_called_;
   bool did_notify_ready_to_activate_;
   bool did_request_commit_;
@@ -6206,19 +6199,31 @@ TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
   // Software draw.
   DrawFrame();
 
+  scoped_refptr<TestContextProvider> onscreen_context_provider =
+      TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> offscreen_context_provider =
+      TestContextProvider::Create();
+
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
   // DeferredInitialize and hardware draw.
-  EXPECT_FALSE(did_try_initialize_renderer_);
   EXPECT_TRUE(output_surface_ptr->InitializeAndSetContext3d(
-      TestContextProvider::Create(), NULL));
-  EXPECT_TRUE(did_try_initialize_renderer_);
+      onscreen_context_provider, offscreen_context_provider));
+  EXPECT_EQ(onscreen_context_provider,
+            host_impl_->output_surface()->context_provider());
+  EXPECT_EQ(offscreen_context_provider,
+            host_impl_->offscreen_context_provider());
 
   // Defer intialized GL draw.
   DrawFrame();
 
   // Revert back to software.
-  did_try_initialize_renderer_ = false;
   output_surface_ptr->ReleaseGL();
-  EXPECT_TRUE(did_try_initialize_renderer_);
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
+  // Software draw again.
   DrawFrame();
 }
 

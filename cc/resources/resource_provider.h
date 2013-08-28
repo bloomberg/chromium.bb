@@ -324,13 +324,6 @@ class CC_EXPORT ResourceProvider {
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
-  ContextProvider* offscreen_context_provider() {
-    return offscreen_context_provider_.get();
-  }
-  void set_offscreen_context_provider(
-      scoped_refptr<ContextProvider> offscreen_context_provider) {
-    offscreen_context_provider_ = offscreen_context_provider;
-  }
   static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
 
  private:
@@ -441,8 +434,6 @@ class CC_EXPORT ResourceProvider {
   scoped_ptr<TextureUploader> texture_uploader_;
   int max_texture_size_;
   GLenum best_texture_format_;
-
-  scoped_refptr<cc::ContextProvider> offscreen_context_provider_;
 
   base::ThreadChecker thread_checker_;
 

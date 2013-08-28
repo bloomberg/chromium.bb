@@ -1296,9 +1296,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   if (output_surface_->ForcedDrawToSoftwareDevice()) {
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, output_surface_.get(), NULL);
-    temp_software_renderer->DrawFrame(&frame->render_passes);
+    temp_software_renderer->DrawFrame(&frame->render_passes, NULL);
   } else {
-    renderer_->DrawFrame(&frame->render_passes);
+    renderer_->DrawFrame(&frame->render_passes,
+                         offscreen_context_provider_.get());
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
@@ -1686,12 +1687,16 @@ bool LayerTreeHostImpl::DeferredInitialize(
       output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
   bool success = !!renderer_.get();
-  client_->DidTryInitializeRendererOnImplThread(success,
-                                                offscreen_context_provider);
   if (success) {
     EnforceZeroBudget(false);
     client_->SetNeedsCommitOnImplThread();
+  } else if (offscreen_context_provider.get()) {
+    if (offscreen_context_provider->BindToCurrentThread())
+      offscreen_context_provider->VerifyContexts();
+    offscreen_context_provider = NULL;
   }
+
+  SetOffscreenContextProvider(offscreen_context_provider);
   return success;
 }
 
@@ -1716,9 +1721,8 @@ void LayerTreeHostImpl::ReleaseGL() {
                           GetRendererCapabilities().using_map_image);
   DCHECK(tile_manager_);
 
-  bool success = true;
-  client_->DidTryInitializeRendererOnImplThread(
-      success, scoped_refptr<ContextProvider>());
+  SetOffscreenContextProvider(NULL);
+
   client_->SetNeedsCommitOnImplThread();
 }
 
@@ -2317,6 +2321,21 @@ void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
     SendReleaseResourcesRecursive(current->replica_layer());
   for (size_t i = 0; i < current->children().size(); ++i)
     SendReleaseResourcesRecursive(current->children()[i]);
+}
+
+void LayerTreeHostImpl::SetOffscreenContextProvider(
+    const scoped_refptr<ContextProvider>& offscreen_context_provider) {
+  if (!offscreen_context_provider.get()) {
+    offscreen_context_provider_ = NULL;
+    return;
+  }
+
+  if (!offscreen_context_provider->BindToCurrentThread()) {
+    offscreen_context_provider_ = NULL;
+    return;
+  }
+
+  offscreen_context_provider_ = offscreen_context_provider;
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

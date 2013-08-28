@@ -470,13 +470,12 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 }
 
 static inline SkBitmap ApplyFilters(GLRenderer* renderer,
+                                    ContextProvider* offscreen_contexts,
                                     const FilterOperations& filters,
                                     ScopedResource* source_texture_resource) {
   if (filters.IsEmpty())
     return SkBitmap();
 
-  ContextProvider* offscreen_contexts =
-      renderer->resource_provider()->offscreen_context_provider();
   if (!offscreen_contexts || !offscreen_contexts->GrContext())
     return SkBitmap();
 
@@ -492,7 +491,7 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
   offscreen_contexts->Context3d()->makeContextCurrent();
 
   // Lazily label this context.
-  renderer->LazyLabelOffscreenContext();
+  renderer->LazyLabelOffscreenContext(offscreen_contexts);
 
   SkBitmap source =
       RenderSurfaceFilters::Apply(filters,
@@ -514,13 +513,12 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
 }
 
 static SkBitmap ApplyImageFilter(GLRenderer* renderer,
+                                 ContextProvider* offscreen_contexts,
                                  SkImageFilter* filter,
                                  ScopedResource* source_texture_resource) {
   if (!filter)
     return SkBitmap();
 
-  ContextProvider* offscreen_contexts =
-      renderer->resource_provider()->offscreen_context_provider();
   if (!offscreen_contexts || !offscreen_contexts->GrContext())
     return SkBitmap();
 
@@ -536,7 +534,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   offscreen_contexts->Context3d()->makeContextCurrent();
 
   // Lazily label this context.
-  renderer->LazyLabelOffscreenContext();
+  renderer->LazyLabelOffscreenContext(offscreen_contexts);
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -662,7 +660,10 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   }
 
   SkBitmap filtered_device_background =
-      ApplyFilters(this, filters, device_background_texture.get());
+      ApplyFilters(this,
+                   frame->offscreen_context_provider,
+                   filters,
+                   device_background_texture.get());
   if (!filtered_device_background.getTexture())
     return scoped_ptr<ScopedResource>();
 
@@ -776,8 +777,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       // in the compositor.
       use_color_matrix = true;
     } else {
-      filter_bitmap =
-          ApplyImageFilter(this, quad->filter.get(), contents_texture);
+      filter_bitmap = ApplyImageFilter(this,
+                                       frame->offscreen_context_provider,
+                                       quad->filter.get(),
+                                       contents_texture);
     }
   } else if (!quad->filters.IsEmpty()) {
     FilterOperations optimized_filters =
@@ -789,7 +792,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
           color_matrix, optimized_filters.at(0).matrix(), sizeof(color_matrix));
       use_color_matrix = true;
     } else {
-      filter_bitmap = ApplyFilters(this, optimized_filters, contents_texture);
+      filter_bitmap = ApplyFilters(this,
+                                   frame->offscreen_context_provider,
+                                   optimized_filters,
+                                   contents_texture);
     }
   }
 
@@ -3140,7 +3146,8 @@ bool GLRenderer::IsContextLost() {
   return (context_->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
-void GLRenderer::LazyLabelOffscreenContext() {
+void GLRenderer::LazyLabelOffscreenContext(
+    ContextProvider* offscreen_context_provider) {
   if (offscreen_context_labelled_)
     return;
   offscreen_context_labelled_ = true;
@@ -3148,8 +3155,8 @@ void GLRenderer::LazyLabelOffscreenContext() {
       "%s-Offscreen-%p",
       Settings().compositor_name.c_str(),
       context_);
-  resource_provider()->offscreen_context_provider()->Context3d()->
-    pushGroupMarkerEXT(unique_context_name.c_str());
+  offscreen_context_provider->Context3d()->pushGroupMarkerEXT(
+      unique_context_name.c_str());
 }
 
 

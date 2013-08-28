@@ -58,7 +58,8 @@ namespace cc {
 DirectRenderer::DrawingFrame::DrawingFrame()
     : root_render_pass(NULL),
       current_render_pass(NULL),
-      current_texture(NULL) {}
+      current_texture(NULL),
+      offscreen_context_provider(NULL) {}
 
 DirectRenderer::DrawingFrame::~DrawingFrame() {}
 
@@ -190,7 +191,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   }
 }
 
-void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
+void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
+                               ContextProvider* offscreen_context_provider) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount",
                        render_passes_in_draw_order->size());
@@ -204,6 +206,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
       Capabilities().using_partial_swap && client_->AllowPartialSwap() ?
       root_render_pass->damage_rect : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(client_->DeviceViewport().size()));
+  frame.offscreen_context_provider = offscreen_context_provider;
 
   EnsureBackbuffer();
 

@@ -130,7 +130,8 @@ static ResourceProvider::ResourceId AppendToArray(
 }
 
 void DelegatingRenderer::DrawFrame(
-    RenderPassList* render_passes_in_draw_order) {
+    RenderPassList* render_passes_in_draw_order,
+    ContextProvider* offscreen_context_provider) {
   TRACE_EVENT0("cc", "DelegatingRenderer::DrawFrame");
 
   DCHECK(!frame_for_swap_buffers_.delegated_frame_data);

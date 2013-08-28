@@ -143,12 +143,13 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
     if (initialized) {
       renderer_capabilities_for_main_thread_ =
           layer_tree_host_impl_->GetRendererCapabilities();
-
-      layer_tree_host_impl_->resource_provider()->
-          set_offscreen_context_provider(offscreen_context_provider);
     } else if (offscreen_context_provider.get()) {
       offscreen_context_provider->VerifyContexts();
+      offscreen_context_provider = NULL;
     }
+
+    layer_tree_host_impl_->SetOffscreenContextProvider(
+        offscreen_context_provider);
   }
 
   OnOutputSurfaceInitializeAttempted(initialized);
@@ -334,13 +335,6 @@ void SingleThreadProxy::SendManagedMemoryStats() {
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
-void SingleThreadProxy::DidTryInitializeRendererOnImplThread(
-    bool success,
-    scoped_refptr<ContextProvider> offscreen_context_provider) {
-  NOTREACHED()
-      << "This is only used on threaded compositing with impl-side painting";
-}
-
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   // Cause a commit so we can notice the lost context.
   SetNeedsCommitOnImplThread();
@@ -446,8 +440,8 @@ bool SingleThreadProxy::DoComposite(
     DebugScopedSetImplThread impl(this);
     base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
-    layer_tree_host_impl_->resource_provider()->
-        set_offscreen_context_provider(offscreen_context_provider);
+    layer_tree_host_impl_->SetOffscreenContextProvider(
+        offscreen_context_provider);
 
     bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
 
@@ -477,8 +471,8 @@ bool SingleThreadProxy::DoComposite(
   }
 
   if (lost_output_surface) {
-    cc::ContextProvider* offscreen_contexts = layer_tree_host_impl_->
-        resource_provider()->offscreen_context_provider();
+    cc::ContextProvider* offscreen_contexts =
+        layer_tree_host_impl_->offscreen_context_provider();
     if (offscreen_contexts)
       offscreen_contexts->VerifyContexts();
     layer_tree_host_->DidLoseOutputSurface();

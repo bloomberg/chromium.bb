@@ -89,10 +89,12 @@ PixelTest::PixelTest()
 PixelTest::~PixelTest() {}
 
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
+                             OffscreenContextOption provide_offscreen_context,
                              const base::FilePath& ref_file,
                              const PixelComparator& comparator) {
   return RunPixelTestWithReadbackTarget(pass_list,
                                         pass_list->back(),
+                                        provide_offscreen_context,
                                         ref_file,
                                         comparator);
 }
@@ -100,6 +102,7 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
 bool PixelTest::RunPixelTestWithReadbackTarget(
     RenderPassList* pass_list,
     RenderPass* target,
+    OffscreenContextOption provide_offscreen_context,
     const base::FilePath& ref_file,
     const PixelComparator& comparator) {
   base::RunLoop run_loop;
@@ -109,8 +112,19 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
                  base::Unretained(this),
                  run_loop.QuitClosure())));
 
+  scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts;
+  switch (provide_offscreen_context) {
+    case NoOffscreenContext:
+      break;
+    case WithOffscreenContext:
+      offscreen_contexts =
+          webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+      CHECK(offscreen_contexts->BindToCurrentThread());
+      break;
+  }
+
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
-  renderer_->DrawFrame(pass_list);
+  renderer_->DrawFrame(pass_list, offscreen_contexts.get());
 
   // Wait for the readback to complete.
   resource_provider_->Finish();
@@ -159,11 +173,6 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
                                  resource_provider_.get(),
                                  0,
                                  use_skia_gpu_backend).PassAs<DirectRenderer>();
-
-  scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
-      webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  ASSERT_TRUE(offscreen_contexts->BindToCurrentThread());
-  resource_provider_->set_offscreen_context_provider(offscreen_contexts);
 }
 
 void PixelTest::ForceExpandedViewport(gfx::Size surface_expansion,

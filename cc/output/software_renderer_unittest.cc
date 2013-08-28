@@ -115,7 +115,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -202,7 +202,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -269,7 +269,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
@@ -319,7 +319,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));
@@ -338,7 +338,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   // If we didn't clear, the borders should still be green.
@@ -384,7 +384,7 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   root_clear_pass->quad_list[0]->visible_rect = interior_visible_rect;
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list);
+  renderer()->DrawFrame(&list, NULL);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
   EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));

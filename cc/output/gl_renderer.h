@@ -77,7 +77,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                           int line);
 
   bool CanUseSkiaGPUBackend() const;
-  void LazyLabelOffscreenContext();
+  void LazyLabelOffscreenContext(ContextProvider* offscreen_context_provider);
 
  protected:
   GLRenderer(RendererClient* client,

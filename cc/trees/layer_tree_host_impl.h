@@ -54,9 +54,6 @@ struct UIResourceRequest;
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
-  virtual void DidTryInitializeRendererOnImplThread(
-      bool success,
-      scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) = 0;
@@ -224,9 +221,15 @@ class CC_EXPORT LayerTreeHostImpl
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
 
-  // Implementation
+  // Implementation.
   bool CanDraw() const;
   OutputSurface* output_surface() const { return output_surface_.get(); }
+
+  void SetOffscreenContextProvider(
+      const scoped_refptr<ContextProvider>& offscreen_context_provider);
+  ContextProvider* offscreen_context_provider() const {
+    return offscreen_context_provider_.get();
+  }
 
   std::string LayerTreeAsJson() const;
 
@@ -413,9 +416,10 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
-  void CreateAndSetRenderer(OutputSurface* output_surface,
-                            ResourceProvider* resource_provider,
-                            bool skip_gl_renderer);
+  void CreateAndSetRenderer(
+      OutputSurface* output_surface,
+      ResourceProvider* resource_provider,
+      bool skip_gl_renderer);
   void CreateAndSetTileManager(ResourceProvider* resource_provider,
                                bool using_map_image);
   void ReleaseTreeResources();
@@ -464,6 +468,7 @@ class CC_EXPORT LayerTreeHostImpl
   UIResourceMap ui_resource_map_;
 
   scoped_ptr<OutputSurface> output_surface_;
+  scoped_refptr<ContextProvider> offscreen_context_provider_;
 
   // |resource_provider_| and |tile_manager_| can be NULL, e.g. when using tile-
   // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().

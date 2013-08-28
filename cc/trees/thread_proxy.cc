@@ -374,8 +374,8 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::CheckOutputSurfaceStatusOnImplThread");
   if (!layer_tree_host_impl_->IsContextLost())
     return;
-  if (cc::ContextProvider* offscreen_contexts = layer_tree_host_impl_
-          ->resource_provider()->offscreen_context_provider())
+  if (cc::ContextProvider* offscreen_contexts =
+          layer_tree_host_impl_->offscreen_context_provider())
     offscreen_contexts->VerifyContexts();
   scheduler_on_impl_thread_->DidLoseOutputSurface();
 }
@@ -863,8 +863,8 @@ void ThreadProxy::StartCommitOnImplThread(
 
   if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
-  layer_tree_host_impl_->resource_provider()->
-      set_offscreen_context_provider(offscreen_context_provider);
+  layer_tree_host_impl_->SetOffscreenContextProvider(
+      offscreen_context_provider);
 
   if (layer_tree_host_->contents_texture_manager()) {
     if (layer_tree_host_->contents_texture_manager()->
@@ -1295,28 +1295,16 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
   if (*success) {
     *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+  } else if (offscreen_context_provider.get()) {
+    if (offscreen_context_provider->BindToCurrentThread())
+      offscreen_context_provider->VerifyContexts();
+    offscreen_context_provider = NULL;
   }
 
-  DidTryInitializeRendererOnImplThread(*success, offscreen_context_provider);
+  layer_tree_host_impl_->SetOffscreenContextProvider(
+      offscreen_context_provider);
 
   completion->Signal();
-}
-
-void ThreadProxy::DidTryInitializeRendererOnImplThread(
-    bool success,
-    scoped_refptr<ContextProvider> offscreen_context_provider) {
-  DCHECK(IsImplThread());
-  DCHECK(!inside_draw_);
-
-  if (offscreen_context_provider.get())
-    offscreen_context_provider->BindToCurrentThread();
-
-  if (success) {
-    layer_tree_host_impl_->resource_provider()->
-        set_offscreen_context_provider(offscreen_context_provider);
-  } else if (offscreen_context_provider.get()) {
-    offscreen_context_provider->VerifyContexts();
-  }
 }
 
 void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {
