@@ -903,7 +903,8 @@ void APIUtil::UploadExistingFileInternal(
       entry->resource_id(),
       local_file_path,
       mime_type,
-      entry->etag(),
+      // Don't use etag for uploading for now. http://crbug.com/278201
+      std::string(), // entry->etag(),
       base::Bind(&UploadResultAdapter, did_upload_callback),
       google_apis::ProgressCallback());
 }
