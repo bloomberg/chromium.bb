@@ -122,6 +122,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
 
+  // Grants permission to send system exclusive message to any MIDI devices.
+  void GrantSendMIDISysExMessage(int child_id);
+
   // Before servicing a child process's request for a URL, the browser should
   // call this method to determine whether the process has the capability to
   // request the URL.
@@ -199,6 +202,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void RegisterFileSystemPermissionPolicy(
       fileapi::FileSystemType type,
       int policy);
+
+  // Returns true if sending system exclusive messages is allowed.
+  bool CanSendMIDISysExMessage(int child_id);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;

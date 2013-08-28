@@ -585,7 +585,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       media_internals,
       media_stream_manager));
   channel_->AddFilter(
-      new MIDIHost(BrowserMainLoop::GetInstance()->midi_manager()));
+      new MIDIHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
   channel_->AddFilter(new MIDIDispatcherHost(GetID(), browser_context));
   channel_->AddFilter(new VideoCaptureHost(media_stream_manager));
   channel_->AddFilter(new AppCacheDispatcherHost(

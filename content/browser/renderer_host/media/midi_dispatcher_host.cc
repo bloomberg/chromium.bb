@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/midi_dispatcher_host.h"
 
 #include "base/bind.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/media/midi_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -57,6 +58,8 @@ void MIDIDispatcherHost::OnRequestSysExPermission(int render_view_id,
 void MIDIDispatcherHost::WasSysExPermissionGranted(int render_view_id,
                                                    int client_id,
                                                    bool success) {
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantSendMIDISysExMessage(
+      render_process_id_);
   Send(new MIDIMsg_SysExPermissionApproved(render_view_id, client_id, success));
 }
 

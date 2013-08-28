@@ -25,7 +25,7 @@ class CONTENT_EXPORT MIDIHost
       public media::MIDIManagerClient {
  public:
   // Called from UI thread from the owner of this object.
-  MIDIHost(media::MIDIManager* midi_manager);
+  MIDIHost(int renderer_process_id, media::MIDIManager* midi_manager);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -54,6 +54,8 @@ class CONTENT_EXPORT MIDIHost
   friend class BrowserThread;
 
   virtual ~MIDIHost();
+
+  int renderer_process_id_;
 
   // |midi_manager_| talks to the platform-specific MIDI APIs.
   // It can be NULL if the platform (or our current implementation)
