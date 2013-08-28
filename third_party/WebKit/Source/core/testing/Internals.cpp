@@ -62,7 +62,6 @@
 #include "core/dom/ViewportArguments.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -486,9 +485,7 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& es) const
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    if (const ScopeContentDistribution* distribution = toShadowRoot(root)->scopeDistribution())
-        return distribution->numberOfElementShadowChildren();
-    return 0;
+    return toShadowRoot(root)->childShadowRootCount();
 }
 
 bool Internals::attached(Node* node, ExceptionState& es)

@@ -32,7 +32,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/shadow/HTMLContentElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
@@ -206,21 +205,19 @@ void ElementShadow::distribute()
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* firstActiveShadowInsertionPoint = 0;
 
-        if (ScopeContentDistribution* scope = root->scopeDistribution()) {
-            const Vector<RefPtr<InsertionPoint> >& insertionPoints = scope->ensureInsertionPointList(root);
-            for (size_t i = 0; i < insertionPoints.size(); ++i) {
-                InsertionPoint* point = insertionPoints[i].get();
-                if (!point->isActive())
-                    continue;
+        const Vector<RefPtr<InsertionPoint> >& insertionPoints = root->childInsertionPoints();
+        for (size_t i = 0; i < insertionPoints.size(); ++i) {
+            InsertionPoint* point = insertionPoints[i].get();
+            if (!point->isActive())
+                continue;
 
-                if (isHTMLShadowElement(point)) {
-                    if (!firstActiveShadowInsertionPoint)
-                        firstActiveShadowInsertionPoint = toHTMLShadowElement(point);
-                } else {
-                    distributeSelectionsTo(point, pool, distributed);
-                    if (ElementShadow* shadow = shadowOfParentForDistribution(point))
-                        shadow->setNeedsDistributionRecalc();
-                }
+            if (isHTMLShadowElement(point)) {
+                if (!firstActiveShadowInsertionPoint)
+                    firstActiveShadowInsertionPoint = toHTMLShadowElement(point);
+            } else {
+                distributeSelectionsTo(point, pool, distributed);
+                if (ElementShadow* shadow = shadowOfParentForDistribution(point))
+                    shadow->setNeedsDistributionRecalc();
             }
         }
 
@@ -236,7 +233,7 @@ void ElementShadow::distribute()
             // Only allow reprojecting older shadow roots between the same type to
             // disallow reprojecting UA elements into author shadows.
             distributeNodeChildrenTo(shadowElement, root->olderShadowRoot());
-            root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
+            root->olderShadowRoot()->setInsertionPoint(shadowElement);
         } else if (!root->olderShadowRoot()) {
             // There's assumed to always be a UA shadow that selects all nodes.
             // We don't actually add it, instead we just distribute the pool to the
@@ -352,10 +349,8 @@ void ElementShadow::clearDistribution()
 {
     m_nodeToInsertionPoint.clear();
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (ScopeContentDistribution* scope = root->scopeDistribution())
-            scope->setInsertionPointAssignedTo(0);
-    }
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+        root->setInsertionPoint(0);
 }
 
 } // namespace

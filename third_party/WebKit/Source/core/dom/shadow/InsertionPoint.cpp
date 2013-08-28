@@ -35,7 +35,6 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
@@ -176,7 +175,7 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
             rootOwner->setNeedsDistributionRecalc();
             if (isActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
                 m_registeredWithShadowRoot = true;
-                root->ensureScopeDistribution()->registerInsertionPoint(this);
+                root->addInsertionPoint(this);
                 rootOwner->didAffectApplyAuthorStyles();
                 if (canAffectSelector())
                     rootOwner->willAffectSelector();
@@ -207,7 +206,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     if (m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
         ASSERT(root);
         m_registeredWithShadowRoot = false;
-        root->ensureScopeDistribution()->unregisterInsertionPoint(this);
+        root->removeInsertionPoint(this);
         if (rootOwner) {
             rootOwner->didAffectApplyAuthorStyles();
             if (canAffectSelector())

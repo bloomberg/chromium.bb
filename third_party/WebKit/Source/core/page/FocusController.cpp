@@ -38,7 +38,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -80,7 +79,7 @@ Element* FocusNavigationScope::owner() const
     Node* root = rootNode();
     if (root->isShadowRoot()) {
         ShadowRoot* shadowRoot = toShadowRoot(root);
-        return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->ensureScopeDistribution()->insertionPointAssignedTo();
+        return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->insertionPoint();
     }
     if (Frame* frame = root->document()->frame())
         return frame->ownerElement();

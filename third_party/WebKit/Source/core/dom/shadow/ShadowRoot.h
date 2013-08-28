@@ -39,7 +39,7 @@ namespace WebCore {
 class ElementShadow;
 class ExceptionState;
 class InsertionPoint;
-class ScopeContentDistribution;
+class ShadowRootRareData;
 
 class ShadowRoot FINAL : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;
@@ -91,15 +91,20 @@ public:
     virtual void registerScopedHTMLStyleChild() OVERRIDE;
     virtual void unregisterScopedHTMLStyleChild() OVERRIDE;
 
-    ScopeContentDistribution* scopeDistribution() { return m_scopeDistribution.get(); }
-    const ScopeContentDistribution* scopeDistribution() const { return m_scopeDistribution.get(); }
-    ScopeContentDistribution* ensureScopeDistribution();
-
     bool containsShadowElements() const;
     bool containsContentElements() const;
     bool containsInsertionPoints() const { return containsShadowElements() || containsContentElements(); }
     bool containsShadowRoots() const;
+
+    // For Internals, don't use this.
+    unsigned childShadowRootCount() const;
+
     InsertionPoint* insertionPoint() const;
+    void setInsertionPoint(PassRefPtr<InsertionPoint>);
+
+    void addInsertionPoint(InsertionPoint*);
+    void removeInsertionPoint(InsertionPoint*);
+    const Vector<RefPtr<InsertionPoint> >& childInsertionPoints();
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
@@ -114,6 +119,12 @@ private:
     virtual bool childTypeAllowed(NodeType) const OVERRIDE;
     virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
 
+    ShadowRootRareData* ensureShadowRootRareData();
+
+    void addChildShadowRoot();
+    void removeChildShadowRoot();
+    void invalidateChildInsertionPoints();
+
     // ShadowRoots should never be cloned.
     virtual PassRefPtr<Node> cloneNode(bool) OVERRIDE { return 0; }
 
@@ -123,12 +134,13 @@ private:
 
     ShadowRoot* m_prev;
     ShadowRoot* m_next;
-    OwnPtr<ScopeContentDistribution> m_scopeDistribution;
-    unsigned m_numberOfStyles : 28;
+    OwnPtr<ShadowRootRareData> m_shadowRootRareData;
+    unsigned m_numberOfStyles : 27;
     unsigned m_applyAuthorStyles : 1;
     unsigned m_resetStyleInheritance : 1;
     unsigned m_type : 1;
     unsigned m_registeredWithParentShadowRoot : 1;
+    unsigned m_childInsertionPointsIsValid : 1;
 };
 
 inline Element* ShadowRoot::activeElement() const

@@ -29,11 +29,12 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleSheetCollections.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ScopeContentDistribution.h"
+#include "core/dom/shadow/ShadowRootRareData.h"
 #include "core/editing/markup.h"
 #include "core/platform/HistogramSupport.h"
 
@@ -62,6 +63,7 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
     , m_resetStyleInheritance(false)
     , m_type(type)
     , m_registeredWithParentShadowRoot(false)
+    , m_childInsertionPointsIsValid(false)
 {
     ASSERT(document);
     ScriptWrappable::init(this);
@@ -270,7 +272,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
         return InsertionDone;
 
     if (ShadowRoot* root = host()->containingShadowRoot()) {
-        root->ensureScopeDistribution()->registerElementShadow();
+        root->addChildShadowRoot();
         m_registeredWithParentShadowRoot = true;
     }
 
@@ -283,9 +285,8 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
         ShadowRoot* root = host()->containingShadowRoot();
         if (!root)
             root = insertionPoint->containingShadowRoot();
-
-        if (root && root->scopeDistribution())
-            root->scopeDistribution()->unregisterElementShadow();
+        if (root)
+            root->removeChildShadowRoot();
         m_registeredWithParentShadowRoot = false;
     }
 
@@ -314,33 +315,99 @@ void ShadowRoot::unregisterScopedHTMLStyleChild()
     setHasScopedHTMLStyleChild(m_numberOfStyles > 0);
 }
 
-ScopeContentDistribution* ShadowRoot::ensureScopeDistribution()
+ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()
 {
-    if (m_scopeDistribution)
-        return m_scopeDistribution.get();
+    if (m_shadowRootRareData)
+        return m_shadowRootRareData.get();
 
-    m_scopeDistribution = adoptPtr(new ScopeContentDistribution);
-    return m_scopeDistribution.get();
+    m_shadowRootRareData = adoptPtr(new ShadowRootRareData);
+    return m_shadowRootRareData.get();
 }
 
 bool ShadowRoot::containsShadowElements() const
 {
-    return m_scopeDistribution ? m_scopeDistribution->hasShadowElementChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->hasShadowElementChildren() : 0;
 }
 
 bool ShadowRoot::containsContentElements() const
 {
-    return m_scopeDistribution ? m_scopeDistribution->hasContentElementChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->hasContentElementChildren() : 0;
 }
 
 bool ShadowRoot::containsShadowRoots() const
 {
-    return m_scopeDistribution ? m_scopeDistribution->numberOfElementShadowChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->hasShadowRootChildren() : 0;
 }
 
 InsertionPoint* ShadowRoot::insertionPoint() const
 {
-    return m_scopeDistribution ? m_scopeDistribution->insertionPointAssignedTo() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->insertionPoint() : 0;
+}
+
+void ShadowRoot::setInsertionPoint(PassRefPtr<InsertionPoint> insertionPoint)
+{
+    if (!m_shadowRootRareData && !insertionPoint)
+        return;
+    ensureShadowRootRareData()->setInsertionPoint(insertionPoint);
+}
+
+void ShadowRoot::addInsertionPoint(InsertionPoint* insertionPoint)
+{
+    ensureShadowRootRareData()->addInsertionPoint(insertionPoint);
+    invalidateChildInsertionPoints();
+}
+
+void ShadowRoot::removeInsertionPoint(InsertionPoint* insertionPoint)
+{
+    m_shadowRootRareData->removeInsertionPoint(insertionPoint);
+    invalidateChildInsertionPoints();
+}
+
+void ShadowRoot::addChildShadowRoot()
+{
+    ensureShadowRootRareData()->addChildShadowRoot();
+}
+
+void ShadowRoot::removeChildShadowRoot()
+{
+    // FIXME: Why isn't this an ASSERT?
+    if (!m_shadowRootRareData)
+        return;
+    m_shadowRootRareData->removeChildShadowRoot();
+}
+
+unsigned ShadowRoot::childShadowRootCount() const
+{
+    return m_shadowRootRareData ? m_shadowRootRareData->childShadowRootCount() : 0;
+}
+
+void ShadowRoot::invalidateChildInsertionPoints()
+{
+    m_childInsertionPointsIsValid = false;
+    m_shadowRootRareData->clearChildInsertionPoints();
+}
+
+const Vector<RefPtr<InsertionPoint> >& ShadowRoot::childInsertionPoints()
+{
+    DEFINE_STATIC_LOCAL(const Vector<RefPtr<InsertionPoint> >, emptyList, ());
+
+    if (m_shadowRootRareData && m_childInsertionPointsIsValid)
+        return m_shadowRootRareData->childInsertionPoints();
+
+    m_childInsertionPointsIsValid = true;
+
+    if (!containsInsertionPoints())
+        return emptyList;
+
+    Vector<RefPtr<InsertionPoint> > insertionPoints;
+    for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(element, this)) {
+        if (element->isInsertionPoint())
+            insertionPoints.append(toInsertionPoint(element));
+    }
+
+    ensureShadowRootRareData()->setChildInsertionPoints(insertionPoints);
+
+    return m_shadowRootRareData->childInsertionPoints();
 }
 
 }
