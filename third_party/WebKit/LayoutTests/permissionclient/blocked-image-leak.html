@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script id='targetHTML' type='text/html'>
+        <img src="resources/boston.gif">
+    </script>
+
+    <script src="../fast/js/resources/js-test-pre.js"></script>
+    <script src="../fast/js/resources/leak-check.js"></script>
+    <script>
+        testRunner.setImagesAllowed(false);
+
+        var target = grabScriptText('targetHTML');
+        var tolerance = {'numberOfLiveDocuments': 0};
+
+        doLeakTest(htmlToUrl(target), tolerance);
+    </script>
+    <script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>
