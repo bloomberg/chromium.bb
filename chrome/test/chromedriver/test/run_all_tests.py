@@ -41,7 +41,8 @@ def _GenerateTestCommand(script,
                          ref_chromedriver=None,
                          chrome=None,
                          chrome_version=None,
-                         android_package=None):
+                         android_package=None,
+                         verbose=False):
   cmd = [
       sys.executable,
       os.path.join(_THIS_DIR, script),
@@ -53,6 +54,9 @@ def _GenerateTestCommand(script,
     cmd.append('--chrome=' + chrome)
   if chrome_version:
     cmd.append('--chrome-version=' + chrome_version)
+
+  if verbose:
+    cmd.append('--verbose')
 
   if android_package:
     cmd.insert(0, 'xvfb-run')
@@ -80,7 +84,8 @@ def RunPythonTests(chromedriver, ref_chromedriver,
 
 
 def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
-                 chrome_version_name=None, android_package=None):
+                 chrome_version_name=None, android_package=None,
+                 verbose=False):
   version_info = ''
   if chrome_version_name:
     version_info = '(%s)' % chrome_version_name
@@ -91,7 +96,8 @@ def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
                            ref_chromedriver=None,
                            chrome=chrome,
                            chrome_version=chrome_version,
-                           android_package=android_package))
+                           android_package=android_package,
+                           verbose=verbose))
   if code:
     util.MarkBuildStepError()
   return code
@@ -165,7 +171,8 @@ def main():
                              android_package=package)
       code2 = RunJavaTests(chromedriver,
                            chrome_version_name=package,
-                           android_package=package)
+                           android_package=package,
+                           verbose=True)
       code = code or code1 or code2
     return code
   else:
