@@ -6412,11 +6412,12 @@ bool RenderViewImpl::didTapMultipleTargets(
   if (!new_total_scale)
     return false;
 
-  TapMultipleTargetsStrategy multitarget_strategy =
-    renderer_preferences_.tap_multiple_targets_strategy;
-  if (multitarget_strategy == TAP_MULTIPLE_TARGETS_STRATEGY_ZOOM) {
-      return webview()->zoomToMultipleTargetsRect(zoom_rect);
-  } else if (multitarget_strategy == TAP_MULTIPLE_TARGETS_STRATEGY_POPUP) {
+  bool handled = false;
+  switch (renderer_preferences_.tap_multiple_targets_strategy) {
+    case TAP_MULTIPLE_TARGETS_STRATEGY_ZOOM:
+      handled = webview()->zoomToMultipleTargetsRect(zoom_rect);
+      break;
+    case TAP_MULTIPLE_TARGETS_STRATEGY_POPUP: {
       gfx::Size canvas_size =
           gfx::ToCeiledSize(gfx::ScaleSize(zoom_rect.size(), new_total_scale));
       TransportDIB* transport_dib = NULL;
@@ -6424,8 +6425,10 @@ bool RenderViewImpl::didTapMultipleTargets(
         scoped_ptr<skia::PlatformCanvas> canvas(
             RenderProcess::current()->GetDrawingCanvas(&transport_dib,
                                                        gfx::Rect(canvas_size)));
-        if (!canvas)
-          return false;
+        if (!canvas) {
+          handled = false;
+          break;
+        }
 
         // TODO(trchen): Cleanup the device scale factor mess.
         // device scale will be applied in WebKit
@@ -6448,11 +6451,15 @@ bool RenderViewImpl::didTapMultipleTargets(
                                                    physical_window_zoom_rect,
                                                    canvas_size,
                                                    transport_dib->id()));
-  } else {
-    return false;
+      handled = true;
+      break;
+    }
+    case TAP_MULTIPLE_TARGETS_STRATEGY_NONE:
+      // No-op.
+      break;
   }
 
-  return true;
+  return handled;
 }
 #endif
 
