@@ -60,7 +60,7 @@ int wmain(int argc, wchar_t* argv[]) {
     printf("failed to set program. possible choices: %ls\n",
            JoinString(choices, L", ").c_str());
   } else {
-    printf("failed with HRESULT: 0x08X\n", result);
+    printf("failed with HRESULT: %0x08X\n", result);
   }
 
   return FAILED(result);
