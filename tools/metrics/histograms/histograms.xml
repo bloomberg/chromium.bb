@@ -23599,6 +23599,7 @@ other types of suffix sets.
   <int value="5" label="Reloaded due to incognito"/>
   <int value="6" label="Reloaded due to cold start (fg tab on start)"/>
   <int value="7" label="Reloaded due to cold start (bg tab on switch)"/>
+  <int value="8" label="Lazy load for 'Open in new tab'"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
