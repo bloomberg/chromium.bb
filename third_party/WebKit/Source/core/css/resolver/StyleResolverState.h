@@ -24,6 +24,7 @@
 
 #include "CSSPropertyNames.h"
 
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/resolver/ElementResolveContext.h"
@@ -61,6 +62,10 @@ public:
     const RenderStyle* style() const { return m_style.get(); }
     RenderStyle* style() { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
+
+    void setAnimationUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_animationUpdate = update; }
+    const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
+    PassOwnPtr<CSSAnimationUpdate> takeAnimationUpdate() { return m_animationUpdate.release(); }
 
     void setParentStyle(PassRefPtr<RenderStyle> parentStyle) { m_parentStyle = parentStyle; }
     const RenderStyle* parentStyle() const { return m_parentStyle.get(); }
@@ -135,6 +140,8 @@ private:
     // m_parentStyle is not always just element->parentNode()->style()
     // so we keep it separate from m_elementContext.
     RefPtr<RenderStyle> m_parentStyle;
+
+    OwnPtr<CSSAnimationUpdate> m_animationUpdate;
 
     // Required to ASSERT in applyProperties.
     // FIXME: Regions should not need special state on StyleResolverState

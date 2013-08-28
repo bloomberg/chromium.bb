@@ -540,6 +540,8 @@
             'animation/AnimationStack.h',
             'animation/DocumentTimeline.cpp',
             'animation/DocumentTimeline.h',
+            'animation/InertAnimation.cpp',
+            'animation/InertAnimation.h',
             'animation/KeyframeAnimationEffect.cpp',
             'animation/KeyframeAnimationEffect.h',
             'animation/Player.cpp',

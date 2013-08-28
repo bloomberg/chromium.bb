@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/css/CSSAnimations.h"
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 #include "core/css/CSSKeyframeRule.h"
@@ -123,6 +124,30 @@ void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timi
     }
 }
 
+CSSAnimationUpdateScope::CSSAnimationUpdateScope(Element* target)
+    : m_target(target)
+{
+    if (!m_target)
+        return;
+    ActiveAnimations* activeAnimations = m_target->activeAnimations();
+    CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
+    // It's possible than an update was created outside an update scope. That's harmless
+    // but we must clear it now to avoid applying it if an updated replacement is not
+    // created in this scope.
+    if (cssAnimations)
+        cssAnimations->setPendingUpdate(nullptr);
+}
+
+CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
+{
+    if (!m_target)
+        return;
+    ActiveAnimations* activeAnimations = m_target->activeAnimations();
+    CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
+    if (cssAnimations)
+        cssAnimations->maybeApplyPendingUpdate(m_target);
+}
+
 bool CSSAnimations::needsUpdate(const Element* element, const RenderStyle* style)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
@@ -132,61 +157,15 @@ bool CSSAnimations::needsUpdate(const Element* element, const RenderStyle* style
     return (display != NONE && animations && animations->size()) || (cssAnimations && !cssAnimations->isEmpty());
 }
 
-PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* element, EDisplay display, const CSSAnimations* cssAnimations, const CSSAnimationDataList* animationDataList, StyleResolver* resolver)
+PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* element, const RenderStyle* style, const CSSAnimations* cssAnimations, const CSSAnimationDataList* animationDataList, StyleResolver* resolver)
 {
     OwnPtr<CSSAnimationUpdate> update;
-    HashSet<StringImpl*> inactive;
+    HashSet<AtomicString> inactive;
     if (cssAnimations)
         for (AnimationMap::const_iterator iter = cssAnimations->m_animations.begin(); iter != cssAnimations->m_animations.end(); ++iter)
             inactive.add(iter->key);
 
     RefPtr<MutableStylePropertySet> newStyles;
-    if (display != NONE) {
-        for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
-            const CSSAnimationData* animationData = animationDataList->animation(i);
-            if (animationData->isNoneAnimation())
-                continue;
-            ASSERT(animationData->isValidAnimation());
-            AtomicString animationName(animationData->name());
-
-            if (cssAnimations) {
-                AnimationMap::const_iterator existing(cssAnimations->m_animations.find(animationName.impl()));
-                if (existing != cssAnimations->m_animations.end()) {
-                    inactive.remove(animationName.impl());
-                    continue;
-                }
-            }
-
-            // If there's a delay, no styles will apply yet.
-            if (animationData->isDelaySet() && animationData->delay()) {
-                RELEASE_ASSERT_WITH_MESSAGE(animationData->delay() > 0, "Web Animations not yet implemented: Negative delay");
-                continue;
-            }
-
-            const StylePropertySet* keyframeStyles = resolver->firstKeyframeStyles(element, animationName.impl());
-            if (keyframeStyles) {
-                if (!update)
-                    update = adoptPtr(new CSSAnimationUpdate());
-                update->addStyles(keyframeStyles);
-            }
-        }
-    }
-
-    if (!inactive.isEmpty() && !update)
-        update = adoptPtr(new CSSAnimationUpdate());
-    for (HashSet<StringImpl*>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter)
-        update->cancel(cssAnimations->m_animations.get(*iter));
-
-    return update.release();
-}
-
-void CSSAnimations::update(Element* element, const RenderStyle* style)
-{
-    const CSSAnimationDataList* animationDataList = style->animations();
-    HashSet<StringImpl*> inactive;
-    for (AnimationMap::const_iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter)
-        inactive.add(iter->key);
-
     if (style->display() != NONE) {
         for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
             const CSSAnimationData* animationData = animationDataList->animation(i);
@@ -195,30 +174,57 @@ void CSSAnimations::update(Element* element, const RenderStyle* style)
             ASSERT(animationData->isValidAnimation());
             AtomicString animationName(animationData->name());
 
-            AnimationMap::const_iterator existing(m_animations.find(animationName.impl()));
-            if (existing != m_animations.end()) {
-                bool paused = animationData->playState() == AnimPlayStatePaused;
-                existing->value->setPaused(paused);
-                inactive.remove(animationName.impl());
-                continue;
+            if (cssAnimations) {
+                AnimationMap::const_iterator existing(cssAnimations->m_animations.find(animationName));
+                if (existing != cssAnimations->m_animations.end()) {
+                    // FIXME: The play-state of this animation might have changed, record the change in the update.
+                    inactive.remove(animationName);
+                    continue;
+                }
             }
 
             KeyframeAnimationEffect::KeyframeVector keyframes;
-            element->document()->styleResolver()->resolveKeyframes(element, style, animationName.impl(), keyframes);
+            resolver->resolveKeyframes(element, style, animationName.impl(), keyframes);
             if (!keyframes.isEmpty()) {
                 Timing timing;
                 timingFromAnimationData(animationData, timing);
-                OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, animationName));
-                ASSERT(!isNull(element->document()->timeline()->currentTime()));
+                if (!update)
+                    update = adoptPtr(new CSSAnimationUpdate());
                 // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
-                m_animations.set(animationName.impl(), element->document()->timeline()->play(
-                    Animation::create(element, KeyframeAnimationEffect::create(keyframes), timing, eventDelegate.release()).get()).get());
+                update->startAnimation(animationName, InertAnimation::create(KeyframeAnimationEffect::create(keyframes), timing).get());
             }
         }
     }
 
-    for (HashSet<StringImpl*>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter)
+    if (!inactive.isEmpty() && !update)
+        update = adoptPtr(new CSSAnimationUpdate());
+    for (HashSet<AtomicString>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter)
+        update->cancelAnimation(*iter, cssAnimations->m_animations.get(*iter));
+
+    return update.release();
+}
+
+void CSSAnimations::maybeApplyPendingUpdate(Element* element)
+{
+    if (!element->renderer())
+        m_pendingUpdate = nullptr;
+
+    if (!m_pendingUpdate)
+        return;
+
+    OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
+
+    for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter)
         m_animations.take(*iter)->cancel();
+
+    // FIXME: Apply updates to play-state.
+
+    for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
+        OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, iter->name));
+        RefPtr<Animation> animation = Animation::create(element, iter->animation->effect(), iter->animation->specified(), eventDelegate.release());
+        RefPtr<Player> player = element->document()->timeline()->play(animation.get());
+        m_animations.set(iter->name, player.get());
+    }
 }
 
 void CSSAnimations::cancel()
@@ -227,6 +233,7 @@ void CSSAnimations::cancel()
         iter->value->cancel();
 
     m_animations.clear();
+    m_pendingUpdate = nullptr;
 }
 
 void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, AtomicString& eventName, double elapsedTime)

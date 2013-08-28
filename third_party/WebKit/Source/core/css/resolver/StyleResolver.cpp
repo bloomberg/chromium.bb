@@ -678,6 +678,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     if (element->hasTagName(bodyTag))
         document()->textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
 
+    // If any changes to CSS Animations were detected, stash the update away for application after the
+    // render object is updated if we're in the appropriate scope.
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && state.animationUpdate())
+        element->ensureActiveAnimations()->cssAnimations()->setPendingUpdate(state.takeAnimationUpdate());
+
     // Now return the style.
     return state.takeStyle();
 }
@@ -812,7 +817,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     }
 }
 
-void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style, const StringImpl* name, KeyframeAnimationEffect::KeyframeVector& keyframes)
+void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* style, const StringImpl* name, KeyframeAnimationEffect::KeyframeVector& keyframes)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, name);
@@ -823,7 +828,7 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
     const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(element, style, styleKeyframe);
+        RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(0, style, styleKeyframe);
         Vector<double> offsets;
         styleKeyframe->getKeys(offsets);
         RefPtr<Keyframe> firstOffsetKeyframe;
@@ -897,33 +902,6 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
             endKeyframe->setPropertyValue(property, snapshotValue.get());
     }
 }
-
-const StylePropertySet* StyleResolver::firstKeyframeStyles(const Element* element, const StringImpl* animationName)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
-    const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, animationName);
-    if (!keyframesRule)
-        return 0;
-
-    // Find the last keyframe at offset 0
-    const StyleKeyframe* firstKeyframe = 0;
-    const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
-    for (unsigned i = 0; i < styleKeyframes.size(); ++i) {
-        const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
-
-        Vector<double> offsets;
-        styleKeyframe->getKeys(offsets);
-        for (size_t j = 0; j < offsets.size(); ++j) {
-            if (!offsets[j]) {
-                firstKeyframe = styleKeyframe;
-                break;
-            }
-        }
-    }
-
-    return firstKeyframe ? firstKeyframe->properties() : 0;
-}
-
 
 PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
 {
@@ -1146,27 +1124,22 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* target, const DocumentTimeline* timeline, const CSSAnimationUpdate* update)
+bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const DocumentTimeline* timeline)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(pass != VariableDefinitions);
     ASSERT(pass != AnimationProperties);
-    if (update && update->styles()) {
-        bool applyInheritedOnly = false;
-        bool isImportant = false;
-        StyleRule* rule = 0;
-        applyProperties<pass>(state, update->styles(), rule, isImportant, applyInheritedOnly, PropertyWhitelistNone);
-        isImportant = true;
-        applyProperties<pass>(state, update->styles(), rule, isImportant, applyInheritedOnly, PropertyWhitelistNone);
-    }
-    AnimationStack* animationStack = timeline->animationStack(target);
+    const Element* element = state.element();
+    const CSSAnimationUpdate* update = state.animationUpdate();
+    AnimationStack* animationStack = timeline->animationStack(element);
     if (!animationStack)
-        return;
-    const Vector<Animation*>& animations = animationStack->activeAnimations(target);
+        return false;
+    bool didApply = false;
 
+    const Vector<Animation*>& animations = animationStack->activeAnimations(element);
     for (size_t i = 0; i < animations.size(); ++i) {
         RefPtr<Animation> animation = animations.at(i);
-        if (update && update->isFiltered(animation->player()))
+        if (update && update->isCancelled(animation->player()))
             continue;
         const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
         for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
@@ -1179,8 +1152,36 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
                 state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
             else
                 AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+            didApply = true;
         }
     }
+
+    if (!update)
+        return didApply;
+
+    // FIXME: Remove this repetition by incorporating a merge of newAnimations with AnimationStack.
+    // Then resolve the stack before calling applyAnimatedProperties, eg.
+    //     CompositableValueMap* resolved = timeline->animationStack()->resolveWith(newAnimations);
+    //     applyAnimatedProperties(state, resolved);
+    const Vector<CSSAnimationUpdate::NewAnimation>& newAnimations = update->newAnimations();
+    for (size_t i = 0; i < newAnimations.size(); ++i) {
+        RefPtr<InertAnimation> animation = newAnimations.at(i).animation;
+        OwnPtr<AnimationEffect::CompositableValueMap> compositableValues = animation->sample();
+        if (!compositableValues)
+            continue;
+        for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
+            CSSPropertyID property = iter->key;
+            if (!isPropertyForPass<pass>(property))
+                continue;
+            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
+            if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+                state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
+            else
+                AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+            didApply = true;
+        }
+    }
+    return didApply;
 }
 
 // http://dev.w3.org/csswg/css3-regions/#the-at-region-style-rule
@@ -1340,22 +1341,21 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
-PassOwnPtr<CSSAnimationUpdate> StyleResolver::calculateCSSAnimationUpdate(StyleResolverState& state)
+void StyleResolver::calculateCSSAnimationUpdate(StyleResolverState& state)
 {
     if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return nullptr;
+        return;
 
     const Element* element = state.element();
     ASSERT(element);
 
     if (!CSSAnimations::needsUpdate(element, state.style()))
-        return nullptr;
+        return;
 
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const CSSAnimationDataList* animations = state.style()->animations();
     const CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
-    EDisplay display = state.style()->display();
-    return CSSAnimations::calculateUpdate(element, display, cssAnimations, animations, this);
+    state.setAnimationUpdate(CSSAnimations::calculateUpdate(element, state.style(), cssAnimations, animations, this));
 }
 
 void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
@@ -1402,17 +1402,12 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    OwnPtr<CSSAnimationUpdate> cssAnimationUpdate = calculateCSSAnimationUpdate(state);
-
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
     state.setLineHeightValue(0);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    // Animation contributions are processed here because CSS Animations are overridable by user !important rules.
-    if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly)
-        applyAnimatedProperties<HighPriorityProperties>(state, element, element->document()->timeline(), cssAnimationUpdate.get());
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
@@ -1441,11 +1436,26 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly)
-        applyAnimatedProperties<LowPriorityProperties>(state, element, element->document()->timeline(), cssAnimationUpdate.get());
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+
+    if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
+        calculateCSSAnimationUpdate(state);
+        // Apply animated properties, then reapply any rules marked important.
+        if (applyAnimatedProperties<HighPriorityProperties>(state, element->document()->timeline())) {
+            bool important = true;
+            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
+            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+        }
+        if (applyAnimatedProperties<LowPriorityProperties>(state, element->document()->timeline())) {
+            bool important = true;
+            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
+            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+        }
+    }
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());

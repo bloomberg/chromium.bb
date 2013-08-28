@@ -1741,16 +1741,9 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 {
-    if (!isText() && style) {
-        if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-            setStyle(animation()->updateAnimations(this, style.get()));
-            return;
-        }
-        if (node() && node()->isElementNode()) {
-            Element* element = toElement(node());
-            if (CSSAnimations::needsUpdate(element, style.get()))
-                element->ensureActiveAnimations()->cssAnimations()->update(element, style.get());
-        }
+    if (!isText() && style && !RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        setStyle(animation()->updateAnimations(this, style.get()));
+        return;
     }
     setStyle(style);
 }

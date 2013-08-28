@@ -32,14 +32,13 @@
 #define CSSAnimations_h
 
 #include "core/animation/Animation.h"
-
+#include "core/animation/InertAnimation.h"
 #include "core/animation/Player.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
@@ -50,36 +49,56 @@ class Element;
 class RenderObject;
 class StyleResolver;
 
+// Applied to scopes where an animation update will be added as pending and should then be applied (eg. Element style recalc).
+class CSSAnimationUpdateScope FINAL {
+public:
+    CSSAnimationUpdateScope(Element*);
+    ~CSSAnimationUpdateScope();
+private:
+    Element* m_target;
+};
+
 class CSSAnimationUpdate FINAL {
 public:
-    const StylePropertySet* styles() const { return m_styles.get(); }
+    void startAnimation(AtomicString& animationName, PassRefPtr<InertAnimation> animation)
+    {
+        NewAnimation newAnimation;
+        newAnimation.name = animationName;
+        newAnimation.animation = animation;
+        m_newAnimations.append(newAnimation);
+    }
     // Returns whether player has been cancelled and should be filtered during style application.
-    bool isFiltered(const Player* player) const { return m_filtered.contains(player); }
-    void cancel(const Player* player)
+    bool isCancelled(const Player* player) const { return m_cancelledAnimationPlayers.contains(player); }
+    void cancelAnimation(const AtomicString& name, const Player* player)
     {
-        m_filtered.add(player);
+        m_cancelledAnimationNames.append(name);
+        m_cancelledAnimationPlayers.add(player);
     }
-    void addStyles(const StylePropertySet* styles)
-    {
-        if (!m_styles)
-            m_styles = MutableStylePropertySet::create();
-        m_styles->mergeAndOverrideOnConflict(styles);
-    }
+    struct NewAnimation {
+        AtomicString name;
+        RefPtr<InertAnimation> animation;
+    };
+    const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
+    const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
 private:
-    HashSet<const Player*> m_filtered;
-    RefPtr<MutableStylePropertySet> m_styles;
+    // Order is significant since it defines the order in which new animations will be started.
+    Vector<NewAnimation> m_newAnimations;
+    Vector<AtomicString> m_cancelledAnimationNames;
+    HashSet<const Player*> m_cancelledAnimationPlayers;
 };
 
 class CSSAnimations FINAL {
 public:
     static bool needsUpdate(const Element*, const RenderStyle*);
-    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(const Element*, EDisplay, const CSSAnimations*, const CSSAnimationDataList*, StyleResolver*);
-    void update(Element*, const RenderStyle*);
-    bool isEmpty() const { return m_animations.isEmpty(); }
+    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(const Element*, const RenderStyle*, const CSSAnimations*, const CSSAnimationDataList*, StyleResolver*);
+    void setPendingUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
+    void maybeApplyPendingUpdate(Element*);
+    bool isEmpty() const { return m_animations.isEmpty() && !m_pendingUpdate; }
     void cancel();
 private:
-    typedef HashMap<StringImpl*, RefPtr<Player> > AnimationMap;
+    typedef HashMap<AtomicString, RefPtr<Player> > AnimationMap;
     AnimationMap m_animations;
+    OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
     class EventDelegate FINAL : public TimedItem::EventDelegate {
     public:
         EventDelegate(Element* target, const AtomicString& name)

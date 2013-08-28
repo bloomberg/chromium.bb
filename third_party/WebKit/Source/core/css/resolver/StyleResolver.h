@@ -190,9 +190,8 @@ public:
     // FIXME: The following logic related to animations and keyframes should be factored out of StyleResolver
     // The body of calculateCSSAnimationUpdate can move to CSSAnimations.cpp and take just const element, const style,
     // and const ScopedStyleTree
-    PassOwnPtr<CSSAnimationUpdate> calculateCSSAnimationUpdate(StyleResolverState&);
-    void resolveKeyframes(Element*, const RenderStyle*, const StringImpl* animationName, KeyframeAnimationEffect::KeyframeVector&);
-    const StylePropertySet* firstKeyframeStyles(const Element*, const StringImpl* animationName);
+    void calculateCSSAnimationUpdate(StyleResolverState&);
+    void resolveKeyframes(const Element*, const RenderStyle*, const StringImpl* animationName, KeyframeAnimationEffect::KeyframeVector&);
     void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
     const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*);
@@ -307,7 +306,7 @@ private:
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    void applyAnimatedProperties(StyleResolverState&, const Element*, const DocumentTimeline*, const CSSAnimationUpdate*);
+    bool applyAnimatedProperties(StyleResolverState&, const DocumentTimeline*);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();

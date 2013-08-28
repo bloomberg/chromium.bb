@@ -35,6 +35,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
@@ -1476,6 +1477,7 @@ Node::StyleChange Element::recalcOwnStyle(StyleChange change)
 {
     ASSERT(document()->inStyleRecalc());
 
+    CSSAnimationUpdateScope cssAnimationUpdateScope(this);
     RefPtr<RenderStyle> oldStyle = renderStyle();
     RefPtr<RenderStyle> newStyle = styleForRenderer();
     StyleChange localChange = oldStyle ? Node::diff(oldStyle.get(), newStyle.get(), document()) : Reattach;

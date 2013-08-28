@@ -27,6 +27,7 @@
 #include "core/dom/NodeRenderingContext.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -215,6 +216,8 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     if (!shouldCreateRenderer() && !elementInsideRegionNeedsRenderer())
         return;
 
+    // If m_style is already available, this scope shouldn't attempt to trigger animation updates.
+    CSSAnimationUpdateScope cssAnimationUpdateScope(m_style ? 0 : element);
     if (!m_style)
         m_style = element->styleForRenderer();
     ASSERT(m_style);
