@@ -168,7 +168,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     return start_x_position;
   }
 
-  GURL GetURL(const std::string filename) {
+  GURL GetURL(const std::string& filename) {
     return ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("find_in_page"),
         base::FilePath().AppendASCII(filename));
