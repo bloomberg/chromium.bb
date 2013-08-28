@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+
+#ifndef NATIVE_CLIENT_TESTS_TOOLCHAIN_EH_HELPER_H_
+#define NATIVE_CLIENT_TESTS_TOOLCHAIN_EH_HELPER_H_ 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,3 +21,5 @@ void __attribute__((noinline)) next_step(int n) {
   }
   g_step = n;
 }
+
+#endif  // NATIVE_CLIENT_TESTS_TOOLCHAIN_EH_HELPER_H_

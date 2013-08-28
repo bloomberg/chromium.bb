@@ -165,6 +165,9 @@ def SetLibTarget(*args):
   if arch != 'le32':
     env.set('BCLIB_ARCH', arch)
 
+def IsPortable():
+  return env.getone('BCLIB_ARCH') == ''
+
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
@@ -311,7 +314,7 @@ def main(argv):
   # Overriding the lib target uses native-flavored bitcode libs rather than the
   # portable bitcode libs. It is currently only tested/supported for
   # building the IRT.
-  if env.getone('BCLIB_ARCH') != '':
+  if not IsPortable():
     env.set('BASE_USR', "${BASE_USR_ARCH}")
     env.set('BASE_LIB', "${BASE_LIB_ARCH}")
 
@@ -387,15 +390,21 @@ def main(argv):
     # Some ABI simplification passes assume the whole program is
     # available (e.g. -expand-varargs, -nacl-expand-ctors and
     # -nacl-expand-tls).  While we could try running a subset of
-    # simplification passes when linking native objects or enabling
-    # C++ exception handling, we don't do this because it complicates
-    # testing.  For example, it requires '-expand-constant-expr' to be
-    # able to handle 'landingpad' instructions.
+    # simplification passes when linking native objects, we don't
+    # do this because it complicates testing.  For example,
+    # it requires '-expand-constant-expr' to be able to handle
+    # 'landingpad' instructions.
+    # However, if we aren't using biased bitcode, then at least -expand-byval
+    # must be run to work with the PPAPI shim calling convention.
+    # This assumes that PPAPI does not use var-args, so passes like
+    # -expand-varargs and other calling-convention-changing passes are
+    # not needed.
     abi_simplify = (env.getbool('STATIC') and
                     len(native_objects) == 0 and
                     not env.getbool('ALLOW_CXX_EXCEPTIONS') and
                     not env.getbool('ALLOW_NEXE_BUILD_ID') and
-                    env.getone('BCLIB_ARCH') == '')
+                    IsPortable())
+    still_need_expand_byval = IsPortable()
 
     preopt_passes = []
     if abi_simplify:
@@ -417,6 +426,7 @@ def main(argv):
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
+    postopt_passes = []
     if abi_simplify:
       postopt_passes = ['-pnacl-abi-simplify-postopt']
       if not env.getbool('DISABLE_ABI_CHECK'):
@@ -428,6 +438,11 @@ def main(argv):
         if env.getbool('ALLOW_DEV_INTRINSICS'):
           # A flag for the above -verify-pnaclabi-* passes.
           postopt_passes += ['-pnaclabi-allow-dev-intrinsics']
+    elif still_need_expand_byval:
+      # We may still need -expand-byval to match the PPAPI shim
+      # calling convention.
+      postopt_passes = ['-expand-byval']
+    if len(postopt_passes) != 0:
       chain.add(DoLLVMPasses(postopt_passes),
                 'simplify_postopt.' + bitcode_type)
   else:

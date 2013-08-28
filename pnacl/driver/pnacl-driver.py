@@ -159,6 +159,8 @@ EXTRA_ENV = {
     '-l:crt1.bc ' +
     '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
+  'LLVM_PASSES_TO_DISABLE': '',
+
   # Flags for translating to native .o files.
   'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
 
@@ -176,6 +178,10 @@ EXTRA_ENV = {
             '${@AddPrefix:-isystem :ISYSTEM} ' +
             '-x${typespec} "${infile}" -o ${output}',
 }
+
+def AddLLVMPassDisableFlag(*args):
+  env.append('LLVM_PASSES_TO_DISABLE', *args)
+  env.append('LD_FLAGS', *args)
 
 def AddLDFlag(*args):
   env.append('LD_FLAGS', *args)
@@ -209,6 +215,9 @@ def SetTarget(*args):
   arch = ParseTriple(args[0])
   env.set('FRONTEND_TRIPLE', args[0])
   AddLDFlag('--target=' + args[0])
+
+def IsPortable():
+  return env.getone('FRONTEND_TRIPLE').startswith('le32-')
 
 stdin_count = 0
 def AddInputFileStdin():
@@ -245,7 +254,7 @@ CustomPatterns = [
   ( '(--pnacl-allow-exceptions)',   AddAllowCXXExceptions),
   ( '(--pnacl-allow-nexe-build-id)', AddLDFlag),
   ( '(--pnacl-disable-abi-check)',  AddLDFlag),
-  ( '(--pnacl-disable-pass=.+)',    AddLDFlag),
+  ( '(--pnacl-disable-pass=.+)',    AddLLVMPassDisableFlag),
   ( '(--pnacl-allow-dev-intrinsics)', AddLDFlag),
 ]
 
@@ -623,6 +632,13 @@ def RunTranslate(infile, output, mode):
     args += ['-fPIC']
   RunDriver('translate', args)
 
+
+def RunOpt(infile, outfile, pass_list):
+  filtered_list = [pass_option for pass_option in pass_list
+                   if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
+  RunDriver('opt', filtered_list + [infile, '-o', outfile])
+
+
 def SetupChain(chain, input_type, output_type):
   assert(output_type in ('pp','ll','po','s','o'))
   cur_type = input_type
@@ -659,6 +675,10 @@ def SetupChain(chain, input_type, output_type):
   # po -> o
   if (cur_type == 'po' and output_type == 'o' and
       not env.getbool('FORCE_INTERMEDIATE_S')):
+    # If we aren't using biased bitcode, then at least -expand-byval
+    # must be run to work with the PPAPI shim calling convention.
+    if IsPortable():
+      chain.add(RunOpt, 'expand.po', pass_list=['-expand-byval'])
     chain.add(RunTranslate, 'o', mode='-c')
     cur_type = 'o'
   if cur_type == output_type:
@@ -666,6 +686,10 @@ def SetupChain(chain, input_type, output_type):
 
   # po -> s
   if cur_type == 'po':
+    # If we aren't using biased bitcode, then at least -expand-byval
+    # must be run to work with the PPAPI shim calling convention.
+    if IsPortable():
+      chain.add(RunOpt, 'expand.po', pass_list=['-expand-byval'])
     chain.add(RunTranslate, 's', mode='-S')
     cur_type = 's'
   if cur_type == output_type:

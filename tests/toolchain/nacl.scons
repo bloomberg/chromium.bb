@@ -270,6 +270,73 @@ for tag, env_to_try in ENVIRONMENTS_TO_TRY:
                                'run_' + name  +'_test', is_broken=is_broken)
 
 
+# Test that Exception Handling works with the calling conventions that
+# match the PPAPI PNaCl IRT shim's calling conventions.
+exc_env = env.Clone()
+if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
+  # Test what happens when all objects are bitcode w/ bitcode linking.
+  exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
+  exc_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
+  bobj1 = exc_env.ComponentObject('eh_separate_files1_bc.o',
+                                  'eh_separate_files1.cc')
+  bobj2 = exc_env.ComponentObject('eh_separate_files2_bc.o',
+                                  'eh_separate_files2.cc')
+  nexe = exc_env.ComponentProgram('eh_separate_files_bc',
+                                  [bobj1, bobj2],
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = exc_env.CommandSelLdrTestNacl('eh_separate_files_bc.out',
+                                       nexe,
+                                       exit_status='55')
+  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                         'run_eh_separate_files_bc_test',
+                         # TODO(jvoung): enable once driver fix rolls.
+                         is_broken=True)
+  # Also test ahead of time translation, which may be used when debugging.
+  if not env.Bit('pnacl_generate_pexe'):
+    native_env = exc_env.Clone()
+    native_env.PNaClForceNative()
+    nobj1 = native_env.ComponentObject('eh_separate_files1_native.o',
+                                       'eh_separate_files1.cc')
+    nobj2 = native_env.ComponentObject('eh_separate_files2_native.o',
+                                       'eh_separate_files2.cc')
+    nexe = native_env.ComponentProgram('eh_separate_files_native',
+                                       [nobj1, nobj2],
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = native_env.CommandSelLdrTestNacl('eh_separate_files_native.out',
+                                            nexe,
+                                            exit_status='55')
+    env.AddNodeToTestSuite(node,
+                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           'run_eh_separate_files_native_test',
+                           # TODO(jvoung): enable once driver fix rolls.
+                           is_broken=True)
+    # Test mixed objects, one native, one bitcode.
+    nexe = native_env.ComponentProgram('eh_separate_files_mixed1',
+                                       [bobj1, nobj2],
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = native_env.CommandSelLdrTestNacl('eh_separate_files_mixed1.out',
+                                            nexe,
+                                            exit_status='55')
+    env.AddNodeToTestSuite(node,
+                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           'run_eh_separate_files_mixed1_test',
+                           # TODO(jvoung): enable once driver fix rolls.
+                           is_broken=True)
+    # Test having the bitcode and native objects swapped.
+    nexe = native_env.ComponentProgram('eh_separate_files_mixed2',
+                                       [nobj1, bobj2],
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = native_env.CommandSelLdrTestNacl('eh_separate_files_mixed2.out',
+                                            nexe,
+                                            exit_status='55')
+    env.AddNodeToTestSuite(node,
+                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           'run_eh_separate_files_mixed2_test',
+                           # TODO(jvoung): enable once driver fix rolls.
+                           is_broken=True)
+
+
+
 abi_types_nexe = env.ComponentProgram('abi_types',
                                       'abi_types.cc',
                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
