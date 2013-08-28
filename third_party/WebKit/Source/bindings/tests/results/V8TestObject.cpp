@@ -1740,61 +1740,32 @@ static void callbackFunctionAttributeAttributeSetterCallback(v8::Local<v8::Strin
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledAtRuntimeAttr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enabledAtRuntimeAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->enabledAtRuntimeAttr1());
+    v8SetReturnValueInt(info, imp->enabledAtRuntimeAttr());
     return;
 }
 
-static void enabledAtRuntimeAttr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enabledAtRuntimeAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::enabledAtRuntimeAttr1AttributeGetter(name, info);
+    TestObjV8Internal::enabledAtRuntimeAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledAtRuntimeAttr1AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void enabledAtRuntimeAttrAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setEnabledAtRuntimeAttr1(v);
+    imp->setEnabledAtRuntimeAttr(v);
     return;
 }
 
-static void enabledAtRuntimeAttr1AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void enabledAtRuntimeAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::enabledAtRuntimeAttr1AttributeSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledAtRuntimeAttr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->enabledAtRuntimeAttr2());
-    return;
-}
-
-static void enabledAtRuntimeAttr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::enabledAtRuntimeAttr2AttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledAtRuntimeAttr2AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setEnabledAtRuntimeAttr2(v);
-    return;
-}
-
-static void enabledAtRuntimeAttr2AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::enabledAtRuntimeAttr2AttributeSetter(name, value, info);
+    TestObjV8Internal::enabledAtRuntimeAttrAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -4400,7 +4371,7 @@ static void classMethodWithClampMethodCallback(const v8::FunctionCallbackInfo<v8
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledAtRuntimeMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void enabledAtRuntimeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
         throwNotEnoughArgumentsError(args.GetIsolate());
@@ -4408,35 +4379,15 @@ static void enabledAtRuntimeMethod1Method(const v8::FunctionCallbackInfo<v8::Val
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
-    imp->enabledAtRuntimeMethod1(longArg);
+    imp->enabledAtRuntimeMethod(longArg);
 
     return;
 }
 
-static void enabledAtRuntimeMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void enabledAtRuntimeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::enabledAtRuntimeMethod1Method(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledAtRuntimeMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
-    imp->enabledAtRuntimeMethod2(longArg);
-
-    return;
-}
-
-static void enabledAtRuntimeMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::enabledAtRuntimeMethod2Method(args);
+    TestObjV8Internal::enabledAtRuntimeMethodMethod(args);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5493,14 +5444,9 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-    if (RuntimeEnabledFeatures::enabledAtRuntimeAttr1Enabled()) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"enabledAtRuntimeAttr1", TestObjV8Internal::enabledAtRuntimeAttr1AttributeGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr1AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
-    }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"enabledAtRuntimeAttr2", TestObjV8Internal::enabledAtRuntimeAttr2AttributeGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        {"enabledAtRuntimeAttr", TestObjV8Internal::enabledAtRuntimeAttrAttributeGetterCallback, TestObjV8Internal::enabledAtRuntimeAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
     static const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
@@ -5542,10 +5488,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 #if ENABLE(Condition1)
     desc->Set(v8::String::NewSymbol("overloadedMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::overloadedMethod1MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
 #endif // ENABLE(Condition1)
-    if (RuntimeEnabledFeatures::enabledAtRuntimeMethod1Enabled())
-        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod1MethodCallback, v8Undefined(), defaultSignature, 1));
     if (RuntimeEnabledFeatures::featureNameEnabled())
-        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod2MethodCallback, v8Undefined(), defaultSignature, 1));
+        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethodMethodCallback, v8Undefined(), defaultSignature, 1));
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;

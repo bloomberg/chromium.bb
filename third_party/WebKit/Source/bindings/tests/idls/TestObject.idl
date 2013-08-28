@@ -216,10 +216,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     void classMethodWithClamp([Clamp] unsigned short objArgsShort, [Clamp] unsigned long objArgsLong);
 
     // 'EnabledAtRuntime' methods and attributes.
-    [EnabledAtRuntime] void enabledAtRuntimeMethod1(long longArg);
-    [EnabledAtRuntime=FeatureName] void enabledAtRuntimeMethod2(long longArg);
-    [EnabledAtRuntime] attribute long enabledAtRuntimeAttr1;
-    [EnabledAtRuntime=FeatureName] attribute long enabledAtRuntimeAttr2;
+    [EnabledAtRuntime=FeatureName] void enabledAtRuntimeMethod(long longArg);
+    [EnabledAtRuntime=FeatureName] attribute long enabledAtRuntimeAttr;
     // 'EnabledPerContext' methods and attributes.
     [EnabledPerContext] void enabledPerContextMethod1(long longArg);
     [EnabledPerContext=FeatureName] void enabledPerContextMethod2(long longArg);

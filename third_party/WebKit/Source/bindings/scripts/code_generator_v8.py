@@ -171,13 +171,14 @@ def generate_constant(constant):
         value = constant.value
     reflected_name = constant.extended_attributes.get('Reflect', constant.name)
 
+    enabled_at_runtime = 'EnabledAtRuntime' in constant.extended_attributes
     constant_parameter = {
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': reflected_name,
         'value': value,
-        'enabled_at_runtime': 'EnabledAtRuntime' in constant.extended_attributes,
-        'runtime_enable_function_name': runtime_enable_function_name(constant),
+        'enabled_at_runtime': enabled_at_runtime,
+        'runtime_enable_function_name': runtime_enable_function_name(constant) if enabled_at_runtime else None,
     }
     return constant_parameter
 
@@ -186,13 +187,12 @@ def runtime_enable_function_name(definition_or_member):
     """Return the name of the RuntimeEnabledFeatures function.
 
     The returned function checks if a method/attribute is enabled.
-    If a parameter is given (e.g. 'EnabledAtRuntime=FeatureName'), return:
+    Given extended attribute EnabledAtRuntime=FeatureName, return:
         RuntimeEnabledFeatures::{featureName}Enabled
-    Otherwise return:
-        RuntimeEnabledFeatures::{methodName}Enabled
+    Note that the initial character or acronym is uncapitalized.
     """
-    name = definition_or_member.extended_attributes.get('EnabledAtRuntime') or definition_or_member.name
-    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(name)
+    feature_name = definition_or_member.extended_attributes['EnabledAtRuntime']
+    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
 
 
 def uncapitalize(name):

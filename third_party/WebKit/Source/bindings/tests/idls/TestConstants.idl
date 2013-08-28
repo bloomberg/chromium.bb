@@ -47,7 +47,6 @@ interface TestConstants {
 
     // Extended attributes
     [DeprecateAs=Constant] const short DEPRECATED_CONSTANT = 1;
-    [EnabledAtRuntime] const short RUNTIME_ENABLED_CONST = 1;
     [EnabledAtRuntime=FeatureName] const short FEATURE_ENABLED_CONST = 1;
     [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
 };

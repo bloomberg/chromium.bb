@@ -95,10 +95,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
         {"CONST_JAVASCRIPT", 1},
     };
     V8DOMConfiguration::installConstants(desc, proto, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants), isolate);
-    if (RuntimeEnabledFeatures::rUNTIME_ENABLED_CONSTEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"RUNTIME_ENABLED_CONST", static_cast<signed int>(1)};
-        V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
-    }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", static_cast<signed int>(1)};
         V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
@@ -119,7 +115,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
     COMPILE_ASSERT(-0x1A == TestConstants::CONST_VALUE_16, TheValueOfTestConstants_CONST_VALUE_16DoesntMatchWithImplementation);
     COMPILE_ASSERT(-0X1a == TestConstants::CONST_VALUE_17, TheValueOfTestConstants_CONST_VALUE_17DoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestConstants::DEPRECATED_CONSTANT, TheValueOfTestConstants_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
-    COMPILE_ASSERT(1 == TestConstants::RUNTIME_ENABLED_CONST, TheValueOfTestConstants_RUNTIME_ENABLED_CONSTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestConstants::FEATURE_ENABLED_CONST, TheValueOfTestConstants_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestConstants::CONST_IMPL, TheValueOfTestConstants_CONST_IMPLDoesntMatchWithImplementation);
 

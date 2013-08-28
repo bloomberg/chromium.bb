@@ -5548,11 +5548,10 @@ sub GetRuntimeEnableFunctionName
 {
     my $signature = shift;
 
-    # If a parameter is given (e.g. "EnabledAtRuntime=FeatureName") return the RuntimeEnabledFeatures::{FeatureName}Enabled() method.
-    return "RuntimeEnabledFeatures::" . ToMethodName($signature->extendedAttributes->{"EnabledAtRuntime"}) . "Enabled" if ($signature->extendedAttributes->{"EnabledAtRuntime"} && $signature->extendedAttributes->{"EnabledAtRuntime"} ne "VALUE_IS_MISSING");
-
-    # Otherwise return a function named RuntimeEnabledFeatures::{methodName}Enabled().
-    return "RuntimeEnabledFeatures::" . ToMethodName($signature->name) . "Enabled";
+    # Given [EnabledAtRuntime=FeatureName],
+    # return RuntimeEnabledFeatures::{featureName}Enabled;
+    my $featureName = ToMethodName($signature->extendedAttributes->{"EnabledAtRuntime"});
+    return "RuntimeEnabledFeatures::${featureName}Enabled";
 }
 
 sub GetContextEnableFunction
