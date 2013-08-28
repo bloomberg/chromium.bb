@@ -18,6 +18,10 @@ class Rect;
 class RectF;
 }
 
+namespace ui {
+class MouseEvent;
+}
+
 namespace autofill {
 
 // This interface provides data to an AutofillPopupView.
@@ -40,6 +44,9 @@ class AutofillPopupController {
 
   // The user has moved the mouse outside of the popup.
   virtual void MouseExitedPopup() = 0;
+
+  // Whether |event| should be reposted to the native window management.
+  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) = 0;
 
   // Accepts the suggestion at |index|.
   virtual void AcceptSuggestion(size_t index) = 0;
@@ -99,6 +106,9 @@ class AutofillPopupController {
   // Returns the index of the selected line. A line is "selected" when it is
   // hovered or has keyboard focus.
   virtual int selected_line() const = 0;
+
+  // Whether the view should be hidden on outside mouse presses.
+  virtual bool hide_on_outside_click() const = 0;
 
  protected:
   virtual ~AutofillPopupController() {}

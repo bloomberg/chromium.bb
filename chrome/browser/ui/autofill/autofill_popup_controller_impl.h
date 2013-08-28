@@ -66,6 +66,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
 
+  // Tells the view to capture mouse events. Must be called before |Show()|.
+  void set_hide_on_outside_click(bool hide_on_outside_click);
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
                            CloseWidgetAndNoLeaking);
@@ -83,6 +86,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void MouseHovered(int x, int y) OVERRIDE;
   virtual void MouseClicked(int x, int y) OVERRIDE;
   virtual void MouseExitedPopup() OVERRIDE;
+  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(const string16& resource_name) OVERRIDE;
   virtual bool CanDelete(size_t index) const OVERRIDE;
@@ -103,6 +107,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual const gfx::Font& subtext_font() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
+  virtual bool hide_on_outside_click() const OVERRIDE;
 
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
@@ -224,6 +229,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
+
+  // Whether the popup view should hide on mouse presses outside of it.
+  bool hide_on_outside_click_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 

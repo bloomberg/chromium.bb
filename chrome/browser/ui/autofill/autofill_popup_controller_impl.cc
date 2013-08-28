@@ -100,6 +100,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       container_view_(container_view),
       element_bounds_(element_bounds),
       text_direction_(text_direction),
+      hide_on_outside_click_(false),
       weak_ptr_factory_(this),
       key_press_event_callback_(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
@@ -305,6 +306,11 @@ void AutofillPopupControllerImpl::MouseExitedPopup() {
   SetSelectedLine(kNoSelection);
 }
 
+bool AutofillPopupControllerImpl::ShouldRepostEvent(
+    const ui::MouseEvent& event) {
+  return delegate_->ShouldRepostEvent(event);
+}
+
 void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
   delegate_->DidAcceptSuggestion(full_names_[index], identifiers_[index]);
 }
@@ -366,6 +372,10 @@ bool AutofillPopupControllerImpl::IsRTL() const {
   return text_direction_ == base::i18n::RIGHT_TO_LEFT;
 }
 
+bool AutofillPopupControllerImpl::hide_on_outside_click() const {
+  return hide_on_outside_click_;
+}
+
 const std::vector<string16>& AutofillPopupControllerImpl::names() const {
   return names_;
 }
@@ -398,6 +408,11 @@ const gfx::Font& AutofillPopupControllerImpl::subtext_font() const {
 
 int AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
+}
+
+void AutofillPopupControllerImpl::set_hide_on_outside_click(
+    bool hide_on_outside_click) {
+  hide_on_outside_click_ = hide_on_outside_click;
 }
 
 void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {

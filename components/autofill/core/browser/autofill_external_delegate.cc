@@ -186,6 +186,11 @@ void AutofillExternalDelegate::OnPopupHidden(
   registered_key_press_event_callback_with_ = NULL;
 }
 
+bool AutofillExternalDelegate::ShouldRepostEvent(const ui::MouseEvent& event) {
+  NOTREACHED();
+  return true;
+}
+
 void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
   ClearPreviewedForm();
 

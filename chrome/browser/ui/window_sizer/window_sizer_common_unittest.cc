@@ -31,7 +31,13 @@ class TestScreen : public gfx::Screen {
     return gfx::Point();
   }
 
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE {
     NOTREACHED();
     return NULL;
   }

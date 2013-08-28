@@ -172,6 +172,10 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual string16 GetCvc() OVERRIDE { return string16(); }
+  virtual bool HitTestInput(const DetailInput& input,
+                            const gfx::Point& screen_point) OVERRIDE {
+    return false;
+  }
   virtual bool SaveDetailsLocally() OVERRIDE { return true; }
   virtual const content::NavigationController* ShowSignIn() OVERRIDE {
     return NULL;

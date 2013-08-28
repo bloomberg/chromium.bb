@@ -92,6 +92,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual base::string16 GetCvc() OVERRIDE;
+  virtual bool HitTestInput(const DetailInput& input,
+                            const gfx::Point& screen_point) OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;

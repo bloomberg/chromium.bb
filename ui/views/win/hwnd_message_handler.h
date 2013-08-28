@@ -290,8 +290,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MSG_WM_CREATE(OnCreate)
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_DISPLAYCHANGE(OnDisplayChange)
-    MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
+    MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
     MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
     MSG_WM_INITMENU(OnInitMenu)
@@ -311,8 +311,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MSG_WM_SIZE(OnSize)
     MSG_WM_SYSCOMMAND(OnSysCommand)
     MSG_WM_THEMECHANGED(OnThemeChanged)
-    MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
     MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
+    MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
   END_MSG_MAP()
 
   // Message Handlers.

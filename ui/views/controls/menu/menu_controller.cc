@@ -20,6 +20,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/native_theme/native_theme.h"
@@ -30,6 +31,7 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/event_utils.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/views_delegate.h"
@@ -39,7 +41,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #endif
 
 #if defined(OS_WIN)
@@ -890,9 +891,15 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
 
 #if defined(OS_WIN)
     // We're going to close and we own the mouse capture. We need to repost the
-    // mouse down, otherwise the window the user clicked on won't get the
-    // event.
-    RepostEvent(source, event);
+    // mouse down, otherwise the window the user clicked on won't get the event.
+    if (!state_.item) {
+      // We some times get an event after closing all the menus. Ignore it. Make
+      // sure the menu is in fact not visible. If the menu is visible, then
+      // we're in a bad state where we think the menu isn't visibile but it is.
+      DCHECK(!source->GetWidget()->IsVisible());
+    } else {
+      RepostEvent(source, event);
+    }
 #endif
 
     // And close.
@@ -1253,8 +1260,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
     return false;
   }
 
-  gfx::NativeWindow window_under_mouse =
-      GetScreen()->GetWindowAtCursorScreenPoint();
+  gfx::NativeWindow window_under_mouse = GetScreen()->GetWindowUnderCursor();
   // TODO(oshima): Replace with views only API.
   if (!owner_ || window_under_mouse != owner_->GetNativeWindow())
     return false;
@@ -2093,93 +2099,51 @@ bool MenuController::SelectByChar(char16 character) {
   return false;
 }
 
-#if defined(OS_WIN)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const ui::LocatedEvent& event) {
-  if (!state_.item) {
-    // We some times get an event after closing all the menus. Ignore it.
-    // Make sure the menu is in fact not visible. If the menu is visible, then
-    // we're in a bad state where we think the menu isn't visibile but it is.
-    DCHECK(!source->GetWidget()->IsVisible());
-    return;
-  }
-
   gfx::Point screen_loc(event.location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-  HWND window = WindowFromPoint(screen_loc.ToPOINT());
-  if (window) {
-    // Release the capture.
-    SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
-    submenu->ReleaseCapture();
 
-    if (submenu->GetWidget()->GetNativeView() &&
-        GetWindowThreadProcessId(
-            HWNDForNativeView(submenu->GetWidget()->GetNativeView()), NULL) !=
-                GetWindowThreadProcessId(window, NULL)) {
-      // Even though we have mouse capture, windows generates a mouse event
-      // if the other window is in a separate thread. Don't generate an event in
-      // this case else the target window can get double events leading to bad
-      // behavior.
+  gfx::NativeView native_view = source->GetWidget()->GetNativeView();
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
+  gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
+
+  if (!window)
+    return;
+
+#if defined(OS_WIN)
+  // Release the capture.
+  SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
+  submenu->ReleaseCapture();
+
+  gfx::NativeView view = submenu->GetWidget()->GetNativeView();
+  if (view) {
+    DWORD view_tid = GetWindowThreadProcessId(HWNDForNativeView(view), NULL);
+    if (view_tid != GetWindowThreadProcessId(HWNDForNativeView(window), NULL)) {
+      // Even though we have mouse capture, windows generates a mouse event if
+      // the other window is in a separate thread. Only repost an event if
+      // |view| was created on the same thread, else the target window can get
+      // double events leading to bad behavior.
       return;
     }
-
-    // Convert the coordinates to the target window.
-    RECT window_bounds;
-    GetWindowRect(window, &window_bounds);
-    int window_x = screen_loc.x() - window_bounds.left;
-    int window_y = screen_loc.y() - window_bounds.top;
-
-    // Determine whether the click was in the client area or not.
-    // NOTE: WM_NCHITTEST coordinates are relative to the screen.
-    LRESULT nc_hit_result = SendMessage(window, WM_NCHITTEST, 0,
-                                        MAKELPARAM(screen_loc.x(),
-                                                   screen_loc.y()));
-    const bool in_client_area = (nc_hit_result == HTCLIENT);
-
-    // TODO(sky): this isn't right. The event to generate should correspond
-    // with the event we just got. MouseEvent only tells us what is down,
-    // which may differ. Need to add ability to get changed button from
-    // MouseEvent.
-    int event_type;
-    int flags = event.flags();
-    if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-      event_type = in_client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
-    else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-      event_type = in_client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
-    else if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-      event_type = in_client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
-    else
-      event_type = 0;  // Unknown mouse press.
-
-    if (event_type) {
-      if (in_client_area) {
-        PostMessage(window, event_type, event.native_event().wParam,
-                    MAKELPARAM(window_x, window_y));
-      } else {
-        PostMessage(window, event_type, nc_hit_result,
-                    MAKELPARAM(screen_loc.x(), screen_loc.y()));
-      }
-    } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-#if defined(USE_AURA)
-      // Gesture events need to be posted to the target root window. In
-      // desktop chrome there could be multiple root windows.
-      aura::RootWindow* target_root =
-          aura::RootWindow::GetForAcceleratedWidget(window);
-      if (target_root)
-        target_root->RepostEvent(event);
-#endif
-    }
   }
-}
-#elif defined(USE_AURA)
-void MenuController::RepostEvent(SubmenuView* source,
-                                 const ui::LocatedEvent& event) {
-  aura::RootWindow* root_window =
-      source->GetWidget()->GetNativeWindow()->GetRootWindow();
-  DCHECK(root_window);
-  root_window->RepostEvent(event);
-}
 #endif
+
+  scoped_ptr<ui::LocatedEvent> clone;
+  if (event.IsMouseEvent()) {
+    clone.reset(new ui::MouseEvent(static_cast<const ui::MouseEvent&>(event)));
+  } else if (event.IsGestureEvent()) {
+    const ui::GestureEvent& ge = static_cast<const ui::GestureEvent&>(event);
+    clone.reset(new ui::GestureEvent(ge));
+  } else {
+    NOTREACHED();
+    return;
+  }
+  clone->set_location(screen_loc);
+
+  RepostLocatedEvent(window, *clone);
+}
+
 
 void MenuController::SetDropMenuItem(
     MenuItemView* new_target,

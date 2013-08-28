@@ -108,8 +108,11 @@ gfx::Point TestScreen::GetCursorScreenPoint() {
   return Env::GetInstance()->last_mouse_location();
 }
 
-gfx::NativeWindow TestScreen::GetWindowAtCursorScreenPoint() {
-  const gfx::Point point = GetCursorScreenPoint();
+gfx::NativeWindow TestScreen::GetWindowUnderCursor() {
+  return GetWindowAtScreenPoint(GetCursorScreenPoint());
+}
+
+gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return root_window_->GetTopWindowContainingPoint(point);
 }
 

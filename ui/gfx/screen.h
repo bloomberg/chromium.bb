@@ -52,7 +52,10 @@ class UI_EXPORT Screen {
   virtual gfx::Point GetCursorScreenPoint() = 0;
 
   // Returns the window under the cursor.
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() = 0;
+  virtual gfx::NativeWindow GetWindowUnderCursor() = 0;
+
+  // Returns the window at the given screen coordinate |point|.
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) = 0;
 
   // Returns the number of displays.
   // Mirrored displays are excluded; this method is intended to return the
@@ -65,7 +68,7 @@ class UI_EXPORT Screen {
   // Returns the display nearest the specified window.
   virtual gfx::Display GetDisplayNearestWindow(NativeView view) const = 0;
 
-  // Returns the the display nearest the specified point.
+  // Returns the display nearest the specified point.
   virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
 

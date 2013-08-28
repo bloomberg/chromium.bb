@@ -38,7 +38,9 @@ class DesktopScreenX11 : public gfx::Screen {
   // Overridden from gfx::Screen:
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE;
   virtual int GetNumDisplays() const OVERRIDE;
   virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE;
   virtual gfx::Display GetDisplayNearestWindow(
@@ -90,9 +92,15 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   return gfx::Point(root_x, root_y);
 }
 
-gfx::NativeWindow DesktopScreenX11::GetWindowAtCursorScreenPoint() {
+gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
   // TODO(erg): Implement using the discussion at
   // http://codereview.chromium.org/10279005/
+  return NULL;
+}
+
+gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
+    const gfx::Point& point) {
+  NOTIMPLEMENTED();
   return NULL;
 }
 

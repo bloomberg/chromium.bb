@@ -21,7 +21,13 @@ class ScreenIos : public gfx::Screen {
     return gfx::Point(0, 0);
   }
 
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::NativeWindow();
+  }
+
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE {
     NOTIMPLEMENTED();
     return gfx::NativeWindow();
   }

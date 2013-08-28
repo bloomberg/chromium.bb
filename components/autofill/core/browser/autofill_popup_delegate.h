@@ -8,6 +8,10 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/render_view_host.h"
 
+namespace ui {
+class MouseEvent;
+}
+
 namespace autofill {
 
 // An interface for interaction with AutofillPopupController. Will be notified
@@ -23,6 +27,10 @@ class AutofillPopupDelegate {
   // if it was registered in OnPopupShown.
   virtual void OnPopupHidden(
       content::RenderWidgetHost::KeyPressEventCallback* callback) = 0;
+
+  // Called when the Autofill popup recieves a click outside of the popup view
+  // to determine if the event should be reposted to the native window manager.
+  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) = 0;
 
   // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).

@@ -128,6 +128,12 @@ string16 AutofillDialogCocoa::GetCvc() {
   return string16();
 }
 
+bool AutofillDialogCocoa::HitTestInput(const DetailInput& input,
+                                       const gfx::Point& screen_point) {
+  // TODO(dbeam): implement.
+  return false;
+}
+
 bool AutofillDialogCocoa::SaveDetailsLocally() {
   return [sheet_delegate_ saveDetailsLocally];
 }

@@ -19,7 +19,13 @@ class ScreenAndroid : public Screen {
 
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE { return gfx::Point(); }
 
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE {
     NOTIMPLEMENTED();
     return NULL;
   }

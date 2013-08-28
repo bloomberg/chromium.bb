@@ -84,7 +84,13 @@ class ScreenMac : public gfx::Screen {
     return gfx::Point(mouseLocation.x, mouseLocation.y);
   }
 
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::NativeWindow();
+  }
+
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE {
     NOTIMPLEMENTED();
     return gfx::NativeWindow();
   }

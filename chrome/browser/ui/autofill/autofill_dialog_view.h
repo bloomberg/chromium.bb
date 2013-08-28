@@ -12,6 +12,7 @@ class NavigationController;
 }
 
 namespace gfx {
+class Point;
 class Size;
 }
 
@@ -77,6 +78,10 @@ class AutofillDialogView {
   // data. If the user is inputing credit card data from scratch, this is not
   // relevant.
   virtual string16 GetCvc() = 0;
+
+  // Whether or not |point| is within |input|'s bounds.
+  virtual bool HitTestInput(const DetailInput& input,
+                            const gfx::Point& screen_point) = 0;
 
   // Returns true if new or edited autofill details should be saved.
   virtual bool SaveDetailsLocally() = 0;

@@ -91,7 +91,7 @@ class ScreenGtk : public gfx::Screen {
   }
 
   // Returns the window under the cursor.
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
     GdkWindow* window = gdk_window_at_pointer(NULL, NULL);
     if (!window)
       return NULL;
@@ -103,6 +103,12 @@ class ScreenGtk : public gfx::Screen {
       return NULL;
     widget = gtk_widget_get_toplevel(widget);
     return GTK_IS_WINDOW(widget) ? GTK_WINDOW(widget) : NULL;
+  }
+
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
   }
 
   // Returns the number of displays.

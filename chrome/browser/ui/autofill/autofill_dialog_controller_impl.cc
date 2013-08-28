@@ -76,6 +76,7 @@
 #include "grit/webkit_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "ui/base/base_window.h"
+#include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1769,6 +1770,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
       content_bounds,
       base::i18n::IsRTL() ?
           base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT);
+  popup_controller_->set_hide_on_outside_click(true);
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,
@@ -2020,6 +2022,12 @@ void AutofillDialogControllerImpl::OnPopupShown(
 
 void AutofillDialogControllerImpl::OnPopupHidden(
     content::RenderWidgetHost::KeyPressEventCallback* callback) {}
+
+bool AutofillDialogControllerImpl::ShouldRepostEvent(
+    const ui::MouseEvent& event) {
+  // If the event would be reposted inside |input_showing_popup_|, just ignore.
+  return !view_->HitTestInput(*input_showing_popup_, event.location());
+}
 
 void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.

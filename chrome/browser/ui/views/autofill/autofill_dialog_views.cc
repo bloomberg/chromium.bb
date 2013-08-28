@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
@@ -32,6 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -1429,6 +1431,22 @@ base::string16 AutofillDialogViews::GetCvc() {
       decorated_textfield()->text();
 }
 
+bool AutofillDialogViews::HitTestInput(const DetailInput& input,
+                                       const gfx::Point& screen_point) {
+  views::View* view = TextfieldForInput(input);
+  if (!view)
+    view = ComboboxForInput(input);
+
+  if (view) {
+    gfx::Point target_point(screen_point);
+    views::View::ConvertPointFromScreen(view, &target_point);
+    return view->HitTestPoint(target_point);
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 bool AutofillDialogViews::SaveDetailsLocally() {
   DCHECK(save_in_chrome_checkbox_->visible());
   return save_in_chrome_checkbox_->checked();
@@ -2270,11 +2288,11 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
     decorated = iter->second;
     if (decorated == textfield) {
       delegate_->UserEditedOrActivatedInput(group->section,
-                                              iter->first,
-                                              GetWidget()->GetNativeView(),
-                                              textfield->GetBoundsInScreen(),
-                                              textfield->text(),
-                                              was_edit);
+                                            iter->first,
+                                            GetWidget()->GetNativeView(),
+                                            textfield->GetBoundsInScreen(),
+                                            textfield->text(),
+                                            was_edit);
       type = iter->first->type;
       break;
     }

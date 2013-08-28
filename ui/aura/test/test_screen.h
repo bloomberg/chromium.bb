@@ -47,7 +47,9 @@ class TestScreen : public gfx::Screen,
   // gfx::Screen overrides:
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
+      OVERRIDE;
   virtual int GetNumDisplays() const OVERRIDE;
   virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE;
   virtual gfx::Display GetDisplayNearestWindow(

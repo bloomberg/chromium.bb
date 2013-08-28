@@ -51,6 +51,7 @@ class AutofillExternalDelegate
       content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE;
   virtual void OnPopupHidden(
       content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE;
+  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
   virtual void DidAcceptSuggestion(const base::string16& value,
                                    int identifier) OVERRIDE;

@@ -973,7 +973,7 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   if (focused_ && panel_->IsMinimized() &&
       panel_->collection()->type() == PanelCollection::DOCKED &&
       gfx::Screen::GetScreenFor(widget->GetNativeWindow())->
-          GetWindowAtCursorScreenPoint() != widget->GetNativeWindow()) {
+          GetWindowUnderCursor() != widget->GetNativeWindow()) {
     panel_->Restore();
   }
 #endif

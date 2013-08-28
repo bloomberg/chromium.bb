@@ -49,10 +49,14 @@ gfx::Point ScreenWin::GetCursorScreenPoint() {
   return gfx::Point(pt);
 }
 
-gfx::NativeWindow ScreenWin::GetWindowAtCursorScreenPoint() {
-  POINT location;
-  HWND window_hwnd = GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
-  return GetNativeWindowFromHWND(window_hwnd);
+gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {
+  POINT cursor_loc;
+  HWND hwnd = GetCursorPos(&cursor_loc) ? WindowFromPoint(cursor_loc) : NULL;
+  return GetNativeWindowFromHWND(hwnd);
+}
+
+gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
+  return GetNativeWindowFromHWND(WindowFromPoint(point.ToPOINT()));
 }
 
 int ScreenWin::GetNumDisplays() const {
