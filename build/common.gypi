@@ -165,14 +165,6 @@
           }, {
             'use_default_render_theme%': 0,
           }],
-
-          # TODO(thestig) Remove the linux_lsb_release check after all the
-          # official Ubuntu Lucid builder are gone.
-          ['OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0', {
-            'linux_lsb_release%': '<!(lsb_release -r -s)',
-          }, {
-            'linux_lsb_release%': '',
-          }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
         ],
       },
 
@@ -197,7 +189,6 @@
       'buildtype%': '<(buildtype)',
       'branding%': '<(branding)',
       'arm_version%': '<(arm_version)',
-      'linux_lsb_release%': '<(linux_lsb_release)',
 
       # Set to 1 to enable fast builds. Set to 2 for even faster builds
       # (it disables debug info for fastest compilation - only for use
@@ -674,7 +665,8 @@
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
         }], # OS=="linux" and target_arch=="arm" and chromeos==0
 
-        ['linux_lsb_release=="12.04"', {
+
+        ['OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0', {
           'conditions': [
             ['target_arch=="x64"', {
               'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/debian_wheezy_amd64-sysroot',
@@ -683,7 +675,7 @@
               'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/debian_wheezy_i386-sysroot',
             }],
         ],
-        }], # linux_lsb_release=="12.04"
+        }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
 
         ['OS=="linux" and target_arch=="mipsel"', {
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/sysroot',
