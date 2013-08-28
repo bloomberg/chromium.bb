@@ -108,7 +108,7 @@ deps = {
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6f63a4882e6b2cf87e8eec1a3ef8644e0d963283',
     'src/third_party/snappy/src':
-        Var('git_url') + '/external/snappy.git@a18503d3a93fd2428f6a79fc829e9f732eb82360',
+        Var('git_url') + '/external/snappy.git@762bb32f0c9d2f31ba4958c7c0933d22e80c20bf',
     'src/third_party/speex':
         Var('git_url') + '/chromium/deps/speex.git@f448dfcceac99e0a771feaeedf447523b3fd26e1',
     'src/third_party/swig/Lib':
