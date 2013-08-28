@@ -61,8 +61,9 @@ struct wl_interface {
 	const struct wl_message *events;
 };
 
-/**
- * wl_list - linked list
+/** \class wl_list
+ *
+ * \brief doubly-linked list
  *
  * The list head is of "struct wl_list" type, and must be initialized
  * using wl_list_init().  All entries in the list must be of the same
