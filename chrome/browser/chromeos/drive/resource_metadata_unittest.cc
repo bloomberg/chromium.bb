@@ -46,7 +46,7 @@ ResourceEntry CreateDirectoryEntry(const std::string& title,
                                    const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
-  entry.set_resource_id("resource_id:" + title);
+  entry.set_resource_id("id:" + title);
   entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(true);
   entry.mutable_directory_specific_info()->set_changestamp(kTestChangestamp);
@@ -58,7 +58,7 @@ ResourceEntry CreateFileEntry(const std::string& title,
                               const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
-  entry.set_resource_id("resource_id:" + title);
+  entry.set_resource_id("id:" + title);
   entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(false);
   entry.mutable_file_info()->set_size(1024);
@@ -88,23 +88,23 @@ void SetUpEntries(ResourceMetadata* resource_metadata) {
       CreateDirectoryEntry("dir2", kTestRootResourceId)));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateDirectoryEntry("dir3", "resource_id:dir1")));
+      CreateDirectoryEntry("dir3", "id:dir1")));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file4", "resource_id:dir1")));
+      CreateFileEntry("file4", "id:dir1")));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file5", "resource_id:dir1")));
+      CreateFileEntry("file5", "id:dir1")));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file6", "resource_id:dir2")));
+      CreateFileEntry("file6", "id:dir2")));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file7", "resource_id:dir2")));
+      CreateFileEntry("file7", "id:dir2")));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file8", "resource_id:dir2")));
+      CreateFileEntry("file8", "id:dir2")));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file9", "resource_id:dir3")));
+      CreateFileEntry("file9", "id:dir3")));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file10", "resource_id:dir3")));
+      CreateFileEntry("file10", "id:dir3")));
 
   ASSERT_EQ(FILE_ERROR_OK,
             resource_metadata->SetLargestChangestamp(kTestChangestamp));
@@ -232,7 +232,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
   resource_metadata_->GetResourceEntryByIdOnUIThread(
-      "resource_id:file4",
+      "id:file4",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -399,50 +399,6 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
   ASSERT_FALSE(pair_result->second.entry.get());
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath drive_file_path;
-
-  // Add a file to dir3.
-  ResourceEntry file_entry = CreateFileEntry("file100", "resource_id:dir3");
-  resource_metadata_->AddEntryOnUIThread(
-      file_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"),
-            drive_file_path);
-
-  // Add a directory.
-  ResourceEntry dir_entry = CreateDirectoryEntry("dir101", "resource_id:dir1");
-  resource_metadata_->AddEntryOnUIThread(
-      dir_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir101"),
-            drive_file_path);
-
-  // Add to an invalid parent.
-  ResourceEntry file_entry3 = CreateFileEntry("file103", "resource_id:invalid");
-  resource_metadata_->AddEntryOnUIThread(
-      file_entry3,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-
-  // Add an existing file.
-  resource_metadata_->AddEntryOnUIThread(
-      file_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_EXISTS, error);
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, Reset) {
   // The grand root has "root" which is not empty.
   scoped_ptr<ResourceEntryVector> entries;
@@ -578,7 +534,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   // Change the name to dir100 and change the parent to drive/dir1/dir3.
   ResourceEntry dir_entry(entry);
   dir_entry.set_title("dir100");
-  dir_entry.set_parent_local_id("resource_id:dir3");
+  dir_entry.set_parent_local_id("id:dir3");
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(dir_id, dir_entry));
 
   EXPECT_EQ("drive/root/dir1/dir3/dir100",
@@ -588,7 +544,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
             resource_metadata_->GetResourceEntryById(dir_id, &entry));
   EXPECT_EQ("dir100", entry.base_name());
   EXPECT_TRUE(entry.file_info().is_directory());
-  EXPECT_EQ("resource_id:dir2", entry.resource_id());
+  EXPECT_EQ("id:dir2", entry.resource_id());
 
   // Make sure the children have moved over. Test file6.
   entry.Clear();
@@ -610,7 +566,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   dir_entry.Clear();
   dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
   dir_entry.set_title("new-root-name");
-  dir_entry.set_parent_local_id("resource_id:dir1");
+  dir_entry.set_parent_local_id("id:dir1");
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, resource_metadata_->RefreshEntry(
       util::kDriveGrandRootSpecialResourceId, dir_entry));
 }
@@ -619,17 +575,17 @@ TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
   std::set<base::FilePath> sub_directories;
 
   // file9: not a directory, so no children.
-  resource_metadata_->GetSubDirectoriesRecursively("resource_id:file9",
+  resource_metadata_->GetSubDirectoriesRecursively("id:file9",
                                                    &sub_directories);
   EXPECT_TRUE(sub_directories.empty());
 
   // dir2: no child directories.
-  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir2",
+  resource_metadata_->GetSubDirectoriesRecursively("id:dir2",
                                                    &sub_directories);
   EXPECT_TRUE(sub_directories.empty());
 
   // dir1: dir3 is the only child
-  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir1",
+  resource_metadata_->GetSubDirectoriesRecursively("id:dir1",
                                                    &sub_directories);
   EXPECT_EQ(1u, sub_directories.size());
   EXPECT_EQ(1u, sub_directories.count(
@@ -646,23 +602,23 @@ TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
   // dir2/dir101/dir102/dir105/dir106
   // dir2/dir101/dir102/dir105/dir106/dir107
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir100", "resource_id:dir2")));
+      CreateDirectoryEntry("dir100", "id:dir2")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir101", "resource_id:dir2")));
+      CreateDirectoryEntry("dir101", "id:dir2")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir102", "resource_id:dir101")));
+      CreateDirectoryEntry("dir102", "id:dir101")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir103", "resource_id:dir101")));
+      CreateDirectoryEntry("dir103", "id:dir101")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir104", "resource_id:dir101")));
+      CreateDirectoryEntry("dir104", "id:dir101")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir105", "resource_id:dir102")));
+      CreateDirectoryEntry("dir105", "id:dir102")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir106", "resource_id:dir105")));
+      CreateDirectoryEntry("dir106", "id:dir105")));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir107", "resource_id:dir106")));
+      CreateDirectoryEntry("dir107", "id:dir106")));
 
-  resource_metadata_->GetSubDirectoriesRecursively("resource_id:dir2",
+  resource_metadata_->GetSubDirectoriesRecursively("id:dir2",
                                                    &sub_directories);
   EXPECT_EQ(8u, sub_directories.size());
   EXPECT_EQ(1u, sub_directories.count(base::FilePath::FromUTF8Unsafe(
@@ -673,9 +629,32 @@ TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
       "drive/root/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
+TEST_F(ResourceMetadataTest, AddEntry) {
+  base::FilePath drive_file_path;
+
+  // Add a file to dir3.
+  ResourceEntry file_entry = CreateFileEntry("file100", "id:dir3");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(file_entry));
+  EXPECT_EQ("drive/root/dir1/dir3/file100",
+            resource_metadata_->GetFilePath("id:file100").AsUTF8Unsafe());
+
+  // Add a directory.
+  ResourceEntry dir_entry = CreateDirectoryEntry("dir101", "id:dir1");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(dir_entry));
+  EXPECT_EQ("drive/root/dir1/dir101",
+            resource_metadata_->GetFilePath("id:dir101").AsUTF8Unsafe());
+
+  // Add to an invalid parent.
+  ResourceEntry file_entry3 = CreateFileEntry("file103", "id:invalid");
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->AddEntry(file_entry3));
+
+  // Add an existing file.
+  EXPECT_EQ(FILE_ERROR_EXISTS, resource_metadata_->AddEntry(file_entry));
+}
+
 TEST_F(ResourceMetadataTest, RemoveEntry) {
   // Make sure file9 is found.
-  const std::string file9_resource_id = "resource_id:file9";
+  const std::string file9_resource_id = "id:file9";
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
       file9_resource_id, &entry));
@@ -689,7 +668,7 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
       file9_resource_id, &entry));
 
   // Look for dir3.
-  const std::string dir3_resource_id = "resource_id:dir3";
+  const std::string dir3_resource_id = "id:dir3";
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
       dir3_resource_id, &entry));
   EXPECT_EQ("dir3", entry.base_name());

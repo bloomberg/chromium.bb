@@ -245,17 +245,6 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-void ResourceMetadata::AddEntryOnUIThread(const ResourceEntry& entry,
-                                          const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  PostFileMoveTask(
-      blocking_task_runner_.get(),
-      base::Bind(&AddEntryWithFilePath, base::Unretained(this), entry),
-      callback);
-}
-
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
