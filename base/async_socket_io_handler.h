@@ -11,13 +11,6 @@
 
 namespace base {
 
-// The message loop callback interface is different based on platforms.
-#if defined(OS_WIN)
-typedef base::MessageLoopForIO::IOHandler MessageLoopIOHandler;
-#elif defined(OS_POSIX)
-typedef base::MessageLoopForIO::Watcher MessageLoopIOHandler;
-#endif
-
 // Extends the CancelableSyncSocket class to allow reading from a socket
 // asynchronously on a TYPE_IO message loop thread.  This makes it easy to share
 // a thread that uses a message loop (e.g. for IPC and other things) and not
@@ -53,7 +46,12 @@ typedef base::MessageLoopForIO::Watcher MessageLoopIOHandler;
 //
 class BASE_EXPORT AsyncSocketIoHandler
     : public NON_EXPORTED_BASE(base::NonThreadSafe),
-      public NON_EXPORTED_BASE(MessageLoopIOHandler) {
+// The message loop callback interface is different based on platforms.
+#if defined(OS_WIN)
+      public NON_EXPORTED_BASE(base::MessageLoopForIO::IOHandler) {
+#else
+      public NON_EXPORTED_BASE(base::MessageLoopForIO::Watcher) {
+#endif
  public:
   AsyncSocketIoHandler();
   virtual ~AsyncSocketIoHandler();
