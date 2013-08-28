@@ -16,5 +16,11 @@ window.onload = function () {
 <body>
 <div>The title of this document is:</div>
 <div id="console"></div>
+<script>
+  // FIXME: This is only needed because of our flaky whitespace textnode handling.
+  // Once we make our whitespace text node handling deterministic, we can remove this
+  // and rebaseline the test.
+  document.body.offsetHeight;
+</script>
 </body>
 </html>
