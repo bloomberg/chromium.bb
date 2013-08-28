@@ -58,6 +58,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   InstallerState state_;
   ObserverList<PluginInstallerObserver> observers_;
+  int strong_observer_count_;
   ObserverList<WeakPluginInstallerObserver> weak_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstaller);

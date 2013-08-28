@@ -67,7 +67,8 @@ void BeginDownload(
 }  // namespace
 
 PluginInstaller::PluginInstaller()
-    : state_(INSTALLER_STATE_IDLE) {
+    : state_(INSTALLER_STATE_IDLE),
+      strong_observer_count_(0) {
 }
 
 PluginInstaller::~PluginInstaller() {
@@ -109,12 +110,14 @@ void PluginInstaller::OnDownloadDestroyed(DownloadItem* download) {
 }
 
 void PluginInstaller::AddObserver(PluginInstallerObserver* observer) {
+  strong_observer_count_++;
   observers_.AddObserver(observer);
 }
 
 void PluginInstaller::RemoveObserver(PluginInstallerObserver* observer) {
+  strong_observer_count_--;
   observers_.RemoveObserver(observer);
-  if (observers_.size() == weak_observers_.size()) {
+  if (strong_observer_count_ == 0) {
     FOR_EACH_OBSERVER(WeakPluginInstallerObserver, weak_observers_,
                       OnlyWeakObserversLeft());
   }
