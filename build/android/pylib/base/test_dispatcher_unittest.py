@@ -186,6 +186,15 @@ class TestShard(unittest.TestCase):
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
+  def testTestsRemainWithAllDevicesOffline(self):
+    attached_devices = android_commands.GetAttachedDevices
+    android_commands.GetAttachedDevices = lambda: []
+    try:
+      with self.assertRaises(AssertionError):
+        results, exit_code = TestShard._RunShard(MockRunner)
+    finally:
+      android_commands.GetAttachedDevices = attached_devices
+
 
 class TestReplicate(unittest.TestCase):
   """Tests test_dispatcher.RunTests with replication."""

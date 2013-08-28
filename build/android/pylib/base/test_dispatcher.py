@@ -126,6 +126,10 @@ class _TestCollection(object):
         break
       yield r
 
+  def __len__(self):
+    """Return the number of tests currently in the collection."""
+    return len(self._tests)
+
 
 def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
                        num_retries, tag_results_with_device=False):
@@ -235,16 +239,18 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   logging.warning('Running tests with %s test runners.' % (len(runners)))
   results = []
   exit_code = 0
-  watcher = watchdog_timer.WatchdogTimer(timeout)
-
-  workers = reraiser_thread.ReraiserThreadGroup(
-      [reraiser_thread.ReraiserThread(
-          _RunTestsFromQueue,
-          [r, test_collection_factory(), results, watcher, num_retries,
-           tag_results_with_device],
-          name=r.device[-4:])
-       for r in runners])
   run_results = base_test_result.TestRunResults()
+  watcher = watchdog_timer.WatchdogTimer(timeout)
+  test_collections = [test_collection_factory() for _ in runners]
+
+  threads = [
+      reraiser_thread.ReraiserThread(
+          _RunTestsFromQueue,
+          [r, tc, results, watcher, num_retries, tag_results_with_device],
+          name=r.device[-4:])
+      for r, tc in zip(runners, test_collections)]
+
+  workers = reraiser_thread.ReraiserThreadGroup(threads)
   workers.StartAll()
 
   # Catch DeviceUnresponsiveErrors and set a warning exit code
@@ -253,6 +259,10 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   except android_commands.errors.DeviceUnresponsiveError as e:
     logging.error(e)
     exit_code = constants.WARNING_EXIT_CODE
+
+  assert all([len(tc) == 0 for tc in test_collections]), (
+      'Some tests were not run, all devices are likely offline (ran %d tests)' %
+      len(run_results.GetAll()))
 
   for r in results:
     run_results.AddTestRunResults(r)
