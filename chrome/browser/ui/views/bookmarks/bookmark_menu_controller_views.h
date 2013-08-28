@@ -50,6 +50,10 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   void RunMenuAt(BookmarkBarView* bookmark_bar, bool for_drop);
 
+  void clear_bookmark_bar() {
+    bookmark_bar_ = NULL;
+  }
+
   // Hides the menu.
   void Cancel();
 
@@ -130,8 +134,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // Is the menu being shown for a drop?
   bool for_drop_;
 
-  // The bookmark bar. This is only non-null if we're showing a menu item
-  // for a folder on the bookmark bar and not for drop.
+  // The bookmark bar. This is only non-null if we're showing a menu item for a
+  // folder on the bookmark bar and not for drop, or if the BookmarkBarView has
+  // been destroyed before the menu.
   BookmarkBarView* bookmark_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);

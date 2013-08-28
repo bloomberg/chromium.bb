@@ -471,6 +471,7 @@ BookmarkBarView::~BookmarkBarView() {
   if (bookmark_menu_) {
     bookmark_menu_->set_observer(NULL);
     bookmark_menu_->SetPageNavigator(NULL);
+    bookmark_menu_->clear_bookmark_bar();
   }
   if (context_menu_.get())
     context_menu_->SetPageNavigator(NULL);
