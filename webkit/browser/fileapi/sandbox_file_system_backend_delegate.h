@@ -218,6 +218,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   FileSystemOptions file_system_options_;
 
   bool is_filesystem_opened_;
+  base::ThreadChecker io_thread_checker_;
 
   // Accessed only on the file thread.
   std::set<GURL> visited_origins_;
