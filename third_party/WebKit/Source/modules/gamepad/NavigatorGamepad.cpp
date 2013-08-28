@@ -27,11 +27,35 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 
 #include "core/page/Navigator.h"
-#include "core/platform/Gamepads.h"
 #include "modules/gamepad/GamepadList.h"
+#include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
+
+static void sampleGamepads(GamepadList* into)
+{
+    WebKit::WebGamepads gamepads;
+
+    WebKit::Platform::current()->sampleGamepads(gamepads);
+
+    for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i) {
+        WebKit::WebGamepad& webGamepad = gamepads.items[i];
+        if (i < gamepads.length && webGamepad.connected) {
+            RefPtr<Gamepad> gamepad = into->item(i);
+            if (!gamepad)
+                gamepad = Gamepad::create();
+            gamepad->id(webGamepad.id);
+            gamepad->index(i);
+            gamepad->timestamp(webGamepad.timestamp);
+            gamepad->axes(webGamepad.axesLength, webGamepad.axes);
+            gamepad->buttons(webGamepad.buttonsLength, webGamepad.buttons);
+            into->set(i, gamepad);
+        } else {
+            into->set(i, 0);
+        }
+    }
+}
 
 NavigatorGamepad::NavigatorGamepad()
 {
