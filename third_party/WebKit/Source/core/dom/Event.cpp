@@ -148,14 +148,18 @@ bool Event::isClipboardEvent() const
     return false;
 }
 
+bool Event::storesResultAsString() const
+{
+    return false;
+}
+
 bool Event::isBeforeTextInsertedEvent() const
 {
     return false;
 }
 
-bool Event::isBeforeUnloadEvent() const
+void Event::storeResult(const String&)
 {
-    return false;
 }
 
 void Event::setTarget(PassRefPtr<EventTarget> target)

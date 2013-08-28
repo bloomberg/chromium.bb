@@ -41,7 +41,6 @@
             'dom/Attr.idl',
             'dom/AutocompleteErrorEvent.idl',
             'dom/BeforeLoadEvent.idl',
-            'dom/BeforeUnloadEvent.idl',
             'dom/CDATASection.idl',
             'dom/CharacterData.idl',
             'dom/ClientRect.idl',
