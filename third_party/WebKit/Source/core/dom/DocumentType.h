@@ -37,9 +37,10 @@ public:
         return adoptRef(new DocumentType(document, name, publicId, systemId));
     }
 
-    // FIXME: We never fill m_entities and m_notations. Current implementation of NamedNodeMap doesn't work without an associated Element yet.
-    NamedNodeMap* entities() const { return m_entities.get(); }
-    NamedNodeMap* notations() const { return m_notations.get(); }
+    // FIXME: These wre removed from DOM4, we should add a UseCounter and see if
+    // we can remove them since they never worked anyway.
+    NamedNodeMap* entities() const { return 0; }
+    NamedNodeMap* notations() const { return 0; }
 
     const String& name() const { return m_name; }
     const String& publicId() const { return m_publicId; }
@@ -49,16 +50,13 @@ public:
 private:
     DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
 
-    virtual KURL baseURI() const;
-    virtual String nodeName() const;
-    virtual NodeType nodeType() const;
-    virtual PassRefPtr<Node> cloneNode(bool deep);
+    virtual KURL baseURI() const OVERRIDE;
+    virtual String nodeName() const OVERRIDE;
+    virtual NodeType nodeType() const OVERRIDE;
+    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-
-    OwnPtr<NamedNodeMap> m_entities;
-    OwnPtr<NamedNodeMap> m_notations;
 
     String m_name;
     String m_publicId;

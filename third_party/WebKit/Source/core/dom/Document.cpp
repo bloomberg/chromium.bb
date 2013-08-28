@@ -659,7 +659,7 @@ String Document::compatMode() const
     return inQuirksMode() ? "BackCompat" : "CSS1Compat";
 }
 
-void Document::setDocType(PassRefPtr<DocumentType> docType)
+void Document::setDoctype(PassRefPtr<DocumentType> docType)
 {
     // This should never be called more than once.
     ASSERT(!m_docType || !docType);

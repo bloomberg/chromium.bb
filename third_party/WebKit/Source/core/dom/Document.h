@@ -298,6 +298,7 @@ public:
     void setReferrerPolicy(ReferrerPolicy referrerPolicy) { m_referrerPolicy = referrerPolicy; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
 
+    void setDoctype(PassRefPtr<DocumentType>);
     DocumentType* doctype() const { return m_docType.get(); }
 
     DOMImplementation* implementation();
@@ -853,8 +854,6 @@ public:
 
     void incDOMTreeVersion() { m_domTreeVersion = ++s_globalTreeVersion; }
     uint64_t domTreeVersion() const { return m_domTreeVersion; }
-
-    void setDocType(PassRefPtr<DocumentType>);
 
     enum PendingSheetLayout { NoLayoutWithPendingSheets, DidLayoutWithPendingSheets, IgnoreLayoutWithPendingSheets };
 
