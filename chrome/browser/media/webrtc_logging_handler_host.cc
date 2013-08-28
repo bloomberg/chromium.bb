@@ -23,9 +23,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/config/gpu_info_collector.h"
 #include "net/base/address_family.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -225,8 +225,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
   pcb.Write(info.c_str(), info.length());
 
   // GPU
-  gpu::GPUInfo gpu_info;
-  gpu::CollectBasicGraphicsInfo(&gpu_info);
+  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
   info = "Gpu: machine-model='" + gpu_info.machine_model +
          "', vendor-id=" + IntToString(gpu_info.gpu.vendor_id) +
          ", device-id=" + IntToString(gpu_info.gpu.device_id) +
