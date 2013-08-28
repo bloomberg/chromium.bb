@@ -46,6 +46,15 @@ function test()
         return resource;
     }
 
+    function createScriptMock(content)
+    {
+        var documentURL = "http://fake.url";
+        var resourceId = ++lastResourceId + "";
+        var url = documentURL + "/" + resourceId;
+        var script = InspectorTest.createScriptMock(url, 0, 0, false, content);
+        WebInspector.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+    }
+
     function finishResource(resource)
     {
         resource.request.finished = true;
@@ -56,6 +65,8 @@ function test()
     {
         InspectorTest.createWorkspace();
         WebInspector.resourceTreeModel = new WebInspector.Object();
+        WebInspector.debuggerModel = new WebInspector.Object();
+        WebInspector.debuggerModel._registerScript = function(){};
         var networkUISourceCodeProvider = new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceProvider, InspectorTest.testWorkspace);
         return networkUISourceCodeProvider;
     }
@@ -66,7 +77,7 @@ function test()
             var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            var resource = createResourceMock(WebInspector.resourceTypes.Document, "<document resource content>");
+            createResourceMock(WebInspector.resourceTypes.Document, "<document resource content>");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -79,7 +90,20 @@ function test()
             var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            var resource = createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
+            createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
+
+            function uiSourceCodeAdded(uiSourceCode)
+            {
+                InspectorTest.dumpUISourceCode(uiSourceCode, next);
+            }
+        },
+
+        function testVMScript(next)
+        {
+            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+            InspectorTest.addResult("Creating script.");
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+            createScriptMock("<script content>");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -92,7 +116,7 @@ function test()
             var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            var resource = createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
+            createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
