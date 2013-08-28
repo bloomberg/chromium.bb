@@ -1495,6 +1495,14 @@ def GetDefaultConcurrentLinks():
         # Allow 8Gb per link on Linux because Gold is quite memory hungry
         return max(1, int(match.group(1)) / (8 * (2 ** 20)))
     return 1
+  elif sys.platform == 'darwin':
+    try:
+      avail_bytes = int(subprocess.check_output(['sysctl', '-n', 'hw.memsize']))
+      # A static library debug build of Chromium's unit_tests takes ~2.7GB, so
+      # 4GB per ld process allows for some more bloat.
+      return max(1, avail_bytes / (4 * (2 ** 30)))  # total / 4GB
+    except:
+      return 1
   else:
     # TODO(scottmg): Implement this for other platforms.
     return 1
