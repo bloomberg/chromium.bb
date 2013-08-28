@@ -61,13 +61,12 @@ using google_apis::drive::CreateDirectoryRequest;
 using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::FilesGetRequest;
+using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
 using google_apis::drive::InsertResourceRequest;
-using google_apis::drive::MoveResourceRequest;
 using google_apis::drive::ResumeUploadRequest;
-using google_apis::drive::TouchResourceRequest;
 using google_apis::drive::TrashResourceRequest;
 
 namespace drive {
@@ -585,14 +584,14 @@ CancelCallback DriveAPIService::MoveResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new MoveResourceRequest(
-          sender_.get(),
-          url_generator_,
-          resource_id,
-          parent_resource_id,
-          new_title,
-          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
+  FilesPatchRequest* request = new FilesPatchRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_file_id(resource_id);
+  request->set_title(new_title);
+  if (!parent_resource_id.empty())
+    request->add_parent(parent_resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::RenameResource(
@@ -602,14 +601,12 @@ CancelCallback DriveAPIService::RenameResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new MoveResourceRequest(
-          sender_.get(),
-          url_generator_,
-          resource_id,
-          std::string(),
-          new_title,
-          base::Bind(&EntryActionCallbackAdapter, callback)));
+  FilesPatchRequest* request = new FilesPatchRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&EntryActionCallbackAdapter, callback));
+  request->set_file_id(resource_id);
+  request->set_title(new_title);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::TouchResource(
@@ -622,14 +619,19 @@ CancelCallback DriveAPIService::TouchResource(
   DCHECK(!last_viewed_by_me_date.is_null());
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new TouchResourceRequest(
-          sender_.get(),
-          url_generator_,
-          resource_id,
-          modified_date,
-          last_viewed_by_me_date,
-          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
+  FilesPatchRequest* request = new FilesPatchRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  // Need to set setModifiedDate to true to overwrite modifiedDate.
+  request->set_set_modified_date(true);
+
+  // Need to set updateViewedDate to false, otherwise the lastViewedByMeDate
+  // will be set to the request time (not the specified time via request).
+  request->set_update_viewed_date(false);
+
+  request->set_modified_date(modified_date);
+  request->set_last_viewed_by_me_date(last_viewed_by_me_date);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::AddResourceToDirectory(
