@@ -42,7 +42,7 @@ SWARM_SERVER = 'https://chromium-swarm-dev.appspot.com'
 
 
 # The default time to wait for a shard to finish running.
-DEFAULT_SHARD_WAIT_TIME = 40 * 60.
+DEFAULT_SHARD_WAIT_TIME = 80 * 60.
 
 
 NO_OUTPUT_FOUND = (
