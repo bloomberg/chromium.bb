@@ -463,8 +463,7 @@ class GerritHelper(object):
     """Submits patch using Gerrit Review."""
     cmd = self.GetGerritReviewCommand(
         ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
-    if True:
-#    if dryrun:
+    if dryrun:
       logging.info('Would have run: %s', ' '.join(map(repr, cmd)))
       return
     try:
@@ -641,8 +640,7 @@ class GerritOnBorgHelper(GerritHelper):
         label='Commit-Queue')
 
   def SubmitChange(self, change, dryrun=False):
-    if True:
-#    if dryrun:
+    if dryrun:
       logging.info('Would have submitted change %s', (change,))
       return
     gob_util.SubmitChange(
