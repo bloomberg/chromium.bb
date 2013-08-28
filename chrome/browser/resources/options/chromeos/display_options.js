@@ -835,8 +835,6 @@ cr.define('options', function() {
       }
 
       this.layout_ = layout;
-      this.offset_ = offset;
-      this.dirty_ = false;
 
       $('display-options-toggle-mirroring').textContent =
           loadTimeData.getString(
