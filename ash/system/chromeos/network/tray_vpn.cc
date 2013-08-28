@@ -9,7 +9,6 @@
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_label_button.h"
@@ -138,10 +137,6 @@ views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
   return detailed_;
 }
 
-views::View* TrayVPN::CreateNotificationView(user::LoginStatus status) {
-  return NULL;
-}
-
 void TrayVPN::DestroyTrayView() {
 }
 
@@ -151,9 +146,6 @@ void TrayVPN::DestroyDefaultView() {
 
 void TrayVPN::DestroyDetailedView() {
   detailed_ = NULL;
-}
-
-void TrayVPN::DestroyNotificationView() {
 }
 
 void TrayVPN::UpdateAfterLoginStatusChange(user::LoginStatus status) {

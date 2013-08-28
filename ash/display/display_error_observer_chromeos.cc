@@ -22,25 +22,6 @@ namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
 
-class DisplayErrorNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DisplayErrorNotificationDelegate() {}
-
-  // message_center::NotificationDelegate overrides:
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE {}
-  virtual bool HasClickedListener() OVERRIDE { return false; }
-  virtual void Click() OVERRIDE { }
-
- protected:
-  virtual ~DisplayErrorNotificationDelegate() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayErrorNotificationDelegate);
-};
-
 }  // namespace
 
 DisplayErrorObserver::DisplayErrorObserver() {
@@ -70,7 +51,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       base::string16(),  // display_source
       message_center::NotifierId(NOTIFIER_DISPLAY_ERROR),
       message_center::RichNotificationData(),
-      new DisplayErrorNotificationDelegate()));
+      NULL));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
