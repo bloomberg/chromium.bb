@@ -1251,3 +1251,9 @@ crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-fil
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-color-matrix.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-mix-color-negative.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-mix-color.html [ ImageOnlyFailure Timeout Pass ]
+
+crbug.com/280560 crypto/digest.html [ Crash ]
+crbug.com/280560 crypto/encrypt-decrypt.html [ Crash ]
+crbug.com/280560 crypto/generateKey.html [ Crash ]
+crbug.com/280560 crypto/importKey.html [ Crash ]
+crbug.com/280560 crypto/sign-verify.html [ Crash ]
