@@ -65,13 +65,11 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     m_shadowRoots.push(shadowRoot.get());
     ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
     setNeedsDistributionRecalc();
+    shadowHost->lazyReattachIfAttached();
 
     // addShadowRoot() affects apply-author-styles. However, we know that the youngest shadow root has not had any children yet.
     // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
     m_applyAuthorStyles = false;
-
-    if (shadowHost->attached())
-        shadowHost->lazyReattach();
 
     InspectorInstrumentation::didPushShadowRoot(shadowHost, shadowRoot.get());
 
