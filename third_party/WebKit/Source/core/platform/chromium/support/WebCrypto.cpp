@@ -79,7 +79,7 @@ void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey, const W
 WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
     : m_impl(impl)
 {
-    ASSERT(impl);
+    ASSERT(m_impl.get());
 }
 
 void WebCryptoResult::reset()

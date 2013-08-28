@@ -47,8 +47,8 @@ KeyPair::KeyPair(const PassRefPtr<Key>& publicKey, const PassRefPtr<Key>& privat
     : m_publicKey(publicKey)
     , m_privateKey(privateKey)
 {
-    ASSERT(publicKey);
-    ASSERT(privateKey);
+    ASSERT(m_publicKey.get());
+    ASSERT(m_privateKey.get());
     ScriptWrappable::init(this);
 }
 
