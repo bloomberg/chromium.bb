@@ -392,8 +392,9 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
                     WebKit::WebWindowFeatures /* window_features */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
-                    SkBitmap /* thumbnail */)
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
+                    SkBitmap /* thumbnail */,
+                    gfx::Size /* original size of the image */)
 
 #if defined(OS_ANDROID)
 // Asks the renderer to return information about whether the current page can

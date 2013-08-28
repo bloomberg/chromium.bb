@@ -90,11 +90,10 @@ const char kGoogleUnescapedSearchTermsParameterFull[] =
     "{google:unescapedSearchTerms}";
 
 const char kGoogleImageSearchSource[] = "google:imageSearchSource";
-const char kGoogleImageSearchSourceFull[] = "{google:imageSearchSource}";
 const char kGoogleImageThumbnailParameter[] = "google:imageThumbnail";
-const char kGoogleImageThumbnailParameterFull[] = "{google:imageThumbnail}";
 const char kGoogleImageURLParameter[] = "google:imageURL";
-const char kGoogleImageURLParameterFull[] = "{google:imageURL}";
+const char kGoogleImageOriginalWidth[] = "google:imageOriginalWidth";
+const char kGoogleImageOriginalHeight[] = "google:imageOriginalHeight";
 
 // Display value for kSearchTermsParameter.
 const char kDisplaySearchTerms[] = "%s";
@@ -531,18 +530,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kCountParameter) {
     if (!optional)
       url->insert(start, kDefaultCount);
-  } else if ((parameter == kStartIndexParameter) ||
-             (parameter == kStartPageParameter)) {
-    // We don't support these.
-    if (!optional)
-      url->insert(start, "1");
-  } else if (parameter == kLanguageParameter) {
-    replacements->push_back(Replacement(LANGUAGE, start));
-  } else if (parameter == kInputEncodingParameter) {
-    replacements->push_back(Replacement(ENCODING, start));
-  } else if (parameter == kOutputEncodingParameter) {
-    if (!optional)
-      url->insert(start, kOutputEncodingType);
   } else if (parameter == kGoogleAssistedQueryStatsParameter) {
     replacements->push_back(Replacement(GOOGLE_ASSISTED_QUERY_STATS, start));
   } else if (parameter == kGoogleBaseURLParameter) {
@@ -551,6 +538,20 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == kGoogleCursorPositionParameter) {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
+  } else if (parameter == kGoogleImageOriginalHeight) {
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_HEIGHT, start));
+  } else if (parameter == kGoogleImageOriginalWidth) {
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_WIDTH, start));
+  } else if (parameter == kGoogleImageSearchSource) {
+    url->insert(start, GetGoogleImageSearchSource());
+  } else if (parameter == kGoogleImageThumbnailParameter) {
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
+  } else if (parameter == kGoogleImageURLParameter) {
+    replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
+                                        start));
   } else if (parameter == kGoogleInstantEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_ENABLED, start));
   } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
@@ -573,29 +574,33 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
-  } else if (parameter == kGoogleSuggestClient) {
-    replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
-  } else if (parameter == kGoogleZeroPrefixUrlParameter) {
-    replacements->push_back(Replacement(GOOGLE_ZERO_PREFIX_URL, start));
-  } else if (parameter == kGoogleSuggestAPIKeyParameter) {
-    url->insert(start,
-                net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
   } else if (parameter == kGoogleSourceIdParameter) {
 #if defined(OS_ANDROID)
     url->insert(start, "sourceid=chrome-mobile&");
 #else
     url->insert(start, "sourceid=chrome&");
 #endif
+  } else if (parameter == kGoogleSuggestAPIKeyParameter) {
+    url->insert(start,
+                net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
+  } else if (parameter == kGoogleSuggestClient) {
+    replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
-  } else if (parameter == kGoogleImageSearchSource) {
-    url->insert(start, GetGoogleImageSearchSource());
-  } else if (parameter == kGoogleImageThumbnailParameter) {
-    replacements->push_back(
-        Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
-  } else if (parameter == kGoogleImageURLParameter) {
-    replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
-                                        start));
+  } else if (parameter == kGoogleZeroPrefixUrlParameter) {
+    replacements->push_back(Replacement(GOOGLE_ZERO_PREFIX_URL, start));
+  } else if (parameter == kInputEncodingParameter) {
+    replacements->push_back(Replacement(ENCODING, start));
+  } else if (parameter == kLanguageParameter) {
+    replacements->push_back(Replacement(LANGUAGE, start));
+  } else if (parameter == kOutputEncodingParameter) {
+    if (!optional)
+      url->insert(start, kOutputEncodingType);
+  } else if ((parameter == kStartIndexParameter) ||
+             (parameter == kStartPageParameter)) {
+    // We don't support these.
+    if (!optional)
+      url->insert(start, "1");
   } else if (!prepopulated_) {
     // If it's a prepopulated URL, we know that it's safe to remove unknown
     // parameters, so just ignore this and return true below. Otherwise it could
@@ -952,6 +957,24 @@ std::string TemplateURLRef::HandleReplacements(
         if (search_terms_args.image_url.is_valid()) {
           HandleReplacement(
               std::string(), search_terms_args.image_url.spec(), *i, &url);
+        }
+        break;
+
+      case GOOGLE_IMAGE_ORIGINAL_WIDTH:
+        if (!search_terms_args.image_original_size.IsEmpty()) {
+          HandleReplacement(
+              std::string(),
+              base::IntToString(search_terms_args.image_original_size.width()),
+              *i, &url);
+        }
+        break;
+
+      case GOOGLE_IMAGE_ORIGINAL_HEIGHT:
+        if (!search_terms_args.image_original_size.IsEmpty()) {
+          HandleReplacement(
+              std::string(),
+              base::IntToString(search_terms_args.image_original_size.height()),
+              *i, &url);
         }
         break;
 

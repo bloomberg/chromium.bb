@@ -423,15 +423,17 @@ void ChromeRenderViewObserver::OnRequestThumbnailForContextNode(
     int thumbnail_min_area_pixels, gfx::Size thumbnail_max_size_pixels) {
   WebNode context_node = render_view()->GetContextMenuNode();
   SkBitmap thumbnail;
+  gfx::Size original_size;
   CHECK(!context_node.isNull());
   if (context_node.isElementNode()) {
     WebKit::WebImage image = context_node.to<WebElement>().imageContents();
+    original_size = image.size();
     thumbnail = Downscale(image,
                           thumbnail_min_area_pixels,
                           thumbnail_max_size_pixels);
   }
-  Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(routing_id(),
-                                                                thumbnail));
+  Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(
+      routing_id(), thumbnail, original_size));
 }
 
 void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {

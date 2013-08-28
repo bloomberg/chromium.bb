@@ -20,6 +20,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class Size;
+}
+
 // This class holds the Chrome specific parts of RenderViewHost, and has the
 // same lifetime.
 class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
@@ -45,7 +49,8 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
 
   void OnFocusedNodeTouched(bool editable);
 
-  void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap);
+  void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap,
+                                           const gfx::Size& original_size);
 
   Profile* profile_;
   chrome_browser_net::Predictor* predictor_;

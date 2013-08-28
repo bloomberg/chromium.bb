@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "ui/gfx/size.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
@@ -116,6 +117,9 @@ class TemplateURLRef {
     // When searching for an image, the URL of the original image. Callers
     // should leave this empty for images specified via data: URLs.
     GURL image_url;
+
+    // When searching for an image, the original size of the image.
+    gfx::Size image_original_size;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -235,6 +239,8 @@ class TemplateURLRef {
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_CURSOR_POSITION,
+    GOOGLE_IMAGE_ORIGINAL_HEIGHT,
+    GOOGLE_IMAGE_ORIGINAL_WIDTH,
     GOOGLE_IMAGE_SEARCH_SOURCE,
     GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
