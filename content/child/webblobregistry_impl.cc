@@ -189,6 +189,11 @@ void WebBlobRegistryImpl::finalizeStream(const WebURL& url) {
   sender_->Send(new StreamHostMsg_FinishBuilding(url));
 }
 
+void WebBlobRegistryImpl::abortStream(const WebURL& url) {
+  DCHECK(ChildThread::current());
+  sender_->Send(new StreamHostMsg_AbortBuilding(url));
+}
+
 void WebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
   DCHECK(ChildThread::current());
   sender_->Send(new StreamHostMsg_Remove(url));

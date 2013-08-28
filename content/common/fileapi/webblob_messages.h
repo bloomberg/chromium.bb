@@ -68,6 +68,10 @@ IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,
 IPC_MESSAGE_CONTROL1(StreamHostMsg_FinishBuilding,
                      GURL /* url */)
 
+// Aborts building a stream.
+IPC_MESSAGE_CONTROL1(StreamHostMsg_AbortBuilding,
+                     GURL /* url */)
+
 // Creates a new stream that's a clone of an existing src stream.
 IPC_MESSAGE_CONTROL2(StreamHostMsg_Clone,
                      GURL /* url */,

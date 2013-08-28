@@ -195,6 +195,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(StreamHostMsg_SyncAppendSharedMemory,
                         OnAppendSharedMemoryToStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_FinishBuilding, OnFinishBuildingStream)
+    IPC_MESSAGE_HANDLER(StreamHostMsg_AbortBuilding, OnAbortBuildingStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_Clone, OnCloneStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_Remove, OnRemoveStream)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -674,6 +675,13 @@ void FileAPIMessageFilter::OnFinishBuildingStream(const GURL& url) {
   scoped_refptr<Stream> stream(GetStreamForURL(url));
   if (stream.get())
     stream->Finalize();
+}
+
+void FileAPIMessageFilter::OnAbortBuildingStream(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_refptr<Stream> stream(GetStreamForURL(url));
+  if (stream.get())
+    stream->Abort();
 }
 
 void FileAPIMessageFilter::OnCloneStream(

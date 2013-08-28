@@ -37,6 +37,7 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
   virtual void addDataToStream(const WebKit::WebURL& url,
                                WebKit::WebThreadSafeData& data);
   virtual void finalizeStream(const WebKit::WebURL& url);
+  virtual void abortStream(const WebKit::WebURL& url);
   virtual void unregisterStreamURL(const WebKit::WebURL& url);
 
  private:

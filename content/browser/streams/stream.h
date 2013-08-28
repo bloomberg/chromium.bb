@@ -58,6 +58,10 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   // Removes the write observer.  |observer| must be the current observer.
   void RemoveWriteObserver(StreamWriteObserver* observer);
 
+  // Stops accepting new data, clears all buffer, unregisters this stream from
+  // |registry_| and make coming ReadRawData() calls return STREAM_ABORTED.
+  void Abort();
+
   // Adds the data in |buffer| to the stream.  Takes ownership of |buffer|.
   void AddData(scoped_refptr<net::IOBuffer> buffer, size_t size);
   // Adds data of |size| at |data| to the stream. This method creates a copy
@@ -86,10 +90,6 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   size_t last_total_buffered_bytes() const {
     return last_total_buffered_bytes_;
   }
-
- protected:
-  // Stops accepting new data and make ReadRawData() return STREAM_ABORTED.
-  void Abort();
 
  private:
   friend class base::RefCountedThreadSafe<Stream>;
