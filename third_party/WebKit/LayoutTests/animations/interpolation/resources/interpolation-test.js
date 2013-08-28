@@ -38,9 +38,12 @@
  *    dumping of textual output.
  *  * testInterpolationAt([timeFractions], {property: x, from: y, to: z})
  *    Constructs a test case for the interpolation of property x from
- *    value y to value z at each of the times in timeFractions. For each
- *    time fraction a div is constructed with the 'target' class and an
- *    animation which freezes at the time fraction is scheduled.
+ *    value y to value z at each of the times in timeFractions.
+ *  * assertInterpolation({property: x, from: y, to: z}, [{at: fraction, is: value}])
+ *    Constructs a test case which for each fraction will output a PASS
+ *    or FAIL depending on whether the interpolated result matches
+ *    'value'. Replica elements are constructed to aid eyeballing test
+ *    results. This function may not be used in a ref test.
  *  * convertToReference - This is intended to be used interactively to
  *    construct a reference given the results of a test. To build a
  *    reference, run the test, open the inspector and trigger this
@@ -59,15 +62,33 @@
   // pre-Web-Animations Blink, WebKit and Gecko.
   var durationSeconds = 0.1;
   var iterationCount = 0.5;
+  var cssText = '';
+  var fragment = document.createDocumentFragment();
+  var style = document.createElement('style');
+  fragment.appendChild(style);
+
+  var updateScheduled = false;
+  function maybeScheduleUpdate() {
+    if (updateScheduled) {
+      return;
+    }
+    updateScheduled = true;
+    setTimeout(function() {
+      updateScheduled = false;
+      style.innerHTML = cssText;
+      document.body.appendChild(fragment);
+    }, 0);
+  }
 
   function dumpResults() {
-    var targets = document.querySelectorAll('.target');
+    var targets = document.querySelectorAll('.target.active');
     if (isRefTest) {
       // Convert back to reference to avoid cases where the computed style is
       // out of sync with the compositor.
       for (var i = 0; i < targets.length; i++) {
         targets[i].convertToReference();
       }
+      style.parentNode.removeChild(style);
     } else {
       var resultString = '';
       for (var i = 0; i < targets.length; i++) {
@@ -86,6 +107,7 @@
     for (var i = 0; i < scripts.length; i++) {
       scripts[i].parentNode.removeChild(scripts[i]);
     }
+    style.parentNode.removeChild(style);
     var html = document.documentElement.outerHTML;
     document.documentElement.style.whiteSpace = 'pre';
     document.documentElement.textContent = html;
@@ -106,45 +128,105 @@
     if (!Array.isArray(fractions)) {
       fractions = [fractions];
     }
-    fractions.map(function(fraction) {
-      makeInterpolationTest(fraction, params.property, params.from, params.to);
-    });
+    assertInterpolation(params, fractions.map(function(fraction) {
+      return {at: fraction};
+    }));
   }
 
-  var keyframeId = 0;
-  function makeInterpolationTest(fraction, property, from, to) {
-    var easing = createEasing(fraction);
-    var id = 'test' + keyframeId++;
+  function assertInterpolation(params, expectations) {
+    var keyframeId = defineKeyframes(params);
+    var nextTestId = 0;
+    expectations.forEach(function(expectation) {
+      makeInterpolationTest(
+          expectation.at, keyframeId, ++nextTestId, params, expectation.is);
+    });
+    maybeScheduleUpdate();
+  }
+
+  var nextKeyframeId = 0;
+  function defineKeyframes(params) {
+    var id = 'test-' + ++nextKeyframeId;
+    cssText += '@' + prefix + 'keyframes ' + id + ' { \n' +
+        '  0% { ' + params.property + ': ' + params.from + '; }\n' +
+        '  100% { ' + params.property + ': ' + params.to + '; }\n' +
+        '}\n';
+    return id;
+  }
+
+  function normalizeValue(value) {
+    return value.
+        // Round numbers to two decimal places.
+        replace(/\.\d+/g, function(n) {
+          return ('.' + Math.round(parseFloat(n, 10) * 100)).
+              replace(/\.?0*$/, '');
+        }).
+        // Place whitespace between tokens.
+        replace(/([\w\d.]+|[^\s])/g, '$1 ').
+        replace(/\s+/g, ' ');
+  }
+
+  function createTarget(id) {
     var target = document.createElement('div');
+    target.classList.add(id);
     var template = document.querySelector('#target-template');
     if (template) {
       target.appendChild(template.content.cloneNode(true));
     }
-    var style = document.createElement('style');
     target.classList.add('target');
+    return target;
+  }
+
+  function makeInterpolationTest(fraction, keyframeId, testId, params, expectation) {
+    console.assert(expectation === undefined || !isRefTest);
+    var id = keyframeId + '-' + testId;
+    var target = createTarget(id);
+    target.classList.add('active');
+    var replica;
+    if (expectation !== undefined) {
+      replica = createTarget(id);
+      replica.classList.add('replica');
+      replica.style[params.property] = expectation;
+    }
     target.getResultString = function() {
-        return property + ' from [' + from + '] to ' +
-            '[' + to + '] was [' + getComputedStyle(this)[property] + ']' +
-            ' at ' + fraction;
+      var value = getComputedStyle(this)[params.property];
+      var result = '';
+      var reason = '';
+      if (expectation !== undefined) {
+        var parsedExpectation = getComputedStyle(replica)[params.property];
+        var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
+        result = pass ? 'PASS: ' : 'FAIL: ';
+        reason = pass ? '' : ', expected [' + expectation + ']';
+        value = pass ? expectation : value;
+      }
+      return result + params.property + ' from [' + params.from + '] to ' +
+          '[' + params.to + '] was [' + value + ']' +
+          ' at ' + fraction + reason;
     };
     target.convertToReference = function() {
-        this.style[property] = getComputedStyle(this)[property];
-        this.removeChild(style);
+      this.style[params.property] = getComputedStyle(this)[params.property];
     };
-    target.id = id;
-    style.innerHTML = '@' + prefix + 'keyframes ' + id + '{\n' +
-        '  0% { ' + property + ': ' + from + '; }\n' +
-        '  100% { ' + property + ': ' + to + '; }\n' +
-        '}\n' +
-        '#' + id + ' {\n' +
-        '  ' + prefix + 'animation: ' + id + ' ' + durationSeconds + 's forwards;\n' +
+    var easing = createEasing(fraction);
+    cssText += '.' + id + '.active {\n' +
+        '  ' + prefix + 'animation: ' + keyframeId + ' ' + durationSeconds + 's forwards;\n' +
         '  ' + prefix + 'animation-timing-function: ' + easing + ';\n' +
         '  ' + prefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
-        '}';
-    target.appendChild(style);
+        '}\n';
     testCount++;
-    document.body.appendChild(target);
-    document.body.appendChild(document.createTextNode('\n'));
+    fragment.appendChild(target);
+    replica && fragment.appendChild(replica);
+    fragment.appendChild(document.createTextNode('\n'));
+  }
+
+  var finished = false;
+  function finishTest() {
+    finished = true;
+    dumpResults();
+    if (window.testRunner) {
+      if (!isRefTest) {
+        testRunner.dumpAsText();
+      }
+      testRunner.notifyDone();
+    }
   }
 
   if (window.testRunner) {
@@ -157,37 +239,35 @@
     durationSeconds = 1000;
     iterationCount = 1;
     document.documentElement.addEventListener(startEvent, function() {
-      if (++startedCount != testCount) {
+      if (finished || ++startedCount != testCount) {
         return;
       }
       internals.pauseAnimations(durationSeconds / 2);
-      dumpResults();
-      if (window.testRunner) {
-        if (!isRefTest) {
-          testRunner.dumpAsText();
-        }
-        testRunner.notifyDone();
-      }
+      finishTest();
     });
   } else {
     if (window.internals && internals.runtimeFlags.webAnimationsCSSEnabled) {
       durationSeconds = 0;
     }
     document.documentElement.addEventListener(endEvent, function() {
-      if (++finishedCount != testCount) {
+      if (finished || ++finishedCount != testCount) {
         return;
       }
-      dumpResults();
-      if (window.testRunner) {
-        if (!isRefTest) {
-          testRunner.dumpAsText();
-        }
-        testRunner.notifyDone();
-      }
+      finishTest();
     });
+  }
+
+  if (!window.testRunner) {
+    setTimeout(function() {
+      if (finished) {
+        return;
+      }
+      finishTest();
+    }, 10000);
   }
 
   window.runAsRefTest = runAsRefTest;
   window.testInterpolationAt = testInterpolationAt;
+  window.assertInterpolation = assertInterpolation;
   window.convertToReference = convertToReference;
 })();
