@@ -132,9 +132,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/window_positioner.h"
 #endif
 
 #if defined(USE_AURA)
@@ -1605,21 +1603,6 @@ bool BrowserView::GetSavedWindowPlacement(
   if (!ShouldSaveOrRestoreWindowPos())
     return false;
   chrome::GetSavedWindowBoundsAndShowState(browser_.get(), bounds, show_state);
-
-#if defined(USE_ASH)
-  if (chrome::IsNativeWindowInAsh(
-          const_cast<BrowserView*>(this)->GetNativeWindow())) {
-    if (browser_->is_type_popup()) {
-      // In case of a popup with an 'unspecified' location we are
-      // looking for a good screen location. We are interpreting (0,0) as an
-      // unspecified location.
-      if (bounds->x() == 0 && bounds->y() == 0) {
-        *bounds = ChromeShellDelegate::instance()->window_positioner()->
-            GetPopupPosition(*bounds);
-      }
-    }
-  }
-#endif
 
   if (browser_->is_type_popup() &&
       !browser_->is_app() &&

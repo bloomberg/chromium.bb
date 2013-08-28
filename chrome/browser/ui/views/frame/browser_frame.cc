@@ -71,7 +71,7 @@ void BrowserFrame::InitBrowserFrame() {
 #if defined(USE_ASH)
   if (browser_view_->browser()->host_desktop_type() ==
       chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {
-    params.context = ash::Shell::GetAllRootWindows()[0];
+    params.context = ash::Shell::GetPrimaryRootWindow();
   }
 #endif
   Init(params);

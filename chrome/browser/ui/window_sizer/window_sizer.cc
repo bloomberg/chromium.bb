@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -18,6 +17,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "ui/gfx/screen.h"
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/window_positioner.h"
+#endif
 
 // Minimum height of the visible part of a window.
 const int kMinVisibleHeight = 30;
@@ -204,6 +209,18 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     // the user's screen size.
     GetDefaultWindowBounds(bounds);
   } else {
+#if defined(USE_ASH)
+    // In case of a popup with an 'unspecified' location in ash, we are
+    // looking for a good screen location. We are interpreting (0,0) as an
+    // unspecified location.
+    if (chrome::ShouldOpenAshOnStartup() &&
+        browser_ && browser_->is_type_popup() &&
+        bounds->x() == 0 && bounds->y() == 0) {
+      *bounds = ChromeShellDelegate::instance()->window_positioner()->
+          GetPopupPosition(*bounds);
+      return;
+    }
+#endif
     // In case that there was a bound given we need to make sure that it is
     // visible and fits on the screen.
     // Find the size of the work area of the monitor that intersects the bounds
