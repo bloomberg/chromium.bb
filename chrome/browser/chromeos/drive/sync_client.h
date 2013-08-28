@@ -62,21 +62,21 @@ class SyncClient {
   virtual ~SyncClient();
 
   // Adds a fetch task to the queue.
-  void AddFetchTask(const std::string& resource_id);
+  void AddFetchTask(const std::string& local_id);
 
   // Removes a fetch task from the queue.
-  void RemoveFetchTask(const std::string& resource_id);
+  void RemoveFetchTask(const std::string& local_id);
 
   // Adds an upload task to the queue.
-  void AddUploadTask(const std::string& resource_id);
+  void AddUploadTask(const std::string& local_id);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
-  // dirty-but-not-uploaded files). Kicks off retrieval of the resource
+  // dirty-but-not-uploaded files). Kicks off retrieval of the local
   // IDs of these files, and then starts the sync loop.
   void StartProcessingBacklog();
 
   // Starts checking the existing pinned files to see if these are
-  // up-to-date. If stale files are detected, the resource IDs of these files
+  // up-to-date. If stale files are detected, the local IDs of these files
   // are added to the queue and the sync loop is started.
   void StartCheckingExistingPinnedFiles();
 
@@ -92,49 +92,48 @@ class SyncClient {
   // Adds the given task to the queue. If the same task is queued, remove the
   // existing one, and adds a new one to the end of the queue.
   void AddTaskToQueue(SyncType type,
-                      const std::string& resource_id,
+                      const std::string& local_id,
                       const base::TimeDelta& delay);
 
   // Called when a task is ready to be added to the queue.
-  void StartTask(SyncType type, const std::string& resource_id);
+  void StartTask(SyncType type, const std::string& local_id);
 
-  // Called when the resource IDs of files in the backlog are obtained.
-  void OnGetResourceIdsOfBacklog(const std::vector<std::string>* to_fetch,
+  // Called when the local IDs of files in the backlog are obtained.
+  void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,
                                  const std::vector<std::string>* to_upload);
 
-  // Called when the resource ID of a pinned file is obtained.
-  void OnGetResourceIdOfExistingPinnedFile(const std::string& resource_id,
-                                           const FileCacheEntry& cache_entry);
+  // Called when the local ID of a pinned file is obtained.
+  void OnGetLocalIdOfExistingPinnedFile(const std::string& local_id,
+                                        const FileCacheEntry& cache_entry);
 
   // Called when a file entry is obtained.
-  void OnGetResourceEntryById(const std::string& resource_id,
+  void OnGetResourceEntryById(const std::string& local_id,
                               const FileCacheEntry& cache_entry,
                               FileError error,
                               scoped_ptr<ResourceEntry> entry);
 
   // Called when a cache entry is obtained.
-  void OnGetCacheEntry(const std::string& resource_id,
+  void OnGetCacheEntry(const std::string& local_id,
                        const std::string& latest_md5,
                        bool success,
                        const FileCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
-  void OnRemove(const std::string& resource_id, FileError error);
+  void OnRemove(const std::string& local_id, FileError error);
 
   // Called when a file is pinned.
-  void OnPinned(const std::string& resource_id, FileError error);
+  void OnPinned(const std::string& local_id, FileError error);
 
-  // Called when the file for |resource_id| is fetched.
+  // Called when the file for |local_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
-  void OnFetchFileComplete(const std::string& resource_id,
+  void OnFetchFileComplete(const std::string& local_id,
                            FileError error,
                            const base::FilePath& local_path,
                            scoped_ptr<ResourceEntry> entry);
 
-  // Called when the file for |resource_id| is uploaded.
+  // Called when the file for |local_id| is uploaded.
   // Calls DoSyncLoop() to go back to the sync loop.
-  void OnUploadFileComplete(const std::string& resource_id,
-                            FileError error);
+  void OnUploadFileComplete(const std::string& local_id, FileError error);
 
   ResourceMetadata* metadata_;
   FileCache* cache_;
@@ -145,10 +144,10 @@ class SyncClient {
   // Used to upload committed files.
   scoped_ptr<file_system::UpdateOperation> update_operation_;
 
-  // List of the resource ids of resources which have a fetch task created.
+  // List of the local ids of resources which have a fetch task created.
   std::set<std::string> fetch_list_;
 
-  // List of the resource ids of resources which have a upload task created.
+  // List of the local ids of resources which have a upload task created.
   std::set<std::string> upload_list_;
 
   // Fetch tasks which have been created, but not started yet.  If they are
