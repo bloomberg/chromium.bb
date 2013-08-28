@@ -59,7 +59,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
   close_callback.Run();
   EXPECT_EQ(
       1U,
-      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
+      observer()->upload_needed_local_ids().count(src_entry.resource_id()));
 }
 
 TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
@@ -126,7 +126,7 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
   close_callback.Run();
   // Here we don't know about the resource id, so just make sure
   // OnCacheFileUploadNeededByOperation is called actually.
-  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().size());
+  EXPECT_EQ(1U, observer()->upload_needed_local_ids().size());
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
@@ -157,7 +157,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   close_callback.Run();
   EXPECT_EQ(
       1U,
-      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
+      observer()->upload_needed_local_ids().count(src_entry.resource_id()));
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
@@ -185,7 +185,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
   close_callback.Run();
   // Here we don't know about the resource id, so just make sure
   // OnCacheFileUploadNeededByOperation is called actually.
-  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().size());
+  EXPECT_EQ(1U, observer()->upload_needed_local_ids().size());
 }
 
 TEST_F(OpenFileOperationTest, OpenFileTwice) {
@@ -235,14 +235,14 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
 
   // There still remains a client opening the file, so it shouldn't be
   // uploaded yet.
-  EXPECT_TRUE(observer()->upload_needed_resource_ids().empty());
+  EXPECT_TRUE(observer()->upload_needed_local_ids().empty());
 
   close_callback2.Run();
 
   // Here, all the clients close the file, so it should be uploaded then.
   EXPECT_EQ(
       1U,
-      observer()->upload_needed_resource_ids().count(src_entry.resource_id()));
+      observer()->upload_needed_local_ids().count(src_entry.resource_id()));
 }
 
 }  // namespace file_system

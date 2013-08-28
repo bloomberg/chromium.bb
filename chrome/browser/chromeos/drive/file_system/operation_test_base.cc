@@ -32,8 +32,8 @@ void OperationTestBase::LoggingObserver::OnDirectoryChangedByOperation(
 }
 
 void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
-    const std::string& resource_id) {
-  upload_needed_resource_ids_.insert(resource_id);
+    const std::string& local_id) {
+  upload_needed_local_ids_.insert(local_id);
 }
 
 OperationTestBase::OperationTestBase() {

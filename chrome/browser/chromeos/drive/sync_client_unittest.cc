@@ -76,7 +76,7 @@ class DummyOperationObserver : public file_system::OperationObserver {
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& path) OVERRIDE {}
   virtual void OnCacheFileUploadNeededByOperation(
-      const std::string& resource_id) OVERRIDE {}
+      const std::string& local_id) OVERRIDE {}
 };
 
 }  // namespace

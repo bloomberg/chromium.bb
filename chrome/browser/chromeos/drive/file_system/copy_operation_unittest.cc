@@ -55,7 +55,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   // TransferFileFromLocalToRemote stores a copy of the local file in the cache,
   // marks it dirty and requests the observer to upload the file.
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
-  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().count(
+  EXPECT_EQ(1U, observer()->upload_needed_local_ids().count(
       entry.resource_id()));
   FileCacheEntry cache_entry;
   bool found = false;
