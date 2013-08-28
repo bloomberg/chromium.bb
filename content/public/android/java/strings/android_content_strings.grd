@@ -26,10 +26,10 @@
       <message desc="Title for the time picker dialog, which can be used to choose a time. [CHAR-LIMIT=32]" name="IDS_TIME_PICKER_DIALOG_TITLE">
         Set time
       </message>
-      <message desc="Value for AM in AM/PM in the time picker dialog. AM represents the morning (ante-meridiem). [CHAR-LIMIT=2]" name="IDS_TIME_PICKER_DIALOG_AM">
+      <message desc="Value for AM in AM/PM in the time picker dialog. AM represents the morning (ante-meridiem). [CHAR-LIMIT=4]" name="IDS_TIME_PICKER_DIALOG_AM">
         AM
       </message>
-      <message desc="Value for PM in AM/PM in the time picker dialog. PM represents the afternoon (post-meridiem). [CHAR-LIMIT=2]" name="IDS_TIME_PICKER_DIALOG_PM">
+      <message desc="Value for PM in AM/PM in the time picker dialog. PM represents the afternoon (post-meridiem). [CHAR-LIMIT=4]" name="IDS_TIME_PICKER_DIALOG_PM">
         PM
       </message>
       <message desc="Separator used between hours and minutes in the time pickerr dialog (hh:mm) [CHAR-LIMIT=1]" name="IDS_TIME_PICKER_DIALOG_HOUR_MINUTE_SEPARATOR">
