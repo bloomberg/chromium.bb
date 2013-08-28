@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 ppapi14	6191
@@ -89,14 +89,14 @@ ppapi21	8715
   # newlib	d3186f98e4957d4c97981668e3832b70485f88b6	Provide sanity check that compiler defines __*_ENDIAN__
 ppapi22	9338
 ppapi23	9624
-  glibc		51fe1ff9a701891460bc51b21ff723802fda33ee	Remove aliases to stat64, fstat64, fstatat64 and lstat64.
+  glibc		51fe1ff9a701891460bc51b21ff723802fda33ee	Remove aliases to stat64, fstat64, fstatat64 and lstat64
 ppapi24	9900
 ppapi25	9900
-  gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access.
+  gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access
   # Skipped (potentially disruptive changes to artificats layout)
-  # glibc	1262975b707b91c56fc71d7f3ebd836ff0b5d6f3	Remove unnecessary alignment between .got.plt and .data sections.
-  # glibc	2197a8b6c73b1e4ef59fd777e50a9d3016b9c694	Remove alignment between read-only and read-write data segments.
-  # glibc	7690fd5bb6300f9111715446f410d87799ba9cab	Remove alignment of code and data segments for shared libraries.
+  # glibc	1262975b707b91c56fc71d7f3ebd836ff0b5d6f3	Remove unnecessary alignment between .got.plt and .data sections
+  # glibc	2197a8b6c73b1e4ef59fd777e50a9d3016b9c694	Remove alignment between read-only and read-write data segments
+  # glibc	7690fd5bb6300f9111715446f410d87799ba9cab	Remove alignment of code and data segments for shared libraries
   # Skipped (only affects ARM which is not yet released at this stage)
   # newlib	086df3789d8e7b823cc5044e92edd66296712452	Use SFI_BREG prefix on PLD instruction
   # newlib	6a104f495cf91387ecec5f5f87c6e12d345b204c	Add __aeabi_atexit to newlib
@@ -105,10 +105,31 @@ ppapi26	10650
   glibc		b7d4c72d2e3f97e00465df9aff09184b32ebac8b	Disable ld.so.cache support
   newlib	5feee65e182c08a7e89fbffc3223c57e4335420f	newlib: Don't use -fshort-enums
 ppapi27	10934
-  glibc		a30570615f75ed3058827c0600cfed5b7a768e90	Fill tz in gettimeofday function.
-  glibc		a0e12298059896274848548713dd426d7b751cbd	Make non-executable stack default for NaCl.
+  glibc		a30570615f75ed3058827c0600cfed5b7a768e90	Fill tz in gettimeofday function
+  glibc		a0e12298059896274848548713dd426d7b751cbd	Make non-executable stack default for NaCl
   # Skipped (new functionality and possible disruptions)
   # glibc	eb3343e404e39008c94f37f58e2ec9c4d6ffb8da	Provide mprotect syscall
   # glibc	cd98ee38fe55370fd5bc769ef6ecc43605d35595	Align and pad code segments to 64k
   # glibc	d7687c6a2f9ddd20f6fbc2ebaa4bb7022cf0a55a	Linker scripts: Fold .fini into .text
-  # glibc	a589e0a8bf423917fb62707ef6285119a967a668	Prepare for fast loading through mmap'ing text.
+  # glibc	a589e0a8bf423917fb62707ef6285119a967a668	Prepare for fast loading through mmap'ing text
+ppapi28	11233
+  binutils	b097198c5ea69d97c274f7d53145533f1f52d661	Move .note.gnu.build-id to rodata segment
+  binutils	10cd99c241c75cd4a68e7a5693d784ab7d93ac5b	Provide symbols for .note.gnu.build-id section bounds
+  gcc		698564c88efa176fa1ae1254c67a12f7fb4fc573	Backport GCC 4.5+ --enable-linker-build-id option
+  gcc		f96a3cbfb8777e1e47471b357929b8a1e3340a23	Fix mcount counter generation
+  glibc		2324fd9e11f551e367cbe714ff49a4df3309396e	Provide symbols for .note.gnu.build-id section bounds
+ppapi29	11540
+  binutils	80605460ee5ab0c1a80585e9ca2d131e3c58044d	Update disassembler in NaCl binutils
+  gcc		d913bb7ca2ab1adfd8222e1974b47dabd7ad4e89	Use x86_64_general_operand in a bunch more SI mode insn patterns
+  gcc		aca852ebe18b7df668416b1a0bf2fc8c3a198656	Use x86_64_*_operand in LEA splitters
+  glibc		325363bf232c73cb71d8d6c6874565fd27519f33	Allow use of alternative 'main' symbol
+  glibc		f6905ead6866abd2689b9ec691d3be02f77fcd77	Fix undefined NULL by including stddef.h
+  # Skipped (new functionality and possible disruptions)
+  # glibc	b7b14f88df476ab3830d6c0bc209428605caa30e	Add getpid implementation for NaCl
+ppapi30	11958
+  gcc		46c2b9f0e51c734569cdd6956af695881814e7ed	Use long long builtins of zero counting for x86-64
+  glibc		8ec02f0e5af28bd478ce262f04d156e4ef09c4d9	Enable process and thread CPU time clocks
+  # Skipped (new functionality and possible disruptions)
+  # glibc	668027f311c810bb56af7ac8d8f3236fe5108bc7	Add a PT_NOTE section to mark build_id
+  # glibc	5e65ba072a5d9b9e6571ef15a4fa96cff7ce4729	Drop section rewriting and format fixes
+  # glibc	990e7c45ed7de9183d157697950194c5f64b100a	Reverting nacl_fixup_ldso.py sections change

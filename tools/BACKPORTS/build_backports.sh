@@ -442,7 +442,37 @@ while read name id comment ; do
 			rm ./newlib/libc/include/machine/setjmp.h.rej
 		      fi
 		    )
-		  else
+		  elif [[ "$name" = ppapi1[4-7] ]] &&
+		       [[ "$id" = "f96a3cbfb8777e1e47471b357929b8a1e3340a23" ]]; then
+		    patch -p0 <<-END
+			--- gcc/config/i386/nacl.h
+			+++ gcc/config/i386/nacl.h
+			@@ -269,3 +269,6 @@
+			 #define DWARF2_ADDR_SIZE \\
+			     (TARGET_NACL ? (TARGET_64BIT ? 8 : 4) : \\
+			                    (POINTER_SIZE / BITS_PER_UNIT))
+			+
+			+/* Profile counters are not available under Native Client. */
+			+#define NO_PROFILE_COUNTERS 1
+			END
+		  elif [[ "$name" = ppapi1[5-9] || "$name" == ppapi2[0-7] ]] &&
+		       [[ "$id" = "2324fd9e11f551e367cbe714ff49a4df3309396e" ]]; then
+		    for ldscript in elf{,64}_nacl.x{,.static,s}; do
+		      patch -p0 <<-END
+			--- nacl/dyn-link/ldscripts/$ldscript
+			+++ nacl/dyn-link/ldscripts/$ldscript
+			@@ -50 +50,6 @@
+			-  .note.gnu.build-id : { *(.note.gnu.build-id) } :seg_rodata
+			+  .note.gnu.build-id :
+			+  {
+			+    PROVIDE_HIDDEN (__note_gnu_build_id_start = .);
+			+    *(.note.gnu.build-id)
+			+    PROVIDE_HIDDEN (__note_gnu_build_id_end = .);
+			+  } :seg_rodata
+			END
+		    done
+		  elif [[ "$name" != ppapi1[5-8] ]] ||
+		       [[ "$id" != "8ec02f0e5af28bd478ce262f04d156e4ef09c4d9" ]]; then
 		    git diff "$id"{^..,} | patch -p1 ||
 		      touch "../../../../../$$.error" "../../../../../$$.error.$name"
 		  fi
