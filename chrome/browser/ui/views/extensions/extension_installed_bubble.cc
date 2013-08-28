@@ -543,13 +543,11 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       icon_(icon),
       animation_wait_retries_(0),
       weak_factory_(this) {
-  extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(browser_->profile());
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
     type_ = OMNIBOX_KEYWORD;
-  else if (extension_action_manager->GetBrowserAction(*extension_))
+  else if (extensions::ActionInfo::GetBrowserActionInfo(extension))
     type_ = BROWSER_ACTION;
-  else if (extension_action_manager->GetPageAction(*extension) &&
+  else if (extensions::ActionInfo::GetPageActionInfo(extension) &&
            extensions::ActionInfo::IsVerboseInstallMessage(extension))
     type_ = PAGE_ACTION;
   else
