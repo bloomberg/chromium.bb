@@ -147,7 +147,7 @@ class TestTranslatorPruned(unittest.TestCase):
     have been renamed to something else.
     """
     total = 0
-    for sym_regex in [
+    pruned_list = [
         'LLParser', 'LLLexer',
         'MCAsmParser', '::AsmParser',
         'ARMAsmParser', 'X86AsmParser',
@@ -159,7 +159,16 @@ class TestTranslatorPruned(unittest.TestCase):
         # Can only check *InstPrinter::print*, not *::getRegisterName():
         # https://code.google.com/p/nativeclient/issues/detail?id=3326
         'ARMInstPrinter::print', 'X86.*InstPrinter::print',
-        ]:
+        # Currently pruned by hacking Triple.h. That covers most things,
+        # but not all.  E.g., container-specific relocation handling.
+        '.*MachObjectWriter', 'TargetLoweringObjectFileMachO',
+        'MCMachOStreamer', '.*MCAsmInfoDarwin',
+        '.*COFFObjectWriter', 'TargetLoweringObjectFileCOFF',
+        '.*COFFStreamer', '.*COFFMachineModuleInfo', '.*AsmInfoGNUCOFF',
+        # This is not pruned out: 'MCSectionMachO', 'MCSectionCOFF',
+        # 'MachineModuleInfoMachO', ...
+        ]
+    for sym_regex in pruned_list:
       unpruned = self.size_of_matching_syms(
           sym_regex, TestTranslatorPruned.unpruned_symbols)
       pruned = self.size_of_matching_syms(
