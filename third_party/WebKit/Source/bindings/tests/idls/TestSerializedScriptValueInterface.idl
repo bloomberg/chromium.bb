@@ -30,10 +30,8 @@
 ] interface TestSerializedScriptValueInterface {
     attribute SerializedScriptValue value;
     readonly attribute SerializedScriptValue readonlyValue;
-    [CachedAttribute] attribute SerializedScriptValue cachedValue;
-    [CachedAttribute] readonly attribute SerializedScriptValue cachedReadonlyValue;
 
     [CachedAttribute=isValueDirty] attribute SerializedScriptValue dirtySerializedValue;
     [CachedAttribute=isValueDirty] attribute any dirtyScriptValue;
-    [CachedAttribute,CallWith=ScriptState] attribute SerializedScriptValue cachedValueCallWith;
+    [CachedAttribute=isValueDirty,CallWith=ScriptState] attribute SerializedScriptValue cachedValueCallWith;
 };

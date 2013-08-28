@@ -1412,9 +1412,8 @@ END
         }
         my $imp = 0;
         if ($attrCached) {
-            if ($attrCached ne "VALUE_IS_MISSING") {
-                $imp = 1;
-                $code .= <<END;
+            $imp = 1;
+            $code .= <<END;
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
     v8::Handle<v8::Value> value;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
@@ -1426,16 +1425,6 @@ END
         }
     }
 END
-            } else {
-                $code .= <<END;
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
-    v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
-    if (!value.IsEmpty()) {
-        v8SetReturnValue(info, value);
-        return;
-    }
-END
-            }
         }
         if (!$attribute->isStatic && !$imp) {
             $code .= <<END;
@@ -5558,13 +5547,10 @@ sub GetContextEnableFunction
 {
     my $signature = shift;
 
-    # If a parameter is given (e.g. "EnabledPerContext=FeatureName") return the {FeatureName}Allowed() method.
-    if ($signature->extendedAttributes->{"EnabledPerContext"} && $signature->extendedAttributes->{"EnabledPerContext"} ne "VALUE_IS_MISSING") {
-        return "ContextFeatures::" . ToMethodName($signature->extendedAttributes->{"EnabledPerContext"}) . "Enabled";
-    }
-
-    # Or it fallbacks to the attribute name if the parameter value is missing.
-    return "ContextFeatures::" . ToMethodName($signature->name) . "Enabled";
+    # Given [EnabledPerContext=FeatureName],
+    # return ContextFeatures::{featureName}Enabled
+    my $featureName = ToMethodName($signature->extendedAttributes->{"EnabledPerContext"});
+    return "ContextFeatures::${featureName}Enabled";
 }
 
 sub GetPassRefPtrType

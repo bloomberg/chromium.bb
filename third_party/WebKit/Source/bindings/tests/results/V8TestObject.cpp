@@ -1769,61 +1769,32 @@ static void enabledAtRuntimeAttrAttributeSetterCallback(v8::Local<v8::String> na
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledPerContextAttr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enabledPerContextAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->enabledPerContextAttr1());
+    v8SetReturnValueInt(info, imp->enabledPerContextAttr());
     return;
 }
 
-static void enabledPerContextAttr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enabledPerContextAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::enabledPerContextAttr1AttributeGetter(name, info);
+    TestObjV8Internal::enabledPerContextAttrAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledPerContextAttr1AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void enabledPerContextAttrAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setEnabledPerContextAttr1(v);
+    imp->setEnabledPerContextAttr(v);
     return;
 }
 
-static void enabledPerContextAttr1AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void enabledPerContextAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::enabledPerContextAttr1AttributeSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledPerContextAttr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->enabledPerContextAttr2());
-    return;
-}
-
-static void enabledPerContextAttr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::enabledPerContextAttr2AttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledPerContextAttr2AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setEnabledPerContextAttr2(v);
-    return;
-}
-
-static void enabledPerContextAttr2AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::enabledPerContextAttr2AttributeSetter(name, value, info);
+    TestObjV8Internal::enabledPerContextAttrAttributeSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -4391,7 +4362,7 @@ static void enabledAtRuntimeMethodMethodCallback(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enabledPerContextMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void enabledPerContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
         throwNotEnoughArgumentsError(args.GetIsolate());
@@ -4399,35 +4370,15 @@ static void enabledPerContextMethod1Method(const v8::FunctionCallbackInfo<v8::Va
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
-    imp->enabledPerContextMethod1(longArg);
+    imp->enabledPerContextMethod(longArg);
 
     return;
 }
 
-static void enabledPerContextMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void enabledPerContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::enabledPerContextMethod1Method(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void enabledPerContextMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    if (args.Length() < 1) {
-        throwNotEnoughArgumentsError(args.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
-    imp->enabledPerContextMethod2(longArg);
-
-    return;
-}
-
-static void enabledPerContextMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::enabledPerContextMethod2Method(args);
+    TestObjV8Internal::enabledPerContextMethodMethod(args);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5563,14 +5514,9 @@ bool V8TestObject::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolat
 void V8TestObject::installPerContextProperties(v8::Handle<v8::Object> instance, TestObj* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
-    if (ContextFeatures::enabledPerContextAttr1Enabled(impl->document())) {
-        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
-        {"enabledPerContextAttr1", TestObjV8Internal::enabledPerContextAttr1AttributeGetterCallback, TestObjV8Internal::enabledPerContextAttr1AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
-    }
     if (ContextFeatures::featureNameEnabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
-        {"enabledPerContextAttr2", TestObjV8Internal::enabledPerContextAttr2AttributeGetterCallback, TestObjV8Internal::enabledPerContextAttr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        {"enabledPerContextAttr", TestObjV8Internal::enabledPerContextAttrAttributeGetterCallback, TestObjV8Internal::enabledPerContextAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
 }
@@ -5582,10 +5528,8 @@ void V8TestObject::installPerContextPrototypeProperties(v8::Handle<v8::Object> p
     UNUSED_PARAM(defaultSignature);
 
     ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
-    if (context && context->isDocument() && ContextFeatures::enabledPerContextMethod1Enabled(toDocument(context)))
-        proto->Set(v8::String::NewSymbol("enabledPerContextMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod1MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context)))
-        proto->Set(v8::String::NewSymbol("enabledPerContextMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod2MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+        proto->Set(v8::String::NewSymbol("enabledPerContextMethod"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
 }
 
 EventTarget* V8TestObject::toEventTarget(v8::Handle<v8::Object> object)

@@ -278,15 +278,20 @@ sub checkIfIDLAttributesExists
     my $error;
     OUTER: for my $name (keys %$extendedAttributes) {
         if (!exists $idlAttributes->{$name}) {
-            $error = "Unknown IDL attribute [$name] is found at $idlFile.";
-            last OUTER;
+            $error = "Invalid IDL attribute [$name] found in $idlFile.";
+            last;
         }
-        if ($idlAttributes->{$name}{"*"}) {
+        # Check no argument first, since "*" means "some argument (not missing)".
+        if ($extendedAttributes->{$name} eq "VALUE_IS_MISSING" and not exists $idlAttributes->{$name}{"VALUE_IS_MISSING"}) {
+            $error = "Missing required argument for IDL attribute [$name] in file $idlFile.";
+            last;
+        }
+        if (exists $idlAttributes->{$name}{"*"}) {
             next;
         }
         for my $rightValue (split /\s*[|&]\s*/, $extendedAttributes->{$name}) {
-            if (!exists $idlAttributes->{$name}{$rightValue}) {
-                $error = "Unknown IDL attribute [$name=" . $extendedAttributes->{$name} . "] is found at $idlFile.";
+            if (!(exists $idlAttributes->{$name}{$rightValue})) {
+                $error = "Invalid IDL attribute value [$name=" . $extendedAttributes->{$name} . "] found in $idlFile.";
                 last OUTER;
             }
         }

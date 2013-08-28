@@ -1,21 +1,34 @@
 #
-# This file describes all IDL attributes.
-# If any IDL file uses an IDL attribute not listed below, the build will fail.
-# If you want to add a new IDL attribute, you need to
-#     (1) add the IDL attribute to this file
-#     (2) add the explanation to the Blink IDL document: http://www.chromium.org/blink/webidl
-#     (3) add test cases to run-bindings-tests
+# This file describes all Blink IDL extended attributes and allowed values.
+# If any IDL file uses an extended attribute or values not listed below, the
+# build will fail.
+# If you would like to add a new extended attribute or value, please:
+#     (1) add the extended attribute or value to this file
+#     (2) add an explanation to the Blink IDL extended attributes document:
+#         http://www.chromium.org/blink/webidl/blink-idl-extended-attributes
+#     (3) add appropriate test cases to run-bindings-tests
 #
 # The syntax of this file is as follows:
-#     - You can write one IDL attribute per one line.
-#     - "ATTR" means that the IDL attribute ATTR does not take any argument; i.e. [ATTR].
-#     - "ATTR=X" means that the IDL attribute ATTR always takes one argument X; i.e. [ATTR=X].
-#     - "ATTR=X|Y|Z" means that the IDL attribute ATTR takes one or more arguments
-#       and the arguments are X, Y or Z; e.g. [ATTR=X], [ATTR=Y], [ATTR=X|Z], [ATTR=X|Y|Z].
-#     - "ATTR=|X|Y|Z" means that the IDL attribute ATTR can take arguments
-#       and the arguments are X, Y or Z; e.g. [ATTR], [ATTR=X], [ATTR=Y], [ATTR=X|Z], [ATTR=X|Y|Z].
-#     - "ATTR=*" means that the IDL attribute ATTR can take arbitrary arguments;
-#       e.g. [ATTR=INDEXED_DATABASE], [ATTR=deleteFunction].
+#     - One extended attribute per one line: Name and (optionally) Values.
+#     - "Attr" means that the Attr does not take a value, i.e. [Attr].
+#     - "Attr=X" means that Attr takes a required value, which must be X;
+#       i.e. [Attr=X].
+#     - "Attr=X|Y|Z" means that Attr takes a required value, and the valid
+#       values are X, Y, and Z, and combinations thereof;
+#       e.g. [Attr=X], [Attr=Y], [Attr=X|Z].
+#       The separator must be | or &, so [Attr=X&Z] is also valid; the
+#       separator makes a difference for Conditional, but otherwise is simply
+#       a style convention.
+#     - "Attr=|X|Y|Z" means that Attr takes an optional value, whose valid
+#       values (if present) are X, Y, and Z, and combinations thereof; e.g.
+#       [Attr], [Attr=X], [Attr=Y], [Attr=X|Z], [Attr=X|Y|Z], [Attr=X&Z].
+#       Note that including an empty value in the list, as in [Attr=X||Y],
+#       is NOT valid: the value is optional, but empty values are not allowed.
+#     - "Attr=*" means that Attr takes a required value, which can be
+#       arbitrary and combinations thereof, e.g. [Attr=IndexedDB],
+#       [Attr=DeleteFunction], [Attr=X|Y].
+#     - "Attr=|*" means that Attr takes an optional value, which can be
+#       arbitrary, e.g. [Attr], [Attr=X].
 #
 
 ActiveDOMObject
@@ -50,6 +63,8 @@ DoNotCheckSecurityOnSetter
 DoNotCheckSignature
 DoNotGenerateToV8
 DoNotGenerateWrap
+# Valid values for EnabledAtRuntime and EnabledPerContext are Runtime Enabled
+# Features, listed in Source/core/page/RuntimeEnabledFeatures.in
 EnabledAtRuntime=*
 EnabledPerContext=*
 EnforceRange
@@ -70,7 +85,7 @@ OverrideBuiltins
 PerWorldBindings
 RaisesException
 ReadOnly
-Reflect=*
+Reflect=|*
 Replaceable
 SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException

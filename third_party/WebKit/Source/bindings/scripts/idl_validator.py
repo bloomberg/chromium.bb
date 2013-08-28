@@ -32,15 +32,11 @@
 import re
 
 
-class IDLExtendedAttributeFileFormatError(Exception):
-    pass
-
-
 class IDLInvalidExtendedAttributeError(Exception):
     pass
 
 
-class IDLExtendedAttributeValidator:
+class IDLExtendedAttributeValidator(object):
     def __init__(self, extended_attributes_filename):
         self.valid_extended_attributes = read_extended_attributes_file(extended_attributes_filename)
 
@@ -65,35 +61,36 @@ class IDLExtendedAttributeValidator:
         if name not in self.valid_extended_attributes:
             raise IDLInvalidExtendedAttributeError('Unknown extended attribute [%s]' % name)
         valid_values = self.valid_extended_attributes[name]
-        if '*' in valid_values:  # wildcard, any value ok
+        if values_string is None and None not in valid_values:
+            raise IDLInvalidExtendedAttributeError('Missing required argument for extended attribute [%s]' % name)
+        if '*' in valid_values:  # wildcard, any (non-empty) value ok
             return
         if values_string is None:
-            value_list = [None]
+            values = set([None])
         else:
-            value_list = re.split('[|&]', values_string)
-        for value in value_list:
-            if value not in valid_values:
-                raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (value, name, values_string))
+            values = set(re.split('[|&]', values_string))
+        invalid_values = values - valid_values
+        if invalid_values:
+            invalid_value = invalid_values.pop()
+            raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (invalid_value, name, values_string))
 
 
 def read_extended_attributes_file(extended_attributes_filename):
+    def extended_attribute_name_values():
+        with open(extended_attributes_filename) as extended_attributes_file:
+            for line in extended_attributes_file:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                name, _, values_string = map(str.strip, line.partition('='))
+                value_list = [value.strip() for value in values_string.split('|')]
+                yield name, value_list
+
     valid_extended_attributes = {}
-    with open(extended_attributes_filename) as extended_attributes_file:
-        for line in extended_attributes_file:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            name, _, values_string = map(str.strip, line.partition('='))
-            if not name:
-                raise IDLExtendedAttributeFileFormatError('The format of %s is wrong, in line "%s"' % (extended_attributes_filename, line))
-            valid_extended_attributes[name] = set()
-            value_list = values_string.split('|')
-            if not value_list:
-                valid_extended_attributes[name].add(None)
-                continue
-            for value in value_list:
-                value = value.strip()
-                if not value:
-                    value = None
-                valid_extended_attributes[name].add(value)
+    for name, value_list in extended_attribute_name_values():
+        if not value_list:
+            valid_extended_attributes[name] = set([None])
+            continue
+        valid_extended_attributes[name] = set([value if value else None
+                                               for value in value_list])
     return valid_extended_attributes
