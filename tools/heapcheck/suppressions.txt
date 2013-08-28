@@ -861,3 +861,11 @@
    fun:views::Widget::Init
    fun:BrowserFrame::InitBrowserFrame
 }
+{
+   bug_280192
+   Heapcheck:Leak
+   ...
+   fun:GtkThemeService::GtkThemeService
+   ...
+   fun:SavedFilesServiceUnitTest::SavedFilesServiceUnitTest
+}
