@@ -129,7 +129,7 @@ public:
     void setFillGradient(PassRefPtr<Gradient>);
     Gradient* fillGradient() const { return m_state->m_fillGradient.get(); }
 
-    DrawLooper* drawLooper() const { return m_state->m_looper.get(); }
+    SkDrawLooper* drawLooper() const { return m_state->m_looper.get(); }
     SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeData.color().rgb()); }
 
     int getNormalizedAlpha() const;
@@ -304,7 +304,7 @@ public:
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
-    void setDrawLooper(PassRefPtr<DrawLooper>);
+    void setDrawLooper(const DrawLooper&);
     void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);

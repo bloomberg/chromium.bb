@@ -2513,10 +2513,10 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             }
 
             // Draw only the shadow.
-            RefPtr<DrawLooper> drawLooper = adoptRef(new DrawLooper);
-            drawLooper->addShadow(shadowOffset, shadowBlur, shadowColor,
+            DrawLooper drawLooper;
+            drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
-            context->setDrawLooper(drawLooper.release());
+            context->setDrawLooper(drawLooper);
 
             if (hasBorderRadius) {
                 RoundedRect influenceRect(shadowRect, border.radii());

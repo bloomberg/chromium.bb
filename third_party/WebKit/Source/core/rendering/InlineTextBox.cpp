@@ -396,17 +396,17 @@ static void paintTextWithShadows(GraphicsContext* context,
     Color fillColor = context->fillColor();
 
     if (hasShadow) {
-        RefPtr<DrawLooper> drawLooper = adoptRef(new DrawLooper);
+        DrawLooper drawLooper;
         do {
             int shadowX = horizontal ? shadow->x() : shadow->y();
             int shadowY = horizontal ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper->addShadow(offset, shadow->blur(),
+            drawLooper.addShadow(offset, shadow->blur(),
                 renderer->resolveColor(shadow->color(), Color::stdShadowColor),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
-        drawLooper->addUnmodifiedContent();
-        context->setDrawLooper(drawLooper.release());
+        drawLooper.addUnmodifiedContent();
+        context->setDrawLooper(drawLooper);
     }
 
     TextRunPaintInfo textRunPaintInfo(textRun);

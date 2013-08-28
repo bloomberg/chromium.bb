@@ -56,17 +56,17 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     const ShadowData* shadow = context->printing() ? 0 : style->textShadow();
     bool hasShadow = shadow;
     if (hasShadow) {
-        RefPtr<DrawLooper> drawLooper = adoptRef(new DrawLooper);
+        DrawLooper drawLooper;
         do {
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper->addShadow(offset, shadow->blur(),
+            drawLooper.addShadow(offset, shadow->blur(),
                 m_renderer->resolveColor(shadow->color(), Color::stdShadowColor),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
-        drawLooper->addUnmodifiedContent();
-        context->setDrawLooper(drawLooper.release());
+        drawLooper.addUnmodifiedContent();
+        context->setDrawLooper(drawLooper);
     }
 
     // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
