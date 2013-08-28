@@ -117,6 +117,11 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
 
   // Whether the request is coming from a <webview>.
   IPC_STRUCT_MEMBER(bool, is_web_view)
+
+  // Whether the caller is interested in the result value. Manifest-declared
+  // content scripts and executeScript() calls without a response callback
+  // are examples of when this will be false.
+  IPC_STRUCT_MEMBER(bool, wants_result)
 IPC_STRUCT_END()
 
 // Struct containing the data for external connections to extensions. Used to

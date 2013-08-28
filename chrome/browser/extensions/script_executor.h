@@ -55,6 +55,18 @@ class ScriptExecutor {
     ISOLATED_WORLD,
   };
 
+  // The type of process the target is.
+  enum ProcessType {
+    DEFAULT_PROCESS,
+    WEB_VIEW_PROCESS,
+  };
+
+  // The type of result the caller is interested in.
+  enum ResultType {
+    NO_RESULT,
+    JSON_SERIALIZED_RESULT,
+  };
+
   // Callback from ExecuteScript. The arguments are (error, on_page_id, on_url,
   // result). Success is implied by an empty error.
   typedef base::Callback<void(const std::string&, int32, const GURL&,
@@ -73,7 +85,8 @@ class ScriptExecutor {
                      FrameScope frame_scope,
                      UserScript::RunLocation run_at,
                      WorldType world_type,
-                     bool is_web_view,
+                     ProcessType process_type,
+                     ResultType result_type,
                      const ExecuteScriptCallback& callback);
 
  private:

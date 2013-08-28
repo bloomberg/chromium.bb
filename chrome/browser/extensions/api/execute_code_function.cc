@@ -127,7 +127,10 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
       frame_scope,
       run_at,
       ScriptExecutor::ISOLATED_WORLD,
-      IsWebView(),
+      IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
+                  : ScriptExecutor::DEFAULT_PROCESS,
+      has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
+                     : ScriptExecutor::NO_RESULT,
       base::Bind(&ExecuteCodeFunction::OnExecuteCodeFinished, this));
   return true;
 }

@@ -1395,7 +1395,8 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
             ScriptExecutor::TOP_FRAME,
             UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD,
-            false /* is_web_view */,
+            ScriptExecutor::DEFAULT_PROCESS,
+            ScriptExecutor::NO_RESULT,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
