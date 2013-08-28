@@ -264,6 +264,10 @@ FileSystem::FileSystem(
 }
 
 void FileSystem::Reload() {
+  // Discard the current loader and renew. This is to avoid that change lists
+  // requested before the metadata reset is applied after the reset.
+  SetupChangeListLoader();
+
   resource_metadata_->ResetOnUIThread(base::Bind(
       &FileSystem::ReloadAfterReset,
       weak_ptr_factory_.GetWeakPtr()));
@@ -359,8 +363,6 @@ void FileSystem::ReloadAfterReset(FileError error) {
                << FileErrorToString(error);
     return;
   }
-
-  SetupChangeListLoader();
 
   change_list_loader_->LoadIfNeeded(
       internal::DirectoryFetchInfo(),
