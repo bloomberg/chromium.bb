@@ -10,8 +10,7 @@ from telemetry.core import exceptions
 from telemetry.core import extension_to_load
 from telemetry.core import util
 from telemetry.core.chrome import cros_interface
-from telemetry.core.chrome import cros_util
-from telemetry.test import options_for_unittests
+from telemetry.unittest import options_for_unittests
 
 class CrOSAutoTest(unittest.TestCase):
   def setUp(self):
@@ -36,13 +35,17 @@ class CrOSAutoTest(unittest.TestCase):
 
     if with_autotest_ext:
       extension_path = os.path.join(os.path.dirname(__file__), 'autotest_ext')
-      self._load_extension = extension_to_load.ExtensionToLoad(extension_path,
-                                                               True)
+      self._load_extension = extension_to_load.ExtensionToLoad(
+          path=extension_path,
+          browser_type=options.browser_type,
+          is_component=True)
       options.extensions_to_load = [self._load_extension]
 
     browser_to_create = browser_finder.FindBrowser(options)
     self.assertTrue(browser_to_create)
-    return browser_to_create.Create()
+    b = browser_to_create.Create()
+    b.Start()
+    return b
 
   def _GetAutotestExtension(self, browser):
     """Returns the autotest extension instance"""
