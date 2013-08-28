@@ -16,7 +16,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
+from utils import net
 
 
 class SleepingServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
@@ -122,7 +122,7 @@ class UrlOpenTimeoutTest(unittest.TestCase):
   def call(self, mode, sleep_duration, **kwargs):
     url = self.server.url + '/%s/%f' % (mode, sleep_duration)
     kwargs['max_attempts'] = 2
-    return run_isolated.url_open(url, **kwargs)
+    return net.url_open(url, **kwargs)
 
   def test_urlopen_success(self):
     # Server doesn't block.
@@ -136,12 +136,12 @@ class UrlOpenTimeoutTest(unittest.TestCase):
 
   def test_urlopen_retry(self):
     # This should trigger retry logic and eventually return None.
-    prev_sleep_before_retry = run_isolated.HttpService.sleep_before_retry
+    prev_sleep_before_retry = net.HttpService.sleep_before_retry
     try:
-      run_isolated.HttpService.sleep_before_retry = lambda *_args: None
+      net.HttpService.sleep_before_retry = lambda *_args: None
       stream = self.call('sleep_before_response', 0.25, read_timeout=0.1)
     finally:
-      run_isolated.HttpService.sleep_before_retry = prev_sleep_before_retry
+      net.HttpService.sleep_before_retry = prev_sleep_before_retry
     self.assertIsNone(stream)
 
   def test_urlopen_keeping_connection(self):
@@ -154,7 +154,7 @@ class UrlOpenTimeoutTest(unittest.TestCase):
     for mode in ('sleep_after_headers', 'sleep_during_response'):
       stream = self.call(mode, 0.25, read_timeout=0.1)
       self.assertTrue(stream)
-      with self.assertRaises(run_isolated.TimeoutError):
+      with self.assertRaises(net.TimeoutError):
         stream.read()
 
 

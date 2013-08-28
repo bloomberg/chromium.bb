@@ -7,24 +7,26 @@
 
 __version__ = '0.1'
 
+import binascii
 import hashlib
 import json
 import logging
 import os
 import re
 import shutil
-import StringIO
 import subprocess
 import sys
 import time
 import urllib
-import zipfile
 
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
-from utils import tools
+
+from utils import net
 from utils import threading_utils
+from utils import tools
+from utils import zip_package
 
 import run_isolated
 
@@ -83,6 +85,8 @@ class Manifest(object):
         priority - int between 0 and 1000, lower the higher priority
     """
     self.manifest_hash = manifest_hash
+    self.bundle = zip_package.ZipPackage(ROOT_DIR)
+
     self._test_name = test_name
     self._shards = shards
     self._test_filter = test_filter
@@ -105,7 +109,7 @@ class Manifest(object):
 
   def _token(self):
     if not self._token_cache:
-      result = run_isolated.url_open(self._data_server_get_token)
+      result = net.url_open(self._data_server_get_token)
       if not result:
         # TODO(maruel): Implement authentication.
         raise Failure('Failed to get token, need authentication')
@@ -125,34 +129,20 @@ class Manifest(object):
           'time_out': time_out,
         })
 
-  def add_file(self, source_path, rel_path):
-    self._files[source_path] = rel_path
-
   def zip_and_upload(self):
     """Zips up all the files necessary to run a shard and uploads to Swarming
     master.
     """
     assert not self._zip_file_hash
+
     start_time = time.time()
-
-    zip_memory_file = StringIO.StringIO()
-    zip_file = zipfile.ZipFile(zip_memory_file, 'w')
-
-    for source, relpath in self._files.iteritems():
-      zip_file.write(source, relpath)
-
-    zip_file.close()
+    zip_contents = self.bundle.zip_into_buffer()
+    self._zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
     print 'Zipping completed, time elapsed: %f' % (time.time() - start_time)
 
-    zip_memory_file.flush()
-    zip_contents = zip_memory_file.getvalue()
-    zip_memory_file.close()
-
-    self._zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
-
-    response = run_isolated.url_open(
+    response = net.url_open(
         self._data_server_has + '?token=%s' % self._token(),
-        data=self._zip_file_hash,
+        data=binascii.unhexlify(self._zip_file_hash),
         content_type='application/octet-stream')
     if response is None:
       print >> sys.stderr, (
@@ -167,7 +157,7 @@ class Manifest(object):
 
     url = '%s%s?priority=0&token=%s' % (
         self._data_server_storage, self._zip_file_hash, self._token())
-    response = run_isolated.url_open(
+    response = net.url_open(
         url, data=zip_contents, content_type='application/octet-stream')
     if response is None:
       print >> sys.stderr, 'Failed to upload the zip file: %s' % url
@@ -223,8 +213,8 @@ def get_test_keys(swarm_base_url, test_name):
   key_data = urllib.urlencode([('name', test_name)])
   url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
 
-  for i in range(run_isolated.URL_OPEN_MAX_ATTEMPTS):
-    response = run_isolated.url_open(url, retry_404=True)
+  for i in range(net.URL_OPEN_MAX_ATTEMPTS):
+    response = net.url_open(url, retry_404=True)
     if response is None:
       raise Failure(
           'Error: Unable to find any tests with the name, %s, on swarm server'
@@ -235,8 +225,8 @@ def get_test_keys(swarm_base_url, test_name):
     if 'No matching' in result:
       logging.warning('Unable to find any tests with the name, %s, on swarm '
                       'server' % test_name)
-      if i != run_isolated.URL_OPEN_MAX_ATTEMPTS:
-        run_isolated.HttpService.sleep_before_retry(i, None)
+      if i != net.URL_OPEN_MAX_ATTEMPTS:
+        net.HttpService.sleep_before_retry(i, None)
       continue
     return json.loads(result)
 
@@ -256,14 +246,13 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
       logging.error('retrieve_results(%s) timed out', base_url)
       return {}
     # Do retries ourselves.
-    response = run_isolated.url_open(
-        result_url, retry_404=False, retry_50x=False)
+    response = net.url_open(result_url, retry_404=False, retry_50x=False)
     if response is None:
       # Aggressively poll for results. Do not use retry_404 so
       # should_stop is polled more often.
       remaining = min(5, timeout - (now() - start)) if timeout else 5
       if remaining > 0:
-        run_isolated.HttpService.sleep_before_retry(1, remaining)
+        net.HttpService.sleep_before_retry(1, remaining)
     else:
       try:
         data = json.load(response) or {}
@@ -321,13 +310,16 @@ def chromium_setup(manifest):
 
   Highly chromium specific.
   """
-  cleanup_script_name = 'swarm_cleanup.py'
-  cleanup_script_path = os.path.join(TOOLS_PATH, cleanup_script_name)
-  run_test_name = 'run_isolated.py'
-  run_test_path = os.path.join(ROOT_DIR, run_test_name)
+  # Add uncompressed zip here. It'll be compressed as part of the package sent
+  # to Swarming server.
+  run_test_name = 'run_isolated.zip'
+  manifest.bundle.add_buffer(run_test_name,
+    run_isolated.get_as_zip_package().zip_into_buffer(compress=False))
 
-  manifest.add_file(run_test_path, run_test_name)
-  manifest.add_file(cleanup_script_path, cleanup_script_name)
+  cleanup_script_name = 'swarm_cleanup.py'
+  manifest.bundle.add_file(os.path.join(TOOLS_PATH, cleanup_script_name),
+    cleanup_script_name)
+
   run_cmd = [
     'python', run_test_name,
     '--hash', manifest.manifest_hash,
@@ -404,7 +396,7 @@ def process_manifest(
   print('Job name: %s' % test_name)
   test_url = swarming + '/test'
   manifest_text = manifest.to_json()
-  result = run_isolated.url_open(test_url, data={'request': manifest_text})
+  result = net.url_open(test_url, data={'request': manifest_text})
   if not result:
     print >> sys.stderr, 'Failed to send test for %s\n%s' % (
         test_name, test_url)

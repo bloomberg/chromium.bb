@@ -25,7 +25,7 @@ import isolateserver_archive
 class IsolateServerTest(auto_stub.TestCase):
   def setUp(self):
     super(IsolateServerTest, self).setUp()
-    self.mock(isolateserver_archive.run_isolated, 'url_open', self._url_open)
+    self.mock(isolateserver_archive.net, 'url_open', self._url_open)
     self.mock(isolateserver_archive, 'randomness', lambda: 'not_really_random')
     self._lock = threading.Lock()
     self._requests = []

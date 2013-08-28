@@ -17,8 +17,8 @@ import auto_stub
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import run_isolated
 import swarming
+from utils import net
 
 
 FILE_NAME = u'test.isolated'
@@ -148,7 +148,7 @@ class TestCase(auto_stub.TestCase):
     super(TestCase, self).setUp()
     self._lock = threading.Lock()
     self.requests = []
-    self.mock(swarming.run_isolated, 'url_open', self._url_open)
+    self.mock(swarming.net, 'url_open', self._url_open)
 
   def tearDown(self):
     try:
@@ -179,7 +179,7 @@ class TestGetTestKeys(TestCase):
         'http://host:9001/get_matching_test_cases?name=my_test',
         {'retry_404': True},
         StringIO.StringIO('No matching Test Cases'),
-      ) for _ in range(run_isolated.URL_OPEN_MAX_ATTEMPTS)
+      ) for _ in range(net.URL_OPEN_MAX_ATTEMPTS)
     ]
     try:
       swarming.get_test_keys('http://host:9001', 'my_test')
@@ -264,7 +264,7 @@ class TestGetSwarmResults(TestCase):
 
   def test_url_errors(self):
     # NOTE: get_swarm_results() hardcodes timeout=10. range(12) is because of an
-    # additional time.time() call deep in run_isolated.url_open().
+    # additional time.time() call deep in net.url_open().
     now = {}
     lock = threading.Lock()
     def get_now():
@@ -272,7 +272,7 @@ class TestGetSwarmResults(TestCase):
       with lock:
         return now.setdefault(t, range(12)).pop(0)
     self.mock(
-        swarming.run_isolated.HttpService,
+        swarming.net.HttpService,
         'sleep_before_retry',
         staticmethod(lambda _x, _y: None))
     self.mock(swarming, 'now', get_now)
@@ -363,7 +363,7 @@ def chromium_tasks(retrieval_url):
   return [
     {
       u'action': [
-        u'python', u'run_isolated.py',
+        u'python', u'run_isolated.zip',
         u'--hash', FILE_HASH,
         u'--remote', retrieval_url + u'default-gzip/',
       ],
@@ -417,17 +417,6 @@ def generate_expected_json(
   return expected
 
 
-class MockZipFile(object):
-  def __init__(self, filename, mode):
-    pass
-
-  def write(self, source, dest=None):
-    pass
-
-  def close(self):
-    pass
-
-
 def MockUrlOpen(url, _data, has_return_value):
   if '/content/contains' in url:
     return StringIO.StringIO(has_return_value)
@@ -447,7 +436,6 @@ def MockUrlOpenNoZip(url, data=None, content_type=None):
 class ManifestTest(auto_stub.TestCase):
   def setUp(self):
     self.mock(swarming.time, 'sleep', lambda x: None)
-    self.mock(swarming.zipfile, 'ZipFile', MockZipFile)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 
@@ -540,7 +528,7 @@ class ManifestTest(auto_stub.TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_process_manifest_success(self):
-    self.mock(swarming.run_isolated, 'url_open', MockUrlOpenNoZip)
+    self.mock(swarming.net, 'url_open', MockUrlOpenNoZip)
 
     result = swarming.process_manifest(
         file_sha1_or_isolated=FILE_HASH,
@@ -565,7 +553,7 @@ class ManifestTest(auto_stub.TestCase):
     self.mock(sys, 'stdout', StringIO.StringIO())
 
   def test_process_manifest_success_zip_already_uploaded(self):
-    self.mock(swarming.run_isolated, 'url_open', MockUrlOpenHasZip)
+    self.mock(swarming.net, 'url_open', MockUrlOpenHasZip)
 
     result = swarming.process_manifest(
         file_sha1_or_isolated=FILE_HASH,

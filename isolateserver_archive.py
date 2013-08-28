@@ -19,6 +19,7 @@ import zlib
 
 import run_isolated
 
+from utils import net
 from utils import threading_utils
 from utils import tools
 
@@ -118,7 +119,7 @@ def sha1_file(filepath):
 
 
 def url_read(url, **kwargs):
-  result = run_isolated.url_read(url, **kwargs)
+  result = net.url_read(url, **kwargs)
   if result is None:
     # If we get no response from the server, assume it is down and raise an
     # exception.
@@ -143,21 +144,21 @@ def upload_hash_content_to_blobstore(
   # TODO(maruel): Support large files. This would require streaming support.
   content_type, body = encode_multipart_formdata(
       data, [('content', hash_key, content)])
-  for attempt in xrange(run_isolated.URL_OPEN_MAX_ATTEMPTS):
+  for attempt in xrange(net.URL_OPEN_MAX_ATTEMPTS):
     # Retry HTTP 50x here.
-    upload_url = run_isolated.url_read(generate_upload_url, data=data)
+    upload_url = net.url_read(generate_upload_url, data=data)
     if not upload_url:
       raise run_isolated.MappingError(
           'Unable to connect to server %s' % generate_upload_url)
 
     # Do not retry this request on HTTP 50x. Regenerate an upload url each time
     # since uploading "consumes" the upload url.
-    result = run_isolated.url_read(
+    result = net.url_read(
         upload_url, data=body, content_type=content_type, retry_50x=False)
     if result is not None:
       return result
-    if attempt != run_isolated.URL_OPEN_MAX_ATTEMPTS - 1:
-      run_isolated.HttpService.sleep_before_retry(attempt, None)
+    if attempt != net.URL_OPEN_MAX_ATTEMPTS - 1:
+      net.HttpService.sleep_before_retry(attempt, None)
   raise run_isolated.MappingError(
       'Unable to connect to server %s' % generate_upload_url)
 
