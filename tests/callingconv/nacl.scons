@@ -5,7 +5,7 @@
 
 Import('env')
 
-# This test does not make any sense for pure pnacl
+# This test does not make any sense for pure pnacl.
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
@@ -38,7 +38,7 @@ base_env = env.Clone()
 callingconv_h = base_env.File('callingconv.h').srcnode()
 extra_cflags = [ '-Wno-long-long', '-I' + callingconv_h.dir.abspath ]
 
-settings = {
+base_settings = {
   'num_functions'    : 200,
   'calls_per_func'   : 4,
   'max_args_per_func': 16,
@@ -48,109 +48,119 @@ settings = {
   # which would force scons to always rebuild.
 }
 
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2381
+def AddTest(env, test_variant, envlist, settings, is_broken):
+  envlist = list(envlist)
+  settings = dict(settings)
+  # Add custom CFLAGS: this must be done here, since PNaClGetNNaClEnv
+  # wipes CFLAGS.
+  for e in envlist:
+    e.Append(CFLAGS = extra_cflags)
+
+  # Create two modules for each environment,
+  # so that we test toolchain self-interaction.
+  envlist = envlist + envlist
+  num_modules = len(envlist)
+  settings['num_modules'] = num_modules
+  module_filenames = [ 'module%d_%s.c' % (i, test_variant)
+                       for i in xrange(num_modules) ]
+
+  # Generate the module source files (module0.c, module1.c, ...).
+  settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
+  base_env = env.Clone()
+  base_env['GENERATOR_SETTINGS'] = ' '.join(settings_args)
+
+  if not env.Bit('built_elsewhere'):
+    # On the QEMU bot, generate the golden file and c files.
+    nodes = base_env.Command(
+        [test_variant + '.golden'] + module_filenames,
+        base_env.File('generate.py'),
+        Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
+  else:
+    # On the hardware bot, do not regenerate the files.
+    nodes = []
+    nodes.append(base_env.File(test_variant + '.golden'))
+    nodes.extend([ base_env.File(module_filenames[i])
+                   for i in xrange(num_modules) ])
+
+  # Create the module objects
+  modules = []
+  for i in xrange(num_modules):
+    obj = envlist[i].ComponentObject(nodes[i+1])
+    envlist[i].Depends(obj, callingconv_h)
+    modules.append(obj)
+
+  # Compile callingconv.c
+  callingconv = link_env.ComponentObject(
+      test_variant,
+      'callingconv.c')
+  link_env.Depends(callingconv, callingconv_h)
+
+  prog = link_env.ComponentProgram(test_variant,
+                                   [callingconv] + modules,
+                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  node = link_env.CommandSelLdrTestNacl(
+      test_variant + '.out',
+      prog,
+      stdout_golden=nodes[0])
+
+  env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
+                         'run_' + test_variant + '_test',
+                         is_broken=is_broken)
+
+
 if env.Bit('bitcode'):
+  # For PNaCl, we do a mixed test and a self-consistency test.
+  # The mixed test checks self-consistency as well, but it is currently
+  # broken on several platforms, so we check it separately as well
+  # (where it is not broken).
+
+  # (1) Self-consistency.
+  settings = dict(base_settings)
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2381
   settings['allow_struct_va_arg'] = 0
+  envlist = [base_env]
+  link_env = base_env
+  AddTest(base_env, 'callingconv_self', envlist, settings, is_broken=False)
 
-# Structure passing for PNaCl X86-64 has a different ABI.
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=1902
-if env.Bit('bitcode') and env.Bit('target_x86_64'):
-  settings['allow_struct'] = 0
+  # (2) Cross-check.
+  if env.Bit('target_arm'):
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
+    settings['allow_double'] = 0
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3143
+    settings['allow_struct'] = 0
 
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
-if env.Bit('target_arm'):
-  settings['allow_double'] = 0
-
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=3143
-if env.Bit('bitcode') and env.Bit('target_arm'):
-  settings['allow_struct'] = 0
-
-# Environments for building module sources
-envlist = []
-
-is_broken = False
-
-if env.Bit('bitcode'):
-  # For PNaCl, we do a mixed test.
-  # Create environments for pnacl-clang, pnacl-gcc, and nacl-gcc.
-  # For each environment, we compile a test module straight to native code.
+  envlist = []
   pnacl_env = base_env.Clone()
   pnacl_env.PNaClForceNative()
-
+  # PNaCl only uses the standard ABI if given special flags.
   if env.Bit('target_arm'):
-    # For ARM, PNaCl only uses the standard ABI if given special flags.
     pnacl_env.Append(CCFLAGS=[
         '--target=armv7a-unknown-nacl-gnueabi',
         '-mfloat-abi=hard',
         ])
+  elif env.Bit('target_x86_32'):
+    pnacl_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
+  elif env.Bit('target_x86_64'):
+    pnacl_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
+  else:
+    raise Exception('Unknown architecture')
 
   envlist.append(pnacl_env)
 
   native_env = base_env.PNaClGetNNaClEnv()
   envlist.append(native_env)
-
-  # TODO(mcgrathr): Remove after fix for:
-  # https://code.google.com/p/nativeclient/issues/detail?id=3143
-  is_broken = env.Bit('target_arm')
-
   link_env = pnacl_env
+
+  # TODO(mcgrathr): Remove after fix for ARM:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3143
+  # Also broken on x86_32:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3650
+  is_broken = env.Bit('target_arm') or env.Bit('target_x86_32')
+  AddTest(base_env, 'callingconv', envlist, settings, is_broken)
 else:
-  # For NNaCl toolchain, just test self-consistency
+  # For NNaCl toolchain, just test self-consistency.
+  settings = dict(base_settings)
   link_env = base_env
-  envlist.append(base_env)
-
-# Add custom CFLAGS
-# This must be done here, since PNaClGetNNaClEnv and
-# PNaClChangeFrontend wipe CFLAGS.
-for e in envlist:
-  e.Append(CFLAGS = extra_cflags)
-
-# Create two modules for each environment,
-# so that we test toolchain self-interaction.
-envlist = envlist + envlist
-
-num_modules = len(envlist)
-settings['num_modules'] = num_modules
-module_filenames = [ 'module%d.c' % i for i in xrange(num_modules) ]
-
-# Generate the module source files (module0.c, module1.c, ...)
-settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
-base_env['GENERATOR_SETTINGS'] = ' '.join(settings_args)
-
-
-if not env.Bit('built_elsewhere'):
-  # on the QEMU bot, generate the golden file and c files
-  nodes = base_env.Command(
-      ['callingconv.golden'] + module_filenames,
-      base_env.File('generate.py'),
-      Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
-else:
-  # on the hardware bot, do not regenerate the files
-  nodes = []
-  nodes.append(base_env.File('callingconv.golden'))
-  nodes.extend([base_env.File(module_filenames[i]) for i in xrange(num_modules)])
-
-# Create the module objects
-modules = []
-for i in xrange(num_modules):
-  obj = envlist[i].ComponentObject(nodes[i+1])
-  envlist[i].Depends(obj, callingconv_h)
-  modules.append(obj)
-
-# Compile callingconv.c
-callingconv = link_env.ComponentObject('callingconv.c')
-link_env.Depends(callingconv, callingconv_h)
-
-
-prog = link_env.ComponentProgram('callingconv',
-                                 [callingconv] + modules,
-                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
-
-node = link_env.CommandSelLdrTestNacl(
-         'callingconv.out',
-         prog,
-         stdout_golden=nodes[0])
-
-env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
-                       'run_callingconv_test',
-                       is_broken=is_broken)
+  envlist = [base_env]
+  AddTest(base_env, 'callingconv', envlist, settings, is_broken=False)
