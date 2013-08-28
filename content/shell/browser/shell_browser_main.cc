@@ -194,6 +194,12 @@ int ShellBrowserMain(
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;
+
+#if defined(OS_ANDROID)
+      // There will be left-over tasks in the queue for Android because the
+      // main window is being destroyed. Run them before starting the next test.
+      base::MessageLoop::current()->RunUntilIdle();
+#endif
     }
     if (!ran_at_least_once) {
       base::MessageLoop::current()->PostTask(FROM_HERE,

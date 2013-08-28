@@ -287,6 +287,12 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   test_url_ = GURL();
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
+
+#if defined(OS_ANDROID)
+  // Re-using the shell's main window on Android causes issues with networking
+  // requests never succeeding. See http://crbug.com/277652.
+  DiscardMainWindow();
+#endif
   return true;
 }
 
