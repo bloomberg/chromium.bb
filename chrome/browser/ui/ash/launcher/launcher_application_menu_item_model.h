@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 
 #include "ash/launcher/launcher_delegate.h"
+#include "ash/launcher/launcher_item_delegate.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 

@@ -13,6 +13,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_delegate.h"
+#include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -71,7 +72,10 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // * App shell windows have ShellWindowLauncherItemController, owned by
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
+// TODO(simon.hong81): Move LauncherItemDelegate out from
+// ChromeLauncherController and makes separate subclass with it.
 class ChromeLauncherController : public ash::LauncherDelegate,
+                                 public ash::LauncherItemDelegate,
                                  public ash::LauncherModelObserver,
                                  public ash::ShellObserver,
                                  public ash::DisplayController::Observer,
@@ -265,17 +269,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                                         bool allow_minimize);
 
   // ash::LauncherDelegate overrides:
-  virtual void ItemSelected(const ash::LauncherItem& item,
-                           const ui::Event& event) OVERRIDE;
-  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(
-      const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      const ash::LauncherItem& item,
-      int event_flags) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
-  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
-  virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE;
   virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
   virtual ash::LauncherID GetLauncherIDForAppID(
@@ -284,6 +278,18 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
   virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
+
+  // ash::LauncherItemDelegate overrides:
+  virtual void ItemSelected(const ash::LauncherItem& item,
+                           const ui::Event& event) OVERRIDE;
+  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(
+      const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
+  virtual ash::LauncherMenuModel* CreateApplicationMenu(
+      const ash::LauncherItem& item,
+      int event_flags) OVERRIDE;
+  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
+  virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -464,6 +470,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // |target_index|.
   void MoveItemWithoutPinnedStateChangeNotification(int source_index,
                                                     int target_index);
+
+  // Register LauncherItemDelegate.
+  void RegisterLauncherItemDelegate();
 
   static ChromeLauncherController* instance_;
 

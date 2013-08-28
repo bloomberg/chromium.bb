@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/launcher/launcher_delegate.h"
+#include "ash/launcher/launcher_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/window_observer.h"
 
@@ -21,6 +22,7 @@ namespace test {
 // Test implementation of LauncherDelegate.
 // Tests may create icons for windows by calling AddLauncherItem
 class TestLauncherDelegate : public LauncherDelegate,
+                             public LauncherItemDelegate,
                              public aura::WindowObserver {
  public:
   explicit TestLauncherDelegate(LauncherModel* model);
@@ -38,6 +40,16 @@ class TestLauncherDelegate : public LauncherDelegate,
       const HierarchyChangeParams& params) OVERRIDE;
 
   // LauncherDelegate implementation.
+  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
+  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
+  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
+  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
+  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
+  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
+  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
+
+  // LauncherItemDelegate implementation.
   virtual void ItemSelected(const LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
   virtual base::string16 GetTitle(const LauncherItem& item) OVERRIDE;
@@ -46,16 +58,8 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual ash::LauncherMenuModel* CreateApplicationMenu(
       const LauncherItem& item,
       int event_flags) OVERRIDE;
-  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
-  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
-  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
-  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
-  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
-  virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
-  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
-  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 
  private:
   typedef std::map<aura::Window*, ash::LauncherID> WindowToID;

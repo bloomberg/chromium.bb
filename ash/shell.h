@@ -75,6 +75,7 @@ class DisplayController;
 class HighContrastController;
 class Launcher;
 class LauncherDelegate;
+class LauncherItemDelegateManager;
 class LauncherModel;
 class MagnificationController;
 class MruWindowTracker;
@@ -101,6 +102,7 @@ namespace internal {
 class AcceleratorFilter;
 class ActivationController;
 class AppListController;
+class AppListLauncherItemDelegate;
 class CaptureController;
 class DisplayChangeObserver;
 class DisplayErrorObserver;
@@ -366,6 +368,10 @@ class ASH_EXPORT Shell
     return activation_client_;
   }
 
+  LauncherItemDelegateManager* launcher_item_delegate_manager() {
+    return launcher_item_delegate_manager_.get();
+  }
+
   ScreenAsh* screen() { return screen_; }
 
   // Force the shelf to query for it's current visibility state.
@@ -541,6 +547,9 @@ class ASH_EXPORT Shell
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
+  scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
+  scoped_ptr<internal::AppListLauncherItemDelegate>
+      app_list_launcher_item_delegate_;
 
   scoped_ptr<LauncherModel> launcher_model_;
 

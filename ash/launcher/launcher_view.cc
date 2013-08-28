@@ -12,6 +12,8 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_icon_observer.h"
+#include "ash/launcher/launcher_item_delegate.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/overflow_bubble.h"
@@ -408,7 +410,8 @@ LauncherView::LauncherView(LauncherModel* model,
       got_deleted_(NULL),
       drag_and_drop_item_pinned_(false),
       drag_and_drop_launcher_id_(0),
-      dragged_off_shelf_(false) {
+      dragged_off_shelf_(false),
+      item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -981,9 +984,15 @@ void LauncherView::PrepareForDrag(Pointer pointer,
   drag_pointer_ = pointer;
   start_drag_index_ = view_model_->GetIndexOfView(drag_view_);
 
+  if (start_drag_index_== -1) {
+    CancelDrag(-1);
+    return;
+  }
+
   // If the item is no longer draggable, bail out.
-  if (start_drag_index_ == -1 ||
-      !delegate_->IsDraggable(model_->items()[start_drag_index_])) {
+  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+      model_->items()[start_drag_index_].type);
+  if (!item_delegate->IsDraggable(model_->items()[start_drag_index_])) {
     CancelDrag(-1);
     return;
   }
@@ -998,8 +1007,10 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   // Bail if it is gone.
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
-  if (current_index == -1 ||
-      !delegate_->IsDraggable(model_->items()[current_index])) {
+
+  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+      model_->items()[current_index].type);
+  if (!item_delegate->IsDraggable(model_->items()[current_index])) {
     CancelDrag(-1);
     return;
   }
@@ -1496,9 +1507,13 @@ void LauncherView::PointerPressedOnButton(views::View* view,
 
   tooltip_->Close();
   int index = view_model_->GetIndexOfView(view);
-  if (index == -1 ||
-      view_model_->view_size() <= 1 ||
-      !delegate_->IsDraggable(model_->items()[index]))
+  if (index == -1)
+    return;
+
+  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+      model_->items()[index].type);
+  if (view_model_->view_size() <= 1 ||
+      !item_delegate->IsDraggable(model_->items()[index]))
     return;  // View is being deleted or not draggable, ignore request.
 
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
@@ -1567,21 +1582,9 @@ base::string16 LauncherView::GetAccessibleName(const views::View* view) {
   if (view_index == -1)
     return base::string16();
 
-  switch (model_->items()[view_index].type) {
-    case TYPE_TABBED:
-    case TYPE_APP_PANEL:
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
-    case TYPE_BROWSER_SHORTCUT:
-      return delegate_->GetTitle(model_->items()[view_index]);
-
-    case TYPE_APP_LIST:
-      return model_->status() == LauncherModel::STATUS_LOADING ?
-          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_SYNCING_TITLE) :
-          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
-  }
-  return base::string16();
+  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+      model_->items()[view_index].type);
+  return item_delegate->GetTitle(model_->items()[view_index]);
 }
 
 void LauncherView::ButtonPressed(views::Button* sender,
@@ -1625,23 +1628,24 @@ void LauncherView::ButtonPressed(views::Button* sender,
       case TYPE_BROWSER_SHORTCUT:
         Shell::GetInstance()->delegate()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APP);
-        // Fallthrough
-      case TYPE_TABBED:
-      case TYPE_APP_PANEL:
-        delegate_->ItemSelected(model_->items()[view_index], event);
-        // Don't show the menu when the user creates a new browser using ctrl
-        // click.
-        if (model_->items()[view_index].type != TYPE_BROWSER_SHORTCUT ||
-            !(event.flags() & ui::EF_CONTROL_DOWN))
-          ShowListMenuForView(model_->items()[view_index], sender, event);
         break;
 
       case TYPE_APP_LIST:
         Shell::GetInstance()->delegate()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-        Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
+        break;
+
+      case TYPE_TABBED:
+      case TYPE_APP_PANEL:
         break;
     }
+
+    LauncherItemDelegate* item_delegate =
+        item_manager_->GetLauncherItemDelegate(
+            model_->items()[view_index].type);
+    item_delegate->ItemSelected(model_->items()[view_index], event);
+
+    ShowListMenuForView(model_->items()[view_index], sender, event);
   }
 }
 
@@ -1649,7 +1653,9 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
                                        views::View* source,
                                        const ui::Event& event) {
   scoped_ptr<ash::LauncherMenuModel> menu_model;
-  menu_model.reset(delegate_->CreateApplicationMenu(item, event.flags()));
+  LauncherItemDelegate* item_delegate =
+      item_manager_->GetLauncherItemDelegate(item.type);
+  menu_model.reset(item_delegate->CreateApplicationMenu(item, event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
@@ -1669,6 +1675,8 @@ void LauncherView::ShowContextMenuForView(views::View* source,
                                           const gfx::Point& point,
                                           ui:: MenuSourceType source_type) {
   int view_index = view_model_->GetIndexOfView(source);
+  // TODO(simon.hong81): Create LauncherContextMenu for applist in its
+  // LauncherItemDelegate.
   if (view_index != -1 &&
       model_->items()[view_index].type == TYPE_APP_LIST) {
     view_index = -1;
@@ -1680,11 +1688,15 @@ void LauncherView::ShowContextMenuForView(views::View* source,
     Shell::GetInstance()->ShowContextMenu(point, source_type);
     return;
   }
-  scoped_ptr<ui::MenuModel> menu_model(delegate_->CreateContextMenu(
+  scoped_ptr<ui::MenuModel> menu_model;
+  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+      model_->items()[view_index].type);
+  menu_model.reset(item_delegate->CreateContextMenu(
       model_->items()[view_index],
       source->GetWidget()->GetNativeView()->GetRootWindow()));
   if (!menu_model)
     return;
+
   base::AutoReset<LauncherID> reseter(
       &context_menu_id_,
       view_index == -1 ? 0 : model_->items()[view_index].id);
@@ -1816,7 +1828,11 @@ bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
       Shell::GetInstance()->GetAppListWindow())
     return false;
   const LauncherItem* item = LauncherItemForView(view);
-  return (!item || delegate_->ShouldShowTooltip(*item));
+  if (!item)
+    return true;
+  LauncherItemDelegate* item_delegate =
+      item_manager_->GetLauncherItemDelegate(item->type);
+  return item_delegate->ShouldShowTooltip(*item);
 }
 
 int LauncherView::CalculateShelfDistance(const gfx::Point& coordinate) const {

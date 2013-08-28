@@ -4,7 +4,9 @@
 
 #include "ash/shell/launcher_delegate_impl.h"
 
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_util.h"
+#include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
@@ -17,6 +19,10 @@ namespace shell {
 
 LauncherDelegateImpl::LauncherDelegateImpl(WindowWatcher* watcher)
     : watcher_(watcher) {
+  ash::LauncherItemDelegateManager* manager =
+      ash::Shell::GetInstance()->launcher_item_delegate_manager();
+  manager->RegisterLauncherItemDelegate(ash::TYPE_TABBED, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
 }
 
 LauncherDelegateImpl::~LauncherDelegateImpl() {

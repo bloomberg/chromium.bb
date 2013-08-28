@@ -35,6 +35,7 @@ class LauncherViewTestAPI;
 class LauncherDelegate;
 struct LauncherItem;
 class LauncherIconObserver;
+class LauncherItemDelegateManager;
 class LauncherModel;
 
 namespace internal {
@@ -385,6 +386,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // True when the icon was dragged off the shelf.
   bool dragged_off_shelf_;
+
+  // Holds LauncherItemDelegateManager.
+  LauncherItemDelegateManager* item_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

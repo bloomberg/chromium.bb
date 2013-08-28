@@ -4,8 +4,10 @@
 
 #include "ash/test/test_launcher_delegate.h"
 
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +23,15 @@ TestLauncherDelegate::TestLauncherDelegate(LauncherModel* model)
     : model_(model) {
   CHECK(!instance_);
   instance_ = this;
+
+  ash::LauncherItemDelegateManager* manager =
+      ash::Shell::GetInstance()->launcher_item_delegate_manager();
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_TABBED, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_WINDOWED_APP, this);
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {

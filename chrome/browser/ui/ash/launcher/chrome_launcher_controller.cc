@@ -8,6 +8,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
 #include "ash/root_window_controller.h"
@@ -243,6 +244,11 @@ ChromeLauncherController::ChromeLauncherController(
       prefs::kShelfPreferences,
       base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
                  base::Unretained(this)));
+
+  // This check is needed for win7_aura. Without this, all tests in
+  // ChromeLauncherControllerTest will fail by win7_aura.
+  if (ash::Shell::HasInstance())
+    RegisterLauncherItemDelegate();
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -1650,4 +1656,17 @@ ChromeLauncherController::MoveItemWithoutPinnedStateChangeNotification(
     int source_index, int target_index) {
   base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
   model_->Move(source_index, target_index);
+}
+
+void ChromeLauncherController::RegisterLauncherItemDelegate() {
+  // TODO(simon.hong81): Register LauncherItemDelegate when LauncherItemDelegate
+  // is created.
+  ash::LauncherItemDelegateManager* manager =
+      ash::Shell::GetInstance()->launcher_item_delegate_manager();
+  manager->RegisterLauncherItemDelegate(ash::TYPE_TABBED, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
+  manager->RegisterLauncherItemDelegate(ash::TYPE_WINDOWED_APP, this);
 }

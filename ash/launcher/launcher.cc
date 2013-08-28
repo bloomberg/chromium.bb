@@ -9,6 +9,8 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
+#include "ash/launcher/launcher_item_delegate.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_navigator.h"
 #include "ash/launcher/launcher_view.h"
@@ -106,9 +108,9 @@ void Launcher::ActivateLauncherItem(int index) {
                      ui::EF_NONE,
                      false);
 
-  const ash::LauncherItems& items =
-      launcher_view_->model()->items();
-  delegate_->ItemSelected(items[index], event);
+  const ash::LauncherItem& item = launcher_view_->model()->items()[index];
+  Shell::GetInstance()->launcher_item_delegate_manager()->
+      GetLauncherItemDelegate(item.type)->ItemSelected(item, event);
 }
 
 void Launcher::CycleWindowLinear(CycleDirection direction) {
