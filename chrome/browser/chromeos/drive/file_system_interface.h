@@ -37,14 +37,12 @@ struct SearchResultInfo {
 
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
-  MetadataSearchResult(const ResourceEntry& in_entry,
+  MetadataSearchResult(const base::FilePath& in_path,
+                       const ResourceEntry& in_entry,
                        const std::string& in_highlighted_base_name)
-      : entry(in_entry),
+      : path(in_path),
+        entry(in_entry),
         highlighted_base_name(in_highlighted_base_name) {
-    // Note: |path| is set separately from |entry| or other fields, because
-    // getting path typically takes longer time hence we want to fill it only
-    // when it is necessary. (I.e., not for temporary candidates, just for
-    // final user visible results.)
   }
 
   // The two members are used to create FileEntry object.
