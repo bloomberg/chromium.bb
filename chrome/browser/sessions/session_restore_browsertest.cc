@@ -308,9 +308,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title1.html"))));
-  GURL url2(ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(FILE_PATH_LITERAL("title2.html"))));
+  // Any page that will yield a 200 status code will work here.
+  GURL url2("about:version");
   GURL url3(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title3.html"))));
@@ -352,12 +351,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   // Find the SessionID for entry2. Since the session service was destroyed,
   // there is no guarantee that the SessionID for the tab has remained the same.
   base::Time timestamp;
+  int http_status_code = 0;
   for (std::vector<TabRestoreService::Tab>::const_iterator it =
            window->tabs.begin(); it != window->tabs.end(); ++it) {
     const TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
+      http_status_code = tab.navigations[0].http_status_code();
       std::vector<content::WebContents*> content =
           service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
       ASSERT_EQ(1U, content.size());
@@ -367,6 +368,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     }
   }
   EXPECT_FALSE(timestamp.is_null());
+  EXPECT_EQ(200, http_status_code);
 
   // Make sure that the restored tab is removed from the service.
   ASSERT_EQ(1U, service->entries().size());
@@ -375,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   EXPECT_EQ(2U, window->tabs.size());
 
   // Make sure that the restored tab was restored with the correct
-  // timestamp.
+  // timestamp and status code.
   const content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -383,6 +385,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       contents->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(timestamp, entry->GetTimestamp());
+  EXPECT_EQ(http_status_code, entry->GetHttpStatusCode());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {

@@ -202,6 +202,7 @@ base::DictionaryValue* TabNavigationToValue(
   SET_STR(favicon_url);
   SET_ENUM(blocked_state, GetBlockedStateString);
   SET_STR_REP(content_pack_categories);
+  SET_INT32(http_status_code);
   return value;
 }
 

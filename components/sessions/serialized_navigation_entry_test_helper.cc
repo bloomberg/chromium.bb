@@ -43,6 +43,7 @@ SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
   navigation.page_state_ =
       content::PageState::CreateFromEncodedData("fake_state");
   navigation.timestamp_ = base::Time::Now();
+  navigation.http_status_code_ = 200;
   return navigation;
 }
 

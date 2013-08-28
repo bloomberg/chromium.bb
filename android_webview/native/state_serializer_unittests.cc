@@ -54,6 +54,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   const GURL base_url_for_data_url("http://base_url");
   const bool is_overriding_user_agent = true;
   const base::Time timestamp = base::Time::FromInternalValue(12345);
+  const int http_status_code = 404;
 
   entry->SetURL(url);
   entry->SetVirtualURL(virtual_url);
@@ -65,6 +66,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   entry->SetBaseURLForDataURL(base_url_for_data_url);
   entry->SetIsOverridingUserAgent(is_overriding_user_agent);
   entry->SetTimestamp(timestamp);
+  entry->SetHttpStatusCode(http_status_code);
 
   Pickle pickle;
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
@@ -86,6 +88,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   EXPECT_EQ(base_url_for_data_url, copy->GetBaseURLForDataURL());
   EXPECT_EQ(is_overriding_user_agent, copy->GetIsOverridingUserAgent());
   EXPECT_EQ(timestamp, copy->GetTimestamp());
+  EXPECT_EQ(http_status_code, copy->GetHttpStatusCode());
 }
 
 }  // namespace android_webview

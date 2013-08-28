@@ -48,6 +48,7 @@ const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
 const string16 kSearchTerms = ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
+const int kHttpStatusCode = 404;
 
 const int kPageID = 10;
 
@@ -68,6 +69,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetExtraData(kSearchTermsKey, kSearchTerms);
   navigation_entry->GetFavicon().valid = true;
   navigation_entry->GetFavicon().url = kFaviconURL;
+  navigation_entry->SetHttpStatusCode(kHttpStatusCode);
   return navigation_entry.Pass();
 }
 
@@ -86,6 +88,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_navigation_home_page(true);
   sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
   sync_data.set_favicon_url(kFaviconURL.spec());
+  sync_data.set_http_status_code(kHttpStatusCode);
   return sync_data;
 }
 
@@ -108,6 +111,7 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_TRUE(navigation.timestamp().is_null());
   EXPECT_TRUE(navigation.search_terms().empty());
   EXPECT_FALSE(navigation.favicon_url().is_valid());
+  EXPECT_EQ(0, navigation.http_status_code());
 }
 
 // Create a SerializedNavigationEntry from a NavigationEntry.  All its fields
@@ -134,6 +138,7 @@ TEST(SerializedNavigationEntryTest, FromNavigationEntry) {
   EXPECT_EQ(kIsOverridingUserAgent, navigation.is_overriding_user_agent());
   EXPECT_EQ(kTimestamp, navigation.timestamp());
   EXPECT_EQ(kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
 }
 
 // Create a SerializedNavigationEntry from a sync_pb::TabNavigation.  All its
@@ -160,6 +165,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_TRUE(navigation.timestamp().is_null());
   EXPECT_EQ(kSearchTerms, navigation.search_terms());
   EXPECT_EQ(kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
 }
 
 // Create a SerializedNavigationEntry, pickle it, then create another one by
@@ -192,6 +198,7 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(kIsOverridingUserAgent, new_navigation.is_overriding_user_agent());
   EXPECT_EQ(kTimestamp, new_navigation.timestamp());
   EXPECT_EQ(kSearchTerms, new_navigation.search_terms());
+  EXPECT_EQ(kHttpStatusCode, new_navigation.http_status_code());
 }
 
 // Create a NavigationEntry, then create another one by converting to
@@ -226,6 +233,7 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
   string16 search_terms;
   new_navigation_entry->GetExtraData(kSearchTermsKey, &search_terms);
   EXPECT_EQ(kSearchTerms, search_terms);
+  EXPECT_EQ(kHttpStatusCode, new_navigation_entry->GetHttpStatusCode());
 }
 
 // Create a NavigationEntry, convert it to a SerializedNavigationEntry, then
@@ -251,6 +259,7 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
   EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp_msec());
   EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
   EXPECT_EQ(kFaviconURL.spec(), sync_data.favicon_url());
+  EXPECT_EQ(kHttpStatusCode, sync_data.http_status_code());
 }
 
 // Ensure all transition types and qualifiers are converted to/from the sync

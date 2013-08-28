@@ -798,6 +798,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry =
       NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
   active_entry->SetTimestamp(timestamp);
+  active_entry->SetHttpStatusCode(params.http_status_code);
   active_entry->SetPageState(params.page_state);
   // No longer needed since content state will hold the post data if any.
   active_entry->SetBrowserInitiatedPostData(NULL);

@@ -95,3 +95,31 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
   }
   ASSERT_EQ(1, found_navigations);
 }
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(CheckInitialState(0));
+
+  // We want a URL that doesn't 404 and has a non-empty title.
+  // about:version is simple to render, too.
+  const GURL url("about:version");
+
+  ScopedWindowMap windows;
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, windows.GetMutable()));
+
+  int found_navigations = 0;
+  for (SessionWindowMap::const_iterator it = windows.Get()->begin();
+       it != windows.Get()->end(); ++it) {
+    for (std::vector<SessionTab*>::const_iterator it2 =
+             it->second->tabs.begin(); it2 != it->second->tabs.end(); ++it2) {
+      for (std::vector<sessions::SerializedNavigationEntry>::const_iterator
+               it3 = (*it2)->navigations.begin();
+           it3 != (*it2)->navigations.end(); ++it3) {
+        EXPECT_EQ(200, it3->http_status_code());
+        ++found_navigations;
+      }
+    }
+  }
+  ASSERT_EQ(1, found_navigations);
+}

@@ -48,6 +48,7 @@ NavigationEntryImpl::NavigationEntryImpl()
       post_id_(-1),
       restore_type_(RESTORE_NONE),
       is_overriding_user_agent_(false),
+      http_status_code_(0),
       is_renderer_initiated_(false),
       should_replace_entry_(false),
       should_clear_history_list_(false),
@@ -75,6 +76,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       post_id_(-1),
       restore_type_(RESTORE_NONE),
       is_overriding_user_agent_(false),
+      http_status_code_(0),
       is_renderer_initiated_(is_renderer_initiated),
       should_replace_entry_(false),
       should_clear_history_list_(false),
@@ -275,6 +277,14 @@ void NavigationEntryImpl::SetTimestamp(base::Time timestamp) {
 
 base::Time NavigationEntryImpl::GetTimestamp() const {
   return timestamp_;
+}
+
+void NavigationEntryImpl::SetHttpStatusCode(int http_status_code) {
+  http_status_code_ = http_status_code;
+}
+
+int NavigationEntryImpl::GetHttpStatusCode() const {
+  return http_status_code_;
 }
 
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {

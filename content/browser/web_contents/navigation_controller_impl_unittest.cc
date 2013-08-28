@@ -355,8 +355,9 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), -1);
 
-  // The timestamp should not have been set yet.
+  // Neither the timestamp nor the status code should have been set yet.
   EXPECT_TRUE(controller.GetPendingEntry()->GetTimestamp().is_null());
+  EXPECT_EQ(0, controller.GetPendingEntry()->GetHttpStatusCode());
 
   // We should have gotten no notifications from the preceeding checks.
   EXPECT_EQ(0U, notifications.size());

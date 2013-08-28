@@ -624,6 +624,50 @@ TEST_F(PersistentTabRestoreServiceTest, TimestampSurvivesRestore) {
   }
 }
 
+// Makes sure we restore status codes correctly.
+TEST_F(PersistentTabRestoreServiceTest, StatusCodesSurviveRestore) {
+  AddThreeNavigations();
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(web_contents(), -1);
+
+  // Make sure an entry was created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // Make sure the entry matches.
+  std::vector<sessions::SerializedNavigationEntry> old_navigations;
+  {
+    // |entry|/|tab| doesn't survive after RecreateService().
+    TabRestoreService::Entry* entry = service_->entries().front();
+    ASSERT_EQ(TabRestoreService::TAB, entry->type);
+    Tab* tab = static_cast<Tab*>(entry);
+    old_navigations = tab->navigations;
+  }
+
+  EXPECT_EQ(3U, old_navigations.size());
+  for (size_t i = 0; i < old_navigations.size(); ++i) {
+    EXPECT_EQ(200, old_navigations[i].http_status_code());
+  }
+
+  // Set this, otherwise previous session won't be loaded.
+  profile()->set_last_session_exited_cleanly(false);
+
+  RecreateService();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  TabRestoreService::Entry* restored_entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, restored_entry->type);
+  Tab* restored_tab =
+      static_cast<Tab*>(restored_entry);
+  ASSERT_EQ(old_navigations.size(), restored_tab->navigations.size());
+  for (size_t i = 0; i < restored_tab->navigations.size(); ++i) {
+    EXPECT_EQ(200, restored_tab->navigations[i].http_status_code());
+  }
+}
+
 TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   service_->ClearEntries();
   ASSERT_TRUE(service_->entries().empty());

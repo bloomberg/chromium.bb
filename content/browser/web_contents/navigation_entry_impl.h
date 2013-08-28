@@ -84,6 +84,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual bool GetExtraData(const std::string& key,
                             string16* data) const OVERRIDE;
   virtual void ClearExtraData(const std::string& key) OVERRIDE;
+  virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
+  virtual int GetHttpStatusCode() const OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -231,6 +233,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   GURL original_request_url_;
   bool is_overriding_user_agent_;
   base::Time timestamp_;
+  int http_status_code_;
 
   // This member is not persisted with session restore because it is transient.
   // If the post request succeeds, this field is cleared since the same

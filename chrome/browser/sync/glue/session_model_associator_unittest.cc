@@ -326,14 +326,17 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
       content::NavigationEntry::Create());
   entry1->SetVirtualURL(GURL("http://www.google.com"));
   entry1->SetTimestamp(kTime1);
+  entry1->SetHttpStatusCode(200);
   scoped_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   entry2->SetVirtualURL(GURL("http://www.noodle.com"));
   entry2->SetTimestamp(kTime2);
+  entry2->SetHttpStatusCode(201);
   scoped_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   entry3->SetVirtualURL(GURL("http://www.doodle.com"));
   entry3->SetTimestamp(kTime3);
+  entry3->SetHttpStatusCode(202);
   EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
   EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
       Return(entry1.get()));
@@ -378,6 +381,9 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
   EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
   EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
   EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
+  EXPECT_EQ(200, session_tab.navigations[0].http_status_code());
+  EXPECT_EQ(201, session_tab.navigations[1].http_status_code());
+  EXPECT_EQ(202, session_tab.navigations[2].http_status_code());
   EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
             session_tab.navigations[0].blocked_state());
   EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,

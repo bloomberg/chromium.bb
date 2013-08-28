@@ -132,4 +132,6 @@ message TabNavigation {
   optional BlockedState blocked_state = 18 [default=STATE_ALLOWED];
   // A list of category identifiers for the URL.
   repeated string content_pack_categories = 19;
+  // The status code from the last navigation.
+  optional int32 http_status_code = 20;
 }

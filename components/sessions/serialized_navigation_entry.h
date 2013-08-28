@@ -100,6 +100,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   const content::PageState& page_state() const { return page_state_; }
   const string16& search_terms() const { return search_terms_; }
   const GURL& favicon_url() const { return favicon_url_; }
+  int http_status_code() const { return http_status_code_; }
   const content::Referrer& referrer() const { return referrer_; }
   content::PageTransition transition_type() const {
     return transition_type_;
@@ -149,6 +150,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   base::Time timestamp_;
   string16 search_terms_;
   GURL favicon_url_;
+  int http_status_code_;
 
   // Additional information.
   BlockedState blocked_state_;
