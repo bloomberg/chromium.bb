@@ -28,6 +28,7 @@
 #define NewDeviceOrientationController_h
 
 #include "core/dom/Event.h"
+#include "core/page/DOMWindowLifecycleObserver.h"
 #include "core/platform/Supplementable.h"
 #include "modules/device_orientation/DeviceSensorEventController.h"
 
@@ -37,7 +38,7 @@ class DeviceOrientationData;
 
 // FIXME: rename this class to DeviceOrientationController once Device Orientation is completely implemented
 // and the old implementation deleted from core/dom.
-class NewDeviceOrientationController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext> {
+class NewDeviceOrientationController : public DeviceSensorEventController, public Supplement<ScriptExecutionContext>, public DOMWindowLifecycleObserver {
 
 public:
     virtual ~NewDeviceOrientationController();
@@ -46,6 +47,11 @@ public:
     static NewDeviceOrientationController* from(Document*);
 
     void didChangeDeviceOrientation(WebCore::DeviceOrientationData*);
+
+    // Inherited from DOMWindowLifecycleObserver
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
 private:
     explicit NewDeviceOrientationController(Document*);

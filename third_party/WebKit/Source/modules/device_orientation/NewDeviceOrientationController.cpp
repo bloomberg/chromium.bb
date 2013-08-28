@@ -27,7 +27,9 @@
 #include "config.h"
 #include "modules/device_orientation/NewDeviceOrientationController.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/EventNames.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
@@ -35,7 +37,8 @@
 namespace WebCore {
 
 NewDeviceOrientationController::NewDeviceOrientationController(Document* document)
-    : DeviceSensorEventController(document)
+    : DOMWindowLifecycleObserver(document->domWindow())
+    , DeviceSensorEventController(document)
 {
 }
 
@@ -89,6 +92,23 @@ bool NewDeviceOrientationController::isNullEvent(Event* event)
     ASSERT(event->type() == eventNames().deviceorientationEvent);
     DeviceOrientationEvent* orientationEvent = static_cast<DeviceOrientationEvent*>(event);
     return !orientationEvent->orientation()->canProvideEventData();
+}
+
+void NewDeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
+{
+    if (eventType == eventNames().deviceorientationEvent && RuntimeEnabledFeatures::deviceOrientationEnabled())
+        startUpdating();
+}
+
+void NewDeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+{
+    if (eventType == eventNames().deviceorientationEvent)
+        stopUpdating();
+}
+
+void NewDeviceOrientationController::didRemoveAllEventListeners(DOMWindow* window)
+{
+    stopUpdating();
 }
 
 } // namespace WebCore
