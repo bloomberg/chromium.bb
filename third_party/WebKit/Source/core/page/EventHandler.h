@@ -277,6 +277,7 @@ private:
     void defaultSpaceEventHandler(KeyboardEvent*);
     void defaultBackspaceEventHandler(KeyboardEvent*);
     void defaultTabEventHandler(KeyboardEvent*);
+    void defaultEscapeEventHandler(KeyboardEvent*);
     void defaultArrowEventHandler(FocusDirection, KeyboardEvent*);
 
     DragSourceAction updateDragSourceActionsAllowed() const;

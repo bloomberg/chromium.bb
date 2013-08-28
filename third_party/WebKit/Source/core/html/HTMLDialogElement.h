@@ -50,7 +50,10 @@ private:
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const OVERRIDE;
+
+    void closeDialog(const String& returnValue = String());
     void reposition();
 
     bool m_topIsValid;

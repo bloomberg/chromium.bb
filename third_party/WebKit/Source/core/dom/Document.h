@@ -102,6 +102,7 @@ class FrameView;
 class HTMLAllCollection;
 class HTMLCanvasElement;
 class HTMLCollection;
+class HTMLDialogElement;
 class HTMLDocument;
 class HTMLElement;
 class HTMLFrameOwnerElement;
@@ -1040,7 +1041,7 @@ public:
     void addToTopLayer(Element*, const Element* before = 0);
     void removeFromTopLayer(Element*);
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
-    Element* activeModalDialog() const { return !m_topLayerElements.isEmpty() ? m_topLayerElements.last().get() : 0; }
+    HTMLDialogElement* activeModalDialog() const;
 
     const Document* templateDocument() const;
     Document* ensureTemplateDocument();

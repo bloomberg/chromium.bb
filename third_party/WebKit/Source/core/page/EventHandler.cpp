@@ -52,6 +52,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/fetch/ImageResource.h"
 #include "core/history/BackForwardController.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -3077,6 +3078,8 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
             defaultTabEventHandler(event);
         else if (event->keyIdentifier() == "U+0008")
             defaultBackspaceEventHandler(event);
+        else if (event->keyIdentifier() == "U+001B")
+            defaultEscapeEventHandler(event);
         else {
             FocusDirection direction = focusDirectionForKey(event->keyIdentifier());
             if (direction != FocusDirectionNone)
@@ -3398,7 +3401,6 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
         event->setDefaultHandled();
 }
 
-
 void EventHandler::defaultArrowEventHandler(FocusDirection focusDirection, KeyboardEvent* event)
 {
     ASSERT(event->type() == eventNames().keydownEvent);
@@ -3444,6 +3446,12 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
 
     if (page->focusController().advanceFocus(focusDirection))
         event->setDefaultHandled();
+}
+
+void EventHandler::defaultEscapeEventHandler(KeyboardEvent* event)
+{
+    if (HTMLDialogElement* dialog = m_frame->document()->activeModalDialog())
+        dialog->dispatchEvent(Event::create(eventNames().cancelEvent, false, true));
 }
 
 void EventHandler::capsLockStateMayHaveChanged()

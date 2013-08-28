@@ -40,6 +40,7 @@ namespace WebCore {
     macro(blocked) \
     macro(blur) \
     macro(cached) \
+    macro(cancel) \
     macro(change) \
     macro(chargingchange) \
     macro(chargingtimechange) \

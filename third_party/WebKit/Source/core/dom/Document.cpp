@@ -105,6 +105,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
@@ -4740,6 +4741,13 @@ void Document::removeFromTopLayer(Element* element)
     ASSERT(position != notFound);
     m_topLayerElements.remove(position);
     element->setIsInTopLayer(false);
+}
+
+HTMLDialogElement* Document::activeModalDialog() const
+{
+    if (m_topLayerElements.isEmpty())
+        return 0;
+    return static_cast<HTMLDialogElement*>(m_topLayerElements.last().get());
 }
 
 void Document::webkitExitPointerLock()

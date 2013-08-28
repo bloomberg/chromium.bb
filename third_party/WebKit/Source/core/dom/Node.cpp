@@ -72,6 +72,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/RadioNodeList.h"
@@ -866,7 +867,7 @@ bool Node::shouldHaveFocusAppearance() const
 
 bool Node::isInert() const
 {
-    const Element* dialog = document()->activeModalDialog();
+    const HTMLDialogElement* dialog = document()->activeModalDialog();
     if (dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this))
         return true;
     return document()->ownerElement() && document()->ownerElement()->isInert();

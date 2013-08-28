@@ -63,6 +63,11 @@ void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
         es.throwDOMException(InvalidStateError);
         return;
     }
+    closeDialog(returnValue);
+}
+
+void HTMLDialogElement::closeDialog(const String& returnValue)
+{
     setBooleanAttribute(openAttr, false);
     document()->removeFromTopLayer(this);
     m_topIsValid = false;
@@ -134,6 +139,16 @@ bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
         return true;
 
     return HTMLElement::isPresentationAttribute(name);
+}
+
+void HTMLDialogElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == eventNames().cancelEvent) {
+        closeDialog();
+        event->setDefaultHandled();
+        return;
+    }
+    HTMLElement::defaultEventHandler(event);
 }
 
 bool HTMLDialogElement::shouldBeReparentedUnderRenderView(const RenderStyle* style) const
