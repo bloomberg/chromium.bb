@@ -18,7 +18,6 @@
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperationContext;
-class FileSystemOperationImpl;
 class SandboxFileSystemBackend;
 }
 
@@ -29,7 +28,6 @@ class SyncableFileOperationRunner;
 // A wrapper class of FileSystemOperation for syncable file system.
 class SyncableFileSystemOperation
     : public NON_EXPORTED_BASE(fileapi::FileSystemOperation),
-      public base::SupportsWeakPtr<SyncableFileSystemOperation>,
       public base::NonThreadSafe {
  public:
   virtual ~SyncableFileSystemOperation();
@@ -93,8 +91,6 @@ class SyncableFileSystemOperation
       const fileapi::FileSystemURL& url,
       base::FilePath* platform_path) OVERRIDE;
 
-  using base::SupportsWeakPtr<SyncableFileSystemOperation>::AsWeakPtr;
-
  private:
   typedef SyncableFileSystemOperation self;
   class QueueableTask;
@@ -106,7 +102,6 @@ class SyncableFileSystemOperation
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* file_system_context,
       scoped_ptr<fileapi::FileSystemOperationContext> operation_context);
-  fileapi::FileSystemOperationImpl* NewOperation();
 
   void DidFinish(base::PlatformFileError status);
   void DidWrite(const WriteCallback& callback,
@@ -117,16 +112,16 @@ class SyncableFileSystemOperation
   void OnCancelled();
 
   const fileapi::FileSystemURL url_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_ptr<fileapi::FileSystemOperationContext> operation_context_;
 
+  scoped_ptr<fileapi::FileSystemOperation> impl_;
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
-  scoped_ptr<fileapi::FileSystemOperationImpl> inflight_operation_;
   std::vector<fileapi::FileSystemURL> target_paths_;
 
   StatusCallback completion_callback_;
 
   bool is_directory_operation_enabled_;
+
+  base::WeakPtrFactory<SyncableFileSystemOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileSystemOperation);
 };

@@ -26,8 +26,7 @@ class RecursiveOperationDelegate;
 
 // The default implementation of FileSystemOperation for file systems.
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
-    : public NON_EXPORTED_BASE(FileSystemOperation),
-      public base::SupportsWeakPtr<FileSystemOperationImpl> {
+    : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
   // NOTE: This constructor should not be called outside FileSystemBackends;
   // instead please consider using
@@ -195,6 +194,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
+
+  base::WeakPtrFactory<FileSystemOperationImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImpl);
 };
