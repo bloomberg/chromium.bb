@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
 
 namespace WebKit {
 class WebMediaStreamCenterClient;

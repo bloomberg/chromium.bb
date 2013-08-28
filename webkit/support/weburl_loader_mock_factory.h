@@ -9,12 +9,12 @@
 
 #include "base/files/file_path.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace WebKit {
 class WebData;
-struct WebURLError;
 class WebURLLoader;
 }
 
@@ -75,7 +75,11 @@ class WebURLLoaderMockFactory {
   void CancelLoad(WebURLLoaderMock* loader);
 
  private:
-  struct ResponseInfo;
+  struct ResponseInfo {
+    WebKit::WebURLResponse response;
+    base::FilePath file_path;
+  };
+
 
   // Loads the specified request and populates the response, error and data
   // accordingly.

@@ -24,11 +24,6 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
-struct WebURLLoaderMockFactory::ResponseInfo {
-  WebKit::WebURLResponse response;
-  base::FilePath file_path;
-};
-
 WebURLLoaderMockFactory::WebURLLoaderMockFactory() {}
 
 WebURLLoaderMockFactory::~WebURLLoaderMockFactory() {}

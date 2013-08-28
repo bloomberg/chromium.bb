@@ -11,8 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 

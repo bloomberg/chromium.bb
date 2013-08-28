@@ -15,14 +15,13 @@
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
 #include "content/common/content_export.h"
+#include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/host/ppapi_host.h"
 
 namespace content {
-
-struct PepperRendererInstanceData;
 
 class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
  public:

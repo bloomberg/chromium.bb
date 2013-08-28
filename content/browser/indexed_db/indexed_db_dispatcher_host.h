@@ -12,8 +12,8 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "url/gurl.h"
 
-class GURL;
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCount_Params;
 struct IndexedDBHostMsg_DatabaseCreateIndex_Params;

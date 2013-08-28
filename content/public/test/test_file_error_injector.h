@@ -13,8 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 
