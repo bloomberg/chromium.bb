@@ -304,7 +304,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   ntp_process_host->sink().ClearMessages();
   ViewHostMsg_RunJavaScriptMessage js_msg(
       rvh()->GetRoutingID(), msg, msg, kChromeURL,
-      JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
+      JAVASCRIPT_MESSAGE_TYPE_CONFIRM, false, &result, &unused);
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
