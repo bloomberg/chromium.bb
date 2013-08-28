@@ -31,7 +31,7 @@ PinnedTabService* BuildForProfile(Profile* profile) {
 
 class PinnedTabServiceTest : public BrowserWithTestWindowTest {
  public:
-  PinnedTabServiceTest() {}
+  PinnedTabServiceTest() : pinned_tab_service_(NULL) {}
 
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
