@@ -458,5 +458,50 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Tests that the lazy background page updates the chrome://extensions page
+// when it is destroyed.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
+
+  ResultCatcher catcher;
+  base::FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+      AppendASCII("wait_for_view");
+  const Extension* extension = LoadExtension(extdir);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // The extension should've opened a new tab to an extension page.
+  EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetURL().spec());
+
+  // Lazy Background Page still exists, because the extension created a new tab
+  // to an extension page.
+  ExtensionProcessManager* pm =
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Close the new tab.
+  LazyBackgroundObserver page_complete;
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
+  page_complete.WaitUntilClosed();
+
+  // Lazy Background Page has been shut down.
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Verify that extensions page shows that the lazy background page is
+  // inactive.
+  bool is_inactive;
+  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "//iframe[starts-with(@src, 'chrome://extension')]",
+      "var ele = document.querySelectorAll('div.active-views');"
+      "window.domAutomationController.send("
+      "    ele[0].innerHTML.search('(Inactive)') > 0);",
+      &is_inactive));
+  EXPECT_TRUE(is_inactive);
+}
+
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.

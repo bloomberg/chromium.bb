@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -494,6 +496,15 @@ void ExtensionSettingsHandler::Observe(
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
+    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED:
+       // This notification is sent when the extension host destruction begins,
+       // not when it finishes. We use PostTask to delay the update until after
+       // the destruction finishes.
+       base::MessageLoop::current()->PostTask(
+           FROM_HERE,
+           base::Bind(&ExtensionSettingsHandler::MaybeUpdateAfterNotification,
+                      base::Unretained(this)));
+       break;
     default:
       NOTREACHED();
   }
@@ -966,6 +977,9 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(
           profile->GetExtensionService()->extension_prefs()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 
   content::RenderViewHost::AddCreatedCallback(rvh_created_callback_);
 
