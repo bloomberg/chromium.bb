@@ -10,14 +10,16 @@
 
 namespace content {
 
+class RenderProcessHost;
 class RenderViewHostImpl;
 
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
-  RenderFrameHostImpl(
-      RenderViewHostImpl* render_view_host,
-      int routing_id,
-      bool swapped_out);
+  static RenderFrameHostImpl* FromID(int process_id, int routing_id);
+
+  RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+                      int routing_id,
+                      bool is_swapped_out);
   virtual ~RenderFrameHostImpl();
 
   // IPC::Sender
@@ -26,12 +28,16 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  int routing_id() { return routing_id_; }
+  void Init();
+  RenderProcessHost* GetProcess() const;
+  int routing_id() const { return routing_id_; }
 
  private:
-  RenderViewHostImpl* render_view_host_;
+  bool is_swapped_out() { return is_swapped_out_; }
 
+  RenderViewHostImpl* render_view_host_;  // Not owned. Outlives this object.
   int routing_id_;
+  bool is_swapped_out_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };

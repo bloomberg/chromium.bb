@@ -176,15 +176,16 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didLoseWebGLContext(WebKit::WebFrame* frame,
                                    int arb_robustness_status_code);
 
-  // RenderFrameImpl methods
-  int GetRoutingID() const;
-
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
  private:
+  int GetRoutingID() const;
+
   RenderViewImpl* render_view_;
   int routing_id_;
+  bool is_swapped_out_;
+  bool is_detaching_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

@@ -202,7 +202,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called when a renderer object already been created for this host, and we
   // just need to be attached to it. Used for window.open, <select> dropdown
   // menus, and other times when the renderer initiates creating an object.
-  void Init();
+  virtual void Init();
 
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();

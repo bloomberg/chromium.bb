@@ -356,6 +356,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   }
 
   // RenderWidgetHost public overrides.
+  virtual void Init() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual bool IsRenderView() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -587,6 +588,11 @@ class CONTENT_EXPORT RenderViewHostImpl
  private:
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
+
+  // TODO(nasko): Remove this accessor once RenderFrameHost moves into the frame
+  // tree.
+  RenderFrameHostImpl* main_render_frame_host() const;
 
   // Sets whether this RenderViewHost is swapped out in favor of another,
   // and clears any waiting state that is no longer relevant.

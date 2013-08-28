@@ -288,4 +288,11 @@ TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
+TEST_F(RenderViewHostTest, RoutingIdSane) {
+  EXPECT_EQ(test_rvh()->GetProcess(),
+            test_rvh()->main_render_frame_host()->GetProcess());
+  EXPECT_NE(test_rvh()->GetRoutingID(),
+            test_rvh()->main_render_frame_host()->routing_id());
+}
+
 }  // namespace content

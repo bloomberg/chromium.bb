@@ -116,11 +116,7 @@ g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 // static
 RenderViewHost* RenderViewHost::FromID(int render_process_id,
                                        int render_view_id) {
-  RenderWidgetHost* widget =
-      RenderWidgetHost::FromID(render_process_id, render_view_id);
-  if (!widget || !widget->IsRenderView())
-    return NULL;
-  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
+  return RenderViewHostImpl::FromID(render_process_id, render_view_id);
 }
 
 // static
@@ -143,8 +139,11 @@ void RenderViewHost::FilterURL(const RenderProcessHost* process,
 // static
 RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
                                                int render_view_id) {
-  return static_cast<RenderViewHostImpl*>(
-      RenderViewHost::FromID(render_process_id, render_view_id));
+  RenderWidgetHost* widget =
+      RenderWidgetHost::FromID(render_process_id, render_view_id);
+  if (!widget || !widget->IsRenderView())
+    return NULL;
+  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
 }
 
 RenderViewHostImpl::RenderViewHostImpl(
@@ -1020,6 +1019,11 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   }
 
   return handled;
+}
+
+void RenderViewHostImpl::Init() {
+  RenderWidgetHostImpl::Init();
+  main_render_frame_host()->Init();
 }
 
 void RenderViewHostImpl::Shutdown() {
@@ -2030,6 +2034,11 @@ void RenderViewHostImpl::OnShowPopup(
   }
 }
 #endif
+
+RenderFrameHostImpl* RenderViewHostImpl::main_render_frame_host() const {
+  DCHECK_EQ(GetProcess(), main_render_frame_host_->GetProcess());
+  return main_render_frame_host_.get();
+}
 
 void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
   // We update the number of RenderViews in a SiteInstance when the
