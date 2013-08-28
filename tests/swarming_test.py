@@ -263,6 +263,7 @@ class TestGetSwarmResults(TestCase):
     self.assertEqual([], actual)
 
   def test_url_errors(self):
+    self.mock(logging, 'error', lambda *_: None)
     # NOTE: get_swarm_results() hardcodes timeout=10. range(12) is because of an
     # additional time.time() call deep in net.url_open().
     now = {}
@@ -357,6 +358,38 @@ class TestGetSwarmResults(TestCase):
     ]
     actual = get_swarm_results(['key1', 'key1-repeat', 'key2', 'key3'])
     self.assertEqual(expected, sorted(actual))
+
+  def test_collect_nothing(self):
+    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'yield_results', lambda *_: [])
+    self.assertEquals(
+        1, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
+
+  def test_collect_success(self):
+    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    data = {
+      'config_instance_index': 0,
+      'exit_codes': '0',
+      'machine_id': 0,
+      'output': 'Foo',
+    }
+    self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
+    self.assertEquals(
+        0, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
+
+  def test_collect_fail(self):
+    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    data = {
+      'config_instance_index': 0,
+      'exit_codes': '0,8',
+      'machine_id': 0,
+      'output': 'Foo',
+    }
+    self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
+    self.assertEquals(
+        8, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
 
 
 def chromium_tasks(retrieval_url):

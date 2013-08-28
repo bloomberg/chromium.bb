@@ -467,7 +467,7 @@ def collect(url, test_name, timeout, decorate):
   if not test_keys:
     raise Failure('No test keys to get results with.')
 
-  exit_code = 0
+  exit_code = None
   for _index, output in yield_results(url, test_keys, timeout, None):
     shard_exit_codes = (output['exit_codes'] or '1').split(',')
     shard_exit_code = max(int(i) for i in shard_exit_codes)
@@ -480,7 +480,8 @@ def collect(url, test_name, timeout, decorate):
               output['machine_tag'],
               output['exit_codes']))
       print(''.join('  %s\n' % l for l in output['output'].splitlines()))
-  return exit_code
+    exit_code = exit_code or shard_exit_code
+  return exit_code if exit_code is not None else 1
 
 
 def add_trigger_options(parser):
