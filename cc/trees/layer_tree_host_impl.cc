@@ -1681,19 +1681,49 @@ bool LayerTreeHostImpl::DeferredInitialize(
 
   ReleaseTreeResources();
   renderer_.reset();
-  resource_provider_->InitializeGL();
-  bool skip_gl_renderer = false;
-  CreateAndSetRenderer(
-      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
-  bool success = !!renderer_.get();
+  bool resource_provider_success = resource_provider_->InitializeGL();
+
+  bool success = resource_provider_success;
+  if (success) {
+    bool skip_gl_renderer = false;
+    CreateAndSetRenderer(
+        output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
+    if (!renderer_)
+      success = false;
+  }
+
+  if (success) {
+    if (offscreen_context_provider.get() &&
+        !offscreen_context_provider->BindToCurrentThread())
+      success = false;
+  }
+
   if (success) {
     EnforceZeroBudget(false);
     client_->SetNeedsCommitOnImplThread();
-  } else if (offscreen_context_provider.get()) {
-    if (offscreen_context_provider->BindToCurrentThread())
-      offscreen_context_provider->VerifyContexts();
-    offscreen_context_provider = NULL;
+  } else {
+    if (offscreen_context_provider.get()) {
+      if (offscreen_context_provider->BindToCurrentThread())
+        offscreen_context_provider->VerifyContexts();
+      offscreen_context_provider = NULL;
+    }
+
+    client_->DidLoseOutputSurfaceOnImplThread();
+
+    if (resource_provider_success) {
+      // If this fails the context provider will be dropped from the output
+      // surface and destroyed. But the GLRenderer expects the output surface
+      // to stick around - and hold onto the context3d - as long as it is alive.
+      // TODO(danakj): Remove the need for this code path: crbug.com/276411
+      renderer_.reset();
+
+      // The resource provider can't stay in GL mode or it tries to clean up GL
+      // stuff, but the context provider is going away on the output surface
+      // which contradicts being in GL mode.
+      // TODO(danakj): Remove the need for this code path: crbug.com/276411
+      resource_provider_->InitializeSoftware();
+    }
   }
 
   SetOffscreenContextProvider(offscreen_context_provider);

@@ -71,6 +71,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_commit_(false),
         did_request_redraw_(false),
         did_upload_visible_tile_(false),
+        did_lose_output_surface_(false),
         reduce_memory_result_(true),
         current_limit_bytes_(0),
         current_priority_cutoff_value_(0) {
@@ -93,7 +94,9 @@ class LayerTreeHostImplTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {}
 
-  virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
+  virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {
+    did_lose_output_surface_ = true;
+  }
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
       OVERRIDE {}
@@ -351,6 +354,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_commit_;
   bool did_request_redraw_;
   bool did_upload_visible_tile_;
+  bool did_lose_output_surface_;
   bool reduce_memory_result_;
   base::TimeDelta requested_scrollbar_animation_delay_;
   size_t current_limit_bytes_;
@@ -6175,56 +6179,151 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_EQ(host_impl_->active_tree()->root_layer(), frame.will_draw_layers[0]);
 }
 
-TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
-  set_reduce_memory_result(false);
-  scoped_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())));
-  FakeOutputSurface* output_surface_ptr = output_surface.get();
-  EXPECT_TRUE(
-      host_impl_->InitializeRenderer(output_surface.PassAs<OutputSurface>()));
+class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    LayerTreeHostImplTest::SetUp();
 
-  // Add two layers.
-  scoped_ptr<SolidColorLayerImpl> root_layer =
-      SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
-  FakeVideoFrameProvider provider;
-  scoped_ptr<VideoLayerImpl> video_layer =
-      VideoLayerImpl::Create(host_impl_->active_tree(), 2, &provider);
-  video_layer->SetBounds(gfx::Size(10, 10));
-  video_layer->SetContentBounds(gfx::Size(10, 10));
-  video_layer->SetDrawsContent(true);
-  root_layer->AddChild(video_layer.PassAs<LayerImpl>());
-  SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
+    set_reduce_memory_result(false);
 
+    scoped_ptr<FakeOutputSurface> output_surface(
+        FakeOutputSurface::CreateDeferredGL(
+            scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())));
+    output_surface_ = output_surface.get();
+
+    EXPECT_TRUE(host_impl_->InitializeRenderer(
+        output_surface.PassAs<OutputSurface>()));
+
+    scoped_ptr<SolidColorLayerImpl> root_layer =
+        SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
+    SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
+
+    onscreen_context_provider_ = TestContextProvider::Create();
+    offscreen_context_provider_ = TestContextProvider::Create();
+  }
+
+  FakeOutputSurface* output_surface_;
+  scoped_refptr<TestContextProvider> onscreen_context_provider_;
+  scoped_refptr<TestContextProvider> offscreen_context_provider_;
+};
+
+
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Success) {
   // Software draw.
   DrawFrame();
-
-  scoped_refptr<TestContextProvider> onscreen_context_provider =
-      TestContextProvider::Create();
-  scoped_refptr<TestContextProvider> offscreen_context_provider =
-      TestContextProvider::Create();
 
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
   EXPECT_FALSE(host_impl_->offscreen_context_provider());
 
   // DeferredInitialize and hardware draw.
-  EXPECT_TRUE(output_surface_ptr->InitializeAndSetContext3d(
-      onscreen_context_provider, offscreen_context_provider));
-  EXPECT_EQ(onscreen_context_provider,
+  EXPECT_TRUE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_EQ(onscreen_context_provider_,
             host_impl_->output_surface()->context_provider());
-  EXPECT_EQ(offscreen_context_provider,
+  EXPECT_EQ(offscreen_context_provider_,
             host_impl_->offscreen_context_provider());
 
   // Defer intialized GL draw.
   DrawFrame();
 
   // Revert back to software.
-  output_surface_ptr->ReleaseGL();
+  output_surface_->ReleaseGL();
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
   EXPECT_FALSE(host_impl_->offscreen_context_provider());
 
   // Software draw again.
   DrawFrame();
+}
+
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_0) {
+  // Software draw.
+  DrawFrame();
+
+  // Fail initialization of the onscreen context before the OutputSurface binds
+  // it to the thread.
+  onscreen_context_provider_->UnboundTestContext3d()
+      ->set_times_make_current_succeeds(0);
+
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+  EXPECT_FALSE(did_lose_output_surface_);
+
+  // DeferredInitialize fails.
+  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
+  // Software draw again.
+  DrawFrame();
+}
+
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_1) {
+  // Software draw.
+  DrawFrame();
+
+  // Fail initialization of the onscreen context after the OutputSurface binds
+  // it to the thread.
+  onscreen_context_provider_->UnboundTestContext3d()
+      ->set_times_make_current_succeeds(2);
+
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+  EXPECT_FALSE(did_lose_output_surface_);
+
+  // DeferredInitialize fails.
+  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
+  // We lose the output surface.
+  EXPECT_TRUE(did_lose_output_surface_);
+}
+
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_2) {
+  // Software draw.
+  DrawFrame();
+
+  // Fail initialization of the onscreen context after the OutputSurface binds
+  // it to the thread and during renderer initialization.
+  onscreen_context_provider_->UnboundTestContext3d()
+      ->set_times_make_current_succeeds(1);
+
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+  EXPECT_FALSE(did_lose_output_surface_);
+
+  // DeferredInitialize fails.
+  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
+  // We lose the output surface.
+  EXPECT_TRUE(did_lose_output_surface_);
+}
+
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OffscreenContext) {
+  // Software draw.
+  DrawFrame();
+
+  // Fail initialization of the offscreen context.
+  offscreen_context_provider_->UnboundTestContext3d()
+      ->set_times_make_current_succeeds(0);
+
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+  EXPECT_FALSE(did_lose_output_surface_);
+
+  // DeferredInitialize fails.
+  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
+      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
+  EXPECT_FALSE(host_impl_->offscreen_context_provider());
+
+  // We lose the output surface.
+  EXPECT_TRUE(did_lose_output_surface_);
 }
 
 class ContextThatDoesNotSupportMemoryManagmentExtensions
