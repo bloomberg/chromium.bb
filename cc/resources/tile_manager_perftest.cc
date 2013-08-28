@@ -91,7 +91,8 @@ class TileManagerPerfTest : public testing::Test {
       case EVENTUALLY_AND_ACTIVE_BIN:
       case EVENTUALLY_BIN:
         return TilePriorityForEventualBin();
-      case NEVER_AND_ACTIVE_BIN:
+      case AT_LAST_BIN:
+      case AT_LAST_AND_ACTIVE_BIN:
       case NEVER_BIN:
         return TilePriority();
       default:
@@ -110,7 +111,8 @@ class TileManagerPerfTest : public testing::Test {
       case EVENTUALLY_AND_ACTIVE_BIN:
       case EVENTUALLY_BIN:
         return NEVER_BIN;
-      case NEVER_AND_ACTIVE_BIN:
+      case AT_LAST_BIN:
+      case AT_LAST_AND_ACTIVE_BIN:
       case NEVER_BIN:
         return NOW_BIN;
       default:
@@ -149,8 +151,8 @@ class TileManagerPerfTest : public testing::Test {
   void RunManageTilesTest(const std::string test_name,
                           unsigned tile_count,
                           unsigned priority_change_percent) {
-    DCHECK_GE(100u, tile_count);
-    DCHECK_LE(100u, priority_change_percent);
+    DCHECK_GE(tile_count, 100u);
+    DCHECK_LE(priority_change_percent, 100u);
     num_runs_ = 0;
     TileBinVector tiles;
     CreateTiles(tile_count, &tiles);

@@ -32,7 +32,8 @@ const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
     NEVER_BIN,                  // [SOON_BIN]
     NEVER_BIN,                  // [EVENTUALLY_AND_ACTIVE_BIN]
     NEVER_BIN,                  // [EVENTUALLY_BIN]
-    NEVER_BIN,                  // [NEVER_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_BIN]
     NEVER_BIN                   // [NEVER_BIN]
   }, {  // [ALLOW_ABSOLUTE_MINIMUM]
     NOW_AND_READY_TO_DRAW_BIN,  // [NOW_AND_READY_TO_DRAW_BIN]
@@ -40,7 +41,8 @@ const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
     NEVER_BIN,                  // [SOON_BIN]
     NEVER_BIN,                  // [EVENTUALLY_AND_ACTIVE_BIN]
     NEVER_BIN,                  // [EVENTUALLY_BIN]
-    NEVER_BIN,                  // [NEVER_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_BIN]
     NEVER_BIN                   // [NEVER_BIN]
   }, {  // [ALLOW_PREPAINT_ONLY]
     NOW_AND_READY_TO_DRAW_BIN,  // [NOW_AND_READY_TO_DRAW_BIN]
@@ -48,7 +50,8 @@ const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
     SOON_BIN,                   // [SOON_BIN]
     NEVER_BIN,                  // [EVENTUALLY_AND_ACTIVE_BIN]
     NEVER_BIN,                  // [EVENTUALLY_BIN]
-    NEVER_BIN,                  // [NEVER_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_AND_ACTIVE_BIN]
+    NEVER_BIN,                  // [AT_LAST_BIN]
     NEVER_BIN                   // [NEVER_BIN]
   }, {  // [ALLOW_ANYTHING]
     NOW_AND_READY_TO_DRAW_BIN,  // [NOW_AND_READY_TO_DRAW_BIN]
@@ -56,7 +59,8 @@ const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
     SOON_BIN,                   // [SOON_BIN]
     EVENTUALLY_AND_ACTIVE_BIN,  // [EVENTUALLY_AND_ACTIVE_BIN]
     EVENTUALLY_BIN,             // [EVENTUALLY_BIN]
-    NEVER_AND_ACTIVE_BIN,       // [NEVER_AND_ACTIVE_BIN]
+    AT_LAST_AND_ACTIVE_BIN,     // [AT_LAST_AND_ACTIVE_BIN]
+    AT_LAST_BIN,                // [AT_LAST_BIN]
     NEVER_BIN                   // [NEVER_BIN]
   }
 };
@@ -78,7 +82,7 @@ inline ManagedTileBin BinFromTilePriority(const TilePriority& prio,
 
   if (prio.distance_to_visible_in_pixels ==
       std::numeric_limits<float>::infinity())
-    return is_active ? NEVER_AND_ACTIVE_BIN : NEVER_BIN;
+    return NEVER_BIN;
 
   if (can_be_in_now_bin && prio.time_to_visible_in_seconds == 0)
     return is_ready_to_draw ? NOW_AND_READY_TO_DRAW_BIN : NOW_BIN;
@@ -308,20 +312,27 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     TilePriority* high_priority = NULL;
     switch (tree_priority) {
       case SAME_PRIORITY_FOR_BOTH_TREES:
-        mts.bin[HIGH_PRIORITY_BIN] = mts.bin[LOW_PRIORITY_BIN] = combined_bin;
+        mts.bin = combined_bin;
         high_priority = &combined_priority;
         break;
       case SMOOTHNESS_TAKES_PRIORITY:
-        mts.bin[HIGH_PRIORITY_BIN] = mts.tree_bin[ACTIVE_TREE];
-        mts.bin[LOW_PRIORITY_BIN] = mts.tree_bin[PENDING_TREE];
+        mts.bin = mts.tree_bin[ACTIVE_TREE];
         high_priority = &active_priority;
         break;
       case NEW_CONTENT_TAKES_PRIORITY:
-        mts.bin[HIGH_PRIORITY_BIN] = mts.tree_bin[PENDING_TREE];
-        mts.bin[LOW_PRIORITY_BIN] = mts.tree_bin[ACTIVE_TREE];
+        mts.bin = mts.tree_bin[PENDING_TREE];
         high_priority = &pending_priority;
         break;
     }
+
+    // Bump up the priority if we determined it's NEVER_BIN on one tree,
+    // but is still required on the other tree.
+    bool is_in_never_bin_on_both_trees =
+        mts.tree_bin[ACTIVE_TREE] == NEVER_BIN &&
+        mts.tree_bin[PENDING_TREE] == NEVER_BIN;
+
+    if (mts.bin == NEVER_BIN && !is_in_never_bin_on_both_trees)
+      mts.bin = tile_is_active ? AT_LAST_AND_ACTIVE_BIN : AT_LAST_BIN;
 
     DCHECK(high_priority != NULL);
 
@@ -334,7 +345,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     mts.visible_and_ready_to_draw =
         mts.tree_bin[ACTIVE_TREE] == NOW_AND_READY_TO_DRAW_BIN;
 
-    if (mts.is_in_never_bin_on_both_trees()) {
+    if (mts.bin == NEVER_BIN) {
       FreeResourcesForTile(tile);
       continue;
     }
@@ -346,7 +357,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     // priority.
     ManagedTileBin priority_bin = mts.visible_and_ready_to_draw
                                   ? NOW_AND_READY_TO_DRAW_BIN
-                                  : mts.bin[HIGH_PRIORITY_BIN];
+                                  : mts.bin;
 
     // Insert the tile into a priority set.
     tiles->InsertTile(tile, priority_bin);
@@ -526,7 +537,7 @@ void TileManager::AssignGpuMemoryToTiles(
       continue;
 
     // If the tile is not needed, free it up.
-    if (mts.is_in_never_bin_on_both_trees()) {
+    if (mts.bin == NEVER_BIN) {
       FreeResourcesForTile(tile);
       continue;
     }

@@ -18,9 +18,6 @@ class BinComparator {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
 
-    if (ams.bin[LOW_PRIORITY_BIN] != bms.bin[LOW_PRIORITY_BIN])
-      return ams.bin[LOW_PRIORITY_BIN] < bms.bin[LOW_PRIORITY_BIN];
-
     if (ams.required_for_activation != bms.required_for_activation)
       return ams.required_for_activation;
 
@@ -51,13 +48,14 @@ typedef std::vector<Tile*> TileVector;
 void SortBinTiles(ManagedTileBin bin, TileVector* tiles) {
   switch (bin) {
     case NOW_AND_READY_TO_DRAW_BIN:
+    case NEVER_BIN:
       break;
     case NOW_BIN:
     case SOON_BIN:
     case EVENTUALLY_AND_ACTIVE_BIN:
     case EVENTUALLY_BIN:
-    case NEVER_AND_ACTIVE_BIN:
-    case NEVER_BIN:
+    case AT_LAST_AND_ACTIVE_BIN:
+    case AT_LAST_BIN:
       std::sort(tiles->begin(), tiles->end(), BinComparator());
       break;
     default:

@@ -12,52 +12,42 @@ namespace cc {
 
 scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
   switch (bin) {
-  case NOW_AND_READY_TO_DRAW_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NOW_AND_READY_TO_DRAW_BIN"));
-  case NOW_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NOW_BIN"));
-  case SOON_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "SOON_BIN"));
-  case EVENTUALLY_AND_ACTIVE_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "EVENTUALLY_AND_ACTIVE_BIN"));
-  case EVENTUALLY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "EVENTUALLY_BIN"));
-  case NEVER_AND_ACTIVE_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NEVER_AND_ACTIVE_BIN"));
-  case NEVER_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NEVER_BIN"));
-  default:
-      DCHECK(false) << "Unrecognized ManagedTileBin value " << bin;
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown ManagedTileBin value>"));
+    case NOW_AND_READY_TO_DRAW_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("NOW_AND_READY_TO_DRAW_BIN"));
+    case NOW_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("NOW_BIN"));
+    case SOON_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("SOON_BIN"));
+    case EVENTUALLY_AND_ACTIVE_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("EVENTUALLY_AND_ACTIVE_BIN"));
+    case EVENTUALLY_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("EVENTUALLY_BIN"));
+    case AT_LAST_AND_ACTIVE_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("AT_LAST_AND_ACTIVE_BIN"));
+    case AT_LAST_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("AT_LAST_BIN"));
+    case NEVER_BIN:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("NEVER_BIN"));
+    case NUM_BINS:
+      NOTREACHED();
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("Invalid Bin (NUM_BINS)"));
   }
-}
-
-scoped_ptr<base::Value> ManagedTileBinPriorityAsValue(
-    ManagedTileBinPriority bin_priority) {
-  switch (bin_priority) {
-  case HIGH_PRIORITY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "HIGH_PRIORITY_BIN"));
-  case LOW_PRIORITY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "LOW_PRIORITY_BIN"));
-  default:
-      DCHECK(false) << "Unrecognized ManagedTileBinPriority value";
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown ManagedTileBinPriority value>"));
-  }
+  return scoped_ptr<base::Value>(
+      base::Value::CreateStringValue("Invalid Bin (UNKNOWN)"));
 }
 
 ManagedTileState::ManagedTileState()
     : raster_mode(LOW_QUALITY_RASTER_MODE),
+      bin(NEVER_BIN),
       gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
@@ -65,10 +55,8 @@ ManagedTileState::ManagedTileState()
       distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
       visible_and_ready_to_draw(false),
       scheduled_priority(0) {
-  for (int i = 0; i < NUM_TREES; ++i) {
+  for (int i = 0; i < NUM_TREES; ++i)
     tree_bin[i] = NEVER_BIN;
-    bin[i] = NEVER_BIN;
-  }
 }
 
 ManagedTileState::TileVersion::TileVersion()
@@ -105,10 +93,12 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetBoolean("has_resource",
                     tile_versions[raster_mode].resource_.get() != 0);
-  state->Set("bin.0", ManagedTileBinAsValue(bin[ACTIVE_TREE]).release());
-  state->Set("bin.1", ManagedTileBinAsValue(bin[PENDING_TREE]).release());
+  state->Set("tree_bin.0",
+             ManagedTileBinAsValue(tree_bin[ACTIVE_TREE]).release());
+  state->Set("tree_bin.1",
+             ManagedTileBinAsValue(tree_bin[PENDING_TREE]).release());
   state->Set("gpu_memmgr_stats_bin",
-      ManagedTileBinAsValue(bin[ACTIVE_TREE]).release());
+      ManagedTileBinAsValue(gpu_memmgr_stats_bin).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
       MathUtil::AsValueSafely(time_to_needed_in_seconds).release());

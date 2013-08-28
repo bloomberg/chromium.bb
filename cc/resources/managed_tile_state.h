@@ -22,9 +22,10 @@ enum ManagedTileBin {
   SOON_BIN = 2,                   // Impl-side version of prepainting.
   EVENTUALLY_AND_ACTIVE_BIN = 3,  // Nice to have, and has a task or resource.
   EVENTUALLY_BIN = 4,             // Nice to have, if we've got memory and time.
-  NEVER_AND_ACTIVE_BIN = 5,       // Dont bother, but has a task or resource.
-  NEVER_BIN = 6,                  // Dont bother.
-  NUM_BINS = 7
+  AT_LAST_AND_ACTIVE_BIN = 5,     // Only do this after all other bins.
+  AT_LAST_BIN = 6,                // Only do this after all other bins.
+  NEVER_BIN = 7,                  // Dont bother.
+  NUM_BINS = 8
   // NOTE: Be sure to update ManagedTileBinAsValue and kBinPolicyMap when adding
   // or reordering fields.
 };
@@ -131,15 +132,7 @@ class CC_EXPORT ManagedTileState {
   TileVersion tile_versions[NUM_RASTER_MODES];
   RasterMode raster_mode;
 
-  // Ephemeral state, valid only during TileManager::ManageTiles.
-  bool is_in_never_bin_on_both_trees() const {
-    return (bin[HIGH_PRIORITY_BIN] == NEVER_BIN ||
-            bin[HIGH_PRIORITY_BIN] == NEVER_AND_ACTIVE_BIN) &&
-           (bin[LOW_PRIORITY_BIN] == NEVER_BIN ||
-            bin[LOW_PRIORITY_BIN] == NEVER_AND_ACTIVE_BIN);
-  }
-
-  ManagedTileBin bin[NUM_BIN_PRIORITIES];
+  ManagedTileBin bin;
   ManagedTileBin tree_bin[NUM_TREES];
 
   // The bin that the tile would have if the GPU memory manager had

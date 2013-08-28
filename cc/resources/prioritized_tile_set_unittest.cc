@@ -25,9 +25,6 @@ class BinComparator {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
 
-    if (ams.bin[LOW_PRIORITY_BIN] != bms.bin[LOW_PRIORITY_BIN])
-      return ams.bin[LOW_PRIORITY_BIN] < bms.bin[LOW_PRIORITY_BIN];
-
     if (ams.required_for_activation != bms.required_for_activation)
       return ams.required_for_activation;
 
@@ -310,8 +307,8 @@ TEST_F(PrioritizedTileSetTest, EventuallyBin) {
   EXPECT_EQ(20, i);
 }
 
-TEST_F(PrioritizedTileSetTest, NeverAndActiveBin) {
-  // Ensure that NEVER_AND_ACTIVE_BIN tiles are sorted.
+TEST_F(PrioritizedTileSetTest, AtLastAndActiveBin) {
+  // Ensure that AT_LAST_AND_ACTIVE_BIN tiles are sorted.
 
   PrioritizedTileSet set;
   TilePriority priorities[4] = {
@@ -327,7 +324,7 @@ TEST_F(PrioritizedTileSetTest, NeverAndActiveBin) {
       tile->SetPriority(ACTIVE_TREE, priorities[priority]);
       tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
-      set.InsertTile(tile, NEVER_AND_ACTIVE_BIN);
+      set.InsertTile(tile, AT_LAST_AND_ACTIVE_BIN);
     }
   }
 
@@ -344,9 +341,8 @@ TEST_F(PrioritizedTileSetTest, NeverAndActiveBin) {
   EXPECT_EQ(20, i);
 }
 
-TEST_F(PrioritizedTileSetTest, NeverBin) {
-  // Ensure that NEVER_BIN tiles are sorted, since they might not
-  // be NEVER_BIN on a LOW_PRIORITY tree.
+TEST_F(PrioritizedTileSetTest, AtLastBin) {
+  // Ensure that AT_LAST_BIN tiles are sorted.
 
   PrioritizedTileSet set;
   TilePriority priorities[4] = {
@@ -362,7 +358,7 @@ TEST_F(PrioritizedTileSetTest, NeverBin) {
       tile->SetPriority(ACTIVE_TREE, priorities[priority]);
       tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
-      set.InsertTile(tile, NEVER_BIN);
+      set.InsertTile(tile, AT_LAST_BIN);
     }
   }
 
@@ -388,16 +384,16 @@ TEST_F(PrioritizedTileSetTest, TilesForEachBin) {
   scoped_refptr<Tile> soon_bin = CreateTile();
   scoped_refptr<Tile> eventually_and_active_bin = CreateTile();
   scoped_refptr<Tile> eventually_bin = CreateTile();
-  scoped_refptr<Tile> never_bin = CreateTile();
-  scoped_refptr<Tile> never_and_active_bin = CreateTile();
+  scoped_refptr<Tile> at_last_bin = CreateTile();
+  scoped_refptr<Tile> at_last_and_active_bin = CreateTile();
 
   PrioritizedTileSet set;
   set.InsertTile(soon_bin, SOON_BIN);
-  set.InsertTile(never_and_active_bin, NEVER_AND_ACTIVE_BIN);
+  set.InsertTile(at_last_and_active_bin, AT_LAST_AND_ACTIVE_BIN);
   set.InsertTile(eventually_bin, EVENTUALLY_BIN);
   set.InsertTile(now_bin, NOW_BIN);
   set.InsertTile(eventually_and_active_bin, EVENTUALLY_AND_ACTIVE_BIN);
-  set.InsertTile(never_bin, NEVER_BIN);
+  set.InsertTile(at_last_bin, AT_LAST_BIN);
   set.InsertTile(now_and_ready_to_draw_bin, NOW_AND_READY_TO_DRAW_BIN);
 
   // Tiles should appear in order.
@@ -412,9 +408,9 @@ TEST_F(PrioritizedTileSetTest, TilesForEachBin) {
   ++it;
   EXPECT_TRUE(*it == eventually_bin.get());
   ++it;
-  EXPECT_TRUE(*it == never_and_active_bin.get());
+  EXPECT_TRUE(*it == at_last_and_active_bin.get());
   ++it;
-  EXPECT_TRUE(*it == never_bin.get());
+  EXPECT_TRUE(*it == at_last_bin.get());
   ++it;
   EXPECT_FALSE(it);
 }
@@ -428,8 +424,8 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBin) {
   std::vector<scoped_refptr<Tile> > soon_bins;
   std::vector<scoped_refptr<Tile> > eventually_and_active_bins;
   std::vector<scoped_refptr<Tile> > eventually_bins;
-  std::vector<scoped_refptr<Tile> > never_bins;
-  std::vector<scoped_refptr<Tile> > never_and_active_bins;
+  std::vector<scoped_refptr<Tile> > at_last_bins;
+  std::vector<scoped_refptr<Tile> > at_last_and_active_bins;
 
   TilePriority priorities[4] = {
       TilePriorityForEventualBin(),
@@ -449,16 +445,16 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBin) {
       soon_bins.push_back(tile);
       eventually_and_active_bins.push_back(tile);
       eventually_bins.push_back(tile);
-      never_bins.push_back(tile);
-      never_and_active_bins.push_back(tile);
+      at_last_bins.push_back(tile);
+      at_last_and_active_bins.push_back(tile);
 
       set.InsertTile(tile, NOW_AND_READY_TO_DRAW_BIN);
       set.InsertTile(tile, NOW_BIN);
       set.InsertTile(tile, SOON_BIN);
       set.InsertTile(tile, EVENTUALLY_AND_ACTIVE_BIN);
       set.InsertTile(tile, EVENTUALLY_BIN);
-      set.InsertTile(tile, NEVER_BIN);
-      set.InsertTile(tile, NEVER_AND_ACTIVE_BIN);
+      set.InsertTile(tile, AT_LAST_BIN);
+      set.InsertTile(tile, AT_LAST_AND_ACTIVE_BIN);
     }
   }
 
@@ -507,20 +503,20 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBin) {
     ++it;
   }
 
-  // Never and active bins are sorted.
-  std::sort(never_and_active_bins.begin(),
-            never_and_active_bins.end(),
+  // At last and active bins are sorted.
+  std::sort(at_last_and_active_bins.begin(),
+            at_last_and_active_bins.end(),
             BinComparator());
-  for (vector_it = never_and_active_bins.begin();
-       vector_it != never_and_active_bins.end();
+  for (vector_it = at_last_and_active_bins.begin();
+       vector_it != at_last_and_active_bins.end();
        ++vector_it) {
     EXPECT_TRUE(*vector_it == *it);
     ++it;
   }
 
-  // Never bins are sorted.
-  std::sort(never_bins.begin(), never_bins.end(), BinComparator());
-  for (vector_it = never_bins.begin(); vector_it != never_bins.end();
+  // At last bins are sorted.
+  std::sort(at_last_bins.begin(), at_last_bins.end(), BinComparator());
+  for (vector_it = at_last_bins.begin(); vector_it != at_last_bins.end();
        ++vector_it) {
     EXPECT_TRUE(*vector_it == *it);
     ++it;
@@ -539,8 +535,8 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
   std::vector<scoped_refptr<Tile> > soon_bins;
   std::vector<scoped_refptr<Tile> > eventually_and_active_bins;
   std::vector<scoped_refptr<Tile> > eventually_bins;
-  std::vector<scoped_refptr<Tile> > never_bins;
-  std::vector<scoped_refptr<Tile> > never_and_active_bins;
+  std::vector<scoped_refptr<Tile> > at_last_bins;
+  std::vector<scoped_refptr<Tile> > at_last_and_active_bins;
 
   TilePriority priorities[4] = {
       TilePriorityForEventualBin(),
@@ -560,16 +556,16 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
       soon_bins.push_back(tile);
       eventually_and_active_bins.push_back(tile);
       eventually_bins.push_back(tile);
-      never_bins.push_back(tile);
-      never_and_active_bins.push_back(tile);
+      at_last_bins.push_back(tile);
+      at_last_and_active_bins.push_back(tile);
 
       set.InsertTile(tile, NOW_AND_READY_TO_DRAW_BIN);
       set.InsertTile(tile, NOW_BIN);
       set.InsertTile(tile, SOON_BIN);
       set.InsertTile(tile, EVENTUALLY_AND_ACTIVE_BIN);
       set.InsertTile(tile, EVENTUALLY_BIN);
-      set.InsertTile(tile, NEVER_BIN);
-      set.InsertTile(tile, NEVER_AND_ACTIVE_BIN);
+      set.InsertTile(tile, AT_LAST_BIN);
+      set.InsertTile(tile, AT_LAST_AND_ACTIVE_BIN);
     }
   }
 
@@ -620,16 +616,16 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
     ++it;
   }
 
-  // Never and active bins are not sorted.
-  for (vector_it = never_and_active_bins.begin();
-       vector_it != never_and_active_bins.end();
+  // At last and active bins are not sorted.
+  for (vector_it = at_last_and_active_bins.begin();
+       vector_it != at_last_and_active_bins.end();
        ++vector_it) {
     EXPECT_TRUE(*vector_it == *it);
     ++it;
   }
 
-  // Never bins are not sorted.
-  for (vector_it = never_bins.begin(); vector_it != never_bins.end();
+  // At last bins are not sorted.
+  for (vector_it = at_last_bins.begin(); vector_it != at_last_bins.end();
        ++vector_it) {
     EXPECT_TRUE(*vector_it == *it);
     ++it;
@@ -643,17 +639,17 @@ TEST_F(PrioritizedTileSetTest, TilesForFirstAndLastBins) {
   // we just get two tiles from the iterator.
 
   scoped_refptr<Tile> now_and_ready_to_draw_bin = CreateTile();
-  scoped_refptr<Tile> never_bin = CreateTile();
+  scoped_refptr<Tile> at_last_bin = CreateTile();
 
   PrioritizedTileSet set;
-  set.InsertTile(never_bin, NEVER_BIN);
+  set.InsertTile(at_last_bin, AT_LAST_BIN);
   set.InsertTile(now_and_ready_to_draw_bin, NOW_AND_READY_TO_DRAW_BIN);
 
   // Only two tiles should appear and they should appear in order.
   PrioritizedTileSet::Iterator it(&set, true);
   EXPECT_TRUE(*it == now_and_ready_to_draw_bin.get());
   ++it;
-  EXPECT_TRUE(*it == never_bin.get());
+  EXPECT_TRUE(*it == at_last_bin.get());
   ++it;
   EXPECT_FALSE(it);
 }
@@ -665,13 +661,13 @@ TEST_F(PrioritizedTileSetTest, MultipleIterators) {
   scoped_refptr<Tile> now_bin = CreateTile();
   scoped_refptr<Tile> soon_bin = CreateTile();
   scoped_refptr<Tile> eventually_bin = CreateTile();
-  scoped_refptr<Tile> never_bin = CreateTile();
+  scoped_refptr<Tile> at_last_bin = CreateTile();
 
   PrioritizedTileSet set;
   set.InsertTile(soon_bin, SOON_BIN);
   set.InsertTile(eventually_bin, EVENTUALLY_BIN);
   set.InsertTile(now_bin, NOW_BIN);
-  set.InsertTile(never_bin, NEVER_BIN);
+  set.InsertTile(at_last_bin, AT_LAST_BIN);
   set.InsertTile(now_and_ready_to_draw_bin, NOW_AND_READY_TO_DRAW_BIN);
 
   // Tiles should appear in order.
@@ -684,7 +680,7 @@ TEST_F(PrioritizedTileSetTest, MultipleIterators) {
   ++it;
   EXPECT_TRUE(*it == eventually_bin.get());
   ++it;
-  EXPECT_TRUE(*it == never_bin.get());
+  EXPECT_TRUE(*it == at_last_bin.get());
   ++it;
   EXPECT_FALSE(it);
 
@@ -712,7 +708,7 @@ TEST_F(PrioritizedTileSetTest, MultipleIterators) {
   EXPECT_TRUE(third_it);
   EXPECT_TRUE(*third_it == soon_bin.get());
   EXPECT_TRUE(second_it);
-  EXPECT_TRUE(*second_it == never_bin.get());
+  EXPECT_TRUE(*second_it == at_last_bin.get());
   EXPECT_FALSE(it);
 
   ++second_it;
