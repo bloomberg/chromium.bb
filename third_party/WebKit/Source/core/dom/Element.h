@@ -697,6 +697,9 @@ private:
     void setInlineStyleFromString(const AtomicString&);
     MutableStylePropertySet* ensureMutableInlineStyle();
 
+    StyleChange recalcOwnStyle(StyleChange);
+    void recalcChildStyle(StyleChange);
+
     void makePresentationAttributeCacheKey(PresentationAttributeCacheKey&) const;
     void rebuildPresentationAttributeStyle();
 

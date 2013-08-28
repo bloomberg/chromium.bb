@@ -6522,7 +6522,7 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
     ASSERT(firstLetter->isFloating() || firstLetter->isInline());
 
-    if (Node::diff(firstLetter->style(), pseudoStyle, document()) == Node::Detach) {
+    if (Node::diff(firstLetter->style(), pseudoStyle, document()) == Node::Reattach) {
         // The first-letter renderer needs to be replaced. Create a new renderer of the right type.
         RenderObject* newFirstLetter;
         if (pseudoStyle->display() == INLINE)

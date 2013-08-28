@@ -166,7 +166,7 @@ public:
     static bool isSupported(const String& feature, const String& version);
     static void dumpStatistics();
 
-    enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };
+    enum StyleChange { NoChange, NoInherit, Inherit, Force, Reattach };
     static StyleChange diff(const RenderStyle*, const RenderStyle*, Document*);
 
     virtual ~Node();

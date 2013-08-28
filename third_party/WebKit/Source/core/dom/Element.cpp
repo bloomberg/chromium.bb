@@ -1449,64 +1449,74 @@ bool Element::recalcStyle(StyleChange change)
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);
 
-    // Ref currentStyle in case it would otherwise be deleted when setting the new style in the renderer.
-    RefPtr<RenderStyle> currentStyle = renderStyle();
-    bool hasParentStyle = static_cast<bool>(parentRenderStyle());
-    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
-    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
-
     if (hasRareData() && (change > NoChange || needsStyleRecalc())) {
         ElementRareData* data = elementRareData();
         data->resetStyleState();
         data->clearComputedStyle();
     }
 
-    if (hasParentStyle && (change >= Inherit || needsStyleRecalc())) {
-        StyleChange localChange = Detach;
-        RefPtr<RenderStyle> newStyle;
-        if (currentStyle) {
-            newStyle = styleForRenderer();
-            localChange = Node::diff(currentStyle.get(), newStyle.get(), document());
-        } else if (attached() && isActiveInsertionPoint(this)) {
-            // Active InsertionPoints will never have renderers so there's no reason to
-            // reattach them repeatedly once they're already attached.
-            localChange = change;
-        }
-        if (localChange == Detach) {
-            AttachContext reattachContext;
-            reattachContext.resolvedStyle = newStyle.get();
-            reattach(reattachContext);
+    // Active InsertionPoints have no renderers so they never need to go through a recalc.
+    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle() && !isActiveInsertionPoint(this))
+        change = recalcOwnStyle(change);
 
-            if (hasCustomStyleCallbacks())
-                didRecalcStyle(change);
-            return true;
-        }
+    // If we reattached we don't need to recalc the style of our descendants anymore.
+    if (change < Reattach)
+        recalcChildStyle(change);
 
-        InspectorInstrumentation::didRecalculateStyleForElement(this);
+    clearNeedsStyleRecalc();
+    clearChildNeedsStyleRecalc();
 
-        if (RenderObject* renderer = this->renderer()) {
-            if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
-                renderer->setAnimatableStyle(newStyle.get());
-            } else if (needsStyleRecalc()) {
-                // Although no change occurred, we use the new style so that the cousin style sharing code won't get
-                // fooled into believing this style is the same.
-                renderer->setStyleInternal(newStyle.get());
-            }
-        }
+    if (hasCustomStyleCallbacks())
+        didRecalcStyle(change);
 
-        // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
-        // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
-        if (document()->styleSheetCollection()->usesRemUnits() && document()->documentElement() == this && localChange != NoChange && currentStyle && newStyle && currentStyle->fontSize() != newStyle->fontSize()) {
-            // Cached RenderStyles may depend on the re units.
-            document()->styleResolver()->invalidateMatchedPropertiesCache();
-            change = Force;
-        }
+    return change == Reattach;
+}
 
-        if (styleChangeType() >= SubtreeStyleChange)
-            change = Force;
-        else if (change != Force)
-            change = localChange;
+Node::StyleChange Element::recalcOwnStyle(StyleChange change)
+{
+    ASSERT(document()->inStyleRecalc());
+
+    RefPtr<RenderStyle> oldStyle = renderStyle();
+    RefPtr<RenderStyle> newStyle = styleForRenderer();
+    StyleChange localChange = oldStyle ? Node::diff(oldStyle.get(), newStyle.get(), document()) : Reattach;
+
+    if (localChange == Reattach) {
+        AttachContext reattachContext;
+        reattachContext.resolvedStyle = newStyle.get();
+        reattach(reattachContext);
+        return Reattach;
     }
+
+    InspectorInstrumentation::didRecalculateStyleForElement(this);
+
+    if (RenderObject* renderer = this->renderer()) {
+        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
+            renderer->setAnimatableStyle(newStyle.get());
+        } else if (needsStyleRecalc()) {
+            // Although no change occurred, we use the new style so that the cousin style sharing code won't get
+            // fooled into believing this style is the same.
+            renderer->setStyleInternal(newStyle.get());
+        }
+    }
+
+    // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
+    // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
+    if (document()->styleSheetCollection()->usesRemUnits() && document()->documentElement() == this && oldStyle && newStyle && oldStyle->fontSize() != newStyle->fontSize()) {
+        // Cached RenderStyles may depend on the re units.
+        document()->styleResolver()->invalidateMatchedPropertiesCache();
+        return Force;
+    }
+
+    if (styleChangeType() >= SubtreeStyleChange)
+        return Force;
+
+    return max(localChange, change);
+}
+
+void Element::recalcChildStyle(StyleChange change)
+{
+    ASSERT(document()->inStyleRecalc());
+
     StyleResolverParentPusher parentPusher(this);
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
@@ -1522,6 +1532,8 @@ bool Element::recalcStyle(StyleChange change)
     // FIXME: This check is good enough for :hover + foo, but it is not good enough for :hover + foo + bar.
     // For now we will just worry about the common case, since it's a lot trickier to get the second case right
     // without doing way too much re-resolution.
+    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
+    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
     bool forceReattachOfAnyWhitespaceSibling = false;
@@ -1560,13 +1572,6 @@ bool Element::recalcStyle(StyleChange change)
         updatePseudoElement(AFTER, change);
         updatePseudoElement(BACKDROP, change);
     }
-
-    clearNeedsStyleRecalc();
-    clearChildNeedsStyleRecalc();
-
-    if (hasCustomStyleCallbacks())
-        didRecalcStyle(change);
-    return false;
 }
 
 ElementShadow* Element::shadow() const

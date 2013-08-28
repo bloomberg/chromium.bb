@@ -283,7 +283,7 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
     if (display1 != display2 || fl1 != fl2 || colSpan1 != colSpan2
         || (specifiesColumns1 != specifiesColumns2 && doc->settings()->regionBasedColumnsEnabled())
         || (s1 && s2 && !s1->contentDataEquivalent(s2)))
-        ch = Detach;
+        ch = Reattach;
     else if (!s1 || !s2)
         ch = Inherit;
     else if (*s1 == *s2)
@@ -313,15 +313,15 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
     // When text-combine is on, we use RenderCombineText, otherwise RenderText.
     // https://bugs.webkit.org/show_bug.cgi?id=55069
     if ((s1 && s2) && (s1->hasTextCombine() != s2->hasTextCombine()))
-        ch = Detach;
+        ch = Reattach;
 
     // We need to reattach the node, so that it is moved to the correct RenderFlowThread.
     if ((s1 && s2) && (s1->flowThread() != s2->flowThread()))
-        ch = Detach;
+        ch = Reattach;
 
     // When the region thread has changed, we need to prepare a separate render region object.
     if ((s1 && s2) && (s1->regionThread() != s2->regionThread()))
-        ch = Detach;
+        ch = Reattach;
 
     return ch;
 }
