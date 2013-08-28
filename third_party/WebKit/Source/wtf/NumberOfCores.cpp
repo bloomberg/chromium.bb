@@ -32,7 +32,7 @@
 // data types defined in the former. See sysctl(3) and style(9).
 #include <sys/types.h>
 #include <sys/sysctl.h>
-#elif OS(LINUX) || OS(SOLARIS)
+#elif OS(LINUX)
 #include <unistd.h>
 #elif OS(WINDOWS)
 #include "wtf/UnusedParam.h"
@@ -59,7 +59,7 @@ int numberOfProcessorCores()
     int sysctlResult = sysctl(name, sizeof(name) / sizeof(int), &result, &length, 0, 0);
 
     s_numberOfCores = sysctlResult < 0 ? defaultIfUnavailable : result;
-#elif OS(LINUX) || OS(SOLARIS)
+#elif OS(LINUX)
     long sysconfResult = sysconf(_SC_NPROCESSORS_ONLN);
 
     s_numberOfCores = sysconfResult < 0 ? defaultIfUnavailable : static_cast<int>(sysconfResult);

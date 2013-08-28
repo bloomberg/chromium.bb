@@ -36,10 +36,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
 
-#if OS(SOLARIS)
-#include <sys/time.h> // For time_t structure.
-#endif
-
 namespace WebCore {
 
 struct CrossThreadResourceResponseData;

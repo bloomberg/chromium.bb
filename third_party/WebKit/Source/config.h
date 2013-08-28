@@ -57,11 +57,6 @@
 #define WTF_OS_FREEBSD 1
 #endif
 
-/* OS(HURD) - GNU/Hurd */
-#ifdef __GNU__
-#define WTF_OS_HURD 1
-#endif
-
 /* OS(LINUX) - Linux */
 #ifdef __linux__
 #define WTF_OS_LINUX 1
@@ -77,11 +72,6 @@
 #define WTF_OS_OPENBSD 1
 #endif
 
-/* OS(SOLARIS) - Solaris */
-#if defined(sun) || defined(__sun)
-#define WTF_OS_SOLARIS 1
-#endif
-
 /* OS(WINDOWS) - Any version of Windows */
 #if defined(WIN32) || defined(_WIN32)
 #define WTF_OS_WINDOWS 1
@@ -91,11 +81,9 @@
 #if OS(ANDROID)          \
     || OS(DARWIN)           \
     || OS(FREEBSD)          \
-    || OS(HURD)             \
     || OS(LINUX)            \
     || OS(NETBSD)           \
     || OS(OPENBSD)          \
-    || OS(SOLARIS)          \
     || defined(unix)        \
     || defined(__unix)      \
     || defined(__unix__)
@@ -141,7 +129,7 @@
 #endif
 #endif
 
-#if !OS(WINDOWS) && !OS(SOLARIS) && !OS(ANDROID)
+#if !OS(WINDOWS) && !OS(ANDROID)
 #define HAVE_TM_GMTOFF 1
 #define HAVE_TM_ZONE 1
 #define HAVE_TIMEGM 1
