@@ -498,14 +498,33 @@ def UsePrivateLibraries(libs):
   return result_libs
 
 def SplitLinkLine(inputs):
-  """ Pull native objects (.o, .a) out of the input list.
-      These need special handling since they cannot be
-      encoded in the bitcode file.
-      (NOTE: native .so files do not need special handling,
-       because they can be encoded as dependencies in the bitcode)
+  """ Split the input list into bitcode and native objects (.o, .a)
   """
   normal = []
   native = []
+  # Group flags need special handling because they need to go into the right
+  # list based on the type of the inputs in the group. If the group has both
+  # native and bitcode files (which is unfortunately the case for
+  # irt_browser_lib) then the group flags need to go in both lists.
+  if '--start-group' in inputs:
+    start_group = inputs.index('--start-group')
+    # Start with the inputs before the first group
+    normal, native = SplitLinkLine(inputs[:start_group])
+    try:
+      end_group = inputs.index('--end-group')
+    except ValueError:
+      Log.Fatal("Found --start-group without matching --end-group")
+    # Add the contents of the group together with the --{start,end}-group flags
+    norm_group, native_group = SplitLinkLine(inputs[start_group + 1:end_group])
+    if len(norm_group) > 0:
+      normal.extend(['--start-group'] + norm_group + ['--end-group'])
+    if len(native_group) > 0:
+      native.extend(['--start-group'] + native_group + ['--end-group'])
+    # Add the inputs after the first group
+    norm_last, native_last = SplitLinkLine(inputs[end_group + 1:])
+    return normal + norm_last, native + native_last
+
+  # If no groups, split the inputs based on their type.
   for f in inputs:
     if ldtools.IsFlag(f):
       normal.append(f)
@@ -560,7 +579,8 @@ def DoTranslate(infile, outfile):
   args += ['-Wl,'+s for s in env.get('LD_FLAGS_NATIVE')]
   if infile:
     args += [infile]
-  args += [s for s in env.get('NATIVE_OBJECTS')]
+  args += ['-Wl,'+s if ldtools.IsFlag(s) else s
+           for s in env.get('NATIVE_OBJECTS')]
   args += ['-o', outfile]
   RunDriver('translate', args)
 

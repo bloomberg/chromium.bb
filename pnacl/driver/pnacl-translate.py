@@ -11,6 +11,7 @@
 
 import driver_tools
 import filetype
+import ldtools
 import pathtools
 import shutil
 from driver_env import env
@@ -62,8 +63,13 @@ EXTRA_ENV = {
   # libpnacl_irt_shim_dummy.a if libpnacl_irt_shim.a does not exist.
   'LD_ARGS_IRT_SHIM': '-l:libpnacl_irt_shim.a',
   'LD_ARGS_IRT_SHIM_DUMMY': '-l:libpnacl_irt_shim_dummy.a',
-
-  'LD_ARGS_ENTRY': '--entry=__pnacl_start',
+  # In addition to specifying the entry point, we also specify an undefined
+  # reference to _start, which is called by the shim's entry function,
+  # __pnacl_wrapper_start. _start normally comes from libnacl and will be in
+  # the pexe, however for the IRT it comes from irt_entry.c and when linking it
+  # using native object files, this reference is required to make sure it gets
+  # pulled in from the archive.
+  'LD_ARGS_ENTRY': '--entry=__pnacl_start --undefined=_start',
 
   # TODO(eliben): remove SHARED stuff altogether
   'STATIC_CRTBEGIN' : '${ALLOW_CXX_EXCEPTIONS ? ' +
@@ -220,12 +226,13 @@ TranslatorPatterns = [
 
   ( '-fPIC',           "env.set('PIC', '1')"),
 
-  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
 
-  ( '(-.*)',            driver_tools.UnrecognizedOption),
+  # Treat general linker flags as inputs so they don't get re-ordered
+  ( '-Wl,(.*)',        "env.append('INPUTS', *($0).split(','))"),
 
+  ( '(-.*)',            driver_tools.UnrecognizedOption),
   ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
@@ -249,9 +256,10 @@ def main(argv):
 
   # Find the bitcode file on the command line.
   bcfiles = [f for f in inputs
-             if filetype.IsPNaClBitcode(f)
+             if not ldtools.IsFlag(f) and
+               (filetype.IsPNaClBitcode(f)
                 or filetype.IsLLVMBitcode(f)
-                or filetype.FileType(f) == 'll']
+                or filetype.FileType(f) == 'll')]
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
   elif len(bcfiles) == 1:
@@ -375,9 +383,12 @@ def UseDefaultCommandlineLLC():
 def RunLD(infile, outfile):
   inputs = env.get('INPUTS')
   if infile:
-    inputs = ListReplace(inputs,
-                         '__BITCODE__',
-                         '--llc-translated-file=' + infile)
+    # Put llc-translated-file at the beginning of the inputs so that it will
+    # pull in all needed symbols from any native archives that may also be
+    # in the input list. This is in case there are any mixed groups of bitcode
+    # and native archives in the link (as is the case with irt_browser_lib)
+    inputs.remove('__BITCODE__')
+    inputs = ['--llc-translated-file=' + infile] + inputs
   ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]

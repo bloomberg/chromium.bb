@@ -131,6 +131,7 @@ LDPatterns = [
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
 
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
+  ( '(--undefined=.*)',    "env.append('INPUTS', $0)"),
 
   ( '(-.*)',               UnrecognizedOption),
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),

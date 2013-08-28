@@ -3124,6 +3124,7 @@ irt_variant_tests = [
     'tests/pagesize/nacl.scons',
     'tests/performance/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
+    'tests/pnacl_native_objects/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/sel_ldr/nacl.scons',
