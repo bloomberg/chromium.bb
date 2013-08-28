@@ -43,6 +43,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/cert/x509_certificate.h"
@@ -145,6 +146,9 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       AwAutofillManagerDelegate::FromWebContents(web_contents_.get());
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
+
+  web_contents_->GetMutableRendererPrefs()->tap_multiple_targets_strategy =
+      content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,
