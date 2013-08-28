@@ -21,9 +21,11 @@ const char kNoInstall[] = "no-install";
 const char kWebAppCrx[] = "webapp-crx";
 const char kUsername[] = "username";
 const char kkPassword[] = "password";
+const char kMe2MePin[] = "me2me-pin";
 
-// ASSERT_TRUE can only be used in void returning functions.
-void _ASSERT_TRUE(bool condition) {
+// ASSERT_TRUE can only be used in void returning functions. This version
+// should be used in non-void-returning functions.
+inline void _ASSERT_TRUE(bool condition) {
   ASSERT_TRUE(condition);
   return;
 }
@@ -76,6 +78,9 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Approve: grant the chromoting app necessary permissions.
   void Approve();
 
+  // Click on "Get Started" in the Me2Me section and show the host list.
+  void StartMe2Me();
+
 
   /*                                                      */
   /* The following helpers each perform a composite task. */
@@ -91,6 +96,15 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // It starts from the chromoting main page unauthenticated and ends up back
   // on the chromoting main page authenticated and ready to go.
   void Auth();
+
+  // Connect to the local host through Me2Me.
+  void ConnectToLocalHost();
+
+  // Enter the pin number and connect.
+  void EnterPin(const std::string& name);
+
+  // Helper to get the pin number used for me2me authentication.
+  std::string me2me_pin() { return me2me_pin_; }
 
  private:
   // Change behavior of the default host resolver to allow DNS lookup
@@ -153,15 +167,32 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // extract the boolean result.
   bool ExecuteScriptAndExtractBool(const std::string& script);
 
+  // Helper to execute a javascript code snippet on the current page and
+  // extract the int result.
+  int ExecuteScriptAndExtractInt(const std::string& script);
+
+  // Helper to execute a javascript code snippet on the current page and
+  // extract the string result.
+  std::string ExecuteScriptAndExtractString(const std::string& script);
+
   // Helper to navigate to a given url.
   void NavigateToURLAndWait(const GURL& url);
 
-  // Helper to check whether a html element with the given name exists on
+  // Helper to check whether an html element with the given name exists on
   // the current page.
   bool HtmlElementExists(const std::string& name) {
     return ExecuteScriptAndExtractBool(
         "document.getElementById(\"" + name + "\") != null");
   }
+
+  // Helper to check whether a html element with the given name is visible.
+  bool HtmlElementVisible(const std::string& name);
+
+  // Click on the named HTML control.
+  void ClickOnControl(const std::string& name);
+
+  // Wait for the me2me connection to be established.
+  void WaitForConnection();
 
 
   /*        */
@@ -179,6 +210,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   base::FilePath webapp_crx_;
   std::string username_;
   std::string password_;
+  std::string me2me_pin_;
 };
 
 }  // namespace remoting

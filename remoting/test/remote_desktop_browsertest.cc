@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,26 @@ void RemoteDesktopBrowserTest::VerifyInternetAccess() {
   NavigateToURLAndWait(google_url);
 
   EXPECT_EQ(GetCurrentURL().host(), "www.google.com");
+}
+
+bool RemoteDesktopBrowserTest::HtmlElementVisible(const std::string& name) {
+  _ASSERT_TRUE(HtmlElementExists(name));
+
+  ExecuteScript(
+      "function isElementVisible(name) {"
+      "  var element = document.getElementById(name);"
+      "  /* The existence of the element has already been ASSERTed. */"
+      "  do {"
+      "    if (element.hidden) {"
+      "      return false;"
+      "    }"
+      "    element = element.parentNode;"
+      "  } while (element != null);"
+      "  return true;"
+      "};");
+
+  return ExecuteScriptAndExtractBool(
+      "isElementVisible(\"" + name + "\")");
 }
 
 void RemoteDesktopBrowserTest::InstallChromotingApp() {
@@ -157,6 +177,27 @@ void RemoteDesktopBrowserTest::Approve() {
       "remoting.OAuth2.prototype.isAuthenticated()"));
 }
 
+void RemoteDesktopBrowserTest::StartMe2Me() {
+  // The chromoting extension should be installed.
+  ASSERT_FALSE(ChromotingID().empty());
+
+  // The active tab should have the chromoting app loaded.
+  ASSERT_EQ(GetCurrentURL(), Chromoting_Main_URL());
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      "remoting.OAuth2.prototype.isAuthenticated()"));
+
+  // The Me2Me host list should be hidden.
+  ASSERT_FALSE(HtmlElementVisible("me2me-content"));
+  // The Me2Me "Get Start" button should be visible.
+  ASSERT_TRUE(HtmlElementVisible("get-started-me2me"));
+
+  // Starting Me2Me.
+  ExecuteScript("remoting.showMe2MeUiAndSave();");
+
+  EXPECT_TRUE(HtmlElementVisible("me2me-content"));
+  EXPECT_FALSE(HtmlElementVisible("me2me-first-run"));
+}
+
 void RemoteDesktopBrowserTest::Install() {
   // TODO: add support for installing unpacked extension (the v2 app needs it).
   if (!NoInstall()) {
@@ -184,6 +225,24 @@ void RemoteDesktopBrowserTest::Auth() {
   Authorize();
   Authenticate();
   Approve();
+}
+
+void RemoteDesktopBrowserTest::ConnectToLocalHost() {
+  // Wait until remoting.hostList.localHost_ is initialized.
+  // This can take a while.
+  // TODO: Instead of polling, can we register a callback to
+  // remoting.hostList.setLocalHost_?
+  while (ExecuteScriptAndExtractBool(
+      "remoting.hostList.localHost_ == null")) {
+  }
+
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      "remoting.hostList.localHost_.hostName && "
+      "remoting.hostList.localHost_.hostId && "
+      "remoting.hostList.localHost_.status && "
+      "remoting.hostList.localHost_.status == 'ONLINE'"));
+
+  ClickOnControl("this-host-connect");
 }
 
 void RemoteDesktopBrowserTest::EnableDNSLookupForThisTest(
@@ -229,6 +288,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
 
   username_ = command_line->GetSwitchValueASCII(kUsername);
   password_ = command_line->GetSwitchValueASCII(kkPassword);
+  me2me_pin_ = command_line->GetSwitchValueASCII(kMe2MePin);
 
   no_cleanup_ = command_line->HasSwitch(kNoCleanup);
   no_install_ = command_line->HasSwitch(kNoInstall);
@@ -282,9 +342,29 @@ void RemoteDesktopBrowserTest::ExecuteScriptAndWaitUntil(
 bool RemoteDesktopBrowserTest::ExecuteScriptAndExtractBool(
     const std::string& script) {
   bool result;
-  // Using a private assert function because ASSERT_TRUE can only be used in
-  // void returning functions.
   _ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(" + script + ");",
+      &result));
+
+  return result;
+}
+
+int RemoteDesktopBrowserTest::ExecuteScriptAndExtractInt(
+    const std::string& script) {
+  int result;
+  _ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(" + script + ");",
+      &result));
+
+  return result;
+}
+
+std::string RemoteDesktopBrowserTest::ExecuteScriptAndExtractString(
+    const std::string& script) {
+  std::string result;
+  _ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(" + script + ");",
       &result));
@@ -302,6 +382,45 @@ void RemoteDesktopBrowserTest::NavigateToURLAndWait(const GURL& url) {
 
   ui_test_utils::NavigateToURL(browser(), url);
   observer.Wait();
+}
+
+void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
+  _ASSERT_TRUE(HtmlElementExists(name));
+  _ASSERT_TRUE(HtmlElementVisible(name));
+
+  ExecuteScript("document.getElementById(\"" + name + "\").click();");
+}
+
+void RemoteDesktopBrowserTest::EnterPin(const std::string& pin) {
+  // Wait for the pin-form to be displayed. This can take a while.
+  // We also need to dismiss the host-needs-update dialog if it comes up.
+  // TODO 1: Instead of polling, can we register a callback to be called
+  // when the pin-form is ready?
+  // TODO 2: Instead of blindly dismiss the host-needs-update dialog,
+  // we should verify that it only pops up at the right circumstance. That
+  // probably belongs in a separate test case though.
+  do {
+    if (HtmlElementVisible("host-needs-update-connect-button")) {
+      ClickOnControl("host-needs-update-connect-button");
+    }
+  } while (!HtmlElementVisible("pin-form"));
+
+  ExecuteScript(
+      "document.getElementById(\"pin-entry\").value = \"" + pin + "\";");
+
+  ClickOnControl("pin-connect-button");
+
+  WaitForConnection();
+}
+
+void RemoteDesktopBrowserTest::WaitForConnection() {
+  // Wait until the client has connected to the server.
+  // This can take a while.
+  // TODO: Instead of polling, can we register a callback to
+  // remoting.clientSession.onStageChange_?
+  while (ExecuteScriptAndExtractBool(
+      "remoting.clientSession == null")) {
+  }
 }
 
 }  // namespace remoting

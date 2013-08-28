@@ -1169,6 +1169,7 @@
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../remoting/test/auth_browsertest.cc',
         '../remoting/test/launch_browsertest.cc',
+        '../remoting/test/me2me_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.h',
         'app/breakpad_mac_stubs.mm',
