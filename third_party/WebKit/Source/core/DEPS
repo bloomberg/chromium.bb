@@ -15,7 +15,6 @@ include_rules = [
     "+modules/indexeddb",
     "+modules/mediasource",
     "+modules/mediastream",
-    "+modules/notifications",
     "+modules/speech",
     "+modules/webaudio",
     "+modules/webdatabase",

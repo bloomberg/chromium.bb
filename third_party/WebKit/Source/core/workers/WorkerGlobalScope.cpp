@@ -57,12 +57,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-#include "modules/notifications/NotificationCenter.h"
-#endif
-
-
-
 namespace WebCore {
 
 class CloseWorkerGlobalScopeTask : public ScriptExecutionContext::Task {
