@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/http/http_status_code.h"
 
 using content::BrowserThread;
 
@@ -195,6 +198,45 @@ void GetFileCallbackToFileOperationCallbackAdapter(
     const base::FilePath& unused_file_path,
     scoped_ptr<ResourceEntry> unused_entry) {
   callback.Run(error);
+}
+
+// Checks whether the |url| passed to the constructor is accessible. If it is
+// not, invokes |on_stale_closure|.
+class StaleURLChecker : public net::URLFetcherDelegate {
+ public:
+  StaleURLChecker(const GURL& url, const base::Closure& on_stale_closure)
+      : on_stale_closure_(on_stale_closure) {
+    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::HEAD, this));
+    fetcher_->SetRequestContext(g_browser_process->system_request_context());
+    fetcher_->Start();
+  }
+
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+    int code = source->GetResponseCode();
+    if (code == net::HTTP_FORBIDDEN)
+      on_stale_closure_.Run();
+    delete this;
+  }
+
+ private:
+  scoped_ptr<net::URLFetcher> fetcher_;
+  const base::Closure on_stale_closure_;
+};
+
+// Checks the first thumbnail URL in |entries| whether it is still available
+// by sending a HEAD request. If it's stale, invokes |on_stale_closure|.
+void CheckStaleThumbnailURL(ResourceEntryVector* entries,
+                            const base::Closure& on_stale_closure) {
+  const char kImageThumbnailDomain[] = "googleusercontent.com";
+  for (size_t i = 0; i < entries->size(); ++i) {
+    const std::string& url =
+        entries->at(i).file_specific_info().thumbnail_url();
+    if (url.find(kImageThumbnailDomain) != std::string::npos) {
+      // The stale URL checker deletes itself.
+      new StaleURLChecker(GURL(url), on_stale_closure);
+      break;
+    }
+  }
 }
 
 }  // namespace
@@ -714,10 +756,12 @@ void FileSystem::ReadDirectoryByPathAfterLoad(
       directory_path,
       base::Bind(&FileSystem::ReadDirectoryByPathAfterRead,
                  weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
                  callback));
 }
 
 void FileSystem::ReadDirectoryByPathAfterRead(
+    const base::FilePath& directory_path,
     const ReadDirectoryCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntryVector> entries) {
@@ -740,6 +784,15 @@ void FileSystem::ReadDirectoryByPathAfterRead(
     }
     filtered->push_back(entries->at(i));
   }
+
+  // Thumbnail URLs are short-lived. We check the validness of the URL in
+  // background, and refresh the metadata for the directory if necessary.
+  // TODO(kinaba): Remove this hack by using persistent URLs crbug.com/254025.
+  CheckStaleThumbnailURL(filtered.get(),
+                         base::Bind(&FileSystem::RefreshDirectory,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    directory_path));
+
   callback.Run(FILE_ERROR_OK, filtered.Pass());
 }
 
@@ -1004,6 +1057,36 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
+}
+
+void FileSystem::RefreshDirectory(const base::FilePath& directory_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  resource_metadata_->GetResourceEntryByPathOnUIThread(
+      directory_path,
+      base::Bind(&FileSystem::RefreshDirectoryAfterGetResourceEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path));
+}
+
+void FileSystem::RefreshDirectoryAfterGetResourceEntry(
+    const base::FilePath& directory_path,
+    FileError error,
+    scoped_ptr<ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != FILE_ERROR_OK || !entry->file_info().is_directory())
+    return;
+
+  // Do not load special directories. Just return.
+  const std::string& id = entry->resource_id();
+  if (util::IsSpecialResourceId(id))
+    return;
+
+  util::Log(logging::LOG_INFO,
+            "Thumbnail refresh for %s", directory_path.AsUTF8Unsafe().c_str());
+  change_list_loader_->LoadDirectoryFromServer(
+      id, base::Bind(&util::EmptyFileOperationCallback));
 }
 
 }  // namespace drive
