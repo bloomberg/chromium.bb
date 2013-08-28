@@ -385,6 +385,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicDecrypter* decrypter() const;
   const QuicDecrypter* alternative_decrypter() const;
 
+  bool is_server() const { return is_server_; }
+
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will

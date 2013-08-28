@@ -20,8 +20,21 @@ QuicSpdyCompressor::QuicSpdyCompressor()
 QuicSpdyCompressor::~QuicSpdyCompressor() {
 }
 
+string QuicSpdyCompressor::CompressHeadersWithPriority(
+    QuicPriority priority,
+    const SpdyHeaderBlock& headers) {
+  return CompressHeadersInternal(priority, headers, true);
+}
+
 string QuicSpdyCompressor::CompressHeaders(
     const SpdyHeaderBlock& headers) {
+  return CompressHeadersInternal(0, headers, false);
+}
+
+string QuicSpdyCompressor::CompressHeadersInternal(
+    QuicPriority priority,
+    const SpdyHeaderBlock& headers,
+    bool write_priority) {
   // TODO(rch): Modify the SpdyFramer to expose a
   // CreateCompressedHeaderBlock method, or some such.
   SpdyStreamId stream_id = 3;    // unused.
@@ -34,12 +47,19 @@ string QuicSpdyCompressor::CompressHeaders(
   string serialized = string(frame->data() + header_frame_prefix_len,
                              frame->size() - header_frame_prefix_len);
   uint32 serialized_len = serialized.length();
+  char priority_str[sizeof(priority)];
+  memcpy(&priority_str, &priority, sizeof(priority));
   char id_str[sizeof(header_sequence_id_)];
   memcpy(&id_str, &header_sequence_id_, sizeof(header_sequence_id_));
   char len_str[sizeof(serialized_len)];
   memcpy(&len_str, &serialized_len, sizeof(serialized_len));
   string compressed;
-  compressed.reserve(arraysize(id_str) + arraysize(len_str) + serialized_len);
+  int priority_len = write_priority ? arraysize(priority_str) : 0;
+  compressed.reserve(
+      priority_len + arraysize(id_str) + arraysize(len_str) + serialized_len);
+  if (write_priority) {
+    compressed.append(priority_str, arraysize(priority_str));
+  }
   compressed.append(id_str, arraysize(id_str));
   compressed.append(len_str, arraysize(len_str));
   compressed.append(serialized);

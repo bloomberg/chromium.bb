@@ -12,6 +12,36 @@ using std::min;
 
 namespace net {
 
+namespace {
+
+// This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
+// to set a priority client-side, or cancel a stream before stripping the
+// priority from the wire server-side.  In either case, start out with a
+// priority in the middle.
+QuicPriority kDefaultPriority = 3;
+
+// Appends bytes from data into partial_data_buffer.  Once partial_data_buffer
+// reaches 4 bytes, copies the data into 'result' and clears
+// partial_data_buffer.
+// Returns the number of bytes consumed.
+uint32 StripUint32(const char* data, uint32 data_len,
+                   string* partial_data_buffer,
+                   uint32* result) {
+  DCHECK_GT(4u, partial_data_buffer->length());
+  size_t missing_size = 4 - partial_data_buffer->length();
+  if (data_len < missing_size) {
+    StringPiece(data, data_len).AppendToString(partial_data_buffer);
+    return data_len;
+  }
+  StringPiece(data, missing_size).AppendToString(partial_data_buffer);
+  DCHECK_EQ(4u, partial_data_buffer->length());
+  memcpy(result, partial_data_buffer->data(), 4);
+  partial_data_buffer->clear();
+  return missing_size;
+}
+
+}  // namespace
+
 ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
                                        QuicSession* session)
     : sequencer_(this),
@@ -21,12 +51,14 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
       stream_bytes_read_(0),
       stream_bytes_written_(0),
       headers_decompressed_(false),
+      priority_(kDefaultPriority),
       headers_id_(0),
       decompression_failed_(false),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
       read_side_closed_(false),
       write_side_closed_(false),
+      priority_parsed_(false),
       fin_buffered_(false),
       fin_sent_(false) {
 }
@@ -245,28 +277,17 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
     // The crypto stream does not use compression.
     return ProcessData(data, data_len);
   }
+
   uint32 total_bytes_consumed = 0;
   if (headers_id_ == 0u) {
-    // The headers ID has not yet been read.  Strip it from the beginning of
-    // the data stream.
-    DCHECK_GT(4u, headers_id_buffer_.length());
-    size_t missing_size = 4 - headers_id_buffer_.length();
-    if (data_len < missing_size) {
-      StringPiece(data, data_len).AppendToString(&headers_id_buffer_);
-      return data_len;
+    total_bytes_consumed += StripPriorityAndHeaderId(data, data_len);
+    data += total_bytes_consumed;
+    data_len -= total_bytes_consumed;
+    if (data_len == 0) {
+      return total_bytes_consumed;
     }
-    total_bytes_consumed += missing_size;
-    StringPiece(data, missing_size).AppendToString(&headers_id_buffer_);
-    DCHECK_EQ(4u, headers_id_buffer_.length());
-    memcpy(&headers_id_, headers_id_buffer_.data(), 4);
-    headers_id_buffer_.clear();
-    data += missing_size;
-    data_len -= missing_size;
   }
   DCHECK_NE(0u, headers_id_);
-  if (data_len == 0) {
-    return total_bytes_consumed;
-  }
 
   // Once the headers are finished, we simply pass the data through.
   if (headers_decompressed_) {
@@ -431,6 +452,31 @@ void ReliableQuicStream::OnClose() {
     visitor_ = NULL;
     visitor->OnClose(this);
   }
+}
+
+uint32 ReliableQuicStream::StripPriorityAndHeaderId(
+    const char* data, uint32 data_len) {
+  uint32 total_bytes_parsed = 0;
+
+  if (!priority_parsed_ &&
+      session_->connection()->version() >= QUIC_VERSION_9 &&
+      session_->connection()->is_server()) {
+    total_bytes_parsed = StripUint32(
+        data, data_len, &headers_id_and_priority_buffer_, &priority_);
+    if (total_bytes_parsed > 0 && headers_id_and_priority_buffer_.size() == 0) {
+      // TODO(alyssar) check for priority out of bounds.
+      priority_parsed_ = true;
+    }
+    data += total_bytes_parsed;
+    data_len -= total_bytes_parsed;
+  }
+  if (data_len > 0 && headers_id_ == 0u) {
+    // The headers ID has not yet been read.  Strip it from the beginning of
+    // the data stream.
+    total_bytes_parsed += StripUint32(
+        data, data_len, &headers_id_and_priority_buffer_, &headers_id_);
+  }
+  return total_bytes_parsed;
 }
 
 }  // namespace net

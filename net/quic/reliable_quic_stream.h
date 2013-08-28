@@ -116,6 +116,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   bool GetSSLInfo(SSLInfo* ssl_info);
 
   bool headers_decompressed() const { return headers_decompressed_; }
+  QuicPriority priority() const { return priority_; }
 
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -152,6 +153,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
 
+  uint32 StripPriorityAndHeaderId(const char* data, uint32 data_len);
+
   std::list<string> queued_data_;
 
   QuicStreamSequencer sequencer_;
@@ -165,11 +168,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   uint64 stream_bytes_written_;
   // True if the headers have been completely decompresssed.
   bool headers_decompressed_;
+  // The priority of the stream, once parsed.
+  QuicPriority priority_;
   // ID of the header block sent by the peer, once parsed.
   QuicHeaderId headers_id_;
-  // Buffer into which we write bytes from the headers_id_
-  // until it is fully parsed.
-  string headers_id_buffer_;
+  // Buffer into which we write bytes from priority_ and headers_id_
+  // until each is fully parsed.
+  string headers_id_and_priority_buffer_;
   // Contains a copy of the decompressed headers_ until they are consumed
   // via ProcessData or Readv.
   string decompressed_headers_;
@@ -189,6 +194,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // True if the write side is closed, and further writes should fail.
   bool write_side_closed_;
 
+  // True if the priority has been read, false otherwise.
+  bool priority_parsed_;
   bool fin_buffered_;
   bool fin_sent_;
 };

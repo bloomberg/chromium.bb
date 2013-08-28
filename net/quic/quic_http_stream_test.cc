@@ -203,7 +203,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     headers[":path"] = path;
     headers[":scheme"] = "http";
     headers[":version"] = "HTTP/1.1";
-    request_data_ = SerializeHeaderBlock(headers);
+    request_data_ = SerializeHeaderBlock(headers, true);
   }
 
   void SetResponseString(const std::string& status, const std::string& body) {
@@ -211,11 +211,15 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     headers[":status"] = status;
     headers[":version"] = "HTTP/1.1";
     headers["content-type"] = "text/plain";
-    response_data_ = SerializeHeaderBlock(headers) + body;
+    response_data_ = SerializeHeaderBlock(headers, false) + body;
   }
 
-  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
+  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers,
+                                   bool write_priority) {
     QuicSpdyCompressor compressor;
+    if (framer_.version() >= QUIC_VERSION_9 && write_priority) {
+      return compressor.CompressHeadersWithPriority(0, headers);
+    }
     return compressor.CompressHeaders(headers);
   }
 

@@ -61,8 +61,6 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public QuicEncrypter {
   unsigned char key_[16];
   // The nonce prefix.
   unsigned char nonce_prefix_[4];
-  // last_seq_num_ is the last sequence number observed.
-  QuicPacketSequenceNumber last_seq_num_;
 
 #if defined(USE_OPENSSL)
   ScopedEVPCipherCtx ctx_;

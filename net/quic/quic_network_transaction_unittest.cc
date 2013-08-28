@@ -177,6 +177,9 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
     QuicSpdyCompressor compressor;
+    if (QuicVersionMax() >= QUIC_VERSION_9) {
+      return compressor.CompressHeadersWithPriority(0, headers);
+    }
     return compressor.CompressHeaders(headers);
   }
 
