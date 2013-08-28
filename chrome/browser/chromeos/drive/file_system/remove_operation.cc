@@ -23,8 +23,13 @@ namespace {
 FileError CheckLocalState(internal::ResourceMetadata* metadata,
                           const base::FilePath& path,
                           bool is_recursive,
+                          std::string* local_id,
                           ResourceEntry* entry) {
-  FileError error = metadata->GetResourceEntryByPath(path, entry);
+  FileError error = metadata->GetIdByPath(path, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  error = metadata->GetResourceEntryById(*local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -44,15 +49,15 @@ FileError CheckLocalState(internal::ResourceMetadata* metadata,
 // Updates local metadata and cache state after remote delete.
 FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            internal::FileCache* cache,
-                           const std::string& resource_id,
+                           const std::string& local_id,
                            base::FilePath* changed_directory_path) {
-  *changed_directory_path = metadata->GetFilePath(resource_id).DirName();
-  FileError error = metadata->RemoveEntry(resource_id);
+  *changed_directory_path = metadata->GetFilePath(local_id).DirName();
+  FileError error = metadata->RemoveEntry(local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = cache->Remove(resource_id);
-  DLOG_IF(ERROR, error != FILE_ERROR_OK) << "Failed to remove: " << resource_id;
+  error = cache->Remove(local_id);
+  DLOG_IF(ERROR, error != FILE_ERROR_OK) << "Failed to remove: " << local_id;
 
   return FILE_ERROR_OK;
 }
@@ -84,19 +89,27 @@ void RemoveOperation::Remove(const base::FilePath& path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  std::string* local_id = new std::string;
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&CheckLocalState, metadata_, path, is_recursive, entry),
+      base::Bind(&CheckLocalState,
+                 metadata_,
+                 path,
+                 is_recursive,
+                 local_id,
+                 entry),
       base::Bind(&RemoveOperation::RemoveAfterCheckLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
+                 base::Owned(local_id),
                  base::Owned(entry)));
 }
 
 void RemoveOperation::RemoveAfterCheckLocalState(
     const FileOperationCallback& callback,
+    const std::string* local_id,
     const ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -112,12 +125,12 @@ void RemoveOperation::RemoveAfterCheckLocalState(
       base::Bind(&RemoveOperation::RemoveAfterDeleteResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 entry->resource_id()));
+                 *local_id));
 }
 
 void RemoveOperation::RemoveAfterDeleteResource(
     const FileOperationCallback& callback,
-    const std::string& resource_id,
+    const std::string& local_id,
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -135,7 +148,7 @@ void RemoveOperation::RemoveAfterDeleteResource(
       base::Bind(&UpdateLocalState,
                  metadata_,
                  cache_,
-                 resource_id,
+                 local_id,
                  changed_directory_path),
       base::Bind(&RemoveOperation::RemoveAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
