@@ -71,16 +71,25 @@ const char* ANGLEInstancedArrays::getExtensionName()
 
 void ANGLEInstancedArrays::drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount)
 {
+    if (isLost())
+        return;
+
     m_context->drawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
 void ANGLEInstancedArrays::drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount)
 {
+    if (isLost())
+        return;
+
     m_context->drawElementsInstancedANGLE(mode, count, type, offset, primcount);
 }
 
 void ANGLEInstancedArrays::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor)
 {
+    if (isLost())
+        return;
+
     m_context->vertexAttribDivisorANGLE(index, divisor);
 }
 
