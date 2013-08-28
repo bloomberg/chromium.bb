@@ -234,15 +234,17 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
     public void testDisableRepeatedDialogs()
             throws InterruptedException, TimeoutException, ExecutionException {
         OnEvaluateJavaScriptResultHelper scriptEvent =
-                executeJavaScriptAndWaitForDialog("alert('Android');alert('Android');");
+                executeJavaScriptAndWaitForDialog("alert('Android');");
 
-        // A dialog should appear.
+        // Show a dialog once.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
 
         clickCancel(jsDialog);
+        scriptEvent.waitUntilHasValue();
 
-        // Another dialog should appear with the option to suppress subsequent dialogs.
+        // Show it again, it should have the option to suppress subsequent dialogs.
+        scriptEvent = executeJavaScriptAndWaitForDialog("alert('Android');");
         jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
         final AlertDialog dialog = jsDialog.getDialogForTest();

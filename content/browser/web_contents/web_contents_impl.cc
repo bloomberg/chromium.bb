@@ -3356,7 +3356,6 @@ void WebContentsImpl::RunJavaScriptMessage(
     const string16& default_prompt,
     const GURL& frame_url,
     JavaScriptMessageType javascript_message_type,
-    bool user_gesture,
     IPC::Message* reply_msg,
     bool* did_suppress_message) {
   // Suppress JavaScript dialogs when requested. Also suppress messages when
@@ -3380,7 +3379,6 @@ void WebContentsImpl::RunJavaScriptMessage(
         javascript_message_type,
         message,
         default_prompt,
-        user_gesture,
         base::Bind(&WebContentsImpl::OnDialogClosed,
                    base::Unretained(this),
                    rvh,

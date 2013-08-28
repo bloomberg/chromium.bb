@@ -1800,12 +1800,11 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RouteMessageEvent,
                     ViewMsg_PostMessage_Params)
 
-IPC_SYNC_MESSAGE_ROUTED5_2(ViewHostMsg_RunJavaScriptMessage,
+IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* in - alert message */,
                            string16     /* in - default prompt */,
                            GURL         /* in - originating page URL */,
                            content::JavaScriptMessageType /* in - type */,
-                           bool         /* in - user_gesture */,
                            bool         /* out - success */,
                            string16     /* out - user_input field */)
 

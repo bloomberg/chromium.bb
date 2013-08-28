@@ -262,7 +262,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                                     const string16& default_prompt,
                                     const GURL& frame_url,
                                     JavaScriptMessageType type,
-                                    bool user_gesture,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
