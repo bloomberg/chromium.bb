@@ -286,15 +286,27 @@ TEST_PPAPI_NACL(Graphics2D_Flush)
 TEST_PPAPI_NACL(Graphics2D_FlushOffscreenUpdate)
 TEST_PPAPI_NACL(Graphics2D_BindNull)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
+// In-process and NaCl tests are having flaky failures on Win: crbug.com/242252
+#define MAYBE_IN_Graphics3D DISABLED_Graphics3D
+#define MAYBE_OUT_Graphics3D Graphics3D
+#define MAYBE_NACL_Graphics3D DISABLED_Graphics3D
+#elif defined(OS_WIN) && defined(USE_AURA)
 // These tests fail with the test compositor which is what's used by default for
 // browser tests on Windows Aura. Renable when the software compositor is
 // available.
-// In-process and NaCl tests are having flaky failures on Win: crbug.com/242252
-TEST_PPAPI_IN_PROCESS(DISABLED_Graphics3D)
-TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)
-TEST_PPAPI_NACL(DISABLED_Graphics3D)
+#define MAYBE_IN_Graphics3D DISABLED_Graphics3D
+#define MAYBE_OUT_Graphics3D DISABLED_Graphics3D
+#define MAYBE_NACL_Graphics3D DISABLED_Graphics3D
+#else
+// The tests are failing in-process. crbug.com/280282
+#define MAYBE_IN_Graphics3D DISABLED_Graphics3D
+#define MAYBE_OUT_Graphics3D Graphics3D
+#define MAYBE_NACL_Graphics3D Graphics3D
 #endif
+TEST_PPAPI_IN_PROCESS(MAYBE_IN_Graphics3D)
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_OUT_Graphics3D)
+TEST_PPAPI_NACL(MAYBE_NACL_Graphics3D)
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)

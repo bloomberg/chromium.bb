@@ -62,7 +62,9 @@ gpu::CommandBuffer::State GetErrorState() {
 // Graphics3D context; this isn't allowed, and will likely either crash or
 // result in undefined behavior.  It is assumed that the thread which creates
 // the Graphics3D context will be the thread on which subsequent gl rendering
-// will be done.
+// will be done. This is why it is okay to read need_to_lock_ without the lock;
+// it should only ever be read and written on the same thread where the context
+// was created.
 //
 // TODO(nfullagar): At some point, allow multiple threads to concurrently render
 // each to its own context.  First step is to allow a single thread (either main
@@ -180,7 +182,8 @@ Graphics3D::Graphics3D(const HostResource& resource)
 }
 
 Graphics3D::~Graphics3D() {
-  DestroyGLES2Impl();
+  if (gles2_impl())
+    DestroyGLES2Impl();
 }
 
 bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2) {
@@ -258,6 +261,10 @@ int32 Graphics3D::DoSwapBuffers() {
 
 void Graphics3D::PushAlreadyLocked() {
   ppapi::ProxyLock::AssertAcquired();
+  if (!locking_command_buffer_) {
+    NOTREACHED();
+    return;
+  }
   if (num_already_locked_calls_ == 0)
     locking_command_buffer_->set_need_to_lock(false);
   ++num_already_locked_calls_;
@@ -268,6 +275,10 @@ void Graphics3D::PopAlreadyLocked() {
   DCHECK(!locking_command_buffer_->need_to_lock());
   DCHECK_GT(num_already_locked_calls_, 0);
   ppapi::ProxyLock::AssertAcquired();
+  if (!locking_command_buffer_) {
+    NOTREACHED();
+    return;
+  }
   --num_already_locked_calls_;
   if (num_already_locked_calls_ == 0)
     locking_command_buffer_->set_need_to_lock(true);
