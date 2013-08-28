@@ -17,7 +17,6 @@ namespace ash {
 namespace internal {
 
 namespace tray {
-class RemainingSessionTimeNotificationView;
 class RemainingSessionTimeTrayView;
 }
 
@@ -36,10 +35,7 @@ class TraySessionLengthLimit : public SystemTrayItem,
 
   // SystemTrayItem:
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
@@ -51,11 +47,9 @@ class TraySessionLengthLimit : public SystemTrayItem,
   base::TimeDelta GetRemainingSessionTime() const;
 
  private:
-  void ShowAndSpeakNotification();
   void Update();
 
   tray::RemainingSessionTimeTrayView* tray_view_;
-  tray::RemainingSessionTimeNotificationView* notification_view_;
 
   LimitState limit_state_;
   base::TimeTicks session_start_time_;
