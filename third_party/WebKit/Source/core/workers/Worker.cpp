@@ -124,9 +124,9 @@ void Worker::didReceiveResponse(unsigned long identifier, const ResourceResponse
 
 void Worker::notifyFinished()
 {
-    if (m_scriptLoader->failed())
-        dispatchEvent(Event::create(eventNames().errorEvent, false, true));
-    else {
+    if (m_scriptLoader->failed()) {
+        dispatchEvent(Event::createCancelable(eventNames().errorEvent));
+    } else {
         WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
         if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(scriptExecutionContext()))
             startMode = PauseWorkerGlobalScopeOnStart;

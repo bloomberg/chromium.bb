@@ -84,6 +84,10 @@ public:
     {
         return adoptRef(new Event(type, false, false));
     }
+    static PassRefPtr<Event> createCancelable(const AtomicString& type)
+    {
+        return adoptRef(new Event(type, false, true));
+    }
     static PassRefPtr<Event> create(const AtomicString& type, bool canBubble, bool cancelable)
     {
         return adoptRef(new Event(type, canBubble, cancelable));

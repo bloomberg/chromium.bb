@@ -3451,7 +3451,7 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
 void EventHandler::defaultEscapeEventHandler(KeyboardEvent* event)
 {
     if (HTMLDialogElement* dialog = m_frame->document()->activeModalDialog())
-        dialog->dispatchEvent(Event::create(eventNames().cancelEvent, false, true));
+        dialog->dispatchEvent(Event::createCancelable(eventNames().cancelEvent));
 }
 
 void EventHandler::capsLockStateMayHaveChanged()

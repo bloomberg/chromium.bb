@@ -571,9 +571,7 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 #if LOG_MEDIA_EVENTS
     LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", eventName.string().ascii().data());
 #endif
-
-    RefPtr<Event> event = Event::create(eventName, false, true);
-    m_asyncEventQueue->enqueueEvent(event.release());
+    m_asyncEventQueue->enqueueEvent(Event::createCancelable(eventName));
 }
 
 void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)

@@ -182,7 +182,7 @@ void SharedWorkerScriptLoader::didReceiveResponse(unsigned long identifier, cons
 void SharedWorkerScriptLoader::notifyFinished()
 {
     if (m_scriptLoader->failed()) {
-        m_worker->dispatchEvent(Event::create(eventNames().errorEvent, false, true));
+        m_worker->dispatchEvent(Event::createCancelable(eventNames().errorEvent));
         delete this;
     } else {
         InspectorInstrumentation::scriptImported(m_worker->scriptExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
