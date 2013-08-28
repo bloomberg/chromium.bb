@@ -173,15 +173,11 @@ void MIDIMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
 void MIDIMessageFilter::HandleDataReceived(uint32 port,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
+  DCHECK(!data.empty());
   TRACE_EVENT0("midi", "MIDIMessageFilter::HandleDataReceived");
 
-#if defined(OS_ANDROID)
-  // TODO(crogers): figure out why data() method does not compile on Android.
-  NOTIMPLEMENTED();
-#else
   for (ClientsMap::iterator i = clients_.begin(); i != clients_.end(); ++i)
-    (*i).first->didReceiveMIDIData(port, data.data(), data.size(), timestamp);
-#endif
+    (*i).first->didReceiveMIDIData(port, &data[0], data.size(), timestamp);
 }
 
 void MIDIMessageFilter::SendMIDIData(uint32 port,
