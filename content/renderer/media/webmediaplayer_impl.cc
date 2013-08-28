@@ -723,7 +723,7 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
-  if (!IsSupportedKeySystem(key_system))
+  if (!IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
@@ -778,7 +778,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
            << " [" << session_id.utf8().data() << "]";
 
 
-  if (!IsSupportedKeySystem(key_system))
+  if (!IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
@@ -802,7 +802,7 @@ WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::CancelKeyRequestInternal(
     const WebString& key_system,
     const WebString& session_id) {
-  if (!IsSupportedKeySystem(key_system))
+  if (!IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)

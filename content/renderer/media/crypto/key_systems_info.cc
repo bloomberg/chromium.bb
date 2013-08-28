@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/renderer/media/crypto/key_systems_info.h"
+
+#include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
@@ -79,14 +81,10 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Widevine.
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineKeySystem },
   { "audio/webm", "vorbis", kWidevineKeySystem },
-  { "video/webm", "vorbis,vp8,vp8.0", kWidevineBaseKeySystem },
-  { "audio/webm", "vorbis", kWidevineBaseKeySystem },
 #if defined(USE_PROPRIETARY_CODECS)
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
   { "video/mp4", kWidevineVideoMp4Codecs, kWidevineKeySystem },
-  { "video/mp4", kWidevineVideoMp4Codecs, kWidevineBaseKeySystem },
   { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineKeySystem },
-  { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineBaseKeySystem },
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 #endif  // defined(USE_PROPRIETARY_CODECS)
 #endif  // WIDEVINE_CDM_AVAILABLE
@@ -122,16 +120,32 @@ const int kNumKeySystemToUUIDMapping =
     ARRAYSIZE_UNSAFE(kKeySystemToUUIDMapping);
 #endif  // defined(OS_ANDROID)
 
-bool IsSystemCompatible(const std::string& key_system) {
+bool IsSystemCompatible(const std::string& concrete_key_system) {
+  DCHECK(IsConcreteKeySystem(concrete_key_system))
+      << concrete_key_system << " is not a concrete system";
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (IsWidevine(key_system)) {
+  if (IsWidevine(concrete_key_system)) {
     Version glibc_version(gnu_get_libc_version());
     DCHECK(glibc_version.IsValid());
     return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
   }
 #endif
   return true;
+}
+
+std::string EnsureConcreteKeySystem(const std::string& key_system) {
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  if (key_system == kWidevineKeySystem || key_system == kWidevineBaseKeySystem)
+    return kWidevineKeySystem;
+#endif  // WIDEVINE_CDM_AVAILABLE
+  // No parent names for Clear Key.
+  if (key_system == kClearKeyKeySystem)
+    return kClearKeyKeySystem;
+  // No parent names for External Clear Key.
+  if (key_system == kExternalClearKeyKeySystem)
+    return kExternalClearKeyKeySystem;
+  return std::string();
 }
 
 bool IsCanPlayTypeSuppressed(const std::string& key_system) {

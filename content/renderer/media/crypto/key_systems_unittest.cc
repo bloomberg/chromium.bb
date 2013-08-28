@@ -11,6 +11,30 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+// Death tests are not always available. When they are, they use NDEBUG for
+// the DCHECK variant, which is not sufficient when defined(DCHECK_ALWAYS_ON).
+// EXPECT_DCHECK_DEATH handles all these cases. The test will execute correctly
+// except in the case that death tests are not available but DCHECKs are on.
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+#if defined(DCHECK_ALWAYS_ON)
+#define EXPECT_DCHECK_DEATH(statement, regex) \
+  EXPECT_DEATH(statement, regex)
+#else
+#define EXPECT_DCHECK_DEATH(statement, regex) \
+  EXPECT_DEBUG_DEATH(statement, regex)
+#endif  // defined(DCHECK_ALWAYS_ON)
+#else  // defined(GTEST_HAS_DEATH_TEST)
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define EXPECT_DCHECK_DEATH(statement, regex) \
+  do { statement; } while (false)
+#else
+#include "base/logging.h"
+#define EXPECT_DCHECK_DEATH(statement, regex) \
+  LOG(WARNING) << "Death tests are not supported on this platform.\n" \
+               << "Statement '" #statement "' cannot be verified.";
+#endif  // defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
+#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
@@ -160,12 +184,12 @@ class KeySystemsTest : public testing::Test {
 };
 
 TEST_F(KeySystemsTest, ClearKey_Basic) {
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kClearKey)));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(WebString::fromUTF8(kClearKey)));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kClearKey));
 
   // Not yet out from behind the vendor prefix.
-  EXPECT_FALSE(IsSupportedKeySystem("org.w3.clearkey"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.w3.clearkey"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org.w3.clearkey"));
 
@@ -182,7 +206,8 @@ TEST_F(KeySystemsTest, ClearKey_Parent) {
   const char* const kClearKeyParent = "webkit-org.w3";
 
   // The parent should be supported but is not. See http://crbug.com/164303.
-  EXPECT_FALSE(IsSupportedKeySystem(WebString::fromUTF8(kClearKeyParent)));
+  EXPECT_FALSE(
+      IsConcreteSupportedKeySystem(WebString::fromUTF8(kClearKeyParent)));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kClearKeyParent));
 
@@ -191,47 +216,50 @@ TEST_F(KeySystemsTest, ClearKey_Parent) {
       KeySystemNameForUMA(WebString::fromUTF8(kClearKeyParent)).c_str());
   EXPECT_FALSE(CanUseAesDecryptor(kClearKeyParent));
 #if defined(ENABLE_PEPPER_CDMS)
-  EXPECT_TRUE(GetPepperType(kClearKeyParent).empty());
+  std::string type;
+  EXPECT_DCHECK_DEATH(type = GetPepperType(kClearKeyParent),
+                      "webkit-org.w3 is not a concrete system");
+  EXPECT_TRUE(type.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, ClearKey_IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org.w3.ClEaRkEy"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org.w3.ClEaRkEy"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org.w3.ClEaRkEy"));
 
   // TLDs are not allowed.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org."));
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org"));
-  EXPECT_FALSE(IsSupportedKeySystem("org."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org."));
-  EXPECT_FALSE(IsSupportedKeySystem("org"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org"));
 
   // Extra period.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org.w3."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org.w3."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org.w3."));
 
   // Incomplete.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org.w3.clearke"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org.w3.clearke"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org.w3.clearke"));
 
   // Extra character.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org.w3.clearkeyz"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org.w3.clearkeyz"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org.w3.clearkeyz"));
 
   // There are no child key systems for Clear Key.
-  EXPECT_FALSE(IsSupportedKeySystem("webkit-org.w3.clearkey.foo"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("webkit-org.w3.clearkey.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "webkit-org.w3.clearkey.foo"));
 }
@@ -345,7 +373,8 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_MP4) {
 //
 
 TEST_F(KeySystemsTest, ExternalClearKey_Basic) {
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kExternalClearKey)));
+  EXPECT_TRUE(
+      IsConcreteSupportedKeySystem(WebString::fromUTF8(kExternalClearKey)));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kExternalClearKey));
 
@@ -365,8 +394,8 @@ TEST_F(KeySystemsTest, ExternalClearKey_Parent) {
   const char* const kExternalClearKeyParent = "org.chromium";
 
   // The parent should be supported but is not. See http://crbug.com/164303.
-  EXPECT_FALSE(
-      IsSupportedKeySystem(WebString::fromUTF8(kExternalClearKeyParent)));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(
+      WebString::fromUTF8(kExternalClearKeyParent)));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kExternalClearKeyParent));
 
@@ -376,44 +405,48 @@ TEST_F(KeySystemsTest, ExternalClearKey_Parent) {
                    WebString::fromUTF8(kExternalClearKeyParent)).c_str());
   EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKeyParent));
 #if defined(ENABLE_PEPPER_CDMS)
-  EXPECT_TRUE(GetPepperType(kExternalClearKeyParent).empty());
+  std::string type;
+  EXPECT_DCHECK_DEATH(type = GetPepperType(kExternalClearKeyParent),
+                      "org.chromium is not a concrete system");
+  EXPECT_TRUE(type.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, ExternalClearKey_IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
-  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.ExTeRnAlClEaRkEy"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.chromium.ExTeRnAlClEaRkEy"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(),
       "org.chromium.ExTeRnAlClEaRkEy"));
 
   // TLDs are not allowed.
-  EXPECT_FALSE(IsSupportedKeySystem("org."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org."));
-  EXPECT_FALSE(IsSupportedKeySystem("org"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org"));
 
   // Extra period.
-  EXPECT_FALSE(IsSupportedKeySystem("org.chromium."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.chromium."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org.chromium."));
 
   // Incomplete.
-  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearke"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.chromium.externalclearke"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(),
       "org.chromium.externalclearke"));
 
   // Extra character.
-  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearkeyz"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.chromium.externalclearkeyz"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(),
       "org.chromium.externalclearkeyz"));
 
   // There are no child key systems for Clear Key.
-  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearkey.foo"));
+  EXPECT_FALSE(
+      IsConcreteSupportedKeySystem("org.chromium.externalclearkey.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(),
       "org.chromium.externalclearkey.foo"));
@@ -533,9 +566,10 @@ TEST_F(KeySystemsTest,
 TEST_F(KeySystemsTest, Widevine_Basic) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
+  EXPECT_TRUE(
+      IsConcreteSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
 #else
-  EXPECT_WV(IsSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
+  EXPECT_WV(IsConcreteSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
 #endif
 
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
@@ -556,64 +590,64 @@ TEST_F(KeySystemsTest, Widevine_Basic) {
   EXPECT_STREQ("application/x-ppapi-widevine-cdm",
                GetPepperType(kWidevineAlpha).c_str());
 #else
-  EXPECT_TRUE(GetPepperType(kWidevineAlpha).empty());
+  std::string type;
+  EXPECT_DCHECK_DEATH(type = GetPepperType(kWidevineAlpha),
+                      "com.widevine.alpha is not a concrete system");
+  EXPECT_TRUE(type.empty());
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 }
 
 TEST_F(KeySystemsTest, Widevine_Parent) {
-  const char* const kWidevineParent = kWidevine;
-
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kWidevineParent)));
-#else
-  EXPECT_WV(IsSupportedKeySystem(WebString::fromUTF8(kWidevineParent)));
-#endif
+  // The parent system is not a concrete system but is supported.
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(WebString::fromUTF8(kWidevine)));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), kWidevineParent));
+      "video/webm", no_codecs(), kWidevine));
 
   // The parent is not supported for most things.
   EXPECT_STREQ("Unknown",
-      KeySystemNameForUMA(WebString::fromUTF8(kWidevineParent)).c_str());
-  EXPECT_FALSE(CanUseAesDecryptor(kWidevineParent));
+      KeySystemNameForUMA(WebString::fromUTF8(kWidevine)).c_str());
+  EXPECT_FALSE(CanUseAesDecryptor(kWidevine));
 #if defined(ENABLE_PEPPER_CDMS)
-  EXPECT_TRUE(GetPepperType(kWidevineParent).empty());
+  std::string type;
+  EXPECT_DCHECK_DEATH(type = GetPepperType(kWidevine),
+                      "com.widevine is not a concrete system");
+  EXPECT_TRUE(type.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, Widevine_IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
-  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.AlPhA"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com.widevine.AlPhA"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com.widevine.AlPhA"));
 
   // TLDs are not allowed.
-  EXPECT_FALSE(IsSupportedKeySystem("com."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com."));
-  EXPECT_FALSE(IsSupportedKeySystem("com"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com"));
 
   // Extra period.
-  EXPECT_FALSE(IsSupportedKeySystem("com.widevine."));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com.widevine."));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com.widevine."));
 
   // Incomplete.
-  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alph"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com.widevine.alph"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com.widevine.alph"));
 
   // Extra character.
-  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alphab"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com.widevine.alphab"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com.widevine.alphab"));
 
   // There are no child key systems for Widevine Alpha.
-  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alpha.foo"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("com.widevine.alpha.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "com.widevine.alpha.foo"));
 }
@@ -752,19 +786,28 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
 
 #if defined(OS_ANDROID)
 TEST_F(KeySystemsTest, GetUUID_Widevine) {
-  std::vector<uint8> uuid = GetUUID(kWidevineAlpha);
 #if defined(WIDEVINE_CDM_AVAILABLE)
+  std::vector<uint8> uuid = GetUUID(kWidevineAlpha);
   EXPECT_EQ(16u, uuid.size());
   EXPECT_EQ(0xED, uuid[15]);
 #else
+  std::vector<uint8> uuid;
+  EXPECT_DCHECK_DEATH(uuid = GetUUID(kWidevineAlpha),
+                      "com.widevine.alpha is not a concrete system");
   EXPECT_TRUE(uuid.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
-  EXPECT_TRUE(GetUUID(kWidevine).empty());
+  std::vector<uint8> uuid;
+  EXPECT_DCHECK_DEATH(uuid = GetUUID(kWidevine),
+                      "com.widevine is not a concrete system");
+  EXPECT_TRUE(uuid.empty());
+
   EXPECT_TRUE(GetUUID(kClearKey).empty());
-  EXPECT_TRUE(GetUUID("").empty());
+
+  EXPECT_DCHECK_DEATH(uuid = GetUUID(""), " is not a concrete system");
+  EXPECT_TRUE(uuid.empty());
 }
 #endif  // defined(OS_ANDROID)
 

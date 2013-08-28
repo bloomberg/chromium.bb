@@ -267,8 +267,21 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
+  RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
+                        kWebMAudioOnly, "com.example.foo", SRC,
+                        "GENERATE_KEY_REQUEST_EXCEPTION");
+}
+
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)
+// The parent key system cannot be used in generateKeyRequest.
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
+  RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
+                        kWebMAudioOnly, "com.widevine", SRC,
+                        "GENERATE_KEY_REQUEST_EXCEPTION");
+}
+
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestMSESimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly,
                         kWidevineKeySystem);

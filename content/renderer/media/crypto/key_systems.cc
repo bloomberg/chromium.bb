@@ -130,16 +130,24 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
   return true;
 }
 
-bool IsSupportedKeySystem(const WebKit::WebString& key_system) {
-  return g_key_systems.Get().IsSupportedKeySystem(ToASCIIOrEmpty(key_system));
+static inline bool IsConcreteSupportedKeySystem(const std::string& key_system) {
+  bool result = g_key_systems.Get().IsSupportedKeySystem(key_system);
+  // Verify the two "Concrete" lists are in sync.
+  DCHECK_EQ(result, IsConcreteKeySystem(key_system));
+  return result;
+}
+
+bool IsConcreteSupportedKeySystem(const WebKit::WebString& key_system) {
+  return IsConcreteSupportedKeySystem(ToASCIIOrEmpty(key_system));
 }
 
 bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
+  std::string concrete_key_system = EnsureConcreteKeySystem(key_system);
   return g_key_systems.Get().IsSupportedKeySystemWithMediaMimeType(
-      mime_type, codecs, key_system);
+      mime_type, codecs, concrete_key_system);
 }
 
 std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
@@ -151,9 +159,11 @@ bool CanUseAesDecryptor(const std::string& key_system) {
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-std::string GetPepperType(const std::string& key_system) {
+std::string GetPepperType(const std::string& concrete_key_system) {
+  DCHECK(IsConcreteKeySystem(concrete_key_system))
+      << concrete_key_system << " is not a concrete system";
   for (int i = 0; i < kNumKeySystemToPepperTypeMapping; ++i) {
-    if (kKeySystemToPepperTypeMapping[i].key_system == key_system)
+    if (kKeySystemToPepperTypeMapping[i].key_system == concrete_key_system)
       return kKeySystemToPepperTypeMapping[i].type;
   }
 
@@ -162,9 +172,11 @@ std::string GetPepperType(const std::string& key_system) {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(OS_ANDROID)
-std::vector<uint8> GetUUID(const std::string& key_system) {
+std::vector<uint8> GetUUID(const std::string& concrete_key_system) {
+  DCHECK(IsConcreteKeySystem(concrete_key_system))
+      << concrete_key_system << " is not a concrete system";
   for (int i = 0; i < kNumKeySystemToUUIDMapping; ++i) {
-    if (kKeySystemToUUIDMapping[i].key_system == key_system)
+    if (kKeySystemToUUIDMapping[i].key_system == concrete_key_system)
       return std::vector<uint8>(kKeySystemToUUIDMapping[i].uuid,
                                 kKeySystemToUUIDMapping[i].uuid + 16);
   }

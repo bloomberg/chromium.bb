@@ -400,10 +400,6 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
   if (!key_system.isEmpty()) {
     // Check whether the key system is supported with the mime_type and codecs.
 
-    // Not supporting the key system is a flat-out no.
-    if (!IsSupportedKeySystem(key_system))
-      return IsNotSupported;
-
     std::vector<std::string> strict_codecs;
     bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
     net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, strip_suffix);

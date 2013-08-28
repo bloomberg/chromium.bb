@@ -57,7 +57,25 @@ extern const int kNumKeySystemToUUIDMapping;
 #endif  // defined(OS_ANDROID)
 
 // Returns whether |key_system| is compatible with the user's system.
-bool IsSystemCompatible(const std::string& key_system);
+bool IsSystemCompatible(const std::string& concrete_key_system);
+
+// Returns a concrete key system supported by the platform that most closely
+// corresponds to |key_system|. The result can be passed to other functions that
+// require a concrete key system.
+// Returns null if a conversion cannot be made or |key_system| is unrecognized.
+// The primary use case is to convert a parent key system to a concrete key
+// system to check properties.
+// If we ever have multiple children for a single parent, we may need a more
+// complex solution that checks all concrete children until it gets true.
+std::string EnsureConcreteKeySystem(const std::string& key_system);
+
+// Returns whether |key_system| is a concrete key system.
+// This is used for DCHECKs. Production code should use
+// EnsureConcreteKeySystem().
+inline bool IsConcreteKeySystem(const std::string& key_system) {
+  return !key_system.empty() &&
+      key_system == EnsureConcreteKeySystem(key_system);
+}
 
 // Returns true if canPlayType should return an empty string for |key_system|.
 bool IsCanPlayTypeSuppressed(const std::string& key_system);
