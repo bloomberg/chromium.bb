@@ -21,8 +21,8 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   scoped_refptr<media::VideoFrame> non_pool_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12, size,
                                      gfx::Rect(size), size, base::TimeDelta());
-  scoped_refptr<VideoCaptureBufferPool> pool =
-      new VideoCaptureBufferPool(size.GetArea() * 3 / 2, 3);
+  scoped_refptr<VideoCaptureBufferPool> pool = new VideoCaptureBufferPool(
+      media::VideoFrame::AllocationSize(media::VideoFrame::I420, size), 3);
 
   ASSERT_EQ(460800u, pool->GetMemorySize());
   ASSERT_TRUE(pool->Allocate());

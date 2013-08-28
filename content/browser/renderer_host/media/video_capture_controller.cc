@@ -573,8 +573,11 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
     return;
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool =
-      new VideoCaptureBufferPool(frame_info_.width * frame_info_.height * 3 / 2,
-                                 kNoOfBuffers);
+      new VideoCaptureBufferPool(
+          media::VideoFrame::AllocationSize(
+              media::VideoFrame::I420,
+              gfx::Size(frame_info_.width, frame_info_.height)),
+          kNoOfBuffers);
 
   // Check whether all buffers were created successfully.
   if (!buffer_pool->Allocate()) {

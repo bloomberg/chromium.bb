@@ -80,9 +80,9 @@ class CONTENT_EXPORT RTCVideoEncoder
   // Factory for creating VEAs, shared memory buffers, etc.
   scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories_;
 
-  // Weak pointer and factory for posting back VEA::Client notifications to
+  // Weak pointer factory for posting back VEA::Client notifications to
   // RTCVideoEncoder.
-  scoped_ptr<base::WeakPtrFactory<RTCVideoEncoder> > weak_this_factory_;
+  base::WeakPtrFactory<RTCVideoEncoder> weak_this_factory_;
 
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;

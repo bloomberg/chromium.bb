@@ -310,8 +310,10 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
   StubConsumer()
       : error_encountered_(false),
         wait_color_yuv_(0xcafe1950) {
-    buffer_pool_ =
-        new VideoCaptureBufferPool(kTestWidth * kTestHeight * 3 / 2, 2);
+    buffer_pool_ = new VideoCaptureBufferPool(
+        media::VideoFrame::AllocationSize(media::VideoFrame::I420,
+                                          gfx::Size(kTestWidth, kTestHeight)),
+        2);
     EXPECT_TRUE(buffer_pool_->Allocate());
   }
   virtual ~StubConsumer() {}

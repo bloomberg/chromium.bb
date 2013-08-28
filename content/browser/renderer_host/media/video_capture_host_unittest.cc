@@ -20,6 +20,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,7 +58,8 @@ class DumpVideo {
     base::FilePath file_name = base::FilePath(base::StringPrintf(
         FILE_PATH_LITERAL("dump_w%d_h%d.yuv"), width, height));
     file_.reset(file_util::OpenFile(file_name, "wb"));
-    expected_size_ = width * height * 3 / 2;
+    expected_size_ = media::VideoFrame::AllocationSize(
+        media::VideoFrame::I420, gfx::Size(width, height));
   }
   void NewVideoFrame(const void* buffer) {
     if (file_.get() != NULL) {
@@ -146,7 +148,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   // These handler methods do minimal things and delegate to the mock methods.
   void OnNewBufferCreatedDispatch(int device_id,
                                   base::SharedMemoryHandle handle,
-                                  int length, int buffer_id) {
+                                  uint32 length,
+                                  int buffer_id) {
     OnNewBufferCreated(device_id, handle, length, buffer_id);
     base::SharedMemory* dib = new base::SharedMemory(handle, false);
     dib->Map(length);

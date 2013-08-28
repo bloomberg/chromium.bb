@@ -13,6 +13,7 @@
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -268,7 +269,8 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
 
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
     base::SharedMemory* shm =
-        gpu_factories_->CreateSharedMemory(input_coded_size.GetArea() * 3 / 2);
+        gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
+            media::VideoFrame::I420, input_coded_size));
     if (!shm) {
       DLOG(ERROR) << "Impl::RequireBitstreamBuffers(): "
                      "failed to create input buffer " << i;
@@ -396,47 +398,38 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
 
   const int index = input_buffers_free_.back();
   base::SharedMemory* input_buffer = input_buffers_[index];
-
-  // Do a strided copy of the input frame to match the input requirements for
-  // the encoder.
-  // TODO(sheu): support zero-copy from WebRTC.  http://crbug.com/269312
-  const uint8_t* src = next_frame->buffer(webrtc::kYPlane);
-  uint8* dst = reinterpret_cast<uint8*>(input_buffer->memory());
-  uint8* const y_dst = dst;
-  int width = input_frame_coded_size_.width();
-  int stride = next_frame->stride(webrtc::kYPlane);
-  for (int i = 0; i < next_frame->height(); ++i) {
-    memcpy(dst, src, width);
-    src += stride;
-    dst += width;
-  }
-  src = next_frame->buffer(webrtc::kUPlane);
-  width = input_frame_coded_size_.width() / 2;
-  stride = next_frame->stride(webrtc::kUPlane);
-  for (int i = 0; i < next_frame->height() / 2; ++i) {
-    memcpy(dst, src, width);
-    src += stride;
-    dst += width;
-  }
-  src = next_frame->buffer(webrtc::kVPlane);
-  width = input_frame_coded_size_.width() / 2;
-  stride = next_frame->stride(webrtc::kVPlane);
-  for (int i = 0; i < next_frame->height() / 2; ++i) {
-    memcpy(dst, src, width);
-    src += stride;
-    dst += width;
-  }
-
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
           media::VideoFrame::I420,
           input_frame_coded_size_,
           gfx::Rect(input_visible_size_),
           input_visible_size_,
-          y_dst,
+          reinterpret_cast<uint8*>(input_buffer->memory()),
+          input_buffer->mapped_size(),
           input_buffer->handle(),
           base::TimeDelta(),
           base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index));
+  if (!frame) {
+    DLOG(ERROR) << "Impl::EncodeOneFrame(): failed to create frame";
+    NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  // Do a strided copy of the input frame to match the input requirements for
+  // the encoder.
+  // TODO(sheu): support zero-copy from WebRTC.  http://crbug.com/269312
+  media::CopyYPlane(next_frame->buffer(webrtc::kYPlane),
+                    next_frame->stride(webrtc::kYPlane),
+                    next_frame->height(),
+                    frame.get());
+  media::CopyUPlane(next_frame->buffer(webrtc::kUPlane),
+                    next_frame->stride(webrtc::kUPlane),
+                    next_frame->height(),
+                    frame.get());
+  media::CopyVPlane(next_frame->buffer(webrtc::kVPlane),
+                    next_frame->stride(webrtc::kVPlane),
+                    next_frame->height(),
+                    frame.get());
 
   video_encoder_->Encode(frame, next_frame_keyframe);
   input_buffers_free_.pop_back();
@@ -485,6 +478,7 @@ RTCVideoEncoder::RTCVideoEncoder(
     : video_codec_type_(type),
       video_codec_profile_(profile),
       gpu_factories_(gpu_factories),
+      weak_this_factory_(this),
       encoded_image_callback_(NULL),
       impl_status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED) {
   DVLOG(1) << "RTCVideoEncoder(): profile=" << profile;
@@ -506,8 +500,8 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!impl_);
 
-  weak_this_factory_.reset(new base::WeakPtrFactory<RTCVideoEncoder>(this));
-  impl_ = new Impl(weak_this_factory_->GetWeakPtr(), gpu_factories_);
+  weak_this_factory_.InvalidateWeakPtrs();
+  impl_ = new Impl(weak_this_factory_.GetWeakPtr(), gpu_factories_);
   base::WaitableEvent initialization_waiter(true, false);
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_factories_->GetMessageLoop()->PostTask(
@@ -578,7 +572,7 @@ int32_t RTCVideoEncoder::Release() {
     gpu_factories_->GetMessageLoop()->PostTask(
         FROM_HERE, base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
     impl_ = NULL;
-    weak_this_factory_.reset();
+    weak_this_factory_.InvalidateWeakPtrs();
     impl_status_ = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
   return WEBRTC_VIDEO_CODEC_OK;

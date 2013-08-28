@@ -148,6 +148,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       uint8* data,
+      size_t data_size,
       base::SharedMemoryHandle handle,
       base::TimeDelta timestamp,
       const base::Closure& no_longer_needed_cb);
@@ -191,6 +192,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #endif
 
   static size_t NumPlanes(Format format);
+
+  // Returns the required allocation size for a (tightly packed) frame of the
+  // given coded size and format.
+  static size_t AllocationSize(Format format, const gfx::Size& coded_size);
 
   Format format() const { return format_; }
 

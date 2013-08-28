@@ -128,8 +128,12 @@ int VideoCaptureBufferPool::RecognizeReservedBuffer(
 scoped_refptr<media::VideoFrame> VideoCaptureBufferPool::ReserveI420VideoFrame(
     const gfx::Size& size,
     int rotation) {
-  if (static_cast<size_t>(size.GetArea() * 3 / 2) != GetMemorySize())
+  if (GetMemorySize() !=
+      media::VideoFrame::AllocationSize(media::VideoFrame::I420, size)) {
+    DCHECK_EQ(GetMemorySize(),
+              media::VideoFrame::AllocationSize(media::VideoFrame::I420, size));
     return NULL;
+  }
 
   base::AutoLock lock(lock_);
 
@@ -151,6 +155,7 @@ scoped_refptr<media::VideoFrame> VideoCaptureBufferPool::ReserveI420VideoFrame(
           gfx::Rect(size),
           size,
           static_cast<uint8*>(buffer->shared_memory.memory()),
+          GetMemorySize(),
           buffer->shared_memory.handle(),
           base::TimeDelta(),
           disposal_handler);

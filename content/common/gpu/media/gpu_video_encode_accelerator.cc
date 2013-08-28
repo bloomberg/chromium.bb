@@ -163,6 +163,7 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
           gfx::Rect(input_visible_size_),
           input_visible_size_,
           reinterpret_cast<uint8*>(shm->memory()),
+          buffer_size,
           buffer_handle,
           base::TimeDelta(),
           // It's turtles all the way down...
