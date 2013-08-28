@@ -634,13 +634,18 @@ class GerritOnBorgHelper(GerritHelper):
       logging.info('Would have reset Commit-Queue label for %s', (change,))
       return
     gob_util.ResetReviewLabels(
-        self.host, change.change_id, label='Commit-Queue')
+        self.host,
+        cros_patch.FormatGerritNumber(change.gerrit_number,
+                                      force_external=True),
+        label='Commit-Queue')
 
   def SubmitChange(self, change, dryrun=False):
     if dryrun:
       logging.info('Would have submitted change %s', (change,))
       return
-    gob_util.SubmitChange(self.host, change.change_id)
+    gob_util.SubmitChange(
+        self.host, cros_patch.FormatGerritNumber(change.gerrit_number,
+                                                 force_external=True))
 
 
 def GetGerritPatchInfo(patches):
