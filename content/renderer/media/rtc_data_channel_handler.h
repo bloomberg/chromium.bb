@@ -33,6 +33,12 @@ class CONTENT_EXPORT RtcDataChannelHandler
       WebKit::WebRTCDataChannelHandlerClient* client) OVERRIDE;
   virtual WebKit::WebString label() OVERRIDE;
   virtual bool isReliable() OVERRIDE;
+  virtual bool ordered() const OVERRIDE;
+  virtual unsigned short maxRetransmitTime() const OVERRIDE;
+  virtual unsigned short maxRetransmits() const OVERRIDE;
+  virtual WebKit::WebString protocol() const OVERRIDE;
+  virtual bool negotiated() const OVERRIDE;
+  virtual unsigned short id() const OVERRIDE;
   virtual unsigned long bufferedAmount() OVERRIDE;
   virtual bool sendStringData(const WebKit::WebString& data) OVERRIDE;
   virtual bool sendRawData(const char* data, size_t length) OVERRIDE;

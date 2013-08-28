@@ -37,6 +37,30 @@ bool RtcDataChannelHandler::isReliable() {
   return channel_->reliable();
 }
 
+bool RtcDataChannelHandler::ordered() const {
+  return channel_->ordered();
+}
+
+unsigned short RtcDataChannelHandler::maxRetransmitTime() const {
+  return channel_->maxRetransmitTime();
+}
+
+unsigned short RtcDataChannelHandler::maxRetransmits() const {
+  return channel_->maxRetransmits();
+}
+
+WebKit::WebString RtcDataChannelHandler::protocol() const {
+  return UTF8ToUTF16(channel_->protocol());
+}
+
+bool RtcDataChannelHandler::negotiated() const {
+  return channel_->negotiated();
+}
+
+unsigned short RtcDataChannelHandler::id() const {
+  return channel_->id();
+}
+
 unsigned long RtcDataChannelHandler::bufferedAmount() {
   return channel_->buffered_amount();
 }

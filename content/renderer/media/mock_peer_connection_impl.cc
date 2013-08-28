@@ -86,7 +86,8 @@ class MockDataChannel : public webrtc::DataChannelInterface {
                   const webrtc::DataChannelInit* config)
       : label_(label),
         reliable_(config->reliable),
-        state_(webrtc::DataChannelInterface::kConnecting) {
+        state_(webrtc::DataChannelInterface::kConnecting),
+        config_(*config) {
   }
 
   virtual void RegisterObserver(
@@ -102,6 +103,26 @@ class MockDataChannel : public webrtc::DataChannelInterface {
 
   virtual bool reliable() const OVERRIDE {
     return reliable_;
+  }
+
+  virtual bool ordered() const OVERRIDE {
+    return config_.ordered;
+  }
+
+  virtual unsigned short maxRetransmitTime() const OVERRIDE {
+    return config_.maxRetransmitTime;
+  }
+
+  virtual unsigned short maxRetransmits() const OVERRIDE {
+    return config_.maxRetransmits;
+  }
+
+  virtual std::string protocol() const OVERRIDE {
+    return config_.protocol;
+  }
+
+  virtual bool negotiated() const OVERRIDE {
+    return config_.negotiated;
   }
 
   virtual int id() const OVERRIDE {
@@ -133,6 +154,7 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   std::string label_;
   bool reliable_;
   webrtc::DataChannelInterface::DataState state_;
+  webrtc::DataChannelInit config_;
 };
 
 class MockDtmfSender : public DtmfSenderInterface {
