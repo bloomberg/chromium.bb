@@ -153,7 +153,7 @@ void EmbeddedTestServer::InitializeOnIOThread() {
 
   SocketDescriptor socket_descriptor =
       TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port_);
-  if (socket_descriptor == TCPListenSocket::kInvalidSocket)
+  if (socket_descriptor == kInvalidSocket)
     return;
 
   listen_socket_ = new HttpListenSocket(socket_descriptor, this);

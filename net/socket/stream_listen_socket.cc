@@ -27,6 +27,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/socket/socket_descriptor.h"
 
 using std::string;
 
@@ -43,10 +44,8 @@ const int kReadBufSize = 4096;
 }  // namespace
 
 #if defined(OS_WIN)
-const SocketDescriptor StreamListenSocket::kInvalidSocket = INVALID_SOCKET;
 const int StreamListenSocket::kSocketError = SOCKET_ERROR;
 #elif defined(OS_POSIX)
-const SocketDescriptor StreamListenSocket::kInvalidSocket = -1;
 const int StreamListenSocket::kSocketError = -1;
 #endif
 

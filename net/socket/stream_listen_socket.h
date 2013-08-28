@@ -31,13 +31,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
-#include "net/socket/stream_listen_socket.h"
-
-#if defined(OS_POSIX)
-typedef int SocketDescriptor;
-#else
-typedef SOCKET SocketDescriptor;
-#endif
+#include "net/socket/socket_descriptor.h"
 
 namespace net {
 
@@ -78,7 +72,6 @@ class NET_EXPORT StreamListenSocket
   // Copies the local address to |address|. Returns a network error code.
   int GetLocalAddress(IPEndPoint* address);
 
-  static const SocketDescriptor kInvalidSocket;
   static const int kSocketError;
 
  protected:

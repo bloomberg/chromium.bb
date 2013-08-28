@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/udp/datagram_socket.h"
 
 namespace net {
@@ -152,8 +153,6 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   int SetMulticastLoopbackMode(bool loopback);
 
  private:
-  static const int kInvalidSocket = -1;
-
   enum SocketOptions {
     SOCKET_OPTION_REUSE_ADDRESS  = 1 << 0,
     SOCKET_OPTION_BROADCAST      = 1 << 1,

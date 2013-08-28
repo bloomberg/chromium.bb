@@ -869,6 +869,7 @@
         'socket/nss_ssl_util.cc',
         'socket/nss_ssl_util.h',
         'socket/server_socket.h',
+        'socket/socket_descriptor.h',
         'socket/socket_net_log_params.cc',
         'socket/socket_net_log_params.h',
         'socket/socket.h',

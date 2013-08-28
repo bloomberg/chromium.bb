@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_listen_socket.h"
 
 namespace net {

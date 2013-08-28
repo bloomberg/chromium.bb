@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_channel_handle.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/socket/socket_descriptor.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
@@ -122,7 +122,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Create bound TCP socket in the browser process so that the NaCl GDB debug
   // stub can use it to accept incoming connections even when the Chrome sandbox
   // is enabled.
-  SocketDescriptor GetDebugStubSocketHandle();
+  net::SocketDescriptor GetDebugStubSocketHandle();
 #endif
   bool LaunchSelLdr();
 

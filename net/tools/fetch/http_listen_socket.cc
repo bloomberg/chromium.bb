@@ -13,7 +13,7 @@
 #include "net/tools/fetch/http_server_request_info.h"
 #include "net/tools/fetch/http_server_response_info.h"
 
-HttpListenSocket::HttpListenSocket(SocketDescriptor s,
+HttpListenSocket::HttpListenSocket(net::SocketDescriptor s,
                                    HttpListenSocket::Delegate* delegate)
     : net::TCPListenSocket(s, this),
       delegate_(delegate) {
@@ -23,9 +23,9 @@ HttpListenSocket::~HttpListenSocket() {
 }
 
 void HttpListenSocket::Accept() {
-  SocketDescriptor conn = net::TCPListenSocket::AcceptSocket();
-  DCHECK_NE(conn, net::TCPListenSocket::kInvalidSocket);
-  if (conn == net::TCPListenSocket::kInvalidSocket) {
+  net::SocketDescriptor conn = net::TCPListenSocket::AcceptSocket();
+  DCHECK_NE(conn, net::kInvalidSocket);
+  if (conn == net::kInvalidSocket) {
     // TODO
   } else {
     scoped_refptr<HttpListenSocket> sock(
@@ -40,8 +40,8 @@ scoped_refptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
-  SocketDescriptor s = net::TCPListenSocket::CreateAndBind(ip, port);
-  if (s == net::TCPListenSocket::kInvalidSocket) {
+  net::SocketDescriptor s = net::TCPListenSocket::CreateAndBind(ip, port);
+  if (s == net::kInvalidSocket) {
     // TODO (ibrar): error handling.
   } else {
     scoped_refptr<HttpListenSocket> serv = new HttpListenSocket(s, delegate);

@@ -49,7 +49,7 @@ class HttpListenSocket : public net::TCPListenSocket,
   static const int kReadBufSize = 16 * 1024;
 
   // Must run in the IO thread.
-  HttpListenSocket(SocketDescriptor s, HttpListenSocket::Delegate* del);
+  HttpListenSocket(net::SocketDescriptor s, HttpListenSocket::Delegate* del);
   virtual ~HttpListenSocket();
 
   // Expects the raw data to be stored in recv_data_. If parsing is successful,

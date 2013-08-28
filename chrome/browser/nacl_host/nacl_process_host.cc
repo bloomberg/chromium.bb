@@ -665,29 +665,29 @@ void NaClProcessHost::SendMessageToRenderer(
 static const int kDebugStubPort = 4014;
 
 #if defined(OS_POSIX)
-SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
+net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  SocketDescriptor s;
+  net::SocketDescriptor s = net::kInvalidSocket;
   // We allocate currently unused TCP port for debug stub tests. The port
   // number is passed to the test via debug stub port listener.
   if (nacl_browser->HasGdbDebugStubPortListener()) {
     int port;
     s = net::TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port);
-    if (s != net::TCPListenSocket::kInvalidSocket) {
+    if (s != net::kInvalidSocket) {
       nacl_browser->FireGdbDebugStubPortOpened(port);
     }
   } else {
     s = net::TCPListenSocket::CreateAndBind("127.0.0.1", kDebugStubPort);
   }
-  if (s == net::TCPListenSocket::kInvalidSocket) {
+  if (s == net::kInvalidSocket) {
     LOG(ERROR) << "failed to open socket for debug stub";
-    return net::TCPListenSocket::kInvalidSocket;
+    return net::kInvalidSocket;
   }
   if (listen(s, 1)) {
     LOG(ERROR) << "listen() failed on debug stub socket";
     if (HANDLE_EINTR(close(s)) < 0)
       PLOG(ERROR) << "failed to close debug stub socket";
-    return net::TCPListenSocket::kInvalidSocket;
+    return net::kInvalidSocket;
   }
   return s;
 }
@@ -748,8 +748,8 @@ bool NaClProcessHost::StartNaClExecution() {
 
 #if defined(OS_POSIX)
   if (params.enable_debug_stub) {
-    SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
-    if (server_bound_socket != net::TCPListenSocket::kInvalidSocket) {
+    net::SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
+    if (server_bound_socket != net::kInvalidSocket) {
       params.debug_stub_server_bound_socket =
           nacl::FileDescriptor(server_bound_socket, true);
     }
