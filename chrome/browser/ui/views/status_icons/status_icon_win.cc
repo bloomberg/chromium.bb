@@ -147,7 +147,7 @@ void StatusIconWin::DisplayBalloon(const gfx::ImageSkia& icon,
 ////////////////////////////////////////////////////////////////////////////////
 // StatusIconWin, private:
 
-void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
+void StatusIconWin::UpdatePlatformContextMenu(StatusIconMenuModel* menu) {
   // |menu_model_| is about to be destroyed. Destroy the menu (which closes it)
   // so that it doesn't attempt to continue using |menu_model_|.
   menu_runner_.reset();
@@ -210,7 +210,7 @@ void StatusIconMetro::DisplayBalloon(const gfx::ImageSkia& icon,
   }
 }
 
-void StatusIconMetro::UpdatePlatformContextMenu(ui::MenuModel* menu) {
+void StatusIconMetro::UpdatePlatformContextMenu(StatusIconMenuModel* menu) {
   DVLOG(1) << __FUNCTION__
            << " This functionality is not supported in Windows 8 metro";
 }

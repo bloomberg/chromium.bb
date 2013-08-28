@@ -1,15 +1,20 @@
+
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
-StatusIconLinuxWrapper::StatusIconLinuxWrapper(StatusIconLinux* status_icon) {
+StatusIconLinuxWrapper::StatusIconLinuxWrapper(StatusIconLinux* status_icon)
+    : menu_model_(NULL) {
   status_icon_.reset(status_icon);
   status_icon_->set_delegate(this);
 }
 
-StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {}
+StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
+  if (menu_model_)
+    menu_model_->RemoveObserver(this);
+}
 
 void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
   status_icon_->SetImage(image);
@@ -37,6 +42,10 @@ bool StatusIconLinuxWrapper::HasClickAction() {
   return HasObservers();
 }
 
+void StatusIconLinuxWrapper::OnMenuStateChanged() {
+  status_icon_->RefreshPlatformContextMenu();
+}
+
 StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const string16& tool_tip) {
@@ -50,6 +59,15 @@ StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
   return NULL;
 }
 
-void StatusIconLinuxWrapper::UpdatePlatformContextMenu(ui::MenuModel* model) {
+void StatusIconLinuxWrapper::UpdatePlatformContextMenu(
+    StatusIconMenuModel* model) {
+  // If a menu already exists, remove ourself from its oberver list.
+  if (menu_model_)
+    menu_model_->RemoveObserver(this);
+
   status_icon_->UpdatePlatformContextMenu(model);
+  menu_model_ = model;
+
+  if (model)
+    model->AddObserver(this);
 }

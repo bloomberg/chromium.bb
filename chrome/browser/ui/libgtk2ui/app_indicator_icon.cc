@@ -140,8 +140,6 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
 AppIndicatorIcon::~AppIndicatorIcon() {
   if (icon_) {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
-    if (menu_model_)
-      menu_model_->MenuClosed();
     if (gtk_menu_)
       DestroyMenu();
     g_object_unref(icon_);
@@ -218,6 +216,11 @@ void AppIndicatorIcon::UpdatePlatformContextMenu(ui::MenuModel* model) {
     SetMenu();
 }
 
+void AppIndicatorIcon::RefreshPlatformContextMenu() {
+  gtk_container_foreach(
+      GTK_CONTAINER(gtk_menu_), SetMenuItemInfo, &block_activation_);
+}
+
 void AppIndicatorIcon::SetImageFromFile(base::FilePath icon_file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!icon_file_path.empty()) {
@@ -268,8 +271,7 @@ void AppIndicatorIcon::SetMenu() {
                           G_CALLBACK(OnMenuItemActivatedThunk),
                           &block_activation_,
                           this);
-    UpdateMenu();
-    menu_model_->MenuWillShow();
+    RefreshPlatformContextMenu();
   }
   app_indicator_set_menu(icon_, GTK_MENU(gtk_menu_));
 }
@@ -287,8 +289,6 @@ void AppIndicatorIcon::CreateClickActionReplacement() {
 }
 
 void AppIndicatorIcon::DestroyMenu() {
-  if (menu_model_)
-    menu_model_->MenuClosed();
   gtk_widget_destroy(gtk_menu_);
   gtk_menu_ = NULL;
   menu_model_ = NULL;
@@ -335,11 +335,6 @@ void AppIndicatorIcon::DeletePath(base::FilePath icon_file_path) {
   }
 }
 
-void AppIndicatorIcon::UpdateMenu() {
-  gtk_container_foreach(
-      GTK_CONTAINER(gtk_menu_), SetMenuItemInfo, &block_activation_);
-}
-
 void AppIndicatorIcon::OnClick(GtkWidget* menu_item) {
   if (delegate())
     delegate()->OnClick();
@@ -373,7 +368,6 @@ void AppIndicatorIcon::OnMenuItemActivated(GtkWidget* menu_item) {
   // The menu item can still be activated by hotkeys even if it is disabled.
   if (menu_model_->IsEnabledAt(id))
     ExecuteCommand(model, id);
-  UpdateMenu();
 }
 
 }  // namespace libgtk2ui

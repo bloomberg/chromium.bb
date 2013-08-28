@@ -101,7 +101,7 @@ bool StatusIconMac::HasStatusIconMenu() {
   return menu_.get() != nil;
 }
 
-void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* model) {
+void StatusIconMac::UpdatePlatformContextMenu(StatusIconMenuModel* model) {
   if (!model) {
     menu_.reset();
   } else {

@@ -12,3 +12,6 @@ StatusIconLinux::StatusIconLinux() : delegate_(NULL) {
 
 StatusIconLinux::~StatusIconLinux() {
 }
+
+void StatusIconLinux::RefreshPlatformContextMenu() {
+}

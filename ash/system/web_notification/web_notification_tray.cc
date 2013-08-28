@@ -55,6 +55,15 @@ MessageCenterTrayDelegate* CreateMessageCenterTray() {
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
+namespace {
+
+// Menu commands
+const int kToggleQuietMode = 0;
+const int kEnableQuietModeHour = 1;
+const int kEnableQuietModeDay = 2;
+
+}
+
 namespace internal {
 namespace {
 
@@ -531,6 +540,34 @@ message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
   return message_center_tray_.get();
 }
 
+bool WebNotificationTray::IsCommandIdChecked(int command_id) const {
+  if (command_id != kToggleQuietMode)
+    return false;
+  return message_center()->IsQuietMode();
+}
+
+bool WebNotificationTray::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool WebNotificationTray::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == kToggleQuietMode) {
+    bool in_quiet_mode = message_center()->IsQuietMode();
+    message_center()->SetQuietMode(!in_quiet_mode);
+    return;
+  }
+  base::TimeDelta expires_in = command_id == kEnableQuietModeDay ?
+      base::TimeDelta::FromDays(1):
+      base::TimeDelta::FromHours(1);
+  message_center()->EnterQuietModeWithExpire(expires_in);
+}
+
 bool WebNotificationTray::IsPressed() {
   return IsMessageCenterBubbleVisible();
 }
@@ -579,7 +616,7 @@ bool WebNotificationTray::ClickedOutsideBubble() {
   return true;
 }
 
-message_center::MessageCenter* WebNotificationTray::message_center() {
+message_center::MessageCenter* WebNotificationTray::message_center() const {
   return message_center_tray_->message_center();
 }
 

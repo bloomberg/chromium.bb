@@ -5,7 +5,6 @@
 #include "chrome/browser/status_icons/status_icon.h"
 
 #include "chrome/browser/status_icons/status_icon_observer.h"
-#include "ui/base/models/menu_model.h"
 
 StatusIcon::StatusIcon() {
 }
@@ -35,10 +34,10 @@ void StatusIcon::DispatchBalloonClickEvent() {
 }
 #endif
 
-void StatusIcon::SetContextMenu(ui::MenuModel* menu) {
+void StatusIcon::SetContextMenu(scoped_ptr<StatusIconMenuModel> menu) {
   // The UI may been showing a menu for the current model, don't destroy it
   // until we've notified the UI of the change.
-  scoped_ptr<ui::MenuModel> old_menu = context_menu_contents_.Pass();
-  context_menu_contents_.reset(menu);
-  UpdatePlatformContextMenu(menu);
+  scoped_ptr<StatusIconMenuModel> old_menu = context_menu_contents_.Pass();
+  context_menu_contents_ = menu.Pass();
+  UpdatePlatformContextMenu(context_menu_contents_.get());
 }

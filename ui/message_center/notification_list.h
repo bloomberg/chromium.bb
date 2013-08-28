@@ -113,8 +113,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   bool quiet_mode() const { return quiet_mode_; }
 
-  // Sets the current quiet mode status to |quiet_mode|. The new status is not
-  // expired.
+  // Sets the current quiet mode status to |quiet_mode|.
   void SetQuietMode(bool quiet_mode);
 
   // Sets the current quiet mode to true. The quiet mode will expire in the
@@ -138,14 +137,10 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void PushNotification(scoped_ptr<Notification> notification);
 
-  // Sets the current quiet mode status to |quiet_mode|.
-  void SetQuietModeInternal(bool quiet_mode);
-
   Notifications notifications_;
   bool message_center_visible_;
   size_t unread_count_;
   bool quiet_mode_;
-  scoped_ptr<base::OneShotTimer<NotificationList> > quiet_mode_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationList);
 };

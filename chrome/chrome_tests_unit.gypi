@@ -1208,6 +1208,7 @@
         'browser/spellchecker/spellcheck_service_unittest.cc',
         'browser/spellchecker/spelling_service_client_unittest.cc',
         'browser/spellchecker/word_trimmer_unittest.cc',
+        'browser/status_icons/status_icon_menu_model_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
         'browser/storage_monitor/image_capture_device_manager_unittest.mm',

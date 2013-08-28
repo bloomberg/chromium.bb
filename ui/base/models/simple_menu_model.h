@@ -164,6 +164,10 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
 
+  // One or more of the menu menu items associated with the model has changed.
+  // Do any handling if necessary.
+  virtual void MenuItemsChanged();
+
  private:
   struct Item;
 

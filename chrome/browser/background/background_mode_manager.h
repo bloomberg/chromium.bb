@@ -12,10 +12,10 @@
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/status_icons/status_icon.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class CommandLine;
@@ -47,7 +47,7 @@ class BackgroundModeManager
     : public content::NotificationObserver,
       public BackgroundApplicationListModel::Observer,
       public ProfileInfoCacheObserver,
-      public ui::SimpleMenuModel::Delegate {
+      public StatusIconMenuModel::Delegate {
  public:
   BackgroundModeManager(CommandLine* command_line,
                         ProfileInfoCache* profile_cache);
@@ -88,7 +88,7 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundAppBrowserTest,
                            ReloadBackgroundApp);
 
-  class BackgroundModeData : public ui::SimpleMenuModel::Delegate {
+  class BackgroundModeData : public StatusIconMenuModel::Delegate {
    public:
     explicit BackgroundModeData(
         int command_id,
@@ -98,12 +98,7 @@ class BackgroundModeManager
     // The cached list of BackgroundApplications.
     scoped_ptr<BackgroundApplicationListModel> applications_;
 
-    // Overrides from SimpleMenuModel::Delegate implementation.
-    virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-    virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-    virtual bool GetAcceleratorForCommandId(int command_id,
-                                            ui::Accelerator* accelerator)
-                                            OVERRIDE;
+    // Overrides from StatusIconMenuModel::Delegate implementation.
     virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
     // Returns a browser window, or creates one if none are open. Used by
@@ -118,8 +113,8 @@ class BackgroundModeManager
     // be a submenu in the case of multi-profiles or the main menu in the case
     // of the single profile case. If containing_menu is valid, we will add
     // menu as a submenu to it.
-    void BuildProfileMenu(ui::SimpleMenuModel* menu,
-                          ui::SimpleMenuModel* containing_menu);
+    void BuildProfileMenu(StatusIconMenuModel* menu,
+                          StatusIconMenuModel* containing_menu);
 
     // Set the name associated with this background mode data for displaying in
     // the status tray.
@@ -175,12 +170,7 @@ class BackgroundModeManager
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const string16& old_profile_name) OVERRIDE;
 
-  // Overrides from SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator)
-                                          OVERRIDE;
+  // Overrides from StatusIconMenuModel::Delegate implementation.
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Invoked when an extension is installed so we can ensure that
@@ -295,7 +285,7 @@ class BackgroundModeManager
 
   // Reference to our status icon's context menu (if any) - owned by the
   // status_icon_.
-  ui::SimpleMenuModel* context_menu_;
+  StatusIconMenuModel* context_menu_;
 
   // Set to true when we are running in background mode. Allows us to track our
   // current background state so we can take the appropriate action when the

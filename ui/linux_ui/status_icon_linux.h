@@ -19,7 +19,7 @@ class MenuModel;
 // Since liblinux_ui cannot have dependencies on any chrome browser components
 // we cannot inherit from StatusIcon. So we implement the necessary methods
 // and let a wrapper class implement the StatusIcon interface and defer the
-// callbacks to a delegate.
+// callbacks to a delegate. For the same reason, do not use StatusIconMenuModel.
 class LINUX_UI_EXPORT StatusIconLinux {
  public:
   class Delegate {
@@ -42,6 +42,11 @@ class LINUX_UI_EXPORT StatusIconLinux {
   // subclass update the native context menu based on the new model. The
   // subclass should destroy the existing native context menu on this call.
   virtual void UpdatePlatformContextMenu(ui::MenuModel* model) = 0;
+
+  // Update all the enabled/checked states and the dynamic labels. Some status
+  // icon implementations do not refresh the native menu before showing so we
+  // need to manually refresh it when the menu model changes.
+  virtual void RefreshPlatformContextMenu();
 
   Delegate* delegate() { return delegate_; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }

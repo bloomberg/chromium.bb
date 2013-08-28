@@ -35,7 +35,8 @@ class StatusIconMac : public StatusIcon {
 
  protected:
   // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* model) OVERRIDE;
+  virtual void UpdatePlatformContextMenu(
+      StatusIconMenuModel* model) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StatusIconMacTest, CreateMenu);

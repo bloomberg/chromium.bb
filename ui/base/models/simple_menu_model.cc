@@ -135,6 +135,7 @@ void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
 void SimpleMenuModel::RemoveTrailingSeparators() {
   while (!items_.empty() && items_.back().type == TYPE_SEPARATOR)
     items_.pop_back();
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::AddButtonItem(int command_id,
@@ -227,14 +228,17 @@ void SimpleMenuModel::InsertSubMenuWithStringIdAt(
 
 void SimpleMenuModel::SetIcon(int index, const gfx::Image& icon) {
   items_[ValidateItemIndex(index)].icon = icon;
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::SetSublabel(int index, const base::string16& sublabel) {
   items_[ValidateItemIndex(index)].sublabel = sublabel;
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::Clear() {
   items_.clear();
+  MenuItemsChanged();
 }
 
 int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
@@ -390,6 +394,12 @@ void SimpleMenuModel::OnMenuClosed() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// SimpleMenuModel, Protected:
+
+void SimpleMenuModel::MenuItemsChanged() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, Private:
 
 int SimpleMenuModel::ValidateItemIndex(int index) const {
@@ -401,11 +411,13 @@ int SimpleMenuModel::ValidateItemIndex(int index) const {
 void SimpleMenuModel::AppendItem(const Item& item) {
   ValidateItem(item);
   items_.push_back(item);
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::InsertItemAtIndex(const Item& item, int index) {
   ValidateItem(item);
   items_.insert(items_.begin() + index, item);
+  MenuItemsChanged();
 }
 
 void SimpleMenuModel::ValidateItem(const Item& item) {

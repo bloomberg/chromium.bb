@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/linux_ui/status_icon_linux.h"
 
 typedef struct _AppIndicator AppIndicator;
@@ -31,14 +32,12 @@ class AppIndicatorIcon : public StatusIconLinux {
   // Indicates whether libappindicator so could be opened.
   static bool CouldOpen();
 
-  // Overridden from StatusIcon:
+  // Overridden from StatusIconLinux:
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
-
- protected:
-  // Overridden from StatusIcon.
   virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
+  virtual void RefreshPlatformContextMenu() OVERRIDE;
 
  private:
   void SetImageFromFile(base::FilePath icon_file_path);
@@ -55,9 +54,6 @@ class AppIndicatorIcon : public StatusIconLinux {
                                             int icon_change_count,
                                             std::string id);
   static void DeletePath(base::FilePath icon_file_path);
-
-  // Updates all the enabled/checked states and the dynamic labels.
-  void UpdateMenu();
 
   // Callback for when the status icon click replacement menu item is clicked.
   CHROMEGTK_CALLBACK_0(AppIndicatorIcon, void, OnClick);

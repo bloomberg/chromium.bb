@@ -12,8 +12,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "content/public/common/media_stream_request.h"
-#include "ui/base/models/simple_menu_model.h"
 
 namespace content {
 class WebContents;
@@ -30,7 +30,7 @@ class StatusTray;
 // (MediaCaptureDevicesDispatcher is a singleton).
 class MediaStreamCaptureIndicator
     : public base::RefCountedThreadSafe<MediaStreamCaptureIndicator>,
-      public ui::SimpleMenuModel::Delegate {
+      public StatusIconMenuModel::Delegate {
  public:
   MediaStreamCaptureIndicator();
 
@@ -40,12 +40,7 @@ class MediaStreamCaptureIndicator
       content::WebContents* web_contents,
       const content::MediaStreamDevices& devices);
 
-  // Overrides from SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
+  // Overrides from StatusIconMenuModel::Delegate implementation.
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Returns true if the |web_contents| is capturing user media (e.g., webcam or

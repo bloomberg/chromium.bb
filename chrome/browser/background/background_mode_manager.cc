@@ -63,24 +63,7 @@ BackgroundModeManager::BackgroundModeData::~BackgroundModeData() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  BackgroundModeManager::BackgroundModeData, ui::SimpleMenuModel overrides
-bool BackgroundModeManager::BackgroundModeData::IsCommandIdChecked(
-    int command_id) const {
-  NOTREACHED() << "There are no checked items in the profile submenu.";
-  return false;
-}
-
-bool BackgroundModeManager::BackgroundModeData::IsCommandIdEnabled(
-    int command_id) const {
-  return command_id != IDC_MinimumLabelValue;
-}
-
-bool BackgroundModeManager::BackgroundModeData::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
-  // No accelerators for status icon context menus.
-  return false;
-}
-
+//  BackgroundModeManager::BackgroundModeData, StatusIconMenuModel overrides
 void BackgroundModeManager::BackgroundModeData::ExecuteCommand(
     int item,
     int event_flags) {
@@ -110,14 +93,15 @@ int BackgroundModeManager::BackgroundModeData::GetBackgroundAppCount() const {
 }
 
 void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
-    ui::SimpleMenuModel* menu,
-    ui::SimpleMenuModel* containing_menu) {
+    StatusIconMenuModel* menu,
+    StatusIconMenuModel* containing_menu) {
   int position = 0;
   // When there are no background applications, we want to display
   // just a label stating that none are running.
   if (applications_->size() < 1) {
     menu->AddItemWithStringId(IDC_MinimumLabelValue,
                               IDS_BACKGROUND_APP_NOT_INSTALLED);
+    menu->SetCommandIdEnabled(IDC_MinimumLabelValue, false);
   } else {
     for (extensions::ExtensionList::const_iterator cursor =
              applications_->begin();
@@ -459,29 +443,7 @@ void BackgroundModeManager::OnProfileNameChanged(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  BackgroundModeManager::BackgroundModeData, ui::SimpleMenuModel overrides
-bool BackgroundModeManager::IsCommandIdChecked(
-    int command_id) const {
-  DCHECK(command_id == IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
-  return true;
-}
-
-bool BackgroundModeManager::IsCommandIdEnabled(
-    int command_id) const {
-  if (command_id == IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND) {
-    PrefService* service = g_browser_process->local_state();
-    DCHECK(service);
-    return service->IsUserModifiablePreference(prefs::kBackgroundModeEnabled);
-  }
-  return command_id != IDC_MinimumLabelValue;
-}
-
-bool BackgroundModeManager::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
-  // No accelerators for status icon context menus.
-  return false;
-}
-
+//  BackgroundModeManager::BackgroundModeData, StatusIconMenuModel overrides
 void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
   // When a browser window is necessary, we use the first profile. The windows
   // opened for these commands are not profile-specific, so any profile would
@@ -699,7 +661,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
 
   // TODO(rlp): Add current profile color or indicator.
   // Create a context menu item for Chrome.
-  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
   // Add About item
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
@@ -724,8 +686,8 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
       // We should only display the profile in the status icon if it has at
       // least one background app.
       if (bmd->GetBackgroundAppCount() > 0) {
-        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(bmd);
-        bmd->BuildProfileMenu(submenu, menu);
+        StatusIconMenuModel* submenu = new StatusIconMenuModel(bmd);
+        bmd->BuildProfileMenu(submenu, menu.get());
         profiles_with_apps++;
       }
     }
@@ -738,17 +700,27 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     // have any profiles in the cache.
     DCHECK(profile_cache_->GetNumberOfProfiles() == size_t(1) ||
            keep_alive_for_test_);
-    background_mode_data_.begin()->second->BuildProfileMenu(menu, NULL);
+    background_mode_data_.begin()->second->BuildProfileMenu(menu.get(), NULL);
   }
 
   menu->AddSeparator(ui::NORMAL_SEPARATOR);
   menu->AddCheckItemWithStringId(
       IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND,
       IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
+  menu->SetCommandIdChecked(IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND,
+                            true);
+
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  bool enabled =
+      service->IsUserModifiablePreference(prefs::kBackgroundModeEnabled);
+  menu->SetCommandIdEnabled(IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND,
+                            enabled);
+
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
 
-  context_menu_ = menu;
-  status_icon_->SetContextMenu(menu);
+  context_menu_ = menu.get();
+  status_icon_->SetContextMenu(menu.Pass());
 }
 
 void BackgroundModeManager::RemoveStatusTrayIcon() {

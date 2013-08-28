@@ -45,6 +45,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   // Called when the notification list is no longer being displayed as a
   // notification center.
   virtual void OnNotificationCenterClosed() {}
+
+  // Called whenever the quiet mode changes as a result of user action or when
+  // quiet mode expires.
+  virtual void OnQuietModeChanged(bool in_quiet_mode) {}
 };
 
 }  // namespace message_center

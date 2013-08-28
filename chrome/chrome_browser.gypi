@@ -2012,6 +2012,8 @@
         'browser/status_icons/desktop_notification_balloon.h',
         'browser/status_icons/status_icon.cc',
         'browser/status_icons/status_icon.h',
+        'browser/status_icons/status_icon_menu_model.cc',
+        'browser/status_icons/status_icon_menu_model.h',
         'browser/status_icons/status_icon_observer.h',
         'browser/status_icons/status_tray.cc',
         'browser/status_icons/status_tray.h',

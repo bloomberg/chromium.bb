@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/message_center/message_center_widget_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -39,7 +40,8 @@ class MessageCenterWidgetDelegate;
 // tray icon on click.
 class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
                             public StatusIconObserver,
-                            public base::SupportsWeakPtr<WebNotificationTray> {
+                            public base::SupportsWeakPtr<WebNotificationTray>,
+                            public StatusIconMenuModel::Delegate {
  public:
   WebNotificationTray();
   virtual ~WebNotificationTray();
@@ -63,6 +65,9 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   // of the message center in the status tray area.
   void DisplayFirstRunBalloon();
 #endif
+
+  // StatusIconMenuModel::Delegate implementation.
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Changes the icon and hovertext based on number of unread notifications.
   void UpdateStatusIcon();
@@ -96,11 +101,13 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
 
   StatusIcon* status_icon_;
+  StatusIconMenuModel* status_icon_menu_;
   bool message_center_visible_;
   scoped_ptr<MessageCenterTray> message_center_tray_;
   gfx::Point mouse_click_point_;
 
   bool should_update_tray_content_;
+  bool last_quiet_mode_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

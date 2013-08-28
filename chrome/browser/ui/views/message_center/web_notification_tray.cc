@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -38,6 +39,11 @@ const int kNumberOfSystemTraySprites = 10;
 
 // Number of pixels the message center is offset from the mouse.
 const int kMouseOffset = 5;
+
+// Menu commands
+const int kToggleQuietMode = 0;
+const int kEnableQuietModeHour = 1;
+const int kEnableQuietModeDay = 2;
 
 gfx::ImageSkia* GetIcon(int unread_count, bool is_quiet_mode) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -128,10 +134,12 @@ MessageCenterTrayDelegate* CreateMessageCenterTray() {
 WebNotificationTray::WebNotificationTray()
     : message_center_delegate_(NULL),
       status_icon_(NULL),
+      status_icon_menu_(NULL),
       message_center_visible_(false),
       should_update_tray_content_(true) {
   message_center_tray_.reset(
       new MessageCenterTray(this, g_browser_process->message_center()));
+  last_quiet_mode_state_ = message_center()->IsQuietMode();
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -189,6 +197,17 @@ bool WebNotificationTray::ShowNotifierSettings() {
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
+  if (status_icon_) {
+    bool quiet_mode_state = message_center()->IsQuietMode();
+    if (last_quiet_mode_state_ != quiet_mode_state) {
+      last_quiet_mode_state_ = quiet_mode_state;
+
+      // Quiet mode has changed, update the quiet mode menu.
+      status_icon_menu_->SetCommandIdChecked(kToggleQuietMode,
+                                             quiet_mode_state);
+    }
+  }
+
   // See the comments in ash/system/web_notification/web_notification_tray.cc
   // for why PostTask.
   should_update_tray_content_ = true;
@@ -202,6 +221,18 @@ void WebNotificationTray::OnStatusIconClicked() {
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   mouse_click_point_ = screen->GetCursorScreenPoint();
   message_center_tray_->ToggleMessageCenterBubble();
+}
+
+void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == kToggleQuietMode) {
+    bool in_quiet_mode = message_center()->IsQuietMode();
+    message_center()->SetQuietMode(!in_quiet_mode);
+    return;
+  }
+  base::TimeDelta expires_in = command_id == kEnableQuietModeDay
+                                   ? base::TimeDelta::FromDays(1)
+                                   : base::TimeDelta::FromHours(1);
+  message_center()->EnterQuietModeWithExpire(expires_in);
 }
 
 void WebNotificationTray::UpdateStatusIcon() {
@@ -319,12 +350,24 @@ void WebNotificationTray::DestroyStatusIcon() {
   StatusTray* status_tray = g_browser_process->status_tray();
   if (status_tray)
     status_tray->RemoveStatusIcon(status_icon_);
+  status_icon_menu_ = NULL;
   status_icon_ = NULL;
 }
 
 void WebNotificationTray::AddQuietModeMenu(StatusIcon* status_icon) {
   DCHECK(status_icon);
-  status_icon->SetContextMenu(message_center_tray_->CreateQuietModeMenu());
+
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
+  menu->AddCheckItem(kToggleQuietMode,
+                     l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE));
+  menu->SetCommandIdChecked(kToggleQuietMode, message_center()->IsQuietMode());
+  menu->AddItem(kEnableQuietModeHour,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR));
+  menu->AddItem(kEnableQuietModeDay,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1DAY));
+
+  status_icon_menu_ = menu.get();
+  status_icon->SetContextMenu(menu.Pass());
 }
 
 MessageCenterWidgetDelegate*

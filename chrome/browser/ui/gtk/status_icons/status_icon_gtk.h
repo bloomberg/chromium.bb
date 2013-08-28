@@ -32,7 +32,8 @@ class StatusIconGtk : public StatusIcon {
 
  protected:
   // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
+  virtual void UpdatePlatformContextMenu(
+      StatusIconMenuModel* menu) OVERRIDE;
 
  private:
   // Callback invoked when user right-clicks on the status icon.

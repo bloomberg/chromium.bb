@@ -466,12 +466,33 @@ NotifierSettingsProvider* MessageCenterImpl::GetNotifierSettingsProvider() {
 }
 
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
-  notification_list_->SetQuietMode(in_quiet_mode);
+  if (in_quiet_mode != notification_list_->quiet_mode()) {
+    notification_list_->SetQuietMode(in_quiet_mode);
+    FOR_EACH_OBSERVER(MessageCenterObserver,
+                      observer_list_,
+                      OnQuietModeChanged(in_quiet_mode));
+  }
+  quiet_mode_timer_.reset();
 }
 
 void MessageCenterImpl::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {
-  notification_list_->EnterQuietModeWithExpire(expires_in);
+  if (quiet_mode_timer_.get()) {
+    // Note that the capital Reset() is the method to restart the timer, not
+    // scoped_ptr::reset().
+    quiet_mode_timer_->Reset();
+  } else {
+    notification_list_->SetQuietMode(true);
+    FOR_EACH_OBSERVER(
+        MessageCenterObserver, observer_list_, OnQuietModeChanged(true));
+
+    quiet_mode_timer_.reset(new base::OneShotTimer<MessageCenterImpl>);
+    quiet_mode_timer_->Start(
+        FROM_HERE,
+        expires_in,
+        base::Bind(
+            &MessageCenterImpl::SetQuietMode, base::Unretained(this), false));
+  }
 }
 
 void MessageCenterImpl::RestartPopupTimers() {

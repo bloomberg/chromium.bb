@@ -9,13 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 
 namespace gfx {
 class ImageSkia;
-}
-
-namespace ui {
-class MenuModel;
 }
 
 class StatusIconObserver;
@@ -45,7 +42,7 @@ class StatusIcon {
 
   // Set the context menu for this icon. The icon takes ownership of the passed
   // context menu. Passing NULL results in no menu at all.
-  void SetContextMenu(ui::MenuModel* menu);
+  void SetContextMenu(scoped_ptr<StatusIconMenuModel> menu);
 
   // Adds/Removes an observer for clicks on the status icon. If an observer is
   // registered, then left clicks on the status icon will result in the observer
@@ -67,13 +64,13 @@ class StatusIcon {
   // Invoked after a call to SetContextMenu() to let the platform-specific
   // subclass update the native context menu based on the new model. If NULL is
   // passed, subclass should destroy the native context menu.
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* model) = 0;
+  virtual void UpdatePlatformContextMenu(StatusIconMenuModel* model) = 0;
 
  private:
   ObserverList<StatusIconObserver> observers_;
 
   // Context menu, if any.
-  scoped_ptr<ui::MenuModel> context_menu_contents_;
+  scoped_ptr<StatusIconMenuModel> context_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIcon);
 };

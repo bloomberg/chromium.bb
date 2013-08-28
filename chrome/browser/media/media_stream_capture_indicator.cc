@@ -279,23 +279,6 @@ MediaStreamCaptureIndicator::RegisterMediaStream(
   return usage->RegisterMediaStream(devices);
 }
 
-bool MediaStreamCaptureIndicator::IsCommandIdChecked(
-    int command_id) const {
-  NOTIMPLEMENTED() << "There are no checked items in the MediaStream menu.";
-  return false;
-}
-
-bool MediaStreamCaptureIndicator::IsCommandIdEnabled(
-    int command_id) const {
-  return command_id != IDC_MinimumLabelValue;
-}
-
-bool MediaStreamCaptureIndicator::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
-  // No accelerators for status icon context menu.
-  return false;
-}
-
 void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
                                                  int event_flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -409,7 +392,7 @@ void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
 
 void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<ui::SimpleMenuModel> menu(new ui::SimpleMenuModel(this));
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
 
   bool audio = false;
   bool video = false;
@@ -435,6 +418,10 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
       command_targets_.push_back(web_contents);
       menu->AddItem(command_id, GetTitle(web_contents));
 
+      // If the menu item is not a label, enable it.
+      menu->SetCommandIdEnabled(command_id,
+                                command_id != IDC_MinimumLabelValue);
+
       // If reaching the maximum number, no more item will be added to the menu.
       if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)
         break;
@@ -450,7 +437,7 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
   // The icon will take the ownership of the passed context menu.
   MaybeCreateStatusTrayIcon(audio, video);
   if (status_icon_) {
-    status_icon_->SetContextMenu(menu.release());
+    status_icon_->SetContextMenu(menu.Pass());
   }
 }
 

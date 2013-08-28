@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -49,7 +50,8 @@ class ASH_EXPORT WebNotificationTray
       public views::TrayBubbleView::Delegate,
       public message_center::MessageCenterTrayDelegate,
       public views::ButtonListener,
-      public base::SupportsWeakPtr<WebNotificationTray> {
+      public base::SupportsWeakPtr<WebNotificationTray>,
+      public ui::SimpleMenuModel::Delegate {
  public:
   explicit WebNotificationTray(
       internal::StatusAreaWidget* status_area_widget);
@@ -109,10 +111,18 @@ class ASH_EXPORT WebNotificationTray
   virtual bool ShowNotifierSettings() OVERRIDE;
   virtual message_center::MessageCenterTray* GetMessageCenterTray() OVERRIDE;
 
+  // Overridden from SimpleMenuModel::Delegate.
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+
   // Overridden from TrayBackgroundView.
   virtual bool IsPressed() OVERRIDE;
 
-  message_center::MessageCenter* message_center();
+  message_center::MessageCenter* message_center() const;
 
  private:
   friend class WebNotificationTrayTest;
@@ -142,6 +152,9 @@ class ASH_EXPORT WebNotificationTray
 
   // Shows the quiet mode menu.
   void ShowQuietModeMenu(const ui::Event& event);
+
+  // Creates the menu model for quiet mode and returns it.
+  ui::MenuModel* CreateQuietModeMenu();
 
   internal::WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();

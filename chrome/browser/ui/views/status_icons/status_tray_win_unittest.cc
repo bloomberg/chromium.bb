@@ -8,11 +8,11 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -49,9 +49,9 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   StatusIcon* icon = tray.CreateStatusIcon(
       StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
   icon->SetPressedImage(*image);
-  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(NULL);
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   menu->AddItem(0, L"foo");
-  icon->SetContextMenu(menu);
+  icon->SetContextMenu(menu.Pass());
 }
 
 #if !defined(USE_AURA)  // http://crbug.com/156370
