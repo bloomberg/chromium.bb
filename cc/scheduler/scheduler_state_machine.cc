@@ -366,21 +366,21 @@ bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
   if (has_pending_tree_)
     return false;
 
-  // We want to start the first commit after we get a new output surface ASAP.
-  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
-    return true;
-
   // We want to start forced commits ASAP.
   if (needs_forced_commit_)
     return true;
 
-  // After this point, we only start a commit once per frame.
-  if (HasSentBeginFrameToMainThreadThisFrame())
-    return false;
-
   // We do not need commits if we are not visible, unless there's a
   // request for a forced commit.
   if (!visible_)
+    return false;
+
+  // We want to start the first commit after we get a new output surface ASAP.
+  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
+    return true;
+
+  // After this point, we only start a commit once per frame.
+  if (HasSentBeginFrameToMainThreadThisFrame())
     return false;
 
   // We shouldn't normally accept commits if there isn't an OutputSurface.
