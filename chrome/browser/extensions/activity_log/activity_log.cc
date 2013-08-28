@@ -427,4 +427,32 @@ void ActivityLog::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
+void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
+  if (!policy_ || !IsLogEnabled()) {
+    return;
+  }
+  policy_->RemoveURLs(restrict_urls);
+}
+
+void ActivityLog::RemoveURLs(const std::set<GURL>& restrict_urls) {
+  if (!policy_ || !IsLogEnabled()) {
+    return;
+  }
+
+  std::vector<GURL> urls;
+  for (std::set<GURL>::const_iterator it = restrict_urls.begin();
+       it != restrict_urls.end(); ++it) {
+    urls.push_back(*it);
+  }
+  policy_->RemoveURLs(urls);
+}
+
+void ActivityLog::RemoveURL(const GURL& url) {
+  if (url.is_empty())
+    return;
+  std::vector<GURL> urls;
+  urls.push_back(url);
+  RemoveURLs(urls);
+}
+
 }  // namespace extensions

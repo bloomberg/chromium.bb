@@ -39,6 +39,7 @@ class Extension;
 // (1) Receiving Actions to process, and summarizing, compression, and storing
 //     these as appropriate.
 // (2) Reading Actions back from storage.
+// (3) Cleaning of URLs
 //
 // Implementations based on a database should likely implement
 // ActivityDatabase::Delegate, which provides hooks on database events and
@@ -98,7 +99,11 @@ class ActivityLogPolicy {
       const std::string& page_url,
       const std::string& arg_url,
       const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
+         <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
+
+  // Clean the relevant URL data. The cleaning may need to be different for
+  // different policies. If restrict_urls is empty then all URLs are removed.
+  virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) = 0;
 
   // For unit testing only.
   void SetClockForTesting(scoped_ptr<base::Clock> clock);

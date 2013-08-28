@@ -567,6 +567,78 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadData(
   return actions.Pass();
 }
 
+void CountingPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  // Flush data first so the URL clearing affects queued-up data as well.
+  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
+
+  // If no restrictions then then all URLs need to be removed.
+  if (restrict_urls.empty()) {
+    std::string sql_str = base::StringPrintf(
+      "UPDATE %s SET page_url_x=NULL,page_title_x=NULL,arg_url_x=NULL",
+      kTableName);
+
+    sql::Statement statement;
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing all URLs from database failed: "
+                 << statement.GetSQLStatement();
+      return;
+    }
+  }
+
+  // If URLs are specified then restrict to only those URLs.
+  for (size_t i = 0; i < restrict_urls.size(); ++i) {
+    int64 url_id;
+    if (!restrict_urls[i].is_valid() ||
+        !url_table_.StringToInt(db, restrict_urls[i].spec(), &url_id)) {
+      continue;
+    }
+
+    // Remove any that match the page_url.
+    std::string sql_str = base::StringPrintf(
+      "UPDATE %s SET page_url_x=NULL,page_title_x=NULL WHERE page_url_x IS ?",
+      kTableName);
+
+    sql::Statement statement;
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+    statement.BindInt64(0, url_id);
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing page URL from database failed: "
+                 << statement.GetSQLStatement();
+      return;
+    }
+
+    // Remove any that match the arg_url.
+    sql_str = base::StringPrintf(
+      "UPDATE %s SET arg_url_x=NULL WHERE arg_url_x IS ?", kTableName);
+
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+    statement.BindInt64(0, url_id);
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing arg URL from database failed: "
+                 << statement.GetSQLStatement();
+      return;
+    }
+  }
+
+  // Clean up unused strings from the strings and urls table to really delete
+  // the urls and page titles. Should be called even if an error occured when
+  // removing a URL as there may some things to clean up.
+  CleanStringTables(db);
+}
+
 void CountingPolicy::ReadData(
     const std::string& extension_id,
     const int day,
@@ -600,6 +672,10 @@ void CountingPolicy::ReadFilteredData(
                  page_url,
                  arg_url),
       callback);
+}
+
+void CountingPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
+  ScheduleAndForget(this, &CountingPolicy::DoRemoveURLs, restrict_urls);
 }
 
 void CountingPolicy::OnDatabaseFailure() {

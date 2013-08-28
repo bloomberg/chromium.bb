@@ -190,6 +190,48 @@ class FullStreamUIPolicyTest : public testing::Test {
     ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
   }
 
+  static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
+    ASSERT_EQ(2, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "lets",
+                "[\"vamoose\"]", "", "", "");
+    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "", "", "");
+  }
+
+  static void SomeURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
+    // These will be in the vector in reverse time order.
+    ASSERT_EQ(5, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "Google",
+                "http://www.args-url.com/");
+    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "Google", "");
+    CheckAction(*actions->at(2), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "", "", "");
+    CheckAction(*actions->at(3), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "", "", "http://www.google.com/");
+    CheckAction(*actions->at(4), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "", "", "");
+  }
+
+  static void CheckAction(const Action& action,
+                          const std::string& expected_id,
+                          const Action::ActionType& expected_type,
+                          const std::string& expected_api_name,
+                          const std::string& expected_args_str,
+                          const std::string& expected_page_url,
+                          const std::string& expected_page_title,
+                          const std::string& expected_arg_url) {
+    ASSERT_EQ(expected_id, action.extension_id());
+    ASSERT_EQ(expected_type, action.action_type());
+    ASSERT_EQ(expected_api_name, action.api_name());
+    ASSERT_EQ(expected_args_str,
+              ActivityLogPolicy::Util::Serialize(action.args()));
+    ASSERT_EQ(expected_page_url, action.SerializePageUrl());
+    ASSERT_EQ(expected_page_title, action.page_title());
+    ASSERT_EQ(expected_arg_url, action.SerializeArgUrl());
+  }
+
  protected:
   ExtensionService* extension_service_;
   scoped_ptr<TestingProfile> profile_;
@@ -480,6 +522,123 @@ TEST_F(FullStreamUIPolicyTest, GetOlderActions) {
       "punky",
       3,
       base::Bind(&FullStreamUIPolicyTest::Arguments_GetOlderActions));
+  policy->Close();
+}
+
+TEST_F(FullStreamUIPolicyTest, RemoveAllURLs) {
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
+
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                     base::TimeDelta::FromHours(12));
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Record some actions
+  scoped_refptr<Action> action =
+      new Action("punky", mock_clock->Now(),
+                 Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  action->set_page_title("Google");
+  action->set_arg_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  mock_clock->Advance(base::TimeDelta::FromSeconds(1));
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_API_CALL, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google2.com"));
+  action->set_page_title("Google");
+  // Deliberately no arg url set to make sure it still works when there is no
+  // arg url.
+  policy->ProcessAction(action);
+
+  // Clean all the URLs.
+  std::vector<GURL> no_url_restrictions;
+  policy->RemoveURLs(no_url_restrictions);
+
+  CheckReadData(
+      policy,
+      "punky",
+      0,
+      base::Bind(&FullStreamUIPolicyTest::AllURLsRemoved));
+  policy->Close();
+}
+
+TEST_F(FullStreamUIPolicyTest, RemoveSpecificURLs) {
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
+
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                     base::TimeDelta::FromHours(12));
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Record some actions
+  // This should have the page url and args url cleared.
+  scoped_refptr<Action> action = new Action("punky", mock_clock->Now(),
+                                            Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google1.com"));
+  action->set_page_title("Google");
+  action->set_arg_url(GURL("http://www.google1.com"));
+  policy->ProcessAction(action);
+
+  // This should have the page url cleared but not args url.
+  mock_clock->Advance(base::TimeDelta::FromSeconds(1));
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google1.com"));
+  action->set_page_title("Google");
+  action->set_arg_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  // This should have the page url cleared. The args url is deliberately not set
+  // to make sure this doesn't cause any issues.
+  mock_clock->Advance(base::TimeDelta::FromSeconds(1));
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google2.com"));
+  action->set_page_title("Google");
+  policy->ProcessAction(action);
+
+  // This should have the args url cleared but not the page url or page title.
+  mock_clock->Advance(base::TimeDelta::FromSeconds(1));
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  action->set_page_title("Google");
+  action->set_arg_url(GURL("http://www.google1.com"));
+  policy->ProcessAction(action);
+
+  // This should have neither cleared.
+  mock_clock->Advance(base::TimeDelta::FromSeconds(1));
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  action->set_page_title("Google");
+  action->set_arg_url(GURL("http://www.args-url.com"));
+  policy->ProcessAction(action);
+
+  // Clean some URLs.
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://www.google1.com"));
+  urls.push_back(GURL("http://www.google2.com"));
+  urls.push_back(GURL("http://www.url_not_in_db.com"));
+  policy->RemoveURLs(urls);
+
+  CheckReadData(
+      policy,
+      "punky",
+      0,
+      base::Bind(&FullStreamUIPolicyTest::SomeURLsRemoved));
   policy->Close();
 }
 

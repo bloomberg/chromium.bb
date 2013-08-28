@@ -122,6 +122,13 @@ class ActivityLog : public BrowserContextKeyedService,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Clean up URLs from the activity log database.
+  // If restrict_urls is empty then all URLs in the activity log database are
+  // removed, otherwise only those in restrict_urls are removed.
+  virtual void RemoveURLs(const std::vector<GURL>& restrict_urls);
+  virtual void RemoveURLs(const std::set<GURL>& restrict_urls);
+  virtual void RemoveURL(const GURL& url);
+
  private:
   friend class ActivityLogFactory;
   friend class ActivityLogTest;

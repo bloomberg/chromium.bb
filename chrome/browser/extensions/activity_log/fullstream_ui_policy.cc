@@ -278,6 +278,68 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadData(
   return actions.Pass();
 }
 
+void FullStreamUIPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  // Make sure any queued in memory are sent to the database before cleaning.
+  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
+
+  // If no restrictions then then all URLs need to be removed.
+  if (restrict_urls.empty()) {
+    sql::Statement statement;
+    std::string sql_str = base::StringPrintf(
+        "UPDATE %s SET page_url=NULL,page_title=NULL,arg_url=NULL",
+        kTableName);
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing URLs from database failed: "
+                 << statement.GetSQLStatement();
+    }
+    return;
+  }
+
+  // If URLs are specified then restrict to only those URLs.
+  for (size_t i = 0; i < restrict_urls.size(); ++i) {
+    if (!restrict_urls[i].is_valid()) {
+      continue;
+    }
+
+    // Remove any matching page url info.
+    sql::Statement statement;
+    std::string sql_str = base::StringPrintf(
+      "UPDATE %s SET page_url=NULL,page_title=NULL WHERE page_url=?",
+      kTableName);
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+    statement.BindString(0, restrict_urls[i].spec());
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing page URL from database failed: "
+                 << statement.GetSQLStatement();
+      return;
+    }
+
+    // Remove any matching arg urls.
+    sql_str = base::StringPrintf("UPDATE %s SET arg_url=NULL WHERE arg_url=?",
+                                 kTableName);
+    statement.Assign(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+    statement.BindString(0, restrict_urls[i].spec());
+
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing arg URL from database failed: "
+                 << statement.GetSQLStatement();
+      return;
+    }
+  }
+}
+
 void FullStreamUIPolicy::OnDatabaseFailure() {
   queued_actions_.clear();
 }
@@ -326,6 +388,10 @@ void FullStreamUIPolicy::ReadFilteredData(
                  page_url,
                  arg_url),
       callback);
+}
+
+void FullStreamUIPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
+  ScheduleAndForget(this, &FullStreamUIPolicy::DoRemoveURLs, restrict_urls);
 }
 
 scoped_refptr<Action> FullStreamUIPolicy::ProcessArguments(
