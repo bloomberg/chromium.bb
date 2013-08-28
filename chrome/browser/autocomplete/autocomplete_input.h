@@ -50,25 +50,43 @@ class AutocompleteInput {
   // and update omnibox_event.proto::PageClassification and
   // omnibox_edit_model.cc::ClassifyPage() too.
   enum PageClassification {
-    INVALID_SPEC = 0,   // invalid URI; shouldn't happen
-    NEW_TAB_PAGE = 1,   // chrome://newtab/
-    // Note that chrome://newtab/ doesn't have to be the built-in
-    // version; it could be replaced by an extension.
-    BLANK = 2,          // about:blank
-    HOMEPAGE = 3,       // user switched settings to "open this page" mode.
-    // Note that if the homepage is set to the new tab page or about blank,
-    // then we'll classify the web page into those categories, not HOMEPAGE.
-    OTHER = 4,          // everything not included somewhere else on this list
+    // An invalid URL; shouldn't happen.
+    INVALID_SPEC = 0,
+
+    // chrome://newtab/.  This can be either the built-in version or a
+    // replacement new tab page from an extension.  Note that when Instant
+    // Extended is enabled, the new tab page will be reported as either
+    // INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS or
+    // INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS below,
+    // unless an extension is replacing the new tab page, in which case
+    // it will still be reported as NEW_TAB_PAGE.
+    NEW_TAB_PAGE = 1,
+
+    // about:blank.
+    BLANK = 2,
+
+    // The user's home page.  Note that if the home page is set to any
+    // of the new tab page versions or to about:blank, then we'll
+    // classify the page into those categories, not HOME_PAGE.
+    HOME_PAGE = 3,
+
+    // The catch-all entry of everything not included somewhere else
+    // on this list.
+    OTHER = 4,
+
     // The user is on a search result page that's doing search term
     // replacement, meaning the search terms should've appeared in the omnibox
     // before the user started editing it, not the URL of the page.
     SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6,
+
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the omnibox.
     INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS = 7,
+
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the fakebox.
     INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS = 8,
+
     // The user is on a search result page that's not doing search term
     // replacement, meaning the URL of the page should've appeared in the
     // omnibox before the user started editing it, not the search terms.

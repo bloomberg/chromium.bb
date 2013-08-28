@@ -150,8 +150,8 @@ OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
       return OmniboxEventProto::NEW_TAB_PAGE;
     case AutocompleteInput::BLANK:
       return OmniboxEventProto::BLANK;
-    case AutocompleteInput::HOMEPAGE:
-      return OmniboxEventProto::HOMEPAGE;
+    case AutocompleteInput::HOME_PAGE:
+      return OmniboxEventProto::HOME_PAGE;
     case AutocompleteInput::OTHER:
       return OmniboxEventProto::OTHER;
     case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:

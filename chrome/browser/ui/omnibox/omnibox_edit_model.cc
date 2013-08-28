@@ -1320,7 +1320,7 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (url == content::kAboutBlankURL)
     return AutocompleteInput::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
-    return AutocompleteInput::HOMEPAGE;
+    return AutocompleteInput::HOME_PAGE;
   if (controller_->GetToolbarModel()->WouldReplaceSearchURLWithSearchTerms(
       true))
     return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;

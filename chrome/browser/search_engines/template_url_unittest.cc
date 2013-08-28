@@ -1195,7 +1195,7 @@ TEST_F(TemplateURLTest, ReplacePageClassification) {
   EXPECT_EQ("http://www.google.com/?pgcl=1&q=foo", result);
 
   search_terms_args.page_classification =
-      AutocompleteInput::HOMEPAGE;
+      AutocompleteInput::HOME_PAGE;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://www.google.com/?pgcl=3&q=foo", result);
 }

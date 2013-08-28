@@ -351,7 +351,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
-        "1:50,7:100,2:0";  // 3 == HOMEPAGE
+        "1:50,7:100,2:0";  // 3 == HOME_PAGE
     ASSERT_TRUE(chrome_variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
@@ -361,7 +361,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   AutocompleteResult result;
   result.AppendMatches(matches);
   AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
-                          AutocompleteInput::HOMEPAGE, false, false, false,
+                          AutocompleteInput::HOME_PAGE, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
 
@@ -386,7 +386,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   };
 
   std::map<std::string, std::string> params;
-  // Enable reorder for omnibox inputs on the user's homepage.
+  // Enable reorder for omnibox inputs on the user's home page.
   params[std::string(OmniboxFieldTrial::kReorderForLegalDefaultMatchRule) +
          ":3:*"] = OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled;
   ASSERT_TRUE(chrome_variations::AssociateVariationParams(
@@ -403,7 +403,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
-                            AutocompleteInput::HOMEPAGE, false, false, false,
+                            AutocompleteInput::HOME_PAGE, false, false, false,
                             AutocompleteInput::ALL_MATCHES);
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
@@ -418,7 +418,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     AutocompleteResult result;
     result.AppendMatches(matches);
     AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
-                            AutocompleteInput::HOMEPAGE, false, false, false,
+                            AutocompleteInput::HOME_PAGE, false, false, false,
                             AutocompleteInput::ALL_MATCHES);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
