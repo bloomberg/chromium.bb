@@ -33,6 +33,7 @@
 #include <algorithm>
 #include "CSSPropertyNames.h"
 #include "StylePropertyShorthand.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -1211,8 +1212,10 @@ void CSSPropertyAnimation::ensurePropertyMap()
     // code can find them.
     size_t n = gPropertyWrappers->size();
     for (unsigned int i = 0; i < n; ++i) {
-        ASSERT((*gPropertyWrappers)[i]->property() - firstCSSProperty < numCSSProperties);
-        gPropertyWrapperMap[(*gPropertyWrappers)[i]->property() - firstCSSProperty] = i;
+        CSSPropertyID property = (*gPropertyWrappers)[i]->property();
+        ASSERT_WITH_MESSAGE(CSSAnimations::isAnimatableProperty(property), "%s is not whitelisted for animation", getPropertyNameString(property).utf8().data());
+        ASSERT(property - firstCSSProperty < numCSSProperties);
+        gPropertyWrapperMap[property - firstCSSProperty] = i;
     }
 
     // Now add the shorthand wrappers.

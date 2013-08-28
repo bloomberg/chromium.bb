@@ -89,6 +89,7 @@ private:
 
 class CSSAnimations FINAL {
 public:
+    static bool isAnimatableProperty(CSSPropertyID);
     static bool needsUpdate(const Element*, const RenderStyle*);
     static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(const Element*, const RenderStyle*, const CSSAnimations*, const CSSAnimationDataList*, StyleResolver*);
     void setPendingUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }

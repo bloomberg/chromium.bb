@@ -841,6 +841,8 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
                 // FIXME: Build the correct chained timing function when this property is specified.
                 if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
                     continue;
+                if (!CSSAnimations::isAnimatableProperty(property))
+                    continue;
                 keyframe->setPropertyValue(property, firstOffsetKeyframe ? firstOffsetKeyframe->propertyValue(property) : CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
             }
             if (!firstOffsetKeyframe)
