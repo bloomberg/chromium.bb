@@ -67,13 +67,13 @@ enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSe
 
 class Editor : public FrameDestructionObserver {
 public:
-    explicit Editor(Frame*);
+    explicit Editor(Frame&);
     ~Editor();
 
     EditorClient& client() const;
     TextCheckerClient& textChecker() const;
 
-    Frame* frame() const { return m_frame; }
+    Frame& frame() const { return *m_frame; }
 
     CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 

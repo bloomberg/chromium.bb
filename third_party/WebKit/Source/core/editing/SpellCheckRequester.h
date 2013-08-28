@@ -78,7 +78,7 @@ class SpellCheckRequester {
 public:
     friend class SpellCheckRequest;
 
-    explicit SpellCheckRequester(Frame*);
+    explicit SpellCheckRequester(Frame&);
     ~SpellCheckRequester();
 
     bool isAsynchronousEnabled() const;
@@ -109,7 +109,7 @@ private:
     void didCheckCancel(int sequence);
     void didCheck(int sequence, const Vector<TextCheckingResult>&);
 
-    Frame* m_frame;
+    Frame& m_frame;
     int m_lastRequestSequence;
     int m_lastProcessedSequence;
 

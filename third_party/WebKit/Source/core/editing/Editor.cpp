@@ -786,8 +786,8 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-Editor::Editor(Frame* frame)
-    : FrameDestructionObserver(frame)
+Editor::Editor(Frame& frame)
+    : FrameDestructionObserver(&frame)
     , m_preventRevealSelection(0)
     , m_shouldStartNewKillRingSequence(false)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
@@ -1104,13 +1104,13 @@ void Editor::didEndEditing()
 
 void Editor::setBaseWritingDirection(WritingDirection direction)
 {
-    Node* focusedElement = frame()->document()->focusedElement();
+    Node* focusedElement = frame().document()->focusedElement();
     if (focusedElement && isHTMLTextFormControlElement(focusedElement)) {
         if (direction == NaturalWritingDirection)
             return;
         toHTMLElement(focusedElement)->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
         focusedElement->dispatchInputEvent();
-        frame()->document()->updateStyleIfNeeded();
+        frame().document()->updateStyleIfNeeded();
         return;
     }
 
@@ -1154,9 +1154,9 @@ WritingDirection Editor::baseWritingDirectionForSelectionStart() const
 
 void Editor::ignoreSpelling()
 {
-    RefPtr<Range> selectedRange = frame()->selection()->toNormalizedRange();
+    RefPtr<Range> selectedRange = frame().selection()->toNormalizedRange();
     if (selectedRange)
-        frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
+        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
 }
 
 void Editor::advanceToNextMisspelling(bool startBeforeSelection)
@@ -1166,8 +1166,8 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
 
     // Start at the end of the selection, search to edge of document.  Starting at the selection end makes
     // repeated "check spelling" commands work.
-    VisibleSelection selection(frame()->selection()->selection());
-    RefPtr<Range> spellingSearchRange(rangeOfContents(frame()->document()));
+    VisibleSelection selection(frame().selection()->selection());
+    RefPtr<Range> spellingSearchRange(rangeOfContents(frame().document()));
 
     bool startedWithSelection = false;
     if (selection.start().deprecatedNode()) {
@@ -1189,7 +1189,7 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
         // when spell checking the whole document before sending the message.
         // In that case the document might not be editable, but there are editable pockets that need to be spell checked.
 
-        position = firstEditablePositionAfterPositionInRoot(position, frame()->document()->documentElement()).deepEquivalent();
+        position = firstEditablePositionAfterPositionInRoot(position, frame().document()->documentElement()).deepEquivalent();
         if (position.isNull())
             return;
 
@@ -1298,20 +1298,20 @@ void Editor::advanceToNextMisspelling(bool startBeforeSelection)
 
         // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
         RefPtr<Range> badGrammarRange = TextIterator::subrange(grammarSearchRange.get(), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
-        frame()->selection()->setSelection(VisibleSelection(badGrammarRange.get(), SEL_DEFAULT_AFFINITY));
-        frame()->selection()->revealSelection();
+        frame().selection()->setSelection(VisibleSelection(badGrammarRange.get(), SEL_DEFAULT_AFFINITY));
+        frame().selection()->revealSelection();
 
-        frame()->document()->markers()->addMarker(badGrammarRange.get(), DocumentMarker::Grammar, grammarDetail.userDescription);
+        frame().document()->markers()->addMarker(badGrammarRange.get(), DocumentMarker::Grammar, grammarDetail.userDescription);
     } else if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
         // a marker so we draw the red squiggle later.
 
         RefPtr<Range> misspellingRange = TextIterator::subrange(spellingSearchRange.get(), misspellingOffset, misspelledWord.length());
-        frame()->selection()->setSelection(VisibleSelection(misspellingRange.get(), DOWNSTREAM));
-        frame()->selection()->revealSelection();
+        frame().selection()->setSelection(VisibleSelection(misspellingRange.get(), DOWNSTREAM));
+        frame().selection()->revealSelection();
 
         client().updateSpellingUIWithMisspelledWord(misspelledWord);
-        frame()->document()->markers()->addMarker(misspellingRange.get(), DocumentMarker::Spelling);
+        frame().document()->markers()->addMarker(misspellingRange.get(), DocumentMarker::Spelling);
     }
 }
 
@@ -1360,8 +1360,8 @@ void Editor::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelect
 {
     RefPtr<Range> selectedRange = movingSelection.toNormalizedRange();
     if (selectedRange) {
-        frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
-        frame()->document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Grammar);
+        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
+        frame().document()->markers()->removeMarkers(selectedRange.get(), DocumentMarker::Grammar);
     }
 }
 
@@ -1411,19 +1411,19 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
     // If autocorrected word is non empty, replace the misspelled word by this word.
     if (!autocorrectedString.isEmpty()) {
         VisibleSelection newSelection(misspellingRange.get(), DOWNSTREAM);
-        if (newSelection != frame()->selection()->selection()) {
-            if (!frame()->selection()->shouldChangeSelection(newSelection))
+        if (newSelection != frame().selection()->selection()) {
+            if (!frame().selection()->shouldChangeSelection(newSelection))
                 return;
-            frame()->selection()->setSelection(newSelection);
+            frame().selection()->setSelection(newSelection);
         }
 
-        if (!frame()->editor().shouldInsertText(autocorrectedString, misspellingRange.get(), EditorInsertActionTyped))
+        if (!frame().editor().shouldInsertText(autocorrectedString, misspellingRange.get(), EditorInsertActionTyped))
             return;
-        frame()->editor().replaceSelectionWithText(autocorrectedString, false, false);
+        frame().editor().replaceSelectionWithText(autocorrectedString, false, false);
 
         // Reset the charet one character further.
-        frame()->selection()->moveTo(frame()->selection()->end());
-        frame()->selection()->modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
+        frame().selection()->moveTo(frame().selection()->end());
+        frame().selection()->modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
     }
 
     if (!isGrammarCheckingEnabled())
@@ -1668,8 +1668,8 @@ void Editor::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionA
     // Of course, if current selection is a range, we potentially will edit two words that fall on the boundaries of
     // selection, and remove words between the selection boundaries.
     //
-    VisiblePosition startOfSelection = frame()->selection()->selection().start();
-    VisiblePosition endOfSelection = frame()->selection()->selection().end();
+    VisiblePosition startOfSelection = frame().selection()->selection().start();
+    VisiblePosition endOfSelection = frame().selection()->selection().end();
     if (startOfSelection.isNull())
         return;
     // First word is the word that ends after or on the start of selection.
@@ -2205,7 +2205,7 @@ bool Editor::unifiedTextCheckerEnabled() const
 void Editor::toggleOverwriteModeEnabled()
 {
     m_overwriteModeEnabled = !m_overwriteModeEnabled;
-    frame()->selection()->setShouldShowBlockCursor(m_overwriteModeEnabled);
+    frame().selection()->setShouldShowBlockCursor(m_overwriteModeEnabled);
 };
 
 } // namespace WebCore
