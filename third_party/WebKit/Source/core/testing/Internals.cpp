@@ -979,7 +979,6 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     // Update initial viewport size.
     IntSize initialViewportSize(availableWidth, availableHeight);
     document->page()->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
-    document->styleResolver()->viewportStyleResolver()->resolve();
 
     ViewportArguments arguments = page->viewportArguments();
     PageScaleConstraints constraints = arguments.resolve(initialViewportSize, 980 /* defaultLayoutWidthForNonMobilePages */);

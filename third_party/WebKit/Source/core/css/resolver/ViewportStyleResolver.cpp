@@ -75,8 +75,20 @@ void ViewportStyleResolver::clearDocument()
 
 void ViewportStyleResolver::resolve()
 {
-    if (!m_document || !m_propertySet)
+    if (!m_document)
         return;
+
+    if (!m_propertySet) {
+        // FIXME: This is not entirely correct. If the doctype is XHTML MP, or there is a Meta
+        // element for setting the viewport, the viewport arguments should fall back to those
+        // settings when the @viewport rules are all removed. For now, reset to implicit when
+        // there was an @viewport rule which has now been removed.
+        if (m_document->viewportArguments().type == ViewportArguments::CSSDeviceAdaptation) {
+            m_document->setViewportArguments(ViewportArguments());
+            m_document->updateViewportArguments();
+        }
+        return;
+    }
 
     ViewportArguments arguments(ViewportArguments::CSSDeviceAdaptation);
 
