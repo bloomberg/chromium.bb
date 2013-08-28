@@ -142,6 +142,7 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
           break;
         case ::autofill::CREDIT_CARD_TYPE:
           group = CREDIT_CARD_TYPE;
+          break;
         default:
           group = CREDIT_CARD_DATE;
       }
