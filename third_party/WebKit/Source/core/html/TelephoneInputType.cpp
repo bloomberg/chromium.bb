@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<InputType> TelephoneInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> TelephoneInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new TelephoneInputType(element));
+    return adoptRef(new TelephoneInputType(element));
 }
 
 void TelephoneInputType::countUsage()

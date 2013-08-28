@@ -53,9 +53,9 @@ inline FileInputType::FileInputType(HTMLInputElement* element)
 {
 }
 
-PassOwnPtr<InputType> FileInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> FileInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new FileInputType(element));
+    return adoptRef(new FileInputType(element));
 }
 
 Vector<FileChooserFileInfo> FileInputType::filesFromFormControlState(const FormControlState& state)

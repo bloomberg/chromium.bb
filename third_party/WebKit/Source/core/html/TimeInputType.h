@@ -44,7 +44,7 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseTimeInputType;
 
 class TimeInputType : public BaseTimeInputType {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
 
 private:
     TimeInputType(HTMLInputElement*);

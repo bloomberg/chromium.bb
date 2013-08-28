@@ -105,9 +105,9 @@ static bool isValidEmailAddress(const String& address)
     return !matchOffset && matchLength == addressLength;
 }
 
-PassOwnPtr<InputType> EmailInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> EmailInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new EmailInputType(element));
+    return adoptRef(new EmailInputType(element));
 }
 
 void EmailInputType::countUsage()

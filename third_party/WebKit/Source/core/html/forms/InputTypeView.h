@@ -65,7 +65,7 @@ public:
 // An InputTypeView object represents the UI-specific part of an
 // HTMLInputElement. Do not expose instances of InputTypeView and classes
 // derived from it to classes other than HTMLInputElement.
-class InputTypeView {
+class InputTypeView : public RefCounted<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
     WTF_MAKE_FAST_ALLOCATED;
 

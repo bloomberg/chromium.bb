@@ -37,7 +37,7 @@ namespace WebCore {
 
 class CheckboxInputType : public BaseCheckableInputType {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
 
 private:
     CheckboxInputType(HTMLInputElement* element) : BaseCheckableInputType(element) { }

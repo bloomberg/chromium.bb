@@ -44,9 +44,9 @@ inline ImageInputType::ImageInputType(HTMLInputElement* element)
 {
 }
 
-PassOwnPtr<InputType> ImageInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> ImageInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new ImageInputType(element));
+    return adoptRef(new ImageInputType(element));
 }
 
 const AtomicString& ImageInputType::formControlType() const

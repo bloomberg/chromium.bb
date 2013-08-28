@@ -401,7 +401,7 @@ private:
     bool m_wasModifiedByUser : 1;
     bool m_canReceiveDroppedFiles : 1;
     bool m_hasTouchEventHandler : 1;
-    OwnPtr<InputType> m_inputType;
+    RefPtr<InputType> m_inputType;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.

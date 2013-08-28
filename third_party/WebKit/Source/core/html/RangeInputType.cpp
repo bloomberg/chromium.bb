@@ -74,9 +74,9 @@ static Decimal ensureMaximum(const Decimal& proposedValue, const Decimal& minimu
     return proposedValue >= minimum ? proposedValue : std::max(minimum, fallbackValue);
 }
 
-PassOwnPtr<InputType> RangeInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> RangeInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new RangeInputType(element));
+    return adoptRef(new RangeInputType(element));
 }
 
 RangeInputType::RangeInputType(HTMLInputElement* element)

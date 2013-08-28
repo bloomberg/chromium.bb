@@ -53,9 +53,9 @@ inline DateInputType::DateInputType(HTMLInputElement* element)
 {
 }
 
-PassOwnPtr<InputType> DateInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> DateInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new DateInputType(element));
+    return adoptRef(new DateInputType(element));
 }
 
 void DateInputType::countUsage()

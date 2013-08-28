@@ -43,9 +43,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<InputType> PasswordInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> PasswordInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new PasswordInputType(element));
+    return adoptRef(new PasswordInputType(element));
 }
 
 HTMLElement* PasswordInputType::passwordGeneratorButtonElement() const

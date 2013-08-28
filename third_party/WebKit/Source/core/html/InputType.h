@@ -58,8 +58,8 @@ class InputType : public InputTypeView {
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*, const AtomicString&);
-    static PassOwnPtr<InputType> createText(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*, const AtomicString&);
+    static PassRefPtr<InputType> createText(HTMLInputElement*);
     static const AtomicString& normalizeTypeName(const AtomicString&);
     virtual ~InputType();
 

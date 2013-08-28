@@ -419,7 +419,7 @@ void HTMLInputElement::updateType()
         return;
     }
 
-    OwnPtr<InputType> newType = InputType::create(this, newTypeName);
+    RefPtr<InputType> newType = InputType::create(this, newTypeName);
     removeFromRadioButtonGroup();
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();

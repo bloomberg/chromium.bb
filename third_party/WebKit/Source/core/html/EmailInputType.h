@@ -37,7 +37,7 @@ namespace WebCore {
 
 class EmailInputType : public BaseTextInputType {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
 
 private:
     EmailInputType(HTMLInputElement* element) : BaseTextInputType(element) { }

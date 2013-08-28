@@ -44,7 +44,7 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseWeekInputType;
 
 class WeekInputType : public BaseWeekInputType {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
 
 private:
     WeekInputType(HTMLInputElement* element) : BaseWeekInputType(element) { }

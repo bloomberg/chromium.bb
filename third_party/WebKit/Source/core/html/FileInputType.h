@@ -43,7 +43,7 @@ class FileList;
 
 class FileInputType : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
 
 private:

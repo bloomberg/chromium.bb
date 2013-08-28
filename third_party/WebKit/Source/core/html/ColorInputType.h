@@ -38,7 +38,7 @@ namespace WebCore {
 
 class ColorInputType : public BaseClickableWithKeyInputType, public ColorChooserClient {
 public:
-    static PassOwnPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement*);
     virtual ~ColorInputType();
 
     // ColorChooserClient implementation.

@@ -38,9 +38,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<InputType> URLInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> URLInputType::create(HTMLInputElement* element)
 {
-    return adoptPtr(new URLInputType(element));
+    return adoptRef(new URLInputType(element));
 }
 
 void URLInputType::countUsage()
