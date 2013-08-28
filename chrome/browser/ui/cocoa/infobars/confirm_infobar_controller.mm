@@ -8,7 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/window_open_disposition.h"
@@ -19,7 +19,7 @@
 - (IBAction)ok:(id)sender {
   if (![self isOwned])
     return;
-  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
+  if ([self delegate]->AsConfirmInfoBarDelegate()->Accept())
     [self removeSelf];
 }
 
@@ -27,7 +27,7 @@
 - (IBAction)cancel:(id)sender {
   if (![self isOwned])
     return;
-  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
+  if ([self delegate]->AsConfirmInfoBarDelegate()->Cancel())
     [self removeSelf];
 }
 
@@ -35,7 +35,8 @@
 // the return value of GetButtons().  We create each button if
 // required and position them to the left of the close button.
 - (void)addAdditionalControls {
-  ConfirmInfoBarDelegate* delegate = delegate_->AsConfirmInfoBarDelegate();
+  ConfirmInfoBarDelegate* delegate =
+      [self delegate]->AsConfirmInfoBarDelegate();
   DCHECK(delegate);
   int visibleButtons = delegate->GetButtons();
 
@@ -130,14 +131,16 @@
     return;
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
+  if ([self delegate]->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
     [self removeSelf];
 }
 
 @end
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  ConfirmInfoBarController* controller =
-      [[ConfirmInfoBarController alloc] initWithDelegate:this owner:owner];
-  return new InfoBar(controller, this);
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
+  base::scoped_nsobject<ConfirmInfoBarController> controller(
+      [[ConfirmInfoBarController alloc] initWithInfoBar:infobar.get()]);
+  infobar->set_controller(controller);
+  return infobar.release();
 }

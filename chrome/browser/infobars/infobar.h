@@ -26,9 +26,6 @@ typedef InfoBarDelegate InfoBarAddedDetails;
 typedef std::pair<InfoBarDelegate*, bool> InfoBarRemovedDetails;
 typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
 
-// TODO(pkasting): Port Mac to use this.
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
-
 class InfoBarContainer;
 class InfoBarService;
 
@@ -67,6 +64,9 @@ class InfoBar : public ui::AnimationDelegate {
   // delegate once it is invisible.
   void CloseSoon();
 
+  // Changes the target height of the main ("bar") portion of the infobar.
+  void SetBarTargetHeight(int height);
+
   const ui::SlideAnimation& animation() const { return animation_; }
   int arrow_height() const { return arrow_height_; }
   int arrow_target_height() const { return arrow_target_height_; }
@@ -80,9 +80,6 @@ class InfoBar : public ui::AnimationDelegate {
   // Forwards a close request to our owner.
   // NOTE: Subclasses should not call this if we're already unowned.
   void RemoveSelf();
-
-  // Changes the target height of the main ("bar") portion of the infobar.
-  void SetBarTargetHeight(int height);
 
   // Given a control with size |prefsize|, returns the centered y position
   // within us, taking into account animation so the control "slides in" (or
@@ -134,9 +131,5 @@ class InfoBar : public ui::AnimationDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
-
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
-#endif
 
 #endif  // CHROME_BROWSER_INFOBARS_INFOBAR_H_

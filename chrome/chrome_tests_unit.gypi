@@ -1505,6 +1505,8 @@
         'browser/ui/cocoa/infobars/confirm_infobar_controller_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_container_controller_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_gradient_view_unittest.mm',
+        'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.cc',
+        'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h',
         'browser/ui/cocoa/infobars/translate_infobar_unittest.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_cell_unittest.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_editor_unittest.mm',

@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/infobars/after_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
@@ -29,28 +29,27 @@ using InfoBarUtilities::AddMenuItem;
 
 // TranslateInfoBarDelegate views specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  TranslateInfoBarControllerBase* infobar_controller = NULL;
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
+  base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar_type_) {
     case BEFORE_TRANSLATE:
-      infobar_controller =
-          [[BeforeTranslateInfobarController alloc] initWithDelegate:this
-                                                               owner:owner];
+      infobar_controller.reset([[BeforeTranslateInfobarController alloc]
+          initWithInfoBar:infobar.get()]);
       break;
     case AFTER_TRANSLATE:
-      infobar_controller =
-          [[AfterTranslateInfobarController alloc] initWithDelegate:this
-                                                              owner:owner];
+      infobar_controller.reset([[AfterTranslateInfobarController alloc]
+          initWithInfoBar:infobar.get()]);
       break;
     case TRANSLATING:
     case TRANSLATION_ERROR:
-      infobar_controller =
-          [[TranslateMessageInfobarController alloc] initWithDelegate:this
-                                                                owner:owner];
+      infobar_controller.reset([[TranslateMessageInfobarController alloc]
+          initWithInfoBar:infobar.get()]);
       break;
     default:
       NOTREACHED();
   }
-  return new InfoBar(infobar_controller, this);
+  infobar->set_controller(infobar_controller);
+  return infobar.release();
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)
@@ -99,7 +98,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 @implementation TranslateInfoBarControllerBase
 
 - (TranslateInfoBarDelegate*)delegate {
-  return reinterpret_cast<TranslateInfoBarDelegate*>(delegate_);
+  return reinterpret_cast<TranslateInfoBarDelegate*>([super delegate]);
 }
 
 - (void)constructViews {

@@ -4,9 +4,6 @@
 
 #include "build/build_config.h"
 
-// TODO(pkasting): Port Mac to use this.
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
-
 #include "chrome/browser/infobars/infobar_container.h"
 
 #include <algorithm>
@@ -235,5 +232,3 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
       (InfoBar::kDefaultArrowTargetHeight - top_arrow_target_height_) *
           first_infobar_animation.GetCurrentValue());
 }
-
-#endif  // TOOLKIT_VIEWS || defined(TOOLKIT_GTK) || defined(OS_ANDROID)

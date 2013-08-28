@@ -12,7 +12,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_container_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -20,38 +21,21 @@
 #include "grit/ui_resources.h"
 #include "ui/gfx/image/image.h"
 
-namespace {
-// Durations set to match the default SlideAnimation duration.
-const float kAnimateOpenDuration = 0.12;
-const float kAnimateCloseDuration = 0.12;
-}
-
-@interface InfoBarController (PrivateMethods)
+@interface InfoBarController ()
 // Sets |label_| based on |labelPlaceholder_|, sets |labelPlaceholder_| to nil.
 - (void)initializeLabel;
-
-// Performs final cleanup after an animation is finished or stopped, including
-// notifying the InfoBarDelegate that the infobar was closed and removing the
-// infobar from its container, if necessary.
-- (void)cleanUpAfterAnimation:(BOOL)finished;
-
-// Returns the point, in window coordinates, at which the apex of the infobar
-// tip should be drawn.
-- (NSPoint)pointForTipApex;
 @end
 
 @implementation InfoBarController
 
 @synthesize containerController = containerController_;
-@synthesize delegate = delegate_;
+@synthesize infobar = infobar_;
 
-- (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarService*)owner {
-  DCHECK(delegate);
+- (id)initWithInfoBar:(InfoBarCocoa*)infobar {
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::FrameworkBundle()])) {
-    delegate_ = delegate;
-    owner_ = owner;
+    DCHECK(infobar);
+    infobar_ = infobar;
   }
   return self;
 }
@@ -59,8 +43,6 @@ const float kAnimateCloseDuration = 0.12;
 // All infobars have an icon, so we set up the icon in the base class
 // awakeFromNib.
 - (void)awakeFromNib {
-  DCHECK(delegate_);
-
   [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDefaultState];
   [[closeButton_ cell] setImageID:IDR_CLOSE_1_H
@@ -70,8 +52,8 @@ const float kAnimateCloseDuration = 0.12;
   [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDisabledState];
 
-  if (!delegate_->GetIcon().IsEmpty()) {
-    [image_ setImage:delegate_->GetIcon().ToNSImage()];
+  if (![self delegate]->GetIcon().IsEmpty()) {
+    [image_ setImage:[self delegate]->GetIcon().ToNSImage()];
   } else {
     // No icon, remove it from the view and grow the textfield to include the
     // space.
@@ -87,8 +69,7 @@ const float kAnimateCloseDuration = 0.12;
 
   [self addAdditionalControls];
 
-  infoBarView_.tipApex = [self pointForTipApex];
-  [infoBarView_ setInfobarType:delegate_->GetInfoBarType()];
+  [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];
 }
 
 - (void)dealloc {
@@ -108,7 +89,7 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (BOOL)isOwned {
-  return !!owner_;
+  return infobar_->OwnerCocoa() != NULL;
 }
 
 // Called when someone clicks on the ok button.
@@ -127,63 +108,12 @@ const float kAnimateCloseDuration = 0.12;
 - (void)dismiss:(id)sender {
   if (![self isOwned])
     return;
-  delegate_->InfoBarDismissed();
+  [self delegate]->InfoBarDismissed();
   [self removeSelf];
 }
 
 - (void)removeSelf {
-  // |owner_| should never be NULL here.  If it is, then someone violated what
-  // they were supposed to do -- e.g. a ConfirmInfoBarDelegate subclass returned
-  // true from Accept() or Cancel() even though the infobar was already closing.
-  // In the worst case, if we also switched tabs during that process, then
-  // |this| has already been destroyed.  But if that's the case, then we're
-  // going to deref a garbage |this| pointer here whether we check |owner_| or
-  // not, and in other cases (where we're still closing and |this| is valid),
-  // checking |owner_| here will avoid a NULL deref.
-  if (owner_)
-    owner_->RemoveInfoBar(delegate_);
-}
-
-- (AnimatableView*)animatableView {
-  return static_cast<AnimatableView*>([self view]);
-}
-
-- (void)open {
-  // Simply reset the frame size to its opened size, forcing a relayout.
-  CGFloat finalHeight = [[self view] frame].size.height;
-  [[self animatableView] setHeight:finalHeight];
-}
-
-- (void)animateOpen {
-  // Force the frame size to be 0 and then start an animation.
-  NSRect frame = [[self view] frame];
-  CGFloat finalHeight = frame.size.height;
-  frame.size.height = 0;
-  [[self view] setFrame:frame];
-  [[self animatableView] animateToNewHeight:finalHeight
-                                   duration:kAnimateOpenDuration];
-}
-
-- (void)close {
-  // Stop any running animations.
-  [[self animatableView] stopAnimation];
-  infoBarClosing_ = YES;
-  [self cleanUpAfterAnimation:YES];
-}
-
-- (void)animateClosed {
-  // Notify the container of our intentions.
-  [containerController_ willRemoveController:self];
-
-  // Start animating closed.  We will receive a notification when the animation
-  // is done, at which point we can remove our view from the hierarchy and
-  // notify the delegate that the infobar was closed.
-  [[self animatableView] animateToNewHeight:0 duration:kAnimateCloseDuration];
-
-  // The above call may trigger an animationDidStop: notification for any
-  // currently-running animations, so do not set |infoBarClosing_| until after
-  // starting the animation.
-  infoBarClosing_ = YES;
+  infobar_->RemoveSelfCocoa();
 }
 
 - (void)addAdditionalControls {
@@ -191,7 +121,6 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (void)infobarWillClose {
-  owner_ = NULL;
 }
 
 - (void)removeButtons {
@@ -205,8 +134,15 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setFrame:labelFrame];
 }
 
-- (void)setHasTip:(BOOL)hasTip {
-  [infoBarView_ setHasTip:hasTip];
+- (void)layoutArrow {
+  [infoBarView_ setArrowHeight:infobar_->arrow_height()];
+  [infoBarView_ setArrowHalfWidth:infobar_->arrow_half_width()];
+  [infoBarView_ setHasTip:![containerController_ shouldSuppressTopInfoBarTip]];
+
+  // Convert from window to view coordinates.
+  NSPoint point = NSMakePoint([containerController_ infobarArrowX], 0);
+  point = [infoBarView_ convertPoint:point fromView:nil];
+  [infoBarView_ setArrowX:point.x];
 }
 
 - (void)disablePopUpMenu:(NSMenu*)menu {
@@ -223,9 +159,9 @@ const float kAnimateCloseDuration = 0.12;
   }
 }
 
-@end
-
-@implementation InfoBarController (PrivateMethods)
+- (InfoBarDelegate*)delegate {
+  return infobar_->delegate();
+}
 
 - (void)initializeLabel {
   // Replace the label placeholder NSTextField with the real label NSTextView.
@@ -239,44 +175,6 @@ const float kAnimateCloseDuration = 0.12;
       replaceSubview:labelPlaceholder_ with:label_.get()];
   labelPlaceholder_ = nil;  // Now released.
   [label_.get() setDelegate:self];
-}
-
-- (void)cleanUpAfterAnimation:(BOOL)finished {
-  // Don't need to do any cleanup if the bar was animating open.
-  if (!infoBarClosing_)
-    return;
-
-  if (delegate_) {
-    delete delegate_;
-    delegate_ = NULL;
-  }
-
-  // If the animation ran to completion, then we need to remove ourselves from
-  // the container.  If the animation was interrupted, then the container will
-  // take care of removing us.
-  // TODO(rohitrao): UGH!  This works for now, but should be cleaner.
-  if (finished)
-    [containerController_ removeController:self];
-}
-
-- (void)animationDidStop:(NSAnimation*)animation {
-  [self cleanUpAfterAnimation:NO];
-}
-
-- (void)animationDidEnd:(NSAnimation*)animation {
-  [self cleanUpAfterAnimation:YES];
-}
-
-- (NSPoint)pointForTipApex {
-  BrowserWindowController* windowController =
-      [containerController_ browserWindowController];
-  if (!windowController) {
-    // This should only happen in unit tests.
-    return NSZeroPoint;
-  }
-
-  LocationBarViewMac* locationBar = [windowController locationBarBridge];
-  return locationBar->GetPageInfoBubblePoint();
 }
 
 @end

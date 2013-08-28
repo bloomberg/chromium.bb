@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -141,18 +141,17 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 @implementation ExtensionInfoBarController
 
-- (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarService*)owner
-                window:(NSWindow*)window {
-  if ((self = [super initWithDelegate:delegate owner:owner])) {
+- (id)initWithInfoBar:(InfoBarCocoa*)infobar
+               window:(NSWindow*)window {
+  if ((self = [super initWithInfoBar:infobar])) {
     window_ = window;
     dropdownButton_.reset([[MenuButton alloc] init]);
     [dropdownButton_ setOpenMenuOnClick:YES];
 
     extensions::ExtensionHost* extensionHost =
-        delegate_->AsExtensionInfoBarDelegate()->extension_host();
-    Browser* browser =
-        chrome::FindBrowserWithWebContents(owner->web_contents());
+        [self delegate]->AsExtensionInfoBarDelegate()->extension_host();
+    Browser* browser = chrome::FindBrowserWithWebContents(
+        [self infobar]->OwnerCocoa()->web_contents());
     contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
         initWithExtension:extensionHost->extension()
                   browser:browser
@@ -178,8 +177,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 - (void)addAdditionalControls {
   [self removeButtons];
 
-  extensionView_ = delegate_->AsExtensionInfoBarDelegate()->extension_host()->
-      view()->native_view();
+  extensionView_ = [self delegate]->AsExtensionInfoBarDelegate()
+      ->extension_host()->view()->native_view();
 
   // Add the extension's RenderWidgetHostView to the view hierarchy of the
   // InfoBar and make sure to place it below the Close button.
@@ -210,13 +209,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
   // needed is because the extension view's frame will not have changed in the
   // above case, so the NSViewFrameDidChangeNotification registered below will
   // never fire.
-  if (NSHeight(extensionFrame) > 0.0) {
-    NSSize infoBarSize = [[self view] frame].size;
-    infoBarSize.height = [self clampedExtensionViewHeight] +
-        kBottomBorderHeightPx;
-    [[self view] setFrameSize:infoBarSize];
-    [infoBarView_ setFrameSize:infoBarSize];
-  }
+  if (NSHeight(extensionFrame) > 0.0)
+    [self infobar]->SetBarTargetHeight([self clampedExtensionViewHeight]);
 
   [self adjustExtensionViewSize];
 
@@ -243,19 +237,11 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 - (void)extensionViewFrameChanged {
   [self adjustExtensionViewSize];
-
-  AnimatableView* view = [self animatableView];
-  NSRect infoBarFrame = [view frame];
-  CGFloat newHeight = [self clampedExtensionViewHeight] + kBottomBorderHeightPx;
-  [infoBarView_ setPostsFrameChangedNotifications:NO];
-  infoBarFrame.size.height = newHeight;
-  [infoBarView_ setFrame:infoBarFrame];
-  [infoBarView_ setPostsFrameChangedNotifications:YES];
-  [view animateToNewHeight:newHeight duration:kAnimationDuration];
+  [self infobar]->SetBarTargetHeight([self clampedExtensionViewHeight]);
 }
 
 - (CGFloat)clampedExtensionViewHeight {
-  CGFloat height = delegate_->AsExtensionInfoBarDelegate()->height();
+  CGFloat height = [self delegate]->AsExtensionInfoBarDelegate()->height();
   return std::max(kToolbarMinHeightPx, std::min(height, kToolbarMaxHeightPx));
 }
 
@@ -280,12 +266,13 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 @end
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
   NSWindow* window =
       [(NSView*)owner->web_contents()->GetView()->GetContentNativeView()
           window];
-  ExtensionInfoBarController* controller =
-      [[ExtensionInfoBarController alloc] initWithDelegate:this
-                                                     owner:owner
-                                                    window:window];
-  return new InfoBar(controller, this);
+  base::scoped_nsobject<ExtensionInfoBarController> controller(
+      [[ExtensionInfoBarController alloc] initWithInfoBar:infobar.get()
+                                                   window:window]);
+  infobar->set_controller(controller);
+  return infobar.release();
 }

@@ -496,6 +496,9 @@ class WebContents;
 // positioned relative to.
 - (NSRect)omniboxPopupAnchorRect;
 
+// Force a layout of info bars.
+- (void)layoutInfoBars;
+
 @end  // @interface BrowserWindowController (TestingAPI)
 
 

@@ -14,15 +14,11 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
 
-namespace {
-
-const CGFloat kTipWidth = 23;
-
-}  // namespace
-
 @implementation InfoBarGradientView
 
-@synthesize tipApex = tipApex_;
+@synthesize arrowHeight = arrowHeight_;
+@synthesize arrowHalfWidth = arrowHalfWidth_;
+@synthesize arrowX = arrowX_;
 @synthesize hasTip = hasTip_;
 
 - (id)initWithFrame:(NSRect)frame {
@@ -61,11 +57,9 @@ const CGFloat kTipWidth = 23;
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
-  bounds.size.height = infobars::kBaseHeight;
+  bounds.size.height = InfoBar::kDefaultBarTargetHeight;
 
-  const CGFloat kHalfWidth = kTipWidth / 2.0;
-  NSPoint localApex = [self convertPoint:self.tipApex fromView:nil];
-  CGFloat tipXOffset = localApex.x - kHalfWidth;
+  CGFloat tipXOffset = arrowX_ - arrowHalfWidth_;
 
   // Around the bounds of the infobar, continue drawing the path into which the
   // gradient will be drawn.
@@ -75,10 +69,10 @@ const CGFloat kTipWidth = 23;
   // Draw the tip.
   if (hasTip_) {
     [infoBarPath lineToPoint:NSMakePoint(tipXOffset, NSMaxY(bounds))];
-    [infoBarPath relativeLineToPoint:NSMakePoint(kHalfWidth,
-                                                 infobars::kTipHeight)];
-    [infoBarPath relativeLineToPoint:NSMakePoint(kHalfWidth,
-                                                 -infobars::kTipHeight)];
+    [infoBarPath relativeLineToPoint:NSMakePoint(arrowHalfWidth_,
+                                                 arrowHeight_)];
+    [infoBarPath relativeLineToPoint:NSMakePoint(arrowHalfWidth_,
+                                                 -arrowHeight_)];
   }
   [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
 
@@ -107,14 +101,14 @@ const CGFloat kTipWidth = 23;
   }
 
   // Add an inner stroke.
-  const CGFloat kHighlightTipHeight = infobars::kTipHeight - 1;
+  const CGFloat kHighlightTipHeight = arrowHeight_ - 1;
   NSBezierPath* highlightPath = [NSBezierPath bezierPath];
   [highlightPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds) - 1)];
   if (hasTip_) {
     [highlightPath relativeLineToPoint:NSMakePoint(tipXOffset + 1, 0)];
-    [highlightPath relativeLineToPoint:NSMakePoint(kHalfWidth - 1,
+    [highlightPath relativeLineToPoint:NSMakePoint(arrowHalfWidth_ - 1,
                                                    kHighlightTipHeight)];
-    [highlightPath relativeLineToPoint:NSMakePoint(kHalfWidth - 1,
+    [highlightPath relativeLineToPoint:NSMakePoint(arrowHalfWidth_ - 1,
                                                    -kHighlightTipHeight)];
   }
   [highlightPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds) - 1)];

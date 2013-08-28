@@ -60,7 +60,6 @@
       'app/nibs/GlobalErrorBubble.xib',
       'app/nibs/HungRendererDialog.xib',
       'app/nibs/InfoBar.xib',
-      'app/nibs/InfoBarContainer.xib',
       'app/nibs/Notification.xib',
       'app/nibs/Panel.xib',
       'app/nibs/ScreenCaptureNotification.xib',

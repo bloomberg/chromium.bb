@@ -6,8 +6,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 
-@class AnimatableView;
-@protocol InfoBarContainer;
+@protocol InfoBarContainerControllerBase;
+class InfoBarCocoa;
 class InfoBarDelegate;
 class InfoBarService;
 @class InfoBarGradientView;
@@ -18,9 +18,8 @@ class InfoBarService;
 // override addAdditionalControls to customize the UI.
 @interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
-  id<InfoBarContainer> containerController_;  // weak, owns us
-  InfoBarService* owner_;  // weak
-  BOOL infoBarClosing_;
+  id<InfoBarContainerControllerBase> containerController_;  // weak, owns us
+  InfoBarCocoa* infobar_;  // weak, owns us
 
  @protected
   IBOutlet InfoBarGradientView* infoBarView_;
@@ -30,21 +29,20 @@ class InfoBarService;
   IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* closeButton_;
 
-  // In rare instances, it can be possible for |delegate_| to delete itself
-  // while this controller is still alive.  Always check |delegate_| against
-  // NULL before using it.
-  InfoBarDelegate* delegate_;  // weak, can be NULL
-
   // Text fields don't work as well with embedded links as text views, but
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |labelPlaceholder_| that's replaced by this text view |label_|
   // in -awakeFromNib.
   base::scoped_nsobject<NSTextView> label_;
-};
+}
+
+@property(nonatomic, assign)
+    id<InfoBarContainerControllerBase> containerController;
+@property(nonatomic, readonly) InfoBarDelegate* delegate;
+@property(nonatomic, readonly) InfoBarCocoa* infobar;
 
 // Initializes a new InfoBarController.
-- (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarService*)owner;
+- (id)initWithInfoBar:(InfoBarCocoa*)infobar;
 
 // Returns YES if the infobar is owned.  If this is NO, it is not safe to call
 // any delegate functions, since they might attempt to access the owner.  Code
@@ -67,17 +65,6 @@ class InfoBarService;
 // call will trigger a notification that starts the infobar animating closed.
 - (void)removeSelf;
 
-// Returns a pointer to this controller's view, cast as an AnimatableView.
-- (AnimatableView*)animatableView;
-
-// Open or animate open the infobar.
-- (void)open;
-- (void)animateOpen;
-
-// Close or animate close the infobar.
-- (void)close;
-- (void)animateClosed;
-
 // Subclasses can override this method to add additional controls to
 // the infobar view.  This method is called by awakeFromNib.  The
 // default implementation does nothing.
@@ -91,10 +78,8 @@ class InfoBarService;
 // space.
 - (void)removeButtons;
 
-- (void)setHasTip:(BOOL)hasTip;
-
-@property(nonatomic, assign) id<InfoBarContainer> containerController;
-@property(nonatomic, readonly) InfoBarDelegate* delegate;
+// Updates the view's arrow position.
+- (void)layoutArrow;
 
 @end
 
@@ -108,6 +93,3 @@ class InfoBarService;
 // InfoBarController subclasses, one for each InfoBarDelegate
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
-
-
-

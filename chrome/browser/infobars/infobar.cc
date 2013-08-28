@@ -30,9 +30,6 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
       kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
-// TODO(pkasting): Port Mac to use this.
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
-
 InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
@@ -181,5 +178,3 @@ void InfoBar::MaybeDelete() {
     delegate_ = NULL;
   }
 }
-
-#endif  // TOOLKIT_VIEWS || TOOLKIT_GTK || OS_ANDROID

@@ -10,6 +10,7 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
@@ -35,15 +36,16 @@ using content::WebContents;
 @end
 
 
-@interface InfoBarContainerTest : NSObject<InfoBarContainer> {
+@interface InfoBarContainerTest : NSObject<InfoBarContainerControllerBase> {
   InfoBarController* controller_;
 }
+
 - (id)initWithController:(InfoBarController*)controller;
-- (void)willRemoveController:(InfoBarController*)controller;
-- (void)removeController:(InfoBarController*)controller;
+
 @end
 
 @implementation InfoBarContainerTest
+
 - (id)initWithController:(InfoBarController*)controller {
   if ((self = [super init])) {
     controller_ = controller;
@@ -51,17 +53,18 @@ using content::WebContents;
   return self;
 }
 
-- (void)willRemoveController:(InfoBarController*)controller {
-}
-
-- (void)removeController:(InfoBarController*)controller {
-  DCHECK(controller_ == controller);
-  controller_ = nil;
-}
-
 - (BrowserWindowController*)browserWindowController {
   return nil;
 }
+
+- (BOOL)shouldSuppressTopInfoBarTip {
+  return NO;
+}
+
+- (CGFloat)infobarArrowX {
+  return 0;
+}
+
 @end
 
 @interface TestConfirmInfoBarController : ConfirmInfoBarController
@@ -70,7 +73,9 @@ using content::WebContents;
 
 @implementation TestConfirmInfoBarController
 - (void)removeSelf {
-  [self close];
+  [self infobarWillClose];
+  if ([self infobar])
+    [self infobar]->CloseSoon();
 }
 @end
 
@@ -79,7 +84,7 @@ namespace {
 class ConfirmInfoBarControllerTest : public CocoaProfileTest,
                                      public MockConfirmInfoBarDelegate::Owner {
  public:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
@@ -88,8 +93,12 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents_.get());
     delegate_ = new MockConfirmInfoBarDelegate(this);
+    infobar_.reset(new InfoBarCocoa(infobar_service, delegate_));
+
     controller_.reset([[TestConfirmInfoBarController alloc]
-        initWithDelegate:delegate_ owner:infobar_service]);
+        initWithInfoBar:infobar_.get()]);
+    infobar_->set_controller(controller_);
+
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
@@ -99,7 +108,8 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
     closed_delegate_link_clicked_ = false;
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
+    [controller_ removeSelf];
     if (delegate_)
       delete delegate_;
     CocoaProfileTest::TearDown();
@@ -125,6 +135,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
   }
 
   scoped_ptr<WebContents> web_contents_;
+  scoped_ptr<InfoBarCocoa> infobar_;
 };
 
 

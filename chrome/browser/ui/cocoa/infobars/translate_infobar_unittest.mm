@@ -13,7 +13,7 @@
 #include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #import "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -88,10 +88,14 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
         infobar_service, type, error, profile->GetPrefs(), config));
     [[infobar_controller_ view] removeFromSuperview];
-    scoped_ptr<InfoBar> infobar(static_cast<InfoBarDelegate*>(
-        infobar_delegate_.get())->CreateInfoBar(infobar_service));
-    infobar_controller_.reset(reinterpret_cast<TranslateInfoBarControllerBase*>(
-        infobar->controller()));
+
+    InfoBarDelegate* base =
+        static_cast<InfoBarDelegate*>(infobar_delegate_.get());
+    infobar_.reset(
+        static_cast<InfoBarCocoa*>(base->CreateInfoBar(infobar_service)));
+    infobar_controller_.reset([static_cast<TranslateInfoBarControllerBase*>(
+        infobar_->controller()) retain]);
+
     // We need to set the window to be wide so that the options button
     // doesn't overlap the other buttons.
     [test_window() setContentSize:NSMakeSize(2000, 500)];
@@ -101,6 +105,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
 
   scoped_ptr<WebContents> web_contents_;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate_;
+  scoped_ptr<InfoBarCocoa> infobar_;
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller_;
 };
 

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/window_open_disposition.h"
@@ -25,7 +25,7 @@
   [self removeButtons];
 
   AlternateNavInfoBarDelegate* delegate =
-      static_cast<AlternateNavInfoBarDelegate*>(delegate_);
+      static_cast<AlternateNavInfoBarDelegate*>([self delegate]);
   DCHECK(delegate);
   size_t offset = string16::npos;
   string16 message = delegate->GetMessageTextWithOffset(&offset);
@@ -50,7 +50,7 @@
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   AlternateNavInfoBarDelegate* delegate =
-      static_cast<AlternateNavInfoBarDelegate*>(delegate_);
+      static_cast<AlternateNavInfoBarDelegate*>([self delegate]);
   if (delegate->LinkClicked(disposition))
     [self removeSelf];
 }
@@ -58,7 +58,9 @@
 @end
 
 InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  AlternateNavInfoBarController* controller =
-      [[AlternateNavInfoBarController alloc] initWithDelegate:this owner:owner];
-  return new InfoBar(controller, this);
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
+  base::scoped_nsobject<AlternateNavInfoBarController> controller(
+      [[AlternateNavInfoBarController alloc] initWithInfoBar:infobar.get()]);
+  infobar->set_controller(controller);
+  return infobar.release();
 }
