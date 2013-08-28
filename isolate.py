@@ -26,7 +26,7 @@ import stat
 import subprocess
 import sys
 
-import isolateserver_archive
+import isolateserver
 import run_isolated
 import short_expression_finder
 import trace_inputs
@@ -462,7 +462,7 @@ def process_input(filepath, prevdict, read_only, flavor):
       # Reuse the previous hash if available.
       out['h'] = prevdict.get('h')
     if not out.get('h'):
-      out['h'] = isolateserver_archive.sha1_file(filepath)
+      out['h'] = isolateserver.sha1_file(filepath)
   else:
     # If the timestamp wasn't updated, carry on the link destination.
     if prevdict.get('t') == out['t']:
@@ -1412,8 +1412,7 @@ def chromium_save_isolated(isolated, data, variables):
   for index, f in enumerate(slaves):
     slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
     trace_inputs.write_json(slavepath, f, True)
-    data.setdefault('includes', []).append(
-        isolateserver_archive.sha1_file(slavepath))
+    data.setdefault('includes', []).append(isolateserver.sha1_file(slavepath))
     files.append(os.path.basename(slavepath))
 
   files.extend(save_isolated(isolated, data))
@@ -1969,7 +1968,7 @@ def CMDhashtable(parser, args):
       for item in isolated_files:
         item_path = os.path.join(
             os.path.dirname(complete_state.isolated_filepath), item)
-        # Do not use isolateserver_archive.sha1_file() here because the file is
+        # Do not use isolateserver.sha1_file() here because the file is
         # likely smallish (under 500kb) and its file size is needed.
         with open(item_path, 'rb') as f:
           content = f.read()
@@ -1985,7 +1984,7 @@ def CMDhashtable(parser, args):
                    len(infiles))
 
       if is_url(options.outdir):
-        isolateserver_archive.upload_sha1_tree(
+        isolateserver.upload_sha1_tree(
             base_url=options.outdir,
             indir=complete_state.root_dir,
             infiles=infiles,

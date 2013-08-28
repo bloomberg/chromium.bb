@@ -30,7 +30,7 @@ def CommonChecks(input_api, output_api):
     # These tests are touching the live infrastructure. It's a pain if your IP
     # is not whitelisted so only run these on commit.
     integation_tests = [
-      r'.*isolateserver_archive_smoke_test\.py$',
+      r'.*isolateserver_smoke_test\.py$',
       r'.*swarming_smoke_test\.py$',
     ]
 

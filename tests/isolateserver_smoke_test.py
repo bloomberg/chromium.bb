@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,7 @@ import urllib
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import isolateserver_archive
+import isolateserver
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,7 +24,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 
 # The directory containing the test data files.
-TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver_archive')
+TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver')
 
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
@@ -34,15 +34,16 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
     url = ISOLATE_SERVER + '/content/get_token?from_smoke_test=1'
-    self.token = urllib.quote(isolateserver_archive.url_read(url))
+    self.token = urllib.quote(isolateserver.url_read(url))
 
   def _archive_given_files(self, files):
-    """Given a list of files, call isolateserver_archive.py with them. Then
+    """Given a list of files, call isolateserver.py with them. Then
     verify they are all on the server."""
     args = [
         sys.executable,
-        os.path.join(ROOT_DIR, 'isolateserver_archive.py'),
-        '--remote', ISOLATE_SERVER,
+        os.path.join(ROOT_DIR, 'isolateserver.py'),
+        'archive',
+        '--isolate-server', ISOLATE_SERVER,
         '--namespace', self.namespace
     ]
     if '-v' in sys.argv:
@@ -53,15 +54,14 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
     # Try to download the files from the server.
     file_hashes = [
-        isolateserver_archive.sha1_file(os.path.join(TEST_DATA_DIR, f))
+        isolateserver.sha1_file(os.path.join(TEST_DATA_DIR, f))
         for f in files
     ]
     for i in range(len(files)):
       download_url = '%scontent/retrieve/%s/%s' % (
           ISOLATE_SERVER, self.namespace, file_hashes[i])
 
-      downloaded_file = isolateserver_archive.url_read(download_url,
-                                                       retry_404=True),
+      downloaded_file = isolateserver.url_read(download_url, retry_404=True)
       self.assertTrue(downloaded_file is not None,
                       'File %s was missing from the server' % files[i])
 
@@ -77,7 +77,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       # use transaction for performance reasons, so even if one request was able
       # to retrieve the file, an subsequent may not see it! So retry a few time
       # until the database becomes consistent with regard to these entities.
-      response = isolateserver_archive.url_read(
+      response = isolateserver.url_read(
           contains_hash_url,
           data=body,
           content_type='application/octet-stream')

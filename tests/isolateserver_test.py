@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,14 +19,14 @@ ROOT_DIR = os.path.dirname(BASE_PATH)
 sys.path.insert(0, ROOT_DIR)
 
 import auto_stub
-import isolateserver_archive
+import isolateserver
 
 
 class IsolateServerTest(auto_stub.TestCase):
   def setUp(self):
     super(IsolateServerTest, self).setUp()
-    self.mock(isolateserver_archive.net, 'url_open', self._url_open)
-    self.mock(isolateserver_archive, 'randomness', lambda: 'not_really_random')
+    self.mock(isolateserver.net, 'url_open', self._url_open)
+    self.mock(isolateserver, 'randomness', lambda: 'not_really_random')
     self._lock = threading.Lock()
     self._requests = []
 
@@ -50,11 +50,11 @@ class IsolateServerTest(auto_stub.TestCase):
 
   def test_present(self):
     files = [
-      os.path.join(BASE_PATH, 'isolateserver_archive', f)
+      os.path.join(BASE_PATH, 'isolateserver', f)
       for f in ('small_file.txt', 'empty_file.txt')
     ]
     sha1encoded = ''.join(
-        binascii.unhexlify(isolateserver_archive.sha1_file(f)) for f in files)
+        binascii.unhexlify(isolateserver.sha1_file(f)) for f in files)
     path = 'http://random/'
     self._requests = [
       (path + 'content/get_token', {}, StringIO.StringIO('foo bar')),
@@ -64,20 +64,20 @@ class IsolateServerTest(auto_stub.TestCase):
         StringIO.StringIO('\1\1'),
       ),
     ]
-    result = isolateserver_archive.main(['--remote', path] + files)
+    result = isolateserver.main(['archive', '--isolate-server', path] + files)
     self.assertEqual(0, result)
 
   def test_missing(self):
     files = [
-      os.path.join(BASE_PATH, 'isolateserver_archive', f)
+      os.path.join(BASE_PATH, 'isolateserver', f)
       for f in ('small_file.txt', 'empty_file.txt')
     ]
-    sha1s = map(isolateserver_archive.sha1_file, files)
+    sha1s = map(isolateserver.sha1_file, files)
     sha1encoded = ''.join(map(binascii.unhexlify, sha1s))
     compressed = [
         zlib.compress(
             open(f, 'rb').read(),
-            isolateserver_archive.compression_level(f))
+            isolateserver.compression_level(f))
         for f in files
     ]
     path = 'http://random/'
@@ -99,19 +99,19 @@ class IsolateServerTest(auto_stub.TestCase):
         StringIO.StringIO('ok'),
       ),
     ]
-    result = isolateserver_archive.main(['--remote', path] + files)
+    result = isolateserver.main(['archive', '--isolate-server', path] + files)
     self.assertEqual(0, result)
 
   def test_large(self):
     content = ''
     compressed = ''
     while (
-        len(compressed) <= isolateserver_archive.MIN_SIZE_FOR_DIRECT_BLOBSTORE):
+        len(compressed) <= isolateserver.MIN_SIZE_FOR_DIRECT_BLOBSTORE):
       # The goal here is to generate a file, once compressed, is at least
       # MIN_SIZE_FOR_DIRECT_BLOBSTORE.
       content += ''.join(chr(random.randint(0, 255)) for _ in xrange(20*1024))
       compressed = zlib.compress(
-          content, isolateserver_archive.compression_level('foo.txt'))
+          content, isolateserver.compression_level('foo.txt'))
 
     s = hashlib.sha1(content).hexdigest()
     infiles = {
@@ -122,7 +122,7 @@ class IsolateServerTest(auto_stub.TestCase):
     }
     path = 'http://random/'
     sha1encoded = binascii.unhexlify(s)
-    content_type, body = isolateserver_archive.encode_multipart_formdata(
+    content_type, body = isolateserver.encode_multipart_formdata(
                 [('token', 'foo bar')], [('content', s, compressed)])
 
     self._requests = [
@@ -144,9 +144,8 @@ class IsolateServerTest(auto_stub.TestCase):
       ),
     ]
 
-    self.mock(isolateserver_archive, 'read_and_compress',
-              lambda x, y: compressed)
-    result = isolateserver_archive.upload_sha1_tree(
+    self.mock(isolateserver, 'read_and_compress', lambda x, y: compressed)
+    result = isolateserver.upload_sha1_tree(
           base_url=path,
           indir=os.getcwd(),
           infiles=infiles,
@@ -170,7 +169,7 @@ class IsolateServerTest(auto_stub.TestCase):
         ('blow', {'s': 0}),
       ],
     ]
-    batches = list(isolateserver_archive.batch_files_for_check(items))
+    batches = list(isolateserver.batch_files_for_check(items))
     self.assertEqual(batches, expected)
 
   def test_get_files_to_upload(self):
@@ -189,11 +188,11 @@ class IsolateServerTest(auto_stub.TestCase):
     def mock_check(url, items):
       self.assertEqual('fakeurl', url)
       return [item for item in items if item[0] in missing]
-    self.mock(isolateserver_archive, 'check_files_exist_on_server', mock_check)
+    self.mock(isolateserver, 'check_files_exist_on_server', mock_check)
 
     # 'get_files_to_upload' doesn't guarantee order of its results, so convert
     # list of pairs to unordered dict and compare dicts.
-    result = dict(isolateserver_archive.get_files_to_upload('fakeurl', items))
+    result = dict(isolateserver.get_files_to_upload('fakeurl', items))
     self.assertEqual(result, missing)
 
   def test_upload_blobstore_simple(self):
@@ -201,7 +200,7 @@ class IsolateServerTest(auto_stub.TestCase):
     s = hashlib.sha1(content).hexdigest()
     path = 'http://example.com:80/'
     data = [('token', 'foo bar')]
-    content_type, body = isolateserver_archive.encode_multipart_formdata(
+    content_type, body = isolateserver.encode_multipart_formdata(
         data[:], [('content', s, 'blob_content')])
     self._requests = [
       (
@@ -215,7 +214,7 @@ class IsolateServerTest(auto_stub.TestCase):
         StringIO.StringIO('ok42'),
       ),
     ]
-    result = isolateserver_archive.upload_hash_content_to_blobstore(
+    result = isolateserver.upload_hash_content_to_blobstore(
         path + 'gen_url?foo#bar', data[:], s, content)
     self.assertEqual('ok42', result)
 
@@ -224,7 +223,7 @@ class IsolateServerTest(auto_stub.TestCase):
     s = hashlib.sha1(content).hexdigest()
     path = 'http://example.com:80/'
     data = [('token', 'foo bar')]
-    content_type, body = isolateserver_archive.encode_multipart_formdata(
+    content_type, body = isolateserver.encode_multipart_formdata(
         data[:], [('content', s, 'blob_content')])
     self._requests = [
       (
@@ -251,7 +250,7 @@ class IsolateServerTest(auto_stub.TestCase):
         StringIO.StringIO('ok42'),
       ),
     ]
-    result = isolateserver_archive.upload_hash_content_to_blobstore(
+    result = isolateserver.upload_hash_content_to_blobstore(
         path + 'gen_url?foo#bar', data[:], s, content)
     self.assertEqual('ok42', result)
 

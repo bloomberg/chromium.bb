@@ -1,27 +1,37 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Archives a set of files to a server."""
+
+__version__ = '0.1'
 
 import binascii
 import cStringIO
 import hashlib
 import itertools
 import logging
-import optparse
 import os
 import sys
 import time
 import urllib
 import zlib
 
+from third_party import colorama
+from third_party.depot_tools import fix_encoding
+from third_party.depot_tools import subcommand
+
 import run_isolated
 
 from utils import net
 from utils import threading_utils
 from utils import tools
+
+
+# Default server.
+# TODO(maruel): Chromium-specific.
+ISOLATE_SERVER = 'https://isolateserver-dev.appspot.com/'
 
 
 # The minimum size of files to upload directly to the blobstore.
@@ -357,34 +367,18 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   return 0
 
 
-def main(args):
-  tools.disable_buffering()
-  parser = optparse.OptionParser(
-      usage='%prog [options] <file1..fileN> or - to read from stdin',
-      description=sys.modules[__name__].__doc__)
-  parser.add_option('-r', '--remote', help='Remote server to archive to')
-  parser.add_option(
-        '-v', '--verbose',
-        action='count', default=0,
-        help='Use multiple times to increase verbosity')
-  parser.add_option('--namespace', default='default-gzip',
-                    help='The namespace to use on the server.')
-
+@subcommand.usage('<file1..fileN> or - to read from stdin')
+def CMDarchive(parser, args):
+  """Archives data to the server."""
   options, files = parser.parse_args(args)
 
-  levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-  logging.basicConfig(
-      level=levels[min(len(levels)-1, options.verbose)],
-      format='[%(threadName)s] %(asctime)s,%(msecs)03d %(levelname)5s'
-             ' %(module)15s(%(lineno)3d): %(message)s',
-      datefmt='%H:%M:%S')
   if files == ['-']:
     files = sys.stdin.readlines()
 
   if not files:
     parser.error('Nothing to upload')
-  if not options.remote:
-    parser.error('Nowhere to send. Please specify --remote')
+  if not options.isolate_server:
+    parser.error('Nowhere to send. Please specify --isolate-server')
 
   # Load the necessary metadata. This is going to be rewritten eventually to be
   # more efficient.
@@ -400,11 +394,57 @@ def main(args):
 
   with tools.Profiler('Archive'):
     return upload_sha1_tree(
-        base_url=options.remote,
+        base_url=options.isolate_server,
         indir=os.getcwd(),
         infiles=infiles,
         namespace=options.namespace)
+  return 0
+
+
+def CMDdownload(parser, args):
+  """Download data from the server."""
+  _options, args = parser.parse_args(args)
+  parser.error('Sorry, it\'s not really supported.')
+  return 0
+
+
+class OptionParserIsolateServer(tools.OptionParserWithLogging):
+  def __init__(self, **kwargs):
+    tools.OptionParserWithLogging.__init__(self, **kwargs)
+    self.add_option(
+        '-I', '--isolate-server',
+        default=ISOLATE_SERVER,
+        metavar='URL',
+        help='Isolate server where data is stored. default: %default')
+    self.add_option(
+        '--namespace', default='default-gzip',
+        help='The namespace to use on the server.')
+
+  def parse_args(self, *args, **kwargs):
+    options, args = tools.OptionParserWithLogging.parse_args(
+        self, *args, **kwargs)
+    options.isolate_server = options.isolate_server.rstrip('/')
+    if not options.isolate_server:
+      self.error('--isolate-server is required.')
+    return options, args
+
+
+def main(args):
+  dispatcher = subcommand.CommandDispatcher(__name__)
+  try:
+    return dispatcher.execute(
+        OptionParserIsolateServer(version=__version__), args)
+  except (
+      run_isolated.MappingError,
+      run_isolated.ConfigError) as e:
+    sys.stderr.write('\nError: ')
+    sys.stderr.write(str(e))
+    sys.stderr.write('\n')
+    return 1
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
+  tools.disable_buffering()
+  colorama.init()
   sys.exit(main(sys.argv[1:]))
