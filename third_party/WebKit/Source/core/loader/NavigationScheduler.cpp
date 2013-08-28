@@ -82,6 +82,8 @@ public:
         return adoptPtr(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
     }
 
+    virtual bool isForm() const { return false; }
+
 protected:
     void clearUserGesture() { m_wasUserGesture = false; }
 
@@ -222,15 +224,7 @@ public:
     virtual void fire(Frame* frame)
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-
-        // The submitForm function will find a target frame before using the redirection timer.
-        // Now that the timer has fired, we need to repeat the security check which normally is done when
-        // selecting a target, in case conditions have changed. Other code paths avoid this by targeting
-        // without leaving a time window. If we fail the check just silently drop the form submission.
-        Document* requestingDocument = m_submission->state()->sourceDocument();
-        if (!requestingDocument->canNavigate(frame))
-            return;
-        FrameLoadRequest frameRequest(requestingDocument->document()->securityOrigin());
+        FrameLoadRequest frameRequest(m_submission->state()->sourceDocument()->securityOrigin());
         m_submission->populateFrameLoadRequest(frameRequest);
         frameRequest.setLockBackForwardList(lockBackForwardList());
         frameRequest.setTriggeringEvent(m_submission->event());
@@ -248,6 +242,9 @@ public:
         if (frame->loader()->history()->currentItemShouldBeReplaced())
             setLockBackForwardList(true);
     }
+
+    virtual bool isForm() const { return true; }
+    FormSubmission* submission() const { return m_submission.get(); }
 
 private:
     RefPtr<FormSubmission> m_submission;
@@ -275,6 +272,7 @@ void NavigationScheduler::clear()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
+    m_additionalFormSubmissions.clear();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation() const
@@ -346,18 +344,14 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
-
-    // FIXME: Do we need special handling for form submissions where the URL is the same
-    // as the current one except for the fragment part? See scheduleLocationChange above.
-
-    // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
-    // to match IE and Opera.
-    // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
-    bool lockBackForwardList = mustLockBackForwardList(m_frame)
-        || (submission->state()->formSubmissionTrigger() == SubmittedByJavaScript
-            && m_frame->tree()->parent() && !ScriptController::processingUserGesture());
-
-    schedule(adoptPtr(new ScheduledFormSubmission(submission, lockBackForwardList)));
+    if (m_redirect && m_redirect->isForm()) {
+        if (submission->target() != static_cast<ScheduledFormSubmission*>(m_redirect.get())->submission()->target()) {
+            const String& target = submission->target().isNull() ? "" : submission->target();
+            m_additionalFormSubmissions.add(target, adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
+            return;
+        }
+    }
+    schedule(adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
 }
 
 void NavigationScheduler::scheduleRefresh()
@@ -400,7 +394,15 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
     RefPtr<Frame> protect(m_frame);
 
     OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
+    HashMap<String, OwnPtr<ScheduledNavigation> > additionalFormSubmissions;
+    additionalFormSubmissions.swap(m_additionalFormSubmissions);
     redirect->fire(m_frame);
+    while (!additionalFormSubmissions.isEmpty()) {
+        HashMap<String, OwnPtr<ScheduledNavigation> >::iterator it = additionalFormSubmissions.begin();
+        OwnPtr<ScheduledNavigation> formSubmission = it->value.release();
+        additionalFormSubmissions.remove(it);
+        formSubmission->fire(m_frame);
+    }
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
 }
 
@@ -434,6 +436,7 @@ void NavigationScheduler::cancel()
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
     m_redirect.clear();
+    m_additionalFormSubmissions.clear();
 }
 
 } // namespace WebCore

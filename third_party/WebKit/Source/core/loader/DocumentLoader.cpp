@@ -418,6 +418,11 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     willSendRequest(request, redirectResponse);
 }
 
+static bool isFormSubmission(NavigationType type)
+{
+    return type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;
+}
+
 void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
     // Note that there are no asserts here as there are for the other callbacks. This is due to the
@@ -425,8 +430,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     // deferrals plays less of a part in this function in preventing the bad behavior deferring
     // callbacks is meant to prevent.
     ASSERT(!newRequest.isNull());
-
-    if (!frameLoader()->checkIfFormActionAllowedByCSP(newRequest.url())) {
+    if (isFormSubmission(m_triggeringAction.type()) && !m_frame->document()->contentSecurityPolicy()->allowFormAction(newRequest.url())) {
         cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
         return;
     }

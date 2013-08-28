@@ -93,7 +93,6 @@ public:
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
     void loadHistoryItem(HistoryItem*); // The entry point for all back/forward loads
-    void submitForm(PassRefPtr<FormSubmission>); // Schedules a form submission, which will eventually call load() in the target frame.
 
     // FIXME: This doesn't really belong here, since we don't load Frames synchronously.
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
@@ -179,12 +178,8 @@ public:
     void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
     SandboxFlags effectiveSandboxFlags() const;
 
-    bool checkIfFormActionAllowedByCSP(const KURL&) const;
-
     Frame* opener();
     void setOpener(Frame*);
-
-    void resetMultipleFormSubmissionProtection();
 
     void frameDetached();
 
@@ -198,7 +193,7 @@ public:
 
     FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
 
-    Frame* findFrameForNavigation(const AtomicString& name, Document* activeDocument = 0);
+    Frame* findFrameForNavigation(const AtomicString& name, Document* activeDocument);
 
     void applyUserAgent(ResourceRequest&);
 
@@ -230,6 +225,7 @@ private:
     bool prepareRequestForThisFrame(FrameLoadRequest&);
     void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
+    bool isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest&) const;
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
@@ -293,8 +289,6 @@ private:
     bool m_isComplete;
 
     bool m_containsPlugins;
-
-    KURL m_submittedFormURL;
 
     Timer<FrameLoader> m_checkTimer;
     bool m_shouldCallCheckCompleted;

@@ -209,70 +209,6 @@ void FrameLoader::setDefersLoading(bool defers)
     }
 }
 
-void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
-{
-    ASSERT(submission->method() == FormSubmission::PostMethod || submission->method() == FormSubmission::GetMethod);
-
-    // FIXME: Find a good spot for these.
-    ASSERT(submission->data());
-    ASSERT(submission->state());
-    ASSERT(!submission->state()->sourceDocument()->frame() || submission->state()->sourceDocument()->frame() == m_frame);
-
-    if (!m_frame->page())
-        return;
-
-    if (submission->action().isEmpty())
-        return;
-
-    if (isDocumentSandboxed(m_frame, SandboxForms)) {
-        // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        m_frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
-        return;
-    }
-
-    if (protocolIsJavaScript(submission->action())) {
-        if (!m_frame->document()->contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
-            return;
-        m_frame->script()->executeScriptIfJavaScriptURL(submission->action());
-        return;
-    }
-
-    Frame* targetFrame = findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
-    if (!targetFrame) {
-        if (!DOMWindow::allowPopUp(m_frame) && !ScriptController::processingUserGesture())
-            return;
-
-        targetFrame = m_frame;
-    } else
-        submission->clearTarget();
-
-    if (!targetFrame->page())
-        return;
-
-    // FIXME: We'd like to remove this altogether and fix the multiple form submission issue another way.
-
-    // We do not want to submit more than one form from the same page, nor do we want to submit a single
-    // form more than once. This flag prevents these from happening; not sure how other browsers prevent this.
-    // The flag is reset in each time we start handle a new mouse or key down event, and
-    // also in setView since this part may get reused for a page from the back/forward cache.
-    // The form multi-submit logic here is only needed when we are submitting a form that affects this frame.
-
-    // FIXME: Frame targeting is only one of the ways the submission could end up doing something other
-    // than replacing this frame's content, so this check is flawed. On the other hand, the check is hardly
-    // needed any more now that we reset m_submittedFormURL on each mouse or key down event.
-
-    if (m_frame->tree()->isDescendantOf(targetFrame)) {
-        if (m_submittedFormURL == submission->requestURL())
-            return;
-        m_submittedFormURL = submission->requestURL();
-    }
-
-    submission->setReferrer(outgoingReferrer());
-    submission->setOrigin(outgoingOrigin());
-
-    targetFrame->navigationScheduler()->scheduleFormSubmission(submission);
-}
-
 void FrameLoader::stopLoading()
 {
     m_isComplete = true; // to avoid calling completed() in finishedParsing()
@@ -559,14 +495,6 @@ String FrameLoader::outgoingOrigin() const
     return m_frame->document()->securityOrigin()->toString();
 }
 
-bool FrameLoader::checkIfFormActionAllowedByCSP(const KURL& url) const
-{
-    if (m_submittedFormURL.isEmpty())
-        return true;
-
-    return m_frame->document()->contentSecurityPolicy()->allowFormAction(url);
-}
-
 Frame* FrameLoader::opener()
 {
     return m_opener;
@@ -603,11 +531,6 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
     if (!allowed && reason == AboutToInstantiatePlugin)
         m_client->didNotAllowPlugins();
     return allowed;
-}
-
-void FrameLoader::resetMultipleFormSubmissionProtection()
-{
-    m_submittedFormURL = KURL();
 }
 
 void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, const String& title)
@@ -727,13 +650,23 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
     addHTTPOriginIfNeeded(request, referrerOrigin->toString());
 }
 
+bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest& request) const
+{
+    // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
+    // to match IE and Opera.
+    // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
+    if (!m_frame->tree()->parent() || ScriptController::processingUserGesture())
+        return false;
+    return request.formState() && request.formState()->formSubmissionTrigger() == SubmittedByJavaScript;
+}
+
 FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& request)
 {
     if (m_frame->tree()->parent() && !m_stateMachine.startedFirstRealLoad())
         return FrameLoadTypeInitialInChildFrame;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
-    if (request.lockBackForwardList())
+    if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
     if (!request.requester() && shouldTreatURLAsSameAsCurrent(request.resourceRequest().url()))
         return FrameLoadTypeSame;
@@ -794,8 +727,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    // The search for a target frame is done earlier in the case of form submission.
-    Frame* targetFrame = request.formState() ? 0 : findFrameForNavigation(request.frameName());
+    Frame* targetFrame = findFrameForNavigation(request.frameName(), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
     if (targetFrame && targetFrame != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader()->load(request);
@@ -1331,9 +1263,6 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         handleFallbackContent();
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
-        if (m_submittedFormURL == m_provisionalDocumentLoader->originalRequestCopy().url())
-            m_submittedFormURL = KURL();
-
         m_client->dispatchDidFailProvisionalLoad(error);
         if (loader != m_provisionalDocumentLoader)
             return;
@@ -1434,10 +1363,6 @@ bool FrameLoader::shouldClose()
         if (i == targetFrames.size())
             shouldClose = true;
     }
-
-    if (!shouldClose)
-        m_submittedFormURL = KURL();
-
     return shouldClose;
 }
 
@@ -1664,6 +1589,7 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
 
 Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
 {
+    ASSERT(activeDocument);
     Frame* frame = m_frame->tree()->find(name);
 
     // From http://www.whatwg.org/specs/web-apps/current-work/#seamlessLinks:
@@ -1685,16 +1611,8 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
         ASSERT(frame != m_frame);
     }
 
-    if (activeDocument) {
-        if (!activeDocument->canNavigate(frame))
-            return 0;
-    } else {
-        // FIXME: Eventually all callers should supply the actual activeDocument
-        // so we can call canNavigate with the right document.
-        if (!m_frame->document()->canNavigate(frame))
-            return 0;
-    }
-
+    if (!activeDocument->canNavigate(frame))
+        return 0;
     return frame;
 }
 

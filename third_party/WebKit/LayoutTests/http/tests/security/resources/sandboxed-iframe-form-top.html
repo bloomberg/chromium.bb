@@ -6,6 +6,10 @@
 <script>
 var f = document.getElementById('theForm');
 f.submit();
+setTimeout(function() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}, 0);
 </script>
 </body>
 </html>

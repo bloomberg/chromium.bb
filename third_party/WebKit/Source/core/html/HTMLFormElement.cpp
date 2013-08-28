@@ -45,6 +45,7 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
@@ -318,7 +319,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
 {
     FrameView* view = document()->view();
     Frame* frame = document()->frame();
-    if (!view || !frame)
+    if (!view || !frame || !frame->page())
         return;
 
     if (m_isSubmittingOrPreparingForSubmission) {
@@ -348,13 +349,38 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
 
-    frame->loader()->submitForm(FormSubmission::create(this, m_attributes, event, formSubmissionTrigger));
+    scheduleFormSubmission(FormSubmission::create(this, m_attributes, event, formSubmissionTrigger));
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
 
     m_shouldSubmit = false;
     m_isSubmittingOrPreparingForSubmission = false;
+}
+
+void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
+{
+    ASSERT(submission->method() == FormSubmission::PostMethod || submission->method() == FormSubmission::GetMethod);
+    ASSERT(submission->data());
+    ASSERT(submission->state());
+    if (submission->action().isEmpty())
+        return;
+    if (document()->isSandboxed(SandboxForms)) {
+        // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+        document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
+        return;
+    }
+
+    if (protocolIsJavaScript(submission->action())) {
+        if (!document()->contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
+            return;
+        document()->frame()->script()->executeScriptIfJavaScriptURL(submission->action());
+        return;
+    }
+    submission->setReferrer(document()->frame()->loader()->outgoingReferrer());
+    submission->setOrigin(document()->frame()->loader()->outgoingOrigin());
+
+    document()->frame()->navigationScheduler()->scheduleFormSubmission(submission);
 }
 
 void HTMLFormElement::reset()

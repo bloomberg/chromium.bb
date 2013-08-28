@@ -146,6 +146,8 @@ private:
 
     void submit(Event*, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger);
 
+    void scheduleFormSubmission(PassRefPtr<FormSubmission>);
+
     unsigned formElementIndexWithFormAttribute(Element*, unsigned rangeStart, unsigned rangeEnd);
     unsigned formElementIndex(FormAssociatedElement*);
 
