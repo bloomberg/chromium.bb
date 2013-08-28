@@ -257,8 +257,8 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         return;
     }
 
-    if (document->decoder())
-        m_encoding = document->decoder()->encoding();
+    if (document->encoding().isValid())
+        m_encoding = document->encoding();
 
     m_decodedURL = fullyDecodeString(m_documentURL.string(), m_encoding);
     if (m_decodedURL.find(isRequiredForInjection) == notFound)

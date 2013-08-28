@@ -351,11 +351,11 @@ public:
 
     String defaultCharset() const;
 
-    String inputEncoding() const { return Document::encoding(); }
-    String charset() const { return Document::encoding(); }
-    String characterSet() const { return Document::encoding(); }
+    String inputEncoding() const { return Document::encodingName(); }
+    String charset() const { return Document::encodingName(); }
+    String characterSet() const { return Document::encodingName(); }
 
-    String encoding() const;
+    String encodingName() const;
 
     void setCharset(const String&);
 
@@ -891,6 +891,9 @@ public:
     void setDecoder(PassRefPtr<TextResourceDecoder>);
     TextResourceDecoder* decoder() const { return m_decoder.get(); }
 
+    void setEncoding(const WTF::TextEncoding&);
+    const WTF::TextEncoding& encoding() const { return m_encoding; }
+
     String displayStringModifiedByEncoding(const String&) const;
     PassRefPtr<StringImpl> displayStringModifiedByEncoding(PassRefPtr<StringImpl>) const;
     void displayBufferModifiedByEncoding(LChar* buffer, unsigned len) const
@@ -1278,6 +1281,7 @@ private:
     String m_contentLanguage;
 
     RefPtr<TextResourceDecoder> m_decoder;
+    WTF::TextEncoding m_encoding;
 
     InheritedBool m_designMode;
 

@@ -26,7 +26,6 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/markup.h"
-#include "core/loader/TextResourceDecoder.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -88,10 +87,7 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
         frame->domWindow()->setDocument(result);
     }
 
-    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create(sourceMIMEType);
-    decoder->setEncoding(sourceEncoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(sourceEncoding), TextResourceDecoder::EncodingFromXMLHeader);
-    result->setDecoder(decoder.release());
-
+    result->setEncoding(sourceEncoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(sourceEncoding));
     result->setContent(documentSource);
 
     return result.release();

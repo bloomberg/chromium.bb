@@ -169,7 +169,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
             // Get encoding info.
             String xmlEncoding = param->document->xmlEncoding();
             if (xmlEncoding.isEmpty())
-                xmlEncoding = param->document->encoding();
+                xmlEncoding = param->document->encodingName();
             if (xmlEncoding.isEmpty())
                 xmlEncoding = UTF8Encoding().name();
             result.append("<?xml version=\"");
@@ -509,8 +509,7 @@ bool WebPageSerializerImpl::serialize()
 
         didSerialization = true;
 
-        String encoding = document->encoding();
-        const WTF::TextEncoding& textEncoding = encoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(encoding);
+        const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();
         String directoryName = url == mainURL ? m_localDirectoryName : "";
 
         SerializeDomParam param(url, textEncoding, document, directoryName);

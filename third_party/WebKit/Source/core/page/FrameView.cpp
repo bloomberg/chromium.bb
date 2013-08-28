@@ -1451,8 +1451,8 @@ bool FrameView::scrollToFragment(const KURL& url)
         return true;
 
     // Try again after decoding the ref, based on the document's encoding.
-    if (TextResourceDecoder* decoder = m_frame->document()->decoder())
-        return scrollToAnchor(decodeURLEscapeSequences(fragmentIdentifier, decoder->encoding()));
+    if (m_frame->document()->encoding().isValid())
+        return scrollToAnchor(decodeURLEscapeSequences(fragmentIdentifier, m_frame->document()->encoding()));
 
     return false;
 }

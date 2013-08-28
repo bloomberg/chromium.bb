@@ -281,7 +281,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
     if (selectedFrame->document()->loader())
-        data.frameEncoding = selectedFrame->document()->encoding();
+        data.frameEncoding = selectedFrame->document()->encodingName();
 
     // Send the frame and page URLs in any case.
     data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());

@@ -537,7 +537,7 @@ Document::~Document()
     if (this == topDocument())
         clearAXObjectCache();
 
-    m_decoder = 0;
+    setDecoder(PassRefPtr<TextResourceDecoder>());
 
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
@@ -1110,14 +1110,12 @@ void Document::setReadyState(ReadyState readyState)
     dispatchEvent(Event::create(eventNames().readystatechangeEvent));
 }
 
-String Document::encoding() const
+String Document::encodingName() const
 {
     // TextEncoding::domName() returns a char*, no need to allocate a new
     // String for it each time.
     // FIXME: We should fix TextEncoding to speak AtomicString anyway.
-    if (TextResourceDecoder* d = decoder())
-        return AtomicString(d->encoding().domName());
-    return String();
+    return AtomicString(m_encoding.domName());
 }
 
 String Document::defaultCharset() const
@@ -1132,6 +1130,7 @@ void Document::setCharset(const String& charset)
     if (!decoder())
         return;
     decoder()->setEncoding(charset, TextResourceDecoder::UserChosenEncoding);
+    setEncoding(m_decoder->encoding());
 }
 
 void Document::setContentLanguage(const String& language)
@@ -3942,6 +3941,12 @@ bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, S
 void Document::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
 {
     m_decoder = decoder;
+    setEncoding(m_decoder ? m_decoder->encoding() : WTF::TextEncoding());
+}
+
+void Document::setEncoding(const WTF::TextEncoding& encoding)
+{
+    m_encoding = encoding;
 }
 
 KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const

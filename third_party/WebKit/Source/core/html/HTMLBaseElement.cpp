@@ -88,9 +88,9 @@ KURL HTMLBaseElement::href() const
     if (attributeValue.isNull())
         return document()->url();
 
-    KURL url = !document()->decoder() ?
+    KURL url = document()->encoding().isValid() ?
         KURL(document()->url(), stripLeadingAndTrailingHTMLSpaces(attributeValue)) :
-        KURL(document()->url(), stripLeadingAndTrailingHTMLSpaces(attributeValue), document()->decoder()->encoding());
+        KURL(document()->url(), stripLeadingAndTrailingHTMLSpaces(attributeValue), document()->encoding());
 
     if (!url.isValid())
         return KURL();

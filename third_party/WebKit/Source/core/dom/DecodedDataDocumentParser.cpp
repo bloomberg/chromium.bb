@@ -40,7 +40,7 @@ class TitleEncodingFixer {
 public:
     explicit TitleEncodingFixer(Document* document)
         : m_document(document)
-        , m_firstEncoding(document->decoder()->encoding())
+        , m_firstEncoding(document->encoding())
     {
     }
 
@@ -52,7 +52,7 @@ public:
     // in the title bar.
     inline void fixTitleEncodingIfNeeded()
     {
-        if (m_firstEncoding == m_document->decoder()->encoding())
+        if (m_firstEncoding == m_document->encoding())
             return; // In the common case, the encoding doesn't change and there isn't any work to do.
         fixTitleEncoding();
     }
@@ -73,7 +73,7 @@ void TitleEncodingFixer::fixTitleEncoding()
         || !titleElement->textContent().containsOnlyLatin1())
         return; // Either we don't have a title yet or something bizzare as happened and we give up.
     CString originalBytes = titleElement->textContent().latin1();
-    OwnPtr<TextCodec> codec = newTextCodec(m_document->decoder()->encoding());
+    OwnPtr<TextCodec> codec = newTextCodec(m_document->encoding());
     String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
     titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
 }
@@ -93,6 +93,7 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
     TitleEncodingFixer encodingFixer(document());
 
     String decoded = document()->decoder()->decode(data, length);
+    document()->setEncoding(document()->decoder()->encoding());
 
     encodingFixer.fixTitleEncodingIfNeeded();
 
@@ -113,6 +114,7 @@ size_t DecodedDataDocumentParser::flush()
     if (!decoder)
         return 0;
     String remainingData = decoder->flush();
+    document()->setEncoding(document()->decoder()->encoding());
     if (remainingData.isEmpty())
         return 0;
 

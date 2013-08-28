@@ -83,7 +83,7 @@ WebSecurityOrigin WebDocument::securityOrigin() const
 
 WebString WebDocument::encoding() const
 {
-    return constUnwrap<Document>()->encoding();
+    return constUnwrap<Document>()->encodingName();
 }
 
 WebString WebDocument::contentLanguage() const
