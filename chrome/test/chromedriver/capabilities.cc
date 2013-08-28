@@ -201,7 +201,49 @@ Status ParseExcludeSwitches(const base::Value& option,
   return Status(kOk);
 }
 
-Status ParseDesktopChromeCapabilities(
+Status ParseString(std::string* to_set,
+                   const base::Value& option,
+                   Capabilities* capabilities) {
+  std::string str;
+  if (!option.GetAsString(&str))
+    return Status(kUnknownError, "value must be a string");
+  if (str.empty())
+    return Status(kUnknownError, "value cannot be empty");
+  *to_set = str;
+  return Status(kOk);
+}
+
+Status ParseUseExistingBrowser(const base::Value& option,
+                               Capabilities* capabilities) {
+  std::string server_addr;
+  if (!option.GetAsString(&server_addr))
+    return Status(kUnknownError, "must be 'host:port'");
+
+  std::vector<std::string> values;
+  base::SplitString(server_addr, ':', &values);
+  if (values.size() != 2)
+    return Status(kUnknownError, "must be 'host:port'");
+
+  // Ignoring host input for now, hardcoding to 127.0.0.1.
+  base::StringToInt(values[1], &capabilities->existing_browser_port);
+  if (capabilities->existing_browser_port <= 0)
+    return Status(kUnknownError, "port must be >= 0");
+  return Status(kOk);
+}
+
+Status ParseLoggingPrefs(const base::Value& option,
+                         Capabilities* capabilities) {
+  const base::DictionaryValue* logging_prefs_dict = NULL;
+  if (!option.GetAsDictionary(&logging_prefs_dict))
+    return Status(kUnknownError, "'loggingPrefs' must be a dictionary");
+
+  // TODO(klm): verify log types.
+  // TODO(klm): verify log levels.
+  capabilities->logging_prefs.reset(logging_prefs_dict->DeepCopy());
+  return Status(kOk);
+}
+
+Status ParseChromeOptions(
     Log* log,
     const base::Value& capability,
     Capabilities* capabilities) {
@@ -209,18 +251,34 @@ Status ParseDesktopChromeCapabilities(
   if (!capability.GetAsDictionary(&chrome_options))
     return Status(kUnknownError, "'chromeOptions' must be a dictionary");
 
-  std::map<std::string, Parser> parser_map;
+  bool is_android = chrome_options->HasKey("androidPackage");
+  bool is_existing = chrome_options->HasKey("useExistingBrowser");
 
-  parser_map["detach"] = base::Bind(&ParseDetach);
-  parser_map["loadAsync"] =
-      base::Bind(&IgnoreDeprecatedOption, log, "loadAsync");
-  parser_map["binary"] = base::Bind(&ParseChromeBinary);
-  parser_map["logPath"] = base::Bind(&ParseLogPath);
-  parser_map["args"] = base::Bind(&ParseArgs, false);
-  parser_map["prefs"] = base::Bind(&ParsePrefs);
-  parser_map["localState"] = base::Bind(&ParseLocalState);
-  parser_map["extensions"] = base::Bind(&ParseExtensions);
-  parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
+  std::map<std::string, Parser> parser_map;
+  if (is_android) {
+    parser_map["androidActivity"] =
+        base::Bind(&ParseString, &capabilities->android_activity);
+    parser_map["androidDeviceSerial"] =
+        base::Bind(&ParseString, &capabilities->android_device_serial);
+    parser_map["androidPackage"] =
+        base::Bind(&ParseString, &capabilities->android_package);
+    parser_map["androidProcess"] =
+        base::Bind(&ParseString, &capabilities->android_process);
+    parser_map["args"] = base::Bind(&ParseArgs, true);
+  } else if (is_existing) {
+    parser_map["useExistingBrowser"] = base::Bind(&ParseUseExistingBrowser);
+  } else {
+    parser_map["args"] = base::Bind(&ParseArgs, false);
+    parser_map["binary"] = base::Bind(&ParseChromeBinary);
+    parser_map["detach"] = base::Bind(&ParseDetach);
+    parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
+    parser_map["extensions"] = base::Bind(&ParseExtensions);
+    parser_map["loadAsync"] =
+        base::Bind(&IgnoreDeprecatedOption, log, "loadAsync");
+    parser_map["localState"] = base::Bind(&ParseLocalState);
+    parser_map["logPath"] = base::Bind(&ParseLogPath);
+    parser_map["prefs"] = base::Bind(&ParsePrefs);
+  }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
        it.Advance()) {
@@ -230,118 +288,7 @@ Status ParseDesktopChromeCapabilities(
     }
     Status status = parser_map[it.key()].Run(it.value(), capabilities);
     if (status.IsError())
-      return status;
-  }
-  return Status(kOk);
-}
-
-Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
-                                      Capabilities* capabilities) {
-  const base::Value* chrome_options = NULL;
-  if (desired_caps.Get("chromeOptions", &chrome_options)) {
-    const base::DictionaryValue* chrome_options_dict = NULL;
-    if (!chrome_options->GetAsDictionary(&chrome_options_dict))
-      return Status(kUnknownError, "'chromeOptions' must be a dictionary");
-
-    const base::Value* android_package_value;
-    if (chrome_options_dict->Get("androidPackage", &android_package_value)) {
-      if (!android_package_value->GetAsString(&capabilities->android_package) ||
-          capabilities->android_package.empty()) {
-        return Status(kUnknownError,
-                      "'androidPackage' must be a non-empty string");
-      }
-
-      const base::Value* device_serial_value;
-      if (chrome_options_dict->Get("androidDeviceSerial",
-                                   &device_serial_value)) {
-        if (!device_serial_value->GetAsString(
-            &capabilities->android_device_serial) ||
-            capabilities->android_device_serial.empty()) {
-          return Status(kUnknownError,
-                        "'androidDeviceSerial' must be a non-empty string");
-        }
-      }
-
-      const base::Value* activity_value;
-      if (chrome_options_dict->Get("androidActivity",
-                                   &activity_value)) {
-        if (!activity_value->GetAsString(
-            &capabilities->android_activity) ||
-            capabilities->android_activity.empty()) {
-          return Status(kUnknownError,
-                        "'androidActivity' must be a non-empty string");
-        }
-      }
-
-      const base::Value* process_value;
-      if (chrome_options_dict->Get("androidProcess",
-                                   &process_value)) {
-        if (!process_value->GetAsString(
-            &capabilities->android_process) ||
-            capabilities->android_process.empty()) {
-          return Status(kUnknownError,
-                        "'androidProcess' must be a non-empty string");
-        }
-      }
-
-      const base::Value* args_value;
-      if (chrome_options_dict->Get("args", &args_value))
-        return ParseArgs(true, *args_value, capabilities);
-    }
-  }
-  return Status(kOk);
-}
-
-Status ParseExistingBrowserCapabilities(
-    const base::DictionaryValue& desired_caps,
-    Capabilities* capabilities) {
-  const base::Value* chrome_options = NULL;
-  if (desired_caps.Get("chromeOptions", &chrome_options)) {
-    const base::DictionaryValue* chrome_options_dict = NULL;
-    if (!chrome_options->GetAsDictionary(&chrome_options_dict))
-      return Status(kUnknownError, "'chromeOptions' must be a dictionary");
-
-    // UseExistingBrowser will be formatted as host:port.
-    const base::Value* existing_browser_value;
-    if (!chrome_options_dict->Get("useExistingBrowser",
-        &existing_browser_value)) {
-      return Status(kOk);
-    }
-
-    std::string existing_pair;
-    if (!existing_browser_value->GetAsString(&existing_pair)) {
-      return Status(kUnknownError,
-                    "'useExistingBrowser' must be host:port");
-    }
-
-    std::vector<std::string> values;
-    base::SplitString(existing_pair, ':', &values);
-    if (values.size() != 2) {
-      return Status(kUnknownError,
-                    "'useExistingBrowser' must be formatted as host:port");
-    }
-
-    // Ignoring host input for now, hardcoding to 127.0.0.1.
-    base::StringToInt(values[1], &capabilities->existing_browser_port);
-    if (capabilities->existing_browser_port <= 0) {
-      return Status(kUnknownError,
-                    "existing browser port must be greater than 0");
-    }
-  }
-  return Status(kOk);
-}
-
-Status ParseLoggingPrefs(const base::DictionaryValue& desired_caps,
-                         Capabilities* capabilities) {
-  const base::Value* logging_prefs = NULL;
-  if (desired_caps.Get("loggingPrefs", &logging_prefs)) {
-    const base::DictionaryValue* logging_prefs_dict = NULL;
-    if (!logging_prefs->GetAsDictionary(&logging_prefs_dict)) {
-      return Status(kUnknownError, "'loggingPrefs' must be a dictionary");
-    }
-    // TODO(klm): verify log types.
-    // TODO(klm): verify log levels.
-    capabilities->logging_prefs.reset(logging_prefs_dict->DeepCopy());
+      return Status(kUnknownError, "cannot parse " + it.key(), status);
   }
   return Status(kOk);
 }
@@ -366,31 +313,19 @@ bool Capabilities::IsExistingBrowser() const {
 Status Capabilities::Parse(
     const base::DictionaryValue& desired_caps,
     Log* log) {
-  Status status = ParseLoggingPrefs(desired_caps, this);
-  if (status.IsError())
-    return status;
-  status = ParseAndroidChromeCapabilities(desired_caps, this);
-  if (status.IsError())
-    return status;
-  if (IsAndroid())
-    return Status(kOk);
-  status = ParseExistingBrowserCapabilities(desired_caps, this);
-  if (status.IsError())
-    return status;
-  if (IsExistingBrowser())
-    return Status(kOk);
-
   std::map<std::string, Parser> parser_map;
+  parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions, log);
+  parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
   parser_map["proxy"] = base::Bind(&ParseProxy);
-  parser_map["chromeOptions"] =
-      base::Bind(&ParseDesktopChromeCapabilities, log);
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();
        it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;
     if (desired_caps.Get(it->first, &capability)) {
-      status = it->second.Run(*capability, this);
-      if (status.IsError())
-        return status;
+      Status status = it->second.Run(*capability, this);
+      if (status.IsError()) {
+        return Status(
+            kUnknownError, "cannot parse capability: " + it->first, status);
+      }
     }
   }
   return Status(kOk);
