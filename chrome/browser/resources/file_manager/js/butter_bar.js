@@ -8,14 +8,15 @@
  * Butter bar is shown on top of the file list and is used to show the copy
  * progress and other messages.
  * @param {HTMLElement} dialogDom FileManager top-level div.
- * @param {FileCopyManagerWrapper} copyManager The copy manager.
+ * @param {FileOperationManagerWrapper} fileOperationManager The operation
+ *     manager.
  * @constructor
  */
-function ButterBar(dialogDom, copyManager) {
+function ButterBar(dialogDom, fileOperationManager) {
   this.dialogDom_ = dialogDom;
   this.butter_ = this.dialogDom_.querySelector('#butter-bar');
   this.document_ = this.butter_.ownerDocument;
-  this.copyManager_ = copyManager;
+  this.fileOperationManager_ = fileOperationManager;
   this.hideTimeout_ = null;
   this.showTimeout_ = null;
   this.lastShowTime_ = 0;
@@ -26,10 +27,10 @@ function ButterBar(dialogDom, copyManager) {
   this.alert_ = new ErrorDialog(this.dialogDom_);
 
   this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
-  this.copyManager_.addEventListener(
+  this.fileOperationManager_.addEventListener(
       'copy-progress', this.onCopyProgressBound_);
   this.onDeleteBound_ = this.onDelete_.bind(this);
-  this.copyManager_.addEventListener('delete', this.onDeleteBound_);
+  this.fileOperationManager_.addEventListener('delete', this.onDeleteBound_);
 }
 
 /**
@@ -62,10 +63,10 @@ ButterBar.Mode = {
  * invocation.
  */
 ButterBar.prototype.dispose = function() {
-  // Unregister listeners from FileCopyManager.
-  this.copyManager_.removeEventListener(
+  // Unregister listeners from FileOperationManager.
+  this.fileOperationManager_.removeEventListener(
       'copy-progress', this.onCopyProgressBound_);
-  this.copyManager_.removeEventListener('delete', this.onDeleteBound_);
+  this.fileOperationManager_.removeEventListener('delete', this.onDeleteBound_);
 };
 
 /**
@@ -249,7 +250,7 @@ ButterBar.prototype.transferType_ = function() {
  * Set up butter bar for showing copy progress.
  *
  * @param {Object} progress Copy status object created by
- *     FileCopyManager.getStatus().
+ *     FileOperationManager.getStatus().
  * @private
  */
 ButterBar.prototype.showProgress_ = function(progress) {
@@ -270,14 +271,15 @@ ButterBar.prototype.showProgress_ = function(progress) {
     this.update_(progressString, options);
   } else {
     options.actions[ButterBar.ACTION_X] =
-        this.copyManager_.requestCancel.bind(this.copyManager_);
+        this.fileOperationManager_.requestCancel.bind(
+            this.fileOperationManager_);
     this.show(ButterBar.Mode.COPY, progressString, options);
   }
 };
 
 /**
  * 'copy-progress' event handler. Show progress or an appropriate message.
- * @param {cr.Event} event A 'copy-progress' event from FileCopyManager.
+ * @param {cr.Event} event A 'copy-progress' event from FileOperationManager.
  * @private
  */
 ButterBar.prototype.onCopyProgress_ = function(event) {
@@ -340,7 +342,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
 
 /**
  * 'delete' event handler. Shows information about deleting files.
- * @param {cr.Event} event A 'delete' event from FileCopyManager.
+ * @param {cr.Event} event A 'delete' event from FileOperationManager.
  * @private
  */
 ButterBar.prototype.onDelete_ = function(event) {

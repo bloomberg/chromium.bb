@@ -523,7 +523,7 @@ function onContextMenuClicked(info) {
  */
 function maybeCloseBackgroundPage() {
   if (Object.keys(appWindows).length === 0 &&
-      !FileCopyManager.getInstance().hasQueuedTasks())
+      !FileOperationManager.getInstance().hasQueuedTasks())
     close();
 }
 

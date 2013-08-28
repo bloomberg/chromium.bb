@@ -534,7 +534,7 @@ Commands.zipSelectionCommand = {
   execute: function(event, fileManager, directoryModel) {
     var dirEntry = directoryModel.getCurrentDirEntry();
     var selectionEntries = fileManager.getSelection().entries;
-    fileManager.copyManager_.zipSelection(dirEntry, selectionEntries);
+    fileManager.fileOperationManager_.zipSelection(dirEntry, selectionEntries);
   },
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();

@@ -224,7 +224,7 @@
       "scripts": [
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
-        "js/file_copy_manager.js",
+        "js/file_operation_manager.js",
         "js/async_util.js",
         "js/path_util.js",
         "js/util.js",

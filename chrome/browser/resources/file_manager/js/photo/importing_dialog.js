@@ -7,16 +7,17 @@
 /**
  * ImportingDialog manages the import process (which is really a copying).
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
- * @param {FileCopyManager} copyManager Copy manager isntance.
+ * @param {FileOperationManager} fileOperationManager File operation manager
+ *     isntance.
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {number=} opt_parentWindowId Id of the parent window.
  * @constructor
  */
 function ImportingDialog(
-    parentNode, copyManager, metadataCache, opt_parentWindowId) {
+    parentNode, fileOperationManager, metadataCache, opt_parentWindowId) {
   cr.ui.dialogs.BaseDialog.call(this, parentNode);
   this.parentWindowId_ = opt_parentWindowId;
-  this.copyManager_ = copyManager;
+  this.fileOperationManager_ = fileOperationManager;
   this.metadataCache_ = metadataCache;
   this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
 }
@@ -79,7 +80,7 @@ ImportingDialog.prototype.show = function(entries, move) {
   this.move_ = move;
 
   this.progress_.querySelector('.progress-track').style.width = '0';
-  this.copyManager_.addEventListener('copy-progress',
+  this.fileOperationManager_.addEventListener('copy-progress',
       this.onCopyProgressBound_);
 
   this.previewEntry_(0);
@@ -91,7 +92,7 @@ ImportingDialog.prototype.show = function(entries, move) {
  */
 ImportingDialog.prototype.start = function(destination) {
   this.destination_ = destination;
-  this.copyManager_.paste(
+  this.fileOperationManager_.paste(
       this.entries_.map(function(e) { return e.fullPath }),
       this.destination_.fullPath,
       this.move_);
@@ -119,7 +120,7 @@ ImportingDialog.prototype.previewEntry_ = function(index) {
  * @param {function()=} opt_onHide Completion callback.
  */
 ImportingDialog.prototype.hide = function(opt_onHide) {
-  this.copyManager_.removeEventListener('copy-progress',
+  this.fileOperationManager_.removeEventListener('copy-progress',
       this.onCopyProgressBound_);
   cr.ui.dialogs.BaseDialog.prototype.hide.call(this, opt_onHide);
 };
@@ -129,7 +130,7 @@ ImportingDialog.prototype.hide = function(opt_onHide) {
  * @private
  */
 ImportingDialog.prototype.onCancelClick_ = function() {
-  this.copyManager_.requestCancel();
+  this.fileOperationManager_.requestCancel();
   this.hide();
 };
 
@@ -175,14 +176,14 @@ ImportingDialog.prototype.onContainerKeyDown_ = function(event) {
 
 /**
  * 'copy-progress' event handler. Show progress.
- * @param {cr.Event} event A 'copy-progress' event from FileCopyManager.
+ * @param {cr.Event} event A 'copy-progress' event from FileOperationManager.
  * @private
  */
 ImportingDialog.prototype.onCopyProgress_ = function(event) {
   switch (event.reason) {
     case 'BEGIN':
     case 'PROGRESS':
-      var progress = this.copyManager_.getStatus().percentage;
+      var progress = this.fileOperationManager_.getStatus().percentage;
       this.progress_.querySelector('.progress-track').style.width =
           (progress * 100) + '%';
       var index = Math.round(this.entries_.length * progress);

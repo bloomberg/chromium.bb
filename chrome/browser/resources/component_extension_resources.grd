@@ -70,7 +70,7 @@
         <include name="IDR_FILE_MANAGER_ACTION_CHOICE_SCRIPT_JS" file="file_manager/js/action_choice_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <!-- Scripts working in background page. -->
-        <include name="IDR_FILE_MANAGER_FILE_COPY_MANAGER_JS" file="file_manager/js/file_copy_manager.js" flattenhtml="false" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_FILE_OPERATION_MANAGER_JS" file="file_manager/js/file_operation_manager.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/js/async_util.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PATH_UTIL_JS" file="file_manager/js/path_util.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/js/util.js" flattenhtml="false" type="BINDATA" />
