@@ -6,7 +6,6 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
-    '../media/media.gyp:media',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
@@ -395,6 +394,7 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
+        '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
         '../third_party/WebKit/public/blink.gyp:blink_minimal',
         '../ui/gl/gl.gyp:gl',
