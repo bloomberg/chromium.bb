@@ -588,39 +588,29 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
     // src property to the empty string. Instead, we want to simply restore
     // the src attribute back to its old value.
     if (new_value.empty()) {
-      RemoveProperty(bindings, np_obj);
       return true;
     }
     std::string old_value = bindings->instance()->GetSrcAttribute();
-    bool guest_crashed = bindings->instance()->guest_crashed();
-    if ((old_value != new_value) || guest_crashed) {
-      // If the new value was empty then we're effectively resetting the
-      // attribute to the old value here. This will be picked up by <webview>'s
-      // mutation observer and will restore the src attribute after it has been
-      // removed.
-      UpdateDOMAttribute(bindings, new_value);
-      std::string error_message;
-      if (!bindings->instance()->ParseSrcAttribute(&error_message)) {
-        // Reset to old value on error.
-        UpdateDOMAttribute(bindings, old_value);
-        // Exceptions must be set as the last operation before returning to
-        // script.
-        WebBindings::setException(
-            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-        return false;
-      }
+    // If the new value was empty then we're effectively resetting the
+    // attribute to the old value here. This will be picked up by <webview>'s
+    // mutation observer and will restore the src attribute after it has been
+    // removed.
+    UpdateDOMAttribute(bindings, new_value);
+    std::string error_message;
+    if (!bindings->instance()->ParseSrcAttribute(&error_message)) {
+      // Reset to old value on error.
+      UpdateDOMAttribute(bindings, old_value);
+      // Exceptions must be set as the last operation before returning to
+      // script.
+      WebBindings::setException(
+          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+      return false;
     }
     return true;
   }
   virtual void RemoveProperty(BrowserPluginBindings* bindings,
                               NPObject* np_obj) OVERRIDE {
-    std::string old_value = bindings->instance()->GetSrcAttribute();
-    if (old_value.empty())
-      return;
-    // Remove the DOM attribute to trigger the mutation observer when it is
-    // restored to its original value again.
     bindings->instance()->RemoveDOMAttribute(name());
-    UpdateDOMAttribute(bindings, old_value);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);

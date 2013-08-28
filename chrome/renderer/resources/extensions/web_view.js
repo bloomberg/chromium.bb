@@ -25,7 +25,7 @@ var webView = require('binding').Binding.create('webview').generate();
 var secret = {};
 
 /** @type {Array.<string>} */
-var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
+var WEB_VIEW_ATTRIBUTES = ['name', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];
 
 var webViewInstanceIdCounter = 0;
@@ -61,8 +61,15 @@ var WEB_VIEW_EXT_EVENTS = {
       webview.currentEntryIndex_ = event.currentEntryIndex;
       webview.entryCount_ = event.entryCount;
       webview.processId_ = event.processId;
-      if (event.isTopLevel) {
-        webview.browserPluginNode_.setAttribute('src', event.url);
+      var oldValue = webview.webviewNode_.getAttribute('src');
+      var newValue = event.url;
+      if (event.isTopLevel && (oldValue != newValue)) {
+        // Touching the src attribute triggers a navigation. To avoid
+        // triggering a page reload on every guest-initiated navigation,
+        // we use the flag ignoreNextSrcAttributeChange_ to ignore src attribute
+        // changes that are guest-initiated.
+        webview.ignoreNextSrcAttributeChange_ = true;
+        webview.webviewNode_.setAttribute('src', newValue);
       }
       webview.webviewNode_.dispatchEvent(webviewEvent);
     },
@@ -159,7 +166,8 @@ WebViewInternal.prototype.createBrowserPluginNode_ = function() {
     }.bind(this)
   });
 
-  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
+  var ALL_ATTRIBUTES = WEB_VIEW_ATTRIBUTES.concat(['src']);
+  $Array.forEach(ALL_ATTRIBUTES, function(attributeName) {
     // Only copy attributes that have been assigned values, rather than copying
     // a series of undefined attributes to BrowserPlugin.
     if (this.webviewNode_.hasAttribute(attributeName)) {
@@ -299,6 +307,7 @@ WebViewInternal.prototype.setupWebviewNodeProperties_ = function() {
     'contentWindow is not available at this time. It will become available ' +
         'when the page has finished loading.';
 
+  var self = this;
   var browserPluginNode = this.browserPluginNode_;
   // Expose getters and setters for the attributes.
   $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
@@ -323,6 +332,20 @@ WebViewInternal.prototype.setupWebviewNodeProperties_ = function() {
       enumerable: true
     });
   }, this);
+
+  // <webview> src does not quite behave the same as BrowserPlugin src, and so
+  // we don't simply keep the two in sync.
+  this.src_ = this.webviewNode_.getAttribute('src');
+  Object.defineProperty(this.webviewNode_, 'src', {
+    get: function() {
+      return self.src_;
+    },
+    set: function(value) {
+      self.webviewNode_.setAttribute('src', value);
+    },
+    // No setter.
+    enumerable: true
+  });
 
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
@@ -364,13 +387,15 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver_ =
   // where the webview guest has crashed and navigating to the same address
   // spawns off a new process.
   var self = this;
-  var observer = new MutationObserver(function(mutations) {
+  this.srcObserver_ = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
+      var oldValue = mutation.oldValue;
       var newValue = self.webviewNode_.getAttribute(mutation.attributeName);
-      if (mutation.oldValue != newValue) {
+      if (oldValue != newValue) {
         return;
       }
-      self.handleWebviewAttributeMutation_(mutation.attributeName, newValue);
+      self.handleWebviewAttributeMutation_(
+          mutation.attributeName, oldValue, newValue);
     });
   });
   var params = {
@@ -378,19 +403,43 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver_ =
     attributeOldValue: true,
     attributeFilter: ['src']
   };
-  observer.observe(this.webviewNode_, params);
+  this.srcObserver_.observe(this.webviewNode_, params);
 };
 
 /**
  * @private
  */
 WebViewInternal.prototype.handleWebviewAttributeMutation_ =
-      function(name, newValue) {
+      function(name, oldValue, newValue) {
   // This observer monitors mutations to attributes of the <webview> and
   // updates the BrowserPlugin properties accordingly. In turn, updating
   // a BrowserPlugin property will update the corresponding BrowserPlugin
   // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
   // details.
+  if (name == 'src') {
+    // We treat null attribute (attribute removed) and the empty string as
+    // one case.
+    oldValue = oldValue || '';
+    newValue = newValue || '';
+    // Once we have navigated, we don't allow clearing the src attribute.
+    // Once <webview> enters a navigated state, it cannot be return back to a
+    // placeholder state.
+    if (newValue == '' && oldValue != '') {
+      // src attribute changes normally initiate a navigation. We suppress
+      // the next src attribute handler call to avoid reloading the page
+      // on every guest-initiated navigation.
+      this.ignoreNextSrcAttributeChange_ = true;
+      this.webviewNode_.setAttribute('src', oldValue);
+      return;
+    }
+    this.src_ = newValue;
+    if (this.ignoreNextSrcAttributeChange_) {
+      // Don't allow the src mutation observer to see this change.
+      this.srcObserver_.takeRecords();
+      this.ignoreNextSrcAttributeChange_ = false;
+      return;
+    }
+  }
   if (this.browserPluginNode_.hasOwnProperty(name)) {
     this.browserPluginNode_[name] = newValue;
   } else {
@@ -402,7 +451,7 @@ WebViewInternal.prototype.handleWebviewAttributeMutation_ =
  * @private
  */
 WebViewInternal.prototype.handleBrowserPluginAttributeMutation_ =
-    function(name, oldValue, newValue) {
+    function(name, newValue) {
   // This observer monitors mutations to attributes of the BrowserPlugin and
   // updates the <webview> attributes accordingly.
   // |newValue| is null if the attribute |name| has been removed.
@@ -414,7 +463,7 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation_ =
     // again (such as navigation when crashed), this could end up in an infinite
     // loop. Thus, we avoid this loop by only updating the <webview> attribute
     // if the BrowserPlugin attributes differs from it.
-    if (newValue != oldValue) {
+    if (newValue != this.webviewNode_.getAttribute(name)) {
       this.webviewNode_.setAttribute(name, newValue);
     }
   } else {
@@ -697,7 +746,7 @@ function registerBrowserPluginElement() {
       return;
     }
     var internal = this.internal_(secret);
-    internal.handleBrowserPluginAttributeMutation_(name, oldValue, newValue);
+    internal.handleBrowserPluginAttributeMutation_(name, newValue);
   };
 
   WebViewInternal.BrowserPlugin =
@@ -719,7 +768,7 @@ function registerWebViewElement() {
 
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
     var internal = this.internal_(secret);
-    internal.handleWebviewAttributeMutation_(name, newValue);
+    internal.handleWebviewAttributeMutation_(name, oldValue, newValue);
   };
 
   proto.back = function() {

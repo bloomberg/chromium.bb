@@ -525,6 +525,56 @@ function testTerminateAfterExit() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that multiple consecutive changes to the <webview> src
+// attribute will cause a navigation.
+function testNavOnConsecutiveSrcAttributeChanges() {
+  var testPage1 = 'data:text/html,test page 1';
+  var testPage2 = 'data:text/html,test page 2';
+  var testPage3 = 'data:text/html,test page 3';
+  var webview = new WebView();
+  webview.partition = arguments.callee.name;
+  var loadCommitCount = 0;
+  webview.addEventListener('loadcommit', function(e) {
+    if (e.url == testPage3) {
+      embedder.test.succeed();
+    }
+    loadCommitCount++;
+    if (loadCommitCount > 3) {
+      embedder.test.fail();
+    }
+  });
+  document.body.appendChild(webview);
+  webview.src = testPage1;
+  webview.src = testPage2;
+  webview.src = testPage3;
+}
+
+// This test verifies that we can set the <webview> src multiple times and the
+// changes will cause a navigation.
+function testNavOnSrcAttributeChange() {
+  var testPage1 = 'data:text/html,test page 1';
+  var testPage2 = 'data:text/html,test page 2';
+  var testPage3 = 'data:text/html,test page 3';
+  var tests = [testPage1, testPage2, testPage3];
+  var webview = new WebView();
+  webview.partition = arguments.callee.name;
+  var loadCommitCount = 0;
+  webview.addEventListener('loadcommit', function(evt) {
+    var success = tests.indexOf(evt.url) > -1;
+    embedder.test.assertTrue(success);
+    ++loadCommitCount;
+    if (loadCommitCount == tests.length) {
+      embedder.test.succeed();
+    } else if (loadCommitCount > tests.length) {
+      embedder.test.fail();
+    } else {
+      webview.src = tests[loadCommitCount];
+    }
+  });
+  webview.src = tests[0];
+  document.body.appendChild(webview);
+}
+
 // This test verifies that assigning the src attribute the same value it had
 // prior to a crash spawns off a new guest process.
 function testAssignSrcAfterCrash() {
@@ -544,6 +594,30 @@ function testAssignSrcAfterCrash() {
     webview.setAttribute('src', 'data:text/html,test page');
   });
   webview.setAttribute('src', 'data:text/html,test page');
+  document.body.appendChild(webview);
+}
+
+// This test verifies that <webview> reloads the page if the src attribute is
+// assigned the same value.
+function testReassignSrcAttribute() {
+  var dataUrl = 'data:text/html,test page';
+  var webview = new WebView();
+  webview.partition = arguments.callee.name;
+
+  var loadStopCount = 0;
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(dataUrl, webview.getAttribute('src'));
+    ++loadStopCount;
+    console.log('[' + loadStopCount + '] loadstop called');
+    if (loadStopCount == 3) {
+      embedder.test.succeed();
+    } else if (loadStopCount > 3) {
+      embedder.test.fail();
+    } else {
+      webview.src = dataUrl;
+    }
+  });
+  webview.src = dataUrl;
   document.body.appendChild(webview);
 }
 
@@ -580,7 +654,7 @@ function testBrowserPluginNotAllowed() {
   var objectElement = document.getElementById('object-plugin');
   // Check that bindings are not registered.
   embedder.test.assertTrue(
-      objectElement['-internal-setPermission'] === undefined);
+      objectElement['-internal-attach'] === undefined);
   embedder.test.succeed();
 }
 
@@ -909,6 +983,10 @@ embedder.test.testList = {
   'testExecuteScript': testExecuteScript,
   'testTerminateAfterExit': testTerminateAfterExit,
   'testAssignSrcAfterCrash': testAssignSrcAfterCrash,
+  'testNavOnConsecutiveSrcAttributeChanges':
+      testNavOnConsecutiveSrcAttributeChanges,
+  'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,
+  'testReassignSrcAttribute': testReassignSrcAttribute,
   'testRemoveSrcAttribute': testRemoveSrcAttribute,
   'testBrowserPluginNotAllowed': testBrowserPluginNotAllowed,
   'testNewWindow': testNewWindow,

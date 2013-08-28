@@ -677,8 +677,30 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestNavOnConsecutiveSrcAttributeChanges) {
+  TestHelper("testNavOnConsecutiveSrcAttributeChanges",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
+  TestHelper("testNavOnSrcAttributeChange",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
   TestHelper("testRemoveSrcAttribute",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReassignSrcAttribute) {
+  TestHelper("testReassignSrcAttribute",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
              "web_view/shim");
