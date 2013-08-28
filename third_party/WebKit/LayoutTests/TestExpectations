@@ -1247,3 +1247,5 @@ crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-fil
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-color-matrix.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-mix-color-negative.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux Debug SnowLeopard Lion ] css3/filters/custom/custom-filter-clamp-css-mix-color.html [ ImageOnlyFailure Timeout Pass ]
+
+crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
