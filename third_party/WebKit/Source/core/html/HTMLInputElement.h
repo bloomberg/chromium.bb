@@ -40,6 +40,7 @@ class HTMLImageLoader;
 class HTMLOptionElement;
 class Icon;
 class InputType;
+class InputTypeView;
 class KURL;
 class ListAttributeTargetObserver;
 struct DateTimeChooserParameters;
@@ -402,6 +403,7 @@ private:
     bool m_canReceiveDroppedFiles : 1;
     bool m_hasTouchEventHandler : 1;
     RefPtr<InputType> m_inputType;
+    RefPtr<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.
