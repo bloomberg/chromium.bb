@@ -62,8 +62,6 @@ class PrintPreviewTestBrowserWindow
     return NULL;
   }
 
-  Browser* browser_;
-
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewTestBrowserWindow);
 };
 }  // namespace
