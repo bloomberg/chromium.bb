@@ -66,8 +66,8 @@ var MainView = (function() {
             if (process['type'].match(/^Tab/)) {
               // Append each tab's history.
               for (var j = 0; j < process['history'].length; ++j) {
-                value += '<dl><dt>Hisotry ' + j + ':' +
-                    JoinLinks(process['history'][j]);
+                value += '<dl><dt>History ' + j + ':' +
+                    JoinLinks(process['history'][j]) + '</dl>';
               }
             } else {
               value += '<br>' + process['titles'].join('<br>');
@@ -96,7 +96,8 @@ var MainView = (function() {
      */
     updateExtensions: function(extensions) {
       // Remove existing information.
-      var size = $('extension-view').getElementsByClassName('extension').length;
+      var size =
+          $('extension-view').getElementsByClassName('extension').length;
       for (var i = 0; i < size; ++i) {
         $('extension-view').deleteRow(-1);
       }
