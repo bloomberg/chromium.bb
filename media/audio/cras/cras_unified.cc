@@ -168,7 +168,6 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   if (is_playing_)
     return;
 
-  LOG(ERROR) << "Unified Start";
   // Prepare |audio_format| and |stream_params| for the stream we
   // will create.
   cras_audio_format* audio_format = cras_audio_format_create(
