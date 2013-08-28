@@ -990,7 +990,7 @@ crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure
 crbug.com/248938 [ Win Linux ] virtual/threaded/animations/change-transform-style-during-animation.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-list-style-image.html [ Pass Timeout ]
 crbug.com/248938 [ Mac Release ] virtual/threaded/animations/fill-mode-missing-from-to-keyframes.html [ Pass Timeout ]
-crbug.com/248938 [ Mac ] virtual/threaded/animations/fill-mode-iteration-count-non-integer.html [ Pass Timeout ]
+crbug.com/248938 [ Mac Linux XP ] virtual/threaded/animations/fill-mode-iteration-count-non-integer.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/multiple-animations.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/negative-delay.html [ Pass Timeout ]
