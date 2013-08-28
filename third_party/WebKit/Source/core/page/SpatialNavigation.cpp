@@ -439,7 +439,7 @@ Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusDirection direc
         if (parent->isDocumentNode())
             parent = toDocument(parent)->document()->frame()->ownerElement();
         else
-            parent = parent->parentNode();
+            parent = parent->parentOrShadowHostNode();
     } while (parent && !canScrollInDirection(parent, direction) && !parent->isDocumentNode());
 
     return parent;
