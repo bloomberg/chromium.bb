@@ -11,6 +11,7 @@ if not env.Bit('bitcode') or env.Bit('pnacl_generate_pexe'):
 tests = []
 bc_env = env.Clone()
 bc_env.Replace(CCFLAGS=[], LINKFLAGS=[])
+bc_env.Append(EXTRA_LIBS=['${NONIRT_LIBS}'])
 native_env = env.Clone()
 native_env.Replace(CCFLAGS=[], LINKFLAGS=[])
 native_env.PNaClForceNative()
@@ -49,59 +50,58 @@ both_env = native_env.Clone()
 # flags like -Wl,--start-group (also the LINKFLAGS come before the main object
 # so sneaking libs in there is no good either)
 both_env.Append(_LIBFLAGS=['-lbcsym_a', '-lbcsym_b'])
-tests.append(('archive_bitcode',
-              both_env.ComponentProgram('bitcode', [bc_main],
 # Because we can't properly put these libs into EXTRA_LIBS, we have to add them
 # to IMPLICIT_LIBS to make sure they get built.
-                                        IMPLICIT_LIBS=[bclib_a, bclib_b])))
+both_env.Append(IMPLICIT_LIBS=[bclib_a, bclib_b])
+tests.append(('archive_bitcode',
+              both_env.ComponentProgram('bitcode', [bc_main])))
 
 # Link one archive as native, one as bitcode
 # We can't use the is_broken mechanism here because this test will fail to link
 # until the toolchain is rolled. TODO(dschuff) reenable after toolchain roll.
 #mixed_env = native_env.Clone()
 #mixed_env.Append(_LIBFLAGS=['-lbcsym_a', '-lnativesym_b'])
+#mixed_env.Append(IMPLICIT_LIBS=[bclib_a, nativelib_b])
 #tests.append(('archive_mixed',
-#              mixed_env.ComponentProgram('mixed', [bc_main],
-#                                         IMPLICIT_LIBS=[bclib_a, nativelib_b])))
+#              mixed_env.ComponentProgram('mixed', [bc_main])))
 
 # Both archives are bitcode, in a group
 bcgroup_env = native_env.Clone()
 bcgroup_env.Append(_LIBFLAGS=['-Wl,--start-group',
                               '-lbcsym_b', '-lbcsym_a',
                               '-Wl,--end-group'])
+bcgroup_env.Append(IMPLICIT_LIBS=[bclib_a, bclib_b])
 tests.append(('archive_bitcode_group',
-              bcgroup_env.ComponentProgram('bitcode_group', [bc_main],
-                                           IMPLICIT_LIBS=[bclib_a, bclib_b])))
+              bcgroup_env.ComponentProgram('bitcode_group', [bc_main])))
 
 # One bitcode, one native, in a group
 mixedgroup_env = native_env.Clone()
 mixedgroup_env.Append(_LIBFLAGS=['-Wl,--start-group',
                                  '-lbcsym_b', '-lnativesym_a',
                                  '-Wl,--end-group'])
+mixedgroup_env.Append(IMPLICIT_LIBS=[bclib_b, nativelib_a])
 tests.append(('archive_mixed_group',
-              mixedgroup_env.ComponentProgram(
-                  'mixed_group', [bc_main],
-                  IMPLICIT_LIBS=[bclib_b, nativelib_a])))
+              mixedgroup_env.ComponentProgram('mixed_group', [bc_main])))
 
 # One bitcode, one native, in a group (but switch which one is bitcode)
 mixedgroup_reverse_env = native_env.Clone()
 mixedgroup_reverse_env.Append(_LIBFLAGS=['-Wl,--start-group',
                                          '-lnativesym_b', '-lbcsym_a',
                                          '-Wl,--end-group'])
+mixedgroup_reverse_env.Append(IMPLICIT_LIBS=[bclib_a, nativelib_b])
 tests.append(('archive_mixed_group_reverse',
               mixedgroup_reverse_env.ComponentProgram(
-                  'mixed_group_reverse', [bc_main],
-                  IMPLICIT_LIBS=[bclib_a, nativelib_b])))
+                  'mixed_group_reverse', [bc_main])))
 
 # Link all as native
 #nativegroup_env = native_env.Clone()
 #nativegroup_env.Append(_LIBFLAGS=['-Wl,--start-group',
 #                                  '-lnativesym_b', '-lnativesym_a',
 #                                  '-Wl,--end-group'])
+#nativegroup_env.Append(IMPLICIT_LIBS=[nativelib_a, nativelib_b])
 #tests.append(('archive_native_group',
 #              nativegroup_env.ComponentProgram(
-#                  'native_group', [native_main],
-#                  IMPLICIT_LIBS=[nativelib_a, nativelib_b])))
+#                  'native_group', [native_main])))
 
 
 
