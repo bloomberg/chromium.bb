@@ -160,7 +160,7 @@ void EventSource::scheduleReconnect()
 {
     m_state = CONNECTING;
     m_reconnectTimer.startOneShot(m_reconnectDelay / 1000.0);
-    dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+    dispatchEvent(Event::create(eventNames().errorEvent));
 }
 
 void EventSource::reconnectTimerFired(Timer<EventSource>*)
@@ -247,10 +247,10 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 
     if (responseIsValid) {
         m_state = OPEN;
-        dispatchEvent(Event::create(eventNames().openEvent, false, false));
+        dispatchEvent(Event::create(eventNames().openEvent));
     } else {
         m_loader->cancel();
-        dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+        dispatchEvent(Event::create(eventNames().errorEvent));
     }
 }
 
@@ -311,7 +311,7 @@ void EventSource::abortConnectionAttempt()
     m_loader->cancel();
 
     ASSERT(m_state == CLOSED);
-    dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+    dispatchEvent(Event::create(eventNames().errorEvent));
 }
 
 void EventSource::parseEventStream()

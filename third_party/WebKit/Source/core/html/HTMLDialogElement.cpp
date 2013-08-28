@@ -70,7 +70,7 @@ void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
     if (!returnValue.isNull())
         m_returnValue = returnValue;
 
-    dispatchEvent(Event::create(eventNames().closeEvent, false, false));
+    dispatchEvent(Event::create(eventNames().closeEvent));
 }
 
 PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()

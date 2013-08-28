@@ -258,10 +258,7 @@ void HTMLStyleElement::dispatchPendingLoadEvents()
 void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &styleLoadEventSender());
-    if (m_loadedSheet)
-        dispatchEvent(Event::create(eventNames().loadEvent, false, false));
-    else
-        dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+    dispatchEvent(Event::create(m_loadedSheet ? eventNames().loadEvent : eventNames().errorEvent));
 }
 
 void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)

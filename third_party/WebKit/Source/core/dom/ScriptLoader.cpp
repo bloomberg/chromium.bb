@@ -135,7 +135,7 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language)
 
 void ScriptLoader::dispatchErrorEvent()
 {
-    m_element->dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+    m_element->dispatchEvent(Event::create(eventNames().errorEvent));
 }
 
 void ScriptLoader::dispatchLoadEvent()

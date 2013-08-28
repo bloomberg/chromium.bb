@@ -519,7 +519,7 @@ void RTCPeerConnection::close(ExceptionState& es)
 
 void RTCPeerConnection::negotiationNeeded()
 {
-    scheduleDispatchEvent(Event::create(eventNames().negotiationneededEvent, false, false));
+    scheduleDispatchEvent(Event::create(eventNames().negotiationneededEvent));
 }
 
 void RTCPeerConnection::didGenerateIceCandidate(WebKit::WebRTCICECandidate webCandidate)
@@ -633,7 +633,7 @@ void RTCPeerConnection::changeSignalingState(SignalingState signalingState)
 {
     if (m_signalingState != SignalingStateClosed && m_signalingState != signalingState) {
         m_signalingState = signalingState;
-        scheduleDispatchEvent(Event::create(eventNames().signalingstatechangeEvent, false, false));
+        scheduleDispatchEvent(Event::create(eventNames().signalingstatechangeEvent));
     }
 }
 
@@ -646,7 +646,7 @@ void RTCPeerConnection::changeIceConnectionState(IceConnectionState iceConnectio
 {
     if (m_iceConnectionState != IceConnectionStateClosed && m_iceConnectionState != iceConnectionState) {
         m_iceConnectionState = iceConnectionState;
-        scheduleDispatchEvent(Event::create(eventNames().iceconnectionstatechangeEvent, false, false));
+        scheduleDispatchEvent(Event::create(eventNames().iceconnectionstatechangeEvent));
     }
 }
 

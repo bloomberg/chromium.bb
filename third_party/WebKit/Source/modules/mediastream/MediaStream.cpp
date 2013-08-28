@@ -250,7 +250,7 @@ void MediaStream::streamEnded()
         return;
 
     m_descriptor->setEnded();
-    scheduleDispatchEvent(Event::create(eventNames().endedEvent, false, false));
+    scheduleDispatchEvent(Event::create(eventNames().endedEvent));
 }
 
 void MediaStream::contextDestroyed()
