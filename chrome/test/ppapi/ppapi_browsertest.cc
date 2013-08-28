@@ -632,7 +632,9 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_AppendDataToBody)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_AppendDataToBody)
 TEST_PPAPI_NACL(URLRequest_AppendDataToBody)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_AppendFileToBody)
+#if !defined(OS_MACOSX)  // TODO(teravest): http://crbug.com/280570
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_AppendFileToBody)
+#endif
 TEST_PPAPI_NACL(URLRequest_AppendFileToBody)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_Stress)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_Stress)
@@ -774,7 +776,9 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
       LIST_TEST(FileIO_NotAllowMixedReadWrite)
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
+#if !defined(OS_MACOSX)  // TODO(teravest): http://crbug.com/280570
       LIST_TEST(FileIO_TouchQuery)
+#endif
       LIST_TEST(FileIO_WillWriteWillSetLength)
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
