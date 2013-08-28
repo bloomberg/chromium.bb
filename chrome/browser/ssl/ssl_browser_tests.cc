@@ -398,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
                                  false);  // No interstitial showing
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows (http://crbug.com/267653).
+#ifndef NEDBUG
+// Flaky on Windows debug (http://crbug.com/280537).
 #define MAYBE_TestHTTPSExpiredCertAndDontProceed \
         DISABLED_TestHTTPSExpiredCertAndDontProceed
 #else
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 
 // Visits a page with https error and don't proceed (and ensure we can still
 // navigate at that point):
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -1522,15 +1522,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerFiltered) {
   CheckAuthenticatedState(tab, false);
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows (http://crbug.com/267653).
-#define MAYBE_TestUnsafeContentsInWorker \
-        DISABLED_TestUnsafeContentsInWorker
-#else
-#define MAYBE_TestUnsafeContentsInWorker \
-        TestUnsafeContentsInWorker
-#endif
-
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorker) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -1577,15 +1568,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureImage) {
   CheckAuthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), false);
 }
-
-#if defined(OS_WIN)
-// Flaky on Windows (http://crbug.com/267653).
-#define MAYBE_TestBlockDisplayingInsecureIframe \
-        DISABLED_TestBlockDisplayingInsecureIframe
-#else
-#define MAYBE_TestBlockDisplayingInsecureIframe \
-        TestBlockDisplayingInsecureIframe
-#endif
 
 // Test that when the browser blocks displaying insecure content (iframes), the
 // indicator shows a secure page, because the blocking made the otherwise
