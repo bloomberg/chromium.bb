@@ -23,10 +23,11 @@ namespace fileapi {
 class FileSystemContext;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.requestFileSystem method.
-class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
+class RequestFileSystemFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
                              FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
@@ -66,7 +67,8 @@ class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
 // Base class for AddFileWatchFunction and RemoveFileWatchFunction. Although
 // it's called "FileWatch", the class and its sub classes are used only for
 // watching changes in directories.
-class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
+class FileWatchFunctionBase
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   FileWatchFunctionBase();
 
@@ -127,7 +129,8 @@ class RemoveFileWatchFunction : public FileWatchFunctionBase {
 
 // Implements the chrome.fileBrowserPrivate.setLastModified method.
 // Sets last modified date in seconds of local file
-class SetLastModifiedFunction : public LoggedAsyncExtensionFunction {
+class SetLastModifiedFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setLastModified",
                              FILEBROWSERPRIVATE_SETLASTMODIFIED)
@@ -142,7 +145,8 @@ class SetLastModifiedFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getSizeStats method.
-class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
+class GetSizeStatsFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getSizeStats",
                              FILEBROWSERPRIVATE_GETSIZESTATS)
@@ -166,7 +170,8 @@ class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.getVolumeMetadata method.
 // Retrieves devices meta-data. Expects volume's device path as an argument.
-class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
+class GetVolumeMetadataFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadata",
                              FILEBROWSERPRIVATE_GETVOLUMEMETADATA)
@@ -181,7 +186,8 @@ class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.validatePathNameLength method.
-class ValidatePathNameLengthFunction : public LoggedAsyncExtensionFunction {
+class ValidatePathNameLengthFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.validatePathNameLength",
                              FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH)
@@ -199,7 +205,7 @@ class ValidatePathNameLengthFunction : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.formatDevice method.
 // Formats Device given its mount path.
-class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
+class FormatDeviceFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatDevice",
                              FILEBROWSERPRIVATE_FORMATDEVICE)
@@ -213,6 +219,6 @@ class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

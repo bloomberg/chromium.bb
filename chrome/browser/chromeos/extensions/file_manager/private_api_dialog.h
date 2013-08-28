@@ -15,10 +15,11 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Cancel file selection Dialog.  Closes the dialog window.
-class CancelFileDialogFunction : public LoggedAsyncExtensionFunction {
+class CancelFileDialogFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
                              FILEBROWSERPRIVATE_CANCELDIALOG)
@@ -32,7 +33,7 @@ class CancelFileDialogFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SelectFileFunction : public LoggedAsyncExtensionFunction {
+class SelectFileFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
                              FILEBROWSERPRIVATE_SELECTFILE)
@@ -52,7 +53,7 @@ class SelectFileFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Select multiple files.  Closes the dialog window.
-class SelectFilesFunction : public LoggedAsyncExtensionFunction {
+class SelectFilesFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFiles",
                              FILEBROWSERPRIVATE_SELECTFILES)
@@ -71,6 +72,6 @@ class SelectFilesFunction : public LoggedAsyncExtensionFunction {
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DIALOG_H_

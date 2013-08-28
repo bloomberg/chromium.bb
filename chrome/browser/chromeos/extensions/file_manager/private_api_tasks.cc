@@ -31,7 +31,7 @@ using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using extensions::Extension;
 using fileapi::FileSystemURL;
 
-namespace file_manager {
+namespace extensions {
 namespace {
 
 // Error messages.
@@ -130,8 +130,8 @@ bool ExecuteTaskFunction::RunImpl() {
   if (!args_->GetList(1, &files_list))
     return false;
 
-  file_tasks::TaskDescriptor task;
-  if (!file_tasks::ParseTaskID(task_id, &task)) {
+  file_manager::file_tasks::TaskDescriptor task;
+  if (!file_manager::file_tasks::ParseTaskID(task_id, &task)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
   }
@@ -158,8 +158,8 @@ bool ExecuteTaskFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  int32 tab_id = util::GetTabId(dispatcher());
-  return file_tasks::ExecuteFileTask(
+  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  return file_manager::file_tasks::ExecuteFileTask(
       profile(),
       source_url(),
       extension_->id(),
@@ -218,10 +218,10 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // For the first file, we store all the info.
       for (size_t j = 0; j < app_info_list.size(); ++j) {
         const drive::DriveAppInfo& app_info = *app_info_list[j];
-        GURL icon_url = util::FindPreferredIcon(app_info.app_icons,
-                                                util::kPreferredIconSize);
+        GURL icon_url = file_manager::util::FindPreferredIcon(
+            app_info.app_icons, file_manager::util::kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
-            file_tasks::MakeDriveAppTaskId(app_info.app_id),
+            file_manager::file_tasks::MakeDriveAppTaskId(app_info.app_id),
             TaskInfo(app_info.app_name, icon_url)));
       }
     } else {
@@ -229,8 +229,8 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // based on the task id.
       std::set<std::string> task_id_set;
       for (size_t j = 0; j < app_info_list.size(); ++j) {
-        task_id_set.insert(
-            file_tasks::MakeDriveAppTaskId(app_info_list[j]->app_id));
+        task_id_set.insert(file_manager::file_tasks::MakeDriveAppTaskId(
+            app_info_list[j]->app_id));
       }
       for (TaskInfoMap::iterator iter = task_info_map->begin();
            iter != task_info_map->end(); ) {
@@ -254,7 +254,7 @@ void GetFileTasksFunction::FindDefaultDriveTasks(
 
   for (size_t i = 0; i < file_info_list.size(); ++i) {
     const FileInfo& file_info = file_info_list[i];
-    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
+    std::string task_id = file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
         profile_, file_info.mime_type, file_info.file_path.Extension());
     if (task_info_map.find(task_id) != task_info_map.end())
       default_tasks->insert(task_id);
@@ -338,11 +338,11 @@ void GetFileTasksFunction::FindFileHandlerTasks(
     return;
 
   PathAndMimeTypeSet files;
-  util::GetMimeTypesForPaths(file_paths, &files);
+  file_manager::util::GetMimeTypesForPaths(file_paths, &files);
   std::set<std::string> default_tasks;
   for (PathAndMimeTypeSet::iterator it = files.begin(); it != files.end();
        ++it) {
-    default_tasks.insert(file_tasks::GetDefaultTaskIdFromPrefs(
+    default_tasks.insert(file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
         profile_, it->second, it->first.Extension()));
   }
 
@@ -367,8 +367,10 @@ void GetFileTasksFunction::FindFileHandlerTasks(
     for (FileHandlerList::iterator i = file_handlers.begin();
          i != file_handlers.end(); ++i) {
       DictionaryValue* task = new DictionaryValue;
-      std::string task_id = file_tasks::MakeTaskID(
-          extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, (*i)->id);
+      std::string task_id = file_manager::file_tasks::MakeTaskID(
+          extension->id(),
+          file_manager::file_tasks::TASK_TYPE_FILE_HANDLER,
+          (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
@@ -380,7 +382,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
 
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
           extension,
-          util::kPreferredIconSize,
+          file_manager::util::kPreferredIconSize,
           ExtensionIconSet::MATCH_BIGGER,
           false,  // grayscale
           NULL);  // exists
@@ -405,18 +407,19 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
   DCHECK(result_list);
   DCHECK(default_already_set);
 
-  file_browser_handlers::FileBrowserHandlerList common_tasks =
-      file_browser_handlers::FindCommonFileBrowserHandlers(profile_, file_urls);
+  file_manager::file_browser_handlers::FileBrowserHandlerList common_tasks =
+      file_manager::file_browser_handlers::FindCommonFileBrowserHandlers(
+          profile_, file_urls);
   if (common_tasks.empty())
     return;
-  file_browser_handlers::FileBrowserHandlerList default_tasks =
-      file_browser_handlers::FindDefaultFileBrowserHandlers(
+  file_manager::file_browser_handlers::FileBrowserHandlerList default_tasks =
+      file_manager::file_browser_handlers::FindDefaultFileBrowserHandlers(
           profile_, file_paths, common_tasks);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  for (file_browser_handlers::FileBrowserHandlerList::const_iterator iter =
-           common_tasks.begin();
+  for (file_manager::file_browser_handlers::FileBrowserHandlerList::
+           const_iterator iter = common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
     const FileBrowserHandler* handler = *iter;
@@ -424,9 +427,9 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId", file_tasks::MakeTaskID(
+    task->SetString("taskId", file_manager::file_tasks::MakeTaskID(
         extension_id,
-        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
+        file_manager::file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
         handler->id()));
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
@@ -586,9 +589,10 @@ bool SetDefaultTaskFunction::RunImpl() {
     return true;
   }
 
-  file_tasks::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
+  file_manager::file_tasks::UpdateDefaultTask(
+      profile_, task_id, suffixes, mime_types);
 
   return true;
 }
 
-}  // namespace file_manager
+}  // namespace extensions

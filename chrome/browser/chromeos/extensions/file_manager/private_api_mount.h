@@ -18,11 +18,11 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Implements chrome.fileBrowserPrivate.addMount method.
 // Mounts a device or a file.
-class AddMountFunction : public LoggedAsyncExtensionFunction {
+class AddMountFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
                              FILEBROWSERPRIVATE_ADDMOUNT)
@@ -45,7 +45,7 @@ class AddMountFunction : public LoggedAsyncExtensionFunction {
 
 // Implements chrome.fileBrowserPrivate.removeMount method.
 // Unmounts selected device. Expects mount point path as an argument.
-class RemoveMountFunction : public LoggedAsyncExtensionFunction {
+class RemoveMountFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeMount",
                              FILEBROWSERPRIVATE_REMOVEMOUNT)
@@ -65,7 +65,8 @@ class RemoveMountFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements chrome.fileBrowserPrivate.getMountPoints method.
-class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
+class GetMountPointsFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
                              FILEBROWSERPRIVATE_GETMOUNTPOINTS)
@@ -79,6 +80,6 @@ class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MOUNT_H_

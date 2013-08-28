@@ -18,12 +18,13 @@ struct DriveAppInfo;
 struct SearchResultInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (drive::FileError).
-class GetDriveEntryPropertiesFunction : public LoggedAsyncExtensionFunction {
+class GetDriveEntryPropertiesFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveEntryProperties",
                              FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES)
@@ -50,7 +51,7 @@ class GetDriveEntryPropertiesFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
-class PinDriveFileFunction : public LoggedAsyncExtensionFunction {
+class PinDriveFileFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.pinDriveFile",
                              FILEBROWSERPRIVATE_PINDRIVEFILE)
@@ -76,7 +77,8 @@ class PinDriveFileFunction : public LoggedAsyncExtensionFunction {
 // file manager should check if the local paths returned from getDriveFiles()
 // contain empty paths.
 // TODO(satorux): Should we propagate error types to the JavaScript layer?
-class GetDriveFilesFunction : public LoggedAsyncExtensionFunction {
+class GetDriveFilesFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFiles",
                              FILEBROWSERPRIVATE_GETDRIVEFILES)
@@ -105,7 +107,8 @@ class GetDriveFilesFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
-class CancelFileTransfersFunction : public LoggedAsyncExtensionFunction {
+class CancelFileTransfersFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelFileTransfers",
                              FILEBROWSERPRIVATE_CANCELFILETRANSFERS)
@@ -119,7 +122,7 @@ class CancelFileTransfersFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SearchDriveFunction : public LoggedAsyncExtensionFunction {
+class SearchDriveFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDrive",
                              FILEBROWSERPRIVATE_SEARCHDRIVE)
@@ -140,7 +143,8 @@ class SearchDriveFunction : public LoggedAsyncExtensionFunction {
 
 // Similar to SearchDriveFunction but this one is used for searching drive
 // metadata which is stored locally.
-class SearchDriveMetadataFunction : public LoggedAsyncExtensionFunction {
+class SearchDriveMetadataFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
                              FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
@@ -158,7 +162,8 @@ class SearchDriveMetadataFunction : public LoggedAsyncExtensionFunction {
                         scoped_ptr<drive::MetadataSearchResultVector> results);
 };
 
-class ClearDriveCacheFunction : public LoggedAsyncExtensionFunction {
+class ClearDriveCacheFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
                              FILEBROWSERPRIVATE_CLEARDRIVECACHE)
@@ -187,7 +192,8 @@ class GetDriveConnectionStateFunction : public SyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.requestAccessToken method.
-class RequestAccessTokenFunction : public LoggedAsyncExtensionFunction {
+class RequestAccessTokenFunction
+    : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestAccessToken",
                              FILEBROWSERPRIVATE_REQUESTACCESSTOKEN)
@@ -206,7 +212,7 @@ class RequestAccessTokenFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getShareUrl method.
-class GetShareUrlFunction : public LoggedAsyncExtensionFunction {
+class GetShareUrlFunction : public file_manager::LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getShareUrl",
                              FILEBROWSERPRIVATE_GETSHAREURL)
@@ -224,6 +230,6 @@ class GetShareUrlFunction : public LoggedAsyncExtensionFunction {
   void OnGetShareUrl(drive::FileError error, const GURL& share_url);
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_
