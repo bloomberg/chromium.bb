@@ -122,18 +122,15 @@ class ExtensionLoadedNotificationObserver
     icon_.reset([gfx::SkBitmapToNSImage(icon) retain]);
     pageActionPreviewShowing_ = NO;
 
-    extensions::ExtensionActionManager* extension_action_manager =
-        extensions::ExtensionActionManager::Get(browser_->profile());
-
     if (bundle_) {
       type_ = extension_installed_bubble::kBundle;
     } else if (extension->is_app()) {
       type_ = extension_installed_bubble::kApp;
     } else if (!extensions::OmniboxInfo::GetKeyword(extension).empty()) {
       type_ = extension_installed_bubble::kOmniboxKeyword;
-    } else if (extension_action_manager->GetBrowserAction(*extension)) {
+    } else if (extensions::ActionInfo::GetBrowserActionInfo(extension)) {
       type_ = extension_installed_bubble::kBrowserAction;
-    } else if (extension_action_manager->GetPageAction(*extension) &&
+    } else if (extensions::ActionInfo::GetPageActionInfo(extension) &&
                extensions::ActionInfo::IsVerboseInstallMessage(extension)) {
       type_ = extension_installed_bubble::kPageAction;
     } else {
