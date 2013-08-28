@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/notification_observer.h"
@@ -55,7 +56,7 @@ class ErrorConsole : public content::NotificationObserver {
   static ErrorConsole* Get(Profile* profile);
 
   // Report an extension error, and add it to the list.
-  void ReportError(scoped_ptr<const ExtensionError> error);
+  void ReportError(scoped_ptr<ExtensionError> error);
 
   // Get a collection of weak pointers to all errors relating to the extension
   // with the given |extension_id|.
@@ -66,10 +67,21 @@ class ErrorConsole : public content::NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const ErrorMap& errors() { return errors_; }
+  const ErrorMap& errors() const { return errors_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ErrorConsoleUnitTest, AddAndRemoveErrors);
+
+  // Enable the error console for error collection and retention.
+  void Enable();
+  // Disable the error console, removing the subscriptions to notifications and
+  // removing all current errors.
+  void Disable();
+
+  // Called when the Developer Mode preference is changed; this is important
+  // since we use this as a heuristic to determine if the console is enabled or
+  // not.
+  void OnPrefChanged();
 
   // Remove all errors which happened while incognito; we have to do this once
   // the incognito profile is destroyed.
@@ -86,6 +98,11 @@ class ErrorConsole : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Whether or not the error console is enabled; it is enabled if the
+  // FeatureSwitch (FeatureSwitch::error_console) is enabled and the user is
+  // in Developer Mode.
+  bool enabled_;
+
   // Needed because ObserverList is not thread-safe.
   base::ThreadChecker thread_checker_;
 
@@ -100,7 +117,8 @@ class ErrorConsole : public content::NotificationObserver {
   // incognito fellow).
   Profile* profile_;
 
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar notification_registrar_;
+  PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorConsole);
 };

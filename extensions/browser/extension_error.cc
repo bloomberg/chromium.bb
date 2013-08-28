@@ -40,13 +40,16 @@ bool GetExtensionIDFromGURL(const GURL& url, std::string* extension_id) {
 ExtensionError::ExtensionError(Type type,
                                const std::string& extension_id,
                                bool from_incognito,
+                               logging::LogSeverity level,
                                const string16& source,
                                const string16& message)
     : type_(type),
       extension_id_(extension_id),
       from_incognito_(from_incognito),
+      level_(level),
       source_(source),
-      message_(message) {
+      message_(message),
+      occurrences_(1u) {
 }
 
 ExtensionError::~ExtensionError() {
@@ -55,66 +58,89 @@ ExtensionError::~ExtensionError() {
 std::string ExtensionError::PrintForTest() const {
   return std::string("Extension Error:") +
          "\n  OTR:     " + std::string(from_incognito_ ? "true" : "false") +
+         "\n  Level:   " + base::IntToString(static_cast<int>(level_));
          "\n  Source:  " + base::UTF16ToUTF8(source_) +
          "\n  Message: " + base::UTF16ToUTF8(message_) +
          "\n  ID:      " + extension_id_;
 }
 
-ManifestParsingError::ManifestParsingError(const std::string& extension_id,
-                                           const string16& message)
-    : ExtensionError(ExtensionError::MANIFEST_PARSING_ERROR,
+bool ExtensionError::IsEqual(const ExtensionError* rhs) const {
+  // We don't check |source_| or |level_| here, since they are constant for
+  // manifest errors. Check them in RuntimeError::IsEqualImpl() instead.
+  return type_ == rhs->type_ &&
+         extension_id_ == rhs->extension_id_ &&
+         message_ == rhs->message_ &&
+         IsEqualImpl(rhs);
+}
+
+ManifestError::ManifestError(const std::string& extension_id,
+                             const string16& message)
+    : ExtensionError(ExtensionError::MANIFEST_ERROR,
                      extension_id,
                      false,  // extensions can't be installed while incognito.
+                     logging::LOG_WARNING,  // All manifest errors are warnings.
                      base::FilePath(kManifestFilename).AsUTF16Unsafe(),
                      message) {
 }
 
-ManifestParsingError::~ManifestParsingError() {
+ManifestError::~ManifestError() {
 }
 
-std::string ManifestParsingError::PrintForTest() const {
+std::string ManifestError::PrintForTest() const {
   return ExtensionError::PrintForTest() +
-         "\n  Type:    ManifestParsingError";
+         "\n  Type:    ManifestError";
 }
 
-JavascriptRuntimeError::StackFrame::StackFrame() : line_number(-1),
-                                                   column_number(-1) {
+bool ManifestError::IsEqualImpl(const ExtensionError* rhs) const {
+  // If two manifest errors have the same extension id and message (which are
+  // both checked in ExtensionError::IsEqual), then they are equal.
+  return true;
 }
 
-JavascriptRuntimeError::StackFrame::StackFrame(size_t frame_line,
-                                               size_t frame_column,
-                                               const string16& frame_url,
-                                               const string16& frame_function)
+RuntimeError::StackFrame::StackFrame() : line_number(-1), column_number(-1) {
+}
+
+RuntimeError::StackFrame::StackFrame(size_t frame_line,
+                                     size_t frame_column,
+                                     const string16& frame_url,
+                                     const string16& frame_function)
     : line_number(frame_line),
       column_number(frame_column),
       url(frame_url),
       function(frame_function) {
 }
 
-JavascriptRuntimeError::StackFrame::~StackFrame() {
+RuntimeError::StackFrame::~StackFrame() {
 }
 
-JavascriptRuntimeError::JavascriptRuntimeError(bool from_incognito,
-                                               const string16& source,
-                                               const string16& message,
-                                               logging::LogSeverity level,
-                                               const string16& details)
-    : ExtensionError(ExtensionError::JAVASCRIPT_RUNTIME_ERROR,
+bool RuntimeError::StackFrame::operator==(
+    const RuntimeError::StackFrame& rhs) const {
+  return line_number == rhs.line_number &&
+         column_number == rhs.column_number &&
+         url == rhs.url &&
+         function == rhs.function;
+}
+RuntimeError::RuntimeError(bool from_incognito,
+                           const string16& source,
+                           const string16& message,
+                           logging::LogSeverity level,
+                           const string16& details)
+    : ExtensionError(ExtensionError::RUNTIME_ERROR,
                      std::string(),  // We don't know the id yet.
                      from_incognito,
+                     level,
                      source,
-                     message),
-      level_(level) {
+                     message) {
   ParseDetails(details);
   DetermineExtensionID();
 }
 
-JavascriptRuntimeError::~JavascriptRuntimeError() {
+RuntimeError::~RuntimeError() {
 }
 
-std::string JavascriptRuntimeError::PrintForTest() const {
+std::string RuntimeError::PrintForTest() const {
   std::string result = ExtensionError::PrintForTest() +
-         "\n  Type:    JavascriptRuntimeError"
+         "\n  Type:    RuntimeError"
          "\n  Context: " + base::UTF16ToUTF8(execution_context_url_) +
          "\n  Stack Trace: ";
   for (StackTrace::const_iterator iter = stack_trace_.begin();
@@ -129,7 +155,20 @@ std::string JavascriptRuntimeError::PrintForTest() const {
   return result;
 }
 
-void JavascriptRuntimeError::ParseDetails(const string16& details) {
+bool RuntimeError::IsEqualImpl(const ExtensionError* rhs) const {
+  const RuntimeError* error = static_cast<const RuntimeError*>(rhs);
+
+  // Only look at the first frame of a stack trace to save time and group
+  // nearly-identical errors. The most recent error is kept, so there's no risk
+  // of displaying an old and inaccurate stack trace.
+  return level_ == level_ &&
+         source_ == source_ &&
+         execution_context_url_ == error->execution_context_url_ &&
+         stack_trace_.size() == error->stack_trace_.size() &&
+         (stack_trace_.empty() || stack_trace_[0] == error->stack_trace_[0]);
+}
+
+void RuntimeError::ParseDetails(const string16& details) {
   scoped_ptr<base::Value> value(
       base::JSONReader::Read(base::UTF16ToUTF8(details)));
   const base::DictionaryValue* details_value;
@@ -164,7 +203,7 @@ void JavascriptRuntimeError::ParseDetails(const string16& details) {
   }
 }
 
-void JavascriptRuntimeError::DetermineExtensionID() {
+void RuntimeError::DetermineExtensionID() {
   if (!GetExtensionIDFromGURL(GURL(source_), &extension_id_))
     GetExtensionIDFromGURL(GURL(execution_context_url_), &extension_id_);
 }

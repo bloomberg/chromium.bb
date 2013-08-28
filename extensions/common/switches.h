@@ -14,6 +14,7 @@ namespace switches {
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kAllowScriptingGallery[];
 extern const char kEnableExperimentalExtensionApis[];
+extern const char kErrorConsole[];
 extern const char kExtensionsOnChromeURLs[];
 extern const char kShowComponentExtensionOptions[];
 

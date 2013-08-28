@@ -22,6 +22,10 @@ const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Allows the ErrorConsole to collect runtime and manifest errors, and display
+// them in the chrome:extensions page.
+const char kErrorConsole[] = "error-console";
+
 // Enables extensions running scripts on chrome:// URLs.
 // Extensions still need to explicitly request access to chrome:// URLs in the
 // manifest.

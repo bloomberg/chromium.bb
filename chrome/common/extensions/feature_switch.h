@@ -21,7 +21,7 @@ class FeatureSwitch {
   static FeatureSwitch* script_badges();
   static FeatureSwitch* script_bubble();
   static FeatureSwitch* prompt_for_external_extensions();
-  static FeatureSwitch* tab_capture();
+  static FeatureSwitch* error_console();
 
   enum DefaultValue {
     DEFAULT_ENABLED,

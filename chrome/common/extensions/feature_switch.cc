@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/common/switches.h"
 
 namespace extensions {
 
@@ -18,26 +19,30 @@ class CommonSwitches {
  public:
   CommonSwitches()
       : easy_off_store_install(
-            switches::kEasyOffStoreExtensionInstall,
+            ::switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),
         script_badges(
-            switches::kScriptBadges,
+            ::switches::kScriptBadges,
             FeatureSwitch::DEFAULT_DISABLED),
         script_bubble(
-            switches::kScriptBubble,
+            ::switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
-            switches::kPromptForExternalExtensions,
+            ::switches::kPromptForExternalExtensions,
 #if defined(OS_WIN)
-            FeatureSwitch::DEFAULT_ENABLED) {}
+            FeatureSwitch::DEFAULT_ENABLED),
 #else
-            FeatureSwitch::DEFAULT_DISABLED) {}
+            FeatureSwitch::DEFAULT_DISABLED),
 #endif
+        error_console(
+            switches::kErrorConsole,
+            FeatureSwitch::DEFAULT_DISABLED) {}
 
   FeatureSwitch easy_off_store_install;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
   FeatureSwitch prompt_for_external_extensions;
+  FeatureSwitch error_console;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -56,6 +61,9 @@ FeatureSwitch* FeatureSwitch::script_bubble() {
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;
+}
+FeatureSwitch* FeatureSwitch::error_console() {
+  return &g_common_switches.Get().error_console;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

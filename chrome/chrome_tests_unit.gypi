@@ -2069,6 +2069,7 @@
             ['exclude', '^../extensions/'],
             ['exclude', '^browser/extensions/activity_log/'],
             ['exclude', '^browser/extensions/api/'],
+            ['exclude', '^browser/extensions/error_console/'],
             ['exclude', '^browser/sync/glue/extensions_activity_monitor_unittest.cc'],
             ['exclude', '^common/extensions/api/'],
             ['exclude', '^common/extensions/manifest_handlers/'],
