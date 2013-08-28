@@ -104,8 +104,9 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
   int num_animates_;
 };
 
-MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
+// Temporarily suppressed per crbug.com/280706.
+//MULTI_THREAD_TEST_F(
+//    LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
 
 // Add a layer animation and confirm that
 // LayerTreeHostImpl::updateAnimationState does get called and continues to
