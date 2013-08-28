@@ -10,6 +10,7 @@
 #include "base/process/launch.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
@@ -424,6 +425,14 @@ void RunPesq(const base::FilePath& reference_file,
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
                        MAYBE_MANUAL_TestAudioQuality) {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    // It would take work to implement this on XP; not prioritized right now.
+    LOG(INFO) << "This test is not implemented for Windows XP.";
+    return;
+  }
+#endif
+
   EXPECT_TRUE(test_server()->Start());
 
   ForceMicrophoneVolumeTo100Percent();
