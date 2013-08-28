@@ -463,7 +463,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
+TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_default_max_results(6);
@@ -491,8 +491,8 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingChangeList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -509,8 +509,8 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingChangeList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -522,7 +522,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
 }
 
 TEST_F(FakeDriveServiceTest,
-       ContinueGetResourceList_GetResourceListInDirectory) {
+       GetRemainingFileList_GetResourceListInDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_default_max_results(3);
@@ -551,8 +551,8 @@ TEST_F(FakeDriveServiceTest,
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingFileList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -569,8 +569,8 @@ TEST_F(FakeDriveServiceTest,
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingFileList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -581,7 +581,7 @@ TEST_F(FakeDriveServiceTest,
   EXPECT_EQ(1, fake_service_.directory_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
+TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_default_max_results(2);
@@ -609,8 +609,8 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingFileList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -620,7 +620,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
   EXPECT_EQ(2U, resource_list->entries().size());
 }
 
-TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
+TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_default_max_results(2);
@@ -661,8 +661,8 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingChangeList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -679,8 +679,8 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.ContinueGetResourceList(
-      next_url,
+  fake_service_.GetRemainingChangeList(
+      next_url.spec(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 

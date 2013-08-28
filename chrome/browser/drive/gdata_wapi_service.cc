@@ -294,6 +294,28 @@ CancelCallback GDataWapiService::ContinueGetResourceList(
                                  callback));
 }
 
+CancelCallback GDataWapiService::GetRemainingChangeList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  // The page token for the GData WAPI is an URL.
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
+CancelCallback GDataWapiService::GetRemainingFileList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  // The page token for the GData WAPI is an URL.
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
 CancelCallback GDataWapiService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {

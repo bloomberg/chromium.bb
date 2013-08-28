@@ -78,6 +78,14 @@ CancelCallback DummyDriveService::ContinueGetResourceList(
     const GURL& override_url,
     const GetResourceListCallback& callback) { return CancelCallback(); }
 
+CancelCallback DummyDriveService::GetRemainingChangeList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) { return CancelCallback(); }
+
+CancelCallback DummyDriveService::GetRemainingFileList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) { return CancelCallback(); }
+
 CancelCallback DummyDriveService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) { return CancelCallback(); }

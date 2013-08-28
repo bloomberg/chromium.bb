@@ -441,6 +441,30 @@ CancelCallback DriveAPIService::ContinueGetResourceList(
                      callback)));
 }
 
+CancelCallback DriveAPIService::GetRemainingChangeList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  // Currently page_token is a URL.
+  // TODO(hidehiko): Use actual page token.
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
+CancelCallback DriveAPIService::GetRemainingFileList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  // Currently page_token is a URL.
+  // TODO(hidehiko): Use actual page token.
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
 CancelCallback DriveAPIService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {

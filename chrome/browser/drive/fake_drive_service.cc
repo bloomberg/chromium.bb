@@ -456,6 +456,26 @@ CancelCallback FakeDriveService::ContinueGetResourceList(
   return CancelCallback();
 }
 
+CancelCallback FakeDriveService::GetRemainingChangeList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
+CancelCallback FakeDriveService::GetRemainingFileList(
+    const std::string& page_token,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!page_token.empty());
+  DCHECK(!callback.is_null());
+
+  return ContinueGetResourceList(GURL(page_token), callback);
+}
+
 CancelCallback FakeDriveService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {
