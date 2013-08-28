@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ComposedShadowTreeWalker_h
-#define ComposedShadowTreeWalker_h
+#ifndef ComposedTreeWalker_h
+#define ComposedTreeWalker_h
 
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -38,7 +38,7 @@ class ShadowRoot;
 
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
-class ComposedShadowTreeWalker {
+class ComposedTreeWalker {
 public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 
@@ -52,7 +52,7 @@ public:
         CannotStartFromShadowBoundary
     };
 
-    ComposedShadowTreeWalker(const Node*, Policy = CrossUpperBoundary, StartPolicy = CannotStartFromShadowBoundary);
+    ComposedTreeWalker(const Node*, Policy = CrossUpperBoundary, StartPolicy = CannotStartFromShadowBoundary);
 
     Node* get() const { return const_cast<Node*>(m_node); }
 
@@ -70,7 +70,7 @@ public:
     Node* traverseParent(const Node*, ParentTraversalDetails* = 0) const;
 
 private:
-    ComposedShadowTreeWalker(const Node*, ParentTraversalDetails*);
+    ComposedTreeWalker(const Node*, ParentTraversalDetails*);
 
     enum TraversalDirection {
         TraversalDirectionForward,
@@ -126,7 +126,7 @@ private:
     Policy m_policy;
 };
 
-inline ComposedShadowTreeWalker::ComposedShadowTreeWalker(const Node* node, Policy policy, StartPolicy startPolicy)
+inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, Policy policy, StartPolicy startPolicy)
     : m_node(node)
     , m_policy(policy)
 {
@@ -137,28 +137,28 @@ inline ComposedShadowTreeWalker::ComposedShadowTreeWalker(const Node* node, Poli
 #endif
 }
 
-inline void ComposedShadowTreeWalker::parent()
+inline void ComposedTreeWalker::parent()
 {
     assertPrecondition();
     m_node = traverseParent(m_node);
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::nextSibling()
+inline void ComposedTreeWalker::nextSibling()
 {
     assertPrecondition();
     m_node = traverseSiblingOrBackToInsertionPoint(m_node, TraversalDirectionForward);
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::previousSibling()
+inline void ComposedTreeWalker::previousSibling()
 {
     assertPrecondition();
     m_node = traverseSiblingOrBackToInsertionPoint(m_node, TraversalDirectionBackward);
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::next()
+inline void ComposedTreeWalker::next()
 {
     assertPrecondition();
     if (Node* next = traverseFirstChild(m_node)) {
@@ -175,7 +175,7 @@ inline void ComposedShadowTreeWalker::next()
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::previous()
+inline void ComposedTreeWalker::previous()
 {
     assertPrecondition();
     if (Node* previous = traversePreviousSibling(m_node)) {
@@ -188,39 +188,39 @@ inline void ComposedShadowTreeWalker::previous()
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::firstChild()
+inline void ComposedTreeWalker::firstChild()
 {
     assertPrecondition();
     m_node = traverseChild(m_node, TraversalDirectionForward);
     assertPostcondition();
 }
 
-inline void ComposedShadowTreeWalker::lastChild()
+inline void ComposedTreeWalker::lastChild()
 {
     assertPrecondition();
     m_node = traverseLastChild(m_node);
     assertPostcondition();
 }
 
-inline Node* ComposedShadowTreeWalker::traverseNextSibling(const Node* node)
+inline Node* ComposedTreeWalker::traverseNextSibling(const Node* node)
 {
     ASSERT(node);
     return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedShadowTreeWalker::traversePreviousSibling(const Node* node)
+inline Node* ComposedTreeWalker::traversePreviousSibling(const Node* node)
 {
     ASSERT(node);
     return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
 }
 
-inline Node* ComposedShadowTreeWalker::traverseFirstChild(const Node* node) const
+inline Node* ComposedTreeWalker::traverseFirstChild(const Node* node) const
 {
     ASSERT(node);
     return traverseChild(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedShadowTreeWalker::traverseLastChild(const Node* node) const
+inline Node* ComposedTreeWalker::traverseLastChild(const Node* node) const
 {
     ASSERT(node);
     return traverseChild(node, TraversalDirectionBackward);

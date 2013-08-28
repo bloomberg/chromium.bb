@@ -30,7 +30,7 @@
 #include "core/svg/graphics/SVGImage.h"
 
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ComposedShadowTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/FrameView.h"
@@ -89,7 +89,7 @@ bool SVGImage::hasSingleSecurityOrigin() const
 
     // Don't allow foreignObject elements or images that are not known to be
     // single-origin since these can leak cross-origin information.
-    ComposedShadowTreeWalker walker(rootElement);
+    ComposedTreeWalker walker(rootElement);
     while (Node* node = walker.get()) {
         if (node->hasTagName(SVGNames::foreignObjectTag))
             return false;
@@ -416,4 +416,3 @@ String SVGImage::filenameExtension() const
 }
 
 }
-

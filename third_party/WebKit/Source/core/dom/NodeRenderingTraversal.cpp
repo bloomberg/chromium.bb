@@ -28,7 +28,7 @@
 #include "core/dom/NodeRenderingTraversal.h"
 
 #include "core/dom/PseudoElement.h"
-#include "core/dom/shadow/ComposedShadowTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeWalker.h"
 
 namespace WebCore {
 
@@ -50,14 +50,14 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
     // FIXME: Once everything lazy attaches we should assert that we don't need a distribution recalc here.
-    ComposedShadowTreeWalker walker(node, ComposedShadowTreeWalker::CrossUpperBoundary, ComposedShadowTreeWalker::CanStartFromShadowBoundary);
+    ComposedTreeWalker walker(node, ComposedTreeWalker::CrossUpperBoundary, ComposedTreeWalker::CanStartFromShadowBoundary);
     ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
     return details->outOfComposition() ? 0 : found;
 }
 
 Node* nextSibling(const Node* node)
 {
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     if (node->isBeforePseudoElement()) {
         walker.parent();
         walker.firstChild();
@@ -76,7 +76,7 @@ Node* nextSibling(const Node* node)
 
 Node* previousSibling(const Node* node)
 {
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     if (node->isAfterPseudoElement()) {
         walker.parent();
         walker.lastChild();
@@ -95,28 +95,28 @@ Node* previousSibling(const Node* node)
 
 Node* nextInScope(const Node* node)
 {
-    ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
+    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
     walker.next();
     return walker.get();
 }
 
 Node* previousInScope(const Node* node)
 {
-    ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
+    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
     walker.previous();
     return walker.get();
 }
 
 Node* parentInScope(const Node* node)
 {
-    ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
+    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
     walker.parent();
     return walker.get();
 }
 
 Node* lastChildInScope(const Node* node)
 {
-    ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
+    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
     walker.lastChild();
     return walker.get();
 }

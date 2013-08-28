@@ -60,7 +60,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportArguments.h"
-#include "core/dom/shadow/ComposedShadowTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
@@ -507,7 +507,7 @@ Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     walker.nextSibling();
     return walker.get();
 }
@@ -518,7 +518,7 @@ Node* Internals::firstChildByWalker(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     walker.firstChild();
     return walker.get();
 }
@@ -529,7 +529,7 @@ Node* Internals::lastChildByWalker(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     walker.lastChild();
     return walker.get();
 }
@@ -540,7 +540,7 @@ Node* Internals::nextNodeByWalker(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     walker.next();
     return walker.get();
 }
@@ -551,7 +551,7 @@ Node* Internals::previousNodeByWalker(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    ComposedShadowTreeWalker walker(node);
+    ComposedTreeWalker walker(node);
     walker.previous();
     return walker.get();
 }
