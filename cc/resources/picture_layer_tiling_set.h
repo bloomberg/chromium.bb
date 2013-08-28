@@ -37,6 +37,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   PictureLayerTiling* AddTiling(float contents_scale);
   size_t num_tilings() const { return tilings_.size(); }
+  int NumHighResTilings() const;
   PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx]; }
   const PictureLayerTiling* tiling_at(size_t idx) const {
     return tilings_[idx];

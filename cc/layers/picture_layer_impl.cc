@@ -580,6 +580,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   } else {
     tilings_->RemoveAllTilings();
   }
+
+  SanityCheckTilingState();
 }
 
 void PictureLayerImpl::SyncTiling(
@@ -756,6 +758,7 @@ void PictureLayerImpl::RemoveTiling(float contents_scale) {
       break;
     }
   }
+  SanityCheckTilingState();
 }
 
 namespace {
@@ -839,12 +842,13 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
       low_res != high_res)
     low_res = AddTiling(low_res_raster_contents_scale_);
 
-  if (high_res)
-    high_res->set_resolution(HIGH_RESOLUTION);
+  high_res->set_resolution(HIGH_RESOLUTION);
   if (low_res && low_res != high_res)
     low_res->set_resolution(LOW_RESOLUTION);
   else if (!low_res && previous_low_res)
     previous_low_res->set_resolution(LOW_RESOLUTION);
+
+  SanityCheckTilingState();
 }
 
 bool PictureLayerImpl::ShouldAdjustRasterScale(
@@ -957,6 +961,8 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       twin->RemoveTiling(to_remove[i]->contents_scale());
     tilings_->Remove(to_remove[i]);
   }
+
+  SanityCheckTilingState();
 }
 
 float PictureLayerImpl::MinimumContentsScale() const {
@@ -1010,6 +1016,22 @@ bool PictureLayerImpl::CanHaveTilingWithScale(float contents_scale) const {
   if (contents_scale < MinimumContentsScale())
     return false;
   return true;
+}
+
+void PictureLayerImpl::SanityCheckTilingState() const {
+  if (!DCHECK_IS_ON())
+    return;
+
+  if (!CanHaveTilings()) {
+    DCHECK_EQ(0u, tilings_->num_tilings());
+    return;
+  }
+  if (tilings_->num_tilings() == 0)
+    return;
+
+  // MarkVisibleResourcesAsRequired depends on having exactly 1 high res
+  // tiling to mark its tiles as being required for activation.
+  DCHECK_EQ(1, tilings_->NumHighResTilings());
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(
