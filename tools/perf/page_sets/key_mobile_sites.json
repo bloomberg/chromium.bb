@@ -70,7 +70,7 @@
       "why": "#1 (Alexa global)",
       "navigate_steps": [
         { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementById('timelineBody') !== null" }
+        { "action": "wait", "javascript": "document.getElementById('u_0_c') !== null" }
       ]
     },
     {
@@ -97,7 +97,6 @@
       "why": "#12 (Alexa global),Public profile",
       "navigate_steps": [
         { "action": "navigate" },
-        { "action": "javascript", "expression": "getAppJs.noApp();" },
         { "action": "wait", "javascript": "document.getElementById('profile-view-scroller') !== null" }
       ]
     },
@@ -169,7 +168,7 @@
       }
     },
     {
-      "url": "http://mlb.mlb.com/index.jsp",
+      "url": "http://mlb.com/",
       "why": "#6 Alexa sports"
     },
     {
