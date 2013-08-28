@@ -50,6 +50,9 @@ namespace WTF {
     template <bool Predicate, class If, class Then> struct Conditional  { typedef If Type; };
     template <class If, class Then> struct Conditional<false, If, Then> { typedef Then Type; };
 
+    template<bool Predicate, class T = void> struct EnableIf;
+    template<class T> struct EnableIf<true, T> { typedef T Type; };
+
     template<typename T> struct IsInteger           { static const bool value = false; };
     template<> struct IsInteger<bool>               { static const bool value = true; };
     template<> struct IsInteger<char>               { static const bool value = true; };
@@ -105,6 +108,19 @@ namespace WTF {
         static const bool value = IsInteger<T>::value || IsConvertibleToDouble<!IsInteger<T>::value, T>::value;
     };
 
+    template<typename From, typename To> class IsPointerConvertible {
+        typedef char YesType;
+        struct NoType {
+            char padding[8];
+        };
+
+        static YesType convertCheck(To* x);
+        static NoType convertCheck(...);
+    public:
+        enum {
+            Value = (sizeof(YesType) == sizeof(convertCheck(static_cast<From*>(0))))
+        };
+    };
 
     template <class T> struct IsArray {
         static const bool value = false;
@@ -229,31 +245,8 @@ namespace WTF {
         static const bool value = __has_trivial_destructor(T) || IsPod<RemoveConstVolatile<T> >::value;
     };
 
-    template<typename From, typename To> class IsPointerConvertible {
-    public:
-        struct MatchFound {
-            char dummy;
-        };
-        struct MatchNotFound {
-            char dummy[2];
-        };
-
-        static MatchFound tryConvert(To* x);
-        static MatchNotFound tryConvert(...);
-
-        enum {
-            Value = (sizeof(MatchFound) == sizeof(tryConvert(static_cast<From*>(0))))
-        };
-    };
-
-    template<typename ReturnType, bool Expr> class InstantiateOnlyWhen;
-    template<typename ReturnType> class InstantiateOnlyWhen<ReturnType, true> {
-    public:
-        typedef ReturnType Type;
-    };
-
 #define EnsurePtrConvertibleType(ReturnType, From, To) \
-    typename InstantiateOnlyWhen<ReturnType, IsPointerConvertible<From, To>::Value >::Type
+    typename EnableIf<IsPointerConvertible<From, To>::Value, ReturnType>::Type
 #define EnsurePtrConvertibleArgDecl(From, To) \
     EnsurePtrConvertibleType(bool, From, To) = true
 #define EnsurePtrConvertibleArgDefn(From, To) \
