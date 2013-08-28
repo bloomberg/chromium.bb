@@ -439,7 +439,7 @@ public abstract class TabBase implements NavigationClient {
 
         mContentView = null;
         mContentViewCore = null;
-        mContentViewClient = null;
+        mWebContentsDelegate = null;
         mWebContentsObserver = null;
         nativeDestroyWebContents(mNativeTabAndroid, deleteNativeWebContents);
     }
