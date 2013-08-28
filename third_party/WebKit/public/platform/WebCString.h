@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_WEBKIT
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 #endif
 #if !INSIDE_WEBKIT || defined(UNIT_TEST)
 #include <string>

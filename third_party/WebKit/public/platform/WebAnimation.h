@@ -30,7 +30,7 @@
 #include "WebPrivateOwnPtr.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 #endif
 
 namespace WebCore {

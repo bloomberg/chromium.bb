@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 #endif
 
 namespace WebCore { class SocketStreamError; }

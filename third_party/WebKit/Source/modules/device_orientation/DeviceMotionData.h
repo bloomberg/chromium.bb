@@ -26,9 +26,9 @@
 #ifndef DeviceMotionData_h
 #define DeviceMotionData_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebKit {
 class WebDeviceMotionData;

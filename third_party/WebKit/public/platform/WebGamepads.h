@@ -27,7 +27,7 @@
 #include "WebGamepad.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 #endif
 
 namespace WebKit {

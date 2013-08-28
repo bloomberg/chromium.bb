@@ -795,7 +795,7 @@ END
 
 printElementIncludes($F);
 
-print F "\n#include <wtf/HashMap.h>\n";
+print F "\n#include \"wtf/HashMap.h\"\n";
 
 printConditionalElementIncludes($F);
 
@@ -906,8 +906,8 @@ sub printFactoryHeaderFile
 #ifndef $parameters{namespace}ElementFactory_h
 #define $parameters{namespace}ElementFactory_h
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
     class Element;
@@ -1056,7 +1056,7 @@ sub printWrapperFactoryCppFile
 
     printElementIncludes($F);
 
-    print F "\n#include <wtf/StdLibExtras.h>\n";
+    print F "\n#include \"wtf/StdLibExtras.h\"\n";
 
     printConditionalElementIncludes($F, 1);
 

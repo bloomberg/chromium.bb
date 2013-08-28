@@ -30,7 +30,7 @@
 #include "WebSize.h"
 #include "WebVector.h"
 #if WEBKIT_IMPLEMENTATION
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 #endif
 
 namespace WebCore {

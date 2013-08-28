@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if INSIDE_WEBKIT
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 #endif
 
 namespace WebKit {
