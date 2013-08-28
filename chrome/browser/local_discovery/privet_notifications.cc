@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -159,33 +160,36 @@ void PrivetNotificationService::PrivetNotify(
     const std::string& device_name,
     const std::string& human_readable_name,
     const std::string& description) {
-  Profile* profile_object = Profile::FromBrowserContext(profile_);
-  message_center::RichNotificationData rich_notification_data;
+  if (!LocalDiscoveryUIHandler::GetHasVisible()) {
+    Profile* profile_object = Profile::FromBrowserContext(profile_);
+    message_center::RichNotificationData rich_notification_data;
 
-  rich_notification_data.buttons.push_back(
-      message_center::ButtonInfo(l10n_util::GetStringUTF16(
-          IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
+    rich_notification_data.buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringUTF16(
+            IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
 
-  Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GURL(kPrivetNotificationOriginUrl),
-      l10n_util::GetStringUTF16(IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER),
-      l10n_util::GetStringFUTF16(
-          IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER,
-          UTF8ToUTF16(human_readable_name)),
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
-      WebKit::WebTextDirectionDefault,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT),
-      l10n_util::GetStringUTF16(
-          IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER),
-      UTF8ToUTF16(kPrivetNotificationIDPrefix +
-                  device_name),
-      rich_notification_data,
-      new PrivetNotificationDelegate(device_name, profile_));
+    Notification notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE,
+        GURL(kPrivetNotificationOriginUrl),
+        l10n_util::GetStringUTF16(
+            IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER),
+        l10n_util::GetStringFUTF16(
+            IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER,
+            UTF8ToUTF16(human_readable_name)),
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
+        WebKit::WebTextDirectionDefault,
+        message_center::NotifierId(
+            message_center::NotifierId::SYSTEM_COMPONENT),
+        l10n_util::GetStringUTF16(
+            IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER),
+        UTF8ToUTF16(kPrivetNotificationIDPrefix +
+                    device_name),
+        rich_notification_data,
+        new PrivetNotificationDelegate(device_name, profile_));
 
-  notification_manager_->Add(notification, profile_object);
+    notification_manager_->Add(notification, profile_object);
+  }
 }
 
 void PrivetNotificationService::PrivetRemoveNotification(

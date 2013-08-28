@@ -41,6 +41,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   static LocalDiscoveryUIHandler* Create();
   static void SetFactory(Factory* factory);
+  static bool GetHasVisible();
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -80,10 +81,13 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // For registering a device.
   void HandleRegisterDevice(const base::ListValue* args);
   // For when the page is ready to recieve device notifications.
-
   void HandleStart(const base::ListValue* args);
+
   // For when info for a device is requested.
   void HandleInfoRequested(const base::ListValue* args);
+
+  // For when a visibility change occurs.
+  void HandleIsVisible(const base::ListValue* args);
 
   // For when the IP address of the printer has been resolved for registration.
   void StartRegisterHTTP(scoped_ptr<PrivetHTTPClient> http_client);
@@ -103,6 +107,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // Log an error to the web interface.
   void LogInfoErrorToWeb(const std::string& error);
+
+  // Set the visibility of the page.
+  void SetIsVisible(bool visible);
 
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;
@@ -130,6 +137,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // A map of current device descriptions provided by the PrivetDeviceLister.
   std::map<std::string, DeviceDescription> device_descriptions_;
+
+  // Whether or not the page is marked as visible.
+  bool is_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUIHandler);
 };

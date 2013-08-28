@@ -28,9 +28,10 @@ namespace {
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
 
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
+int g_num_visible = 0;
 }  // namespace
 
-LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() {
+LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
 }
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
@@ -39,6 +40,7 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
+  SetIsVisible(false);
   if (service_discovery_client_.get()) {
     service_discovery_client_ = NULL;
     ServiceDiscoveryHostClientFactory::ReleaseClient();
@@ -56,9 +58,17 @@ void LocalDiscoveryUIHandler::SetFactory(Factory* factory) {
   g_factory = factory;
 }
 
+// static
+bool LocalDiscoveryUIHandler::GetHasVisible() {
+  return g_num_visible != 0;
+}
+
 void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("start", base::Bind(
       &LocalDiscoveryUIHandler::HandleStart,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("isVisible", base::Bind(
+      &LocalDiscoveryUIHandler::HandleIsVisible,
       base::Unretained(this)));
   web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
       &LocalDiscoveryUIHandler::HandleRegisterDevice,
@@ -109,6 +119,13 @@ void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
       base::Bind(&LocalDiscoveryUIHandler::StartInfoHTTP,
                  base::Unretained(this)));
   privet_resolution_->Start();
+}
+
+void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
+  bool is_visible = false;
+  bool rv = args->GetBoolean(0, &is_visible);
+  DCHECK(rv);
+  SetIsVisible(is_visible);
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
@@ -274,6 +291,13 @@ void LocalDiscoveryUIHandler::OnPrivetInfoDone(
   }
 
   web_ui()->CallJavascriptFunction("local_discovery.renderInfo", *json_value);
+}
+
+void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
+  if (visible != is_visible_) {
+    g_num_visible += visible ? 1 : -1;
+    is_visible_ = visible;
+  }
 }
 
 }  // namespace local_discovery

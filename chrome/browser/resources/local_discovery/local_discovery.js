@@ -265,7 +265,17 @@ cr.define('local_discovery', function() {
     logToInfoConsole(loadTimeData.getStringF('infoFailed', reason));
   }
 
+  /*
+   * Update visibility status for page.
+   */
+  function updateVisibility() {
+    chrome.send('isVisible', [!document.webkitHidden]);
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
+    updateVisibility();
+    document.addEventListener('webkitvisibilitychange', updateVisibility,
+                              false);
     chrome.send('start');
   });
 
