@@ -169,7 +169,7 @@ body {
 }
 
 /* Directory tree at the left. */
-.dialog-sidebar {
+.dialog-navigation-list {
   -webkit-border-end: 1px solid rgb(225, 225, 225);
   -webkit-box-flex: 0;
   -webkit-box-orient: vertical;
@@ -182,7 +182,7 @@ body {
   width: 150px;
 }
 
-.dialog-sidebar-header {
+.dialog-navigation-list-header {
   -webkit-app-region: drag;
   -webkit-box-flex: 0;
   display: -webkit-box;
@@ -190,19 +190,19 @@ body {
   line-height: 45px;
 }
 
-.dialog-sidebar-header #app-name {
+.dialog-navigation-list-header #app-name {
   -webkit-margin-start: 15px;
   color: #303030;
   font-size: 130%;
 }
 
-.dialog-sidebar-contents {
+.dialog-navigation-list-contents {
   -webkit-box-flex: 1;
   display: -webkit-box;
   position: relative;
 }
 
-.dialog-sidebar-footer {
+.dialog-navigation-list-footer {
   -webkit-box-flex: 0;
   display: -webkit-box;
 }
@@ -219,35 +219,35 @@ div.splitter {
   z-index: 100;
 }
 
-#volume-list {
+#navigation-list {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
 
-#volume-list > * {
+#navigation-list > * {
   height: 40px;
   padding: 0 5px;
 }
 
-#volume-list > .accepts,
-#volume-list > [lead][selected],
-#volume-list > [lead],
-#volume-list > [selected],
-#volume-list > [anchor] {
+#navigation-list > .accepts,
+#navigation-list > [lead][selected],
+#navigation-list > [lead],
+#navigation-list > [selected],
+#navigation-list > [anchor] {
   background-color: rgb(225, 225, 225);
 }
 
-#volume-list:focus > .accepts,
-#volume-list:focus > [lead][selected],
-#volume-list:focus > [lead],
-#volume-list:focus > [selected],
-#volume-list:focus > [anchor] {
+#navigation-list:focus > .accepts,
+#navigation-list:focus > [lead][selected],
+#navigation-list:focus > [lead],
+#navigation-list:focus > [selected],
+#navigation-list:focus > [anchor] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-#volume-list li.root-item {
+#navigation-list li.root-item {
   -webkit-box-align: center;
   display: -webkit-box;
   line-height: 22px;  /* To accomodate for icons. */
@@ -256,7 +256,7 @@ div.splitter {
 
 /* TODO(yoshiki): Animation is temporary disabled for volumes. Add animation
    back. crbug.com/276132. */
-#volume-list li.root-item.fadein {
+#navigation-list li.root-item.fadein {
   -webkit-animation: fadeIn 150ms ease-in-out;
 }
 
@@ -264,12 +264,12 @@ div.splitter {
    added to elements.
    Must keep the class name 'fadeout' and the animation name 'fadeOut' in sync
    with JavaScript. */
-#volume-list li.root-item.fadeout {
+#navigation-list li.root-item.fadeout {
   -webkit-animation: fadeOut 150ms ease-in-out 0 1 normal both;
   opacity: 0;
 }
 
-#volume-list li.root-item > .root-label {
+#navigation-list li.root-item > .root-label {
   -webkit-box-flex: 1;
   margin: 0 2px;
   overflow: hidden;
@@ -277,7 +277,7 @@ div.splitter {
   white-space: nowrap;
 }
 
-#volume-list .volume-icon {
+#navigation-list .volume-icon {
   background-position: center 2px;
   background-repeat: no-repeat;
   height: 24px;
@@ -383,7 +383,7 @@ div.splitter {
   color: white;
 }
 
-#volume-list .root-item > div.root-eject {
+#navigation-list .root-item > div.root-eject {
   background-image: -webkit-image-set(
     url('../images/files/ui/eject.png') 1x,
     url('../images/files/ui/2x/eject.png') 2x);
@@ -398,7 +398,7 @@ div.splitter {
   width: 20px;
 }
 
-#volume-list:focus .root-item[selected] > div.root-eject {
+#navigation-list:focus .root-item[selected] > div.root-eject {
   -webkit-filter: brightness(0) invert();
   opacity: 1;
 }
@@ -958,7 +958,7 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
-#volume-list > .accepts,
+#navigation-list > .accepts,
 #list-container list > li.accepts,
 #list-container grid > li.accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;

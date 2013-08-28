@@ -424,8 +424,8 @@ DirectoryItem.prototype.setContextMenu = function(menu) {
 // DirectoryTree
 
 /**
- * Tree of directories on the sidebar. This element is also the root of items,
- * in other words, this is the parent of the top-level items.
+ * Tree of directories on the middle bar. This element is also the root of
+ * items, in other words, this is the parent of the top-level items.
  *
  * @constructor
  * @extends {cr.ui.Tree}

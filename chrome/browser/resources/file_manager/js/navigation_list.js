@@ -116,13 +116,13 @@ NavigationModelItem.prototype.isShortcut = function() {
  * A navigation list model. This model combines the 2 lists.
  * @param {FileSystem} filesystem FileSystem.
  * @param {cr.ui.ArrayDataModel} volumesList The first list of the model.
- * @param {cr.ui.ArrayDataModel} pinnedList The second list of the model.
+ * @param {cr.ui.ArrayDataModel} shortcutList The second list of the model.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function NavigationListModel(filesystem, volumesList, pinnedList) {
+function NavigationListModel(filesystem, volumesList, shortcutList) {
   this.volumesListModel_ = volumesList;
-  this.pinnedListModel_ = pinnedList;
+  this.shortcutListModel_ = shortcutList;
 
   var entryToModelItem = function(entry) {
     return NavigationModelItem.createWithEntry(entry);
@@ -142,9 +142,9 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
   };
   Object.freeze(ListType);
 
-  // Generates this.volumesList_ and this.pinnedList_ from the models.
+  // Generates this.volumesList_ and this.shortcutList_ from the models.
   this.volumesList_ = this.volumesListModel_.slice(0).map(entryToModelItem);
-  this.pinnedList_ = this.pinnedListModel_.slice(0).map(pathToModelItem);
+  this.shortcutList_ = this.shortcutListModel_.slice(0).map(pathToModelItem);
 
   // Generates a combined 'permuted' event from an event of either list.
   var permutedHandler = function(listType, event) {
@@ -153,11 +153,11 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     var newLength;
     if (listType == ListType.VOLUME_LIST) {
       // Creates new permutation array.
-      newLength = event.newLength + this.pinnedList_.length;
+      newLength = event.newLength + this.shortcutList_.length;
       for (var i = 0; i < event.permutation.length; i++) {
         newPermutation[i] = event.permutation[i];
       }
-      for (var i = 0; i < this.pinnedList_.length; i++) {
+      for (var i = 0; i < this.shortcutList_.length; i++) {
         newPermutation[i + event.permutation.length] = i + event.newLength;
       }
 
@@ -187,13 +187,13 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
       // Updates the list.
       var newList = [];
       for (var i = 0; i < event.permutation.length; i++) {
-        newList[event.permutation[i]] = this.pinnedList_[i];
+        newList[event.permutation[i]] = this.shortcutList_[i];
       }
       for (var i = 0; i < event.newLength; i++) {
         if (!newList[i])
-          newList[i] = pathToModelItem(this.pinnedListModel_.item(i));
+          newList[i] = pathToModelItem(this.shortcutListModel_.item(i));
       }
-      this.pinnedList_ = newList;
+      this.shortcutList_ = newList;
     }
 
     permutedEvent.newLength = newLength;
@@ -202,7 +202,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
   };
   this.volumesListModel_.addEventListener(
       'permuted', permutedHandler.bind(this, ListType.VOLUME_LIST));
-  this.pinnedListModel_.addEventListener(
+  this.shortcutListModel_.addEventListener(
       'permuted', permutedHandler.bind(this, ListType.SHORTCUT_LIST));
 
   // Generates a combined 'change' event from an event of either list.
@@ -213,7 +213,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     if (listType == ListType.VOLUME_LIST)
       this.volumesList_[i] = entryToModelItem(this.volumesListModel_.item(i));
     else
-      this.pinnedList_[i] = pathToModelItem(this.pinnedListModel_.item(i));
+      this.shortcutList_[i] = pathToModelItem(this.shortcutListModel_.item(i));
 
     var changeEvent = new Event('change');
     changeEvent.index =
@@ -222,7 +222,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
   };
   this.volumesListModel_.addEventListener(
       'change', changeHandler.bind(this, ListType.VOLUME_LIST));
-  this.pinnedListModel_.addEventListener(
+  this.shortcutListModel_.addEventListener(
       'change', changeHandler.bind(this, ListType.SHORTCUT_LIST));
 
   // 'splice' and 'sorted' events are not implemented, since they are not used
@@ -235,7 +235,7 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
 NavigationListModel.prototype = {
   __proto__: cr.EventTarget.prototype,
   get length() { return this.length_(); },
-  get folderShortcutList() { return this.pinnedList_; }
+  get folderShortcutList() { return this.shortcutList_; }
 };
 
 /**
@@ -248,7 +248,7 @@ NavigationListModel.prototype.item = function(index) {
   if (index < offset)
     return this.volumesList_[index];
   else
-    return this.pinnedList_[index - offset];
+    return this.shortcutList_[index - offset];
 };
 
 /**
@@ -257,7 +257,7 @@ NavigationListModel.prototype.item = function(index) {
  * @private
  */
 NavigationListModel.prototype.length_ = function() {
-  return this.volumesList_.length + this.pinnedList_.length;
+  return this.volumesList_.length + this.shortcutList_.length;
 };
 
 /**
@@ -659,7 +659,7 @@ NavigationList.prototype.selectBestMatchItem_ = function() {
   if (!path)
     return;
 
-  // (1) Select the nearest parent directory (including the pinned directories).
+  // (1) Select the nearest parent directory (including the shortcut folders).
   var bestMatchIndex = -1;
   var bestMatchSubStringLen = 0;
   for (var i = 0; i < this.dataModel.length; i++) {

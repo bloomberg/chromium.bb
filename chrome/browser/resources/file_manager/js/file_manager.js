@@ -947,9 +947,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.cancelButton_.addEventListener('click', this.onCancelBound_);
 
     this.decorateSplitter(
-        this.dialogDom_.querySelector('div#sidebar-splitter'));
+        this.dialogDom_.querySelector('#navigation-list-splitter'));
     this.decorateSplitter(
-        this.dialogDom_.querySelector('div#middlebar-splitter'));
+        this.dialogDom_.querySelector('#middlebar-splitter'));
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
@@ -1168,9 +1168,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // published at the end of drag selection.
     this.table_.list.addEventListener('dragselectionend', dragEndBound);
 
-    // TODO(mtomasz, yoshiki): Create sidebar earlier, and here just attach
-    // the directory model.
-    this.initSidebar_();
+    // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
+    // attach the directory model.
+    this.initNavigationList_();
 
     this.table_.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
@@ -1209,11 +1209,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * @private
    */
-  FileManager.prototype.initSidebar_ = function() {
+  FileManager.prototype.initNavigationList_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
 
-    this.navigationList_ = this.dialogDom_.querySelector('#volume-list');
+    this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
     NavigationList.decorate(this.navigationList_,
                             this.volumeManager_,
                             this.directoryModel_);
