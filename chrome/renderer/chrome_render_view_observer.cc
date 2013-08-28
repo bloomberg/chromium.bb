@@ -378,7 +378,8 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
 
   Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(routing_id(),
                                                           success,
-                                                          webapp_capable));
+                                                          webapp_capable,
+                                                          expected_url));
 }
 #endif
 

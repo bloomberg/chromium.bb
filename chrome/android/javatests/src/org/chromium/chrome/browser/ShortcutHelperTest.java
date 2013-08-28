@@ -29,6 +29,13 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
             + "<title>" + WEBAPP_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
+    private static final String SECOND_WEBAPP_TITLE = "Webapp shortcut #2";
+    private static final String SECOND_WEBAPP_HTML = UrlUtils.encodeHtmlDataUri(
+            "<html><head>"
+            + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
+            + "<title>" + SECOND_WEBAPP_TITLE + "</title>"
+            + "</head><body>Webapp capable again</body></html>");
+
     private static final String NORMAL_TITLE = "Plain shortcut";
     private static final String NORMAL_HTML = UrlUtils.encodeHtmlDataUri(
             "<html>"
@@ -47,6 +54,10 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
             }
 
             return true;
+        }
+
+        public void reset() {
+            firedIntent = null;
         }
     }
 
@@ -69,10 +80,9 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
 
     @MediumTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcut() throws InterruptedException {
+    public void testAddWebappShortcuts() throws InterruptedException {
+        // Add a webapp shortcut and make sure the intent's parameters make sense.
         addShortcutToURL(WEBAPP_HTML);
-
-        // Make sure the intent's parameters make sense.
         Intent firedIntent = mTestObserver.firedIntent;
         assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
 
@@ -80,6 +90,18 @@ public class ShortcutHelperTest extends ChromiumTestShellTestBase {
         assertEquals(WEBAPP_HTML, launchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
         assertEquals(WEBAPP_PACKAGE_NAME, launchIntent.getComponent().getPackageName());
         assertEquals(WEBAPP_CLASS_NAME, launchIntent.getComponent().getClassName());
+
+        // Add a second shortcut and make sure it matches the second webapp's parameters.
+        mTestObserver.reset();
+        addShortcutToURL(SECOND_WEBAPP_HTML);
+        Intent newFiredIntent = mTestObserver.firedIntent;
+        assertEquals(SECOND_WEBAPP_TITLE,
+                newFiredIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+
+        Intent newLaunchIntent = newFiredIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+        assertEquals(SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
+        assertEquals(WEBAPP_PACKAGE_NAME, newLaunchIntent.getComponent().getPackageName());
+        assertEquals(WEBAPP_CLASS_NAME, newLaunchIntent.getComponent().getClassName());
     }
 
     @MediumTest

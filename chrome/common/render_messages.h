@@ -641,9 +641,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
 
 #if defined(OS_ANDROID)
 // Contains info about whether the current page can be treated as a webapp.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_DidRetrieveWebappInformation,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_DidRetrieveWebappInformation,
                     bool /* success */,
-                    bool /* is_webapp_capable */)
+                    bool /* is_webapp_capable */,
+                    GURL /* expected_url */)
 #endif  // defined(OS_ANDROID)
 
 // Message sent from renderer to the browser when the element that is focused

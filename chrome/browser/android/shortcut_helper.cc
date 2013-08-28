@@ -26,40 +26,9 @@
 #include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
-namespace {
-
-// Adds a shortcut to the current URL to the Android home screen.
-// This proceeds over three phases:
-// 1) The renderer is asked to parse out webapp related meta tags with an async
-//    IPC message.
-// 2) The highest-resolution favicon available is retrieved for use as the
-//    icon on the home screen.
-// 3) A JNI call is made to fire an Intent at the Android launcher, which adds
-//    adds the shortcut.
-class ShortcutBuilder : public content::WebContentsObserver {
- public:
-  explicit ShortcutBuilder(content::WebContents* web_contents);
-  virtual ~ShortcutBuilder();
-
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
-
- private:
-  void OnDidRetrieveWebappInformation(bool success, bool is_webapp_capable);
-
-  Profile* profile_;
-  GURL url_;
-  string16 title_;
-  bool is_webapp_capable_;
-  CancelableTaskTracker cancelable_task_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutBuilder);
-};
-
 ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-  profile_ =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    : is_webapp_capable_(false) {
+  Observe(web_contents);
   url_ = web_contents->GetURL();
   title_ = web_contents->GetTitle();
 
@@ -67,15 +36,20 @@ ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents)
   Send(new ChromeViewMsg_RetrieveWebappInformation(routing_id(), url_));
 }
 
-ShortcutBuilder::~ShortcutBuilder() {
-}
-
 void ShortcutBuilder::OnDidRetrieveWebappInformation(bool success,
-                                                     bool is_webapp_capable) {
-  // Abort adding the shortcut if the renderer failed to process the page or
-  // if a navigation was instantiated before the process finished.
+                                                     bool is_webapp_capable,
+                                                     const GURL& expected_url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  Observe(NULL);
+
   if (!success) {
     LOG(ERROR) << "Failed to parse webpage.";
+    Destroy();
+    return;
+  } else if (expected_url != url_) {
+    LOG(ERROR) << "Unexpected URL returned.";
+    Destroy();
     return;
   }
   is_webapp_capable_ = is_webapp_capable;
@@ -84,28 +58,33 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(bool success,
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
   //                    rewrite is further along.
   FaviconService::FaviconForURLParams favicon_params(
-      profile_,
+      profile,
       url_,
       chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON | chrome::FAVICON,
       0);
 
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile, Profile::EXPLICIT_ACCESS);
 
   favicon_service->GetRawFaviconForURL(
       favicon_params,
       ui::SCALE_FACTOR_100P,
-      base::Bind(&ShortcutHelper::FinishAddingShortcut,
-                 url_,
-                 title_,
-                 is_webapp_capable_),
+      base::Bind(&ShortcutBuilder::FinishAddingShortcut,
+                 base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
-void ShortcutBuilder::WebContentsDestroyed(content::WebContents* web_contents) {
-  if (cancelable_task_tracker_.HasTrackedTasks())
-    cancelable_task_tracker_.TryCancelAll();
-  delete this;
+void ShortcutBuilder::FinishAddingShortcut(
+    const chrome::FaviconBitmapResult& bitmap_result) {
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&ShortcutHelper::AddShortcutInBackground,
+                 url_,
+                 title_,
+                 is_webapp_capable_,
+                 bitmap_result),
+      true);
+  Destroy();
 }
 
 bool ShortcutBuilder::OnMessageReceived(const IPC::Message& message) {
@@ -118,7 +97,16 @@ bool ShortcutBuilder::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-}  // namespace
+void ShortcutBuilder::WebContentsDestroyed(content::WebContents* web_contents) {
+  Destroy();
+}
+
+void ShortcutBuilder::Destroy() {
+  if (cancelable_task_tracker_.HasTrackedTasks()) {
+    cancelable_task_tracker_.TryCancelAll();
+  }
+  delete this;
+}
 
 void ShortcutHelper::AddShortcut(content::WebContents* web_contents) {
   // The ShortcutBuilder deletes itself when it's done.
@@ -129,22 +117,7 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ShortcutHelper::FinishAddingShortcut(
-    const GURL& url,
-    const string16& title,
-    bool is_webapp_capable,
-    const chrome::FaviconBitmapResult& bitmap_result) {
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&ShortcutHelper::FinishAddingShortcutInBackground,
-                 url,
-                 title,
-                 is_webapp_capable,
-                 bitmap_result),
-      true);
-}
-
-void ShortcutHelper::FinishAddingShortcutInBackground(
+void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const string16& title,
     bool is_webapp_capable,
