@@ -121,9 +121,9 @@ class APIUtilInterface {
   virtual void ListChanges(int64 start_changestamp,
                            const ResourceListCallback& callback) = 0;
 
-  // Fetches the next chunk of ResourceList identified by |feed_url|.
+  // Fetches the next chunk of ResourceList identified by |page_token|.
   // Upon completion, invokes |callback|.
-  virtual void ContinueListing(const GURL& feed_url,
+  virtual void ContinueListing(const std::string& page_token,
                                const ResourceListCallback& callback) = 0;
 
   // Downloads the file identified by |resource_id| from Drive to

@@ -497,13 +497,13 @@ void APIUtil::ListChanges(int64 start_changestamp,
       base::Bind(&APIUtil::DidGetResourceList, AsWeakPtr(), callback));
 }
 
-void APIUtil::ContinueListing(const GURL& feed_url,
+void APIUtil::ContinueListing(const std::string& page_token,
                               const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DVLOG(2) << "Continue listing on feed: " << feed_url;
+  DVLOG(2) << "Continue listing on feed: " << page_token;
 
-  drive_service_->ContinueGetResourceList(
-      feed_url,
+  drive_service_->GetRemainingFileList(
+      page_token,
       base::Bind(&APIUtil::DidGetResourceList, AsWeakPtr(), callback));
 }
 

@@ -71,7 +71,7 @@ class APIUtil : public APIUtilInterface,
                          const ResourceListCallback& callback) OVERRIDE;
   virtual void ListChanges(int64 start_changestamp,
                            const ResourceListCallback& callback) OVERRIDE;
-  virtual void ContinueListing(const GURL& feed_url,
+  virtual void ContinueListing(const std::string& page_token,
                                const ResourceListCallback& callback) OVERRIDE;
   virtual void DownloadFile(const std::string& resource_id,
                             const std::string& local_file_md5,
