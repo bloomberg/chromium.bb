@@ -555,6 +555,15 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_;
 };
 
+// This test ensures JavaScript errors ("Cannot redefine property") do not
+// happen when a <webview> is removed from DOM and added back.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       AddRemoveWebView_AddRemoveWebView) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/addremove"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation",
              "DoneShimTest.PASSED",

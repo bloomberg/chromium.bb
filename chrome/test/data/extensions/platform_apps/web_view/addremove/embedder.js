@@ -5,14 +5,17 @@
 var webview = null;
 var loadcount = 0;
 
-var startTest = function() {
+var startTest = function(guestURL) {
   window.addEventListener('message', receiveMessage, false);
   chrome.test.sendMessage('guest-loaded');
   webview = document.getElementById('webview');
   webview.addEventListener('loadstop', onWebviewLoaded);
+
+  webview.setAttribute('src', guestURL);
 };
 
 var onWebviewLoaded = function(event) {
+  window.console.log('onWebviewLoaded');
   loadcount++;
   webview.contentWindow.postMessage('msg', '*');
 }
@@ -35,7 +38,6 @@ chrome.test.getConfig(function(config) {
   document.querySelector('#webview-tag-container').innerHTML =
       '<webview id=\'webview\' style="width: 400px; height: 400px; ' +
       'margin: 0; padding: 0;"' +
-      ' src="' + guestURL + '"' +
       '></webview>';
-  startTest();
+  startTest(guestURL);
 });
