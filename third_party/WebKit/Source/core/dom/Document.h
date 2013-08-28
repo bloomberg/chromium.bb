@@ -87,7 +87,6 @@ class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
 class DocumentSharedObjectPool;
-class DocumentStyleSheetCollection;
 class DocumentTimeline;
 class DocumentType;
 class Element;
@@ -147,6 +146,7 @@ class SerializedScriptValue;
 class Settings;
 class StyleResolver;
 class StyleSheet;
+class StyleSheetCollections;
 class StyleSheetContents;
 class StyleSheetList;
 class Text;
@@ -440,7 +440,7 @@ public:
     // This is a DOM function.
     StyleSheetList* styleSheets();
 
-    DocumentStyleSheetCollection* styleSheetCollection() { return m_styleSheetCollection.get(); }
+    StyleSheetCollections* styleSheetCollections() { return m_styleSheetCollections.get(); }
 
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
@@ -1222,7 +1222,7 @@ private:
 
     MutationObserverOptions m_mutationObserverTypes;
 
-    OwnPtr<DocumentStyleSheetCollection> m_styleSheetCollection;
+    OwnPtr<StyleSheetCollections> m_styleSheetCollections;
     RefPtr<StyleSheetList> m_styleSheetList;
 
     OwnPtr<FormController> m_formController;

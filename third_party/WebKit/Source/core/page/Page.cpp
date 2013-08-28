@@ -22,9 +22,9 @@
 
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/Caret.h"
 #include "core/history/BackForwardController.h"
@@ -470,7 +470,7 @@ void Page::userStyleSheetLocationChanged()
 
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         if (frame->document())
-            frame->document()->styleSheetCollection()->updatePageUserSheet();
+            frame->document()->styleSheetCollections()->updatePageUserSheet();
     }
 }
 

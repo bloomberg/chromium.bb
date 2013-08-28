@@ -34,9 +34,9 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -192,7 +192,7 @@ StyleSheetCollectionForDocument::StyleSheetCollectionForDocument(TreeScope* tree
     ASSERT(treeScope->rootNode() == treeScope->rootNode()->document());
 }
 
-void StyleSheetCollectionForDocument::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void StyleSheetCollectionForDocument::collectStyleSheets(StyleSheetCollections* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     if (document()->settings() && !document()->settings()->authorAndUserStylesEnabled())
         return;
@@ -284,10 +284,10 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyl
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
     if (!seamlessParentIFrame)
         return;
-    sheets.append(seamlessParentIFrame->document()->styleSheetCollection()->activeAuthorStyleSheets());
+    sheets.append(seamlessParentIFrame->document()->styleSheetCollections()->activeAuthorStyleSheets());
 }
 
-bool StyleSheetCollectionForDocument::updateActiveStyleSheets(DocumentStyleSheetCollection* collections, StyleResolverUpdateMode updateMode)
+bool StyleSheetCollectionForDocument::updateActiveStyleSheets(StyleSheetCollections* collections, StyleResolverUpdateMode updateMode)
 {
     Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;

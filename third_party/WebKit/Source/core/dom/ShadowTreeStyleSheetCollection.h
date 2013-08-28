@@ -33,20 +33,20 @@
 namespace WebCore {
 
 class CSSStyleSheet;
-class DocumentStyleSheetCollection;
 class ShadowRoot;
 class StyleSheet;
 class StyleSheetCollection;
+class StyleSheetCollections;
 
 class ShadowTreeStyleSheetCollection FINAL : public StyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot*);
 
-    bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode);
+    bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
 
 private:
-    void collectStyleSheets(DocumentStyleSheetCollection*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
+    void collectStyleSheets(StyleSheetCollections*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
 };
 
 }

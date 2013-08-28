@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/StyleSheetCollections.h"
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
@@ -52,7 +52,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-DocumentStyleSheetCollection::DocumentStyleSheetCollection(Document* document)
+StyleSheetCollections::StyleSheetCollections(Document* document)
     : m_document(document)
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
@@ -67,7 +67,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(Document* document)
 {
 }
 
-DocumentStyleSheetCollection::~DocumentStyleSheetCollection()
+StyleSheetCollections::~StyleSheetCollections()
 {
     if (m_pageUserSheet)
         m_pageUserSheet->clearOwnerNode();
@@ -81,7 +81,7 @@ DocumentStyleSheetCollection::~DocumentStyleSheetCollection()
         m_authorStyleSheets[i]->clearOwnerNode();
 }
 
-void DocumentStyleSheetCollection::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeScope* treeScope)
+void StyleSheetCollections::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeScope* treeScope)
 {
     if (treeScopes.isEmpty()) {
         treeScopes.add(treeScope);
@@ -108,7 +108,7 @@ void DocumentStyleSheetCollection::insertTreeScopeInDocumentOrder(TreeScopeSet& 
     treeScopes.insertBefore(followingTreeScope, treeScope);
 }
 
-StyleSheetCollection* DocumentStyleSheetCollection::ensureStyleSheetCollectionFor(TreeScope* treeScope)
+StyleSheetCollection* StyleSheetCollections::ensureStyleSheetCollectionFor(TreeScope* treeScope)
 {
     if (treeScope == m_document)
         return &m_collectionForDocument;
@@ -119,7 +119,7 @@ StyleSheetCollection* DocumentStyleSheetCollection::ensureStyleSheetCollectionFo
     return result.iterator->value.get();
 }
 
-StyleSheetCollection* DocumentStyleSheetCollection::styleSheetCollectionFor(TreeScope* treeScope)
+StyleSheetCollection* StyleSheetCollections::styleSheetCollectionFor(TreeScope* treeScope)
 {
     if (treeScope == m_document)
         return &m_collectionForDocument;
@@ -130,17 +130,17 @@ StyleSheetCollection* DocumentStyleSheetCollection::styleSheetCollectionFor(Tree
     return it->value.get();
 }
 
-const Vector<RefPtr<StyleSheet> >& DocumentStyleSheetCollection::styleSheetsForStyleSheetList()
+const Vector<RefPtr<StyleSheet> >& StyleSheetCollections::styleSheetsForStyleSheetList()
 {
     return m_collectionForDocument.styleSheetsForStyleSheetList();
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::activeAuthorStyleSheets() const
+const Vector<RefPtr<CSSStyleSheet> >& StyleSheetCollections::activeAuthorStyleSheets() const
 {
     return m_collectionForDocument.activeAuthorStyleSheets();
 }
 
-void DocumentStyleSheetCollection::getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const
+void StyleSheetCollections::getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const
 {
     activeAuthorStyleSheets.append(&m_collectionForDocument.activeAuthorStyleSheets());
 
@@ -153,20 +153,20 @@ void DocumentStyleSheetCollection::getActiveAuthorStyleSheets(Vector<const Vecto
     }
 }
 
-void DocumentStyleSheetCollection::combineCSSFeatureFlags(const RuleFeatureSet& features)
+void StyleSheetCollections::combineCSSFeatureFlags(const RuleFeatureSet& features)
 {
     // Delay resetting the flags until after next style recalc since unapplying the style may not work without these set (this is true at least with before/after).
     m_usesSiblingRules = m_usesSiblingRules || features.usesSiblingRules();
     m_usesFirstLineRules = m_usesFirstLineRules || features.usesFirstLineRules();
 }
 
-void DocumentStyleSheetCollection::resetCSSFeatureFlags(const RuleFeatureSet& features)
+void StyleSheetCollections::resetCSSFeatureFlags(const RuleFeatureSet& features)
 {
     m_usesSiblingRules = features.usesSiblingRules();
     m_usesFirstLineRules = features.usesFirstLineRules();
 }
 
-CSSStyleSheet* DocumentStyleSheetCollection::pageUserSheet()
+CSSStyleSheet* StyleSheetCollections::pageUserSheet()
 {
     if (m_pageUserSheet)
         return m_pageUserSheet.get();
@@ -186,7 +186,7 @@ CSSStyleSheet* DocumentStyleSheetCollection::pageUserSheet()
     return m_pageUserSheet.get();
 }
 
-void DocumentStyleSheetCollection::clearPageUserSheet()
+void StyleSheetCollections::clearPageUserSheet()
 {
     if (m_pageUserSheet) {
         RefPtr<StyleSheet> removedSheet = m_pageUserSheet;
@@ -195,7 +195,7 @@ void DocumentStyleSheetCollection::clearPageUserSheet()
     }
 }
 
-void DocumentStyleSheetCollection::updatePageUserSheet()
+void StyleSheetCollections::updatePageUserSheet()
 {
     clearPageUserSheet();
     // FIXME: Why is this immediately and not defer?
@@ -203,19 +203,19 @@ void DocumentStyleSheetCollection::updatePageUserSheet()
         m_document->addedStyleSheet(addedSheet, RecalcStyleImmediately);
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::injectedUserStyleSheets() const
+const Vector<RefPtr<CSSStyleSheet> >& StyleSheetCollections::injectedUserStyleSheets() const
 {
     updateInjectedStyleSheetCache();
     return m_injectedUserStyleSheets;
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::injectedAuthorStyleSheets() const
+const Vector<RefPtr<CSSStyleSheet> >& StyleSheetCollections::injectedAuthorStyleSheets() const
 {
     updateInjectedStyleSheetCache();
     return m_injectedAuthorStyleSheets;
 }
 
-void DocumentStyleSheetCollection::updateInjectedStyleSheetCache() const
+void StyleSheetCollections::updateInjectedStyleSheetCache() const
 {
     if (m_injectedStyleSheetCacheValid)
         return;
@@ -246,7 +246,7 @@ void DocumentStyleSheetCollection::updateInjectedStyleSheetCache() const
     }
 }
 
-void DocumentStyleSheetCollection::invalidateInjectedStyleSheetCache()
+void StyleSheetCollections::invalidateInjectedStyleSheetCache()
 {
     m_injectedStyleSheetCacheValid = false;
     m_needsDocumentStyleSheetsUpdate = true;
@@ -255,7 +255,7 @@ void DocumentStyleSheetCollection::invalidateInjectedStyleSheetCache()
     m_document->styleResolverChanged(RecalcStyleDeferred);
 }
 
-void DocumentStyleSheetCollection::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
+void StyleSheetCollections::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
 {
     ASSERT(!authorSheet->isUserStyleSheet());
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
@@ -263,7 +263,7 @@ void DocumentStyleSheetCollection::addAuthorSheet(PassRefPtr<StyleSheetContents>
     m_needsDocumentStyleSheetsUpdate = true;
 }
 
-void DocumentStyleSheetCollection::addUserSheet(PassRefPtr<StyleSheetContents> userSheet)
+void StyleSheetCollections::addUserSheet(PassRefPtr<StyleSheetContents> userSheet)
 {
     ASSERT(userSheet->isUserStyleSheet());
     m_userStyleSheets.append(CSSStyleSheet::create(userSheet, m_document));
@@ -272,7 +272,7 @@ void DocumentStyleSheetCollection::addUserSheet(PassRefPtr<StyleSheetContents> u
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
-void DocumentStyleSheetCollection::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
+void StyleSheetCollections::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
 {
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     ASSERT(m_pendingStylesheets > 0);
@@ -298,7 +298,7 @@ void DocumentStyleSheetCollection::removePendingSheet(Node* styleSheetCandidateN
     m_document->didRemoveAllPendingStylesheet();
 }
 
-void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool createdByParser)
+void StyleSheetCollections::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 {
     if (!node->inDocument())
         return;
@@ -319,7 +319,7 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
     m_dirtyTreeScopes.add(treeScope);
 }
 
-void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
+void StyleSheetCollections::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
     TreeScope* treeScope = scopingNode ? scopingNode->treeScope() : m_document;
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
@@ -336,7 +336,7 @@ void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, Con
     m_activeTreeScopes.remove(treeScope);
 }
 
-void DocumentStyleSheetCollection::modifiedStyleSheetCandidateNode(Node* node)
+void StyleSheetCollections::modifiedStyleSheetCandidateNode(Node* node)
 {
     if (!node->inDocument())
         return;
@@ -350,12 +350,12 @@ void DocumentStyleSheetCollection::modifiedStyleSheetCandidateNode(Node* node)
     m_dirtyTreeScopes.add(treeScope);
 }
 
-bool DocumentStyleSheetCollection::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
+bool StyleSheetCollections::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
 {
     return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
 
-bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
+bool StyleSheetCollections::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
     if (m_document->inStyleRecalc()) {
         // SVG <use> element may manage to invalidate style selector in the middle of a style recalc.
@@ -408,7 +408,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
     return requiresFullStyleRecalc;
 }
 
-void DocumentStyleSheetCollection::activeStyleSheetsUpdatedForInspector()
+void StyleSheetCollections::activeStyleSheetsUpdatedForInspector()
 {
     if (m_activeTreeScopes.isEmpty()) {
         InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_collectionForDocument.styleSheetsForStyleSheetList());
@@ -431,12 +431,12 @@ void DocumentStyleSheetCollection::activeStyleSheetsUpdatedForInspector()
     InspectorInstrumentation::activeStyleSheetsUpdated(m_document, activeStyleSheets);
 }
 
-void DocumentStyleSheetCollection::didRemoveShadowRoot(ShadowRoot* shadowRoot)
+void StyleSheetCollections::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 {
     m_styleSheetCollectionMap.remove(shadowRoot);
 }
 
-void DocumentStyleSheetCollection::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
+void StyleSheetCollections::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
 {
     ASSERT(styleResolver);
 

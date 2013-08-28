@@ -34,11 +34,11 @@ namespace WebCore {
 
 class CSSStyleRule;
 class CSSStyleSheet;
-class DocumentStyleSheetCollection;
 class InspectorCSSOMWrappers;
 class MatchRequest;
 class MediaQueryEvaluator;
 class RuleSet;
+class StyleSheetCollections;
 
 class ShadowDistributedRules {
 public:
@@ -60,7 +60,7 @@ public:
     ~DocumentRuleSets();
     RuleSet* userStyle() const { return m_userStyle.get(); }
 
-    void initUserStyle(DocumentStyleSheetCollection*, const MediaQueryEvaluator&, StyleResolver&);
+    void initUserStyle(StyleSheetCollections*, const MediaQueryEvaluator&, StyleResolver&);
     void resetAuthorStyle();
     void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
 

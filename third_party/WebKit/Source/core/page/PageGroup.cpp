@@ -27,7 +27,7 @@
 #include "core/page/PageGroup.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 
@@ -92,7 +92,7 @@ void PageGroup::invalidatedInjectedStyleSheetCacheInAllFrames()
     HashSet<Page*>::const_iterator end = m_pages.end();
     for (HashSet<Page*>::const_iterator it = m_pages.begin(); it != end; ++it) {
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext())
-            frame->document()->styleSheetCollection()->invalidateInjectedStyleSheetCache();
+            frame->document()->styleSheetCollections()->invalidateInjectedStyleSheetCache();
     }
 }
 

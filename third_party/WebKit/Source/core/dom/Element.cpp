@@ -1501,7 +1501,7 @@ Node::StyleChange Element::recalcOwnStyle(StyleChange change)
 
     // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
     // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
-    if (document()->styleSheetCollection()->usesRemUnits() && document()->documentElement() == this && oldStyle && newStyle && oldStyle->fontSize() != newStyle->fontSize()) {
+    if (document()->styleSheetCollections()->usesRemUnits() && document()->documentElement() == this && oldStyle && newStyle && oldStyle->fontSize() != newStyle->fontSize()) {
         // Cached RenderStyles may depend on the re units.
         document()->styleResolver()->invalidateMatchedPropertiesCache();
         return Force;

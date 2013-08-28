@@ -31,8 +31,8 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/page/Settings.h"
@@ -46,7 +46,7 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot* shado
 {
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleSheetCollections* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     if (document()->settings() && !document()->settings()->authorAndUserStylesEnabled())
         return;
@@ -94,7 +94,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(DocumentStyleSheetCollec
     }
 }
 
-bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(DocumentStyleSheetCollection* collections, StyleResolverUpdateMode updateMode)
+bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleSheetCollections* collections, StyleResolverUpdateMode updateMode)
 {
     Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;

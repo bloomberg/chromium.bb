@@ -43,7 +43,7 @@ namespace WebCore {
 
 class ContainerNode;
 class CSSStyleSheet;
-class DocumentStyleSheetCollection;
+class StyleSheetCollections;
 class Node;
 class StyleSheet;
 class StyleSheetContents;
@@ -103,10 +103,10 @@ class StyleSheetCollectionForDocument FINAL : public StyleSheetCollection {
 public:
     explicit StyleSheetCollectionForDocument(TreeScope*);
 
-    bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode);
+    bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
 
 private:
-    void collectStyleSheets(DocumentStyleSheetCollection*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
+    void collectStyleSheets(StyleSheetCollections*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
 };
 
 }

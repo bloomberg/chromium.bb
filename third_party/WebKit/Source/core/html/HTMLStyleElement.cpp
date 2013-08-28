@@ -29,9 +29,9 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
@@ -102,10 +102,10 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
             scopingNode = containingShadowRoot();
             unregisterWithScopingNode(scopingNode);
         }
-        document()->styleSheetCollection()->removeStyleSheetCandidateNode(this, scopingNode);
+        document()->styleSheetCollections()->removeStyleSheetCandidateNode(this, scopingNode);
         registerWithScopingNode(true);
 
-        document()->styleSheetCollection()->addStyleSheetCandidateNode(this, false);
+        document()->styleSheetCollections()->addStyleSheetCandidateNode(this, false);
         document()->modifiedStyleSheet(sheet());
         return;
     }
@@ -115,7 +115,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (m_scopedStyleRegistrationState != RegisteredAsScoped)
         return;
 
-    document()->styleSheetCollection()->removeStyleSheetCandidateNode(this, parentNode());
+    document()->styleSheetCollections()->removeStyleSheetCandidateNode(this, parentNode());
     unregisterWithScopingNode(parentNode());
 
     // As any <style> in a shadow tree is treated as "scoped",
@@ -123,7 +123,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (isInShadowTree())
         registerWithScopingNode(false);
 
-    document()->styleSheetCollection()->addStyleSheetCandidateNode(this, false);
+    document()->styleSheetCollections()->addStyleSheetCandidateNode(this, false);
     document()->modifiedStyleSheet(sheet());
 }
 

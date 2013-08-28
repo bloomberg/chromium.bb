@@ -49,11 +49,11 @@
 #include "core/css/CSSParserMode.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCollection.h"
@@ -208,9 +208,9 @@ void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLev
     parsedSheet->setIsUserStyleSheet(styleLevel == UserStyleUserLevel);
     parsedSheet->parseString(sourceCode);
     if (parsedSheet->isUserStyleSheet())
-        document->styleSheetCollection()->addUserSheet(parsedSheet);
+        document->styleSheetCollections()->addUserSheet(parsedSheet);
     else
-        document->styleSheetCollection()->addAuthorSheet(parsedSheet);
+        document->styleSheetCollections()->addAuthorSheet(parsedSheet);
 }
 
 void WebDocument::cancelFullScreen()

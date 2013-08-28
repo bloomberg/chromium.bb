@@ -64,7 +64,6 @@
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/DocumentSharedObjectPool.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -90,6 +89,7 @@
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/StyleSheetCollections.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeWalker.h"
@@ -397,7 +397,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
-    , m_styleSheetCollection(DocumentStyleSheetCollection::create(this))
+    , m_styleSheetCollections(StyleSheetCollections::create(this))
     , m_visitedLinkState(VisitedLinkState::create(this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
@@ -547,7 +547,7 @@ Document::~Document()
         m_import = 0;
     }
 
-    m_styleSheetCollection.clear();
+    m_styleSheetCollections.clear();
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
@@ -649,8 +649,8 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
     selectorQueryCache()->invalidate();
     if (inQuirksMode() != wasInQuirksMode) {
         // All user stylesheets have to reparse using the different mode.
-        m_styleSheetCollection->clearPageUserSheet();
-        m_styleSheetCollection->invalidateInjectedStyleSheetCache();
+        m_styleSheetCollections->clearPageUserSheet();
+        m_styleSheetCollections->invalidateInjectedStyleSheetCache();
     }
 }
 
@@ -1622,13 +1622,13 @@ void Document::recalcStyle(StyleChange change)
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
-    if (m_styleSheetCollection->needsUpdateActiveStylesheetsOnStyleRecalc())
-        m_styleSheetCollection->updateActiveStyleSheets(FullStyleUpdate);
+    if (m_styleSheetCollections->needsUpdateActiveStylesheetsOnStyleRecalc())
+        m_styleSheetCollections->updateActiveStyleSheets(FullStyleUpdate);
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
-        m_styleSheetCollection->setUsesRemUnit(true);
+        m_styleSheetCollections->setUsesRemUnit(true);
 
     m_inStyleRecalc = true;
     {
@@ -1675,15 +1675,15 @@ void Document::recalcStyle(StyleChange change)
         unscheduleStyleRecalc();
 
         // FIXME: SVG <use> element can schedule a recalc in the middle of an already running one.
-        // See DocumentStyleSheetCollection::updateActiveStyleSheets.
-        if (m_styleSheetCollection->needsUpdateActiveStylesheetsOnStyleRecalc())
+        // See StyleSheetCollections::updateActiveStyleSheets.
+        if (m_styleSheetCollections->needsUpdateActiveStylesheetsOnStyleRecalc())
             setNeedsStyleRecalc();
 
         m_inStyleRecalc = false;
 
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
         if (m_styleResolver)
-            m_styleSheetCollection->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
+            m_styleSheetCollections->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 
         if (frameView) {
             frameView->resumeScheduledEvents();
@@ -1867,7 +1867,7 @@ void Document::createStyleResolver()
     if (Settings* docSettings = settings())
         matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
     m_styleResolver = adoptPtr(new StyleResolver(this, matchAuthorAndUserStyles));
-    m_styleSheetCollection->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
+    m_styleSheetCollections->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 }
 
 void Document::clearStyleResolver()
@@ -2706,7 +2706,7 @@ Frame* Document::findUnsafeParentScrollPropagationBoundary()
 
 void Document::seamlessParentUpdatedStylesheets()
 {
-    m_styleSheetCollection->didModifySeamlessParentStyleSheet();
+    m_styleSheetCollections->didModifySeamlessParentStyleSheet();
     styleResolverChanged(RecalcStyleImmediately);
 }
 
@@ -2782,8 +2782,8 @@ void Document::processHttpEquivDefaultStyle(const String& content)
     // For more info, see the test at:
     // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
     // -dwh
-    m_styleSheetCollection->setSelectedStylesheetSetName(content);
-    m_styleSheetCollection->setPreferredStylesheetSetName(content);
+    m_styleSheetCollections->setSelectedStylesheetSetName(content);
+    m_styleSheetCollections->setPreferredStylesheetSetName(content);
     styleResolverChanged(RecalcStyleDeferred);
 }
 
@@ -3106,17 +3106,17 @@ StyleSheetList* Document::styleSheets()
 
 String Document::preferredStylesheetSet() const
 {
-    return m_styleSheetCollection->preferredStylesheetSetName();
+    return m_styleSheetCollections->preferredStylesheetSetName();
 }
 
 String Document::selectedStylesheetSet() const
 {
-    return m_styleSheetCollection->selectedStylesheetSetName();
+    return m_styleSheetCollections->selectedStylesheetSetName();
 }
 
 void Document::setSelectedStylesheetSet(const String& aString)
 {
-    m_styleSheetCollection->setSelectedStylesheetSetName(aString);
+    m_styleSheetCollections->setSelectedStylesheetSetName(aString);
     styleResolverChanged(RecalcStyleDeferred);
 }
 
@@ -3136,14 +3136,14 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
     }
     m_didCalculateStyleResolver = true;
 
-    bool needsRecalc = m_styleSheetCollection->updateActiveStyleSheets(updateMode);
+    bool needsRecalc = m_styleSheetCollections->updateActiveStyleSheets(updateMode);
 
     if (updateType >= RecalcStyleDeferred) {
         setNeedsStyleRecalc();
         return;
     }
 
-    if (didLayoutWithPendingStylesheets() && !m_styleSheetCollection->hasPendingSheets()) {
+    if (didLayoutWithPendingStylesheets() && !m_styleSheetCollections->hasPendingSheets()) {
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
         if (renderer())
             renderView()->repaintViewAndCompositedLayers();
@@ -5194,7 +5194,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
 bool Document::haveStylesheetsLoaded() const
 {
-    return !m_styleSheetCollection->hasPendingSheets() || m_ignorePendingStylesheets;
+    return !m_styleSheetCollections->hasPendingSheets() || m_ignorePendingStylesheets;
 }
 
 Locale& Document::getCachedLocale(const AtomicString& locale)
