@@ -50,3 +50,6 @@ MacSandboxTest.FontLoadingTest
 
 # http://crbug.com/270254
 DeviceOrientationEventPumpTest.*
+
+# http://crbug.com/280495
+SyntheticGestureControllerTest.Tick
