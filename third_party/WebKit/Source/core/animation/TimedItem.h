@@ -32,6 +32,7 @@
 #define TimedItem_h
 
 #include "core/animation/Timing.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 

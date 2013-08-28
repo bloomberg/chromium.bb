@@ -21,21 +21,19 @@
 #ifndef RefCounted_h
 #define RefCounted_h
 
-#include "wtf/Assertions.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/ThreadRestrictionVerifier.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/WTFExport.h"
-
-namespace WTF {
 
 #ifdef NDEBUG
 #define CHECK_REF_COUNTED_LIFECYCLE 0
 #else
 #define CHECK_REF_COUNTED_LIFECYCLE 1
+#include "wtf/Assertions.h"
+#include "wtf/ThreadRestrictionVerifier.h"
 #endif
+
+namespace WTF {
 
 // This base class holds the non-template methods and attributes.
 // The RefCounted class inherits from it reducing the template bloat
@@ -166,7 +164,8 @@ inline void adopted(RefCountedBase* object)
 #endif
 
 template<typename T> class RefCounted : public RefCountedBase {
-    WTF_MAKE_NONCOPYABLE(RefCounted); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(RefCounted);
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     void deref()
     {

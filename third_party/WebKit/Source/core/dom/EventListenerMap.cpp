@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 
 #ifndef NDEBUG
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #endif
 
 using namespace WTF;

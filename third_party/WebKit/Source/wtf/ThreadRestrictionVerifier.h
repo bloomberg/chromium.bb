@@ -35,11 +35,6 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
-
-#if HAVE(DISPATCH_H)
-#include <dispatch/dispatch.h>
-#endif
 
 namespace WTF {
 
@@ -50,42 +45,9 @@ namespace WTF {
 class ThreadRestrictionVerifier {
 public:
     ThreadRestrictionVerifier()
-        : m_mode(SingleThreadVerificationMode)
-        , m_shared(false)
+        : m_shared(false)
         , m_owningThread(0)
-        , m_mutex(0)
-#if HAVE(DISPATCH_H)
-        , m_owningQueue(0)
-#endif
     {
-    }
-
-#if HAVE(DISPATCH_H)
-    ~ThreadRestrictionVerifier()
-    {
-        if (m_owningQueue)
-            dispatch_release(m_owningQueue);
-    }
-#endif
-
-    void setMutexMode(Mutex& mutex)
-    {
-        m_mode = MutexVerificationMode;
-        m_mutex = &mutex;
-    }
-
-#if HAVE(DISPATCH_H)
-    void setDispatchQueueMode(dispatch_queue_t queue)
-    {
-        m_mode = SingleDispatchQueueVerificationMode;
-        m_owningQueue = queue;
-        dispatch_retain(m_owningQueue);
-    }
-#endif
-
-    void turnOffVerification()
-    {
-        m_mode = NoVerificationMode;
     }
 
     // Indicates that the object may (or may not) be owned by more than one place.
@@ -99,21 +61,9 @@ public:
         if (!m_shared)
             return;
 
-        switch (m_mode) {
-        case SingleThreadVerificationMode:
-            ASSERT(shared != previouslyShared);
-            // Capture the current thread to verify that subsequent ref/deref happen on this thread.
-            m_owningThread = currentThread();
-            return;
-
-#if HAVE(DISPATCH_H)
-        case SingleDispatchQueueVerificationMode:
-#endif
-        case MutexVerificationMode:
-        case NoVerificationMode:
-            return;
-        }
-        ASSERT_NOT_REACHED();
+        ASSERT(shared != previouslyShared);
+        // Capture the current thread to verify that subsequent ref/deref happen on this thread.
+        m_owningThread = currentThread();
     }
 
     // Is it OK to use the object at this moment on the current thread?
@@ -122,51 +72,14 @@ public:
         if (!m_shared)
             return true;
 
-        switch (m_mode) {
-        case SingleThreadVerificationMode:
-            return m_owningThread == currentThread();
-
-        case MutexVerificationMode:
-            if (!m_mutex->tryLock())
-                return true;
-            m_mutex->unlock();
-            return false;
-
-#if HAVE(DISPATCH_H)
-        case SingleDispatchQueueVerificationMode:
-            return m_owningQueue == dispatch_get_current_queue();
-#endif
-
-        case NoVerificationMode:
-            return true;
-        }
-        ASSERT_NOT_REACHED();
-        return true;
+        return m_owningThread == currentThread();
     }
 
 private:
-    enum VerificationMode {
-        SingleThreadVerificationMode,
-        MutexVerificationMode,
-        NoVerificationMode,
-#if HAVE(DISPATCH_H)
-        SingleDispatchQueueVerificationMode,
-#endif
-    };
-
-    VerificationMode m_mode;
     bool m_shared;
 
     // Used by SingleThreadVerificationMode
     ThreadIdentifier m_owningThread;
-
-    // Used by MutexVerificationMode.
-    Mutex* m_mutex;
-
-#if HAVE(DISPATCH_H)
-    // Used by SingleDispatchQueueVerificationMode.
-    dispatch_queue_t m_owningQueue;
-#endif
 };
 
 }
