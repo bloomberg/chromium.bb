@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,16 +103,11 @@ class AutofillPopupControllerBrowserTest
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };
 
-#if defined(OS_LINUX)
-#define MAYBE_HidePopupOnWindowConfiguration DISABLED_HidePopupOnWindowConfiguration
-#else
-#define MAYBE_HidePopupOnWindowConfiguration HidePopupOnWindowConfiguration
-#endif
 // Autofill UI isn't currently hidden on window move on Mac.
 // http://crbug.com/180566
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       MAYBE_HidePopupOnWindowConfiguration) {
+                       HidePopupOnWindowConfiguration) {
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
