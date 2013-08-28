@@ -825,6 +825,7 @@
         'browser/extensions/api/serial/serial_port_enumerator_unittest.cc',
         'browser/extensions/api/signedin_devices/id_mapping_helper_unittest.cc',
         'browser/extensions/api/signedin_devices/signedin_devices_api_unittest.cc',
+        'browser/extensions/api/signedin_devices/signed_in_devices_manager_unittest.cc',
         'browser/extensions/api/socket/socket_api_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',

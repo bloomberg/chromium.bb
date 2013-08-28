@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/failed_data_types_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -54,8 +55,8 @@ class SyncGlobalError;
 namespace browser_sync {
 class BackendMigrator;
 class ChangeProcessor;
-class DeviceInfo;
 class DataTypeManager;
+class DeviceInfo;
 class JsController;
 class SessionModelAssociator;
 
@@ -284,6 +285,14 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Gets the device info for all devices signed into the account associated
   // with this profile.
   virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedinDevices() const;
+
+  // Notifies the observer of any device info changes.
+  virtual void AddObserverForDeviceInfoChange(
+      browser_sync::SyncedDeviceTracker::Observer* observer);
+
+  // Removes the observer from device info notification.
+  virtual void RemoveObserverForDeviceInfoChange(
+      browser_sync::SyncedDeviceTracker::Observer* observer);
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.

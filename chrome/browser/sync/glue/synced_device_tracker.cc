@@ -32,6 +32,7 @@ SyncedDeviceTracker::SyncedDeviceTracker(syncer::UserShare* user_share,
     user_share_(user_share),
     cache_guid_(cache_guid),
     local_device_info_tag_(DeviceInfoLookupString(cache_guid)) {
+  observers_ = new ObserverListThreadSafe<Observer>;
 }
 
 SyncedDeviceTracker::~SyncedDeviceTracker() {
@@ -49,7 +50,7 @@ void SyncedDeviceTracker::ApplyChangesFromSyncModel(
 }
 
 void SyncedDeviceTracker::CommitChangesFromSyncModel() {
-  // TODO(sync): notify our listeners.
+  observers_->Notify(&Observer::OnDeviceInfoChange);
 }
 
 scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo() const {
@@ -130,6 +131,14 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
                        specifics.device_type()));
 
   }
+}
+
+void SyncedDeviceTracker::AddObserver(Observer* observer) {
+  observers_->AddObserver(observer);
+}
+
+void SyncedDeviceTracker::RemoveObserver(Observer* observer) {
+  observers_->RemoveObserver(observer);
 }
 
 void SyncedDeviceTracker::InitLocalDeviceInfo(const base::Closure& callback) {

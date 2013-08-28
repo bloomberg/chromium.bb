@@ -419,6 +419,8 @@
         'browser/extensions/api/signedin_devices/id_mapping_helper.h',
         'browser/extensions/api/signedin_devices/signedin_devices_api.cc',
         'browser/extensions/api/signedin_devices/signedin_devices_api.h',
+        'browser/extensions/api/signedin_devices/signed_in_devices_manager.cc',
+        'browser/extensions/api/signedin_devices/signed_in_devices_manager.h',
         'browser/extensions/api/socket/socket.cc',
         'browser/extensions/api/socket/socket.h',
         'browser/extensions/api/socket/socket_api.cc',

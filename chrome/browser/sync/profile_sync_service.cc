@@ -422,6 +422,30 @@ ScopedVector<browser_sync::DeviceInfo>
   return devices.Pass();
 }
 
+// Notifies the observer of any device info changes.
+void ProfileSyncService::AddObserverForDeviceInfoChange(
+    browser_sync::SyncedDeviceTracker::Observer* observer) {
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker) {
+      device_tracker->AddObserver(observer);
+    }
+  }
+}
+
+// Removes the observer from device info change notification.
+void ProfileSyncService::RemoveObserverForDeviceInfoChange(
+    browser_sync::SyncedDeviceTracker::Observer* observer) {
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker) {
+      device_tracker->RemoveObserver(observer);
+    }
+  }
+}
+
 void ProfileSyncService::GetDataTypeControllerStates(
   browser_sync::DataTypeController::StateMap* state_map) const {
     for (browser_sync::DataTypeController::TypeMap::const_iterator iter =
