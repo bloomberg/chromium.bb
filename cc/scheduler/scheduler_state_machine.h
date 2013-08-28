@@ -179,6 +179,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldAcquireLayerTexturesForMainThread() const;
   bool ShouldUpdateVisibleTiles() const;
   bool ShouldSendBeginFrameToMainThread() const;
+  bool ShouldCommit() const;
 
   bool HasDrawnThisFrame() const;
   bool HasActivatedPendingTreeThisFrame() const;

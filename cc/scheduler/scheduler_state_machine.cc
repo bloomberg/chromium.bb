@@ -253,6 +253,11 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   if (!can_start_)
     return false;
 
+  // We only want to start output surface initialization after the
+  // previous commit is complete.
+  if (commit_state_ != COMMIT_STATE_IDLE)
+    return false;
+
   // We need to create the output surface if we don't have one and we haven't
   // started creating one yet.
   return output_surface_state_ == OUTPUT_SURFACE_LOST;
@@ -385,65 +390,31 @@ bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
   return true;
 }
 
+bool SchedulerStateMachine::ShouldCommit() const {
+  return commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
+}
+
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   if (ShouldAcquireLayerTexturesForMainThread())
     return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
-
-  switch (commit_state_) {
-    case COMMIT_STATE_IDLE:
-      if (ShouldUpdateVisibleTiles())
-        return ACTION_UPDATE_VISIBLE_TILES;
-      if (ShouldActivatePendingTree())
-        return ACTION_ACTIVATE_PENDING_TREE;
-      if (ShouldDraw()) {
-        return needs_forced_redraw_ ? ACTION_DRAW_FORCED
-                                    : ACTION_DRAW_IF_POSSIBLE;
-      }
-      if (ShouldSendBeginFrameToMainThread())
-        return ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
-      if (ShouldBeginOutputSurfaceCreation())
-        return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
-      return ACTION_NONE;
-
-    case COMMIT_STATE_FRAME_IN_PROGRESS:
-      if (ShouldUpdateVisibleTiles())
-        return ACTION_UPDATE_VISIBLE_TILES;
-      if (ShouldActivatePendingTree())
-        return ACTION_ACTIVATE_PENDING_TREE;
-      if (ShouldDraw()) {
-        return needs_forced_redraw_ ? ACTION_DRAW_FORCED
-                                    : ACTION_DRAW_IF_POSSIBLE;
-      }
-      return ACTION_NONE;
-
-    case COMMIT_STATE_READY_TO_COMMIT:
-      return ACTION_COMMIT;
-
-    case COMMIT_STATE_WAITING_FOR_FIRST_DRAW:
-      if (ShouldUpdateVisibleTiles())
-        return ACTION_UPDATE_VISIBLE_TILES;
-      if (ShouldActivatePendingTree())
-        return ACTION_ACTIVATE_PENDING_TREE;
-      if (ShouldDraw()) {
-        if (needs_forced_redraw_)
-          return ACTION_DRAW_FORCED;
-        else if (PendingDrawsShouldBeAborted())
-          return ACTION_DRAW_AND_SWAP_ABORT;
-        else
-          return ACTION_DRAW_IF_POSSIBLE;
-      }
-      return ACTION_NONE;
-
-    case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
-      if (ShouldUpdateVisibleTiles())
-        return ACTION_UPDATE_VISIBLE_TILES;
-      if (ShouldActivatePendingTree())
-        return ACTION_ACTIVATE_PENDING_TREE;
-      if (ShouldDraw())
-        return ACTION_DRAW_FORCED;
-      return ACTION_NONE;
+  if (ShouldUpdateVisibleTiles())
+    return ACTION_UPDATE_VISIBLE_TILES;
+  if (ShouldActivatePendingTree())
+    return ACTION_ACTIVATE_PENDING_TREE;
+  if (ShouldCommit())
+    return ACTION_COMMIT;
+  if (ShouldDraw()) {
+    if (needs_forced_redraw_)
+      return ACTION_DRAW_FORCED;
+    else if (PendingDrawsShouldBeAborted())
+      return ACTION_DRAW_AND_SWAP_ABORT;
+    else
+      return ACTION_DRAW_IF_POSSIBLE;
   }
-  NOTREACHED();
+  if (ShouldSendBeginFrameToMainThread())
+    return ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
+  if (ShouldBeginOutputSurfaceCreation())
+    return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
   return ACTION_NONE;
 }
 
