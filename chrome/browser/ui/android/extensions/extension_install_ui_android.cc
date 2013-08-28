@@ -17,10 +17,6 @@ void ExtensionInstallUIAndroid::OnInstallFailure(
   NOTIMPLEMENTED();
 }
 
-void ExtensionInstallUIAndroid::SetSkipPostInstallUI(bool skip_ui) {
-  NOTIMPLEMENTED();
-}
-
 // static
 ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
   NOTIMPLEMENTED();
@@ -30,11 +26,6 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 // static
 void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
                                             const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-// static
-void ExtensionInstallUI::DisableFailureUIForTests() {
   NOTIMPLEMENTED();
 }
 

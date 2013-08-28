@@ -130,7 +130,8 @@ CrxInstaller::CrxInstaller(
   if (client_) {
     client_->install_ui()->SetUseAppInstalledBubble(
         approval->use_app_installed_bubble);
-    client_->install_ui()->SetSkipPostInstallUI(approval->skip_post_install_ui);
+    client_->install_ui()->set_skip_post_install_ui(
+        approval->skip_post_install_ui);
   }
 
   if (approval->skip_install_dialog) {
@@ -517,7 +518,7 @@ void CrxInstaller::ConfirmInstall() {
     // because the WebStore already shows an error dialog itself.
     // Note: |client_| can be NULL in unit_tests!
     if (extension()->from_webstore() && client_)
-      client_->install_ui()->SetSkipPostInstallUI(true);
+      client_->install_ui()->set_skip_post_install_ui(true);
     ReportFailureFromUIThread(CrxInstallerError(error));
     return;
   }

@@ -4,6 +4,11 @@
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 
-ExtensionInstallUI::ExtensionInstallUI(Profile* profile) : profile_(profile) {}
+// static
+bool ExtensionInstallUI::disable_failure_ui_for_tests_ = false;
+
+ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
+    : profile_(profile),
+      skip_post_install_ui_(false) {}
 
 ExtensionInstallUI::~ExtensionInstallUI() {}

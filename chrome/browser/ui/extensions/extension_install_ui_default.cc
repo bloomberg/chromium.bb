@@ -53,8 +53,6 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-bool disable_failure_ui_for_tests = false;
-
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   // TODO(mpcomplete): remove this workaround for http://crbug.com/244246
   // after fixing http://crbug.com/38676.
@@ -179,11 +177,6 @@ void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
 }
 
 // static
-void ExtensionInstallUI::DisableFailureUIForTests() {
-  disable_failure_ui_for_tests = true;
-}
-
-// static
 ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
     Browser* browser) {
   content::WebContents* web_contents = NULL;
@@ -205,7 +198,6 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
     : ExtensionInstallUI(profile),
-      skip_post_install_ui_(false),
       previous_using_native_theme_(false),
       use_app_installed_bubble_(false) {
   // |profile| can be NULL during tests.
@@ -224,7 +216,7 @@ ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                                  SkBitmap* icon) {
-  if (skip_post_install_ui_)
+  if (skip_post_install_ui())
     return;
 
   if (!profile()) {
@@ -277,7 +269,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 void ExtensionInstallUIDefault::OnInstallFailure(
     const extensions::CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (disable_failure_ui_for_tests || skip_post_install_ui_)
+  if (disable_failure_ui_for_tests() || skip_post_install_ui())
     return;
 
   Browser* browser =
@@ -290,10 +282,6 @@ void ExtensionInstallUIDefault::OnInstallFailure(
     return;
   ErrorInfoBarDelegate::Create(InfoBarService::FromWebContents(web_contents),
                                error);
-}
-
-void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {
-  skip_post_install_ui_ = skip_ui;
 }
 
 void ExtensionInstallUIDefault::SetUseAppInstalledBubble(bool use_bubble) {

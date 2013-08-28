@@ -104,7 +104,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(test_server()->Start());
-    ExtensionInstallUI::DisableFailureUIForTests();
+    ExtensionInstallUI::set_disable_failure_ui_for_tests();
   }
 
  protected:

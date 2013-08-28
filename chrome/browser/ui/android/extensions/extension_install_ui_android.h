@@ -19,7 +19,6 @@ class ExtensionInstallUIAndroid : public ExtensionInstallUI {
                                 SkBitmap* icon) OVERRIDE;
   virtual void OnInstallFailure(
       const extensions::CrxInstallerError& error) OVERRIDE;
-  virtual void SetSkipPostInstallUI(bool skip_ui) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallUIAndroid);

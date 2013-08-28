@@ -21,13 +21,9 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
                                 SkBitmap* icon) OVERRIDE;
   virtual void OnInstallFailure(
       const extensions::CrxInstallerError& error) OVERRIDE;
-  virtual void SetSkipPostInstallUI(bool skip_ui) OVERRIDE;
   virtual void SetUseAppInstalledBubble(bool use_bubble) OVERRIDE;
 
  private:
-  // Whether or not to show the default UI after completing the installation.
-  bool skip_post_install_ui_;
-
   // Used to undo theme installation.
   std::string previous_theme_id_;
   bool previous_using_native_theme_;
