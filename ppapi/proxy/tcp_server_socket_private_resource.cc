@@ -4,9 +4,8 @@
 
 #include "ppapi/proxy/tcp_server_socket_private_resource.h"
 
-#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
+#include "ppapi/proxy/tcp_socket_private_resource.h"
 
 namespace ppapi {
 namespace proxy {
@@ -16,15 +15,8 @@ TCPServerSocketPrivateResource::TCPServerSocketPrivateResource(
     PP_Instance instance)
     : PluginResource(connection, instance),
       state_(STATE_BEFORE_LISTENING),
-      local_addr_(),
-      plugin_dispatcher_id_(0) {
+      local_addr_() {
   SendCreate(BROWSER, PpapiHostMsg_TCPServerSocket_CreatePrivate());
-
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (dispatcher)
-    plugin_dispatcher_id_ = dispatcher->plugin_dispatcher_id();
-  else
-    NOTREACHED();
 }
 
 TCPServerSocketPrivateResource::~TCPServerSocketPrivateResource() {
@@ -71,7 +63,7 @@ int32_t TCPServerSocketPrivateResource::Accept(
 
   Call<PpapiPluginMsg_TCPServerSocket_AcceptReply>(
       BROWSER,
-      PpapiHostMsg_TCPServerSocket_Accept(plugin_dispatcher_id_),
+      PpapiHostMsg_TCPServerSocket_Accept(),
       base::Bind(&TCPServerSocketPrivateResource::OnPluginMsgAcceptReply,
                  base::Unretained(this), tcp_socket));
   return PP_OK_COMPLETIONPENDING;
@@ -115,7 +107,7 @@ void TCPServerSocketPrivateResource::OnPluginMsgListenReply(
 void TCPServerSocketPrivateResource::OnPluginMsgAcceptReply(
     PP_Resource* tcp_socket,
     const ResourceMessageReplyParams& params,
-    uint32 accepted_socket_id,
+    int pending_resource_id,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   DCHECK(tcp_socket);
@@ -124,12 +116,10 @@ void TCPServerSocketPrivateResource::OnPluginMsgAcceptReply(
     return;
   }
   if (params.result() == PP_OK) {
-    *tcp_socket =
-        PPB_TCPSocket_Private_Proxy::CreateProxyResourceForConnectedSocket(
-            pp_instance(),
-            accepted_socket_id,
-            local_addr,
-            remote_addr);
+    *tcp_socket = (new TCPSocketPrivateResource(connection(), pp_instance(),
+                                                pending_resource_id,
+                                                local_addr,
+                                                remote_addr))->GetReference();
   }
   accept_callback_->Run(params.result());
 }

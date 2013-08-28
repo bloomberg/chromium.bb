@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/error_conversion.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/thunk/enter.h"
@@ -18,23 +19,6 @@
 
 namespace ppapi {
 namespace proxy {
-
-namespace {
-
-int32_t ConvertPPError(int32_t pp_error, bool private_api) {
-  // The private API doesn't return network-specific error codes or
-  // PP_ERROR_NOACCESS. In order to preserve the behavior, we convert those to
-  // PP_ERROR_FAILED.
-  if (private_api &&
-      (pp_error <= PP_ERROR_CONNECTION_CLOSED ||
-       pp_error == PP_ERROR_NOACCESS)) {
-    return PP_ERROR_FAILED;
-  }
-
-  return pp_error;
-}
-
-}  // namespace
 
 const int32_t UDPSocketResourceBase::kMaxReadSize = 1024 * 1024;
 const int32_t UDPSocketResourceBase::kMaxWriteSize = 1024 * 1024;
@@ -227,7 +211,7 @@ void UDPSocketResourceBase::OnPluginMsgSetOptionReply(
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params) {
   if (TrackedCallback::IsPending(callback))
-    callback->Run(ConvertPPError(params.result(), private_api_));
+    RunCallback(callback, params.result());
 }
 
 void UDPSocketResourceBase::OnPluginMsgBindReply(
@@ -243,7 +227,7 @@ void UDPSocketResourceBase::OnPluginMsgBindReply(
   if (params.result() == PP_OK)
     bound_ = true;
   bound_addr_ = bound_addr;
-  bind_callback_->Run(ConvertPPError(params.result(), private_api_));
+  RunCallback(bind_callback_, params.result());
 }
 
 void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
@@ -280,9 +264,9 @@ void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
   recvfrom_addr_ = addr;
 
   if (result == PP_OK)
-    recvfrom_callback_->Run(static_cast<int32_t>(data.size()));
+    RunCallback(recvfrom_callback_, static_cast<int32_t>(data.size()));
   else
-    recvfrom_callback_->Run(ConvertPPError(result, private_api_));
+    RunCallback(recvfrom_callback_, result);
 }
 
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
@@ -292,9 +276,15 @@ void UDPSocketResourceBase::OnPluginMsgSendToReply(
     return;
 
   if (params.result() == PP_OK)
-    sendto_callback_->Run(bytes_written);
+    RunCallback(sendto_callback_, bytes_written);
   else
-    sendto_callback_->Run(ConvertPPError(params.result(), private_api_));
+    RunCallback(sendto_callback_, params.result());
+}
+
+void UDPSocketResourceBase::RunCallback(scoped_refptr<TrackedCallback> callback,
+                                        int32_t pp_result) {
+  callback->Run(ConvertNetworkAPIErrorForCompatibility(pp_result,
+                                                       private_api_));
 }
 
 }  // namespace proxy

@@ -6,8 +6,17 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_SOCKET_UTILS_H_
 
 #include "content/public/common/socket_permission_request.h"
+#include "ppapi/c/pp_stdint.h"
 
 struct PP_NetAddress_Private;
+
+namespace net {
+class X509Certificate;
+}
+
+namespace ppapi {
+class PPB_X509Certificate_Fields;
+}
 
 namespace content {
 
@@ -30,6 +39,17 @@ bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
                       const SocketPermissionRequest& params,
                       RenderViewHost* render_view_host);
+
+// Extracts the certificate field data from a net::X509Certificate into
+// PPB_X509Certificate_Fields.
+bool GetCertificateFields(const net::X509Certificate& cert,
+                          ppapi::PPB_X509Certificate_Fields* fields);
+
+// Extracts the certificate field data from the DER representation of a
+// certificate into PPB_X509Certificate_Fields.
+bool GetCertificateFields(const char* der,
+                          uint32_t length,
+                          ppapi::PPB_X509Certificate_Fields* fields);
 
 }  // namespace pepper_socket_utils
 

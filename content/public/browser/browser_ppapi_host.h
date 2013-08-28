@@ -18,10 +18,6 @@ struct ChannelHandle;
 class Sender;
 }
 
-namespace net {
-class HostResolver;
-}
-
 namespace ppapi {
 class PpapiPermissions;
 namespace host {
@@ -45,7 +41,6 @@ class CONTENT_EXPORT BrowserPpapiHost {
       ppapi::PpapiPermissions permissions,
       base::ProcessHandle plugin_child_process,
       IPC::ChannelProxy* channel,
-      net::HostResolver* host_resolver,
       int render_process_id,
       int render_view_id,
       const base::FilePath& profile_directory);

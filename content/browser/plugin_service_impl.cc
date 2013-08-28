@@ -328,8 +328,7 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     int render_process_id,
     const base::FilePath& plugin_path,
-    const base::FilePath& profile_data_directory,
-    PpapiPluginProcessHost::PluginClient* client) {
+    const base::FilePath& profile_data_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
@@ -356,8 +355,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   return PpapiPluginProcessHost::CreatePluginHost(
-      *info, profile_data_directory,
-      client->GetResourceContext()->GetHostResolver());
+      *info, profile_data_directory);
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
@@ -413,7 +411,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     const base::FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
-      render_process_id, plugin_path, profile_data_directory, client);
+      render_process_id, plugin_path, profile_data_directory);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {

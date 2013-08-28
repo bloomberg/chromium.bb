@@ -1,35 +1,35 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PRIVATE_TCP_SOCKET_PRIVATE_IMPL_H_
-#define PPAPI_SHARED_IMPL_PRIVATE_TCP_SOCKET_PRIVATE_IMPL_H_
+#ifndef PPAPI_PROXY_TCP_SOCKET_PRIVATE_RESOURCE_H_
+#define PPAPI_PROXY_TCP_SOCKET_PRIVATE_RESOURCE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ppapi/shared_impl/resource.h"
-#include "ppapi/shared_impl/tcp_socket_shared.h"
+#include "ppapi/proxy/tcp_socket_resource_base.h"
 #include "ppapi/thunk/ppb_tcp_socket_private_api.h"
 
 namespace ppapi {
+namespace proxy {
 
-// This class provides the shared implementation of a
-// PPB_TCPSocket_Private.  The functions that actually send messages
-// to browser are implemented differently for the proxied and
-// non-proxied derived classes.
-class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
+class PPAPI_PROXY_EXPORT TCPSocketPrivateResource
     : public thunk::PPB_TCPSocket_Private_API,
-      public Resource,
-      public TCPSocketShared {
+      public TCPSocketResourceBase {
  public:
-  // C-tor used in Impl case.
-  TCPSocketPrivateImpl(PP_Instance instance, uint32 socket_id);
-  // C-tor used in Proxy case.
-  TCPSocketPrivateImpl(const HostResource& resource, uint32 socket_id);
+  // C-tor used for new sockets.
+  TCPSocketPrivateResource(Connection connection, PP_Instance instance);
 
-  virtual ~TCPSocketPrivateImpl();
+  // C-tor used for already accepted sockets.
+  TCPSocketPrivateResource(Connection connection,
+                           PP_Instance instance,
+                           int pending_resource_id,
+                           const PP_NetAddress_Private& local_addr,
+                           const PP_NetAddress_Private& remote_addr);
 
-  // Resource overrides.
+  virtual ~TCPSocketPrivateResource();
+
+  // PluginResource overrides.
   virtual PPB_TCPSocket_Private_API* AsPPB_TCPSocket_Private_API() OVERRIDE;
 
   // PPB_TCPSocket_Private_API implementation.
@@ -59,16 +59,11 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
-  // TCPSocketShared implementation.
-  virtual Resource* GetOwnerResource() OVERRIDE;
-
-  // TCPSocketShared overrides.
-  virtual int32_t OverridePPError(int32_t pp_error) OVERRIDE;
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateImpl);
+  DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateResource);
 };
 
+}  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PRIVATE_TCP_SOCKET_PRIVATE_IMPL_H_
+#endif  // PPAPI_PROXY_TCP_SOCKET_PRIVATE_RESOURCE_H_

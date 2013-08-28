@@ -48,14 +48,12 @@ class PPAPI_PROXY_EXPORT TCPServerSocketPrivateResource
                               const PP_NetAddress_Private& local_addr);
   void OnPluginMsgAcceptReply(PP_Resource* tcp_socket,
                               const ResourceMessageReplyParams& params,
-                              uint32 accepted_socket_id,
+                              int pending_resource_id,
                               const PP_NetAddress_Private& local_addr,
                               const PP_NetAddress_Private& remote_addr);
 
   State state_;
   PP_NetAddress_Private local_addr_;
-
-  uint32 plugin_dispatcher_id_;
 
   scoped_refptr<TrackedCallback> listen_callback_;
   scoped_refptr<TrackedCallback> accept_callback_;

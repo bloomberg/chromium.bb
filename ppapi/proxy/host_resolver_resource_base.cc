@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/error_conversion.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -13,25 +14,6 @@
 
 namespace ppapi {
 namespace proxy {
-
-namespace {
-
-int32_t ConvertPPError(int32_t pp_error, bool private_api) {
-  // The private API doesn't return network-specific error codes or
-  // PP_ERROR_NOACCESS. In order to preserve the behavior, we convert those to
-  // PP_ERROR_FAILED.
-  // TODO(yzshen): Consider defining ranges for different kinds of PP_Error
-  // codes, so that we can detect network-specific error codes in a better way.
-  if (private_api &&
-      (pp_error <= PP_ERROR_CONNECTION_CLOSED ||
-       pp_error == PP_ERROR_NOACCESS)) {
-    return PP_ERROR_FAILED;
-  }
-
-  return pp_error;
-}
-
-}  // namespace
 
 HostResolverResourceBase::HostResolverResourceBase(Connection connection,
                                                    PP_Instance instance,
@@ -110,7 +92,8 @@ void HostResolverResourceBase::OnPluginMsgResolveReply(
     canonical_name_.clear();
     net_address_list_.clear();
   }
-  resolve_callback_->Run(ConvertPPError(params.result(), private_api_));
+  resolve_callback_->Run(ConvertNetworkAPIErrorForCompatibility(params.result(),
+                                                                private_api_));
 }
 
 void HostResolverResourceBase::SendResolve(

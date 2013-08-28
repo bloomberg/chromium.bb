@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_TCP_SOCKET_SHARED_H_
-#define PPAPI_SHARED_IMPL_TCP_SOCKET_SHARED_H_
+#ifndef PPAPI_PROXY_TCP_SOCKET_RESOURCE_BASE_H_
+#define PPAPI_PROXY_TCP_SOCKET_RESOURCE_BASE_H_
 
 #include <queue>
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
-#include "ppapi/shared_impl/resource.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -21,9 +23,9 @@ class PPB_X509Certificate_Fields;
 class PPB_X509Certificate_Private_Shared;
 class SocketOptionData;
 
-// This class provides the shared implementation for both PPB_TCPSocket and
-// PPB_TCPSocket_Private.
-class PPAPI_SHARED_EXPORT TCPSocketShared {
+namespace proxy {
+
+class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
  public:
   // The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Read
   // message is allowed to request.
@@ -43,37 +45,6 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
   // such a buffer size.
   static const int32_t kMaxReceiveBufferSize;
 
-  // Notifications on operations completion.
-  void OnConnectCompleted(int32_t result,
-                          const PP_NetAddress_Private& local_addr,
-                          const PP_NetAddress_Private& remote_addr);
-  void OnSSLHandshakeCompleted(
-      bool succeeded,
-      const PPB_X509Certificate_Fields& certificate_fields);
-  void OnReadCompleted(int32_t result, const std::string& data);
-  void OnWriteCompleted(int32_t result);
-  void OnSetOptionCompleted(int32_t result);
-
-  // Send functions that need to be implemented differently for the
-  // proxied and non-proxied derived classes.
-  virtual void SendConnect(const std::string& host, uint16_t port) = 0;
-  virtual void SendConnectWithNetAddress(const PP_NetAddress_Private& addr) = 0;
-  virtual void SendSSLHandshake(
-      const std::string& server_name,
-      uint16_t server_port,
-      const std::vector<std::vector<char> >& trusted_certs,
-      const std::vector<std::vector<char> >& untrusted_certs) = 0;
-  virtual void SendRead(int32_t bytes_to_read) = 0;
-  virtual void SendWrite(const std::string& buffer) = 0;
-  virtual void SendDisconnect() = 0;
-  virtual void SendSetOption(PP_TCPSocket_Option name,
-                             const SocketOptionData& value) = 0;
-
-  virtual Resource* GetOwnerResource() = 0;
-
-  // Used to override PP_Error codes received from the browser side.
-  virtual int32_t OverridePPError(int32_t pp_error);
-
  protected:
   enum ConnectionState {
     // Before a connection is successfully established (including a connect
@@ -88,8 +59,19 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
     DISCONNECTED
   };
 
-  TCPSocketShared(ResourceObjectType resource_type, uint32 socket_id);
-  virtual ~TCPSocketShared();
+  // C-tor used for new sockets.
+  TCPSocketResourceBase(Connection connection,
+                        PP_Instance instance,
+                        bool private_api);
+
+  // C-tor used for already accepted sockets.
+  TCPSocketResourceBase(Connection connection,
+                        PP_Instance instance,
+                        bool private_api,
+                        const PP_NetAddress_Private& local_addr,
+                        const PP_NetAddress_Private& remote_addr);
+
+  virtual ~TCPSocketResourceBase();
 
   int32_t ConnectImpl(const char* host,
                       uint16_t port,
@@ -115,14 +97,20 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
                         const PP_Var& value,
                         scoped_refptr<TrackedCallback> callback);
 
-  void Init(uint32 socket_id);
   bool IsConnected() const;
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
-  ResourceObjectType resource_type_;
-
-  uint32 socket_id_;
-  ConnectionState connection_state_;
+  // IPC message handlers.
+  void OnPluginMsgConnectReply(const ResourceMessageReplyParams& params,
+                               const PP_NetAddress_Private& local_addr,
+                               const PP_NetAddress_Private& remote_addr);
+  void OnPluginMsgSSLHandshakeReply(
+      const ResourceMessageReplyParams& params,
+      const PPB_X509Certificate_Fields& certificate_fields);
+  void OnPluginMsgReadReply(const ResourceMessageReplyParams& params,
+                            const std::string& data);
+  void OnPluginMsgWriteReply(const ResourceMessageReplyParams& params);
+  void OnPluginMsgSetOptionReply(const ResourceMessageReplyParams& params);
 
   scoped_refptr<TrackedCallback> connect_callback_;
   scoped_refptr<TrackedCallback> ssl_handshake_callback_;
@@ -130,6 +118,7 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
   scoped_refptr<TrackedCallback> write_callback_;
   std::queue<scoped_refptr<TrackedCallback> > set_option_callbacks_;
 
+  ConnectionState connection_state_;
   char* read_buffer_;
   int32_t bytes_to_read_;
 
@@ -142,9 +131,14 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
   std::vector<std::vector<char> > untrusted_certificates_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketShared);
+  void RunCallback(scoped_refptr<TrackedCallback> callback, int32_t pp_result);
+
+  bool private_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPSocketResourceBase);
 };
 
+}  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_TCP_SOCKET_SHARED_H_
+#endif  // PPAPI_PROXY_TCP_SOCKET_RESOURCE_BASE_H_

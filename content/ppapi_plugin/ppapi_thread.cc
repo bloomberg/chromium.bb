@@ -101,10 +101,6 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
 
   // Register interfaces that expect messages from the browser process. Please
   // note that only those InterfaceProxy-based ones require registration.
-  AddRoute(ppapi::API_ID_PPB_TCPSOCKET,
-           &dispatcher_message_listener_);
-  AddRoute(ppapi::API_ID_PPB_TCPSOCKET_PRIVATE,
-           &dispatcher_message_listener_);
   AddRoute(ppapi::API_ID_PPB_HOSTRESOLVER_PRIVATE,
            &dispatcher_message_listener_);
   AddRoute(ppapi::API_ID_PPB_NETWORKMANAGER_PRIVATE,

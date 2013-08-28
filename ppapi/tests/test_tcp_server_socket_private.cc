@@ -170,12 +170,21 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   TCPSocketPrivate client_socket(instance_);
   ForceConnect(&client_socket, &address);
 
+  PP_NetAddress_Private client_local_addr, client_remote_addr;
+  ASSERT_TRUE(client_socket.GetLocalAddress(&client_local_addr));
+  ASSERT_TRUE(client_socket.GetRemoteAddress(&client_remote_addr));
+
   accept_callback.WaitForResult(accept_rv);
   CHECK_CALLBACK_BEHAVIOR(accept_callback);
   ASSERT_EQ(PP_OK, accept_callback.result());
 
   ASSERT_TRUE(resource != 0);
   TCPSocketPrivate accepted_socket(pp::PassRef(), resource);
+  PP_NetAddress_Private accepted_local_addr, accepted_remote_addr;
+  ASSERT_TRUE(accepted_socket.GetLocalAddress(&accepted_local_addr));
+  ASSERT_TRUE(accepted_socket.GetRemoteAddress(&accepted_remote_addr));
+  ASSERT_TRUE(NetAddressPrivate::AreEqual(client_local_addr,
+                                          accepted_remote_addr));
 
   const char kSentByte = 'a';
   ASSERT_SUBTEST_SUCCESS(SyncWrite(&client_socket,

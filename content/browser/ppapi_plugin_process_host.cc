@@ -114,10 +114,9 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 // static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const PepperPluginInfo& info,
-    const base::FilePath& profile_data_directory,
-    net::HostResolver* host_resolver) {
+    const base::FilePath& profile_data_directory) {
   PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
-      info, profile_data_directory, host_resolver);
+      info, profile_data_directory);
   if (plugin_host->Init(info))
     return plugin_host;
 
@@ -206,8 +205,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(
     const PepperPluginInfo& info,
-    const base::FilePath& profile_data_directory,
-    net::HostResolver* host_resolver)
+    const base::FilePath& profile_data_directory)
     : permissions_(
           ppapi::PpapiPermissions::GetForCommandLine(info.permissions)),
       profile_data_directory_(profile_data_directory),
@@ -215,13 +213,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_.reset(new BrowserChildProcessHostImpl(
       PROCESS_TYPE_PPAPI_PLUGIN, this));
 
-  filter_ = new PepperMessageFilter(permissions_, host_resolver);
-
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
                                             info.path, profile_data_directory,
-                                            false,
-                                            filter_));
+                                            false));
 
+  filter_ = PepperMessageFilter::CreateForPpapiPluginProcess(permissions_);
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter().get());
 
@@ -243,8 +239,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions,
                                             std::string(), base::FilePath(),
                                             base::FilePath(),
-                                            false,
-                                            NULL));
+                                            false));
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {

@@ -365,8 +365,6 @@
     'renderer/pepper/ppb_proxy_impl.h',
     'renderer/pepper/ppb_scrollbar_impl.cc',
     'renderer/pepper/ppb_scrollbar_impl.h',
-    'renderer/pepper/ppb_tcp_socket_private_impl.cc',
-    'renderer/pepper/ppb_tcp_socket_private_impl.h',
     'renderer/pepper/ppb_uma_private_impl.cc',
     'renderer/pepper/ppb_uma_private_impl.h',
     'renderer/pepper/ppb_var_deprecated_impl.cc',

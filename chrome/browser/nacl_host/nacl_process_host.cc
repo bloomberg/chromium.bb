@@ -794,7 +794,6 @@ void NaClProcessHost::OnPpapiChannelCreated(
         permissions_,
         process_->GetData().handle,
         ipc_proxy_channel_.get(),
-        nacl_host_message_filter_->GetHostResolver(),
         nacl_host_message_filter_->render_process_id(),
         render_view_id_,
         profile_directory_));

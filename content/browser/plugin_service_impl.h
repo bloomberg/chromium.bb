@@ -131,8 +131,7 @@ class CONTENT_EXPORT PluginServiceImpl
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       int render_process_id,
       const base::FilePath& plugin_path,
-      const base::FilePath& profile_data_directory,
-      PpapiPluginProcessHost::PluginClient* client);
+      const base::FilePath& profile_data_directory);
   PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
       int render_process_id, const base::FilePath& plugin_path);
 

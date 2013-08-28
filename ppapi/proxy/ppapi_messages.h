@@ -686,32 +686,6 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
                     std::string /* serialized_block_info */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
-// PPB_TCPSocket and PPB_TCPSocket_Private.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPSocket_ConnectACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    int32_t /* result */,
-                    PP_NetAddress_Private /* local_addr */,
-                    PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    ppapi::PPB_X509Certificate_Fields /* certificate_fields */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_ReadACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    int32_t /* result */,
-                    std::string /* data */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_WriteACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    int32_t /* result */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SetOptionACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    int32_t /* result */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
@@ -1110,45 +1084,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlashMessageLoop_Quit,
                            ppapi::HostResource /* flash_message_loop */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
-// PPB_TCPSocket and PPB_TCPSocket_Private.
-// Creates a PPB_TCPSocket resource.
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBTCPSocket_Create,
-                            int32 /* routing_id */,
-                            uint32 /* plugin_dispatcher_id */,
-                            uint32 /* socket_id */)
-// Creates a PPB_TCPSocket_Private resource.
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBTCPSocket_CreatePrivate,
-                            int32 /* routing_id */,
-                            uint32 /* plugin_dispatcher_id */,
-                            uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL4(PpapiHostMsg_PPBTCPSocket_Connect,
-                     int32 /* routing_id */,
-                     uint32 /* socket_id */,
-                     std::string /* host */,
-                     uint16_t /* port */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
-                     int32 /* routing_id */,
-                     uint32 /* socket_id */,
-                     PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPSocket_SSLHandshake,
-                     uint32 /* socket_id */,
-                     std::string /* server_name */,
-                     uint16_t /* server_port */,
-                     std::vector<std::vector<char> > /* trusted_certs */,
-                     std::vector<std::vector<char> > /* untrusted_certs */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Read,
-                     uint32 /* socket_id */,
-                     int32_t /* bytes_to_read */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Write,
-                     uint32 /* socket_id */,
-                     std::string /* data */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPSocket_Disconnect,
-                     uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SetOption,
-                     uint32 /* socket_id */,
-                     PP_TCPSocket_Option /* name */,
-                     ppapi::SocketOptionData /* value */)
-
 // PPB_X509Certificate_Private
 IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
                             std::vector<char> /* der */,
@@ -1508,6 +1443,41 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
 
+// TCP Socket ------------------------------------------------------------------
+// Creates a PPB_TCPSocket resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Create)
+
+// Creates a PPB_TCPSocket_Private resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_CreatePrivate)
+
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPSocket_Connect,
+                     std::string /* host */,
+                     uint16_t /* port */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_ConnectWithNetAddress,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_TCPSocket_ConnectReply,
+                     PP_NetAddress_Private /* local_addr */,
+                     PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_TCPSocket_SSLHandshake,
+                     std::string /* server_name */,
+                     uint16_t /* server_port */,
+                     std::vector<std::vector<char> > /* trusted_certs */,
+                     std::vector<std::vector<char> > /* untrusted_certs */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPSocket_SSLHandshakeReply,
+                     ppapi::PPB_X509Certificate_Fields /* certificate_fields */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Read,
+                     int32_t /* bytes_to_read */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPSocket_ReadReply,
+                     std::string /* data */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Write,
+                     std::string /* data */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_TCPSocket_WriteReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Disconnect)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPSocket_SetOption,
+                     PP_TCPSocket_Option /* name */,
+                     ppapi::SocketOptionData /* value */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_TCPSocket_SetOptionReply)
+
 // TCP Server Socket -----------------------------------------------------------
 // Creates a PPB_TCPServerSocket_Private resource.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPServerSocket_CreatePrivate)
@@ -1517,10 +1487,9 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPServerSocket_Listen,
                      int32_t /* backlog */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPServerSocket_ListenReply,
                      PP_NetAddress_Private /* local_addr */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPServerSocket_Accept,
-                     uint32 /* plugin_dispatcher_id */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPServerSocket_Accept)
 IPC_MESSAGE_CONTROL3(PpapiPluginMsg_TCPServerSocket_AcceptReply,
-                     uint32 /* accepted_socket_id */,
+                     int /* pending_resource_id */,
                      PP_NetAddress_Private /* local_addr */,
                      PP_NetAddress_Private /* remote_addr */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPServerSocket_StopListening)

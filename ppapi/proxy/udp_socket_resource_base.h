@@ -80,6 +80,8 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   void OnPluginMsgSendToReply(const ResourceMessageReplyParams& params,
                               int32_t bytes_written);
 
+  void RunCallback(scoped_refptr<TrackedCallback> callback, int32_t pp_result);
+
   bool private_api_;
   bool bound_;
   bool closed_;

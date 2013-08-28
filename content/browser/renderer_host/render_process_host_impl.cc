@@ -623,7 +623,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 #if defined(ENABLE_PLUGINS)
   // TODO(raymes): PepperMessageFilter should be removed from here.
-  channel_->AddFilter(new PepperMessageFilter(GetID(), browser_context));
+  channel_->AddFilter(PepperMessageFilter::CreateForRendererProcess());
   channel_->AddFilter(new PepperRendererConnection(GetID()));
 #endif
 #if defined(ENABLE_INPUT_SPEECH)

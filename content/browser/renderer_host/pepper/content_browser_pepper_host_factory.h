@@ -7,8 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/host/host_factory.h"
+
+namespace net {
+class StreamSocket;
+}
 
 namespace ppapi {
 class PpapiPermissions;
@@ -21,11 +25,8 @@ class BrowserPpapiHostImpl;
 class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
  public:
   // Non-owning pointer to the filter must outlive this class.
-  ContentBrowserPepperHostFactory(
-      BrowserPpapiHostImpl* host,
-      // TODO (ygorshenin@): remove this once TCP sockets are
-      // converted to the new design.
-      const scoped_refptr<PepperMessageFilter>& pepper_message_filter);
+  explicit ContentBrowserPepperHostFactory(BrowserPpapiHostImpl* host);
+
   virtual ~ContentBrowserPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
@@ -34,13 +35,19 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
       PP_Instance instance,
       const IPC::Message& message) OVERRIDE;
 
+  // Creates ResourceHost for already accepted TCP |socket|.  Takes
+  // ownership of the |socket|. In the case of failure returns wrapped
+  // NULL.
+  scoped_ptr<ppapi::host::ResourceHost> CreateAcceptedTCPSocket(
+      PP_Instance instance,
+      bool private_api,
+      net::StreamSocket* socket);
+
  private:
   const ppapi::PpapiPermissions& GetPermissions() const;
 
   // Non-owning pointer.
   BrowserPpapiHostImpl* host_;
-
-  scoped_refptr<PepperMessageFilter> pepper_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserPepperHostFactory);
 };

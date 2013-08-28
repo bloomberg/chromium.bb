@@ -6,9 +6,11 @@
 
 #include <stdlib.h>
 
+#include <new>
+
 #include "ppapi/cpp/private/tcp_socket_private.h"
-#include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
+#include "ppapi/tests/testing_instance.h"
 
 namespace {
 
@@ -52,6 +54,7 @@ void TestTCPSocketPrivate::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, ReadWriteSSL, filter);
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, ConnectAddress, filter);
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, SetOption, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, LargeRead, filter);
 }
 
 std::string TestTCPSocketPrivate::TestBasic() {
@@ -177,6 +180,35 @@ std::string TestTCPSocketPrivate::TestSetOption() {
   ASSERT_EQ(PP_ERROR_BADARGUMENT, cb.result());
 
   socket.Disconnect();
+
+  PASS();
+}
+
+std::string TestTCPSocketPrivate::TestLargeRead() {
+  pp::TCPSocketPrivate socket(instance_);
+  {
+    TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+
+    cb.WaitForResult(socket.Connect(host_.c_str(), port_, cb.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cb);
+    ASSERT_EQ(PP_OK, cb.result());
+  }
+
+  ASSERT_EQ(PP_OK, WriteStringToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
+
+  const size_t kReadSize = 1024 * 1024 + 32;
+  // Create large buffer in heap to prevent run-time errors related to
+  // limits on stack size.
+  char* buffer = new (std::nothrow) char[kReadSize];
+  ASSERT_TRUE(buffer != NULL);
+
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  cb.WaitForResult(socket.Read(buffer, kReadSize * sizeof(*buffer),
+                               cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_LE(0, cb.result());
+
+  delete [] buffer;
 
   PASS();
 }

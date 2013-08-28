@@ -28,8 +28,8 @@
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
-using ppapi::host::NetErrorToPepperError;
 using ppapi::NetAddressPrivateImpl;
+using ppapi::host::NetErrorToPepperError;
 
 namespace {
 
