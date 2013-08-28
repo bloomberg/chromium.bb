@@ -11,21 +11,21 @@
 // permission API would only be available for channels CHANNEL_DEV and
 // CHANNEL_CANARY.
 
-var createEvent = require('webView').CreateEvent;
-var messagingNatives = requireNative('messaging_natives');
+var CreateEvent = require('webView').CreateEvent;
+var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
-var webRequestSchema =
+var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebViewInternal = require('webView').WebViewInternal;
-var webView = require('webView').webView;
+var WebView = require('webView').WebView;
 
-var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
+var WEB_VIEW_EXPERIMENTAL_EVENTS = {
   'dialog': {
     cancelable: true,
-    customHandler: function(webview, event, webviewEvent) {
-      webview.maybeSetupExtDialogEvent_(event, webviewEvent);
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.handleDialogEvent_(event, webViewEvent);
     },
-    evt: createEvent('webview.onDialog'),
+    evt: CreateEvent('webview.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
   }
 };
@@ -48,8 +48,8 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ =
 /**
  * @private
  */
-WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
-    function(event, webviewEvent) {
+WebViewInternal.prototype.handleDialogEvent_ =
+    function(event, webViewEvent) {
   var showWarningMessage = function(dialogType) {
     var VOWELS = ['a', 'e', 'i', 'o', 'u'];
     var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
@@ -80,16 +80,16 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      webView.setPermission(self.instanceId_, requestId, true, user_input);
+      WebView.setPermission(self.instanceId_, requestId, true, user_input);
     },
     cancel: function() {
       validateCall();
-      webView.setPermission(self.instanceId_, requestId, false, '');
+      WebView.setPermission(self.instanceId_, requestId, false, '');
     }
   };
-  webviewEvent.dialog = dialog;
+  webViewEvent.dialog = dialog;
 
-  var defaultPrevented = !webviewNode.dispatchEvent(webviewEvent);
+  var defaultPrevented = !webviewNode.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -97,18 +97,18 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
   if (defaultPrevented) {
     // Tell the JavaScript garbage collector to track lifetime of |dialog| and
     // call back when the dialog object has been collected.
-    messagingNatives.BindToGC(dialog, function() {
+    MessagingNatives.BindToGC(dialog, function() {
       // Avoid showing a warning message if the decision has already been made.
       if (actionTaken) {
         return;
       }
-      webView.setPermission(self.instanceId_, requestId, false, '');
+      WebView.setPermission(self.instanceId_, requestId, false, '');
       showWarningMessage(event.messageType);
     });
   } else {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
-    webView.setPermission(self.instanceId_, requestId, false, '');
+    WebView.setPermission(self.instanceId_, requestId, false, '');
     showWarningMessage(event.messageType);
   }
 };
@@ -116,8 +116,8 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
 /**
  * @private
  */
-WebViewInternal.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {
-  return WEB_VIEW_EXPERIMENTAL_EXT_EVENTS;
+WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {
+  return WEB_VIEW_EXPERIMENTAL_EVENTS;
 };
 
 WebViewInternal.prototype.clearData_ = function(var_args) {
@@ -125,7 +125,7 @@ WebViewInternal.prototype.clearData_ = function(var_args) {
     return;
   }
   var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
-  $Function.apply(webView.clearData, null, args);
+  $Function.apply(WebView.clearData, null, args);
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
