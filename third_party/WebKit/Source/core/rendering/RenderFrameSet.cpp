@@ -78,7 +78,7 @@ static Color borderFillColor()
 
 void RenderFrameSet::paintColumnBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
 {
-    if (!paintInfo.rect.intersects(borderRect))
+    if (!paintInfo.rect().intersects(borderRect))
         return;
 
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.
@@ -97,7 +97,7 @@ void RenderFrameSet::paintColumnBorder(const PaintInfo& paintInfo, const IntRect
 
 void RenderFrameSet::paintRowBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
 {
-    if (!paintInfo.rect.intersects(borderRect))
+    if (!paintInfo.rect().intersects(borderRect))
         return;
 
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.

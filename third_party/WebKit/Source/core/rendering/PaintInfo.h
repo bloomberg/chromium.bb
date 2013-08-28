@@ -54,7 +54,6 @@ struct PaintInfo {
         RenderObject* newPaintingRoot = 0, RenderRegion* region = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
         OverlapTestRequestMap* overlapTestRequests = 0, const RenderLayerModelObject* newPaintContainer = 0)
         : context(newContext)
-        , rect(newRect)
         , phase(newPhase)
         , paintBehavior(newPaintBehavior)
         , paintingRoot(newPaintingRoot)
@@ -62,6 +61,7 @@ struct PaintInfo {
         , overlapTestRequests(overlapTestRequests)
         , m_paintContainer(newPaintContainer)
         , m_outlineObjects(newOutlineObjects)
+        , m_rect(newRect)
     {
     }
 
@@ -94,10 +94,10 @@ struct PaintInfo {
 
         context->concatCTM(localToAncestorTransform);
 
-        if (rect == infiniteRect())
+        if (m_rect == infiniteRect())
             return;
 
-        rect = localToAncestorTransform.inverse().mapRect(rect);
+        m_rect = localToAncestorTransform.inverse().mapRect(m_rect);
     }
 
     static IntRect infiniteRect() { return IntRect(LayoutRect::infiniteRect()); }
@@ -106,9 +106,12 @@ struct PaintInfo {
     ListHashSet<RenderInline*>* outlineObjects() { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<RenderInline*>* objects) { m_outlineObjects = objects; }
 
+    const IntRect& rect() const { return m_rect; }
+    IntRect& rect() { return m_rect; }
+    void setRect(const IntRect& rect) { m_rect = rect; }
+
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout rendering/.
     GraphicsContext* context;
-    IntRect rect;
     PaintPhase phase;
     PaintBehavior paintBehavior;
     RenderObject* paintingRoot; // used to draw just one element and its visual kids
@@ -119,6 +122,7 @@ private:
 
     const RenderLayerModelObject* m_paintContainer; // the layer object that originates the current painting
     ListHashSet<RenderInline*>* m_outlineObjects; // used to list outlines that should be painted by a block with inline children
+    IntRect m_rect;
 };
 
 } // namespace WebCore

@@ -192,7 +192,7 @@ bool RenderReplaced::shouldPaint(PaintInfo& paintInfo, const LayoutPoint& paintO
         bottom = max(selBottom, bottom);
     }
 
-    LayoutRect localRepaintRect = paintInfo.rect;
+    LayoutRect localRepaintRect = paintInfo.rect();
     localRepaintRect.inflate(maximalOutlineSize(paintInfo.phase));
     if (adjustedPaintOffset.x() + visualOverflowRect().x() >= localRepaintRect.maxX() || adjustedPaintOffset.x() + visualOverflowRect().maxX() <= localRepaintRect.x())
         return false;

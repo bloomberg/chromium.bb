@@ -230,7 +230,7 @@ void RenderWidget::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
     IntPoint widgetLocation = m_widget->frameRect().location();
     IntPoint paintLocation(roundToInt(adjustedPaintOffset.x() + borderLeft() + paddingLeft()),
         roundToInt(adjustedPaintOffset.y() + borderTop() + paddingTop()));
-    IntRect paintRect = paintInfo.rect;
+    IntRect paintRect = paintInfo.rect();
 
     IntSize widgetPaintOffset = paintLocation - widgetLocation;
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
@@ -303,7 +303,7 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     }
 
     if (hasLayer() && layer()->canResize())
-        layer()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
+        layer()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect());
 }
 
 void RenderWidget::setIsOverlapped(bool isOverlapped)

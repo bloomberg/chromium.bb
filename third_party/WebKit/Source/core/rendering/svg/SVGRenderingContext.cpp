@@ -60,7 +60,7 @@ SVGRenderingContext::~SVGRenderingContext()
         ASSERT(m_filter);
         m_filter->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
         m_paintInfo->context = m_savedContext;
-        m_paintInfo->rect = m_savedPaintRect;
+        m_paintInfo->setRect(m_savedPaintRect);
     }
 
     if (m_renderingFlags & EndOpacityLayer)
@@ -149,7 +149,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
         m_filter = resources->filter();
         if (m_filter) {
             m_savedContext = m_paintInfo->context;
-            m_savedPaintRect = m_paintInfo->rect;
+            m_savedPaintRect = m_paintInfo->rect();
             // Return with false here may mean that we don't need to draw the content
             // (because it was either drawn before or empty) but we still need to apply the filter.
             m_renderingFlags |= EndFilterLayer;
@@ -160,7 +160,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             // changes, we need to paint the whole filter region. Otherwise, elements not visible
             // at the time of the initial paint (due to scrolling, window size, etc.) will never
             // be drawn.
-            m_paintInfo->rect = IntRect(m_filter->drawingRegion(m_object));
+            m_paintInfo->setRect(IntRect(m_filter->drawingRegion(m_object)));
         }
     }
 

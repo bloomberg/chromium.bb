@@ -1093,7 +1093,7 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE)
         return;
 
-    LayoutRect localRepaintRect = paintInfo.rect;
+    LayoutRect localRepaintRect = paintInfo.rect();
     localRepaintRect.inflate(maximalOutlineSize(paintInfo.phase));
 
     LayoutRect paintRect = LayoutRect(paintOffset + location(), pixelSnappedSize());

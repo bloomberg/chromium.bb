@@ -156,9 +156,9 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
 bool SVGRenderSupport::paintInfoIntersectsRepaintRect(const FloatRect& localRepaintRect, const AffineTransform& localTransform, const PaintInfo& paintInfo)
 {
     if (localTransform.isIdentity())
-        return localRepaintRect.intersects(paintInfo.rect);
+        return localRepaintRect.intersects(paintInfo.rect());
 
-    return localTransform.mapRect(localRepaintRect).intersects(paintInfo.rect);
+    return localTransform.mapRect(localRepaintRect).intersects(paintInfo.rect());
 }
 
 const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const RenderObject* start)
