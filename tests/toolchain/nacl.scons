@@ -383,7 +383,7 @@ if env.Bit('bitcode'):
                          ['toolchain_tests', 'small_tests'],
                          'run_printf_to_puts_test')
 
-if env.Bit('nacl_glibc'):
+if env.Bit('nacl_glibc') or (env.IsNewLinker() and not env.Bit('bitcode')):
   def AddAlignedCodeTest(name, object_file):
     node = env.CommandTest(name + '.out',
                            ['${PYTHON}', env.File('aligned_code.py'),

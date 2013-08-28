@@ -166,8 +166,24 @@ for text_end, variant in test_specs:
 
     nexe = asm_env.ComponentProgram(base_name, [obj])
 
-    node = env.CommandSelLdrTestNacl(base_name + '.out',
-                                     nexe)
+    if (env.IsNewLinker() and
+        rodata_address is not None and
+        rodata_address <= START_OF_TEXT + ALLOCATION_SIZE):
+      # With the new linker, the code segment is padded out to
+      # ALLOCATION_SIZE with nops, so the rodata segment starts immediately
+      # thereafter with no space for a halt sled.  Ensure sel_ldr catches
+      # that case.  NaClAbort() behaves differently when code coverage is
+      # enabled: it calls exit() rather than abort().
+      if env.Bit('coverage_enabled'):
+        expected_exit_status = 'naclabort_coverage'
+      else:
+        expected_exit_status = 'trusted_sigabrt'
+    else:
+      expected_exit_status = 0
+
+    node = env.CommandSelLdrTestNacl(base_name + '.out', nexe,
+                                     exit_status=expected_exit_status)
+
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests',
                             'nonpexe_tests'],
