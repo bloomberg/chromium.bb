@@ -27,8 +27,8 @@
 #if ENABLE(WEB_AUDIO)
 
 #include "core/platform/audio/VectorMath.h"
-
 #include "wtf/Assertions.h"
+#include <stdint.h>
 
 #if OS(DARWIN)
 #include <Accelerate/Accelerate.h>

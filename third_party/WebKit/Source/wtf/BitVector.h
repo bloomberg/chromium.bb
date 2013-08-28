@@ -26,13 +26,13 @@
 #ifndef BitVector_h
 #define BitVector_h
 
-#include <stdio.h>
 #include "wtf/Assertions.h"
-#include "wtf/PrintStream.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
+
+class PrintStream;
 
 // This is a space-efficient, resizeable bitvector class. In the common case it
 // occupies one word, but if necessary, it will inflate this one word to point

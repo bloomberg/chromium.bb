@@ -26,11 +26,10 @@
 #include "config.h"
 #include "BitVector.h"
 
+#include "wtf/FastMalloc.h"
+#include "wtf/PrintStream.h"
 #include <algorithm>
 #include <string.h>
-#include "wtf/Assertions.h"
-#include "wtf/FastMalloc.h"
-#include "wtf/StdLibExtras.h"
 
 namespace WTF {
 

@@ -40,12 +40,6 @@
 
 */
 
-#include <stddef.h>
-
-#if !COMPILER(MSVC)
-#include <inttypes.h>
-#endif
-
 #include "wtf/WTFExport.h"
 
 #ifdef NDEBUG
@@ -155,7 +149,7 @@ WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
 #define CRASH() \
     (WTFReportBacktrace(), \
      WTFInvokeCrashHook(), \
-     (*(int *)(uintptr_t)0xbbadbeef = 0), \
+     (*(int*)0xbbadbeef = 0), \
      IMMEDIATE_CRASH())
 #endif
 
