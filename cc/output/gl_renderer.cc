@@ -243,7 +243,6 @@ GLRenderer::~GLRenderer() {
     pending_async_read_pixels_.pop_back();
   }
 
-  context_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
   CleanupSharedObjects();
 }
 
