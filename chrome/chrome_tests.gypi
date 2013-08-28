@@ -1786,6 +1786,11 @@
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
           ]
         }],
+        ['enable_autofill_dialog==0', {
+          'sources!': [
+            'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
+          ]
+        }],
         ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
