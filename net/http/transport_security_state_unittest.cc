@@ -258,8 +258,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(ShouldRedirect("plus.google.com"));
   EXPECT_TRUE(ShouldRedirect("groups.google.com"));
   EXPECT_TRUE(ShouldRedirect("apis.google.com"));
-  EXPECT_TRUE(ShouldRedirect("blah.corp.google.com"));
-  EXPECT_FALSE(ShouldRedirect("www.google.com"));
   EXPECT_FALSE(ShouldRedirect("chart.apis.google.com"));
   EXPECT_TRUE(ShouldRedirect("ssl.google-analytics.com"));
   EXPECT_TRUE(ShouldRedirect("gmail.com"));
