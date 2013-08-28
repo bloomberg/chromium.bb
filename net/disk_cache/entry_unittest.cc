@@ -3079,6 +3079,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
   EXPECT_EQ(kWriteSize,
             WriteData(entry, 0, 0, buffer.get(), kWriteSize, false));
   entry->Close();
+  AddDelay();
 
   std::string key2("the key prefix");
   for (int i = 0; i < kNumExtraEntries; i++) {

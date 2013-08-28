@@ -4,6 +4,7 @@
 
 #include "net/disk_cache/simple/simple_index.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -72,31 +73,63 @@ bool CompareHashesForTimestamp::operator()(uint64 hash1, uint64 hash2) {
 
 namespace disk_cache {
 
-EntryMetadata::EntryMetadata() : last_used_time_(0), entry_size_(0) {}
+EntryMetadata::EntryMetadata()
+  : last_used_time_seconds_since_epoch_(0),
+    entry_size_(0) {
+}
 
-EntryMetadata::EntryMetadata(base::Time last_used_time, uint64 entry_size)
-    : last_used_time_(last_used_time.ToInternalValue()),
-      entry_size_(entry_size) {}
+EntryMetadata::EntryMetadata(base::Time last_used_time, int entry_size)
+    : last_used_time_seconds_since_epoch_(0),
+      entry_size_(entry_size) {
+  SetLastUsedTime(last_used_time);
+}
 
 base::Time EntryMetadata::GetLastUsedTime() const {
-  return base::Time::FromInternalValue(last_used_time_);
+  // Preserve nullity.
+  if (last_used_time_seconds_since_epoch_ == 0)
+    return base::Time();
+
+  return base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(last_used_time_seconds_since_epoch_);
 }
 
 void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
-  last_used_time_ = last_used_time.ToInternalValue();
+  // Preserve nullity.
+  if (last_used_time.is_null()) {
+    last_used_time_seconds_since_epoch_ = 0;
+    return;
+  }
+
+  const base::TimeDelta since_unix_epoch =
+      last_used_time - base::Time::UnixEpoch();
+  const int64 seconds_since_unix_epoch = since_unix_epoch.InSeconds();
+  DCHECK_LE(implicit_cast<int64>(std::numeric_limits<uint32>::min()),
+            seconds_since_unix_epoch);
+  DCHECK_GE(implicit_cast<int64>(std::numeric_limits<uint32>::max()),
+            seconds_since_unix_epoch);
+
+  last_used_time_seconds_since_epoch_ = seconds_since_unix_epoch;
+  // Avoid accidental nullity.
+  if (last_used_time_seconds_since_epoch_ == 0)
+    last_used_time_seconds_since_epoch_ = 1;
 }
 
 void EntryMetadata::Serialize(Pickle* pickle) const {
   DCHECK(pickle);
-  COMPILE_ASSERT(sizeof(EntryMetadata) == (sizeof(int64) + sizeof(uint64)),
-                 EntryMetadata_has_two_member_variables);
-  pickle->WriteInt64(last_used_time_);
+  int64 internal_last_used_time = GetLastUsedTime().ToInternalValue();
+  pickle->WriteInt64(internal_last_used_time);
   pickle->WriteUInt64(entry_size_);
 }
 
 bool EntryMetadata::Deserialize(PickleIterator* it) {
   DCHECK(it);
-  return it->ReadInt64(&last_used_time_) && it->ReadUInt64(&entry_size_);
+  int64 tmp_last_used_time;
+  uint64 tmp_entry_size;
+  if (!it->ReadInt64(&tmp_last_used_time) || !it->ReadUInt64(&tmp_entry_size))
+    return false;
+  SetLastUsedTime(base::Time::FromInternalValue(tmp_last_used_time));
+  entry_size_ = tmp_entry_size;
+  return true;
 }
 
 SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
@@ -292,7 +325,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
       base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr()));
 }
 
-bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, uint64 entry_size) {
+bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, int entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   EntrySet::iterator it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
@@ -336,10 +369,10 @@ void SimpleIndex::PostponeWritingToDisk() {
 }
 
 void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
-                                          uint64 entry_size) {
+                                          int entry_size) {
   // Update the total cache size with the new entry size.
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_GE(cache_size_, (*it)->second.GetEntrySize());
+  DCHECK_GE(cache_size_, implicit_cast<uint64>((*it)->second.GetEntrySize()));
   cache_size_ -= (*it)->second.GetEntrySize();
   cache_size_ += entry_size;
   (*it)->second.SetEntrySize(entry_size);
@@ -434,9 +467,17 @@ void SimpleIndex::WriteToDisk() {
 }
 
 scoped_ptr<SimpleIndex::HashList> SimpleIndex::ExtractEntriesBetween(
-    const base::Time initial_time, const base::Time end_time,
+    base::Time initial_time,
+    base::Time end_time,
     bool delete_entries) {
   DCHECK_EQ(true, initialized_);
+
+  if (!initial_time.is_null())
+    initial_time -= EntryMetadata::GetLowerEpsilonForTimeComparisons();
+  if (end_time.is_null())
+    end_time = base::Time::Max();
+  else
+    end_time += EntryMetadata::GetUpperEpsilonForTimeComparisons();
   const base::Time extended_end_time =
       end_time.is_null() ? base::Time::Max() : end_time;
   DCHECK(extended_end_time >= initial_time);

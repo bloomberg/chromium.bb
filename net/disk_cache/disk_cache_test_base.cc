@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/platform_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -221,6 +222,17 @@ void DiskCacheTestWithCache::TrimDeletedListForTest(bool empty) {
 }
 
 void DiskCacheTestWithCache::AddDelay() {
+  if (simple_cache_mode_) {
+    // The simple cache uses second resolution for many timeouts, so it's safest
+    // to advance by at least whole seconds before falling back into the normal
+    // disk cache epsilon advance.
+    const base::Time initial_time = base::Time::Now();
+    do {
+      base::PlatformThread::YieldCurrentThread();
+    } while (base::Time::Now() -
+             initial_time < base::TimeDelta::FromSeconds(1));
+  }
+
   base::Time initial = base::Time::Now();
   while (base::Time::Now() <= initial) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));

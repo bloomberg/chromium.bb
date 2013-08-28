@@ -38,17 +38,24 @@ struct SimpleIndexLoadResult;
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
   EntryMetadata();
-  EntryMetadata(base::Time last_used_time, uint64 entry_size);
+  EntryMetadata(base::Time last_used_time, int entry_size);
 
   base::Time GetLastUsedTime() const;
   void SetLastUsedTime(const base::Time& last_used_time);
 
-  uint64 GetEntrySize() const { return entry_size_; }
-  void SetEntrySize(uint64 entry_size) { entry_size_ = entry_size; }
+  int GetEntrySize() const { return entry_size_; }
+  void SetEntrySize(int entry_size) { entry_size_ = entry_size; }
 
   // Serialize the data into the provided pickle.
   void Serialize(Pickle* pickle) const;
   bool Deserialize(PickleIterator* it);
+
+  static base::TimeDelta GetLowerEpsilonForTimeComparisons() {
+    return base::TimeDelta::FromSeconds(1);
+  }
+  static base::TimeDelta GetUpperEpsilonForTimeComparisons() {
+    return base::TimeDelta();
+  }
 
  private:
   friend class SimpleIndexFileTest;
@@ -56,14 +63,11 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   // When adding new members here, you should update the Serialize() and
   // Deserialize() methods.
 
-  // This is the serialized format from Time::ToInternalValue().
-  // If you want to make calculations/comparisons, you should use the
-  // base::Time() class. Use the GetLastUsedTime() method above.
-  // TODO(felipeg): Use Time() here.
-  int64 last_used_time_;
+  uint32 last_used_time_seconds_since_epoch_;
 
-  uint64 entry_size_;  // Storage size in bytes.
+  int32 entry_size_;  // Storage size in bytes.
 };
+COMPILE_ASSERT(sizeof(EntryMetadata) == 8, metadata_size);
 
 // This class is not Thread-safe.
 class NET_EXPORT_PRIVATE SimpleIndex
@@ -97,7 +101,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the
   // entry.
-  bool UpdateEntrySize(uint64 entry_hash, uint64 entry_size);
+  bool UpdateEntrySize(uint64 entry_hash, int entry_size);
 
   typedef base::hash_map<uint64, EntryMetadata> EntrySet;
 
@@ -136,7 +140,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void PostponeWritingToDisk();
 
-  void UpdateEntryIteratorSize(EntrySet::iterator* it, uint64 entry_size);
+  void UpdateEntryIteratorSize(EntrySet::iterator* it, int entry_size);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<SimpleIndexLoadResult> load_result);

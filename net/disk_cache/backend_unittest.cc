@@ -1509,6 +1509,7 @@ void DiskCacheBackendTest::BackendDoomBetween() {
 
   AddDelay();
   Time middle_end = Time::Now();
+  AddDelay();
 
   ASSERT_EQ(net::OK, CreateEntry("fourth", &entry));
   entry->Close();

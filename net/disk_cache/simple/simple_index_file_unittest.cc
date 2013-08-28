@@ -75,8 +75,10 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
 class SimpleIndexFileTest : public testing::Test {
  public:
   bool CompareTwoEntryMetadata(const EntryMetadata& a, const EntryMetadata& b) {
-    return a.last_used_time_ == b.last_used_time_ &&
-           a.entry_size_ == b.entry_size_;
+    return
+        a.last_used_time_seconds_since_epoch_ ==
+            b.last_used_time_seconds_since_epoch_ &&
+        a.entry_size_ == b.entry_size_;
   }
 
  protected:
@@ -108,8 +110,7 @@ TEST_F(SimpleIndexFileTest, Serialize) {
                                                 456);
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64 hash = kHashes[i];
-    metadata_entries[i] =
-        EntryMetadata(Time::FromInternalValue(hash), hash);
+    metadata_entries[i] = EntryMetadata(Time(), hash);
     SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
@@ -177,8 +178,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
   EntryMetadata metadata_entries[kNumHashes];
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64 hash = kHashes[i];
-    metadata_entries[i] =
-        EntryMetadata(Time::FromInternalValue(hash), hash);
+    metadata_entries[i] = EntryMetadata(Time(), hash);
     SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
