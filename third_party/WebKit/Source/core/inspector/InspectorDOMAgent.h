@@ -148,6 +148,7 @@ public:
     virtual void markUndoableState(ErrorString*);
     virtual void focus(ErrorString*, int nodeId);
     virtual void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files);
+    virtual void getBoxModel(ErrorString*, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>&);
 
     static void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 

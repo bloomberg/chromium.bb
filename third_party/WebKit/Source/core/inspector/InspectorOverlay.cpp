@@ -138,28 +138,28 @@ static void contentsQuadToPage(const FrameView* mainView, const FrameView* view,
     quad += mainView->scrollOffset();
 }
 
-static void buildNodeHighlight(Node* node, const HighlightConfig& highlightConfig, Highlight* highlight)
+static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
 {
     RenderObject* renderer = node->renderer();
     Frame* containingFrame = node->document()->frame();
 
     if (!renderer || !containingFrame)
-        return;
+        return false;
 
-    highlight->setDataFromConfig(highlightConfig);
     FrameView* containingView = containingFrame->view();
     FrameView* mainView = containingFrame->page()->mainFrame()->view();
     IntRect boundingBox = pixelSnappedIntRect(containingView->contentsToRootView(renderer->absoluteBoundingBoxRect()));
     boundingBox.move(mainView->scrollOffset());
-    IntRect titleAnchorBox = boundingBox;
 
     // RenderSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
     if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
-        highlight->type = HighlightTypeRects;
-        renderer->absoluteQuads(highlight->quads);
-        for (size_t i = 0; i < highlight->quads.size(); ++i)
-            contentsQuadToPage(mainView, containingView, highlight->quads[i]);
-    } else if (renderer->isBox() || renderer->isRenderInline()) {
+        renderer->absoluteQuads(quads);
+        for (size_t i = 0; i < quads.size(); ++i)
+            contentsQuadToPage(mainView, containingView, quads[i]);
+        return false;
+    }
+
+    if (renderer->isBox() || renderer->isRenderInline()) {
         LayoutRect contentBox;
         LayoutRect paddingBox;
         LayoutRect borderBox;
@@ -203,14 +203,30 @@ static void buildNodeHighlight(Node* node, const HighlightConfig& highlightConfi
         contentsQuadToPage(mainView, containingView, absBorderQuad);
         contentsQuadToPage(mainView, containingView, absMarginQuad);
 
-        titleAnchorBox = absMarginQuad.enclosingBoundingBox();
-
-        highlight->type = HighlightTypeNode;
-        highlight->quads.append(absMarginQuad);
-        highlight->quads.append(absBorderQuad);
-        highlight->quads.append(absPaddingQuad);
-        highlight->quads.append(absContentQuad);
+        quads.append(absMarginQuad);
+        quads.append(absBorderQuad);
+        quads.append(absPaddingQuad);
+        quads.append(absContentQuad);
     }
+    return true;
+}
+
+static void buildNodeHighlight(Node* node, const HighlightConfig& highlightConfig, Highlight* highlight)
+{
+    RenderObject* renderer = node->renderer();
+    Frame* containingFrame = node->document()->frame();
+
+    if (!renderer || !containingFrame)
+        return;
+
+    highlight->setDataFromConfig(highlightConfig);
+
+    // RenderSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
+    if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot())
+        highlight->type = HighlightTypeRects;
+    else if (renderer->isBox() || renderer->isRenderInline())
+        highlight->type = HighlightTypeNode;
+    buildNodeQuads(node, highlight->quads);
 }
 
 static void buildQuadHighlight(Page* page, const FloatQuad& quad, const HighlightConfig& highlightConfig, Highlight *highlight)
@@ -666,6 +682,11 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
 {
     m_drawViewSize = false;
     update();
+}
+
+bool InspectorOverlay::getBoxModel(Node* node, Vector<FloatQuad>* quads)
+{
+    return buildNodeQuads(node, *quads);
 }
 
 void InspectorOverlay::freePage()

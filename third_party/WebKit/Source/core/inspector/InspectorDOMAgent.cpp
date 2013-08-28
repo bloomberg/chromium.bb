@@ -1309,6 +1309,57 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     toHTMLInputElement(node)->setFiles(fileList);
 }
 
+static RefPtr<TypeBuilder::Array<double> > buildArrayForQuad(const FloatQuad& quad)
+{
+    RefPtr<TypeBuilder::Array<double> > array = TypeBuilder::Array<double>::create();
+    array->addItem(quad.p1().x());
+    array->addItem(quad.p1().y());
+    array->addItem(quad.p2().x());
+    array->addItem(quad.p2().y());
+    array->addItem(quad.p3().x());
+    array->addItem(quad.p3().y());
+    array->addItem(quad.p4().x());
+    array->addItem(quad.p4().y());
+    return array.release();
+}
+
+void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>& model)
+{
+    Node* node = assertNode(errorString, nodeId);
+    if (!node)
+        return;
+
+    Vector<FloatQuad> quads;
+    bool isInlineOrBox = m_overlay->getBoxModel(node, &quads);
+    if (!isInlineOrBox) {
+        *errorString = "Could not compute box model.";
+        return;
+    }
+
+    RenderObject* renderer = node->renderer();
+    Frame* frame = node->document()->frame();
+    FrameView* view = frame->view();
+
+    IntRect viewRect = frame->view()->visibleContentRect();
+    RefPtr<TypeBuilder::DOM::Rect> rect = TypeBuilder::DOM::Rect::create().
+        setX(viewRect.x()).
+        setY(viewRect.y()).
+        setWidth(viewRect.width()).
+        setHeight(viewRect.height());
+
+    IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
+    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
+
+    model = TypeBuilder::DOM::BoxModel::create()
+        .setContent(buildArrayForQuad(quads.at(3)))
+        .setPadding(buildArrayForQuad(quads.at(2)))
+        .setBorder(buildArrayForQuad(quads.at(1)))
+        .setMargin(buildArrayForQuad(quads.at(0)))
+        .setWidth(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(), modelObject) : boundingBox.width())
+        .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height())
+        .setVisibleContentRect(rect);
+}
+
 void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
 {
     String objectGroupName = objectGroup ? *objectGroup : "";

@@ -119,6 +119,7 @@ public:
     {
         return adoptPtr(new InspectorOverlay(page, client));
     }
+
     ~InspectorOverlay();
 
     void update();
@@ -142,6 +143,7 @@ public:
     void showAndHideViewSize(bool showGrid);
 
     Node* highlightedNode() const;
+    bool getBoxModel(Node*, Vector<FloatQuad>*);
 
     void freePage();
 
