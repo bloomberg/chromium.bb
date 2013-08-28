@@ -326,12 +326,11 @@ void StyleSheetContents::checkLoaded()
     if (isLoading())
         return;
 
-    RefPtr<StyleSheetContents> protect(this);
-
     // Avoid |this| being deleted by scripts that run via
     // ScriptableDocumentParser::executeScriptsWaitingForResources().
-    // See <rdar://problem/6622300>.
-    RefPtr<StyleSheetContents> protector(this);
+    // See https://bugs.webkit.org/show_bug.cgi?id=95106
+    RefPtr<StyleSheetContents> protect(this);
+
     StyleSheetContents* parentSheet = parentStyleSheet();
     if (parentSheet) {
         parentSheet->checkLoaded();
