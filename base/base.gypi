@@ -760,6 +760,13 @@
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
+          ['OS == "android" and <(android_webview_build)==1', {
+            'defines': [
+               # WebView builds as part of the system which already has sincos;
+               # avoid defining it again as it causes a linker warning.
+               'ANDROID_SINCOS_PROVIDED',
+            ],
+          }],
           ['OS == "ios" and _toolset != "host"', {
             'sources/': [
               # Pull in specific Mac files for iOS (which have been filtered out

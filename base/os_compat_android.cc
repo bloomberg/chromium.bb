@@ -75,7 +75,8 @@ time_t timegm(struct tm* const t) {
 // for each function would simply end up calling itself, resulting in a
 // runtime crash due to stack overflow.
 //
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && \
+    !defined(ANDROID_SINCOS_PROVIDED)
 
 // For the record, Clang does not support the 'optimize' attribute.
 // In the unlikely event that it begins performing this optimization too,
