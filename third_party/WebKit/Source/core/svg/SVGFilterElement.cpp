@@ -186,7 +186,14 @@ void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange,
 
 RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
 {
-    return new RenderSVGResourceFilter(this);
+    RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
+
+    HashSet<RenderLayer*>::iterator layerEnd = m_clientLayers.end();
+    for (HashSet<RenderLayer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
+        renderer->addClientRenderLayer(*it);
+    m_clientLayers.clear();
+
+    return renderer;
 }
 
 bool SVGFilterElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
@@ -234,6 +241,26 @@ bool SVGFilterElement::selfHasRelativeLengths() const
         || yCurrentValue().isRelative()
         || widthCurrentValue().isRelative()
         || heightCurrentValue().isRelative();
+}
+
+void SVGFilterElement::addClientRenderLayer(RenderLayer* client)
+{
+    ASSERT(client);
+    RenderSVGResourceFilter* filterRenderer = toRenderSVGFilter(renderer());
+    if (filterRenderer)
+        filterRenderer->addClientRenderLayer(client);
+    else
+        m_clientLayers.add(client);
+}
+
+void SVGFilterElement::removeClientRenderLayer(RenderLayer* client)
+{
+    ASSERT(client);
+    RenderSVGResourceFilter* filterRenderer = toRenderSVGFilter(renderer());
+    if (filterRenderer)
+        filterRenderer->removeClientRenderLayer(client);
+    else
+        m_clientLayers.add(client);
 }
 
 }

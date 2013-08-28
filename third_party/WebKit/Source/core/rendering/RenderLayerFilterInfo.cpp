@@ -37,10 +37,7 @@
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "core/svg/graphics/filters/SVGFilter.h"
+#include "core/svg/SVGFilterElement.h"
 
 namespace WebCore {
 
@@ -130,9 +127,9 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
             // Reference is internal; add layer as a client so we can trigger
             // filter repaint on SVG attribute change.
             Element* filter = m_layer->renderer()->node()->document()->getElementById(referenceFilterOperation->fragment());
-            if (!filter || !filter->renderer() || !filter->renderer()->isSVGResourceFilter())
+            if (!filter || !filter->hasTagName(SVGNames::filterTag))
                 continue;
-            filter->renderer()->toRenderSVGResourceContainer()->addClientRenderLayer(m_layer);
+            toSVGFilterElement(filter)->addClientRenderLayer(m_layer);
             m_internalSVGReferences.append(filter);
         }
     }
@@ -145,9 +142,7 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
     m_externalSVGReferences.clear();
     for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
         Element* filter = m_internalSVGReferences.at(i).get();
-        if (!filter->renderer())
-            continue;
-        filter->renderer()->toRenderSVGResourceContainer()->removeClientRenderLayer(m_layer);
+        toSVGFilterElement(filter)->removeClientRenderLayer(m_layer);
     }
     m_internalSVGReferences.clear();
 }

@@ -35,6 +35,8 @@
 
 namespace WebCore {
 
+class RenderLayer;
+
 class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference,
                                public SVGExternalResourcesRequired {
@@ -42,6 +44,8 @@ public:
     static PassRefPtr<SVGFilterElement> create(const QualifiedName&, Document*);
 
     void setFilterRes(unsigned filterResX, unsigned filterResY);
+    void addClientRenderLayer(RenderLayer*);
+    void removeClientRenderLayer(RenderLayer*);
 
 private:
     SVGFilterElement(const QualifiedName&, Document*);
@@ -73,6 +77,8 @@ private:
         DECLARE_ANIMATED_STRING(Href, href)
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
+
+    HashSet<RenderLayer*> m_clientLayers;
 };
 
 inline SVGFilterElement* toSVGFilterElement(Node* node)
