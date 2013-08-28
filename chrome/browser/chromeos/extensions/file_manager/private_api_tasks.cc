@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -138,10 +139,9 @@ bool ExecuteTaskFunction::RunImpl() {
   if (!files_list->GetSize())
     return true;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext();
+      util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
 
   std::vector<FileSystemURL> file_urls;
   for (size_t i = 0; i < files_list->GetSize(); i++) {
@@ -473,10 +473,9 @@ bool GetFileTasksFunction::RunImpl() {
       mime_types_list->GetSize() != 0)
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext();
+      util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
@@ -557,13 +556,12 @@ bool SetDefaultTaskFunction::RunImpl() {
   if (!args_->GetList(1, &file_url_list))
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
 
   std::set<std::string> suffixes =
-      GetUniqueSuffixes(file_url_list, context.get());
+      GetUniqueSuffixes(file_url_list, file_system_context.get());
 
   // MIME types are an optional parameter.
   base::ListValue* mime_type_list;

@@ -69,11 +69,9 @@ void ShowWarningMessageBox(Profile* profile, const base::FilePath& file_path) {
 bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   // The file manager always runs in the site for its extension id, so that
   // is the site for which file access permissions should be granted.
-  GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
-      GetSiteForExtensionId(kFileManagerAppId);
   fileapi::ExternalFileSystemBackend* backend =
-      BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_backend();
+      GetFileSystemContextForExtensionId(
+          profile, kFileManagerAppId)->external_backend();
   if (!backend)
     return false;
   backend->GrantFullAccessToExtension(kFileManagerAppId);

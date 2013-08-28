@@ -35,7 +35,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -333,9 +333,10 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
 
   // We have to open file system in order to create a FileEntry object for the
   // selected file path.
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  BrowserContext::GetStoragePartition(profile_, site_instance)->
-      GetFileSystemContext()->OpenFileSystem(
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          profile_, render_view_host());
+  file_system_context->OpenFileSystem(
           source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal,
           fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
           base::Bind(
@@ -366,10 +367,9 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   fileapi::ExternalFileSystemBackend* external_backend =
-      BrowserContext::GetStoragePartition(profile_, site_instance)->
-      GetFileSystemContext()->external_backend();
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          profile_, render_view_host())->external_backend();
   DCHECK(external_backend);
 
   external_backend->GetVirtualPath(full_path_, &virtual_path_);

@@ -109,10 +109,9 @@ void SetDriveMountPointPermissions(
     return;
   }
 
-  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   fileapi::ExternalFileSystemBackend* backend =
-      BrowserContext::GetStoragePartition(profile, site_instance)->
-      GetFileSystemContext()->external_backend();
+      util::GetFileSystemContextForRenderViewHost(
+          profile, render_view_host)->external_backend();
   if (!backend)
     return;
 
