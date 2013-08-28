@@ -655,6 +655,14 @@ void SyncBackendHost::ConfigureDataTypes(
       GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
   types_to_purge.RemoveAll(inactive_types);
 
+  // If a type has already been disabled and unapplied or journaled, it will
+  // not be part of the |types_to_purge| set, and therefore does not need
+  // to be acted on again.
+  fatal_types.RetainAll(types_to_purge);
+  syncer::ModelTypeSet unapply_types =
+      syncer::Union(crypto_types, clean_first_types);
+  unapply_types.RetainAll(types_to_purge);
+
   DCHECK(syncer::Intersection(current_types, fatal_types).Empty());
   DCHECK(syncer::Intersection(current_types, crypto_types).Empty());
   DCHECK(current_types.HasAll(types_to_download));
@@ -678,7 +686,7 @@ void SyncBackendHost::ConfigureDataTypes(
                          types_to_download,
                          types_to_purge,
                          fatal_types,
-                         syncer::Union(crypto_types, clean_first_types),
+                         unapply_types,
                          inactive_types,
                          routing_info,
                          ready_task,
