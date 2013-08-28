@@ -56,6 +56,7 @@ PRUNE_PATHS = set([
 
     # Chromium code in third_party.
     os.path.join('third_party','fuzzymatch'),
+    os.path.join('tools', 'swarm_client'),
 
     # Stuff pulled in from chrome-internal for official builds/tools.
     os.path.join('third_party', 'clear_cache'),

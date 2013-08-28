@@ -109,9 +109,6 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('data/dom_perf')
   # Histogram tools, doesn't exist in the snapshot
   excluded_dirs_list.append('tools/histograms')
-  # swarm_client is a third_party and not used on Android.
-  excluded_dirs_list.append('tools/swarm_client')
-  excluded_dirs_list.append('tools/swarming_client')
   # Arm sysroot tools, doesn't exist in the snapshot
   excluded_dirs_list.append('arm-sysroot')
   # Data is not part of open source chromium, but are included on some bots.
@@ -194,6 +191,8 @@ def _FindThirdPartyDirs():
     # third_party directories in this tree aren't actually third party, but
     # provide a way to shadow experimental buildfiles into those directories.
     os.path.join('tools', 'gn', 'secondary'),
+    # Not shipped, Chromium code
+    os.path.join('tools', 'swarm_client'),
   ]
   third_party_dirs = licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
   return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
