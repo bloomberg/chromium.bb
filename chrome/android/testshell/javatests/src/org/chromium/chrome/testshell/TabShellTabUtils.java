@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.testshell;
 
+import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -25,7 +27,7 @@ public class TabShellTabUtils {
     }
 
     public static class TestCallbackHelperContainerForTab
-            extends TestCallbackHelperContainer implements TestShellTabObserver {
+            extends TestCallbackHelperContainer implements TabObserver {
         private final OnCloseTabHelper mOnCloseTabHelper;
         public TestCallbackHelperContainerForTab(TestShellTab tab) {
             super(createTestContentViewClientForTab(tab),
@@ -42,16 +44,20 @@ public class TabShellTabUtils {
         }
 
         @Override
-        public void onLoadProgressChanged(TestShellTab tab, int progress) {
+        public void onLoadProgressChanged(TabBase tab, int progress) {
         }
 
         @Override
-        public void onUpdateUrl(TestShellTab tab, String url) {
+        public void onUpdateUrl(TabBase tab, String url) {
         }
 
         @Override
-        public void onCloseTab(TestShellTab tab) {
+        public void onDestroyed(TabBase tab) {
             mOnCloseTabHelper.notifyCalled();
+        }
+
+        @Override
+        public void onContentChanged(TabBase tab) {
         }
     }
 

@@ -30,7 +30,7 @@ SessionID::id_type SyncedTabDelegateAndroid::GetWindowId() const {
 }
 
 SessionID::id_type SyncedTabDelegateAndroid::GetSessionId() const {
-  return tab_android_->id().id();
+  return tab_android_->session_id().id();
 }
 
 bool SyncedTabDelegateAndroid::IsBeingDestroyed() const {

@@ -24,14 +24,8 @@ using content::WebContents;
 using ui::WindowAndroid;
 
 TestShellTab::TestShellTab(JNIEnv* env,
-                           jobject obj,
-                           WebContents* web_contents,
-                           WindowAndroid* window_android)
-    : TabAndroid(env, obj),
-      web_contents_(web_contents) {
-  InitTabHelpers(web_contents);
-  WindowAndroidHelper::FromWebContents(web_contents)->
-      SetWindowAndroid(window_android);
+                           jobject obj)
+    : TabAndroid(env, obj) {
 }
 
 TestShellTab::~TestShellTab() {
@@ -39,10 +33,6 @@ TestShellTab::~TestShellTab() {
 
 void TestShellTab::Destroy(JNIEnv* env, jobject obj) {
   delete this;
-}
-
-WebContents* TestShellTab::GetWebContents() {
-  return web_contents_.get();
 }
 
 browser_sync::SyncedTabDelegate* TestShellTab::GetSyncedTabDelegate() {
@@ -106,15 +96,6 @@ bool TestShellTab::RegisterTestShellTab(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void TestShellTab::InitWebContentsDelegate(
-    JNIEnv* env,
-    jobject obj,
-    jobject web_contents_delegate) {
-  web_contents_delegate_.reset(
-      new ChromeWebContentsDelegateAndroid(env, web_contents_delegate));
-  web_contents_->SetDelegate(web_contents_delegate_.get());
-}
-
 ScopedJavaLocalRef<jstring> TestShellTab::FixupUrl(JNIEnv* env,
                                                    jobject obj,
                                                    jstring url) {
@@ -128,16 +109,8 @@ ScopedJavaLocalRef<jstring> TestShellTab::FixupUrl(JNIEnv* env,
   return ConvertUTF8ToJavaString(env, fixed_spec);
 }
 
-static jint Init(JNIEnv* env,
-                 jobject obj,
-                 jint web_contents_ptr,
-                 jint window_android_ptr) {
-  TestShellTab* tab = new TestShellTab(
-      env,
-      obj,
-      reinterpret_cast<WebContents*>(web_contents_ptr),
-      reinterpret_cast<WindowAndroid*>(window_android_ptr));
-  return reinterpret_cast<jint>(tab);
+static jint Init(JNIEnv* env, jobject obj) {
+  return reinterpret_cast<jint>(new TestShellTab(env, obj));
 }
 
 int TestShellTab::GetSyncId() const {

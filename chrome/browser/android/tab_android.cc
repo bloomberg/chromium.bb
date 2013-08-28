@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/tab_android.h"
 
+#include "base/android/jni_android.h"
+#include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -13,6 +15,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -33,8 +37,6 @@
 #include "extensions/browser/view_type_utils.h"
 #include "jni/TabBase_jni.h"
 
-using content::WebContents;
-
 namespace {
 
 const char kTabHelpersInitializedUserDataKey[] =
@@ -42,7 +44,7 @@ const char kTabHelpersInitializedUserDataKey[] =
 
 }  // namespace
 
-void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
+void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   // If already initialized, nothing to be done.
   base::SupportsUserData::Data* initialization_tag =
       contents->GetUserData(&kTabHelpersInitializedUserDataKey);
@@ -88,29 +90,46 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   WindowAndroidHelper::CreateForWebContents(contents);
 }
 
-void TabAndroid::InitTabHelpers(WebContents* contents) {
+// TODO(dtrainor): Refactor so we do not need this method.
+void TabAndroid::InitTabHelpers(content::WebContents* contents) {
   BrowserTabContents::AttachTabHelpers(contents);
 }
 
-WebContents* TabAndroid::InitWebContentsFromView(JNIEnv* env,
-                                                 jobject content_view) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env, content_view);
-  DCHECK(content_view_core);
-  WebContents* web_contents = content_view_core->GetWebContents();
-  DCHECK(web_contents);
-  InitTabHelpers(web_contents);
-  // Make sure tab id is same as web contents id. This means tab id can change
-  // based on when web_contents are attached to tab.
-  // TODO(shashishekhar): Add a new notification for this, so any
-  // observers can make appropriate state changes.
-  tab_id_.set_id(SessionTabHelper::FromWebContents(web_contents)
-                     ->session_id().id());
-  return web_contents;
+TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
+  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
+  if (!core_tab_helper)
+    return NULL;
+
+  CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
+  if (!core_delegate)
+    return NULL;
+
+  return static_cast<TabAndroid*>(core_delegate);
 }
 
-TabAndroid::TabAndroid(JNIEnv* env, jobject obj) : weak_java_tab_(env, obj) {
+TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
+  return reinterpret_cast<TabAndroid*>(Java_TabBase_getNativePtr(env, obj));
+}
+
+TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
+    : weak_java_tab_(env, obj),
+      session_tab_id_(),
+      android_tab_id_(-1) {
   Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
+}
+
+content::ContentViewCore* TabAndroid::GetContentViewCore() const {
+  if (!web_contents())
+    return NULL;
+
+  return content::ContentViewCore::FromWebContents(web_contents());
+}
+
+Profile* TabAndroid::GetProfile() const {
+  if (!web_contents())
+    return NULL;
+
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 TabAndroid::~TabAndroid() {
@@ -119,18 +138,82 @@ TabAndroid::~TabAndroid() {
   if (obj.is_null())
     return;
 
-  Java_TabBase_destroyBase(env, obj.obj());
-}
-
-content::WebContents* TabAndroid::GetWebContents() {
-  return NULL;
+  Java_TabBase_clearNativePtr(env, obj.obj());
 }
 
 ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel() {
-  return ToolbarModelImpl::GetSecurityLevelForWebContents(GetWebContents());
+  return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents());
 }
 
 void TabAndroid::RunExternalProtocolDialog(const GURL& url) {
+}
+
+void TabAndroid::SwapTabContents(content::WebContents* old_contents,
+                                 content::WebContents* new_contents) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TabBase_swapWebContents(
+      env,
+      weak_java_tab_.get(env).obj(),
+      reinterpret_cast<jint>(new_contents));
+}
+
+void TabAndroid::InitWebContents(JNIEnv* env,
+                                 jobject obj,
+                                 jint tab_id,
+                                 jboolean incognito,
+                                 jobject jcontent_view_core,
+                                 jobject jweb_contents_delegate) {
+  android_tab_id_ = tab_id;
+
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::GetNativeContentViewCore(env,
+                                                         jcontent_view_core);
+  DCHECK(content_view_core);
+  DCHECK(content_view_core->GetWebContents());
+
+  web_contents_.reset(content_view_core->GetWebContents());
+  InitTabHelpers(web_contents_.get());
+
+  session_tab_id_.set_id(
+      SessionTabHelper::FromWebContents(web_contents())->session_id().id());
+  WindowAndroidHelper::FromWebContents(web_contents())->
+      SetWindowAndroid(content_view_core->GetWindowAndroid());
+  CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
+  web_contents_delegate_.reset(
+      new chrome::android::ChromeWebContentsDelegateAndroid(
+          env, jweb_contents_delegate));
+  web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
+  web_contents()->SetDelegate(web_contents_delegate_.get());
+
+  // Verify that the WebContents this tab represents matches the expected
+  // off the record state.
+  CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
+}
+
+void TabAndroid::DestroyWebContents(JNIEnv* env,
+                                    jobject obj,
+                                    jboolean delete_native) {
+  web_contents()->SetDelegate(NULL);
+
+  if (delete_native) {
+    web_contents_.reset();
+  } else {
+    // Release the WebContents so it does not get deleted by the scoped_ptr.
+    ignore_result(web_contents_.release());
+  }
+}
+
+base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
+    JNIEnv* env,
+    jobject obj) {
+  Profile* profile = GetProfile();
+  if (!profile)
+    return base::android::ScopedJavaLocalRef<jobject>();
+  ProfileAndroid* profile_android = ProfileAndroid::FromProfile(profile);
+  if (!profile_android)
+    return base::android::ScopedJavaLocalRef<jobject>();
+
+  return profile_android->GetJavaObject();
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

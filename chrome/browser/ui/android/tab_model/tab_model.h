@@ -32,9 +32,6 @@ class TabModel : public content::NotificationObserver,
                  public ToolbarModelDelegate {
  public:
   explicit TabModel(Profile* profile);
-  // Deprecated: This constructor is deprecated and should be removed once
-  // downstream Android uses new constructor. See crbug.com/159704.
-  TabModel();
   virtual ~TabModel();
 
   // Implementation of ToolbarDelegate

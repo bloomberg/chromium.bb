@@ -35,17 +35,12 @@ class WindowAndroid;
 
 class TestShellTab : public TabAndroid {
  public:
-  TestShellTab(JNIEnv* env,
-               jobject obj,
-               content::WebContents* web_contents,
-               ui::WindowAndroid* window_android);
+  TestShellTab(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
   // TabAndroid Methods
   // --------------------------------------------------------------------------
-  virtual content::WebContents* GetWebContents() OVERRIDE;
-
   virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() OVERRIDE;
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
@@ -82,10 +77,6 @@ class TestShellTab : public TabAndroid {
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
-  void InitWebContentsDelegate(JNIEnv* env,
-                               jobject obj,
-                               jobject web_contents_delegate);
-
   base::android::ScopedJavaLocalRef<jstring> FixupUrl(JNIEnv* env,
                                                       jobject obj,
                                                       jstring url);
@@ -94,10 +85,6 @@ class TestShellTab : public TabAndroid {
   virtual ~TestShellTab();
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
-          web_contents_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(TestShellTab);
 };
 

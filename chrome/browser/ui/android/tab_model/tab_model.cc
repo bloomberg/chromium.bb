@@ -41,13 +41,6 @@ TabModel::TabModel(Profile* profile)
   }
 }
 
-TabModel::TabModel()
-  : profile_(NULL),
-    is_off_the_record_(false),
-    synced_window_delegate_(
-        new browser_sync::SyncedWindowDelegateAndroid(this)) {
-}
-
 TabModel::~TabModel() {
 }
 

@@ -169,5 +169,5 @@ void ShortcutHelper::AddShortcutInBackground(
 // its otherwise inaccessible WebContents.
 static void AddShortcut(JNIEnv* env, jclass clazz, jint tab_android_ptr) {
   TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
-  ShortcutHelper::AddShortcut(tab->GetWebContents());
+  ShortcutHelper::AddShortcut(tab->web_contents());
 }

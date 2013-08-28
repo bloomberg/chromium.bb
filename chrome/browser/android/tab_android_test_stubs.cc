@@ -13,16 +13,6 @@
 #include "printing/printing_context.h"
 #include "printing/printing_context_android.h"
 
-// static
-TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
-  return NULL;
-}
-
-// static
-TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
-  return NULL;
-}
-
 // AutoLoginInfoBarDelegatAndroid empty implementation for test_shell.
 // TODO(miguelg) remove once the AutoLoginInfoBar is upstreamed.
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(

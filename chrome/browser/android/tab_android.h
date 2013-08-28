@@ -9,11 +9,14 @@
 
 #include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
 class GURL;
+class Profile;
 class SkBitmap;
 
 namespace browser_sync {
@@ -24,29 +27,45 @@ namespace chrome {
 struct NavigateParams;
 }
 
+namespace chrome {
+namespace android {
+class ChromeWebContentsDelegateAndroid;
+}
+}
+
 namespace content {
+class ContentViewCore;
 struct ContextMenuParams;
 class WebContents;
 }
 
-class TabAndroid {
+class TabAndroid : public CoreTabHelperDelegate {
  public:
-  TabAndroid(JNIEnv* env, jobject obj);
-
   // Convenience method to retrieve the Tab associated with the passed
   // WebContents.  Can return NULL.
   static TabAndroid* FromWebContents(content::WebContents* web_contents);
 
+  // Returns the native TabAndroid stored in the Java TabBase represented by
+  // |obj|.
   static TabAndroid* GetNativeTab(JNIEnv* env, jobject obj);
 
-  // TODO(tedchoc): Make pure virtual once all derived classes can be updated.
-  virtual content::WebContents* GetWebContents();
+  TabAndroid(JNIEnv* env, jobject obj);
 
-  virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() = 0;
+  // Return the WebContents, if any, currently owned by this TabAndroid.
+  content::WebContents* web_contents() const { return web_contents_.get(); }
+
+  // Return specific id information regarding this TabAndroid.
+  const SessionID& session_id() const { return session_tab_id_; }
+  int android_id() const { return android_tab_id_; }
+
+  // Helper methods to make it easier to access objects from the associated
+  // WebContents.  Can return NULL.
+  content::ContentViewCore* GetContentViewCore() const;
+  Profile* GetProfile() const;
 
   virtual ToolbarModel::SecurityLevel GetSecurityLevel();
 
-  const SessionID& id() const { return tab_id_; }
+  virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() = 0;
 
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) = 0;
 
@@ -94,20 +113,44 @@ class TabAndroid {
   virtual int GetSyncId() const = 0;
   virtual void SetSyncId(int sync_id) = 0;
 
+  static void InitTabHelpers(content::WebContents* web_contents);
+
+  // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 
-  static void InitTabHelpers(content::WebContents* web_contents);
+  // CoreTabHelperDelegate ----------------------------------------------------
+
+  virtual void SwapTabContents(content::WebContents* old_contents,
+                               content::WebContents* new_contents) OVERRIDE;
+
+  // Methods called from Java via JNI -----------------------------------------
+
+  virtual void InitWebContents(JNIEnv* env,
+                               jobject obj,
+                               jint tab_id,
+                               jboolean incognito,
+                               jobject jcontent_view_core,
+                               jobject jweb_contents_delegate);
+  virtual void DestroyWebContents(JNIEnv* env,
+                                  jobject obj,
+                                  jboolean delete_native);
+  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
+                                                               jobject obj);
 
  protected:
   virtual ~TabAndroid();
 
-  content::WebContents* InitWebContentsFromView(JNIEnv* env,
-                                                jobject content_view);
-
-  SessionID tab_id_;
-
  private:
   JavaObjectWeakGlobalRef weak_java_tab_;
+
+  SessionID session_tab_id_;
+  int android_tab_id_;
+
+  scoped_ptr<content::WebContents> web_contents_;
+  scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
+      web_contents_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_TAB_ANDROID_H_

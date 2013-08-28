@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/string16.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
@@ -17,11 +16,6 @@
 // need for them.
 
 class InfoBarService;
-
-// static
-TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
-  return NULL;
-}
 
 // AutoLoginInfoBarDelegatAndroid empty implementation for test_shell
 // TODO(miguelg) remove once the AutoLoginInfoBar is upstreamed.

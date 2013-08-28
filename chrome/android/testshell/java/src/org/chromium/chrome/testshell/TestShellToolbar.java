@@ -19,6 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.TabObserver;
+import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.content.browser.LoadUrlParams;
 
 /**
@@ -41,7 +44,7 @@ public class TestShellToolbar extends LinearLayout {
     private ClipDrawable mProgressDrawable;
 
     private TestShellTab mTab;
-    private TestShellTabObserver mTabObserver = new TestShellTabObserverImpl();
+    private TabObserver mTabObserver = new TabObserverImpl();
     private MenuHandler mMenuHandler;
 
     /**
@@ -123,7 +126,7 @@ public class TestShellToolbar extends LinearLayout {
         mPrevButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                if (mTab.getContentView().canGoBack()) mTab.getContentView().goBack();
+                if (mTab.canGoBack()) mTab.goBack();
             }
         });
 
@@ -131,7 +134,7 @@ public class TestShellToolbar extends LinearLayout {
         mNextButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mTab.getContentView().canGoForward()) mTab.getContentView().goForward();
+                if (mTab.canGoForward()) mTab.goForward();
             }
         });
     }
@@ -156,19 +159,15 @@ public class TestShellToolbar extends LinearLayout {
         }
     }
 
-    private class TestShellTabObserverImpl implements TestShellTabObserver {
+    private class TabObserverImpl extends EmptyTabObserver {
         @Override
-        public void onLoadProgressChanged(TestShellTab tab, int progress) {
+        public void onLoadProgressChanged(TabBase tab, int progress) {
             if (tab == mTab) TestShellToolbar.this.onLoadProgressChanged(progress);
         }
 
         @Override
-        public void onUpdateUrl(TestShellTab tab, String url) {
+        public void onUpdateUrl(TabBase tab, String url) {
             if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
-        }
-
-        @Override
-        public void onCloseTab(TestShellTab tab) {
         }
     }
 }
