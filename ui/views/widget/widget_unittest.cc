@@ -1541,27 +1541,28 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterHideTest) {
   widget.Close();
 }
 
-// This class provides functionality to test whether the destruction of full
-// screen child windows occurs correctly in desktop AURA without crashing.
+// This class provides functionality to create fullscreen and top level popup
+// windows. It additionally tests whether the destruction of these windows
+// occurs correctly in desktop AURA without crashing.
 // It provides facilities to test the following cases:-
 // 1. Child window destroyed which should lead to the destruction of the
 //    parent.
 // 2. Parent window destroyed which should lead to the child being destroyed.
-class DesktopAuraFullscreenChildWindowDestructionTest
+class DesktopAuraTopLevelWindowTest
     : public views::TestViewsDelegate,
       public aura::WindowObserver {
  public:
-  DesktopAuraFullscreenChildWindowDestructionTest()
-      : full_screen_widget_(NULL),
-        child_window_(NULL),
-        parent_destroyed_(false),
-        child_destroyed_(false) {}
+  DesktopAuraTopLevelWindowTest()
+      : top_level_widget_(NULL),
+        owned_window_(NULL),
+        owner_destroyed_(false),
+        owned_window_destroyed_(false) {}
 
-  virtual ~DesktopAuraFullscreenChildWindowDestructionTest() {
-    EXPECT_TRUE(parent_destroyed_);
-    EXPECT_TRUE(child_destroyed_);
-    full_screen_widget_ = NULL;
-    child_window_ = NULL;
+  virtual ~DesktopAuraTopLevelWindowTest() {
+    EXPECT_TRUE(owner_destroyed_);
+    EXPECT_TRUE(owned_window_destroyed_);
+    top_level_widget_ = NULL;
+    owned_window_ = NULL;
   }
 
   // views::TestViewsDelegate overrides.
@@ -1572,50 +1573,55 @@ class DesktopAuraFullscreenChildWindowDestructionTest
       params->native_widget = new views::DesktopNativeWidgetAura(delegate);
   }
 
-  void CreateFullscreenChildWindow(const gfx::Rect& bounds) {
+  void CreateTopLevelWindow(const gfx::Rect& bounds, bool fullscreen) {
     Widget::InitParams init_params;
     init_params.type = Widget::InitParams::TYPE_WINDOW;
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
+    init_params.accept_events = fullscreen;
 
     widget_.Init(init_params);
 
-    child_window_ = new aura::Window(&child_window_delegate_);
-    child_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    child_window_->Init(ui::LAYER_TEXTURED);
-    child_window_->SetName("TestFullscreenChildWindow");
-    child_window_->SetProperty(aura::client::kShowStateKey,
-                              ui::SHOW_STATE_FULLSCREEN);
-    child_window_->SetDefaultParentByRootWindow(
+    owned_window_ = new aura::Window(&child_window_delegate_);
+    owned_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    owned_window_->SetName("TestTopLevelWindow");
+    if (fullscreen) {
+      owned_window_->SetProperty(aura::client::kShowStateKey,
+                                 ui::SHOW_STATE_FULLSCREEN);
+    } else {
+      owned_window_->SetType(aura::client::WINDOW_TYPE_MENU);
+    }
+    owned_window_->Init(ui::LAYER_TEXTURED);
+    owned_window_->SetDefaultParentByRootWindow(
         widget_.GetNativeView()->GetRootWindow(), gfx::Rect(0, 0, 1900, 1600));
-    child_window_->Show();
-    child_window_->AddObserver(this);
+    owned_window_->Show();
+    owned_window_->AddObserver(this);
 
-    ASSERT_TRUE(child_window_->parent() != NULL);
-    child_window_->parent()->AddObserver(this);
+    ASSERT_TRUE(owned_window_->parent() != NULL);
+    owned_window_->parent()->AddObserver(this);
 
-    full_screen_widget_ =
-        views::Widget::GetWidgetForNativeView(child_window_->parent());
-    ASSERT_TRUE(full_screen_widget_ != NULL);
+    top_level_widget_ =
+        views::Widget::GetWidgetForNativeView(owned_window_->parent());
+    ASSERT_TRUE(top_level_widget_ != NULL);
   }
 
-  void DestroyChildWindow() {
-    ASSERT_TRUE(child_window_ != NULL);
-    delete child_window_;
+  void DestroyOwnedWindow() {
+    ASSERT_TRUE(owned_window_ != NULL);
+    delete owned_window_;
   }
 
-  void DestroyParentWindow() {
-    ASSERT_TRUE(full_screen_widget_ != NULL);
-    full_screen_widget_->CloseNow();
+  void DestroyOwnerWindow() {
+    ASSERT_TRUE(top_level_widget_ != NULL);
+    top_level_widget_->CloseNow();
   }
 
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     window->RemoveObserver(this);
-    if (window == child_window_) {
-      child_destroyed_ = true;
-    } else if (window == full_screen_widget_->GetNativeView()) {
-      parent_destroyed_ = true;
+    if (window == owned_window_) {
+      owned_window_destroyed_ = true;
+    } else if (window == top_level_widget_->GetNativeView()) {
+      owner_destroyed_ = true;
     } else {
       ADD_FAILURE() << "Unexpected window destroyed callback: " << window;
     }
@@ -1623,35 +1629,46 @@ class DesktopAuraFullscreenChildWindowDestructionTest
 
  private:
   views::Widget widget_;
-  views::Widget* full_screen_widget_;
-  aura::Window* child_window_;
-  bool parent_destroyed_;
-  bool child_destroyed_;
+  views::Widget* top_level_widget_;
+  aura::Window* owned_window_;
+  bool owner_destroyed_;
+  bool owned_window_destroyed_;
   aura::test::TestWindowDelegate child_window_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopAuraFullscreenChildWindowDestructionTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopAuraTopLevelWindowTest);
 };
 
-TEST_F(WidgetTest, DesktopAuraFullscreenChildDestroyedBeforeParentTest) {
+TEST_F(WidgetTest, DesktopAuraFullscreenWindowDestroyedBeforeOwnerTest) {
   ViewsDelegate::views_delegate = NULL;
-  DesktopAuraFullscreenChildWindowDestructionTest full_screen_child_test;
-  ASSERT_NO_FATAL_FAILURE(full_screen_child_test.CreateFullscreenChildWindow(
-      gfx::Rect(0, 0, 200, 200)));
+  DesktopAuraTopLevelWindowTest fullscreen_window;
+  ASSERT_NO_FATAL_FAILURE(fullscreen_window.CreateTopLevelWindow(
+      gfx::Rect(0, 0, 200, 200), true));
 
   RunPendingMessages();
-  ASSERT_NO_FATAL_FAILURE(full_screen_child_test.DestroyChildWindow());
+  ASSERT_NO_FATAL_FAILURE(fullscreen_window.DestroyOwnedWindow());
   RunPendingMessages();
 }
 
-TEST_F(WidgetTest, DesktopAuraFullscreenChildParentDestroyed) {
+TEST_F(WidgetTest, DesktopAuraFullscreenWindowOwnerDestroyed) {
   ViewsDelegate::views_delegate = NULL;
 
-  DesktopAuraFullscreenChildWindowDestructionTest full_screen_child_test;
-  ASSERT_NO_FATAL_FAILURE(full_screen_child_test.CreateFullscreenChildWindow(
-      gfx::Rect(0, 0, 200, 200)));
+  DesktopAuraTopLevelWindowTest fullscreen_window;
+  ASSERT_NO_FATAL_FAILURE(fullscreen_window.CreateTopLevelWindow(
+      gfx::Rect(0, 0, 200, 200), true));
 
   RunPendingMessages();
-  ASSERT_NO_FATAL_FAILURE(full_screen_child_test.DestroyParentWindow());
+  ASSERT_NO_FATAL_FAILURE(fullscreen_window.DestroyOwnerWindow());
+  RunPendingMessages();
+}
+
+TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupTest) {
+  ViewsDelegate::views_delegate = NULL;
+  DesktopAuraTopLevelWindowTest popup_window;
+  ASSERT_NO_FATAL_FAILURE(popup_window.CreateTopLevelWindow(
+      gfx::Rect(0, 0, 200, 200), false));
+
+  RunPendingMessages();
+  ASSERT_NO_FATAL_FAILURE(popup_window.DestroyOwnedWindow());
   RunPendingMessages();
 }
 
