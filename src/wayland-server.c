@@ -501,7 +501,7 @@ wl_resource_get_link(struct wl_resource *resource)
 WL_EXPORT struct wl_resource *
 wl_resource_from_link(struct wl_list *link)
 {
-	struct wl_resource *resource;
+	struct wl_resource *resource = NULL;
 
 	return wl_container_of(link, resource, link);
 }
