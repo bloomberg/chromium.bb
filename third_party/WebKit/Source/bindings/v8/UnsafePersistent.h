@@ -65,7 +65,7 @@ public:
     }
 
     template<typename V8T, typename U>
-    bool setReturnValueWithSecurityCheck(v8::ReturnValue<v8::Value> returnValue, U* object)
+    inline bool setReturnValueWithSecurityCheck(v8::ReturnValue<v8::Value> returnValue, U* object)
     {
         v8::Handle<v8::Object> result = deprecatedHandle();
         // Security: always guard against malicious tampering.
@@ -74,7 +74,7 @@ public:
         return !result.IsEmpty();
     }
 
-    bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
+    inline bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
     {
         returnValue.Set(deprecatedHandle());
         return !isEmpty();
