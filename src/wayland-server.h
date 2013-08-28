@@ -134,22 +134,52 @@ struct wl_listener {
 	wl_notify_func_t notify;
 };
 
+/** \class wl_signal
+ *
+ * \brief A source of a type of observable event
+ *
+ * Signals are recognized points where significant events can be observed.
+ * Compositors as well as the server can provide signals. Observers are
+ * added through \ref wl_signal_add.
+ */
 struct wl_signal {
 	struct wl_list listener_list;
 };
 
+/** Initialize a new \ref wl_signal for use.
+ *
+ * \param signal The signal that will be initialized
+ *
+ * \memberof wl_signal
+ */
 static inline void
 wl_signal_init(struct wl_signal *signal)
 {
 	wl_list_init(&signal->listener_list);
 }
 
+/** Add the specified listener to this signal.
+ *
+ * \param signal The signal that will emit events to the listener
+ * \param listener The listener to add
+ *
+ * \memberof wl_signal
+ */
 static inline void
 wl_signal_add(struct wl_signal *signal, struct wl_listener *listener)
 {
 	wl_list_insert(signal->listener_list.prev, &listener->link);
 }
 
+/** Gets the list item for the specified listener.
+ *
+ * \param signal The signal that contains the specified listener
+ * \param notify The listener that is the target of this search
+ * \return the list item that corresponds to the specified listener, or NULL
+ * if none was found
+ *
+ * \memberof wl_signal
+ */
 static inline struct wl_listener *
 wl_signal_get(struct wl_signal *signal, wl_notify_func_t notify)
 {
@@ -162,6 +192,13 @@ wl_signal_get(struct wl_signal *signal, wl_notify_func_t notify)
 	return NULL;
 }
 
+/** Emits this signal, notifying all registered listeners.
+ *
+ * \param signal The signal object that will emit the signal
+ * \param data The data that will be emitted with the signal
+ *
+ * \memberof wl_signal
+ */
 static inline void
 wl_signal_emit(struct wl_signal *signal, void *data)
 {
