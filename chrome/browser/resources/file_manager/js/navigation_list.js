@@ -18,16 +18,13 @@ function NavigationModelItem(filesystem, path, entry) {
   this.filesystem_ = filesystem;
   this.path_ = path;
   this.entry_ = entry;
-  this.fileError_ = null;
 
   this.resolvingQueue_ = new AsyncUtil.Queue();
-
-  Object.seal(this);
 }
 
 NavigationModelItem.prototype = {
-  get path() { return this.path_; },
-  get fileError() { return this.fileError_; }
+  __proto__: cr.EventTarget.prototype,
+  get path() { return this.path_; }
 };
 
 /**
@@ -44,18 +41,14 @@ NavigationModelItem.prototype.getCachedEntry = function() {
 /**
  * @param {FileSystem} filesystem FileSystem.
  * @param {string} path Path.
- * @param {function(NavigationModelItem)} callback Called when the resolving is
- *     success/failed with the created NavigationModelItem.
  * @return {NavigationModelItem} Created NavigationModelItem.
  */
-NavigationModelItem.createWithPath = function(filesystem, path, callback) {
+NavigationModelItem.createWithPath = function(filesystem, path) {
   var modelItem = new NavigationModelItem(
       filesystem,
       path,
       null);
-  modelItem.resolveDirectoryEntry_(function() {
-    callback(modelItem);
-  });
+  modelItem.resolveDirectoryEntry_();
   return modelItem;
 };
 
@@ -92,24 +85,20 @@ NavigationModelItem.prototype.getEntryAsync = function(callback) {
 
 /**
  * Resolves an directory entry.
- * @param {function()} callback Called when the resolving is success/failed.
  * @private
  */
-NavigationModelItem.prototype.resolveDirectoryEntry_ = function(callback) {
+NavigationModelItem.prototype.resolveDirectoryEntry_ = function() {
   this.resolvingQueue_.run(function(continueCallback) {
     this.filesystem_.root.getDirectory(
         this.path_,
         {create: false},
         function(directoryEntry) {
           this.entry_ = directoryEntry;
-          callback();
           continueCallback();
         }.bind(this),
         function(error) {
           this.entry_ = null;
-          this.fileError_ = error;
           console.error('Error on resolving path: ' + this.path_);
-          callback();
           continueCallback();
         }.bind(this));
   }.bind(this));
@@ -139,15 +128,8 @@ function NavigationListModel(filesystem, volumesList, pinnedList) {
     return NavigationModelItem.createWithEntry(entry);
   };
   var pathToModelItem = function(path) {
-    return NavigationModelItem.createWithPath(filesystem, path,
-        function(modelItem) {
-          if (!modelItem.getCachedEntry() &&
-              modelItem.fileError &&
-              modelItem.fileError.code === FileError.NOT_FOUND_ERR) {
-            this.onItemNotFoundError(modelItem);
-          }
-        }.bind(this));
-  }.bind(this);
+    return NavigationModelItem.createWithPath(filesystem, path);
+  };
 
   /**
    * Type of updated list.
@@ -294,37 +276,6 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
 };
 
 /**
- * Called when one od the items is not found on the filesystem.
- * @param {NavigationModelItem} modelItem The entry which is not found.
- */
-NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
-  var index = this.indexOf(modelItem);
-  if (index === -1) {
-    // Invalid modelItem.
-  } else if (index < this.volumesList_.length) {
-    // The item is in the volume list.
-    // Not implemented.
-    // TODO(yoshiki): Implement it when necessary.
-  } else {
-    // The item is in the pinned list.
-    if (this.isDriveMounted())
-      this.pinnedListModel_.remove(modelItem.path);
-  }
-};
-
-/**
- * Returns if the drive is mounted or not.
- * @return {boolean} True if the drive is mounted, false otherwise.
- */
-NavigationListModel.prototype.isDriveMounted = function() {
-  for (var i = 0; i < this.volumesList_.length; i++) {
-    if (PathUtil.isDriveBasedPath(this.item(i).path))
-      return true;
-  }
-  return false;
-};
-
-/**
  * A navigation list item.
  * @constructor
  * @extends {HTMLLIElement}
@@ -333,7 +284,7 @@ var NavigationListItem = cr.ui.define('li');
 
 NavigationListItem.prototype = {
   __proto__: HTMLLIElement.prototype,
-  get modelItem() { return this.modelItem_; }
+  get modelItem() { return this.modelItem_; },
 };
 
 /**
@@ -579,7 +530,7 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
     if (item.selected &&
         modelItem.path !== this.directoryModel_.getCurrentDirPath()) {
       metrics.recordUserAction('FolderShortcut.Navigate');
-      this.changeDirectory_(modelItem);
+      this.changeDirectory_(modelItem.path);
     }
   }.bind(this);
   item.addEventListener('click', handleClick);
@@ -604,16 +555,18 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
  * If the given path is not found, a 'shortcut-target-not-found' event is
  * fired.
  *
- * @param {NavigationModelItem} modelItem Directory to be chagned to.
+ * @param {string} path Path of the directory to be chagned to.
  * @private
  */
-NavigationList.prototype.changeDirectory_ = function(modelItem) {
-  var onErrorCallback = function(error) {
-    if (error.code === FileError.NOT_FOUND_ERR)
-      this.dataModel.onItemNotFoundError(modelItem);
+NavigationList.prototype.changeDirectory_ = function(path) {
+  var onErrorCallback = function() {
+    var event = new Event('shortcut-target-not-found');
+    event.path = path;
+    event.label = PathUtil.getFolderLabel(path);
+    this.dispatchEvent(event);
   }.bind(this);
 
-  this.directoryModel_.changeDirectory(modelItem.path, onErrorCallback);
+  this.directoryModel_.changeDirectory(path, onErrorCallback);
 };
 
 /**
@@ -640,8 +593,7 @@ NavigationList.prototype.selectByIndex = function(index) {
   if (index < 0 || index > this.dataModel.length - 1)
     return false;
 
-  var newModelItem = this.dataModel.item(index);
-  var newPath = newModelItem.path;
+  var newPath = this.dataModel.item(index).path;
   if (!newPath)
     return false;
 
@@ -652,7 +604,7 @@ NavigationList.prototype.selectByIndex = function(index) {
     return false;
 
   metrics.recordUserAction('FolderShortcut.Navigate');
-  this.changeDirectory_(newModelItem);
+  this.changeDirectory_(newPath);
   return true;
 };
 

@@ -886,8 +886,8 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * Changes directory. Causes 'directory-change' event.
  *
  * @param {string} path New current directory path.
- * @param {function(FileError)=} opt_errorCallback Executed if the change
- *     directory failed.
+ * @param {function()=} opt_errorCallback Executed if the change directory
+ * failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
   if (PathUtil.isSpecialSearchRoot(path)) {
@@ -900,7 +900,7 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
   }.bind(this), function(error) {
     console.error('Error changing directory to ' + path + ': ', error);
     if (opt_errorCallback)
-      opt_errorCallback(error);
+      opt_errorCallback();
   });
 };
 

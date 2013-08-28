@@ -1222,6 +1222,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         new NavigationListModel(this.filesystem_,
                                 this.directoryModel_.getRootsList(),
                                 this.folderShortcutsModel_);
+
+    this.navigationList_.addEventListener(
+        'shortcut-target-not-found',
+        function(e) {
+          var path = e.path;
+          var label = e.label;
+          this.confirm.showWithTitle(
+            label,
+            str('SHORTCUT_TARGET_UNAVAILABLE'),
+            // 'Yes' is clicked.
+            function() {
+              this.removeFolderShortcut(path);
+            }.bind(this));
+        }.bind(this));
   };
 
   /**
