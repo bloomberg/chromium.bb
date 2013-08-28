@@ -62,6 +62,7 @@ class MediaDrmBridge {
             mSchemeUUID = schemeUUID;
             mMediaDrm = new MediaDrm(schemeUUID);
             mNativeMediaDrmBridge = nativeMediaDrmBridge;
+            mMediaDrm.setPropertyString("privacyMode", "enable");
             mMediaDrm.setOnEventListener(new MediaDrmListener());
             mHandler = new Handler();
         } catch (android.media.UnsupportedSchemeException e) {
@@ -233,7 +234,15 @@ class MediaDrmBridge {
         }
         try {
             final byte[] session = sessionId.getBytes("UTF-8");
-            mMediaDrm.provideKeyResponse(session, key);
+            try {
+                mMediaDrm.provideKeyResponse(session, key);
+            } catch (java.lang.IllegalStateException e) {
+                // This is not really an exception. Some error code are incorrectly
+                // reported as an exception.
+                // TODO(qinmin): remove this exception catch when b/10495563 is fixed.
+                Log.e(TAG, "Exception intentionally caught when calling provideKeyResponse() "
+                        + e.toString());
+            }
             mHandler.post(new Runnable() {
                 public void run() {
                     nativeOnKeyAdded(mNativeMediaDrmBridge, mSessionId);
