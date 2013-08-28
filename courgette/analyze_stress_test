@@ -6,21 +6,9 @@
 
 # Produce metrics analyzing the output of a stress test
 
+source "$(dirname ${0})/stress_test_common"
+
 set -e
-
-error() {
-  echo "error: ${@}" >&2
-}
-
-# Given a token, search for and count the instances of lines from the
-# logfile that start with the token.
-count_result() {
-  if [ ! -z "${1}" ]; then
-    echo $(cat "${log}" | grep "^${1} " | wc -l)    
-  else
-    echo 0
-  fi
-}
 
 # Given a token, search for and compute the percentiles from logfile.
 compute_percentiles() {

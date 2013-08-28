@@ -6,9 +6,7 @@
 
 # Produce memory metrics for run_apply_test
 
-error() {
-  echo "error: ${@}" >&2
-}
+source "$(dirname ${0})/stress_test_common"
 
 compute_percentiles() {
   if [ -z "${1}" ]; then
