@@ -62,32 +62,68 @@ std::ostream& operator<<(std::ostream& os, const GuestMode& guest_mode) {
 }
 
 struct TestEntryInfo {
+  TestEntryInfo(EntryType type,
+                const std::string& source_file_name,
+                const std::string& target_name,
+                const std::string& mime_type,
+                SharedOption shared_option,
+                const base::Time& last_modified_time) :
+      type(type),
+      source_file_name(source_file_name),
+      target_name(target_name),
+      mime_type(mime_type),
+      shared_option(shared_option),
+      last_modified_time(last_modified_time) {
+  }
+
   EntryType type;
-  const char* source_file_name;  // Source file name to be used as a prototype.
-  const char* target_name;  // Target file or directory name.
-  const char* mime_type;
+  std::string source_file_name;  // Source file name to be used as a prototype.
+  std::string target_name;  // Target file or directory name.
+  std::string mime_type;
   SharedOption shared_option;
-  const char* last_modified_time_as_string;
+  base::Time last_modified_time;
 };
 
-TestEntryInfo kTestEntrySetCommon[] = {
-  { FILE, "text.txt", "hello.txt", "text/plain", NONE, "4 Sep 1998 12:34:56" },
-  { FILE, "image.png", "My Desktop Background.png", "text/plain", NONE,
-    "18 Jan 2038 01:02:03" },
-  { FILE, "music.ogg", "Beautiful Song.ogg", "text/plain", NONE,
-    "12 Nov 2086 12:00:00" },
-  { FILE, "video.ogv", "world.ogv", "text/plain", NONE,
-    "4 July 2012 10:35:00" },
-  { DIRECTORY, "", "photos", NULL, NONE, "1 Jan 1980 23:59:59" },
-  { DIRECTORY, "", ".warez", NULL, NONE, "26 Oct 1985 13:39" }
-};
+// Create the test entry data for common use.
+std::vector<TestEntryInfo> createTestEntrySetCommon() {
+  std::vector<TestEntryInfo> entryInfoSet;
+  base::Time time;
+  base::Time::FromString("4 Sep 1998 12:34:56", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "text.txt", "hello.txt", "text/plain", NONE, time));
+  base::Time::FromString("18 Jan 2038 01:02:03", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "image.png", "My Desktop Background.png", "text/plain", NONE,
+      time));
+  base::Time::FromString("12 Nov 2086 12:00:00", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "music.ogg", "Beautiful Song.ogg", "text/plain", NONE, time));
+  base::Time::FromString("4 July 2012 10:35:00", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "video.ogv", "world.ogv", "text/plain", NONE, time));
+  base::Time::FromString("1 Jan 1980 23:59:59", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      DIRECTORY, "", "photos", "", NONE, time));
+  base::Time::FromString("26 Oct 1985 13:39", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      DIRECTORY, "", ".warez", "", NONE, time));
+  return entryInfoSet;
+}
 
-TestEntryInfo kTestEntrySetDriveOnly[] = {
-  { FILE, "", "Test Document", "application/vnd.google-apps.document", NONE,
-    "10 Apr 2013 16:20:00" },
-  { FILE, "", "Test Shared Document", "application/vnd.google-apps.document",
-    SHARED, "20 Mar 2013 22:40:00" }
-};
+// Create the test entry data for the drive volume.
+std::vector<TestEntryInfo> createTestEntrySetDriveOnly() {
+  std::vector<TestEntryInfo> entryInfoSet;
+  base::Time time;
+  base::Time::FromString("10 Apr 2013 16:20:00", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "", "Test Document", "application/vnd.google-apps.document", NONE,
+      time));
+  base::Time::FromString("20 Mar 2013 22:40:00", &time);
+  entryInfoSet.push_back(TestEntryInfo(
+      FILE, "", "Test Shared Document", "application/vnd.google-apps.document",
+      SHARED, time));
+  return entryInfoSet;
+}
 
 // The local volume class for test.
 // This class provides the operations for a test volume that simulates local
@@ -130,10 +166,8 @@ class LocalTestVolume {
             "Failed to create a directory: " << target_path.value();
         break;
     }
-    base::Time time;
-    ASSERT_TRUE(base::Time::FromString(entry.last_modified_time_as_string,
-                                       &time));
-    ASSERT_TRUE(file_util::SetLastModifiedTime(target_path, time));
+    ASSERT_TRUE(
+        file_util::SetLastModifiedTime(target_path, entry.last_modified_time));
   }
 
  private:
@@ -169,17 +203,17 @@ class DriveTestVolume {
                    entry.target_name,
                    entry.mime_type,
                    entry.shared_option == SHARED,
-                   entry.last_modified_time_as_string);
+                   entry.last_modified_time);
         break;
       case DIRECTORY:
-        CreateDirectory(entry.target_name, entry.last_modified_time_as_string);
+        CreateDirectory(entry.target_name, entry.last_modified_time);
         break;
     }
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
   void CreateDirectory(const std::string& name,
-                       const std::string& modification_time) {
+                       const base::Time& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewDirectory(
@@ -191,11 +225,9 @@ class DriveTestVolume {
     ASSERT_TRUE(error == google_apis::HTTP_CREATED);
     ASSERT_TRUE(resource_entry);
 
-    base::Time time;
-    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
     fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
-        time,
+        modification_time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     base::MessageLoop::current()->RunUntilIdle();
@@ -210,7 +242,7 @@ class DriveTestVolume {
                   const std::string& target_file_name,
                   const std::string& mime_type,
                   bool shared_with_me,
-                  const std::string& modification_time) {
+                  const base::Time& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
     std::string content_data;
@@ -234,11 +266,9 @@ class DriveTestVolume {
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(resource_entry);
 
-    base::Time time;
-    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
     fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
-        time,
+        modification_time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     base::MessageLoop::current()->RunUntilIdle();
@@ -381,8 +411,13 @@ void FileManagerBrowserTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(browser()->profile()));
 
-  for (size_t i = 0; i < arraysize(kTestEntrySetCommon); ++i)
-    local_volume_->CreateEntry(kTestEntrySetCommon[i]);
+  const std::vector<TestEntryInfo> testEntrySetCommon(
+      createTestEntrySetCommon());
+  const std::vector<TestEntryInfo> testEntrySetDriveOnly(
+      createTestEntrySetDriveOnly());
+
+  for (size_t i = 0; i < testEntrySetCommon.size(); ++i)
+    local_volume_->CreateEntry(testEntrySetCommon[i]);
 
   if (drive_volume_) {
     // Install the web server to serve the mocked share dialog.
@@ -391,13 +426,13 @@ void FileManagerBrowserTest::SetUpOnMainThread() {
         "/chromeos/file_manager/share_dialog_mock/index.html"));
     drive_volume_->ConfigureShareUrlBase(share_url_base);
 
-    for (size_t i = 0; i < arraysize(kTestEntrySetCommon); ++i)
-      drive_volume_->CreateEntry(kTestEntrySetCommon[i]);
+    for (size_t i = 0; i < testEntrySetCommon.size(); ++i)
+      drive_volume_->CreateEntry(testEntrySetCommon[i]);
 
     // For testing Drive, create more entries with Drive specific attributes.
     // TODO(haruki): Add a case for an entry cached by DriveCache.
-    for (size_t i = 0; i < arraysize(kTestEntrySetDriveOnly); ++i)
-      drive_volume_->CreateEntry(kTestEntrySetDriveOnly[i]);
+    for (size_t i = 0; i < testEntrySetDriveOnly.size(); ++i)
+      drive_volume_->CreateEntry(testEntrySetDriveOnly[i]);
 
     test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
@@ -438,14 +473,15 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
       entry.function->Reply(std::tr1::get<0>(GetParam()) ? "true" : "false");
     } else if (entry.message == "addEntry") {
       // Add the extra entry.
-      const TestEntryInfo file = {
-        FILE,
-        "music.ogg",  // Prototype file name.
-        "newly added file.ogg",  // Target file name.
-        "audio/ogg",
-        NONE,
-        "4 Sep 1998 00:00:00"
-      };
+      base::Time time;
+      ASSERT_TRUE(base::Time::FromString("4 Sep 1998 00:00:00", &time));
+      const TestEntryInfo file(
+          FILE,
+          "music.ogg",  // Prototype file name.
+          "newly added file.ogg",  // Target file name.
+          "audio/ogg",
+          NONE,
+          time);
       if (drive_volume_)
         drive_volume_->CreateEntry(file);
       local_volume_->CreateEntry(file);
