@@ -179,7 +179,7 @@ private:
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
     void performPostLoadActions();
 
-    bool clientDisallowsImage(const KURL&) const;
+    bool clientDefersImage(const KURL&) const;
     void reloadImagesIfNotDeferred();
 
     HashSet<String> m_validatedURLs;

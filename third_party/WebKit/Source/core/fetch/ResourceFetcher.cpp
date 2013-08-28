@@ -215,9 +215,7 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
     if (request.resourceRequest().url().protocolIsData())
         preCacheDataURIImage(request);
 
-    if (clientDisallowsImage(request.resourceRequest().url()))
-        return 0;
-
+    request.setDefer(clientDefersImage(request.resourceRequest().url()) ? FetchRequest::DeferredByClient : FetchRequest::NoDefer);
     return static_cast<ImageResource*>(requestResource(Resource::Image, request).get());
 }
 
@@ -896,14 +894,14 @@ void ResourceFetcher::setImagesEnabled(bool enable)
     reloadImagesIfNotDeferred();
 }
 
-bool ResourceFetcher::clientDisallowsImage(const KURL& url) const
+bool ResourceFetcher::clientDefersImage(const KURL& url) const
 {
     return frame() && !frame()->loader()->client()->allowImage(m_imagesEnabled, url);
 }
 
 bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
 {
-    return clientDisallowsImage(url) || !m_autoLoadImages;
+    return clientDefersImage(url) || !m_autoLoadImages;
 }
 
 void ResourceFetcher::reloadImagesIfNotDeferred()
@@ -911,7 +909,7 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     DocumentResourceMap::iterator end = m_documentResources.end();
     for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != end; ++it) {
         Resource* resource = it->value.get();
-        if (resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDisallowsImage(resource->url()))
+        if (resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
             const_cast<Resource*>(resource)->load(this, defaultResourceOptions());
     }
 }
