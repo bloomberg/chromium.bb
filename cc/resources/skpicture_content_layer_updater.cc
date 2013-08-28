@@ -17,8 +17,7 @@ SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
     RenderingStatsInstrumentation* stats_instrumentation,
     int layer_id)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id),
-      layer_is_opaque_(false) {}
+    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id) {}
 
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 
@@ -33,7 +32,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas,
-                content_rect,
+                content_rect.origin(),
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect);
@@ -47,10 +46,6 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
 void SkPictureContentLayerUpdater::DrawPicture(SkCanvas* canvas) {
   TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::DrawPicture");
   canvas->drawPicture(picture_);
-}
-
-void SkPictureContentLayerUpdater::SetOpaque(bool opaque) {
-  layer_is_opaque_ = opaque;
 }
 
 }  // namespace cc

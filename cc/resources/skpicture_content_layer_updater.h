@@ -20,9 +20,6 @@ class LayerPainter;
 // FrameBufferSkPictureContentLayerUpdater are two examples of such
 // implementations.
 class SkPictureContentLayerUpdater : public ContentLayerUpdater {
- public:
-  virtual void SetOpaque(bool opaque) OVERRIDE;
-
  protected:
   SkPictureContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
@@ -37,13 +34,9 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
                                gfx::Rect* resulting_opaque_rect) OVERRIDE;
   void DrawPicture(SkCanvas* canvas);
 
-  bool layer_is_opaque() const { return layer_is_opaque_; }
-
  private:
   // Recording canvas.
   SkPicture picture_;
-  // True when it is known that all output pixels will be opaque.
-  bool layer_is_opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(SkPictureContentLayerUpdater);
 };

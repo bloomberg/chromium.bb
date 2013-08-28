@@ -9,6 +9,7 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -23,7 +24,8 @@ ContentLayerUpdater::ContentLayerUpdater(
     int layer_id)
     : rendering_stats_instrumentation_(stats_instrumentation),
       layer_id_(layer_id),
-      painter_(painter.Pass()) {}
+      painter_(painter.Pass()),
+      layer_is_opaque_(false) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 
@@ -33,14 +35,17 @@ void ContentLayerUpdater::set_rendering_stats_instrumentation(
 }
 
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
-                                        gfx::Rect content_rect,
+                                        gfx::Point origin,
                                         float contents_width_scale,
                                         float contents_height_scale,
                                         gfx::Rect* resulting_opaque_rect) {
   TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   canvas->save();
-  canvas->translate(SkFloatToScalar(-content_rect.x()),
-                    SkFloatToScalar(-content_rect.y()));
+  canvas->translate(SkFloatToScalar(-origin.x()),
+                    SkFloatToScalar(-origin.y()));
+
+  SkDevice* device = canvas->getDevice();
+  gfx::Rect content_rect(origin, gfx::Size(device->width(), device->height()));
 
   gfx::Rect layer_rect = content_rect;
 
@@ -52,12 +57,14 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
         content_rect, 1.f / contents_width_scale, 1.f / contents_height_scale);
   }
 
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
   SkRect layer_sk_rect = SkRect::MakeXYWH(
       layer_rect.x(), layer_rect.y(), layer_rect.width(), layer_rect.height());
-  canvas->drawRect(layer_sk_rect, paint);
+
+  // If the layer has opaque contents then there is no need to
+  // clear the canvas before painting.
+  if (!layer_is_opaque_)
+    canvas->clear(SK_ColorTRANSPARENT);
+
   canvas->clipRect(layer_sk_rect);
 
   gfx::RectF opaque_layer_rect;
@@ -69,6 +76,10 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   *resulting_opaque_rect = opaque_content_rect;
 
   content_rect_ = content_rect;
+}
+
+void ContentLayerUpdater::SetOpaque(bool opaque) {
+  layer_is_opaque_ = opaque;
 }
 
 }  // namespace cc
