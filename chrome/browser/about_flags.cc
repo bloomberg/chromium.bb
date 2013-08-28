@@ -1635,7 +1635,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_MAP_IMAGE_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kMapImageChoices)
-  }
+  },
+  {
+    "enable-device-motion",
+    IDS_FLAGS_ENABLE_DEVICE_MOTION_NAME,
+    IDS_FLAGS_ENABLE_DEVICE_MOTION_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableDeviceMotion)
+  },
 };
 
 const Experiment* experiments = kExperiments;
