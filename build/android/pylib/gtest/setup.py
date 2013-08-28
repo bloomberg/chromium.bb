@@ -21,8 +21,9 @@ import test_package_exe
 import test_runner
 
 sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
-from common import unittest_util
+                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
+                             'common'))
+import unittest_util
 
 
 _ISOLATE_FILE_PATHS = {
