@@ -31,15 +31,12 @@
 #include "config.h"
 #include "modules/crypto/SubtleCrypto.h"
 
-#include "V8Key.h" // Must precede ScriptPromiseResolver.h
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/custom/V8ArrayBufferCustom.h" // Must precede ScriptPromiseResolver.h
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/crypto/CryptoResult.h"
 #include "modules/crypto/Key.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ArrayBufferView.h"
@@ -50,72 +47,6 @@ namespace WebCore {
 //        v8::Context before trying to fulfill the promise, and enable test.
 
 namespace {
-
-class CryptoResult : public WebKit::WebCryptoResultPrivate, public ThreadSafeRefCounted<CryptoResult> {
-public:
-    static PassRefPtr<CryptoResult> create()
-    {
-        return adoptRef(new CryptoResult);
-    }
-
-    virtual void ref() OVERRIDE
-    {
-        ThreadSafeRefCounted<CryptoResult>::ref();
-    }
-
-    virtual void deref() OVERRIDE
-    {
-        ThreadSafeRefCounted<CryptoResult>::deref();
-    }
-
-    virtual void completeWithError() OVERRIDE
-    {
-        m_promiseResolver->reject(ScriptValue::createNull());
-        finish();
-    }
-
-    virtual void completeWithBuffer(const WebKit::WebArrayBuffer& buffer) OVERRIDE
-    {
-        m_promiseResolver->fulfill(PassRefPtr<ArrayBuffer>(buffer));
-        finish();
-    }
-
-    virtual void completeWithBoolean(bool b) OVERRIDE
-    {
-        m_promiseResolver->fulfill(ScriptValue::createBoolean(b));
-        finish();
-    }
-
-    virtual void completeWithKey(const WebKit::WebCryptoKey& key) OVERRIDE
-    {
-        m_promiseResolver->fulfill(Key::create(key));
-        finish();
-    }
-
-    WebKit::WebCryptoResult result()
-    {
-        return WebKit::WebCryptoResult(this);
-    }
-
-    ScriptObject promise()
-    {
-        return m_promiseResolver->promise();
-    }
-
-private:
-    CryptoResult()
-        : m_promiseResolver(ScriptPromiseResolver::create())
-        , m_finished(false) { }
-
-    void finish()
-    {
-        ASSERT(!m_finished);
-        m_finished = true;
-    }
-
-    RefPtr<ScriptPromiseResolver> m_promiseResolver;
-    bool m_finished;
-};
 
 ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
 {

@@ -28,62 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef CryptoResult_h
+#define CryptoResult_h
+
+#include "bindings/v8/ScriptObject.h"
 #include "public/platform/WebCrypto.h"
+#include "wtf/Forward.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
-#include "modules/crypto/CryptoResult.h"
-#include "public/platform/WebArrayBuffer.h"
-#include <string.h>
+namespace WebCore {
 
-namespace WebKit {
+class ScriptPromiseResolver;
 
-void WebCryptoResult::completeWithError()
-{
-    m_impl->completeWithError();
-    reset();
-}
+// Wrapper around a Promise to notify completion of the crypto operation.
+class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
+public:
+    ~CryptoResult();
 
-void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
-{
-    RELEASE_ASSERT(!buffer.isNull());
-    m_impl->completeWithBuffer(buffer);
-    reset();
-}
+    static PassRefPtr<CryptoResult> create();
 
-void WebCryptoResult::completeWithBuffer(const void* bytes, size_t bytesSize)
-{
-    WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
-    RELEASE_ASSERT(!buffer.isNull());
-    memcpy(buffer.data(), bytes, bytesSize);
-    completeWithBuffer(buffer);
-}
+    void completeWithError();
+    void completeWithBuffer(const WebKit::WebArrayBuffer&);
+    void completeWithBoolean(bool);
+    void completeWithKey(const WebKit::WebCryptoKey&);
 
-void WebCryptoResult::completeWithBoolean(bool b)
-{
-    m_impl->completeWithBoolean(b);
-    reset();
-}
+    WebKit::WebCryptoResult result()
+    {
+        return WebKit::WebCryptoResult(this);
+    }
 
-void WebCryptoResult::completeWithKey(const WebCryptoKey& key)
-{
-    m_impl->completeWithKey(key);
-    reset();
-}
+    ScriptObject promise();
 
-WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
-    : m_impl(impl)
-{
-    ASSERT(impl);
-}
+private:
+    CryptoResult();
+    void finish();
 
-void WebCryptoResult::reset()
-{
-    m_impl.reset();
-}
+    RefPtr<ScriptPromiseResolver> m_promiseResolver;
+    bool m_finished;
+};
 
-void WebCryptoResult::assign(const WebCryptoResult& o)
-{
-    m_impl = o.m_impl;
-}
+} // namespace WebCore
 
-} // namespace WebKit
+#endif

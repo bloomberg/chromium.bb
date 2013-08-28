@@ -29,61 +29,68 @@
  */
 
 #include "config.h"
-#include "public/platform/WebCrypto.h"
-
 #include "modules/crypto/CryptoResult.h"
+
+#include "V8Key.h" // Must precede ScriptPromiseResolver.h
+#include "bindings/v8/custom/V8ArrayBufferCustom.h" // Must precede ScriptPromiseResolver.h
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "modules/crypto/Key.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"
-#include <string.h>
+#include "public/platform/WebCrypto.h"
+#include "public/platform/WebCryptoAlgorithm.h"
+#include "wtf/ArrayBufferView.h"
 
-namespace WebKit {
+namespace WebCore {
 
-void WebCryptoResult::completeWithError()
+CryptoResult::~CryptoResult()
 {
-    m_impl->completeWithError();
-    reset();
+    ASSERT(m_finished);
 }
 
-void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
+PassRefPtr<CryptoResult> CryptoResult::create()
 {
-    RELEASE_ASSERT(!buffer.isNull());
-    m_impl->completeWithBuffer(buffer);
-    reset();
+    return adoptRef(new CryptoResult);
 }
 
-void WebCryptoResult::completeWithBuffer(const void* bytes, size_t bytesSize)
+void CryptoResult::completeWithError()
 {
-    WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
-    RELEASE_ASSERT(!buffer.isNull());
-    memcpy(buffer.data(), bytes, bytesSize);
-    completeWithBuffer(buffer);
+    m_promiseResolver->reject(ScriptValue::createNull());
+    finish();
 }
 
-void WebCryptoResult::completeWithBoolean(bool b)
+void CryptoResult::completeWithBuffer(const WebKit::WebArrayBuffer& buffer)
 {
-    m_impl->completeWithBoolean(b);
-    reset();
+    m_promiseResolver->fulfill(PassRefPtr<ArrayBuffer>(buffer));
+    finish();
 }
 
-void WebCryptoResult::completeWithKey(const WebCryptoKey& key)
+void CryptoResult::completeWithBoolean(bool b)
 {
-    m_impl->completeWithKey(key);
-    reset();
+    m_promiseResolver->fulfill(ScriptValue::createBoolean(b));
+    finish();
 }
 
-WebCryptoResult::WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>& impl)
-    : m_impl(impl)
+void CryptoResult::completeWithKey(const WebKit::WebCryptoKey& key)
 {
-    ASSERT(impl);
+    m_promiseResolver->fulfill(Key::create(key));
+    finish();
 }
 
-void WebCryptoResult::reset()
+ScriptObject CryptoResult::promise()
 {
-    m_impl.reset();
+    return m_promiseResolver->promise();
 }
 
-void WebCryptoResult::assign(const WebCryptoResult& o)
+CryptoResult::CryptoResult()
+    : m_promiseResolver(ScriptPromiseResolver::create())
+    , m_finished(false) { }
+
+void CryptoResult::finish()
 {
-    m_impl = o.m_impl;
+    ASSERT(!m_finished);
+    m_finished = true;
 }
 
-} // namespace WebKit
+} // namespace WebCore

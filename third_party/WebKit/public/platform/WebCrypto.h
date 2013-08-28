@@ -35,32 +35,19 @@
 #include "WebCryptoKey.h"
 #include "WebPrivatePtr.h"
 
+namespace WebCore { class CryptoResult; }
+
+#if WEBKIT_IMPLEMENTATION
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
+
 namespace WebKit {
 
 class WebArrayBuffer;
 class WebCryptoOperation;
 
-class WebCryptoResultPrivate {
-public:
-    virtual void ref() = 0;
-    virtual void deref() = 0;
-
-    virtual void completeWithError() = 0;
-    virtual void completeWithBuffer(const WebArrayBuffer&) = 0;
-    virtual void completeWithBoolean(bool) = 0;
-    virtual void completeWithKey(const WebCryptoKey&) = 0;
-
-protected:
-    virtual ~WebCryptoResultPrivate() { }
-};
-
 class WebCryptoResult {
 public:
-    explicit WebCryptoResult(WebCryptoResultPrivate* impl)
-    {
-        assign(impl);
-    }
-
     WebCryptoResult(const WebCryptoResult& o)
     {
         assign(o);
@@ -83,12 +70,15 @@ public:
     WEBKIT_EXPORT void completeWithBoolean(bool);
     WEBKIT_EXPORT void completeWithKey(const WebCryptoKey&);
 
+#if WEBKIT_IMPLEMENTATION
+    explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
+#endif
+
 private:
     WEBKIT_EXPORT void reset();
     WEBKIT_EXPORT void assign(const WebCryptoResult&);
-    WEBKIT_EXPORT void assign(WebCryptoResultPrivate*);
 
-    WebPrivatePtr<WebCryptoResultPrivate> m_impl;
+    WebPrivatePtr<WebCore::CryptoResult> m_impl;
 };
 
 class WebCrypto {
