@@ -68,6 +68,14 @@ kb-key::x-superscript[inverted] {
   color: #ffffff;
 }
 
+/**
+* Controls whether the shift key should be highlighted or not.
+* Only highlights if we are in a lockable keyboard which is not locked.
+*/
+kb-keyboard:not(.locked) kb-keyset[lockable] kb-shift-key {
+  color: lightblue;
+}
+
 kb-shift-key.dark,
 kb-layout-selector.dark,
 kb-key.dark {
@@ -87,7 +95,7 @@ kb-altkey::x-key {
   text-align: center;
 }
 
-.caps kb-shift-key,
+.locked kb-shift-key,
 .active {
   background-color: #848490 !important;
   border-top: 2px solid #A9A9AF !important;
@@ -155,11 +163,6 @@ kb-altkey::x-key {
 
 .audio .microphone {
   background-image: url('images/microphone-green.svg');
-}
-
-/* Highlight for shift key when pressed. */
-.highlight kb-shift-key {
-  color: lightblue;
 }
 
 .layout-selector {

@@ -183,17 +183,13 @@
       * Handles the state of the shift key.
       */
       keysetChanged: function() {
-        // TODO (rsadam): Generalize to avoid the need to hardcode upper. Add
-        // state attribute to shift key.
-        if (this.keyset == 'upper') {
-          // Deals with the edge case where caps was triggered by a long press.
-          // Do not want to highlight the shift key in this case.
-          if (!this.classList.contains('caps'))
-            this.classList.add('highlight');
-        } else {
-          this.classList.remove('highlight');
-          this.classList.remove('caps');
-        }
+        var keysetId = '#' + this.layout + '-' + this.keyset;
+        var keyset = this.querySelector(keysetId);
+
+        // Unlocks the keyboard if the current keyset is not lockable.
+        if (!keyset.getAttribute('lockable'))
+          this.classList.remove('locked');
+        
       },
 
       ready: function() {
@@ -347,15 +343,14 @@
           this.dblDetail_.clickCount++;
           if (this.dblDetail_.clickCount == 2) {
             this.keyset = this.dblDetail_.toKeyset;
-            var keysetId = '#' + this.layout + '-' + this.keyset
-            this.querySelector(keysetId).nextKeyset = this.dblTimer_.nextKeyset;
+            var keysetId = '#' + this.layout + '-' + this.keyset;
+            var keyset = this.querySelector(keysetId);
+            keyset.nextKeyset = this.dblTimer_.nextKeyset;
             clearTimeout(this.dblTimer_);
             
             // Checks if shift is capitalized.
-            if (this.keyset == 'upper') {
-              this.classList.remove('highlight');
-              this.classList.add('caps');
-            }
+            if (keyset.getAttribute('lockable'))
+              this.classList.add('locked');
 
             this.dblDetail_ = null;
           }
@@ -442,8 +437,8 @@
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
               detail.nextKeyset;
 
-          // Sets the caps class before removing active to prevent flicker.
-          this.classList.add('caps');
+          // Locks the keyset before removing active to prevent flicker.
+          this.classList.add('locked');
           // Makes last pressed key inactive if transit to a new keyset on long
           // press.
           this.lastPressedKey.classList.remove('active');
