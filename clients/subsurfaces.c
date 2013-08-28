@@ -398,6 +398,9 @@ triangle_frame_callback(void *data, struct wl_callback *callback,
 	if (callback)
 		wl_callback_destroy(callback);
 
+	eglMakeCurrent(tri->egl->dpy, tri->egl_surface,
+				   tri->egl_surface, tri->egl->ctx);
+
 	glViewport(0, 0, tri->width, tri->height);
 
 	triangle_draw(&tri->gl, tri->time);
