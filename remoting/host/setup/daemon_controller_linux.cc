@@ -110,10 +110,12 @@ static bool RunHostScriptWithTimeout(
   // As long as we're relying on running an external binary from the
   // PATH, don't do it as root.
   if (getuid() == 0) {
+    LOG(ERROR) << "Refusing to run script as root.";
     return false;
   }
   base::FilePath script_path;
   if (!GetScriptPath(&script_path)) {
+    LOG(ERROR) << "GetScriptPath() failed.";
     return false;
   }
   CommandLine command_line(script_path);
@@ -130,11 +132,15 @@ static bool RunHostScriptWithTimeout(
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_remap;
   if (!base::LaunchProcess(command_line, options, &process_handle)) {
+    LOG(ERROR) << "Failed to run command: "
+               << command_line.GetCommandLineString();
     return false;
   }
 
   if (!base::WaitForExitCodeWithTimeout(process_handle, exit_code, timeout)) {
     base::KillProcess(process_handle, 0, false);
+    LOG(ERROR) << "Timeout exceeded for command: "
+               << command_line.GetCommandLineString();
     return false;
   }
 

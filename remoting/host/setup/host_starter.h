@@ -91,6 +91,11 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   std::string host_id_;
   bool use_service_account_;
 
+  // True if the host was not started and unregistration was requested. If this
+  // is set and a network/OAuth error occurs during unregistration, this will
+  // be logged, but the error will still be reported as START_ERROR.
+  bool unregistering_host_;
+
   base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
   base::WeakPtr<HostStarter> weak_ptr_;
 

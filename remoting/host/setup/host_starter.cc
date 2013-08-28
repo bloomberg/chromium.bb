@@ -25,6 +25,7 @@ HostStarter::HostStarter(
       service_client_(service_client.Pass()),
       daemon_controller_(daemon_controller.Pass()),
       consent_to_data_collection_(false),
+      unregistering_host_(false),
       weak_ptr_factory_(this),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -178,14 +179,13 @@ void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
     return;
   }
   if (result != DaemonController::RESULT_OK) {
+    unregistering_host_ = true;
     service_client_->UnregisterHost(host_id_, access_token_, this);
     return;
   }
-  Result done_result = (result == DaemonController::RESULT_OK) ?
-      START_COMPLETE : START_ERROR;
   CompletionCallback cb = on_done_;
   on_done_.Reset();
-  cb.Run(done_result);
+  cb.Run(START_COMPLETE);
 }
 
 void HostStarter::OnOAuthError() {
@@ -196,7 +196,12 @@ void HostStarter::OnOAuthError() {
   }
   CompletionCallback cb = on_done_;
   on_done_.Reset();
-  cb.Run(OAUTH_ERROR);
+  if (unregistering_host_) {
+    LOG(ERROR) << "OAuth error occurred when unregistering host.";
+    cb.Run(START_ERROR);
+  } else {
+    cb.Run(OAUTH_ERROR);
+  }
 }
 
 void HostStarter::OnNetworkError(int response_code) {
@@ -207,7 +212,12 @@ void HostStarter::OnNetworkError(int response_code) {
   }
   CompletionCallback cb = on_done_;
   on_done_.Reset();
-  cb.Run(NETWORK_ERROR);
+  if (unregistering_host_) {
+    LOG(ERROR) << "Network error occurred when unregistering host.";
+    cb.Run(START_ERROR);
+  } else {
+    cb.Run(NETWORK_ERROR);
+  }
 }
 
 void HostStarter::OnHostUnregistered() {

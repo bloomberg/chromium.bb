@@ -134,7 +134,10 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
     delegate_->OnOAuthError();
     return;
   }
-  if (source->GetResponseCode() == net::HTTP_OK) {
+
+  // Treat codes 2xx as successful; for example, HTTP_NO_CONTENT (204) can be
+  // returned from a DELETE_REQUEST.
+  if (source->GetResponseCode() / 100 == 2) {
     switch (old_type) {
       case PENDING_REQUEST_NONE:
         break;
