@@ -11,7 +11,7 @@
 
 using content::BrowserThread;
 
-namespace extensions {
+namespace file_manager {
 
 CancelFileDialogFunction::CancelFileDialogFunction() {
 }
@@ -20,7 +20,7 @@ CancelFileDialogFunction::~CancelFileDialogFunction() {
 }
 
 bool CancelFileDialogFunction::RunImpl() {
-  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
@@ -45,15 +45,14 @@ bool SelectFileFunction::RunImpl() {
   bool need_local_path = false;
   args_->GetBoolean(3, &need_local_path);
 
-  file_manager::util::GetSelectedFileInfoLocalPathOption option =
-      file_manager::util::NO_LOCAL_PATH_RESOLUTION;
+  util::GetSelectedFileInfoLocalPathOption option =
+      util::NO_LOCAL_PATH_RESOLUTION;
   if (need_local_path) {
     option = for_opening ?
-        file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
-        file_manager::util::NEED_LOCAL_PATH_FOR_SAVING;
+        util::NEED_LOCAL_PATH_FOR_OPENING : util::NEED_LOCAL_PATH_FOR_SAVING;
   }
 
-  file_manager::util::GetSelectedFileInfo(
+  util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_paths,
@@ -71,7 +70,7 @@ void SelectFileFunction::GetSelectedFileInfoResponse(
   }
   int index;
   args_->GetInteger(1, &index);
-  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
@@ -103,13 +102,12 @@ bool SelectFilesFunction::RunImpl() {
   bool need_local_path = false;
   args_->GetBoolean(1, &need_local_path);
 
-  file_manager::util::GetSelectedFileInfo(
+  util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_urls,
       need_local_path ?
-          file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
-          file_manager::util::NO_LOCAL_PATH_RESOLUTION,
+          util::NEED_LOCAL_PATH_FOR_OPENING : util::NO_LOCAL_PATH_RESOLUTION,
       base::Bind(&SelectFilesFunction::GetSelectedFileInfoResponse, this));
   return true;
 }
@@ -117,9 +115,9 @@ bool SelectFilesFunction::RunImpl() {
 void SelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
 }
 
-}  // namespace extensions
+}  // namespace file_manager

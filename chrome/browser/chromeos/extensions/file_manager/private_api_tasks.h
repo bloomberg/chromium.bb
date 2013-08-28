@@ -18,10 +18,10 @@ namespace drive {
 class DriveAppRegistry;
 }
 
-namespace extensions {
+namespace file_manager {
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTaskFunction : public file_manager::LoggedAsyncExtensionFunction {
+class ExecuteTaskFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.executeTask",
                              FILEBROWSERPRIVATE_EXECUTETASK)
@@ -38,7 +38,7 @@ class ExecuteTaskFunction : public file_manager::LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getFileTasks method.
-class GetFileTasksFunction : public file_manager::LoggedAsyncExtensionFunction {
+class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTasks",
                              FILEBROWSERPRIVATE_GETFILETASKS)
@@ -129,6 +129,6 @@ class SetDefaultTaskFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace extensions
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_

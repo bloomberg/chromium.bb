@@ -11,7 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
-namespace extensions {
+namespace file_manager {
 
 GetStringsFunction::GetStringsFunction() {
 }
@@ -509,10 +509,10 @@ bool GetStringsFunction::RunImpl() {
 #undef SET_STRING
 
   dict->SetBoolean("PDF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(profile(),
+                   util::ShouldBeOpenedWithPlugin(profile(),
                                                   FILE_PATH_LITERAL(".pdf")));
   dict->SetBoolean("SWF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(profile(),
+                   util::ShouldBeOpenedWithPlugin(profile(),
                                                   FILE_PATH_LITERAL(".swf")));
 
   webui::SetFontAndTextDirection(dict);
@@ -528,4 +528,4 @@ bool GetStringsFunction::RunImpl() {
   return true;
 }
 
-}  // namespace extensions
+}  // namespace file_manager

@@ -22,7 +22,7 @@
 
 using content::BrowserThread;
 
-namespace extensions {
+namespace file_manager {
 namespace {
 
 // List of connection types of drive.
@@ -80,8 +80,7 @@ bool GetDriveEntryPropertiesFunction::RunImpl() {
 
   GURL file_url = GURL(file_url_str);
   file_path_ = drive::util::ExtractDrivePath(
-      file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), file_url));
+      util::GetLocalPathFromURL(render_view_host(), profile(), file_url));
 
   properties_.reset(new base::DictionaryValue);
   properties_->SetString("fileUrl", file_url.spec());
@@ -138,21 +137,19 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
   integration_service->drive_app_registry()->GetAppsForFile(
       file_path_, file_specific_info.content_mime_type(), &drive_apps);
   if (!drive_apps.empty()) {
-    std::string default_task_id =
-        file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
-            profile_,
-            file_specific_info.content_mime_type(),
-            file_path_.Extension());
-    file_manager::file_tasks::TaskDescriptor default_task;
-    file_manager::file_tasks::ParseTaskID(default_task_id, &default_task);
+    std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
+        profile_,
+        file_specific_info.content_mime_type(),
+        file_path_.Extension());
+    file_tasks::TaskDescriptor default_task;
+    file_tasks::ParseTaskID(default_task_id, &default_task);
     DCHECK(default_task_id.empty() || !default_task.app_id.empty());
     for (size_t i = 0; i < drive_apps.size(); ++i) {
       const drive::DriveAppInfo* app_info = drive_apps[i];
       if (default_task.app_id == app_info->app_id) {
         // The drive app is set as default. Files.app should use the doc icon.
-        const GURL doc_icon = file_manager::util::FindPreferredIcon(
-            app_info->document_icons,
-            file_manager::util::kPreferredIconSize);
+        const GURL doc_icon = util::FindPreferredIcon(app_info->document_icons,
+                                                      util::kPreferredIconSize);
         properties_->SetString("customIconUrl", doc_icon.spec());
       }
     }
@@ -206,8 +203,8 @@ bool PinDriveFileFunction::RunImpl() {
     return false;
 
   base::FilePath drive_path =
-      drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), GURL(url)));
+      drive::util::ExtractDrivePath(
+          util::GetLocalPathFromURL(render_view_host(), profile(), GURL(url)));
   if (set_pin) {
     file_system->Pin(drive_path,
                      base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
@@ -246,7 +243,7 @@ bool GetDriveFilesFunction::RunImpl() {
     std::string file_url_as_string;
     if (!file_urls_as_strings->GetString(i, &file_url_as_string))
       return false;
-    const base::FilePath path = file_manager::util::GetLocalPathFromURL(
+    const base::FilePath path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(file_url_as_string));
     DCHECK(drive::util::IsUnderDriveMountPoint(path));
     base::FilePath drive_path = drive::util::ExtractDrivePath(path);
@@ -346,7 +343,7 @@ bool CancelFileTransfersFunction::RunImpl() {
     std::string url_as_string;
     url_list->GetString(i, &url_as_string);
 
-    base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
+    base::FilePath file_path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(url_as_string));
     if (file_path.empty())
       continue;
@@ -652,7 +649,7 @@ bool GetShareUrlFunction::RunImpl() {
   if (!args_->GetString(0, &file_url))
     return false;
 
-  const base::FilePath path = file_manager::util::GetLocalPathFromURL(
+  const base::FilePath path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(file_url));
   DCHECK(drive::util::IsUnderDriveMountPoint(path));
 
@@ -666,7 +663,7 @@ bool GetShareUrlFunction::RunImpl() {
 
   integration_service->file_system()->GetShareUrl(
       drive_path,
-      file_manager::util::GetFileManagerBaseUrl(),  // embed origin
+      util::GetFileManagerBaseUrl(),  // embed origin
       base::Bind(&GetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }
@@ -684,4 +681,4 @@ void GetShareUrlFunction::OnGetShareUrl(drive::FileError error,
   SendResponse(true);
 }
 
-}  // namespace extensions
+}  // namespace file_manager
