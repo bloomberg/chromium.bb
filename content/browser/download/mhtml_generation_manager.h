@@ -25,14 +25,20 @@ class MHTMLGenerationManager : public NotificationObserver {
  public:
   static MHTMLGenerationManager* GetInstance();
 
-  typedef base::Callback<void(const base::FilePath& /* path to the MHTML file */,
-      int64 /* size of the file */)> GenerateMHTMLCallback;
+  typedef base::Callback<void(int64 /* size of the file */)>
+      GenerateMHTMLCallback;
 
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
-  void GenerateMHTML(WebContents* web_contents,
-                     const base::FilePath& file,
-                     const GenerateMHTMLCallback& callback);
+  void SaveMHTML(WebContents* web_contents,
+                 const base::FilePath& file,
+                 const GenerateMHTMLCallback& callback);
+
+  // Instructs the render view to generate a MHTML representation of the current
+  // page for |web_contents|.
+  void StreamMHTML(WebContents* web_contents,
+                   const base::PlatformFile file,
+                   const GenerateMHTMLCallback& callback);
 
   // Notification from the renderer that the MHTML generation finished.
   // |mhtml_data_size| contains the size in bytes of the generated MHTML data,
@@ -45,8 +51,6 @@ class MHTMLGenerationManager : public NotificationObserver {
   struct Job{
     Job();
     ~Job();
-
-    base::FilePath file_path;
 
     // The handles to file the MHTML is saved to, for the browser and renderer
     // processes.
@@ -73,9 +77,9 @@ class MHTMLGenerationManager : public NotificationObserver {
   // been created.  This returns a handle to that file for the browser process
   // and one for the renderer process. These handles are
   // kInvalidPlatformFileValue if the file could not be opened.
-  void FileCreated(int job_id,
-                   base::PlatformFile browser_file,
-                   IPC::PlatformFileForTransit renderer_file);
+  void FileHandleAvailable(int job_id,
+                           base::PlatformFile browser_file,
+                           IPC::PlatformFileForTransit renderer_file);
 
   // Called on the file thread to close the file the MHTML was saved to.
   void CloseFile(base::PlatformFile file);
@@ -84,6 +88,9 @@ class MHTMLGenerationManager : public NotificationObserver {
   // not).  Closes the file and removes the job from the job map.
   // |mhtml_data_size| is -1 if the MHTML generation failed.
   void JobFinished(int job_id, int64 mhtml_data_size);
+
+  // Creates an register a new job.
+  int NewJob(WebContents* web_contents, const GenerateMHTMLCallback& callback);
 
   // Implementation of NotificationObserver.
   virtual void Observe(int type,

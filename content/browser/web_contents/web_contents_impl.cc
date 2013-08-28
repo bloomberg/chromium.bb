@@ -1929,8 +1929,8 @@ void WebContentsImpl::SaveFrame(const GURL& url,
 
 void WebContentsImpl::GenerateMHTML(
     const base::FilePath& file,
-    const base::Callback<void(const base::FilePath&, int64)>& callback) {
-  MHTMLGenerationManager::GetInstance()->GenerateMHTML(this, file, callback);
+    const base::Callback<void(int64)>& callback) {
+  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, file, callback);
 }
 
 bool WebContentsImpl::IsActiveEntry(int32 page_id) {

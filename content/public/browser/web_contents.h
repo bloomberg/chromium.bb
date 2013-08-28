@@ -352,7 +352,6 @@ class WebContents : public PageNavigator,
   virtual void GenerateMHTML(
       const base::FilePath& file,
       const base::Callback<void(
-          const base::FilePath& /* path to the MHTML file */,
           int64 /* size of the file */)>& callback) = 0;
 
   // Returns true if the active NavigationEntry's page_id equals page_id.

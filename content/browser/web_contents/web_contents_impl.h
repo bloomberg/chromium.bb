@@ -275,7 +275,7 @@ class CONTENT_EXPORT WebContentsImpl
                          const Referrer& referrer) OVERRIDE;
   virtual void GenerateMHTML(
       const base::FilePath& file,
-      const base::Callback<void(const base::FilePath&, int64)>& callback)
+      const base::Callback<void(int64)>& callback)
           OVERRIDE;
   virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
 

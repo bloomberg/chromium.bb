@@ -36,29 +36,12 @@ MHTMLGenerationManager::MHTMLGenerationManager() {
 MHTMLGenerationManager::~MHTMLGenerationManager() {
 }
 
-void MHTMLGenerationManager::GenerateMHTML(
-    WebContents* web_contents,
-    const base::FilePath& file,
-    const GenerateMHTMLCallback& callback) {
+void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
+                                       const base::FilePath& file,
+                                       const GenerateMHTMLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  static int id_counter = 0;
 
-  int job_id = id_counter++;
-  Job job;
-  job.file_path = file;
-  job.process_id = web_contents->GetRenderProcessHost()->GetID();
-  job.routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  job.callback = callback;
-  id_to_job_[job_id] = job;
-  if (!registrar_.IsRegistered(
-          this,
-          NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-          Source<RenderProcessHost>(web_contents->GetRenderProcessHost()))) {
-    registrar_.Add(
-        this,
-        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<RenderProcessHost>(web_contents->GetRenderProcessHost()));
-  }
+  int job_id = NewJob(web_contents, callback);
 
   base::ProcessHandle renderer_process =
       web_contents->GetRenderProcessHost()->GetHandle();
@@ -66,6 +49,23 @@ void MHTMLGenerationManager::GenerateMHTML(
       base::Bind(&MHTMLGenerationManager::CreateFile, base::Unretained(this),
                  job_id, file, renderer_process));
 }
+
+void MHTMLGenerationManager::StreamMHTML(
+    WebContents* web_contents,
+    const base::PlatformFile browser_file,
+    const GenerateMHTMLCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  int job_id = NewJob(web_contents, callback);
+
+  base::ProcessHandle renderer_process =
+      web_contents->GetRenderProcessHost()->GetHandle();
+  IPC::PlatformFileForTransit renderer_file =
+      IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
+
+  FileHandleAvailable(job_id, browser_file, renderer_file);
+}
+
 
 void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
   JobFinished(job_id, mhtml_data_size);
@@ -86,12 +86,17 @@ void MHTMLGenerationManager::CreateFile(
   IPC::PlatformFileForTransit renderer_file =
       IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::FileCreated, base::Unretained(this),
-                 job_id, browser_file, renderer_file));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&MHTMLGenerationManager::FileHandleAvailable,
+                 base::Unretained(this),
+                 job_id,
+                 browser_file,
+                 renderer_file));
 }
 
-void MHTMLGenerationManager::FileCreated(int job_id,
+void MHTMLGenerationManager::FileHandleAvailable(int job_id,
     base::PlatformFile browser_file,
     IPC::PlatformFileForTransit renderer_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -131,7 +136,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
   }
 
   Job& job = iter->second;
-  job.callback.Run(job.file_path, file_size);
+  job.callback.Run(file_size);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&MHTMLGenerationManager::CloseFile, base::Unretained(this),
@@ -143,6 +148,26 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
 void MHTMLGenerationManager::CloseFile(base::PlatformFile file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::ClosePlatformFile(file);
+}
+
+int MHTMLGenerationManager::NewJob(WebContents* web_contents,
+                                   const GenerateMHTMLCallback& callback) {
+  static int id_counter = 0;
+  int job_id = id_counter++;
+  Job& job = id_to_job_[job_id];
+  job.process_id = web_contents->GetRenderProcessHost()->GetID();
+  job.routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  job.callback = callback;
+  if (!registrar_.IsRegistered(
+          this,
+          NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+          Source<RenderProcessHost>(web_contents->GetRenderProcessHost()))) {
+    registrar_.Add(
+        this,
+        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        Source<RenderProcessHost>(web_contents->GetRenderProcessHost()));
+  }
+  return job_id;
 }
 
 void MHTMLGenerationManager::Observe(int type,

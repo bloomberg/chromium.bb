@@ -129,7 +129,7 @@ class CONTENT_EXPORT SavePackage
       DownloadItemImpl* item);
 
   // Callback for WebContents::GenerateMHTML().
-  void OnMHTMLGenerated(const base::FilePath& path, int64 size);
+  void OnMHTMLGenerated(int64 size);
 
   // For testing only.
   SavePackage(WebContents* web_contents,

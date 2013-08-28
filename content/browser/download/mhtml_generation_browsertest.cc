@@ -21,7 +21,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
  public:
   MHTMLGenerationTest() : mhtml_generated_(false), file_size_(0) {}
 
-  void MHTMLGenerated(const base::FilePath& path, int64 size) {
+  void MHTMLGenerated(int64 size) {
     mhtml_generated_ = true;
     file_size_ = size;
     base::MessageLoopForUI::current()->Quit();

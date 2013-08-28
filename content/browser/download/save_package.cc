@@ -363,7 +363,7 @@ void SavePackage::InitWithDownloadItem(
   }
 }
 
-void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {
+void SavePackage::OnMHTMLGenerated(int64 size) {
   if (size <= 0) {
     Cancel(false);
     return;

@@ -50,7 +50,7 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   void ReturnSuccess(int64 file_size);
 
   // Callback called once the MHTML generation is done.
-  void MHTMLGenerated(const base::FilePath& file_path, int64 mhtml_file_size);
+  void MHTMLGenerated(int64 mhtml_file_size);
 
   // Returns the WebContents we are associated with, NULL if it's been closed.
   content::WebContents* GetWebContents();

@@ -306,9 +306,10 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
                                jstring jpath, jobject callback) {
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
+  base::FilePath target_path(ConvertJavaStringToUTF8(env, jpath));
   web_contents_->GenerateMHTML(
-      base::FilePath(ConvertJavaStringToUTF8(env, jpath)),
-      base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
+      target_path,
+      base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
 }
 
 void AwContents::PerformLongClick() {
