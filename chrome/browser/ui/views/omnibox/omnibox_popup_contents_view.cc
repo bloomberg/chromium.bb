@@ -247,7 +247,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     popup_->SetBounds(GetPopupBounds());
   }
 
-  SchedulePaint();
+  Layout();
 }
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
