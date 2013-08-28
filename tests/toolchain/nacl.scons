@@ -288,9 +288,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                        nexe,
                                        exit_status='55')
   env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_eh_separate_files_bc_test',
-                         # TODO(jvoung): enable once driver fix rolls.
-                         is_broken=True)
+                         'run_eh_separate_files_bc_test')
   # Also test ahead of time translation, which may be used when debugging.
   if not env.Bit('pnacl_generate_pexe'):
     native_env = exc_env.Clone()
@@ -307,9 +305,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
                            ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
-                           'run_eh_separate_files_native_test',
-                           # TODO(jvoung): enable once driver fix rolls.
-                           is_broken=True)
+                           'run_eh_separate_files_native_test')
     # Test mixed objects, one native, one bitcode.
     nexe = native_env.ComponentProgram('eh_separate_files_mixed1',
                                        [bobj1, nobj2],
@@ -319,9 +315,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
                            ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
-                           'run_eh_separate_files_mixed1_test',
-                           # TODO(jvoung): enable once driver fix rolls.
-                           is_broken=True)
+                           'run_eh_separate_files_mixed1_test')
     # Test having the bitcode and native objects swapped.
     nexe = native_env.ComponentProgram('eh_separate_files_mixed2',
                                        [nobj1, bobj2],
@@ -331,9 +325,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
                            ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
-                           'run_eh_separate_files_mixed2_test',
-                           # TODO(jvoung): enable once driver fix rolls.
-                           is_broken=True)
+                           'run_eh_separate_files_mixed2_test')
 
 
 
