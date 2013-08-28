@@ -1349,6 +1349,37 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.PromoAction"
+    enum="DataReductionProxyPromoAction">
+  <summary>
+    Samples which method was used by the user to dismiss the proxy promo. This
+    is sampled when the promo leaves view, with the sampled value depending on
+    which of four possible controls the user used.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.SettingsConversion"
+    enum="DataReductionProxySettingsConversion">
+  <summary>
+    Samples of user interactions with the ON/OFF switch in the settings menu for
+    reducing data usage. Only the setting changes between entering the reducing
+    data usage setting menu and leaving the menu will be sampled. So if a user
+    enters the menu with OFF and leaves it with OFF, it is counted as one OFF to
+    OFF conversion regardless of how many times he or she toggles the ON/OFF
+    switch.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.StartupState"
+    enum="DataReductionProxyStartupState">
+  <summary>
+    Samples of the state of the data reduction proxy on Chrome startup. The
+    proxy will either be unavailable (the feature hasn't been rolled out to this
+    user yet), not enabled (the feature is available but the user doesn't have
+    it turned on), or enabled (the feature is enabled and turned on).
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Recovery.ConflictingDlls" enum="DiagnosticsResult">
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future
@@ -17452,6 +17483,26 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DataReductionProxyPromoAction" type="int">
+  <int value="0" label="Dismissed from first screen"/>
+  <int value="1" label="Dismissed from second screen"/>
+  <int value="2" label="Enabled from first screen"/>
+  <int value="3" label="Enabled from second screen"/>
+</enum>
+
+<enum name="DataReductionProxySettingsConversion" type="int">
+  <int value="0" label="OFF to OFF"/>
+  <int value="1" label="OFF to ON"/>
+  <int value="2" label="ON to OFF"/>
+  <int value="3" label="ON to ON"/>
+</enum>
+
+<enum name="DataReductionProxyStartupState" type="int">
+  <int value="0" label="Proxy not available"/>
+  <int value="1" label="Proxy available but not enabled"/>
+  <int value="2" label="Proxy available and enabled"/>
 </enum>
 
 <enum name="DevicePermissionActions" type="int">

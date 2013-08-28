@@ -197,6 +197,11 @@ def AddAndroidActions(actions):
   Arguments
     actions: set of actions to add to.
   """
+  actions.add('DataReductionProxy_PromoDisplayed');
+  actions.add('DataReductionProxy_PromoLearnMore');
+  actions.add('DataReductionProxy_TurnedOn');
+  actions.add('DataReductionProxy_TurnedOnFromPromo');
+  actions.add('DataReductionProxy_TurnedOff');
   actions.add('MobileBeamCallbackSuccess')
   actions.add('MobileBeamInvalidAppState')
   actions.add('MobileBreakpadUploadAttempt')
