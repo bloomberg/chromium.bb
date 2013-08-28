@@ -543,7 +543,9 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
   RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DrawImageShadowGPU) {
+// Intermittent failure, should be fixed by converting to telemetry.
+// See crbug.com/276500 for more details.
+IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DISABLED_DrawImageShadowGPU) {
   // TODO(junov): Fix test flakiness crbug.com/272383
   RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
