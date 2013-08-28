@@ -1,7 +1,7 @@
 Name: chromite
 Short Name: chromite
-URL: https://git.chromium.org/chromiumos/chromite.git
-Version: 0.0.1
+URL: https://chromium.googlesource.com/chromiumos/chromite
+Version: 0.0.2
 License: BSD
 License File: LICENSE
 Security Critical: no
