@@ -133,10 +133,10 @@ bool RunGyp(const BuildSettings* build_settings) {
   CommandLine cmdline(python_path);
   cmdline.AppendArgPath(
       build_settings->GetFullPath(SourceFile("//build/gyp_chromium.py")));
-  base::FilePath::StringType gen_output =
-      FILE_PATH_LITERAL("--generator-output=") +
-      build_settings->GetFullPath(SourceFile("//out.gn")).value();
-  cmdline.AppendArgPath(base::FilePath(gen_output));
+  cmdline.AppendArg("-G");
+  cmdline.AppendArg("output_dir=out.gn");
+  cmdline.AppendArg("-f");
+  cmdline.AppendArg("ninja");
 
   std::string output;
   if (!base::GetAppOutput(cmdline, &output)) {
@@ -164,7 +164,7 @@ int RunGyp(const std::vector<std::string>& args) {
   if (!setup->DoSetup())
     return 1;
 
-  setup->build_settings().SetBuildDir(SourceDir("//out.gn/out/Debug/"));
+  setup->build_settings().SetBuildDir(SourceDir("//out.gn/Debug/"));
   setup->build_settings().set_using_external_generator(true);
 
   // Provide a way for buildfiles to know we're doing a GYP build.
