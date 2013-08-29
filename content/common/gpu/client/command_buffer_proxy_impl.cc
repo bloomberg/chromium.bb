@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/gpu/client/gl_surface_capturer_host.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
@@ -498,6 +499,25 @@ CommandBufferProxyImpl::CreateVideoDecoder(
                                         this);
   vda.reset(decoder_host);
   return vda.Pass();
+}
+
+scoped_ptr<SurfaceCapturer> CommandBufferProxyImpl::CreateSurfaceCapturer(
+    SurfaceCapturer::Client* client) {
+  int capturer_route_id;
+  scoped_ptr<SurfaceCapturer> capturer;
+  if (!Send(new GpuCommandBufferMsg_CreateSurfaceCapturer(
+           route_id_, &capturer_route_id))) {
+    LOG(ERROR) << "Send(GpuCommandBufferMsg_CreateSurfaceCapturer) failed";
+    return capturer.Pass();
+  }
+
+  if (capturer_route_id < 0) {
+    DLOG(ERROR) << "Failed create surface capturer";
+    return capturer.Pass();
+  }
+
+  capturer.reset(new GLSurfaceCapturerHost(capturer_route_id, client, this));
+  return capturer.Pass();
 }
 
 gpu::error::Error CommandBufferProxyImpl::GetLastError() {

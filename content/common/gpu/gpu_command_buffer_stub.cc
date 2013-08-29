@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/common/gpu/media/gl_surface_capturer.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
@@ -206,6 +207,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnGetTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
                                     OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateSurfaceCapturer,
+                                    OnCreateSurfaceCapturer)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
                         OnSetSurfaceVisible)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DiscardBackbuffer,
@@ -725,6 +728,18 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
   decoder->Initialize(profile, reply_message, channel_->io_message_loop());
   // decoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
+}
+
+void GpuCommandBufferStub::OnCreateSurfaceCapturer(
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateSurfaceCapturer");
+  int capturer_route_id = channel_->GenerateRouteID();
+  new GLSurfaceCapturer(capturer_route_id, this);
+  // The capturer is registered as a DestructionObserver of this stub and will
+  // self-delete during destruction of this stub.
+  GpuCommandBufferMsg_CreateSurfaceCapturer::WriteReplyParams(
+      reply_message, capturer_route_id);
+  Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {

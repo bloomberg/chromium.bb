@@ -14,6 +14,7 @@
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
+#include "content/common/gpu/surface_capturer.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -222,6 +223,8 @@ IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS(media::VideoFrame::Format)
 
 IPC_ENUM_TRAITS(media::VideoEncodeAccelerator::Error)
+
+IPC_ENUM_TRAITS(content::SurfaceCapturer::Error)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -571,6 +574,12 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
                            media::VideoCodecProfile /* profile */,
                            int /* route_id */)
 
+// Create and initialize a surface capturer, returning its new route_id.
+// Created capturers should be freed with SurfaceCapturerMsg_Destroy when no
+// longer needed.
+IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_CreateSurfaceCapturer,
+                           int /* route_id */)
+
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
@@ -763,3 +772,40 @@ IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_BitstreamBufferReady,
 // Report error condition.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,
                     media::VideoEncodeAccelerator::Error /* error */)
+
+//------------------------------------------------------------------------------
+// Gpu Surface Capturer Messages
+// These messages are sent from the Browser process to the GPU process.
+
+// Initialize the capturer.
+IPC_MESSAGE_ROUTED1(SurfaceCapturerMsg_Initialize,
+                    media::VideoFrame::Format /* format */)
+
+// Attempt to start a capture.
+IPC_MESSAGE_ROUTED0(SurfaceCapturerMsg_TryCapture)
+
+// Copy captured contents to a video frame.
+IPC_MESSAGE_ROUTED3(SurfaceCapturerMsg_CopyCaptureToVideoFrame,
+                    int32 /* buffer_id */,
+                    base::SharedMemoryHandle /* buffer_shm */,
+                    uint32 /* buffer_size */)
+
+// Destroy the capturer.
+IPC_MESSAGE_ROUTED0(SurfaceCapturerMsg_Destroy)
+
+//------------------------------------------------------------------------------
+// Gpu Surface Capturer Host Messages
+// These messages are sent from GPU process to Browser process.
+
+// Report the capture output parameters to the Browser process.
+IPC_MESSAGE_ROUTED2(SurfaceCapturerHostMsg_NotifyCaptureParameters,
+                    gfx::Size /* buffer_size */,
+                    gfx::Rect /* visible_rect */)
+
+// Report successful copy of a capture of a surface.
+IPC_MESSAGE_ROUTED1(SurfaceCapturerHostMsg_NotifyCopyCaptureDone,
+                    int32 /* frame_id */)
+
+// Report error.
+IPC_MESSAGE_ROUTED1(SurfaceCapturerHostMsg_NotifyError,
+                    content::SurfaceCapturer::Error /* error */)
