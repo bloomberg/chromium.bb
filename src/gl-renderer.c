@@ -77,6 +77,7 @@ struct gl_surface_state {
 	enum buffer_type buffer_type;
 	int pitch; /* in pixels */
 	int height; /* in pixels */
+	int y_inverted;
 };
 
 struct gl_renderer {
@@ -599,7 +600,11 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 				weston_surface_to_buffer_float(es, sx, sy,
 							       &bx, &by);
 				*(v++) = bx * inv_width;
-				*(v++) = by * inv_height;
+				if (gs->y_inverted) {
+					*(v++) = by * inv_height;
+				} else {
+					*(v++) = (gs->height - by) * inv_height;
+				}
 			}
 
 			vtxcnt[nvtx++] = n;
@@ -1260,6 +1265,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->target = GL_TEXTURE_2D;
 		gs->buffer_type = BUFFER_TYPE_SHM;
 		gs->needs_full_upload = 1;
+		gs->y_inverted = 1;
 
 		ensure_textures(gs, 1);
 		glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
@@ -1284,6 +1290,8 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 			 EGL_WIDTH, &buffer->width);
 	gr->query_buffer(gr->egl_display, buffer->legacy_buffer,
 			 EGL_HEIGHT, &buffer->height);
+	gr->query_buffer(gr->egl_display, buffer->legacy_buffer,
+			 EGL_WAYLAND_Y_INVERTED_WL, &buffer->y_inverted);
 
 	for (i = 0; i < gs->num_images; i++)
 		gr->destroy_image(gr->egl_display, gs->images[i]);
@@ -1340,6 +1348,7 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 	gs->pitch = buffer->width;
 	gs->height = buffer->height;
 	gs->buffer_type = BUFFER_TYPE_EGL;
+	gs->y_inverted = buffer->y_inverted;
 }
 
 static void
@@ -1363,6 +1372,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		glDeleteTextures(gs->num_textures, gs->textures);
 		gs->num_textures = 0;
 		gs->buffer_type = BUFFER_TYPE_NULL;
+		gs->y_inverted = 1;
 		return;
 	}
 
@@ -1377,6 +1387,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		weston_log("unhandled buffer type!\n");
 		weston_buffer_reference(&gs->buffer_ref, NULL);
 		gs->buffer_type = BUFFER_TYPE_NULL;
+		gs->y_inverted = 1;
 	}
 }
 
@@ -1409,6 +1420,7 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	 * by zero there.
 	 */
 	gs->pitch = 1;
+	gs->y_inverted = 1;
 
 	pixman_region32_init(&gs->texture_damage);
 	surface->renderer_state = gs;

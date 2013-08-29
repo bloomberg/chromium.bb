@@ -1088,6 +1088,7 @@ weston_buffer_from_resource(struct wl_resource *resource)
 	buffer->resource = resource;
 	wl_signal_init(&buffer->destroy_signal);
 	buffer->destroy_listener.notify = weston_buffer_destroy_handler;
+	buffer->y_inverted = 1;
 	wl_resource_add_destroy_listener(resource, &buffer->destroy_listener);
 	
 	return buffer;

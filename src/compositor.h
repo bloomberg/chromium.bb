@@ -611,6 +611,7 @@ struct weston_buffer {
 	};
 	int32_t width, height;
 	uint32_t busy_count;
+	int y_inverted;
 };
 
 struct weston_buffer_reference {
