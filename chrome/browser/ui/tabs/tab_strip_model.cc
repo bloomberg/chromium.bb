@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/url_constants.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -187,6 +188,11 @@ void TabStripModel::InsertWebContentsAt(int index,
     }
     data->opener = active_contents;
   }
+
+  web_modal::WebContentsModalDialogManager* modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(contents);
+  if (modal_dialog_manager)
+    data->blocked = modal_dialog_manager->IsShowingDialog();
 
   contents_data_.insert(contents_data_.begin() + index, data);
 
