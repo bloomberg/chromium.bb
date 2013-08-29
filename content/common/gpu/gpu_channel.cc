@@ -985,4 +985,12 @@ void GpuChannel::CacheShader(const std::string& key,
       new GpuHostMsg_CacheShader(client_id_, key, shader));
 }
 
+void GpuChannel::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  channel_->AddFilter(filter);
+}
+
+void GpuChannel::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  channel_->RemoveFilter(filter);
+}
+
 }  // namespace content

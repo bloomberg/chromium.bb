@@ -32,6 +32,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/md5.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -616,7 +617,8 @@ void GLRenderingVDAClient::CreateDecoder() {
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
       static_cast<EGLContext>(rendering_helper_->GetGLContext()),
       client,
-      base::Bind(&DoNothingReturnTrue)));
+      base::Bind(&DoNothingReturnTrue),
+      base::MessageLoopProxy::current()));
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),

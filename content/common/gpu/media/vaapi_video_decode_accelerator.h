@@ -25,6 +25,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -40,8 +41,8 @@ namespace content {
 // ChildThread.  A few methods on it are called on the decoder thread which is
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
-class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
-    public media::VideoDecodeAccelerator {
+class CONTENT_EXPORT VaapiVideoDecodeAccelerator
+    : public VideoDecodeAcceleratorImpl {
  public:
   VaapiVideoDecodeAccelerator(
       Display* x_display, GLXContext glx_context,

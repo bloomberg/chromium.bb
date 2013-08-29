@@ -16,8 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/video_decoder_config.h"
-#include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -54,14 +54,15 @@ class H264Parser;
 // decoder_thread_, so there are no synchronization issues.
 // ... well, there are, but it's a matter of getting messages posted in the
 // right order, not fiddling with locks.
-class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
-    public media::VideoDecodeAccelerator {
+class CONTENT_EXPORT ExynosVideoDecodeAccelerator
+    : public VideoDecodeAcceleratorImpl {
  public:
   ExynosVideoDecodeAccelerator(
       EGLDisplay egl_display,
       EGLContext egl_context,
       Client* client,
-      const base::Callback<bool(void)>& make_context_current);
+      const base::Callback<bool(void)>& make_context_current,
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
   virtual ~ExynosVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
@@ -74,6 +75,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+
+  // VideoDecodeAcceleratorImpl implementation.
+  virtual bool CanDecodeOnIOThread() OVERRIDE;
 
   // Do any necessary initialization before the sandbox is enabled.
   static void PreSandboxInitialization();
@@ -178,7 +182,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   // Enqueue a BitstreamBuffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
   // the buffer.
-  void DecodeTask(scoped_ptr<BitstreamBufferRef> bitstream_record);
+  void DecodeTask(const media::BitstreamBuffer& bitstream_buffer);
 
   // Decode from the buffers queued in decoder_input_queue_.  Calls
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
@@ -310,6 +314,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // Our original calling message loop for the child thread.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+
+  // Message loop of the IO thread.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder or
   // device worker threads back to the child thread.  Because the worker threads

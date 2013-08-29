@@ -86,6 +86,10 @@ class GpuChannel : public IPC::Listener,
 
   base::ProcessId renderer_pid() const { return channel_->peer_pid(); }
 
+  scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
+    return io_message_loop_;
+  }
+
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
@@ -155,6 +159,9 @@ class GpuChannel : public IPC::Listener,
 #endif
 
   void CacheShader(const std::string& key, const std::string& shader);
+
+  void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
+  void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
 
  protected:
   virtual ~GpuChannel();

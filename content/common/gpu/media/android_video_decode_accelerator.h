@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_bridge.h"
@@ -28,8 +29,8 @@ namespace content {
 // A VideoDecodeAccelerator implementation for Android.
 // This class decodes the input encoded stream by using Android's MediaCodec
 // class. http://developer.android.com/reference/android/media/MediaCodec.html
-class CONTENT_EXPORT AndroidVideoDecodeAccelerator :
-    public media::VideoDecodeAccelerator {
+class CONTENT_EXPORT AndroidVideoDecodeAccelerator
+    : public VideoDecodeAcceleratorImpl {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   AndroidVideoDecodeAccelerator(

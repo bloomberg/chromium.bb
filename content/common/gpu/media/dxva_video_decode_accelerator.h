@@ -17,6 +17,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/video/video_decode_accelerator.h"
 
 interface IMFSample;
@@ -29,7 +30,7 @@ namespace content {
 // This class lives on a single thread and DCHECKs that it is never accessed
 // from any other.
 class CONTENT_EXPORT DXVAVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator,
+    : public VideoDecodeAcceleratorImpl,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   enum State {
