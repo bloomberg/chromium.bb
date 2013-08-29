@@ -131,6 +131,20 @@ FileError OperationTestBase::GetLocalResourceEntry(const base::FilePath& path,
   return error;
 }
 
+std::string OperationTestBase::GetLocalId(const base::FilePath& path) {
+  std::string local_id;
+  FileError error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetIdByPath,
+                 base::Unretained(metadata()), path, &local_id),
+      base::Bind(google_apis::test_util::CreateCopyResultCallback(&error)));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error) << path.value();
+  return local_id;
+}
+
 FileError OperationTestBase::CheckForUpdates() {
   FileError error = FILE_ERROR_FAILED;
   change_list_loader_->CheckForUpdates(

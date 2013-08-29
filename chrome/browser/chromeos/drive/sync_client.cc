@@ -172,7 +172,7 @@ void SyncClient::StartTask(SyncType type, const std::string& local_id) {
         DVLOG(1) << "Fetching " << local_id;
         pending_fetch_list_.erase(local_id);
 
-        download_operation_->EnsureFileDownloadedByResourceId(
+        download_operation_->EnsureFileDownloadedByLocalId(
             local_id,
             ClientContext(BACKGROUND),
             GetFileContentInitializedCallback(),

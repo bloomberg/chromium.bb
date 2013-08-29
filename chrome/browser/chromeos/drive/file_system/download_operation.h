@@ -45,7 +45,7 @@ class DownloadOperation {
                     const base::FilePath& temporary_file_directory);
   ~DownloadOperation();
 
-  // Ensures that the file content specified by |resource_id| is locally
+  // Ensures that the file content specified by |local_id| is locally
   // downloaded.
   // For hosted documents, this method may create a JSON file representing the
   // file.
@@ -61,14 +61,14 @@ class DownloadOperation {
   // |initialized_callback| and |get_content_callback| can be null if not
   // needed.
   // |completion_callback| must not be null.
-  void EnsureFileDownloadedByResourceId(
-      const std::string& resource_id,
+  void EnsureFileDownloadedByLocalId(
+      const std::string& local_id,
       const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const GetFileCallback& completion_callback);
 
-  // Does the same thing as EnsureFileDownloadedByResourceId for the file
+  // Does the same thing as EnsureFileDownloadedByLocalId for the file
   // specified by |file_path|.
   void EnsureFileDownloadedByPath(
       const base::FilePath& file_path,
@@ -78,15 +78,15 @@ class DownloadOperation {
       const GetFileCallback& completion_callback);
 
  private:
-  // Thin wrapper of Callbacks for EnsureFileDownloaded.
-  class DownloadCallback;
+  // Parameters for EnsureFileDownloaded.
+  class DownloadParams;
 
   // Part of EnsureFileDownloaded(). Called upon the completion of precondition
   // check.
   void EnsureFileDownloadedAfterCheckPreCondition(
-      const DownloadCallback& callback,
+      scoped_ptr<DownloadParams> params,
       const ClientContext& context,
-      scoped_ptr<ResourceEntry> entry,
+      std::string* local_id,
       base::FilePath* drive_file_path,
       base::FilePath* cache_file_path,
       FileError error);
@@ -94,9 +94,9 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called when it is ready to start
   // downloading the file.
   void EnsureFileDownloadedAfterPrepareForDownloadFile(
-      const DownloadCallback& callback,
+      scoped_ptr<DownloadParams> params,
       const ClientContext& context,
-      scoped_ptr<ResourceEntry> entry,
+      const std::string& local_id,
       const base::FilePath& drive_file_path,
       base::FilePath* temp_download_file_path,
       FileError error);
@@ -104,8 +104,8 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called after the actual downloading.
   void EnsureFileDownloadedAfterDownloadFile(
       const base::FilePath& drive_file_path,
-      scoped_ptr<ResourceEntry> entry,
-      const DownloadCallback& callback,
+      const std::string& local_id,
+      scoped_ptr<DownloadParams> params,
       google_apis::GDataErrorCode gdata_error,
       const base::FilePath& downloaded_file_path);
 
@@ -113,8 +113,7 @@ class DownloadOperation {
   // completed.
   void EnsureFileDownloadedAfterUpdateLocalState(
       const base::FilePath& file_path,
-      const DownloadCallback& callback,
-      scoped_ptr<ResourceEntry> entry,
+      scoped_ptr<DownloadParams> params,
       base::FilePath* cache_file_path,
       FileError error);
 

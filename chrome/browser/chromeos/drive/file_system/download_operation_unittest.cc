@@ -118,7 +118,7 @@ TEST_F(DownloadOperationTest,
 
   FileError error = FILE_ERROR_FAILED;
   cache()->StoreOnUIThread(
-      "<resource_id>", "<md5>", tmp_file,
+      "<id>", "<md5>", tmp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
@@ -148,7 +148,7 @@ TEST_F(DownloadOperationTest,
   FileCacheEntry cache_entry;
   bool result = true;
   cache()->GetCacheEntryOnUIThread(
-      "<resource_id>",
+      "<id>",
       google_apis::test_util::CreateCopyResultCallback(&result,
                                                        &cache_entry));
   test_util::RunBlockingPoolTask();
@@ -197,7 +197,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_OK;
   cache()->StoreOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       src_entry.file_specific_info().md5(),
       temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
@@ -247,17 +247,16 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_HostedDocument) {
   EXPECT_EQ(entry->resource_id(), util::ReadResourceIdFromGDocFile(file_path));
 }
 
-TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId) {
+TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId) {
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  std::string resource_id = src_entry.resource_id();
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> entry;
-  operation_->EnsureFileDownloadedByResourceId(
-      resource_id,
+  operation_->EnsureFileDownloadedByLocalId(
+      GetLocalId(file_in_root),
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
@@ -350,7 +349,7 @@ TEST_F(DownloadOperationTest,
   }
 }
 
-TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
+TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId_FromCache) {
   base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir(), &temp_file));
 
@@ -361,7 +360,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_FAILED;
   cache()->StoreOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       src_entry.file_specific_info().md5(),
       temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
@@ -373,11 +372,10 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
   // Hence the downloading should work even if the drive service is offline.
   fake_service()->set_offline(true);
 
-  std::string resource_id = src_entry.resource_id();
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> entry;
-  operation_->EnsureFileDownloadedByResourceId(
-      resource_id,
+  operation_->EnsureFileDownloadedByLocalId(
+      GetLocalId(file_in_root),
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
@@ -405,7 +403,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   // Store the file as a cache, marking it to be dirty.
   FileError error = FILE_ERROR_FAILED;
   cache()->StoreOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       src_entry.file_specific_info().md5(),
       dirty_file,
       internal::FileCache::FILE_OPERATION_COPY,
@@ -413,7 +411,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   cache()->MarkDirtyOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

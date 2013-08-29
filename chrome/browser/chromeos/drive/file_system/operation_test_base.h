@@ -82,6 +82,9 @@ class OperationTestBase : public testing::Test {
   FileError GetLocalResourceEntry(const base::FilePath& path,
                                   ResourceEntry* entry);
 
+  // Gets the local ID of the entry specified by the path.
+  std::string GetLocalId(const base::FilePath& path);
+
   // Synchronously updates |metadata_| by fetching the change feed from the
   // |fake_service_|.
   FileError CheckForUpdates();
