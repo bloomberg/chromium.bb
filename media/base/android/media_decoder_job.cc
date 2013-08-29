@@ -29,7 +29,8 @@ MediaDecoderJob::MediaDecoderJob(
       weak_this_(this),
       request_data_cb_(request_data_cb),
       access_unit_index_(0),
-      stop_decode_pending_(false) {
+      stop_decode_pending_(false),
+      destroy_pending_(false) {
 }
 
 MediaDecoderJob::~MediaDecoderJob() {}
@@ -118,23 +119,16 @@ void MediaDecoderJob::Flush() {
 }
 
 void MediaDecoderJob::Release() {
-  // If is_decoding() returns false, there is nothing running on the decoder
-  // thread. So it is safe to delete the MediaDecoderJob on the UI thread.
-  // However, if we post a task to the decoder thread to delete object, then we
-  // cannot immediately pass the surface to a new MediaDecoderJob instance
-  // because the java surface is still owned by the old object. New decoder
-  // creation will be blocked on the UI thread until the previous decoder gets
-  // deleted. This introduces extra latency during config changes, and makes the
-  // logic in MediaSourcePlayer more complicated.
-  //
-  // TODO(qinmin): Figure out the logic to passing the surface to a new
-  // MediaDecoderJob instance after the previous one gets deleted on the decoder
-  // thread.
-  if (is_decoding() && !decoder_loop_->BelongsToCurrentThread()) {
-    DCHECK(ui_loop_->BelongsToCurrentThread());
-    decoder_loop_->DeleteSoon(FROM_HERE, this);
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+
+  destroy_pending_ = is_decoding();
+
+  request_data_cb_.Reset();
+  on_data_received_cb_.Reset();
+  decode_cb_.Reset();
+
+  if (destroy_pending_)
     return;
-  }
 
   delete this;
 }
@@ -289,8 +283,14 @@ void MediaDecoderJob::DecodeInternal(
 void MediaDecoderJob::OnDecodeCompleted(
     DecodeStatus status, const base::TimeDelta& presentation_timestamp,
     size_t audio_output_bytes) {
-  DCHECK(!decode_cb_.is_null());
   DCHECK(ui_loop_->BelongsToCurrentThread());
+
+  if (destroy_pending_) {
+    delete this;
+    return;
+  }
+
+  DCHECK(!decode_cb_.is_null());
 
   if (status != MediaDecoderJob::DECODE_FAILED &&
       status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER &&

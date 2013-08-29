@@ -534,6 +534,8 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
   if (is_audio_encrypted_ && media_crypto.is_null())
     return;
 
+  DCHECK(!audio_decoder_job_ || !audio_decoder_job_->is_decoding());
+
   audio_decoder_job_.reset(AudioDecoderJob::Create(
       audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
       audio_extra_data_.size(), media_crypto.obj(),
@@ -560,6 +562,8 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   base::android::ScopedJavaLocalRef<jobject> media_crypto = GetMediaCrypto();
   if (is_video_encrypted_ && media_crypto.is_null())
     return;
+
+  DCHECK(!video_decoder_job_ || !video_decoder_job_->is_decoding());
 
   // Release the old VideoDecoderJob first so the surface can get released.
   // Android does not allow 2 MediaCodec instances use the same surface.

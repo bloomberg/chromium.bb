@@ -166,6 +166,11 @@ class MediaDecoderJob {
 
   bool stop_decode_pending_;
 
+  // Indicates that this object should be destroyed once the current
+  // Decode() has completed. This gets set when Release() gets called
+  // while there is a decode in progress.
+  bool destroy_pending_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaDecoderJob);
 };
 
