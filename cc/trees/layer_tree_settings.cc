@@ -31,6 +31,7 @@ LayerTreeSettings::LayerTreeSettings()
       scrollbar_linear_fade_length_ms(300),
       solid_color_scrollbars(false),
       solid_color_scrollbar_color(SK_ColorWHITE),
+      solid_color_scrollbar_thickness_dip(-1),
       calculate_top_controls_position(false),
       use_memory_management(true),
       timeout_and_draw_when_animation_checkerboards(true),
