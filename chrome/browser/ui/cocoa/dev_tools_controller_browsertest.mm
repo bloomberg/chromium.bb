@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOverlappingViews) {
       dev_tools->web_contents()->GetView();
 
   // Without the find bar.
-  EXPECT_FALSE(dev_tools_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools_view->GetAllowOverlappingViews());
 
   // With the find bar.
   browser()->GetFindBarController()->find_bar()->Show(false);
@@ -48,5 +48,5 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOverlappingViews) {
 
   // Without the find bar.
   browser()->GetFindBarController()->find_bar()->Hide(false);
-  EXPECT_FALSE(dev_tools_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools_view->GetAllowOverlappingViews());
 }

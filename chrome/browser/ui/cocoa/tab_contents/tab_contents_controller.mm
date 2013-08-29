@@ -63,6 +63,10 @@ using content::WebContents;
   }
   [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
                                           NSViewHeightSizable];
+  // The rendering path with overlapping views disabled causes bugs when
+  // transitioning between composited and non-composited mode.
+  // http://crbug.com/279472
+  contents_->GetView()->SetAllowOverlappingViews(true);
 }
 
 - (void)changeWebContents:(WebContents*)newContents {

@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        AllowOverlappingViewsHistoryOverlay) {
   content::WebContentsView* web_contents_view =
       browser()->tab_strip_model()->GetActiveWebContents()->GetView();
-  EXPECT_FALSE(web_contents_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(web_contents_view->GetAllowOverlappingViews());
 
   base::scoped_nsobject<HistoryOverlayController> overlay(
       [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
@@ -388,5 +388,5 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_TRUE(web_contents_view->GetAllowOverlappingViews());
 
   overlay.reset();
-  EXPECT_FALSE(web_contents_view->GetAllowOverlappingViews());
+  EXPECT_TRUE(web_contents_view->GetAllowOverlappingViews());
 }
