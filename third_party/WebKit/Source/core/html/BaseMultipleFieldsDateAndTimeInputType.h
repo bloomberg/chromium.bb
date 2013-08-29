@@ -122,6 +122,7 @@ private:
     bool m_isDestroyingShadowSubtree;
     bool m_pickerIndicatorIsVisible;
     bool m_pickerIndicatorIsAlwaysVisible;
+    bool m_didCreateShadowElements;
 };
 
 } // namespace WebCore
