@@ -113,8 +113,7 @@ void ActualVsBaselineTester::CheckDefs() {
 void ActualVsBaselineTester::CheckUses() {
   nacl_arm_dec::RegisterList actual_uses(actual_decoder_.uses(inst_));
   nacl_arm_dec::RegisterList baseline_uses(baseline_decoder_.uses(inst_));
-  EXPECT_TRUE(baseline_decoder_.uses(inst_).
-              Equals(actual_decoder_.uses(inst_)));
+  EXPECT_TRUE(baseline_uses.Equals(actual_uses));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegisterWritebackSmallImmediate() {
