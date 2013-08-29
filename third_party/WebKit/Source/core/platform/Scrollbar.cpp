@@ -55,8 +55,7 @@ PassRefPtr<Scrollbar> Scrollbar::createNativeScrollbar(ScrollableArea* scrollabl
     return adoptRef(new Scrollbar(scrollableArea, orientation, size));
 }
 
-Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize,
-                     ScrollbarTheme* theme)
+Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, ScrollbarTheme* theme)
     : m_scrollableArea(scrollableArea)
     , m_orientation(orientation)
     , m_controlSize(controlSize)
@@ -120,6 +119,13 @@ bool Scrollbar::isScrollableAreaActive() const
 bool Scrollbar::isScrollViewScrollbar() const
 {
     return parent() && parent()->isFrameView() && toFrameView(parent())->isScrollViewScrollbar(this);
+}
+
+TextDirection Scrollbar::textDirection() const
+{
+    if (m_orientation == VerticalScrollbar && m_scrollableArea)
+        return m_scrollableArea->textDirection();
+    return LTR;
 }
 
 void Scrollbar::offsetDidChange()

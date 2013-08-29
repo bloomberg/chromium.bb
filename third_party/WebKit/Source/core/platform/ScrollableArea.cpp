@@ -402,6 +402,11 @@ IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) con
     return scrollPosition.shrunkTo(maximumScrollPosition()).expandedTo(minimumScrollPosition());
 }
 
+TextDirection ScrollableArea::textDirection() const
+{
+    return !m_scrollOrigin.x() ? LTR : RTL;
+}
+
 int ScrollableArea::lineStep(ScrollbarOrientation) const
 {
     return pixelsPerLineStep();

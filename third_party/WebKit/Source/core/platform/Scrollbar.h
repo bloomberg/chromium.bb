@@ -30,6 +30,7 @@
 #include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/Widget.h"
+#include "core/platform/text/TextDirection.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 
@@ -47,7 +48,7 @@ class Scrollbar : public Widget,
 
 public:
     // Must be implemented by platforms that can't simply use the Scrollbar base class.  Right now the only platform that is not using the base class is GTK.
-    static PassRefPtr<Scrollbar> createNativeScrollbar(ScrollableArea*, ScrollbarOrientation orientation, ScrollbarControlSize size);
+    static PassRefPtr<Scrollbar> createNativeScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
 
     virtual ~Scrollbar();
 
@@ -77,6 +78,7 @@ public:
 
     virtual bool isCustomScrollbar() const { return false; }
     virtual ScrollbarOrientation orientation() const { return m_orientation; }
+    TextDirection textDirection() const;
 
     virtual int value() const { return lroundf(m_currentPos); }
     virtual float currentPos() const { return m_currentPos; }

@@ -27,6 +27,7 @@
 #define ScrollableArea_h
 
 #include "core/platform/Scrollbar.h"
+#include "core/platform/text/TextDirection.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -185,6 +186,8 @@ public:
     int minimumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? minimumScrollPosition().x() : minimumScrollPosition().y(); }
     int maximumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? maximumScrollPosition().x() : maximumScrollPosition().y(); }
     int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return std::max(std::min(pos, maximumScrollPosition(orientation)), minimumScrollPosition(orientation)); }
+
+    TextDirection textDirection() const;
 
 protected:
     ScrollableArea();

@@ -189,6 +189,11 @@ WebScrollbar::Orientation WebPluginScrollbarImpl::orientation() const
     return WebScrollbar::Vertical;
 }
 
+bool WebPluginScrollbarImpl::isRightToLeft() const
+{
+    return false;
+}
+
 bool WebPluginScrollbarImpl::isCustomScrollbar() const
 {
     return m_scrollbar->isCustomScrollbar();

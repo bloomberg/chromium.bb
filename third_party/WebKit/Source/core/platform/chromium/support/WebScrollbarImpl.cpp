@@ -28,6 +28,7 @@
 
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/text/TextDirection.h"
 
 namespace WebKit {
 
@@ -116,6 +117,11 @@ WebScrollbar::ScrollbarOverlayStyle WebScrollbarImpl::scrollbarOverlayStyle() co
 WebScrollbar::Orientation WebScrollbarImpl::orientation() const
 {
     return static_cast<WebScrollbar::Orientation>(m_scrollbar->orientation());
+}
+
+bool WebScrollbarImpl::isRightToLeft() const
+{
+    return m_scrollbar->textDirection() == WebCore::RTL;
 }
 
 bool WebScrollbarImpl::isCustomScrollbar() const

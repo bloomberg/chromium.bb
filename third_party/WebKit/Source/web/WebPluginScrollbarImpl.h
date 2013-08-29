@@ -42,9 +42,7 @@ class ScrollbarGroup;
 
 class WebPluginScrollbarImpl : public WebPluginScrollbar {
 public:
-    WebPluginScrollbarImpl(Orientation,
-                     ScrollbarGroup*,
-                     WebPluginScrollbarClient*);
+    WebPluginScrollbarImpl(Orientation, ScrollbarGroup*, WebPluginScrollbarClient*);
     ~WebPluginScrollbarImpl();
 
     void setScrollOffset(int);
@@ -73,6 +71,7 @@ public:
     virtual WebScrollbar::ScrollbarPart hoveredPart() const OVERRIDE;
     virtual WebScrollbar::ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
     virtual WebScrollbar::Orientation orientation() const OVERRIDE;
+    virtual bool isRightToLeft() const OVERRIDE;
     virtual bool isCustomScrollbar() const OVERRIDE;
 
     // WebKit::WebPluginScrollbar methods
