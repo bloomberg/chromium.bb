@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
 namespace drive {
 class DriveAppRegistry;
@@ -52,8 +53,8 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  struct FileInfo;
-  typedef std::vector<FileInfo> FileInfoList;
+  typedef extensions::app_file_handler_util::PathAndMimeTypeSet
+      PathAndMimeTypeSet;
 
   // Holds fields to build a task result.
   struct TaskInfo;
@@ -61,16 +62,16 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // Map from a task id to TaskInfo.
   typedef std::map<std::string, TaskInfo> TaskInfoMap;
 
-  // Looks up available apps for each file in |file_info_list| in the
+  // Looks up available apps for each file in |path_mime_set| in the
   // |registry|, and returns the intersection of all available apps as a
   // map from task id to TaskInfo.
   static void GetAvailableDriveTasks(drive::DriveAppRegistry* registry,
-                                     const FileInfoList& file_info_list,
+                                     const PathAndMimeTypeSet& path_mime_set,
                                      TaskInfoMap* task_info_map);
 
   // Looks in the preferences and finds any of the available apps that are
   // also listed as default apps for any of the files in the info list.
-  void FindDefaultDriveTasks(const FileInfoList& file_info_list,
+  void FindDefaultDriveTasks(const PathAndMimeTypeSet& path_mime_set,
                              const TaskInfoMap& task_info_map,
                              std::set<std::string>* default_tasks);
 
@@ -91,7 +92,7 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // "taskId" field in |result_list| will look like
   // "<drive-app-id>|drive|open-with" (See also file_tasks.h).
   // "driveApp" field in |result_list| will be set to "true".
-  void FindDriveAppTasks(const FileInfoList& file_info_list,
+  void FindDriveAppTasks(const PathAndMimeTypeSet& path_mime_set,
                          ListValue* result_list,
                          bool* default_already_set);
 
@@ -99,7 +100,7 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // manifest.json) that can be used with the given files, appending them to
   // the |result_list|. See the comment at FindDriveAppTasks() about
   // |default_already_set|
-  void FindFileHandlerTasks(const std::vector<base::FilePath>& file_paths,
+  void FindFileHandlerTasks(const PathAndMimeTypeSet& path_mime_set,
                             ListValue* result_list,
                             bool* default_already_set);
 

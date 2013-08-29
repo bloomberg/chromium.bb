@@ -32,15 +32,5 @@ std::string GetMimeTypeForPath(const base::FilePath& file_path) {
   }
 }
 
-void GetMimeTypesForPaths(
-    const std::vector<base::FilePath>& file_paths,
-    extensions::app_file_handler_util::PathAndMimeTypeSet* path_mime_set) {
-  for (std::vector<base::FilePath>::const_iterator iter = file_paths.begin();
-       iter != file_paths.end(); ++iter) {
-    path_mime_set->insert(
-        std::make_pair(*iter, util::GetMimeTypeForPath(*iter)));
-  }
-}
-
 }  // namespace util
 }  // namespace file_manager

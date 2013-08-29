@@ -23,12 +23,6 @@ namespace util {
 // unknown.
 std::string GetMimeTypeForPath(const base::FilePath& file_path);
 
-// Gets the MIME types for the given file paths as PathAndMimeTypeSet. For
-// files without known MIME types, values will be set to "".
-void GetMimeTypesForPaths(
-    const std::vector<base::FilePath>& file_paths,
-    extensions::app_file_handler_util::PathAndMimeTypeSet* path_mime_set);
-
 }  // namespace util
 }  // namespace file_manager
 
