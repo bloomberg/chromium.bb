@@ -8,26 +8,6 @@ import os
 import sys
 
 
-def _RemoveAllStalePycFiles():
-  for dirname, _, filenames in os.walk(os.path.dirname(__file__)):
-    if '.svn' in dirname or '.git' in dirname:
-      continue
-    for filename in filenames:
-      root, ext = os.path.splitext(filename)
-      if ext != '.pyc':
-        continue
-
-      pyc_path = os.path.join(dirname, filename)
-      py_path = os.path.join(dirname, root + '.py')
-      if not os.path.exists(py_path):
-        print >> sys.stderr, 'Removing stale .pyc file:', pyc_path
-        os.remove(pyc_path)
-
-    if os.path.isdir(dirname) and not os.listdir(dirname):
-      print >> sys.stderr, 'Removing empty directory:', dirname
-      os.removedirs(dirname)
-
-
 def _Init():
   telemetry_path = os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir, 'telemetry')
@@ -39,5 +19,7 @@ def _Init():
   sys.path.append(absolute_telemetry_tools_path)
 
 
-_RemoveAllStalePycFiles()
 _Init()
+
+from telemetry import RemoveAllStalePycFiles
+RemoveAllStalePycFiles(os.path.dirname(__file__))
