@@ -5727,6 +5727,34 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndInvalidOCSP) {
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 
+TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
+  if (!SystemSupportsOCSP()) {
+    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  SSLConfigService::SetCRLSet(scoped_refptr<CRLSet>());
+
+  CertStatus cert_status;
+  DoConnection(ssl_options, &cert_status);
+
+  // Currently only works for Windows. When using NSS or OS X, it's not
+  // possible to determine whether the check failed because of actual
+  // revocation or because there was an OCSP failure.
+#if defined(OS_WIN)
+  EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
+#else
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+#endif
+
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
+  EXPECT_EQ(SystemUsesChromiumEVMetadata(),
+            static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
+}
+
 TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndGoodOCSP) {
   if (!SystemSupportsOCSP()) {
     LOG(WARNING) << "Skipping test because system doesn't support OCSP";

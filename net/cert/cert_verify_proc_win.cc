@@ -647,6 +647,7 @@ int CertVerifyProcWin::VerifyInternal(
     chain_flags &= ~CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
+    CertFreeCertificateChain(chain_context);
     if (!CertGetCertificateChain(
              chain_engine,
              cert_list.get(),
