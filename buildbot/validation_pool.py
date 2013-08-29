@@ -305,7 +305,7 @@ class PatchSeries(object):
       remote = constants.INTERNAL_REMOTE
     return self._helper_pool.GetHelper(remote)
 
-  def _GetGerritPatch(self, project, query, parent_lookup=False):
+  def _GetGerritPatch(self, query, parent_lookup=False):
     """Query the configured helpers looking for a given change.
 
     Args:
@@ -318,8 +318,9 @@ class PatchSeries(object):
     helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
     if constants.USE_GOB:
-      change = helper.QuerySingleRecord(
-          query_text, must_match=True, project=project)
+      change = helper.QuerySingleRecord(query_text, must_match=False)
+      if not change:
+        return
     else:
       change = helper.QuerySingleRecord(query_text, must_match=True)
     # If the query was a gerrit number based query, check the projects/change-id
@@ -382,9 +383,9 @@ class PatchSeries(object):
         dep_change = None
 
       if dep_change is None:
-        dep_change = self._GetGerritPatch(leaf.project, dep,
-                                          parent_lookup=parent_lookup)
-
+        dep_change = self._GetGerritPatch(dep, parent_lookup=parent_lookup)
+      if dep_change is None:
+        continue
       if getattr(dep_change, 'IsAlreadyMerged', lambda: False)():
         continue
       elif limit_to is not None and dep_change not in limit_to:
