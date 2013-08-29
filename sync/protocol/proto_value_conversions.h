@@ -43,6 +43,7 @@ class FaviconTrackingSpecifics;
 class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
 class KeystoreEncryptionFlagsSpecifics;
+class Media;
 class ManagedUserSettingSpecifics;
 class ManagedUserSpecifics;
 class NigoriSpecifics;
@@ -57,6 +58,8 @@ class SessionTab;
 class SessionWindow;
 class SimpleCollapsedLayout;
 class SyncCycleCompletedEventInfo;
+class SyncedNotificationImage;
+class SyncedNotificationProfileImage;
 class SyncedNotificationRenderInfo;
 class SyncedNotificationSpecifics;
 class TabNavigation;
@@ -192,6 +195,9 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* ManagedUserSettingSpecificsToValue(
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ManagedUserSpecificsToValue(
     const sync_pb::ManagedUserSpecifics& managed_user_specifics);
 
+SYNC_EXPORT_PRIVATE base::DictionaryValue* MediaToValue(
+    const sync_pb::Media& media);
+
 SYNC_EXPORT_PRIVATE base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
 
@@ -210,6 +216,13 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* SearchEngineSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SyncedNotificationImageToValue(
+    const sync_pb::SyncedNotificationImage& image);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue*
+    SyncedNotificationProfileImageToValue(
+        const sync_pb::SyncedNotificationProfileImage& image);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ThemeSpecificsToValue(
     const sync_pb::ThemeSpecifics& theme_specifics);

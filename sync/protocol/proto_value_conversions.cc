@@ -241,11 +241,36 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
   return value;
 }
 
+base::DictionaryValue* SyncedNotificationImageToValue(
+    const sync_pb::SyncedNotificationImage& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(url);
+  return value;
+}
+
+base::DictionaryValue* SyncedNotificationProfileImageToValue(
+    const sync_pb::SyncedNotificationProfileImage& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(image_url);
+  return value;
+}
+
+base::DictionaryValue* MediaToValue(
+    const sync_pb::Media& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET(image, SyncedNotificationImageToValue);
+  return value;
+}
+
 base::DictionaryValue* SimpleCollapsedLayoutToValue(
     const sync_pb::SimpleCollapsedLayout& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(heading);
   SET_STR(description);
+  SET_STR(annotation);
+  SET_REP(media, MediaToValue);
+  SET_REP(profile_image, SyncedNotificationProfileImageToValue);
+  SET(app_icon, SyncedNotificationImageToValue);
   return value;
 }
 
@@ -259,6 +284,7 @@ base::DictionaryValue* CollapsedInfoToValue(
 base::DictionaryValue* RenderInfoToValue(
     const sync_pb::SyncedNotificationRenderInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
+  // TODO(petewil): Add the expanded info values too.
   SET(collapsed_info, CollapsedInfoToValue);
   return value;
 }
@@ -268,6 +294,8 @@ base::DictionaryValue* CoalescedNotificationToValue(
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(key);
   SET_INT32(read_state);
+  SET_INT64(creation_time_msec);
+  SET_INT32(priority);
   SET(render_info, RenderInfoToValue);
   return value;
 }
