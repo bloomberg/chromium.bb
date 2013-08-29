@@ -82,6 +82,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
         const base::TimeDelta& presentation_timestamp,
         size_t audio_output_bytes);
 
+  // Gets MediaCrypto object from |drm_bridge_|.
+  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
+
+  // Callback to notify that MediaCrypto is ready in |drm_bridge_|.
+  void OnMediaCryptoReady();
+
   // Handle pending events when all the decoder jobs finished.
   void ProcessPendingEvents();
 

@@ -71,21 +71,57 @@ class MediaDrmBridge {
     }
 
     /**
+     * Create a MediaCrypto object.
+     *
+     * @return if a MediaCrypto object is successfully created.
+     */
+    private boolean createMediaCrypto() {
+        assert(mSessionId != null);
+        assert(mMediaCrypto == null);
+        try {
+            final byte[] session = mSessionId.getBytes("UTF-8");
+            if (MediaCrypto.isCryptoSchemeSupported(mSchemeUUID)) {
+                mMediaCrypto = new MediaCrypto(mSchemeUUID, session);
+            }
+        } catch (android.media.MediaCryptoException e) {
+            Log.e(TAG, "Cannot create MediaCrypto " + e.toString());
+            return false;
+        } catch (java.io.UnsupportedEncodingException e) {
+            Log.e(TAG, "Cannot create MediaCrypto " + e.toString());
+            return false;
+        }
+
+        assert(mMediaCrypto != null);
+        nativeOnMediaCryptoReady(mNativeMediaDrmBridge);
+        return true;
+    }
+
+    /**
      * Open a new session and return the sessionId.
      *
-     * @return ID of the session.
+     * @return false if unexpected error happens. Return true if a new session
+     * is successfully opened, or if provisioning is required to open a session.
      */
-    private String openSession() {
-        String session = null;
+    private boolean openSession() {
+        assert(mSessionId == null);
+
+        if (mMediaDrm == null) {
+            return false;
+        }
+
         try {
             final byte[] sessionId = mMediaDrm.openSession();
-            session = new String(sessionId, "UTF-8");
+            mSessionId = new String(sessionId, "UTF-8");
         } catch (android.media.NotProvisionedException e) {
             Log.e(TAG, "Cannot open a new session " + e.toString());
-        } catch (java.io.UnsupportedEncodingException e) {
+            return true;
+        } catch (Exception e) {
             Log.e(TAG, "Cannot open a new session " + e.toString());
+            return false;
         }
-        return session;
+
+        assert(mSessionId != null);
+        return createMediaCrypto();
     }
 
     /**
@@ -104,25 +140,10 @@ class MediaDrmBridge {
     }
 
     /**
-     * Create a new MediaCrypto object from the session Id.
-     *
-     * @param sessionId Crypto session Id.
+     * Return the MediaCrypto object if available.
      */
     @CalledByNative
     private MediaCrypto getMediaCrypto() {
-        if (mMediaCrypto != null) {
-            return mMediaCrypto;
-        }
-        try {
-            final byte[] session = mSessionId.getBytes("UTF-8");
-            if (MediaCrypto.isCryptoSchemeSupported(mSchemeUUID)) {
-                mMediaCrypto = new MediaCrypto(mSchemeUUID, session);
-            }
-        } catch (android.media.MediaCryptoException e) {
-            Log.e(TAG, "Cannot create MediaCrypto " + e.toString());
-        } catch (java.io.UnsupportedEncodingException e) {
-            Log.e(TAG, "Cannot create MediaCrypto " + e.toString());
-        }
         return mMediaCrypto;
     }
 
@@ -143,6 +164,7 @@ class MediaDrmBridge {
             }
         }
         mMediaDrm.release();
+        mMediaDrm = null;
     }
 
     /**
@@ -164,14 +186,21 @@ class MediaDrmBridge {
         }
 
         if (mSessionId == null) {
-            mSessionId = openSession();
+            if (!openSession()) {
+                onKeyError();
+                return;
+            }
+
+            // NotProvisionedException happened during openSession().
             if (mSessionId == null) {
                 if (mPendingInitData != null) {
                     Log.e(TAG, "generateKeyRequest is called when another call is pending.");
                     onKeyError();
                     return;
                 }
-                // We assume some event will be fired if openSession() failed.
+
+                // We assume MediaDrm.EVENT_PROVISION_REQUIRED is always fired if
+                // NotProvisionedException is throwed in openSession().
                 // generateKeyRequest() will be resumed after provisioning is finished.
                 // TODO(xhwang): Double check if this assumption is true. Otherwise we need
                 // to handle the exception in openSession more carefully.
@@ -387,6 +416,8 @@ class MediaDrmBridge {
             onProvisionResponse(mResponseBody);
         }
     }
+
+    private native void nativeOnMediaCryptoReady(int nativeMediaDrmBridge);
 
     private native void nativeOnKeyMessage(int nativeMediaDrmBridge, String sessionId,
                                            byte[] message, String destinationUrl);

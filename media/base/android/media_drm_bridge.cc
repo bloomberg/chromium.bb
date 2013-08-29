@@ -7,7 +7,10 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "jni/MediaDrmBridge_jni.h"
 #include "media/base/android/media_player_manager.h"
 
@@ -205,17 +208,34 @@ void MediaDrmBridge::AddKey(const uint8* key, int key_length,
       env, j_media_drm_.obj(), j_session_id.obj(), j_key_data.obj());
 }
 
-ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
-}
-
 void MediaDrmBridge::CancelKeyRequest(const std::string& session_id) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_session_id =
       ConvertUTF8ToJavaString(env, session_id);
   Java_MediaDrmBridge_cancelKeyRequest(
       env, j_media_drm_.obj(), j_session_id.obj());
+}
+
+void MediaDrmBridge::SetMediaCryptoReadyCB(const base::Closure& closure) {
+  if (closure.is_null()) {
+    media_crypto_ready_cb_.Reset();
+    return;
+  }
+
+  DCHECK(media_crypto_ready_cb_.is_null());
+
+  if (!GetMediaCrypto().is_null()) {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE, closure);
+    return;
+  }
+
+  media_crypto_ready_cb_ = closure;
+}
+
+void MediaDrmBridge::OnMediaCryptoReady(JNIEnv* env, jobject) {
+  DCHECK(!GetMediaCrypto().is_null());
+  if (!media_crypto_ready_cb_.is_null())
+    base::ResetAndReturn(&media_crypto_ready_cb_).Run();
 }
 
 void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
@@ -240,6 +260,11 @@ void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
   // |j_session_id| can be NULL, in which case we'll return an empty string.
   std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
   manager_->OnKeyError(media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
+}
+
+ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
 }
 
 MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {

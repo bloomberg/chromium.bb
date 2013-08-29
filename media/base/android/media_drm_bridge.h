@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 
@@ -49,6 +50,17 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
+  // Returns a MediaCrypto object if it's already created. Returns a null object
+  // otherwise.
+  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
+
+  // Sets callback which will be called when MediaCrypto is ready.
+  // If |closure| is null, previously set callback will be cleared.
+  void SetMediaCryptoReadyCB(const base::Closure& closure);
+
+  // Called after a MediaCrypto object is created.
+  void OnMediaCryptoReady(JNIEnv* env, jobject);
+
   // Called after we got the response for GenerateKeyRequest().
   void OnKeyMessage(JNIEnv* env, jobject, jstring j_session_id,
                     jbyteArray message, jstring destination_url);
@@ -62,9 +74,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Helper function to determine whether a protected surface is needed for the
   // video playback.
   bool IsProtectedSurfaceRequired();
-
-  // Methods to create and release a MediaCrypto object.
-  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
   int media_keys_id() const { return media_keys_id_; }
 
@@ -87,6 +96,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   // Non-owned pointer.
   MediaPlayerManager* manager_;
+
+  base::Closure media_crypto_ready_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

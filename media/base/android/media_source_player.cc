@@ -268,17 +268,38 @@ void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {
   clock_.SetDuration(duration_);
 }
 
+base::android::ScopedJavaLocalRef<jobject> MediaSourcePlayer::GetMediaCrypto() {
+  base::android::ScopedJavaLocalRef<jobject> media_crypto;
+  if (drm_bridge_)
+    media_crypto = drm_bridge_->GetMediaCrypto();
+  return media_crypto;
+}
+
+void MediaSourcePlayer::OnMediaCryptoReady() {
+  DCHECK(!drm_bridge_->GetMediaCrypto().is_null());
+  drm_bridge_->SetMediaCryptoReadyCB(base::Closure());
+
+  if (playing_)
+    StartInternal();
+}
+
 void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
   // Currently we don't support DRM change during the middle of playback, even
   // if the player is paused.
   // TODO(qinmin): support DRM change after playback has started.
   // http://crbug.com/253792.
   if (GetCurrentTime() > base::TimeDelta()) {
-    LOG(INFO) << "Setting DRM bridge after play back has started. "
+    LOG(INFO) << "Setting DRM bridge after playback has started. "
               << "This is not well supported!";
   }
 
   drm_bridge_ = drm_bridge;
+
+  if (drm_bridge_->GetMediaCrypto().is_null()) {
+    drm_bridge_->SetMediaCryptoReadyCB(base::Bind(
+        &MediaSourcePlayer::OnMediaCryptoReady, weak_this_.GetWeakPtr()));
+    return;
+  }
 
   if (playing_)
     StartInternal();
@@ -509,26 +530,13 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
   if (audio_decoder_job_ && !reconfig_audio_decoder_)
     return;
 
-  base::android::ScopedJavaLocalRef<jobject> media_codec;
-  if (is_audio_encrypted_) {
-    if (drm_bridge_) {
-      media_codec = drm_bridge_->GetMediaCrypto();
-      // TODO(qinmin/xhwang): Currently we assume MediaCrypto is available
-      // whenever MediaDrmBridge is constructed. This is not always true, e.g.
-      // if the device is not provisioned. See http://crbug.com/277700
-      DCHECK(!media_codec.is_null());
-    } else {
-      // Don't create the decoder job if |drm_bridge_| is not set,
-      // so StartInternal() will not proceed.
-      LOG(INFO) << "MediaDrmBridge is not available when creating decoder "
-                << "for encrypted audio stream.";
-      return;
-    }
-  }
+  base::android::ScopedJavaLocalRef<jobject> media_crypto = GetMediaCrypto();
+  if (is_audio_encrypted_ && media_crypto.is_null())
+    return;
 
   audio_decoder_job_.reset(AudioDecoderJob::Create(
       audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
-      audio_extra_data_.size(), media_codec.obj(),
+      audio_extra_data_.size(), media_crypto.obj(),
       base::Bind(&MediaPlayerManager::OnReadFromDemuxer,
                  base::Unretained(manager()), player_id(),
                  DemuxerStream::AUDIO)));
@@ -549,17 +557,9 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   if (video_decoder_job_ && !reconfig_video_decoder_)
     return;
 
-  base::android::ScopedJavaLocalRef<jobject> media_crypto;
-  if (is_video_encrypted_) {
-    if (drm_bridge_) {
-      media_crypto = drm_bridge_->GetMediaCrypto();
-      DCHECK(!media_crypto.is_null());
-    } else {
-      LOG(INFO) << "MediaDrmBridge is not available when creating decoder "
-                << "for encrypted video stream.";
-      return;
-    }
-  }
+  base::android::ScopedJavaLocalRef<jobject> media_crypto = GetMediaCrypto();
+  if (is_video_encrypted_ && media_crypto.is_null())
+    return;
 
   // Release the old VideoDecoderJob first so the surface can get released.
   // Android does not allow 2 MediaCodec instances use the same surface.
