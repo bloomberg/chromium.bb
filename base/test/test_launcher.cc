@@ -13,6 +13,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -255,9 +256,44 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-bool RunTests(TestLauncherDelegate* launcher_delegate,
+typedef Callback<void(bool)> RunTestsCallback;
+
+void RunRemainingTestsDone(scoped_ptr<ResultsPrinter> printer,
+                           size_t num_started_tests,
+                           const RunTestsCallback& callback) {
+  bool result = true;
+
+  printf("%" PRIuS " test%s run\n",
+         printer->test_run_count(),
+         printer->test_run_count() > 1 ? "s" : "");
+  printf("%" PRIuS " test%s failed\n",
+         printer->failed_tests().size(),
+         printer->failed_tests().size() != 1 ? "s" : "");
+  if (num_started_tests != printer->test_run_count()) {
+    result = false;
+    // TODO(phajdan.jr): Print more detailed info which test results
+    // are missing or superfluous.
+    printf("BUG: %" PRIuS " tests started but only got results for %" PRIuS
+           " tests back.\n", num_started_tests, printer->test_run_count());
+  }
+
+  if (!printer->failed_tests().empty()) {
+    result = false;
+
+    printf("Failing tests:\n");
+    for (size_t i = 0; i < printer->failed_tests().size(); ++i)
+      printf("%s\n", printer->failed_tests()[i].c_str());
+  }
+
+  fflush(stdout);
+
+  callback.Run(result);
+}
+
+void RunTests(TestLauncherDelegate* launcher_delegate,
               int total_shards,
-              int shard_index) {
+              int shard_index,
+              const RunTestsCallback& callback) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
@@ -279,7 +315,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
   int num_runnable_tests = 0;
   size_t num_started_tests = 0;
 
-  ResultsPrinter printer(*command_line);
+  scoped_ptr<ResultsPrinter> printer(new ResultsPrinter(*command_line));
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
@@ -315,40 +351,46 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
                                  test_info,
                                  base::Bind(
                                      &ResultsPrinter::AddTestResult,
-                                     base::Unretained(&printer)));
+                                     base::Unretained(printer.get())));
     }
   }
 
-  launcher_delegate->RunRemainingTests();
-
-  bool result = true;
-
-  printf("%" PRIuS " test%s run\n",
-         printer.test_run_count(),
-         printer.test_run_count() > 1 ? "s" : "");
-  printf("%" PRIuS " test%s failed\n",
-         printer.failed_tests().size(),
-         printer.failed_tests().size() != 1 ? "s" : "");
-  if (num_started_tests != printer.test_run_count()) {
-    result = false;
-    // TODO(phajdan.jr): Print more detailed info which test results
-    // are missing or superfluous.
-    printf("BUG: %" PRIuS " tests started but only got results for %" PRIuS
-           " tests back.\n", num_started_tests, printer.test_run_count());
-  }
-
-  if (!printer.failed_tests().empty()) {
-    result = false;
-
-    printf("Failing tests:\n");
-    for (size_t i = 0; i < printer.failed_tests().size(); ++i)
-      printf("%s\n", printer.failed_tests()[i].c_str());
-  }
-
-  fflush(stdout);
-
-  return result;
+  launcher_delegate->RunRemainingTests(
+      Bind(&RunRemainingTestsDone,
+           Passed(&printer), num_started_tests, callback));
 }
+
+void RunTestIteration(TestLauncherDelegate* launcher_delegate,
+                      int32 total_shards,
+                      int32 shard_index,
+                      int cycles,
+                      int* exit_code,
+                      bool run_tests_success) {
+  if (!run_tests_success) {
+    *exit_code = 1;
+    MessageLoop::current()->Quit();
+    return;
+  }
+
+  if (cycles == 0) {
+    MessageLoop::current()->Quit();
+    return;
+  }
+
+  // Special value "-1" means "repeat indefinitely".
+  int new_cycles = (cycles == -1) ? cycles : cycles - 1;
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&RunTests, launcher_delegate, total_shards, shard_index,
+           Bind(&RunTestIteration,
+                launcher_delegate,
+                total_shards,
+                shard_index,
+                new_cycles,
+                exit_code)));
+}
+
 
 }  // namespace
 
@@ -436,6 +478,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 char** argv) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
+
   int32 total_shards;
   int32 shard_index;
   InitSharding(&total_shards, &shard_index);
@@ -445,16 +488,18 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag), &cycles);
 
   int exit_code = 0;
-  while (cycles != 0) {
-    if (!RunTests(launcher_delegate, total_shards, shard_index)) {
-      exit_code = 1;
-      break;
-    }
+  MessageLoop message_loop;
+  message_loop.PostTask(
+      FROM_HERE,
+      Bind(&RunTestIteration,
+           launcher_delegate,
+           total_shards,
+           shard_index,
+           cycles,
+           &exit_code,
+           true));
 
-    // Special value "-1" means "repeat indefinitely".
-    if (cycles != -1)
-      cycles--;
-  }
+  message_loop.Run();
 
   return exit_code;
 }

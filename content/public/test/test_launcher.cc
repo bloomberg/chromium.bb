@@ -184,7 +184,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const testing::TestCase* test_case,
       const testing::TestInfo* test_info,
       const base::TestLauncherDelegate::TestResultCallback& callback) OVERRIDE;
-  virtual void RunRemainingTests() OVERRIDE;
+  virtual void RunRemainingTests(
+      const RunRemainingTestsCallback& callback) OVERRIDE;
 
  private:
   content::TestLauncherDelegate* launcher_delegate_;
@@ -250,8 +251,10 @@ void WrapperTestLauncherDelegate::RunTest(
   callback.Run(result);
 }
 
-void WrapperTestLauncherDelegate::RunRemainingTests() {
-  // No need to do anything here, we launch tests synchronously.
+void WrapperTestLauncherDelegate::RunRemainingTests(
+    const RunRemainingTestsCallback& callback) {
+  // No need to do anything else here, we launch tests synchronously.
+  callback.Run();
 }
 
 }  // namespace

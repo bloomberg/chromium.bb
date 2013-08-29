@@ -4,6 +4,7 @@
 
 #include "base/test/unit_test_launcher.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -76,10 +77,13 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
     // Run tests in batches no larger than the limit.
     if (tests_.size() >= kTestBatchLimit)
-      RunRemainingTests();
+      RunRemainingTests(Bind(&DoNothing));
   }
 
-  virtual void RunRemainingTests() OVERRIDE {
+  virtual void RunRemainingTests(
+      const RunRemainingTestsCallback& callback) OVERRIDE {
+    ScopedClosureRunner scoped_runner(callback);
+
     if (tests_.empty())
       return;
 

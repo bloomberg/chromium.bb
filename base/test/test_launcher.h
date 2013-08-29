@@ -72,7 +72,8 @@ class TestLauncherDelegate {
   // If the delegate is running tests asynchronously, it must finish
   // running all pending tests and call their callbacks before returning
   // from this method.
-  virtual void RunRemainingTests() = 0;
+  typedef base::Closure RunRemainingTestsCallback;
+  virtual void RunRemainingTests(const RunRemainingTestsCallback& callback) = 0;
 
  protected:
   virtual ~TestLauncherDelegate();
