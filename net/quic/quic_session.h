@@ -211,12 +211,36 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
+  // Performs the work required to close |stream_id|.  If |locally_reset|
+  // then the stream has been reset by this endpoint, not by the peer.  This
+  // means the stream may become a zombie stream which needs to stay
+  // around until headers have been decompressed.
+  void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
+
+  // Adds |stream_id| to the zobmie stream map, closing the oldest
+  // zombie stream if the set is full.
+  void AddZombieStream(QuicStreamId stream_id);
+
+  // Closes the zombie stream |stream_id| and removes it from the zombie
+  // stream map.
+  void CloseZombieStream(QuicStreamId stream_id);
+
+  // Adds |stream_id| to the prematurely closed stream map, removing the
+  // oldest prematurely closed stream if the set is full.
+  void AddPrematurelyClosedStream(QuicStreamId stream_id);
+
   scoped_ptr<QuicConnection> connection_;
 
   // Tracks the last 20 streams which closed without decompressing headers.
   // This is for best-effort detection of an unrecoverable compression context.
   // Ideally this would be a linked_hash_set as the boolean is unused.
   linked_hash_map<QuicStreamId, bool> prematurely_closed_streams_;
+
+  // Streams which have been locally reset before decompressing headers
+  // from the peer.  These streams need to stay open long enough to
+  // process any headers from the peer.
+  // Ideally this would be a linked_hash_set as the boolean is unused.
+  linked_hash_map<QuicStreamId, bool> zombie_streams_;
 
   // A shim to stand between the connection and the session, to handle stream
   // deletions.

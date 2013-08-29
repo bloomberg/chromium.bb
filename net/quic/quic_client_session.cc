@@ -238,7 +238,16 @@ ReliableQuicStream* QuicClientSession::CreateIncomingReliableStream(
 
 void QuicClientSession::CloseStream(QuicStreamId stream_id) {
   QuicSession::CloseStream(stream_id);
+  OnClosedStream();
+}
 
+void QuicClientSession::SendRstStream(QuicStreamId id,
+                                      QuicRstStreamErrorCode error) {
+  QuicSession::SendRstStream(id, error);
+  OnClosedStream();
+}
+
+void QuicClientSession::OnClosedStream() {
   if (GetNumOpenStreams() < get_max_open_streams() &&
       !stream_requests_.empty() &&
       crypto_stream_->encryption_established() &&

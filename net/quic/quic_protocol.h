@@ -279,6 +279,8 @@ enum QuicRstStreamErrorCode {
   QUIC_STREAM_CONNECTION_ERROR,
   // GoAway frame sent. No more stream can be created.
   QUIC_STREAM_PEER_GOING_AWAY,
+  // The stream has been cancelled.
+  QUIC_STREAM_CANCELLED,
 
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,

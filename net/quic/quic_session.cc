@@ -18,6 +18,7 @@ using std::vector;
 namespace net {
 
 const size_t kMaxPrematurelyClosedStreamsTracked = 20;
+const size_t kMaxZombieStreams = 20;
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
@@ -133,9 +134,19 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
   }
 
   for (size_t i = 0; i < frames.size(); ++i) {
-    ReliableQuicStream* stream = GetStream(frames[i].stream_id);
-    if (stream) {
-      stream->OnStreamFrame(frames[i]);
+    QuicStreamId stream_id = frames[i].stream_id;
+    ReliableQuicStream* stream = GetStream(stream_id);
+    if (!stream) {
+      continue;
+    }
+    stream->OnStreamFrame(frames[i]);
+
+    // If the stream had been prematurely closed, and the
+    // headers are now decompressed, then we are finally finished
+    // with this stream.
+    if (ContainsKey(zombie_streams_, stream_id) &&
+        stream->headers_decompressed()) {
+      CloseZombieStream(stream_id);
     }
   }
 
@@ -162,6 +173,16 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   if (!stream) {
     return;  // Errors are handled by GetStream.
   }
+  if (ContainsKey(zombie_streams_, stream->id())) {
+    // If this was a zombie stream then we close it out now.
+    CloseZombieStream(stream->id());
+    // However, since the headers still have not been decompressed, we want to
+    // mark it a prematurely closed so that if we ever receive frames
+    // for this stream we can close the connection.
+    DCHECK(!stream->headers_decompressed());
+    AddPrematurelyClosedStream(frame.stream_id);
+    return;
+  }
   stream->OnStreamReset(frame.error_code);
 }
 
@@ -171,6 +192,7 @@ void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
 }
 
 void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+  DCHECK(!connection_->connected());
   if (error_ == QUIC_NO_ERROR) {
     error_ = error;
   }
@@ -221,7 +243,7 @@ QuicConsumedData QuicSession::WriteData(QuicStreamId id,
 void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error) {
   connection_->SendRstStream(id, error);
-  CloseStream(id);
+  CloseStreamInner(id, true);
 }
 
 void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
@@ -230,6 +252,11 @@ void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
 }
 
 void QuicSession::CloseStream(QuicStreamId stream_id) {
+  CloseStreamInner(stream_id, false);
+}
+
+void QuicSession::CloseStreamInner(QuicStreamId stream_id,
+                                   bool locally_reset) {
   DLOG(INFO) << ENDPOINT << "Closing stream " << stream_id;
 
   ReliableStreamMap::iterator it = stream_map_.find(stream_id);
@@ -238,16 +265,60 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
     return;
   }
   ReliableQuicStream* stream = it->second;
-  if (!stream->headers_decompressed()) {
-    if (prematurely_closed_streams_.size() ==
-        kMaxPrematurelyClosedStreamsTracked) {
-      prematurely_closed_streams_.erase(prematurely_closed_streams_.begin());
+  if (connection_->connected() && !stream->headers_decompressed()) {
+    // If the stream is being closed locally (for example a client cancelling
+    // a request before receiving the response) then we need to make sure that
+    // we keep the stream alive long enough to process any response or
+    // RST_STREAM frames.
+    if (locally_reset && !is_server_) {
+      AddZombieStream(stream_id);
+      return;
     }
-    prematurely_closed_streams_.insert(make_pair(stream->id(), true));
+
+    // This stream has been closed before the headers were decompressed.
+    // This might cause problems with head of line blocking of headers.
+    // If the peer sent headers which were lost but we now close the stream
+    // we will never be able to decompress headers for other streams.
+    // To deal with this, we keep track of streams which have been closed
+    // prematurely.  If we ever receive data frames for this steam, then we
+    // know there actually has been a problem and we close the connection.
+    AddPrematurelyClosedStream(stream->id());
   }
   closed_streams_.push_back(it->second);
   stream_map_.erase(it);
   stream->OnClose();
+}
+
+void QuicSession::AddZombieStream(QuicStreamId stream_id) {
+  if (zombie_streams_.size() == kMaxZombieStreams) {
+    QuicStreamId oldest_zombie_stream_id = zombie_streams_.begin()->first;
+    CloseZombieStream(oldest_zombie_stream_id);
+    // However, since the headers still have not been decompressed, we want to
+    // mark it a prematurely closed so that if we ever receive frames
+    // for this stream we can close the connection.
+    AddPrematurelyClosedStream(oldest_zombie_stream_id);
+  }
+  zombie_streams_.insert(make_pair(stream_id, true));
+}
+
+void QuicSession::CloseZombieStream(QuicStreamId stream_id) {
+  DCHECK(ContainsKey(zombie_streams_, stream_id));
+  zombie_streams_.erase(stream_id);
+  ReliableQuicStream* stream = GetStream(stream_id);
+  if (!stream) {
+    return;
+  }
+  stream_map_.erase(stream_id);
+  stream->OnClose();
+  closed_streams_.push_back(stream);
+}
+
+void QuicSession::AddPrematurelyClosedStream(QuicStreamId stream_id) {
+  if (prematurely_closed_streams_.size() ==
+      kMaxPrematurelyClosedStreamsTracked) {
+    prematurely_closed_streams_.erase(prematurely_closed_streams_.begin());
+  }
+  prematurely_closed_streams_.insert(make_pair(stream_id, true));
 }
 
 bool QuicSession::IsEncryptionEstablished() {
@@ -376,7 +447,10 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
   if (id == kCryptoStreamId) {
     return false;
   }
-  if (stream_map_.count(id) != 0) {
+  if (ContainsKey(zombie_streams_, id)) {
+    return true;
+  }
+  if (ContainsKey(stream_map_, id)) {
     // Stream is active
     return false;
   }
@@ -392,7 +466,8 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
-  return stream_map_.size() + implicitly_created_streams_.size();
+  return stream_map_.size() + implicitly_created_streams_.size() -
+      zombie_streams_.size();
 }
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id) {

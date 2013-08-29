@@ -814,6 +814,7 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
 
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error) {
+  LOG(INFO) << "Sending RST_STREAM: " << id << " code: " << error;
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicRstStreamFrame(id, error)));
 }

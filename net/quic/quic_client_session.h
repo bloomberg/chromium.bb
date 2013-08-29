@@ -102,6 +102,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual QuicReliableClientStream* CreateOutgoingReliableStream() OVERRIDE;
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
+  virtual void SendRstStream(QuicStreamId id,
+                             QuicRstStreamErrorCode error) OVERRIDE;
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
   virtual void OnCryptoHandshakeMessageSent(
       const CryptoHandshakeMessage& message) OVERRIDE;
@@ -143,6 +145,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   QuicReliableClientStream* CreateOutgoingReliableStreamImpl();
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
+
+  void OnClosedStream();
 
   void CloseSessionOnErrorInner(int error);
 
