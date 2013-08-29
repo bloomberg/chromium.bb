@@ -14,10 +14,10 @@ import tempfile
 import constants
 
 
-def _Call(args, stdout=None, stderr=None, shell=None, cwd=None):
+def Call(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
   return subprocess.call(
       args=args, cwd=cwd, stdout=stdout, stderr=stderr,
-      shell=shell, close_fds=True,
+      shell=shell, close_fds=True, env=env,
       preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 
 
@@ -34,7 +34,7 @@ def RunCmd(args, cwd=None):
     Return code from the command execution.
   """
   logging.info(str(args) + ' ' + (cwd or ''))
-  return _Call(args, cwd=cwd)
+  return Call(args, cwd=cwd)
 
 
 def GetCmdOutput(args, cwd=None, shell=False):
@@ -84,7 +84,7 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   logging.info(s)
   tmpout = tempfile.TemporaryFile(bufsize=0)
   tmperr = tempfile.TemporaryFile(bufsize=0)
-  exit_code = _Call(args, cwd=cwd, stdout=tmpout, stderr=tmperr, shell=shell)
+  exit_code = Call(args, cwd=cwd, stdout=tmpout, stderr=tmperr, shell=shell)
   tmperr.seek(0)
   stderr = tmperr.read()
   tmperr.close()

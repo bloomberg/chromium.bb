@@ -34,15 +34,11 @@ class TestPackageApk(TestPackage):
     if suite_name == 'content_browsertests':
       self.suite_path = os.path.join(
           product_dir, 'apks', '%s.apk' % suite_name)
-      self._test_apk_package_name = constants.BROWSERTEST_TEST_PACKAGE_NAME
-      self._test_activity_name = constants.BROWSERTEST_TEST_ACTIVITY_NAME
-      self._command_line_file = constants.BROWSERTEST_COMMAND_LINE_FILE
+      self._package_info = constants.PACKAGE_INFO['content_browsertests']
     else:
       self.suite_path = os.path.join(
           product_dir, '%s_apk' % suite_name, '%s-debug.apk' % suite_name)
-      self._test_apk_package_name = constants.GTEST_TEST_PACKAGE_NAME
-      self._test_activity_name = constants.GTEST_TEST_ACTIVITY_NAME
-      self._command_line_file = constants.GTEST_COMMAND_LINE_FILE
+      self._package_info = constants.PACKAGE_INFO['gtest']
 
   def _CreateCommandLineFileOnDevice(self, adb, options):
     command_line_file = tempfile.NamedTemporaryFile()
@@ -50,15 +46,14 @@ class TestPackageApk(TestPackage):
     command_line_file.write(self.suite_name + ' ' + options)
     command_line_file.flush()
     adb.PushIfNeeded(command_line_file.name,
-                          constants.TEST_EXECUTABLE_DIR + '/' +
-                          self._command_line_file)
+                     self._package_info.cmdline_file)
 
   def _GetFifo(self):
     # The test.fifo path is determined by:
     # testing/android/java/src/org/chromium/native_test/
     #     ChromeNativeTestActivity.java and
     # testing/android/native_test_launcher.cc
-    return '/data/data/' + self._test_apk_package_name + '/files/test.fifo'
+    return '/data/data/' + self._package_info.package + '/files/test.fifo'
 
   def _ClearFifo(self, adb):
     adb.RunShellCommand('rm -f ' + self._GetFifo())
@@ -78,15 +73,15 @@ class TestPackageApk(TestPackage):
 
   def _StartActivity(self, adb):
     adb.StartActivity(
-        self._test_apk_package_name,
-        self._test_activity_name,
+        self._package_info.package,
+        self._package_info.activity,
         wait_for_completion=True,
         action='android.intent.action.MAIN',
         force_stop=True)
 
   #override
   def ClearApplicationState(self, adb):
-    adb.ClearApplicationState(self._test_apk_package_name)
+    adb.ClearApplicationState(self._package_info.package)
     # Content shell creates a profile on the sdscard which accumulates cache
     # files over time.
     if self.suite_name == 'content_browsertests':
@@ -132,4 +127,4 @@ class TestPackageApk(TestPackage):
   def Install(self, adb):
     self.tool.CopyFiles()
     adb.ManagedInstall(self.suite_path, False,
-                            package_name=self._test_apk_package_name)
+                            package_name=self._package_info.package)

@@ -15,7 +15,6 @@ from pylib import android_commands
 from pylib import constants
 from pylib import ports
 from pylib.chrome_test_server_spawner import SpawningServer
-from pylib.flag_changer import FlagChanger
 from pylib.forwarder import Forwarder
 from pylib.valgrind_tools import CreateTool
 # TODO(frankf): Move this to pylib/utils
@@ -45,8 +44,6 @@ class BaseTestRunner(object):
     self._forwarder_device_port = 8000
     self.forwarder_base_url = ('http://localhost:%d' %
         self._forwarder_device_port)
-    self.flags = FlagChanger(self.adb)
-    self.flags.AddFlags(['--disable-fre'])
     self._spawning_server = None
     # We will allocate port for test server spawner when calling method
     # LaunchChromeTestServerSpawner and allocate port for test server when
@@ -166,7 +163,6 @@ class BaseTestRunner(object):
       self._http_server.ShutdownHttpServer()
     if self._spawning_server:
       self._spawning_server.Stop()
-    self.flags.Restore()
 
   def CleanupSpawningServerState(self):
     """Tells the spawning server to clean up any state.

@@ -4,6 +4,7 @@
 
 """Defines a set of constants shared by test runners and other scripts."""
 
+import collections
 import os
 import subprocess
 import sys
@@ -14,22 +15,19 @@ DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
 EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, os.pardir,
                                                  os.pardir))
+
+# TODO(craigdh): Remove these once references have been removed downstream.
 CHROME_PACKAGE = 'com.google.android.apps.chrome'
 CHROME_ACTIVITY = 'com.google.android.apps.chrome.Main'
-CHROME_DEVTOOLS_SOCKET = 'chrome_devtools_remote'
 
 CHROME_STABLE_PACKAGE = 'com.android.chrome'
 CHROME_BETA_PACKAGE = 'com.chrome.beta'
-
-CHROME_TESTS_PACKAGE = 'com.google.android.apps.chrome.tests'
 
 LEGACY_BROWSER_PACKAGE = 'com.google.android.browser'
 LEGACY_BROWSER_ACTIVITY = 'com.android.browser.BrowserActivity'
 
 CONTENT_SHELL_PACKAGE = 'org.chromium.content_shell_apk'
 CONTENT_SHELL_ACTIVITY = 'org.chromium.content_shell_apk.ContentShellActivity'
-
-CHROME_SHELL_PACKAGE = 'org.chromium.chrome.browser.test'
 
 CHROMIUM_TEST_SHELL_PACKAGE = 'org.chromium.chrome.testshell'
 CHROMIUM_TEST_SHELL_ACTIVITY = (
@@ -38,14 +36,50 @@ CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET = 'chromium_testshell_devtools_remote'
 CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR = os.path.join(
     DIR_SOURCE_ROOT, 'chrome', 'android')
 
-GTEST_TEST_PACKAGE_NAME = 'org.chromium.native_test'
-GTEST_TEST_ACTIVITY_NAME = 'org.chromium.native_test.ChromeNativeTestActivity'
-GTEST_COMMAND_LINE_FILE = 'chrome-native-tests-command-line'
 
-BROWSERTEST_TEST_PACKAGE_NAME = 'org.chromium.content_browsertests_apk'
-BROWSERTEST_TEST_ACTIVITY_NAME = (
-    'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity')
-BROWSERTEST_COMMAND_LINE_FILE = 'content-browser-tests-command-line'
+PackageInfo = collections.namedtuple('PackageInfo',
+    ['package', 'activity', 'cmdline_file', 'devtools_socket',
+     'test_package'])
+
+PACKAGE_INFO = {
+    'chrome': PackageInfo(
+        CHROME_PACKAGE,
+        CHROME_ACTIVITY,
+        '/data/local/chrome-command-line',
+        'chrome_devtools_remote',
+        'com.google.android.apps.chrome.tests'),
+    'legacy_browser': PackageInfo(
+        LEGACY_BROWSER_PACKAGE,
+        LEGACY_BROWSER_ACTIVITY,
+        None,
+        None,
+        None),
+    'content_shell': PackageInfo(
+        CONTENT_SHELL_PACKAGE,
+        CONTENT_SHELL_ACTIVITY,
+        '/data/local/tmp/content-shell-command-line',
+        None,
+        None),
+    'chromium_test_shell': PackageInfo(
+        CHROMIUM_TEST_SHELL_PACKAGE,
+        CHROMIUM_TEST_SHELL_ACTIVITY,
+        '/data/local/tmp/chromium-testshell-command-line',
+        CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET,
+        'org.chromium.chrome.testshell.tests'),
+    'gtest': PackageInfo(
+        'org.chromium.native_test',
+        'org.chromium.native_test.ChromeNativeTestActivity',
+        '/data/local/tmp/chrome-native-tests-command-line',
+        None,
+        None),
+    'content_browsertests': PackageInfo(
+        'org.chromium.content_browsertests_apk',
+        'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity',
+        '/data/local/tmp/content-browser-tests-command-line',
+        None,
+        None),
+}
+
 
 # Ports arrangement for various test servers used in Chrome for Android.
 # Lighttpd server will attempt to use 9000 as default port, if unavailable it

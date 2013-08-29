@@ -11,6 +11,7 @@ import time
 
 from pylib import android_commands
 from pylib import constants
+from pylib import flag_changer
 from pylib import json_perf_parser
 from pylib import perf_tests_helper
 from pylib import valgrind_tools
@@ -71,6 +72,14 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
     self.coverage_dir = test_options.coverage_dir
+    # Use the correct command line file for the package under test.
+    cmdline_file = [a.cmdline_file for a in constants.PACKAGE_INFO.itervalues()
+                    if a.test_package == self.test_pkg.GetPackageName()]
+    assert len(cmdline_file) < 2, 'Multiple packages have the same test package'
+    if len(cmdline_file) and cmdline_file[0]:
+      self.flags = flag_changer.FlagChanger(self.adb, cmdline_file[0])
+    else:
+      self.flags = flag_changer.FlagChanger(self.adb)
 
   #override
   def InstallTestPackage(self):
@@ -141,10 +150,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.ports_to_forward:
       self._ForwardPorts([(port, port) for port in self.ports_to_forward])
-    self.flags.AddFlags(['--enable-test-intents'])
+    self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
+    self.flags.Restore()
     if self.ports_to_forward:
       self._UnmapPorts([(port, port) for port in self.ports_to_forward])
     super(TestRunner, self).TearDown()
