@@ -71,6 +71,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void CreateNewTab() OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual bool IsTabShowingWebViewModalDialog(int index) OVERRIDE;
   virtual void OnStartedDraggingTabs() OVERRIDE;
   virtual void OnStoppedDraggingTabs() OVERRIDE;
 

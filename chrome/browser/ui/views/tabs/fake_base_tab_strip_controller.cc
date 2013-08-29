@@ -115,6 +115,10 @@ bool FakeBaseTabStripController::IsIncognito() {
 void FakeBaseTabStripController::LayoutTypeMaybeChanged() {
 }
 
+bool FakeBaseTabStripController::IsTabShowingWebViewModalDialog(int index) {
+  return false;
+}
+
 void FakeBaseTabStripController::OnStartedDraggingTabs() {
 }
 

@@ -1127,6 +1127,16 @@ void TabStrip::MaybeStartDrag(
       gfx::Screen::GetScreenFor(widget->GetNativeView())->GetNumDisplays() == 1)
     detach_behavior = TabDragController::NOT_DETACHABLE;
 
+#if defined(OS_CHROMEOS)
+  // TODO(wittman): This is a temporary workaround to avoid crbug.com/275274 and
+  // crbug.com/274856 in M30 and should be reverted after merge, as we have a
+  // solution to these bugs in trunk.
+  //
+  // Don't allow detaching if the tab has a WebContentsModalDialogView opened.
+  if (controller()->IsTabShowingWebViewModalDialog(GetModelIndexOfTab(tab)))
+    detach_behavior = TabDragController::NOT_DETACHABLE;
+#endif
+
 #if defined(OS_WIN)
   // It doesn't make sense to drag tabs out on Win8's single window Metro mode.
   if (win8::IsSingleWindowMetroMode())
