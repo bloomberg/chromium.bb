@@ -40,8 +40,8 @@ bool ConvertCharToKeyCode(
     std::string* error_msg) {
   short vkey_and_modifiers = ::VkKeyScanW(key);
   bool translated = vkey_and_modifiers != -1 &&
-                    LOBYTE(vkey_and_modifiers) != -1 &&
-                    HIBYTE(vkey_and_modifiers) != -1;
+                    LOBYTE(vkey_and_modifiers) != 0xFF &&
+                    HIBYTE(vkey_and_modifiers) != 0xFF;
   *error_msg = std::string();
   if (translated) {
     *key_code = static_cast<ui::KeyboardCode>(LOBYTE(vkey_and_modifiers));
