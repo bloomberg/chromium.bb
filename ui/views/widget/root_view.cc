@@ -122,8 +122,7 @@ void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  for (; v && v != this && !event->handled(); v = v->parent())
-    DispatchEventToTarget(v, event);
+  DispatchKeyEventStartAt(v, event);
 }
 
 void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
@@ -695,6 +694,19 @@ void RootView::NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
     // incorrect event dispatch.
     MouseEnterExitEvent notify_event(event, type);
     DispatchEventToTarget(p, &notify_event);
+  }
+}
+
+
+void RootView::DispatchKeyEventStartAt(View* view, ui::KeyEvent* event) {
+  if (event->handled() || !view)
+    return;
+
+  for (; view && view != this; view = view->parent()) {
+    DispatchEventToTarget(view, event);
+    // Do this check here rather than in the if as |view| may have been deleted.
+    if (event->handled())
+      return;
   }
 }
 

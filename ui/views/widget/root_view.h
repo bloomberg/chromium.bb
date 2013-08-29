@@ -16,6 +16,7 @@
 namespace views {
 
 namespace test {
+class RootViewTestHelper;
 class WidgetTest;
 }
 
@@ -126,6 +127,7 @@ class VIEWS_EXPORT RootView : public View,
  private:
   friend class ::views::View;
   friend class ::views::Widget;
+  friend class ::views::test::RootViewTestHelper;
   friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
@@ -151,6 +153,10 @@ class VIEWS_EXPORT RootView : public View,
                                    ui::EventType type,
                                    View* view,
                                    View* sibling);
+
+  // Dispatches the KeyEvent to |view| and ancestors until the event is
+  // handled.
+  void DispatchKeyEventStartAt(View* view, ui::KeyEvent* event);
 
   // Overridden from ui::EventDispatcherDelegate:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;

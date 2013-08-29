@@ -623,6 +623,7 @@
         'test/test_widget_observer.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
+        'widget/root_view_test_helper.h',
       ],
       'conditions': [
         ['use_aura==1', {
@@ -740,20 +741,21 @@
         'ime/input_method_bridge_unittest.cc',
         'layout/box_layout_unittest.cc',
         'layout/grid_layout_unittest.cc',
+        'run_all_unittests.cc',
         'touchui/touch_selection_controller_impl_unittest.cc',
         'view_model_unittest.cc',
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
-        'window/dialog_client_view_unittest.cc',
-        'window/dialog_delegate_unittest.cc',
         'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
+        'widget/root_view_unittest.cc',
         'widget/widget_unittest.cc',
         'widget/window_reorderer_unittest.cc',
-        'run_all_unittests.cc',
+        'window/dialog_client_view_unittest.cc',
+        'window/dialog_delegate_unittest.cc',
       ],
       'conditions': [
         ['chromeos==0', {
