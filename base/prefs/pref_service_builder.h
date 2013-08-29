@@ -29,6 +29,7 @@ class BASE_PREFS_EXPORT PrefServiceBuilder {
   // Functions for setting the various parameters of the PrefService to build.
   // These take ownership of the |store| parameter.
   PrefServiceBuilder& WithManagedPrefs(PrefStore* store);
+  PrefServiceBuilder& WithManagedUserPrefs(PrefStore* store);
   PrefServiceBuilder& WithExtensionPrefs(PrefStore* store);
   PrefServiceBuilder& WithCommandLinePrefs(PrefStore* store);
   PrefServiceBuilder& WithUserPrefs(PersistentPrefStore* store);
@@ -55,6 +56,7 @@ class BASE_PREFS_EXPORT PrefServiceBuilder {
   virtual void ResetDefaultState();
 
   scoped_refptr<PrefStore> managed_prefs_;
+  scoped_refptr<PrefStore> managed_user_prefs_;
   scoped_refptr<PrefStore> extension_prefs_;
   scoped_refptr<PrefStore> command_line_prefs_;
   scoped_refptr<PersistentPrefStore> user_prefs_;

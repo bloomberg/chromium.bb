@@ -59,6 +59,7 @@ PrefServiceSyncable* PrefServiceSyncableBuilder::CreateSyncable(
   PrefServiceSyncable* pref_service = new PrefServiceSyncable(
       pref_notifier,
       new PrefValueStore(managed_prefs_.get(),
+                         managed_user_prefs_.get(),
                          extension_prefs_.get(),
                          command_line_prefs_.get(),
                          user_prefs_.get(),

@@ -32,6 +32,11 @@ PrefServiceBuilder& PrefServiceBuilder::WithManagedPrefs(PrefStore* store) {
   return *this;
 }
 
+PrefServiceBuilder& PrefServiceBuilder::WithManagedUserPrefs(PrefStore* store) {
+  managed_user_prefs_ = store;
+  return *this;
+}
+
 PrefServiceBuilder& PrefServiceBuilder::WithExtensionPrefs(PrefStore* store) {
   extension_prefs_ = store;
   return *this;
@@ -77,6 +82,7 @@ PrefService* PrefServiceBuilder::Create(PrefRegistry* pref_registry) {
   PrefService* pref_service =
       new PrefService(pref_notifier,
                       new PrefValueStore(managed_prefs_.get(),
+                                         managed_user_prefs_.get(),
                                          extension_prefs_.get(),
                                          command_line_prefs_.get(),
                                          user_prefs_.get(),
@@ -93,6 +99,7 @@ PrefService* PrefServiceBuilder::Create(PrefRegistry* pref_registry) {
 
 void PrefServiceBuilder::ResetDefaultState() {
   managed_prefs_ = NULL;
+  managed_user_prefs_ = NULL;
   extension_prefs_ = NULL;
   command_line_prefs_ = NULL;
   user_prefs_ = NULL;

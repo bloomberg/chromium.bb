@@ -24,6 +24,7 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
           new PrefValueStore(managed_prefs,
                              NULL,
                              NULL,
+                             NULL,
                              user_prefs,
                              recommended_prefs,
                              pref_registry->defaults().get(),
@@ -39,12 +40,11 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
 
 TestingPrefServiceSimple::TestingPrefServiceSimple()
     : TestingPrefServiceBase<PrefService, PrefRegistry>(
-        new TestingPrefStore(),
-        new TestingPrefStore(),
-        new TestingPrefStore(),
-        new PrefRegistrySimple(),
-        new PrefNotifierImpl()) {
-}
+          new TestingPrefStore(),
+          new TestingPrefStore(),
+          new TestingPrefStore(),
+          new PrefRegistrySimple(),
+          new PrefNotifierImpl()) {}
 
 TestingPrefServiceSimple::~TestingPrefServiceSimple() {
 }
