@@ -47,6 +47,7 @@ static const char kTetheringUnbind[] = "Tethering.unbind";
 
 static const char kChromeProductName[] = "Chrome";
 static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
+const int kMinVersionPortForwarding = 28;
 
 class SocketTunnel {
  public:
@@ -236,6 +237,10 @@ static bool IsVersionLower(const ParsedVersion& left,
     left.begin(), left.end(), right.begin(), right.end());
 }
 
+static bool IsPortForwardingSupported(const ParsedVersion& version) {
+  return !version.empty() && version[0] >= kMinVersionPortForwarding;
+}
+
 static std::string FindBestSocketForTethering(
     const DevToolsAdbBridge::RemoteBrowsers browsers) {
   std::string socket;
@@ -245,6 +250,7 @@ static std::string FindBestSocketForTethering(
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser = *it;
     ParsedVersion current_version = ParseVersion(browser->version());
     if (browser->product() == kChromeProductName &&
+        IsPortForwardingSupported(current_version) &&
         IsVersionLower(newest_version, current_version)) {
       socket = browser->socket();
       newest_version = current_version;

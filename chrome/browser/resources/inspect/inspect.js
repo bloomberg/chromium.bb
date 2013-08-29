@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var MIN_VERSION_TAB_CLOSE = 25;
+var MIN_VERSION_TARGET_ID = 26;
+var MIN_VERSION_NEW_TAB = 29;
+var MIN_VERSION_TAB_ACTIVATE = 30;
+
 function inspect(data) {
   chrome.send('inspect', [data]);
 }
@@ -236,7 +241,7 @@ function populateDeviceLists(devices) {
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
         browserSection.appendChild(browserHeader);
 
-        if (majorChromeVersion >= 29) {
+        if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
           var newPage = document.createElement('div');
           newPage.className = 'open';
 
@@ -273,17 +278,27 @@ function populateDeviceLists(devices) {
       pageList.textContent = '';
       for (var p = 0; p < browser.pages.length; p++) {
         var page = browser.pages[p];
+        // Attached targets have no unique id until Chrome 26.
+        // For such targets it is impossible:
+        //  - to issue 'close' command,
+        //  - to activate existing DevTools window.
+        page.hasUniqueId = !page.attached ||
+            majorChromeVersion >= MIN_VERSION_TARGET_ID;
         var row = addTargetToList(
             page, pageList, ['faviconUrl', 'name', 'url', 'description']);
         if (isChrome) {
-          if (majorChromeVersion >= 30) {
+          if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE) {
             row.appendChild(createActionLink(
                 'activate', activate.bind(null, page), false));
           }
           row.appendChild(createActionLink(
               'reload', reload.bind(null, page), page.attached));
-          row.appendChild(createActionLink(
-              'close', terminate.bind(null, page), page.attached));
+          if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
+            row.appendChild(createActionLink(
+                'close',
+                terminate.bind(null, page),
+                page.attached || !page.hasUniqueId));
+          }
         }
       }
     }
@@ -386,7 +401,8 @@ function addTargetToList(data, list, properties) {
   if (description)
     addWebViewDescription(description, row);
 
-  row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
+  row.appendChild(createActionLink(
+      'inspect', inspect.bind(null, data), !data.hasUniqueId));
 
   list.appendChild(row);
   return row;

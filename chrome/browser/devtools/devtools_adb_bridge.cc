@@ -674,6 +674,14 @@ DevToolsAdbBridge::RemotePage::RemotePage(
   value.GetString("webSocketDebuggerUrl", &debug_url_);
   value.GetString("devtoolsFrontendUrl", &frontend_url_);
 
+  if (id_.empty() && !debug_url_.empty())  {
+    // Target id is not available until Chrome 26. Use page id at the end of
+    // debug_url_ instead. For attached targets the id will remain empty.
+    std::vector<std::string> parts;
+    Tokenize(debug_url_, "/", &parts);
+    id_ = parts[parts.size()-1];
+  }
+
   if (debug_url_.find("ws://") == 0)
     debug_url_ = debug_url_.substr(5);
   else
