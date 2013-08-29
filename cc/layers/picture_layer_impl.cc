@@ -148,11 +148,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
-  bool clipped = false;
-  gfx::QuadF target_quad = MathUtil::MapQuad(
-      draw_transform(),
-      gfx::QuadF(rect),
-      &clipped);
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(
         tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
@@ -285,7 +280,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     DCHECK(draw_quad);
     quad_sink->Append(draw_quad.Pass(), append_quads_data);
 
-    if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
+    if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());
   }
 
