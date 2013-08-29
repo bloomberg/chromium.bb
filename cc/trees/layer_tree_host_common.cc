@@ -1455,8 +1455,10 @@ static void CalculateDrawPropertiesInternal(
     // Check back-face visibility before continuing with this surface and its
     // subtree
     if (!layer->double_sided() && TransformToParentIsKnown(layer) &&
-        IsSurfaceBackFaceVisible(layer, combined_transform))
+        IsSurfaceBackFaceVisible(layer, combined_transform)) {
+      layer->ClearRenderSurface();
       return;
+    }
 
     RenderSurfaceType* render_surface = CreateOrReuseRenderSurface(layer);
 

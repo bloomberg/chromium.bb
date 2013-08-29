@@ -164,6 +164,10 @@ class LayerTreeHostCommonTestBase {
                                    false);
   }
 
+  RenderSurfaceLayerList* render_surface_layer_list() const {
+    return render_surface_layer_list_.get();
+  }
+
  private:
   scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
 };
@@ -8904,6 +8908,68 @@ TEST_F(LayerTreeHostCommonTest,
   // Sanity check our num_unclipped_descendants values.
   EXPECT_EQ(1, render_surface1->num_unclipped_descendants());
   EXPECT_EQ(0, render_surface2->num_unclipped_descendants());
+}
+
+TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> render_surface = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(render_surface);
+  render_surface->AddChild(child);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  SetLayerPropertiesForTesting(render_surface.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_transform,
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+
+  root->SetPreserves3d(true);
+  render_surface->SetDoubleSided(false);
+  render_surface->SetForceRenderSurface(true);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(2u, render_surface_layer_list()->size());
+  EXPECT_EQ(1u,
+            render_surface_layer_list()->at(0)
+                ->render_surface()->layer_list().size());
+  EXPECT_EQ(1u,
+            render_surface_layer_list()->at(1)
+                ->render_surface()->layer_list().size());
+
+  gfx::Transform rotation_transform = identity_transform;
+  rotation_transform.RotateAboutXAxis(180.0);
+
+  render_surface->SetTransform(rotation_transform);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(1u, render_surface_layer_list()->size());
+  EXPECT_EQ(0u,
+            render_surface_layer_list()->at(0)
+                ->render_surface()->layer_list().size());
 }
 
 }  // namespace
