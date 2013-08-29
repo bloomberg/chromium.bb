@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/auto_window_management.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
@@ -38,66 +39,6 @@ bool IsValidBrowser(Browser* browser, const gfx::Rect& bounds_in_screen) {
           browser->window()->GetNativeWindow() &&
           bounds_in_screen.Intersects(
               browser->window()->GetNativeWindow()->GetBoundsInScreen()));
-}
-
-// Check if the window was not created as popup or as panel, it is
-// on the screen defined by |bounds_in_screen| and visible.
-bool IsValidToplevelWindow(aura::Window* window,
-                           const gfx::Rect& bounds_in_screen) {
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator iter = ash_browser_list->begin();
-       iter != ash_browser_list->end();
-       ++iter) {
-    Browser* browser = *iter;
-    if (browser && browser->window() &&
-        browser->window()->GetNativeWindow() == window) {
-      return IsValidBrowser(browser, bounds_in_screen);
-    }
-  }
-  // A window which has no browser associated with it is probably not a window
-  // of which we want to copy the size from.
-  return false;
-}
-
-// Get the first open (non minimized) window which is on the screen defined
-// by |bounds_in_screen| and visible.
-aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
-  // Get the active window.
-  aura::Window* window = ash::wm::GetActiveWindow();
-  if (window && window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      window->IsVisible() && IsValidToplevelWindow(window, bounds_in_screen)) {
-    return window;
-  }
-
-  // Get a list of all windows.
-  const std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList(false);
-
-  if (windows.empty())
-    return NULL;
-
-  aura::Window::Windows::const_iterator iter = windows.begin();
-  // Find the index of the current window.
-  if (window)
-    iter = std::find(windows.begin(), windows.end(), window);
-
-  int index = (iter == windows.end()) ? 0 : (iter - windows.begin());
-
-  // Scan the cycle list backwards to see which is the second topmost window
-  // (and so on). Note that we might cycle a few indices twice if there is no
-  // suitable window. However - since the list is fairly small this should be
-  // very fast anyways.
-  for (int i = index + windows.size(); i >= 0; i--) {
-    aura::Window* window = windows[i % windows.size()];
-    if (window && window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-        bounds_in_screen.Intersects(window->GetBoundsInScreen()) &&
-        window->IsVisible()
-        && IsValidToplevelWindow(window, bounds_in_screen)) {
-      return window;
-    }
-  }
-  return NULL;
 }
 
 // Return the number of valid top level windows on the screen defined by
@@ -180,13 +121,12 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
   if (browser_ && browser_->is_type_tabbed()) {
     aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
     // Always open new window in the active display.
-    gfx::Rect active_area = active->GetBoundsInScreen();
     gfx::Rect work_area =
-        screen_->GetDisplayMatching(active_area).work_area();
+        screen_->GetDisplayMatching(active->GetBoundsInScreen()).work_area();
 
     // This is a window / app. See if there is no window and try to place it.
     int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
-    aura::Window* top_window = GetTopWindow(work_area);
+    aura::Window* top_window = ash::GetTopWindowForNewWindow(active);
     // Our window should not have any impact if we are already on top.
     if (browser_->window() &&
         top_window == browser_->window()->GetNativeWindow())
@@ -220,16 +160,10 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     if (maximized)
       return true;
 
-    // Use the size of the other window, and mirror the location to the
-    // opposite side. Then make sure that it is inside our work area
-    // (if possible).
+    // Use the size of the other window. The window's bound will be rearranged
+    // in ash::WorkspaceLayoutManager using this location.
     *bounds_in_screen = top_window->GetBoundsInScreen();
 
-    bool move_right =
-        bounds_in_screen->CenterPoint().x() < work_area.CenterPoint().x();
-
-    MoveRect(work_area, *bounds_in_screen, move_right);
-    bounds_in_screen->AdjustToFit(work_area);
     return true;
   }
 

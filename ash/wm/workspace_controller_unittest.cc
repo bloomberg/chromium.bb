@@ -101,15 +101,18 @@ class WorkspaceControllerTest : public test::AshTestBase {
     return window;
   }
 
-  aura::Window* CreateAppTestWindow(aura::Window* parent) {
-    aura::Window* window = new aura::Window(NULL);
-    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    window->SetType(aura::client::WINDOW_TYPE_POPUP);
-    window->Init(ui::LAYER_TEXTURED);
-    if (!parent)
-      SetDefaultParentByPrimaryRootWindow(window);
-    else
-      parent->AddChild(window);
+  aura::Window* CreateBrowserLikeWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateTestWindow();
+    window->SetBounds(bounds);
+    SetTrackedByWorkspace(window, true);
+    wm::SetWindowPositionManaged(window, true);
+    window->Show();
+    return window;
+  }
+
+  aura::Window* CreatePopupLikeWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateTestWindowInShellWithBounds(bounds);
+    window->Show();
     return window;
   }
 
@@ -718,9 +721,64 @@ TEST_F(WorkspaceControllerTest, TrackedByWorkspace) {
   EXPECT_EQ(w1->parent(), w2->parent());
 }
 
+// Test the placement of newly created windows.
+TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
+  if (!SupportsHostWindowResize())
+    return;
+  UpdateDisplay("1600x1200");
+  // Creating a popup handler here to make sure it does not interfere with the
+  // existing windows.
+  gfx::Rect source_browser_bounds(16, 32, 640, 320);
+  scoped_ptr<aura::Window> browser_window(CreateBrowserLikeWindow(
+      source_browser_bounds));
+
+  // Creating a popup to make sure it does not interfere with the positioning.
+  scoped_ptr<aura::Window> browser_popup(CreatePopupLikeWindow(
+      gfx::Rect(16, 32, 128, 256)));
+
+  browser_window->Show();
+  browser_popup->Show();
+
+  { // With a shown window it's size should get returned.
+    scoped_ptr<aura::Window> new_browser_window(CreateBrowserLikeWindow(
+        source_browser_bounds));
+    // The position should be right flush.
+    EXPECT_EQ("960,32 640x320", new_browser_window->bounds().ToString());
+  }
+
+  { // With the window shown - but more on the right side then on the left
+    // side (and partially out of the screen), it should default to the other
+    // side and inside the screen.
+    gfx::Rect source_browser_bounds(gfx::Rect(1000, 600, 640, 320));
+    browser_window->SetBounds(source_browser_bounds);
+
+    scoped_ptr<aura::Window> new_browser_window(CreateBrowserLikeWindow(
+        source_browser_bounds));
+    // The position should be left & bottom flush.
+    EXPECT_EQ("0,600 640x320", new_browser_window->bounds().ToString());
+
+    // If the other window was already beyond the point to get right flush
+    // it will remain where it is.
+    EXPECT_EQ("1000,600 640x320", browser_window->bounds().ToString());
+  }
+
+  { // Make sure that popups do not get changed.
+    scoped_ptr<aura::Window> new_popup_window(CreatePopupLikeWindow(
+        gfx::Rect(50, 100, 300, 150)));
+    EXPECT_EQ("50,100 300x150", new_popup_window->bounds().ToString());
+  }
+
+  browser_window->Hide();
+  { // If a window is there but not shown the default should be centered.
+    scoped_ptr<aura::Window> new_browser_window(CreateBrowserLikeWindow(
+        gfx::Rect(50, 100, 300, 150)));
+    EXPECT_EQ("650,100 300x150", new_browser_window->bounds().ToString());
+  }
+}
+
 // Test the basic auto placement of one and or two windows in a "simulated
 // session" of sequential window operations.
-TEST_F(WorkspaceControllerTest, BasicAutoPlacing) {
+TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   // Test 1: In case there is no manageable window, no window should shift.
 
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
@@ -821,7 +879,7 @@ TEST_F(WorkspaceControllerTest, TestUserMovedWindowRepositioning) {
   // positionable again (user movement cleared).
   window2->Show();
 
-  // |window1| should be flush left and |window3| flush right.
+  // |window1| should be flush left and |window2| flush right.
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_EQ(
       base::IntToString(desktop_area.width() - window2->bounds().width()) +
@@ -835,6 +893,54 @@ TEST_F(WorkspaceControllerTest, TestUserMovedWindowRepositioning) {
   window2->Hide();
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window1.get()));
+}
+
+// Test if the single window will be restored at original position.
+TEST_F(WorkspaceControllerTest, TestSingleWindowsRestoredBounds) {
+  scoped_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(110, 110, 100, 100)));
+  scoped_ptr<aura::Window> window3(
+      CreateTestWindowInShellWithBounds(gfx::Rect(120, 120, 100, 100)));
+  window1->Hide();
+  window2->Hide();
+  window3->Hide();
+  ash::wm::SetWindowPositionManaged(window1.get(), true);
+  ash::wm::SetWindowPositionManaged(window2.get(), true);
+  ash::wm::SetWindowPositionManaged(window3.get(), true);
+
+  window1->Show();
+  wm::ActivateWindow(window1.get());
+  window2->Show();
+  wm::ActivateWindow(window2.get());
+  window3->Show();
+  wm::ActivateWindow(window3.get());
+  EXPECT_EQ(0, window1->bounds().x());
+  EXPECT_EQ(window2->GetRootWindow()->bounds().right(),
+            window2->bounds().right());
+  EXPECT_EQ(0, window3->bounds().x());
+
+  window1->Hide();
+  EXPECT_EQ(window2->GetRootWindow()->bounds().right(),
+            window2->bounds().right());
+  EXPECT_EQ(0, window3->bounds().x());
+
+  // Being a single window will retore the original location.
+  window3->Hide();
+  wm::ActivateWindow(window2.get());
+  EXPECT_EQ("110,110 100x100", window2->bounds().ToString());
+
+  // Showing the 3rd will push the 2nd window left.
+  window3->Show();
+  wm::ActivateWindow(window3.get());
+  EXPECT_EQ(0, window2->bounds().x());
+  EXPECT_EQ(window3->GetRootWindow()->bounds().right(),
+            window3->bounds().right());
+
+  // Being a single window will retore the original location.
+  window2->Hide();
+  EXPECT_EQ("120,120 100x100", window3->bounds().ToString());
 }
 
 // Test that user placed windows go back to their user placement after the user

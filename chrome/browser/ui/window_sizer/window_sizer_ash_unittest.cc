@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
-
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
@@ -11,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
@@ -21,7 +21,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 
-typedef ash::test::AshTestBase WindowSizerTest;
+typedef ash::test::AshTestBase WindowSizerAshTest;
 
 namespace {
 
@@ -61,6 +61,8 @@ class TestBrowserWindowAura : public TestBrowserWindow {
     Browser::CreateParams create_params = params;
     create_params.window = this;
     browser_.reset(new Browser(create_params));
+    if (browser_->is_type_tabbed() || browser_->is_app())
+      ash::wm::SetWindowPositionManaged(native_window_.get(), true);
   }
 
  private:
@@ -92,7 +94,7 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
 
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.
-TEST_F(WindowSizerTest, DefaultSizeCase) {
+TEST_F(WindowSizerAshTest, DefaultSizeCase) {
   int grid = WindowSizer::kDesktopBorderSize;
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
@@ -214,7 +216,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
 
 // Test that the next opened window is positioned appropriately given the
 // bounds of an existing window of the same type.
-TEST_F(WindowSizerTest, LastWindowBoundsCase) {
+TEST_F(WindowSizerAshTest, LastWindowBoundsCase) {
   { // normal, in the middle of the screen somewhere.
     gfx::Rect window_bounds;
     GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
@@ -272,7 +274,7 @@ TEST_F(WindowSizerTest, LastWindowBoundsCase) {
 }
 
 // Test that the window opened is sized appropriately given persisted sizes.
-TEST_F(WindowSizerTest, PersistedBoundsCase) {
+TEST_F(WindowSizerAshTest, PersistedBoundsCase) {
   { // normal, in the middle of the screen somewhere.
     gfx::Rect initial_bounds(WindowSizer::kDesktopBorderSize,
                              WindowSizer::kDesktopBorderSize, 500, 400);
@@ -367,7 +369,7 @@ TEST_F(WindowSizerTest, PersistedBoundsCase) {
 // are run on Mac, and the *WithNonAggressiveRepositioning tests are run on
 // other platforms.
 
-TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
+TEST_F(WindowSizerAshTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   { // taskbar on left.
     gfx::Rect window_bounds;
     GetWindowBounds(p1024x768, taskbar_left_work_area, gfx::Rect(),
@@ -442,7 +444,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 }
 
 // Test the placement of newly created windows.
-TEST_F(WindowSizerTest, PlaceNewWindows) {
+TEST_F(WindowSizerAshTest, PlaceNewWindows) {
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -473,46 +475,7 @@ TEST_F(WindowSizerTest, PlaceNewWindows) {
       gfx::Rect(32, 48, 256, 512),
       Browser::CreateParams(Browser::TYPE_POPUP, profile.get(),
                             chrome::HOST_DESKTOP_TYPE_ASH)));
-
   browser_window->Show();
-  { // With a shown window it's size should get returned.
-    gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_s1600x1200,
-                    PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
-    // The position should be right flush.
-    EXPECT_EQ("960,32 640x320", window_bounds.ToString());
-  }
-
-  { // With the window shown - but more on the right side then on the left
-    // side (and partially out of the screen), it should default to the other
-    // side and inside the screen.
-    browser_window->GetNativeWindow()->SetBounds(
-        gfx::Rect(1000, 600, 640, 320));
-    gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_s1600x1200,
-                    PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
-    // The position should be left & bottom flush.
-    EXPECT_EQ("0,600 640x320", window_bounds.ToString());
-  }
-
-  { // If the second windows right side is already over the right side of the
-    // screen, it will not move back into the screen.
-    browser_window->GetNativeWindow()->SetBounds(
-        gfx::Rect(1000, 600, 640, 320));
-    gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(),
-                    gfx::Rect(50, 100, 300, 150), bottom_s1600x1200,
-                    PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
-    // The position should be left & bottom flush.
-    EXPECT_EQ("0,600 640x320", window_bounds.ToString());
-    // If the other window was already beyond the point to get right flush
-    // it will remain where it is.
-    EXPECT_EQ("1000,600 640x320",
-              browser_window->GetNativeWindow()->bounds().ToString());
-  }
-
   { // Make sure that popups do not get changed.
     gfx::Rect window_bounds;
     GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(),
@@ -551,7 +514,7 @@ TEST_F(WindowSizerTest, PlaceNewWindows) {
 // Test the placement of newly created windows on an empty desktop.
 // This test supplements "PlaceNewWindows" by testing the creation of a newly
 // created browser window on an empty desktop.
-TEST_F(WindowSizerTest, PlaceNewBrowserWindowOnEmptyDesktop) {
+TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -627,9 +590,11 @@ TEST_F(WindowSizerTest, PlaceNewBrowserWindowOnEmptyDesktop) {
 #endif
 
 // Test the placement of newly created windows on multiple dislays.
-TEST_F(WindowSizerTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
+TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
-  const gfx::Rect secondary(1600, 0, 1600, 1200);
+  gfx::Rect primary_bounds = ash::Shell::GetInstance()->GetScreen()->
+      GetPrimaryDisplay().bounds();
+  gfx::Rect secondary_bounds = ash::ScreenAsh::GetSecondaryDisplay().bounds();
 
   ash::Shell::GetInstance()->set_active_root_window(
       ash::Shell::GetPrimaryRootWindow());
@@ -647,7 +612,7 @@ TEST_F(WindowSizerTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
 
   scoped_ptr<BrowserWindow> another_browser_window(CreateTestBrowserWindow(
       CreateTestWindowInShellWithId(1),
-      gfx::Rect(1600 - 200, 10, 300, 300),
+      gfx::Rect(400, 10, 300, 300),
       Browser::CreateParams(profile.get(), chrome::HOST_DESKTOP_TYPE_ASH)));
   another_browser_window->Show();
 
@@ -665,31 +630,36 @@ TEST_F(WindowSizerTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   // First new window should be in the primary.
   {
     gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, secondary,
-                    gfx::Rect(), secondary,
+    GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds,
+                    gfx::Rect(), secondary_bounds,
                     PERSISTED, new_browser_window->browser(),
                     gfx::Rect(), &window_bounds);
-    EXPECT_EQ("0,10 300x300", window_bounds.ToString());
+    // TODO(oshima): Use exact bounds when the window_sizer_ash is
+    // moved to ash and changed to include the result from
+    // RearrangeVisibleWindowOnShow.
+    EXPECT_TRUE(primary_bounds.Contains(window_bounds));
   }
 
   // Move the window to the right side of the secondary display and create a new
-  // window. It should be opened then on the left side on the secondary display.
+  // window. It should be opened then on the secondary display.
   {
     gfx::Display second_display = ash::Shell::GetScreen()->
         GetDisplayNearestPoint(gfx::Point(1600 + 100,10));
     browser_window->GetNativeWindow()->SetBoundsInScreen(
-        gfx::Rect(secondary.CenterPoint().x() + 300, 10, 200, 200),
+        gfx::Rect(secondary_bounds.CenterPoint().x() - 100, 10, 200, 200),
         second_display);
     browser_window->Activate();
     EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
               ash::Shell::GetActiveRootWindow());
-
     gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, secondary,
-                    gfx::Rect(), secondary,
+    GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds,
+                    gfx::Rect(), secondary_bounds,
                     PERSISTED, new_browser_window->browser(),
                     gfx::Rect(), &window_bounds);
-    EXPECT_EQ("1600,10 200x200", window_bounds.ToString());
+    // TODO(oshima): Use exact bounds when the window_sizer_ash is
+    // moved to ash and changed to include the result from
+    // RearrangeVisibleWindowOnShow.
+    EXPECT_TRUE(secondary_bounds.Contains(window_bounds));
   }
 
   // Activate another window in the primary display and create a new window.
@@ -700,16 +670,19 @@ TEST_F(WindowSizerTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
               ash::Shell::GetActiveRootWindow());
 
     gfx::Rect window_bounds;
-    GetWindowBounds(p1600x1200, p1600x1200, secondary,
-                    gfx::Rect(), secondary,
+    GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds,
+                    gfx::Rect(), secondary_bounds,
                     PERSISTED, new_browser_window->browser(),
                     gfx::Rect(), &window_bounds);
-    EXPECT_EQ("0,10 300x300", window_bounds.ToString());
+    // TODO(oshima): Use exact bounds when the window_sizer_ash is
+    // moved to ash and changed to include the result from
+    // RearrangeVisibleWindowOnShow.
+    EXPECT_TRUE(primary_bounds.Contains(window_bounds));
   }
 }
 
 // Test that the show state is properly returned for non default cases.
-TEST_F(WindowSizerTest, TestShowState) {
+TEST_F(WindowSizerAshTest, TestShowState) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
 
   // Creating a browser & window to play with.
@@ -802,7 +775,7 @@ TEST_F(WindowSizerTest, TestShowState) {
 }
 
 // Test that the default show state override behavior is properly handled.
-TEST_F(WindowSizerTest, TestShowStateDefaults) {
+TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
   // Creating a browser & window to play with.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
 

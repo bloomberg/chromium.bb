@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
@@ -39,31 +40,6 @@ bool WindowPositionCanBeManaged(const aura::Window* window) {
           !wm::IsWindowMinimized(window) &&
           !wm::IsWindowMaximized(window) &&
           !wm::HasUserChangedWindowPositionOrSize(window));
-}
-
-// Given a |window|, return the only |other_window| which has an impact on
-// the automated windows location management. If there is more then one window,
-// false is returned, but the |other_window| will be set to the first one
-// found.
-// If the return value is true a single window was found.
-bool GetOtherVisibleAndManageableWindow(const aura::Window* window,
-                                        aura::Window** other_window) {
-  *other_window = NULL;
-  const aura::Window::Windows& windows = window->parent()->children();
-  // Find a single open managed window.
-  for (size_t i = 0; i < windows.size(); i++) {
-    aura::Window* iterated_window = windows[i];
-    if (window != iterated_window &&
-        iterated_window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-        iterated_window->TargetVisibility() &&
-        wm::IsWindowPositionManaged(iterated_window)) {
-      // Bail if we find a second usable window.
-      if (*other_window)
-        return false;
-      *other_window = iterated_window;
-    }
-  }
-  return *other_window != NULL;
 }
 
 // Get the work area for a given |window|.
@@ -137,15 +113,68 @@ void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
     window->SetBounds(bounds);
 }
 
+// Get the first open (non minimized) window which is on the screen defined.
+aura::Window* GetReferenceWindow(const aura::RootWindow* root_window,
+                                 const aura::Window* exclude,
+                                 bool *single_window) {
+  if (single_window)
+    *single_window = true;
+  // Get the active window.
+  aura::Window* active = ash::wm::GetActiveWindow();
+  if (active && active->GetRootWindow() != root_window)
+    active = NULL;
+
+  // Get a list of all windows.
+  const std::vector<aura::Window*> windows =
+      ash::MruWindowTracker::BuildWindowList(false);
+
+  if (windows.empty())
+    return NULL;
+
+  aura::Window::Windows::const_iterator iter = windows.begin();
+  // Find the index of the current active window.
+  if (active)
+    iter = std::find(windows.begin(), windows.end(), active);
+
+  int index = (iter == windows.end()) ? 0 : (iter - windows.begin());
+
+  // Scan the cycle list backwards to see which is the second topmost window
+  // (and so on). Note that we might cycle a few indices twice if there is no
+  // suitable window. However - since the list is fairly small this should be
+  // very fast anyways.
+  aura::Window* found = NULL;
+  for (int i = index + windows.size(); i >= 0; i--) {
+    aura::Window* window = windows[i % windows.size()];
+    if (window != exclude &&
+        window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+        window->GetRootWindow() == root_window &&
+        window->TargetVisibility() &&
+        wm::IsWindowPositionManaged(window)) {
+      if (found && found != window) {
+        // no need to check !signle_window because the function must have
+        // been already returned in the "if (!single_window)" below.
+        *single_window = false;
+        return found;
+      }
+      found = window;
+      // If there is no need to check single window, return now.
+      if (!single_window)
+        return found;
+    }
+  }
+  return found;
+}
+
 } // namespace
 
 void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
   if (!UseAutoWindowManager(removed_window))
     return;
   // Find a single open browser window.
-  aura::Window* other_shown_window = NULL;
-  if (!GetOtherVisibleAndManageableWindow(removed_window,
-                                          &other_shown_window) ||
+  bool single_window;
+  aura::Window* other_shown_window = GetReferenceWindow(
+      removed_window->GetRootWindow(), removed_window, &single_window);
+  if (!other_shown_window || !single_window ||
       !WindowPositionCanBeManaged(other_shown_window))
     return;
   AutoPlaceSingleWindow(other_shown_window, true);
@@ -157,9 +186,11 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
       !added_window->TargetVisibility())
     return;
   // Find a single open managed window.
-  aura::Window* other_shown_window = NULL;
-  if (!GetOtherVisibleAndManageableWindow(added_window,
-                                          &other_shown_window)) {
+  bool single_window;
+  aura::Window* other_shown_window = GetReferenceWindow(
+      added_window->GetRootWindow(), added_window, &single_window);
+
+  if (!other_shown_window) {
     // It could be that this window is the first window joining the workspace.
     if (!WindowPositionCanBeManaged(added_window) || other_shown_window)
       return;
@@ -169,31 +200,44 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
     return;
   }
 
-  // When going from one to two windows both windows loose their "positioned
-  // by user" flags.
-  ash::wm::SetUserHasChangedWindowPositionOrSize(added_window, false);
-  ash::wm::SetUserHasChangedWindowPositionOrSize(other_shown_window, false);
+  gfx::Rect other_bounds = other_shown_window->bounds();
+  gfx::Rect work_area = GetWorkAreaForWindow(added_window);
+  bool move_other_right =
+      other_bounds.CenterPoint().x() > work_area.width() / 2;
 
-  if (WindowPositionCanBeManaged(other_shown_window)) {
-    gfx::Rect work_area = GetWorkAreaForWindow(added_window);
+  // Push the other window to the size only if there are two windows left.
+  if (single_window) {
+    // When going from one to two windows both windows loose their "positioned
+    // by user" flags.
+    ash::wm::SetUserHasChangedWindowPositionOrSize(added_window, false);
+    ash::wm::SetUserHasChangedWindowPositionOrSize(other_shown_window, false);
 
-    // Push away the other window after remembering its current position.
-    gfx::Rect other_bounds = other_shown_window->bounds();
-    ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
+    if (WindowPositionCanBeManaged(other_shown_window)) {
+      // Don't override pre auto managed bounds as the current bounds
+      // may not be original.
+      if (!ash::wm::GetPreAutoManageWindowBounds(other_shown_window))
+        ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
 
-    bool move_right = other_bounds.CenterPoint().x() > work_area.width() / 2;
-    if (MoveRectToOneSide(work_area.width(), move_right, &other_bounds))
-      SetBoundsAnimated(other_shown_window, other_bounds);
-
-    // Remember the current location of the new window and push it also to the
-    // opposite location (if needed).
-    // Since it is just coming into view, we do not need to animate it.
-    gfx::Rect added_bounds = added_window->bounds();
-    ash::wm::SetPreAutoManageWindowBounds(added_window, added_bounds);
-    if (MoveRectToOneSide(work_area.width(), !move_right, &added_bounds))
-      added_window->SetBounds(added_bounds);
+      // Push away the other window after remembering its current position.
+      if (MoveRectToOneSide(work_area.width(), move_other_right, &other_bounds))
+        SetBoundsAnimated(other_shown_window, other_bounds);
+    }
   }
+
+  // Remember the current location of the window if it's new and push
+  // it also to the opposite location if needed.  Since it is just
+  // being shown, we do not need to animate it.
+  gfx::Rect added_bounds = added_window->bounds();
+  if (!ash::wm::GetPreAutoManageWindowBounds(added_window))
+    ash::wm::SetPreAutoManageWindowBounds(added_window, added_bounds);
+  if (MoveRectToOneSide(work_area.width(), !move_other_right, &added_bounds))
+    added_window->SetBounds(added_bounds);
 }
 
 } // namespace internal
+
+aura::Window* GetTopWindowForNewWindow(const aura::RootWindow* root_window) {
+  return internal::GetReferenceWindow(root_window, NULL, NULL);
+}
+
 } // namespace ash

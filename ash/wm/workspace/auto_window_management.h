@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/window.h"
+#include "ash/ash_export.h"
+
+namespace gfx {
+class Rect;
+}
+namespace aura {
+class RootWindow;
+class Window;
+}
 
 namespace ash {
 namespace internal {
@@ -16,5 +24,12 @@ void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window);
 void RearrangeVisibleWindowOnShow(aura::Window* added_window);
 
 } // namespace internal
-} // namespace ash
 
+// Returns the top window used for automated windows location
+// management.
+// TODO(oshima): This is temporarily made public and exported until we
+// move the initial bounds logic in window_sizer_ash.cc into ash.
+ASH_EXPORT aura::Window* GetTopWindowForNewWindow(
+    const aura::RootWindow* root_window);
+
+} // namespace ash
