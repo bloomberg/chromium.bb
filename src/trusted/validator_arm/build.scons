@@ -227,8 +227,8 @@ address_set_test = gtest_env.Command(target='address_set_test.out',
 #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
 
 # TODO(jfb) Remove this, see issue #3217.
-# The rest are ncval and tests, they currently only work on 32bit linux.
-if not env.Bit('linux') or env.Bit('target_x86_64'):
+# The rest are ncval and tests, they currently only work on linux.
+if not env.Bit('linux'):
   Return()
 
 ncval = env.ComponentProgram(
