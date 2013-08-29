@@ -2499,7 +2499,6 @@
             '../third_party/expat/expat.gyp:expat',
             '../third_party/hunspell/hunspell.gyp:hunspell',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../third_party/libusb/libusb.gyp:libusb',
             '../third_party/libyuv/libyuv.gyp:libyuv',
             '../third_party/npapi/npapi.gyp:npapi',

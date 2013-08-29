@@ -72,7 +72,6 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libevent/libevent.gyp:libevent',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',

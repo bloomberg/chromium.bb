@@ -2424,7 +2424,6 @@
             '../third_party/hunspell/hunspell.gyp:hunspell',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
-            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../third_party/npapi/npapi.gyp:npapi',
             '../third_party/re2/re2.gyp:re2',
             '../ui/compositor/compositor.gyp:compositor',
