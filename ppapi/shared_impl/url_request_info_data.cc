@@ -17,7 +17,6 @@ const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
 
 URLRequestInfoData::BodyItem::BodyItem()
     : is_file(false),
-      file_ref_pp_resource(0),
       start_offset(0),
       number_of_bytes(-1),
       expected_last_modified_time(0.0) {
@@ -26,7 +25,6 @@ URLRequestInfoData::BodyItem::BodyItem()
 URLRequestInfoData::BodyItem::BodyItem(const std::string& data)
     : is_file(false),
       data(data),
-      file_ref_pp_resource(0),
       start_offset(0),
       number_of_bytes(-1),
       expected_last_modified_time(0.0) {
@@ -38,8 +36,8 @@ URLRequestInfoData::BodyItem::BodyItem(
     int64_t number_of_bytes,
     PP_Time expected_last_modified_time)
     : is_file(true),
-      file_ref_resource(file_ref),
-      file_ref_pp_resource(file_ref->pp_resource()),
+      file_ref(file_ref),
+      file_ref_host_resource(file_ref->host_resource()),
       start_offset(start_offset),
       number_of_bytes(number_of_bytes),
       expected_last_modified_time(expected_last_modified_time) {

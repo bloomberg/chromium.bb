@@ -12,7 +12,6 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/file_io_state_manager.h"
-#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
 
 namespace ppapi {
@@ -137,8 +136,6 @@ class PPAPI_PROXY_EXPORT FileIOResource
   PP_FileHandle file_handle_;
   PP_FileSystemType file_system_type_;
   FileIOStateManager state_manager_;
-
-  ScopedPPResource file_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIOResource);
 };

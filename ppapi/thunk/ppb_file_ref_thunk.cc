@@ -7,7 +7,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
-#include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
@@ -33,12 +32,7 @@ PP_Resource Create(PP_Resource file_system, const char* path) {
   EnterResourceCreationNoLock enter(instance);
   if (enter.failed())
     return 0;
-  FileRefCreateInfo info;
-  info.file_system_type = enter_file_system.object()->GetType();
-  info.internal_path = std::string(path);
-  info.pending_host_resource_id = 0;
-  info.file_system_plugin_resource = file_system;
-  return enter.functions()->CreateFileRef(instance, info);
+  return enter.functions()->CreateFileRef(instance, file_system, path);
 }
 
 PP_Bool IsFileRef(PP_Resource resource) {

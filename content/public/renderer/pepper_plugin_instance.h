@@ -56,6 +56,11 @@ class PepperPluginInstance {
   // Returns the location of this module.
   virtual base::FilePath GetModulePath() = 0;
 
+  // Returns a reference to a file with the given path.
+  // The returned object will have a refcount of 0 (just like "new").
+  virtual PP_Resource CreateExternalFileReference(
+      const base::FilePath& external_file_path) = 0;
+
   // Creates a PPB_ImageData given a Skia image.
   virtual PP_Resource CreateImage(gfx::ImageSkia* source_image,
                                   float scale) = 0;
@@ -87,6 +92,7 @@ class PepperPluginInstance {
   virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
                            bool from_user_action) = 0;
+
 };
 
 }  // namespace content

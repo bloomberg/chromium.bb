@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/shared_impl/file_ref_detailed_info.h"
 
 class GURL;
 
@@ -60,11 +59,6 @@ class PepperRendererConnection : public BrowserMessageFilter {
       int child_process_id,
       int32_t sequence_num,
       const std::vector<PP_Resource>& resources);
-
-  void OnMsgFileRefSyncGetInfoForRenderer(
-    int child_process_id,
-    const std::vector<PP_Resource>& resources,
-    std::vector<ppapi::FileRefDetailedInfo>* out_infos);
 
   void OnMsgDidCreateInProcessInstance(
       PP_Instance instance,

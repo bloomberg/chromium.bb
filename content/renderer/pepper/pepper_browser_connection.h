@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/shared_impl/file_ref_detailed_info.h"
 
 namespace content {
 
@@ -31,7 +30,10 @@ class PepperBrowserConnection
   typedef base::Callback<void(const std::vector<int>&)>
       PendingResourceIDCallback;
   typedef base::Callback<void(
-      const std::vector<ppapi::FileRefDetailedInfo>&)> FileRefGetInfoCallback;
+      const std::vector<PP_Resource>&,
+      const std::vector<PP_FileSystemType>&,
+      const std::vector<std::string>&,
+      const std::vector<base::FilePath>&)> FileRefGetInfoCallback;
 
   explicit PepperBrowserConnection(RenderView* render_view);
   virtual ~PepperBrowserConnection();
@@ -72,7 +74,10 @@ class PepperBrowserConnection
       const std::vector<int>& pending_resource_host_ids);
   void OnMsgFileRefGetInfoReply(
       int32_t sequence_number,
-      const std::vector<ppapi::FileRefDetailedInfo>& infos);
+      const std::vector<PP_Resource>& resources,
+      const std::vector<PP_FileSystemType>& types,
+      const std::vector<std::string>& file_system_url_specs,
+      const std::vector<base::FilePath>& external_paths);
 
   // Return the next sequence number.
   int32_t GetNextSequence();
