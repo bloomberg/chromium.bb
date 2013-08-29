@@ -268,11 +268,16 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
       PermissionMessage::kVideoCapture },
-    // The permission string for "fileSystem" is only shown when "write" is
-    // present. Read-only access is only granted after the user has been shown
-    // a file chooser dialog and selected a file. Selecting the file is
-    // considered consent to read it.
+    // The permission string for "fileSystem" is only shown when "write" or
+    // "directory" is present. Read-only access is only granted after the user
+    // has been shown a file or directory  chooser dialog and selected a file or
+    // directory . Selecting the file or directory  is considered consent to
+    // read it.
     { APIPermission::kFileSystem, "fileSystem" },
+    { APIPermission::kFileSystemDirectory, "fileSystem.directory",
+      APIPermissionInfo::kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_DIRECTORY,
+      PermissionMessage::kFileSystemDirectory },
     { APIPermission::kFileSystemRetainEntries, "fileSystem.retainEntries" },
     { APIPermission::kFileSystemWrite, "fileSystem.write",
       APIPermissionInfo::kFlagNone,

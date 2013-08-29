@@ -1,0 +1,13 @@
+{
+  "name": "chrome.fileSystem open directory",
+  "version": "0.1",
+  "description": "Test for chrome.fileSystem.chooseFile opening a directory.",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    {"fileSystem": ["write"]}
+  ]
+}

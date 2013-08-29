@@ -261,6 +261,10 @@
     "extension_types": ["extension"],
     "whitelist": [ "2FC374607C2DF285634B67C64A2E356C607091C3" ]
   }],
+  "fileSystem.directory": [{
+    "channel": "trunk",
+    "extension_types": ["platform_app"]
+  }],
   "fileSystem.retainEntries": [{
     "channel": "dev",
     "extension_types": ["platform_app"]

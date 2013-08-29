@@ -133,6 +133,7 @@ class PlatformAppPathLauncher
       CheckWritableFiles(
           paths,
           profile_,
+          false,
           base::Bind(&PlatformAppPathLauncher::OnFileValid, this),
           base::Bind(&PlatformAppPathLauncher::OnFileInvalid, this));
       return;
@@ -283,8 +284,12 @@ class PlatformAppPathLauncher
       return;
     }
 
-    GrantedFileEntry file_entry = CreateFileEntry(
-        profile_, extension_, host->render_process_host()->GetID(), file_path_);
+    GrantedFileEntry file_entry =
+        CreateFileEntry(profile_,
+                        extension_,
+                        host->render_process_host()->GetID(),
+                        file_path_,
+                        false);
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, handler_id_, mime_type, file_entry);
   }

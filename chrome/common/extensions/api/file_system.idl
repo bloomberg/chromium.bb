@@ -38,7 +38,14 @@ namespace fileSystem {
     // Prompts the user to open an existing file or a new file and returns a
     // writable FileEntry on success. Calls using this type will fail unless the
     // application has the 'write' permission under 'fileSystem'.
-    saveFile
+    saveFile,
+
+    // Prompts the user to open a directory and returns a DirectoryEntry on
+    // success. Calls using this type will fail unless the application has the
+    // 'directory' permission under 'fileSystem'. If the application has the
+    // 'write' permission under 'fileSystem', the returned DirectoryEntry will
+    // be writable; otherwise it will be read-only. New in Chrome 31.
+    openDirectory
   };
 
   dictionary ChooseEntryOptions {
@@ -68,36 +75,38 @@ namespace fileSystem {
     boolean? acceptsMultiple;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
-  callback FileEntryCallback = void ([instanceOf=FileEntry] object fileEntry);
-  callback FileEntriesCallback = void (
-      [instanceOf=FileEntry] optional object fileEntry,
+  callback EntryCallback = void ([instanceOf=Entry] object entry);
+  callback EntriesCallback = void (
+      [instanceOf=Entry] optional object entry,
       [instanceOf=FileEntry] optional object[] fileEntries);
   callback IsWritableCallback = void (boolean isWritable);
   callback IsRestorableCallback = void (boolean isRestorable);
 
   interface Functions {
-    // Get the display path of a FileEntry object. The display path is based on
-    // the full path of the file on the local file system, but may be made more
-    // readable for display purposes.
-    static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
+    // Get the display path of an Entry object. The display path is based on
+    // the full path of the file or directory on the local file system, but may
+    // be made more readable for display purposes.
+    static void getDisplayPath([instanceOf=Entry] object entry,
                                GetDisplayPathCallback callback);
 
-    // Get a writable FileEntry from another FileEntry. This call will fail if
-    // the application does not have the 'write' permission under 'fileSystem'.
-    static void getWritableEntry([instanceOf=FileEntry] object fileEntry,
-                                 FileEntryCallback callback);
+    // Get a writable Entry from another Entry. This call will fail if the
+    // application does not have the 'write' permission under 'fileSystem'. If
+    // entry is a DirectoryEntry, this call will fail if the application does
+    // not have the 'directory' permission under 'fileSystem'.
+    static void getWritableEntry([instanceOf=Entry] object entry,
+                                 EntryCallback callback);
 
-    // Gets whether this FileEntry is writable or not.
-    static void isWritableEntry([instanceOf=FileEntry] object fileEntry,
+    // Gets whether this Entry is writable or not.
+    static void isWritableEntry([instanceOf=Entry] object entry,
                                 IsWritableCallback callback);
 
-    // Ask the user to choose a file.
+    // Ask the user to choose a file or directory.
     static void chooseEntry(optional ChooseEntryOptions options,
-                            FileEntriesCallback callback);
+                            EntriesCallback callback);
 
     // Returns the file entry with the given id if it can be restored. This call
     // will fail otherwise. This method is new in Chrome 30.
-    static void restoreEntry(DOMString id, FileEntryCallback callback);
+    static void restoreEntry(DOMString id, EntryCallback callback);
 
     // Returns whether a file entry for the given id can be restored, i.e.
     // whether restoreEntry would succeed with this id now. This method is new
@@ -111,6 +120,6 @@ namespace fileSystem {
     // to dev channel), entries are retained indefinitely. Otherwise, entries
     // are retained only while the app is running and across restarts. This
     // method is new in Chrome 30.
-    static DOMString retainEntry([instanceOf=FileEntry] object fileEntry);
+    static DOMString retainEntry([instanceOf=Entry] object entry);
   };
 };

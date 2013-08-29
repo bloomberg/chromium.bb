@@ -33,6 +33,17 @@ if (window == backgroundPage) {
         var entries = [];
         var hasError = false;
 
+        var getEntryError = function(fileError) {
+          if (!hasError) {
+            hasError = true;
+            lastError.run(
+                'fileSystem.' + functionName,
+                'Error getting fileEntry, code: ' + fileError.code,
+                request.stack,
+                callback);
+          }
+        }
+
         // Loop through the response entries and asynchronously get the
         // FileEntry for each. We use hasError to ensure that only the first
         // error is reported. Note that an error can occur either during the
@@ -46,10 +57,7 @@ if (window == backgroundPage) {
           var fs = GetIsolatedFileSystem(fileSystemId);
 
           try {
-            // TODO(koz): fs.root.getFile() makes a trip to the browser process,
-            // but it might be possible avoid that by calling
-            // WebFrame::createFileEntry().
-            fs.root.getFile(baseName, {}, function(fileEntry) {
+            var getEntryCallback = function(fileEntry) {
               if (hasError)
                 return;
               entryIdManager.registerEntry(id, fileEntry);
@@ -64,16 +72,16 @@ if (window == backgroundPage) {
                   callback(entries[0]);
                 }
               }
-            }, function(fileError) {
-              if (!hasError) {
-                hasError = true;
-                lastError.run(
-                    'fileSystem.' + functionName,
-                    'Error getting fileEntry, code: ' + fileError.code,
-                    request.stack,
-                    callback);
-              }
-            });
+            }
+            // TODO(koz): fs.root.getFile() makes a trip to the browser process,
+            // but it might be possible avoid that by calling
+            // WebFrame::createFileEntry().
+            if (entry.isDirectory) {
+              fs.root.getDirectory(baseName, {}, getEntryCallback,
+                                   getEntryError);
+            } else {
+              fs.root.getFile(baseName, {}, getEntryCallback, getEntryError);
+            }
           } catch (e) {
             if (!hasError) {
               hasError = true;

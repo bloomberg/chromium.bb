@@ -59,10 +59,13 @@ bool FileHandlerCanHandleFileWithMimeType(
   return false;
 }
 
-bool DoCheckWritableFile(const base::FilePath& path) {
+bool DoCheckWritableFile(const base::FilePath& path, bool is_directory) {
   // Don't allow links.
   if (base::PathExists(path) && file_util::IsLink(path))
     return false;
+
+  if (is_directory)
+    return base::DirectoryExists(path);
 
   // Create the file if it doesn't already exist.
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -92,6 +95,7 @@ class WritableFileChecker
   WritableFileChecker(
       const std::vector<base::FilePath>& paths,
       Profile* profile,
+      bool is_directory,
       const base::Closure& on_success,
       const base::Callback<void(const base::FilePath&)>& on_failure);
 
@@ -119,6 +123,7 @@ class WritableFileChecker
 
   const std::vector<base::FilePath> paths_;
   Profile* profile_;
+  const bool is_directory_;
   int outstanding_tasks_;
   base::FilePath error_path_;
   base::Closure on_success_;
@@ -128,10 +133,12 @@ class WritableFileChecker
 WritableFileChecker::WritableFileChecker(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
+    bool is_directory,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure)
     : paths_(paths),
       profile_(profile),
+      is_directory_(is_directory),
       outstanding_tasks_(1),
       on_success_(on_success),
       on_failure_(on_failure) {}
@@ -184,7 +191,7 @@ void WritableFileChecker::CheckLocalWritableFiles() {
   for (std::vector<base::FilePath>::const_iterator it = paths_.begin();
        it != paths_.end();
        ++it) {
-    if (!DoCheckWritableFile(*it)) {
+    if (!DoCheckWritableFile(*it, is_directory_)) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI,
           FROM_HERE,
@@ -290,7 +297,8 @@ GrantedFileEntry CreateFileEntry(
     Profile* profile,
     const Extension* extension,
     int renderer_id,
-    const base::FilePath& path) {
+    const base::FilePath& path,
+    bool is_directory) {
   GrantedFileEntry result;
   fileapi::IsolatedContext* isolated_context =
       fileapi::IsolatedContext::GetInstance();
@@ -303,8 +311,11 @@ GrantedFileEntry CreateFileEntry(
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(renderer_id, result.filesystem_id);
-  if (HasFileSystemWritePermission(extension))
+  if (HasFileSystemWritePermission(extension)) {
     policy->GrantWriteFileSystem(renderer_id, result.filesystem_id);
+    if (is_directory)
+      policy->GrantCreateFileForFileSystem(renderer_id, result.filesystem_id);
+  }
 
   result.id = result.filesystem_id + ":" + result.registered_name;
   return result;
@@ -313,12 +324,15 @@ GrantedFileEntry CreateFileEntry(
 void CheckWritableFiles(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
+    bool is_directory,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure) {
-  scoped_refptr<WritableFileChecker> checker(
-      new WritableFileChecker(paths, profile, on_success, on_failure));
+  scoped_refptr<WritableFileChecker> checker(new WritableFileChecker(
+      paths, profile, is_directory, on_success, on_failure));
   checker->Check();
 }
+
+GrantedFileEntry::GrantedFileEntry() {}
 
 bool HasFileSystemWritePermission(const Extension* extension) {
   return extension->HasAPIPermission(APIPermission::kFileSystemWrite);

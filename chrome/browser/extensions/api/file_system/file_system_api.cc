@@ -60,6 +60,8 @@ const char kUserCancelled[] = "User cancelled";
 const char kWritableFileErrorFormat[] = "Error opening %s";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystem.write permission";
+const char kRequiresFileSystemDirectoryError[] =
+    "Operation requires fileSystem.directory permission";
 const char kMultipleUnsupportedError[] =
     "acceptsMultiple: true is not supported for 'saveFile'";
 const char kUnknownIdError[] = "Unknown id";
@@ -304,6 +306,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
 
 FileSystemEntryFunction::FileSystemEntryFunction()
     : multiple_(false),
+      is_directory_(false),
       response_(NULL) {}
 
 void FileSystemEntryFunction::CheckWritableFiles(
@@ -312,6 +315,7 @@ void FileSystemEntryFunction::CheckWritableFiles(
   app_file_handler_util::CheckWritableFiles(
       paths,
       profile_,
+      is_directory_,
       base::Bind(&FileSystemEntryFunction::RegisterFileSystemsAndSendResponse,
                  this,
                  paths),
@@ -348,7 +352,8 @@ void FileSystemEntryFunction::AddEntryToResponse(
           profile(),
           GetExtension(),
           render_view_host_->GetProcess()->GetID(),
-          path);
+          path,
+          is_directory_);
   base::ListValue* entries;
   bool success = response_->GetList("entries", &entries);
   DCHECK(success);
@@ -360,6 +365,7 @@ void FileSystemEntryFunction::AddEntryToResponse(
     entry->SetString("id", file_entry.id);
   else
     entry->SetString("id", id_override);
+  entry->SetBoolean("isDirectory", is_directory_);
   entries->Append(entry);
 }
 
@@ -382,15 +388,39 @@ bool FileSystemGetWritableEntryFunction::RunImpl() {
     return false;
   }
 
-  base::FilePath path;
   if (!ValidateFileEntryAndGetPath(filesystem_name, filesystem_path,
-                                   render_view_host_, &path, &error_))
+                                   render_view_host_, &path_, &error_))
     return false;
 
-  std::vector<base::FilePath> paths;
-  paths.push_back(path);
-  CheckWritableFiles(paths);
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread,
+          this),
+      base::Bind(
+          &FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse,
+          this));
   return true;
+}
+
+void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (is_directory_ &&
+      !extension_->HasAPIPermission(APIPermission::kFileSystemDirectory)) {
+    error_ = kRequiresFileSystemDirectoryError;
+    SendResponse(false);
+  }
+  std::vector<base::FilePath> paths;
+  paths.push_back(path_);
+  CheckWritableFiles(paths);
+}
+
+void FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  if (base::DirectoryExists(path_)) {
+    is_directory_ = true;
+  }
 }
 
 bool FileSystemIsWritableEntryFunction::RunImpl() {
@@ -627,8 +657,15 @@ void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(
 void FileSystemChooseEntryFunction::FilesSelected(
     const std::vector<base::FilePath>& paths) {
   DCHECK(!paths.empty());
-  file_system_api::SetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(profile()), GetExtension()->id(), paths[0].DirName());
+  base::FilePath last_choose_directory;
+  if (is_directory_) {
+    last_choose_directory = paths[0];
+  } else {
+    last_choose_directory = paths[0].DirName();
+  }
+  file_system_api::SetLastChooseEntryDirectory(ExtensionPrefs::Get(profile()),
+                                               GetExtension()->id(),
+                                               last_choose_directory);
   if (app_file_handler_util::HasFileSystemWritePermission(extension_)) {
     CheckWritableFiles(paths);
     return;
@@ -732,6 +769,17 @@ bool FileSystemChooseEntryFunction::RunImpl() {
         return false;
       }
       picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
+    } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENDIRECTORY) {
+      is_directory_ = true;
+      if (!extension_->HasAPIPermission(APIPermission::kFileSystemDirectory)) {
+        error_ = kRequiresFileSystemDirectoryError;
+        return false;
+      }
+      if (multiple_) {
+        error_ = kMultipleUnsupportedError;
+        return false;
+      }
+      picker_type = ui::SelectFileDialog::SELECT_FOLDER;
     }
 
     base::FilePath::StringType suggested_extension;
@@ -767,32 +815,47 @@ bool FileSystemRetainEntryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
   SavedFilesService* saved_files_service = SavedFilesService::Get(profile());
   // Add the file to the retain list if it is not already on there.
-  if (!saved_files_service->IsRegistered(extension_->id(), entry_id) &&
-      !RetainFileEntry(entry_id)) {
-    return false;
+  if (!saved_files_service->IsRegistered(extension_->id(), entry_id)) {
+    std::string filesystem_name;
+    std::string filesystem_path;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_name));
+    EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
+    if (!ValidateFileEntryAndGetPath(filesystem_name,
+                                     filesystem_path,
+                                     render_view_host_,
+                                     &path_,
+                                     &error_)) {
+      return false;
+    }
+
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&FileSystemRetainEntryFunction::SetIsDirectoryOnFileThread,
+                   this),
+        base::Bind(
+            &FileSystemRetainEntryFunction::RetainFileEntry, this, entry_id));
+    return true;
   }
+
   saved_files_service->EnqueueFileEntry(extension_->id(), entry_id);
+  SendResponse(true);
   return true;
 }
 
-bool FileSystemRetainEntryFunction::RetainFileEntry(
+void FileSystemRetainEntryFunction::RetainFileEntry(
     const std::string& entry_id) {
-  std::string filesystem_name;
-  std::string filesystem_path;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_name));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
-  base::FilePath path;
-  if (!ValidateFileEntryAndGetPath(filesystem_name,
-                                   filesystem_path,
-                                   render_view_host_,
-                                   &path,
-                                   &error_)) {
-    return false;
-  }
+  SavedFilesService* saved_files_service = SavedFilesService::Get(profile());
+  saved_files_service->RegisterFileEntry(
+      extension_->id(), entry_id, path_, is_directory_);
+  saved_files_service->EnqueueFileEntry(extension_->id(), entry_id);
+  SendResponse(true);
+}
 
-  SavedFilesService::Get(profile())->RegisterFileEntry(
-      extension_->id(), entry_id, path);
-  return true;
+void FileSystemRetainEntryFunction::SetIsDirectoryOnFileThread() {
+  if (base::DirectoryExists(path_)) {
+    is_directory_ = true;
+  }
 }
 
 bool FileSystemIsRestorableFunction::RunImpl() {
@@ -822,6 +885,7 @@ bool FileSystemRestoreEntryFunction::RunImpl() {
   // |needs_new_entry| will be false if the renderer already has an Entry for
   // |entry_id|.
   if (needs_new_entry) {
+    is_directory_ = file_entry->is_directory;
     CreateResponse();
     AddEntryToResponse(file_entry->path, file_entry->id);
   }

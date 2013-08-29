@@ -74,6 +74,9 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
   // Whether multiple entries have been requested.
   bool multiple_;
 
+  // Whether a directory has been requested.
+  bool is_directory_;
+
   // The dictionary to send as the response.
   base::DictionaryValue* response_;
 };
@@ -86,6 +89,13 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
  protected:
   virtual ~FileSystemGetWritableEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void CheckPermissionAndSendResponse();
+  void SetIsDirectoryOnFileThread();
+
+  // The path to the file for which a writable entry has been requested.
+  base::FilePath path_;
 };
 
 class FileSystemIsWritableEntryFunction : public SyncExtensionFunction {
@@ -146,7 +156,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   base::FilePath initial_path_;
 };
 
-class FileSystemRetainEntryFunction : public SyncExtensionFunction {
+class FileSystemRetainEntryFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.retainEntry", FILESYSTEM_RETAINENTRY)
 
@@ -157,7 +167,15 @@ class FileSystemRetainEntryFunction : public SyncExtensionFunction {
  private:
   // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
   // |entry_id| must refer to an entry in an isolated file system.
-  bool RetainFileEntry(const std::string& entry_id);
+  void RetainFileEntry(const std::string& entry_id);
+
+  void SetIsDirectoryOnFileThread();
+
+  // Whether the file being retained is a directory.
+  bool is_directory_;
+
+  // The path to the file to retain.
+  base::FilePath path_;
 };
 
 class FileSystemIsRestorableFunction : public SyncExtensionFunction {
