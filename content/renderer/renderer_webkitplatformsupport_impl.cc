@@ -617,12 +617,18 @@ long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
 
 WebKit::WebSharedWorkerRepository*
 RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
+#if !defined(OS_ANDROID)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSharedWorkers)) {
     return shared_worker_repository_.get();
   } else {
     return NULL;
   }
+#else
+  // Shared workers are unsupported on Android. Returning NULL will prevent the
+  // window.SharedWorker constructor from being exposed. http://crbug.com/154571
+  return NULL;
+#endif
 }
 
 bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
