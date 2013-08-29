@@ -293,12 +293,13 @@ struct PrerenderLocalPredictor::PrerenderProperties {
       : url_id(url_id),
         url(url),
         priority(priority),
-        start_time(start_time) {
+        start_time(start_time),
+        would_have_matched(false) {
   }
 
   // Default constructor for dummy element
   PrerenderProperties()
-      : priority(0.0) {
+      : priority(0.0), would_have_matched(false) {
   }
 
   double GetCurrentDecayedPriority() {
