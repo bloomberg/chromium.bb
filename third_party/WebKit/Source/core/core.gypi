@@ -1833,6 +1833,8 @@
             'dom/DocumentOrderedMap.cpp',
             'dom/DocumentParser.cpp',
             'dom/DocumentSharedObjectPool.cpp',
+            'dom/DocumentStyleSheetCollection.cpp',
+            'dom/DocumentStyleSheetCollection.h',
             'dom/DocumentType.cpp',
             'dom/Element.cpp',
             'dom/Element.h',

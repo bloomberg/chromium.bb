@@ -30,7 +30,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
-#include "core/dom/StyleSheetCollection.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -42,7 +42,9 @@ namespace WebCore {
 class CSSStyleSheet;
 class Node;
 class RuleFeatureSet;
+class ShadowTreeStyleSheetCollection;
 class StyleSheet;
+class StyleSheetCollection;
 class StyleSheetContents;
 class StyleSheetList;
 
@@ -99,7 +101,7 @@ public:
     void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
     bool usesRemUnits() const { return m_usesRemUnits; }
     void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
-    bool hasScopedStyleSheet() { return m_collectionForDocument.scopingNodesForStyleScoped(); }
+    bool hasScopedStyleSheet() { return m_documentStyleSheetCollection.scopingNodesForStyleScoped(); }
 
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);
@@ -139,7 +141,7 @@ private:
 
     bool m_needsUpdateActiveStylesheetsOnStyleRecalc;
 
-    StyleSheetCollectionForDocument m_collectionForDocument;
+    DocumentStyleSheetCollection m_documentStyleSheetCollection;
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;
 
     TreeScopeSet m_dirtyTreeScopes;

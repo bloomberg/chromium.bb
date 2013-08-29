@@ -62,7 +62,7 @@ StyleSheetCollections::StyleSheetCollections(Document* document)
     , m_usesFirstLineRules(false)
     , m_usesFirstLetterRules(false)
     , m_usesRemUnits(false)
-    , m_collectionForDocument(document)
+    , m_documentStyleSheetCollection(document)
     , m_needsDocumentStyleSheetsUpdate(true)
 {
 }
@@ -111,7 +111,7 @@ void StyleSheetCollections::insertTreeScopeInDocumentOrder(TreeScopeSet& treeSco
 StyleSheetCollection* StyleSheetCollections::ensureStyleSheetCollectionFor(TreeScope* treeScope)
 {
     if (treeScope == m_document)
-        return &m_collectionForDocument;
+        return &m_documentStyleSheetCollection;
 
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(treeScope, nullptr);
     if (result.isNewEntry)
@@ -122,7 +122,7 @@ StyleSheetCollection* StyleSheetCollections::ensureStyleSheetCollectionFor(TreeS
 StyleSheetCollection* StyleSheetCollections::styleSheetCollectionFor(TreeScope* treeScope)
 {
     if (treeScope == m_document)
-        return &m_collectionForDocument;
+        return &m_documentStyleSheetCollection;
 
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(treeScope);
     if (it == m_styleSheetCollectionMap.end())
@@ -132,17 +132,17 @@ StyleSheetCollection* StyleSheetCollections::styleSheetCollectionFor(TreeScope* 
 
 const Vector<RefPtr<StyleSheet> >& StyleSheetCollections::styleSheetsForStyleSheetList()
 {
-    return m_collectionForDocument.styleSheetsForStyleSheetList();
+    return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
 }
 
 const Vector<RefPtr<CSSStyleSheet> >& StyleSheetCollections::activeAuthorStyleSheets() const
 {
-    return m_collectionForDocument.activeAuthorStyleSheets();
+    return m_documentStyleSheetCollection.activeAuthorStyleSheets();
 }
 
 void StyleSheetCollections::getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const
 {
-    activeAuthorStyleSheets.append(&m_collectionForDocument.activeAuthorStyleSheets());
+    activeAuthorStyleSheets.append(&m_documentStyleSheetCollection.activeAuthorStyleSheets());
 
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values begin = m_styleSheetCollectionMap.values().begin();
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values end = m_styleSheetCollectionMap.values().end();
@@ -370,7 +370,7 @@ bool StyleSheetCollections::updateActiveStyleSheets(StyleResolverUpdateMode upda
 
     bool requiresFullStyleRecalc = false;
     if (m_needsDocumentStyleSheetsUpdate || updateMode == FullStyleUpdate)
-        requiresFullStyleRecalc = m_collectionForDocument.updateActiveStyleSheets(this, updateMode);
+        requiresFullStyleRecalc = m_documentStyleSheetCollection.updateActiveStyleSheets(this, updateMode);
 
     if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
         TreeScopeSet treeScopes = updateMode == FullStyleUpdate ? m_activeTreeScopes : m_dirtyTreeScopes;
@@ -398,7 +398,7 @@ bool StyleSheetCollections::updateActiveStyleSheets(StyleResolverUpdateMode upda
 
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
     activeStyleSheetsUpdatedForInspector();
-    m_usesRemUnits = m_collectionForDocument.usesRemUnits();
+    m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
 
     if (m_needsDocumentStyleSheetsUpdate || updateMode == FullStyleUpdate) {
         m_document->notifySeamlessChildDocumentsOfStylesheetUpdate();
@@ -411,12 +411,12 @@ bool StyleSheetCollections::updateActiveStyleSheets(StyleResolverUpdateMode upda
 void StyleSheetCollections::activeStyleSheetsUpdatedForInspector()
 {
     if (m_activeTreeScopes.isEmpty()) {
-        InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_collectionForDocument.styleSheetsForStyleSheetList());
+        InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
         return;
     }
     Vector<RefPtr<StyleSheet> > activeStyleSheets;
 
-    activeStyleSheets.append(m_collectionForDocument.styleSheetsForStyleSheetList());
+    activeStyleSheets.append(m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
 
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::iterator end = m_activeTreeScopes.end();
@@ -441,7 +441,7 @@ void StyleSheetCollections::appendActiveAuthorStyleSheets(StyleResolver* styleRe
     ASSERT(styleResolver);
 
     styleResolver->setBuildScopedStyleTreeInDocumentOrder(true);
-    styleResolver->appendAuthorStyleSheets(0, m_collectionForDocument.activeAuthorStyleSheets());
+    styleResolver->appendAuthorStyleSheets(0, m_documentStyleSheetCollection.activeAuthorStyleSheets());
 
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::iterator end = m_activeTreeScopes.end();

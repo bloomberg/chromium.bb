@@ -97,18 +97,6 @@ protected:
     StyleSheetScopingNodeList m_scopingNodesForStyleScoped;
 };
 
-// FIXME: rename this class to DocumentStyleSheetCollection.
-class StyleSheetCollectionForDocument FINAL : public StyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(StyleSheetCollectionForDocument); WTF_MAKE_FAST_ALLOCATED;
-public:
-    explicit StyleSheetCollectionForDocument(TreeScope*);
-
-    bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
-
-private:
-    void collectStyleSheets(StyleSheetCollections*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
-};
-
 }
 
 #endif
