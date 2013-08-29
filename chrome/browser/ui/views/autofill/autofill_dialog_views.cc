@@ -1789,14 +1789,18 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   group->container->SetActive(true);
   views::Button::ButtonState state = group->suggested_button->state();
   group->suggested_button->SetState(views::Button::STATE_PRESSED);
+
+  gfx::Rect screen_bounds = source->GetBoundsInScreen();
+  screen_bounds.Inset(source->GetInsets());
   if (menu_runner_->RunMenuAt(source->GetWidget(),
                               NULL,
-                              group->suggested_button->GetBoundsInScreen(),
+                              screen_bounds,
                               views::MenuItemView::TOPRIGHT,
                               ui::MENU_SOURCE_NONE,
                               0) == views::MenuRunner::MENU_DELETED) {
     return;
   }
+
   group->container->SetActive(false);
   group->suggested_button->SetState(state);
 }
