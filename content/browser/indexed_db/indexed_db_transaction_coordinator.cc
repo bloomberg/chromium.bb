@@ -105,11 +105,17 @@ void IndexedDBTransactionCoordinator::ProcessStartedTransactions() {
   }
 }
 
-static bool DoScopesOverlap(const std::set<int64>& scope1,
-                            const std::set<int64>& scope2) {
-  for (std::set<int64>::const_iterator it = scope1.begin(); it != scope1.end();
-       ++it) {
-    if (scope2.find(*it) != scope2.end())
+template<typename T>
+static bool DoSetsIntersect(const std::set<T>& set1,
+                            const std::set<T>& set2) {
+  typename std::set<T>::const_iterator it1 = set1.begin();
+  typename std::set<T>::const_iterator it2 = set2.begin();
+  while (it1 != set1.end() && it2 != set2.end()) {
+    if (*it1 < *it2)
+      ++it1;
+    else if (*it2 < *it1)
+      ++it2;
+    else
       return true;
   }
   return false;
@@ -134,7 +140,7 @@ bool IndexedDBTransactionCoordinator::CanRunTransaction(
            ++it) {
         IndexedDBTransaction* other = *it;
         if (other->mode() == indexed_db::TRANSACTION_READ_WRITE &&
-            DoScopesOverlap(transaction->scope(), other->scope()))
+            DoSetsIntersect(transaction->scope(), other->scope()))
           return false;
       }
       for (list_set<IndexedDBTransaction*>::const_iterator it =
@@ -144,7 +150,7 @@ bool IndexedDBTransactionCoordinator::CanRunTransaction(
         DCHECK(it != queued_transactions_.end());
         IndexedDBTransaction* other = *it;
         if (other->mode() == indexed_db::TRANSACTION_READ_WRITE &&
-            DoScopesOverlap(transaction->scope(), other->scope()))
+            DoSetsIntersect(transaction->scope(), other->scope()))
           return false;
       }
       return true;
