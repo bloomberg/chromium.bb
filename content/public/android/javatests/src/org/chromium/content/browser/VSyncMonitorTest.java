@@ -17,12 +17,14 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         public long mFramePeriods[];
         public int mFrameCount;
 
+        private final boolean mActivelyRequestUpdate;
         private boolean mDone;
         private long mPreviousVSyncTimeMicros;
         private Object mSyncRoot = new Object();
 
-        VSyncDataCollector(int frames) {
+        VSyncDataCollector(int frames, boolean activelyRequestUpdate) {
             mFramePeriods = new long[frames];
+            mActivelyRequestUpdate = activelyRequestUpdate;
         }
 
         public boolean isDone() {
@@ -46,7 +48,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
             }
             mFramePeriods[mFrameCount++] = vsyncTimeMicros - mPreviousVSyncTimeMicros;
             mPreviousVSyncTimeMicros = vsyncTimeMicros;
-            monitor.requestUpdate();
+            if (mActivelyRequestUpdate) monitor.requestUpdate();
         }
 
         public void waitTillDone() throws InterruptedException {
@@ -74,17 +76,20 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
     // Check that the vsync period roughly matches the timestamps that the monitor generates.
     private void performVSyncPeriodTest(boolean enableJBVSync) throws InterruptedException {
         // Collect roughly one second of data on a 60 fps display.
-        final int framesPerSecond = 60;
-        final int secondsToRun = 1;
-        final int totalFrames = secondsToRun * framesPerSecond;
-        VSyncDataCollector collector = new VSyncDataCollector(totalFrames);
+        collectAndCheckVSync(enableJBVSync, 60, true);
+        collectAndCheckVSync(enableJBVSync, VSyncMonitor.MAX_AUTO_ONVSYNC_COUNT, false);
+    }
+
+    private void collectAndCheckVSync(
+            boolean enableJBVSync, final int totalFrames, final boolean activeFrames)
+            throws InterruptedException {
+        VSyncDataCollector collector = new VSyncDataCollector(totalFrames, activeFrames);
         VSyncMonitor monitor = createVSyncMonitor(collector, enableJBVSync);
 
         long reportedFramePeriod = monitor.getVSyncPeriodInMicroseconds();
         assertTrue(reportedFramePeriod > 0);
 
         assertFalse(collector.isDone());
-
         monitor.requestUpdate();
         collector.waitTillDone();
         assertTrue(collector.isDone());
@@ -95,9 +100,10 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         Arrays.sort(collector.mFramePeriods, 0, collector.mFramePeriods.length);
         long medianFramePeriod = collector.mFramePeriods[collector.mFramePeriods.length / 2];
         if (Math.abs(medianFramePeriod - reportedFramePeriod) > reportedFramePeriod * .1) {
-            fail("Measured median frame period " + medianFramePeriod +
-                 " differs by more than 10% from the reported frame period " +
-                 reportedFramePeriod);
+            fail("Measured median frame period " + medianFramePeriod
+                    + " differs by more than 10% from the reported frame period "
+                    + reportedFramePeriod + " for "
+                    + (activeFrames ? "requested" : "automatically sent") + " frames");
         }
     }
 
