@@ -19,9 +19,10 @@ namespace debug {
 
 namespace {
 
-// Maximum number of nested TRACE_MEMORY scopes to record. Must be greater than
-// or equal to HeapProfileTable::kMaxStackDepth.
-const size_t kMaxStackSize = 32;
+// Maximum number of nested TRACE_EVENT scopes to record. Must be less than
+// or equal to HeapProfileTable::kMaxStackDepth / 2 because we record two
+// entries on the pseudo-stack per scope.
+const size_t kMaxScopeDepth = 16;
 
 /////////////////////////////////////////////////////////////////////////////
 // Holds a memory dump until the tracing system needs to serialize it.
@@ -46,13 +47,17 @@ class MemoryDumpHolder : public base::debug::ConvertableToTraceFormat {
 /////////////////////////////////////////////////////////////////////////////
 // Records a stack of TRACE_MEMORY events. One per thread is required.
 struct TraceMemoryStack {
-  TraceMemoryStack() : index_(0) {
-    memset(category_stack_, 0, kMaxStackSize * sizeof(category_stack_[0]));
+  TraceMemoryStack() : scope_depth(0) {
+    memset(scope_data, 0, kMaxScopeDepth * sizeof(scope_data[0]));
   }
 
-  // Points to the next free entry.
-  size_t index_;
-  const char* category_stack_[kMaxStackSize];
+  // Depth of the currently nested TRACE_EVENT scopes. Allowed to be greater
+  // than kMaxScopeDepth so we can match scope pushes and pops even if we don't
+  // have enough space to store the EventData.
+  size_t scope_depth;
+
+  // Stack of categories and names.
+  ScopedTraceMemory::ScopeData scope_data[kMaxScopeDepth];
 };
 
 // Pointer to a TraceMemoryStack per thread.
@@ -103,8 +108,17 @@ TraceMemoryStack* GetTraceMemoryStack() {
   return stack;
 }
 
-// Returns a "pseudo-stack" of pointers to trace events.
-// TODO(jamescook): Record both category and name, perhaps in a pair for speed.
+// Returns a "pseudo-stack" of pointers to trace event categories and names.
+// Because tcmalloc stores one pointer per stack frame this converts N nested
+// trace events into N * 2 pseudo-stack entries. Thus this macro invocation:
+//    TRACE_EVENT0("category1", "name1");
+//    TRACE_EVENT0("category2", "name2");
+// becomes this pseudo-stack:
+//    stack_out[0] = "category1"
+//    stack_out[1] = "name1"
+//    stack_out[2] = "category2"
+//    stack_out[3] = "name2"
+// Returns int instead of size_t to match the signature required by tcmalloc.
 int GetPseudoStack(int skip_count_ignored, void** stack_out) {
   // If the tracing system isn't fully initialized, just skip this allocation.
   // Attempting to initialize will allocate memory, causing this function to
@@ -113,14 +127,15 @@ int GetPseudoStack(int skip_count_ignored, void** stack_out) {
     return 0;
   TraceMemoryStack* stack =
       static_cast<TraceMemoryStack*>(tls_trace_memory_stack.Get());
-  // Copy at most kMaxStackSize stack entries.
-  const size_t count = std::min(stack->index_, kMaxStackSize);
+  // Copy at most kMaxScopeDepth scope entries.
+  const size_t count = std::min(stack->scope_depth, kMaxScopeDepth);
   // Notes that memcpy() works for zero bytes.
   memcpy(stack_out,
-         stack->category_stack_,
-         count * sizeof(stack->category_stack_[0]));
-  // Function must return an int to match the signature required by tcmalloc.
-  return static_cast<int>(count);
+         stack->scope_data,
+         count * sizeof(stack->scope_data[0]));
+  // Each item in the trace event stack contains both name and category so tell
+  // tcmalloc that we have returned |count| * 2 stack frames.
+  return static_cast<int>(count * 2);
 }
 
 }  // namespace
@@ -231,19 +246,22 @@ bool TraceMemoryController::IsTimerRunningForTest() const {
 // static
 bool ScopedTraceMemory::enabled_ = false;
 
-ScopedTraceMemory::ScopedTraceMemory(const char* category) {
+ScopedTraceMemory::ScopedTraceMemory(const char* category, const char* name) {
   // Not enabled indicates that the trace system isn't running, so don't
   // record anything.
   if (!enabled_)
     return;
   // Get our thread's copy of the stack.
   TraceMemoryStack* trace_memory_stack = GetTraceMemoryStack();
-  const size_t index = trace_memory_stack->index_;
-  // Allow deep nesting of stacks (needed for tests), but only record
-  // |kMaxStackSize| entries.
-  if (index < kMaxStackSize)
-    trace_memory_stack->category_stack_[index] = category;
-  trace_memory_stack->index_++;
+  const size_t index = trace_memory_stack->scope_depth;
+  // Don't record data for deeply nested scopes, but continue to increment
+  // |stack_depth| so we can match pushes and pops.
+  if (index < kMaxScopeDepth) {
+    ScopeData& event = trace_memory_stack->scope_data[index];
+    event.category = category;
+    event.name = name;
+  }
+  trace_memory_stack->scope_depth++;
 }
 
 ScopedTraceMemory::~ScopedTraceMemory() {
@@ -255,8 +273,8 @@ ScopedTraceMemory::~ScopedTraceMemory() {
   TraceMemoryStack* trace_memory_stack = GetTraceMemoryStack();
   // The tracing system can be turned on with ScopedTraceMemory objects
   // allocated on the stack, so avoid potential underflow as they are destroyed.
-  if (trace_memory_stack->index_ > 0)
-    trace_memory_stack->index_--;
+  if (trace_memory_stack->scope_depth > 0)
+    trace_memory_stack->scope_depth--;
 }
 
 // static
@@ -272,15 +290,16 @@ void ScopedTraceMemory::CleanupForTest() {
 }
 
 // static
-int ScopedTraceMemory::GetStackIndexForTest() {
+int ScopedTraceMemory::GetStackDepthForTest() {
   TraceMemoryStack* stack = GetTraceMemoryStack();
-  return static_cast<int>(stack->index_);
+  return static_cast<int>(stack->scope_depth);
 }
 
 // static
-const char* ScopedTraceMemory::GetItemForTest(int index) {
+ScopedTraceMemory::ScopeData ScopedTraceMemory::GetScopeDataForTest(
+    int stack_index) {
   TraceMemoryStack* stack = GetTraceMemoryStack();
-  return stack->category_stack_[index];
+  return stack->scope_data[stack_index];
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -366,7 +385,8 @@ bool AppendHeapProfileLineAsTraceFormat(const std::string& line,
   // 98009 = Total bytes (malloc bytes)
   //
   // 0x7fa7fa9b9ba0 0x7fa7f4b3be13 = Stack trace represented as pointers to
-  //                                 static strings from trace event names.
+  //                                 static strings from trace event categories
+  //                                 and names.
   std::vector<std::string> tokens;
   Tokenize(line, " :[]@", &tokens);
   // It's valid to have no stack addresses, so only require 4 tokens.
@@ -384,30 +404,42 @@ bool AppendHeapProfileLineAsTraceFormat(const std::string& line,
   output->append(tokens[1]);
   output->append(", \"trace\": \"");
 
-  // Convert the "stack addresses" into strings.
+  // Convert pairs of "stack addresses" into category and name strings.
   const std::string kSingleQuote = "'";
-  for (size_t t = 4; t < tokens.size(); ++t) {
-    // Each stack address is a pointer to a constant trace name string.
-    uint64 address = 0;
-    if (!base::HexStringToUInt64(tokens[t], &address))
-      break;
-    // This is ugly but otherwise tcmalloc would need to gain a special output
-    // serializer for pseudo-stacks. Note that this cast also handles 64-bit to
-    // 32-bit conversion if necessary. Tests use a null address.
-    const char* trace_name =
-        address ? reinterpret_cast<const char*>(address) : "null";
+  for (size_t t = 4; t < tokens.size(); t += 2) {
+    // Casting strings into pointers is ugly but otherwise tcmalloc would need
+    // to gain a special output serializer just for pseudo-stacks.
+    const char* trace_category = StringFromHexAddress(tokens[t]);
+    DCHECK_LT(t + 1, tokens.size());
+    const char* trace_name = StringFromHexAddress(tokens[t + 1]);
+
+    // TODO(jamescook): Report the trace category and name separately to the
+    // trace viewer and allow it to decide what decorations to apply. For now
+    // just hard-code a decoration for posted tasks.
+    std::string trace_string(trace_name);
+    if (!strcmp(trace_category, "task"))
+      trace_string.append("->PostTask");
 
     // Some trace name strings have double quotes, convert them to single.
-    std::string trace_name_string(trace_name);
-    ReplaceChars(trace_name_string, "\"", kSingleQuote, &trace_name_string);
+    ReplaceChars(trace_string, "\"", kSingleQuote, &trace_string);
 
-    output->append(trace_name_string);
+    output->append(trace_string);
 
     // Trace viewer expects a trailing space.
     output->append(" ");
   }
   output->append("\"}");
   return true;
+}
+
+const char* StringFromHexAddress(const std::string& hex_address) {
+  uint64 address = 0;
+  if (!base::HexStringToUInt64(hex_address, &address))
+    return "error";
+  if (!address)
+    return "null";
+  // Note that this cast handles 64-bit to 32-bit conversion if necessary.
+  return reinterpret_cast<const char*>(address);
 }
 
 }  // namespace debug

@@ -72,40 +72,39 @@ TEST_F(TraceMemoryTest, ScopedTraceMemory) {
   ScopedTraceMemory::InitForTest();
 
   // Start with an empty stack.
-  EXPECT_EQ(0, ScopedTraceMemory::GetStackIndexForTest());
+  EXPECT_EQ(0, ScopedTraceMemory::GetStackDepthForTest());
 
   {
     // Push an item.
-    const char kScope1[] = "scope1";
-    ScopedTraceMemory scope1(kScope1);
-    EXPECT_EQ(1, ScopedTraceMemory::GetStackIndexForTest());
-    EXPECT_EQ(kScope1, ScopedTraceMemory::GetItemForTest(0));
+    ScopedTraceMemory scope1("cat1", "name1");
+    EXPECT_EQ(1, ScopedTraceMemory::GetStackDepthForTest());
+    EXPECT_EQ("cat1", ScopedTraceMemory::GetScopeDataForTest(0).category);
+    EXPECT_EQ("name1", ScopedTraceMemory::GetScopeDataForTest(0).name);
 
     {
       // One more item.
-      const char kScope2[] = "scope2";
-      ScopedTraceMemory scope2(kScope2);
-      EXPECT_EQ(2, ScopedTraceMemory::GetStackIndexForTest());
-      EXPECT_EQ(kScope2, ScopedTraceMemory::GetItemForTest(1));
+      ScopedTraceMemory scope2("cat2", "name2");
+      EXPECT_EQ(2, ScopedTraceMemory::GetStackDepthForTest());
+      EXPECT_EQ("cat2", ScopedTraceMemory::GetScopeDataForTest(1).category);
+      EXPECT_EQ("name2", ScopedTraceMemory::GetScopeDataForTest(1).name);
     }
 
     // Ended scope 2.
-    EXPECT_EQ(1, ScopedTraceMemory::GetStackIndexForTest());
+    EXPECT_EQ(1, ScopedTraceMemory::GetStackDepthForTest());
   }
 
   // Ended scope 1.
-  EXPECT_EQ(0, ScopedTraceMemory::GetStackIndexForTest());
+  EXPECT_EQ(0, ScopedTraceMemory::GetStackDepthForTest());
 
   ScopedTraceMemory::CleanupForTest();
 }
 
 void TestDeepScopeNesting(int current, int depth) {
-  EXPECT_EQ(current, ScopedTraceMemory::GetStackIndexForTest());
-  const char kCategory[] = "foo";
-  ScopedTraceMemory scope(kCategory);
+  EXPECT_EQ(current, ScopedTraceMemory::GetStackDepthForTest());
+  ScopedTraceMemory scope("category", "name");
   if (current < depth)
     TestDeepScopeNesting(current + 1, depth);
-  EXPECT_EQ(current + 1, ScopedTraceMemory::GetStackIndexForTest());
+  EXPECT_EQ(current + 1, ScopedTraceMemory::GetStackDepthForTest());
 }
 
 TEST_F(TraceMemoryTest, DeepScopeNesting) {
@@ -147,27 +146,48 @@ TEST_F(TraceMemoryTest, AppendHeapProfileLineAsTraceFormat) {
   std::string junk_output;
   EXPECT_FALSE(AppendHeapProfileLineAsTraceFormat("junk", &junk_output));
 
-  // Input with the addresses of name1 and name2.
-  const char kName1[] = "name1";
-  const char kName2[] = "name2";
+  // Input with normal category and name entries.
+  const char kCategory[] = "category";
+  const char kName[] = "name";
   std::ostringstream input;
-  input << "   68:     4195 [  1087:    98009] @ " << &kName1 << " " << &kName2;
+  input << "   68:     4195 [  1087:    98009] @ " << &kCategory << " "
+        << &kName;
   const std::string kExpectedOutput =
       ",\n"
       "{"
       "\"current_allocs\": 68, "
       "\"current_bytes\": 4195, "
-      "\"trace\": \"name1 name2 \""
+      "\"trace\": \"name \""
       "}";
   std::string output;
   EXPECT_TRUE(
       AppendHeapProfileLineAsTraceFormat(input.str().c_str(), &output));
   EXPECT_EQ(kExpectedOutput, output);
 
+  // Input with with the category "task".
+  // TODO(jamescook): Eliminate this special case and move the logic to the
+  // trace viewer code.
+  const char kTaskCategory[] = "task";
+  const char kTaskName[] = "TaskName";
+  std::ostringstream input2;
+  input2 << "   68:     4195 [  1087:    98009] @ " << &kTaskCategory << " "
+        << &kTaskName;
+  const std::string kExpectedOutput2 =
+      ",\n"
+      "{"
+      "\"current_allocs\": 68, "
+      "\"current_bytes\": 4195, "
+      "\"trace\": \"TaskName->PostTask \""
+      "}";
+  std::string output2;
+  EXPECT_TRUE(
+      AppendHeapProfileLineAsTraceFormat(input2.str().c_str(), &output2));
+  EXPECT_EQ(kExpectedOutput2, output2);
+
   // Zero current allocations is skipped.
   std::ostringstream zero_input;
-  zero_input << "   0:     0 [  1087:    98009] @ " << &kName1 << " "
-             << &kName2;
+  zero_input << "   0:     0 [  1087:    98009] @ " << &kCategory << " "
+             << &kName;
   std::string zero_output;
   EXPECT_FALSE(AppendHeapProfileLineAsTraceFormat(zero_input.str().c_str(),
                                                   &zero_output));
@@ -200,11 +220,20 @@ TEST_F(TraceMemoryTest, AppendHeapProfileAsTraceFormat) {
       "\"trace\": \"\"},\n"
       "{\"current_allocs\": 77, "
       "\"current_bytes\": 32546, "
-      "\"trace\": \"null null \""
+      "\"trace\": \"null \""
       "}]\n";
   std::string output;
   AppendHeapProfileAsTraceFormat(input, &output);
   EXPECT_EQ(kExpectedOutput, output);
+}
+
+TEST_F(TraceMemoryTest, StringFromHexAddress) {
+  EXPECT_STREQ("null", StringFromHexAddress("0x0"));
+  EXPECT_STREQ("error", StringFromHexAddress("not an address"));
+  const char kHello[] = "hello";
+  std::ostringstream hex_address;
+  hex_address << &kHello;
+  EXPECT_STREQ(kHello, StringFromHexAddress(hex_address.str()));
 }
 
 }  // namespace debug
