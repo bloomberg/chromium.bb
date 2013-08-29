@@ -388,12 +388,13 @@ void ChangeListLoader::OnGetChangeList(
   DCHECK(resource_list);
   change_lists.push_back(new ChangeList(*resource_list));
 
+  // TODO(hidehiko): Use page token instead of next url.
   GURL next_url;
   if (resource_list->GetNextFeedURL(&next_url) &&
       !next_url.is_empty()) {
     // There is the remaining result so fetch it.
-    scheduler_->ContinueGetResourceList(
-        next_url,
+    scheduler_->GetRemainingChangeList(
+        next_url.spec(),
         base::Bind(&ChangeListLoader::OnGetChangeList,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&change_lists),
@@ -532,14 +533,48 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback);
-  base::TimeTicks start_time = base::TimeTicks::Now();
   scheduler_->GetResourceListInDirectory(
       directory_fetch_info.resource_id(),
-      base::Bind(&ChangeListLoader::OnGetChangeList,
+      base::Bind(&ChangeListLoader::OnGetFileList,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(ScopedVector<ChangeList>()),
-                 completion_callback,
-                 start_time));
+                 completion_callback));
+}
+
+void ChangeListLoader::OnGetFileList(
+    ScopedVector<ChangeList> change_lists,
+    const LoadChangeListCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(ScopedVector<ChangeList>(), error);
+    return;
+  }
+
+  // Add the current change list to the list of collected lists.
+  DCHECK(resource_list);
+  change_lists.push_back(new ChangeList(*resource_list));
+
+  // TODO(hidehiko): Use page token instead of next url.
+  GURL next_url;
+  if (resource_list->GetNextFeedURL(&next_url) &&
+      !next_url.is_empty()) {
+    // There is the remaining result so fetch it.
+    scheduler_->GetRemainingFileList(
+        next_url.spec(),
+        base::Bind(&ChangeListLoader::OnGetFileList,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&change_lists),
+                   callback));
+    return;
+  }
+
+  // Run the callback so the client can process the retrieved change lists.
+  callback.Run(change_lists.Pass(), FILE_ERROR_OK);
 }
 
 void

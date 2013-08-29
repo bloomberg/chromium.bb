@@ -237,8 +237,7 @@ class ChangeListLoader {
   // ================= Implementation for other stuff =================
 
   // This function is used to handle pagenation for the result from
-  // JobScheduler::GetChangeList/GetAllResourceList/ContinueGetResourceList/
-  // GetResourceListInDirectory().
+  // JobScheduler::GetChangeList()/GetAllResourceList().
   //
   // After all the change lists are fetched, |callback| will be invoked with
   // the collected change lists.
@@ -247,6 +246,16 @@ class ChangeListLoader {
                        base::TimeTicks start_time,
                        google_apis::GDataErrorCode status,
                        scoped_ptr<google_apis::ResourceList> resource_list);
+
+  // This function is used to handle pagenation for the result from
+  // JobScheduler::GetResourceListInDirectory().
+  //
+  // After all the file lists are fetched, |callback| will be invoked with
+  // the collected file lists.
+  void OnGetFileList(ScopedVector<ChangeList> change_lists,
+                     const LoadChangeListCallback& callback,
+                     google_apis::GDataErrorCode status,
+                     scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Updates from the whole change list collected in |change_lists|.
   // Record file statistics as UMA histograms.
