@@ -856,7 +856,7 @@ texture_border(struct weston_output *output)
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	GLfloat *d;
-	unsigned int *p;
+	unsigned short *p;
 	int i, j, k, n;
 	GLfloat x[4], y[4], u[4], v[4];
 
@@ -956,7 +956,7 @@ draw_border(struct weston_output *output)
 	glEnableVertexAttribArray(1);
 
 	glDrawElements(GL_TRIANGLES, n * 6,
-		       GL_UNSIGNED_INT, gr->indices.data);
+		       GL_UNSIGNED_SHORT, gr->indices.data);
 
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
