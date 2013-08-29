@@ -32,5 +32,5 @@ def VerifyProcesses(processes):
     process_resolved_path = path_resolver.ResolvePath(process_path)
     is_running = process_resolved_path in running_process_paths
     assert expectation['running'] == is_running, \
-        ('Process %s is running', process_path) if is_running else \
-        ('Process %s is not running', process_path)
+        ('Process %s is running' % process_path) if is_running else \
+        ('Process %s is not running' % process_path)
