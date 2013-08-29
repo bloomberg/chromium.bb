@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_ENTROPY_PROVIDER_H_
-#define CHROME_COMMON_METRICS_ENTROPY_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_
 
 #include <functional>
 #include <string>
@@ -91,4 +91,4 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
 
 }  // namespace metrics
 
-#endif  // CHROME_COMMON_METRICS_ENTROPY_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/variations_seed_processor.h"
+#include "components/variations/variations_seed_processor.h"
 
 #include <map>
 #include <set>
@@ -12,8 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/version.h"
-#include "chrome/browser/metrics/proto/trials_seed.pb.h"
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 

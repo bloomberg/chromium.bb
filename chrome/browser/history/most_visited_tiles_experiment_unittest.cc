@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/metrics/entropy_provider.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

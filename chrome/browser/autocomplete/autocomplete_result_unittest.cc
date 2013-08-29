@@ -17,9 +17,9 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/autocomplete_match_type.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class AutocompleteResultTest : public testing::Test  {

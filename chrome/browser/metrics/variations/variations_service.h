@@ -12,8 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
-#include "chrome/browser/metrics/proto/study.pb.h"
-#include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 #include "chrome/common/chrome_version_info.h"
@@ -28,6 +26,8 @@ class PrefService;
 class PrefRegistrySimple;
 
 namespace chrome_variations {
+
+class TrialsSeed;
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.

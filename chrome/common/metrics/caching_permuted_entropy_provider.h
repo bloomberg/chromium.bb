@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/metrics/proto/permuted_entropy_cache.pb.h"
+#include "components/variations/entropy_provider.h"
 
 class PrefService;
 class PrefRegistrySimple;

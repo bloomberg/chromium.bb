@@ -29,7 +29,6 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'feedback_proto',
-        'variations_seed_proto',
         '../components/components.gyp:auto_login_parser',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',

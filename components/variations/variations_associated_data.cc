@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "chrome/common/metrics/metrics_util.h"
-#include "chrome/common/metrics/variations/variation_ids.h"
+#include "components/variations/metrics_util.h"
 
 namespace chrome_variations {
 

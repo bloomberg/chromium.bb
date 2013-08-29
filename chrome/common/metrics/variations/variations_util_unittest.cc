@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/common/metrics/metrics_util.h"
+#include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {

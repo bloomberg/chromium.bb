@@ -26,7 +26,6 @@
         'probe_message_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
-        'variations_seed_proto',
         '../components/components.gyp:browser_context_keyed_service',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:sessions',
@@ -1121,8 +1120,6 @@
         'browser/metrics/variations/variations_request_scheduler.h',
         'browser/metrics/variations/variations_request_scheduler_mobile.cc',
         'browser/metrics/variations/variations_request_scheduler_mobile.h',
-        'browser/metrics/variations/variations_seed_processor.cc',
-        'browser/metrics/variations/variations_seed_processor.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',
@@ -3369,20 +3366,6 @@
       'variables': {
         'proto_in_dir': 'browser/history',
         'proto_out_dir': 'chrome/browser/history',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
-    {
-      # Protobuf compiler / generator for Chrome Variations seed.
-      'target_name': 'variations_seed_proto',
-      'type': 'static_library',
-      'sources': [
-        'browser/metrics/proto/trials_seed.proto',
-        'browser/metrics/proto/study.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'browser/metrics/proto',
-        'proto_out_dir': 'chrome/browser/metrics/proto',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

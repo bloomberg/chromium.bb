@@ -30,6 +30,7 @@ include_rules = [
   "+chrome/test",
   "+components/json_schema",
   "+components/sessions",
+  "+components/variations",
   "+components/visitedlink/common",
   "+content/public/common",
   "+content/public/test",

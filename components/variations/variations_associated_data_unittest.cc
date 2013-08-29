@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/variations_seed_processor.h"
+#include "components/variations/variations_seed_processor.h"
 
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {

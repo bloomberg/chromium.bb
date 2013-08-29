@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/entropy_provider.h"
+#include "components/variations/entropy_provider.h"
 
 #include <algorithm>
 #include <limits>
@@ -12,7 +12,7 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/sys_byteorder.h"
-#include "chrome/common/metrics/metrics_util.h"
+#include "components/variations/metrics_util.h"
 
 namespace metrics {
 

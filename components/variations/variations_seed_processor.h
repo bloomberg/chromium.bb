@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
+#ifndef COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
+#define COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
 
 #include <string>
 
@@ -12,8 +12,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/metrics/proto/study.pb.h"
-#include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "components/variations/proto/study.pb.h"
+#include "components/variations/proto/trials_seed.pb.h"
 
 namespace chrome_variations {
 
@@ -93,4 +93,4 @@ class VariationsSeedProcessor {
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
+#endif  // COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_

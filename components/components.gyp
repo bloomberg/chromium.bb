@@ -20,6 +20,7 @@
     'policy.gypi',
     'sessions.gypi',
     'user_prefs.gypi',
+    'variations.gypi',
     'visitedlink.gypi',
     'webdata.gypi',
     'web_contents_delegate_android.gypi',

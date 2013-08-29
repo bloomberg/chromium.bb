@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
-#define CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
+#ifndef COMPONENTS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
+#define COMPONENTS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
 
 #include <map>
 #include <string>
@@ -152,4 +152,4 @@ void ClearAllVariationParams();
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
+#endif  // COMPONENTS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_

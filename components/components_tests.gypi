@@ -19,6 +19,11 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
+            # TODO(asvitkine): These should be tested on iOS too.
+            'variations/entropy_provider_unittest.cc',
+            'variations/metrics_util_unittest.cc',
+            'variations/variations_associated_data_unittest.cc',
+            'variations/variations_seed_processor_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
             'webdata/encryptor/encryptor_password_mac_unittest.cc',
             'webdata/encryptor/encryptor_unittest.cc',
@@ -56,6 +61,9 @@
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'sessions',
             'sessions_test_support',
+
+            # Dependencies of variations
+            'variations',
 
             # Dependencies of visitedlink
             'visitedlink_browser',

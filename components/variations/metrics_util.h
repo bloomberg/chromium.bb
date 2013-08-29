@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_METRICS_UTIL_H_
-#define CHROME_COMMON_METRICS_METRICS_UTIL_H_
+#ifndef COMPONENTS_VARIATIONS_METRICS_UTIL_H_
+#define COMPONENTS_VARIATIONS_METRICS_UTIL_H_
 
 #include <string>
 
@@ -17,4 +17,4 @@ uint32 HashName(const std::string& name);
 
 }  // namespace metrics
 
-#endif  // CHROME_COMMON_METRICS_METRICS_UTIL_H_
+#endif  // COMPONENTS_VARIATIONS_METRICS_UTIL_H_

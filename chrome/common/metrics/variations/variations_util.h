@@ -9,7 +9,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 

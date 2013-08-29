@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/metrics/variations/variations_associated_data.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {

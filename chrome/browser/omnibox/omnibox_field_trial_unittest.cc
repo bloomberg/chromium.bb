@@ -12,8 +12,8 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/metrics/variations/variations_util.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxFieldTrialTest : public testing::Test {
