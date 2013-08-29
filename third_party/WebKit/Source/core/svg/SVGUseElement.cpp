@@ -259,6 +259,13 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
+void SVGUseElement::attach(const AttachContext& context)
+{
+    if (m_needsShadowTreeRecreation)
+        buildPendingResource();
+    SVGGraphicsElement::attach(context);
+}
+
 void SVGUseElement::willRecalcStyle(StyleChange)
 {
     if (!m_wasInsertedByParser && m_needsShadowTreeRecreation && renderer() && needsStyleRecalc())
@@ -884,7 +891,7 @@ SVGElementInstance* SVGUseElement::instanceForShadowTreeElement(Node* element, S
 
 void SVGUseElement::invalidateShadowTree()
 {
-    if (!renderer() || m_needsShadowTreeRecreation)
+    if (!attached() || m_needsShadowTreeRecreation)
         return;
     m_needsShadowTreeRecreation = true;
     setNeedsStyleRecalc();
