@@ -37,6 +37,7 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
   virtual void OnAppClosed() OVERRIDE {
     NOTREACHED();
   }
+  virtual void OnAppRequestUserAttention() OVERRIDE {}
   virtual base::FilePath GetProfilePath() const OVERRIDE {
     NOTREACHED();  // Currently unused in this test.
     return base::FilePath();

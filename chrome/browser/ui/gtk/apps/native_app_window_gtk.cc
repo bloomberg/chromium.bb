@@ -368,6 +368,9 @@ gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
       rect_with_decorations.width - current_width - left_inset);
 }
 
+void NativeAppWindowGtk::HideWithApp() {}
+void NativeAppWindowGtk::ShowWithApp() {}
+
 gfx::NativeView NativeAppWindowGtk::GetHostView() const {
   NOTIMPLEMENTED();
   return NULL;

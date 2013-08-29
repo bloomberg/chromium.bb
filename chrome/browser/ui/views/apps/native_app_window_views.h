@@ -142,6 +142,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+  virtual void HideWithApp() OVERRIDE;
+  virtual void ShowWithApp() OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

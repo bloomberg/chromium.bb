@@ -102,6 +102,7 @@ class FakeHost : public apps::AppShimHandler::Host {
     handler_->OnShimClose(this);
     ++close_count_;
   }
+  virtual void OnAppRequestUserAttention() OVERRIDE {}
   virtual base::FilePath GetProfilePath() const OVERRIDE {
     return profile_path_;
   }

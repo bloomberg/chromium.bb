@@ -24,6 +24,8 @@ class AppShimHandler {
     virtual void OnAppLaunchComplete(AppShimLaunchResult result) = 0;
     // Invoked when the app is closed in the browser process.
     virtual void OnAppClosed() = 0;
+    // Invoked when the app is requesting user attention.
+    virtual void OnAppRequestUserAttention() = 0;
 
     // Allows the handler to determine which app this host corresponds to.
     virtual base::FilePath GetProfilePath() const = 0;

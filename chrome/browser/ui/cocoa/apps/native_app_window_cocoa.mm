@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 
+#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -234,6 +235,8 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     const ShellWindow::CreateParams& params)
     : shell_window_(shell_window),
       has_frame_(params.frame == ShellWindow::FRAME_CHROME),
+      is_hidden_(false),
+      is_hidden_with_app_(false),
       is_maximized_(false),
       is_fullscreen_(false),
       attention_request_id_(0),
@@ -478,16 +481,29 @@ gfx::Rect NativeAppWindowCocoa::GetBounds() const {
 }
 
 void NativeAppWindowCocoa::Show() {
+  is_hidden_ = false;
+
+  if (is_hidden_with_app_) {
+    // If there is a shim to gently request attention, return here. Otherwise
+    // show the window as usual.
+    if (apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
+            shell_window_)) {
+      return;
+    }
+  }
+
   [window_controller_ showWindow:nil];
   [window() makeKeyAndOrderFront:window_controller_];
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
+  is_hidden_ = false;
   [window() orderFront:window_controller_];
 }
 
 void NativeAppWindowCocoa::Hide() {
-  [window() orderOut:window_controller_];
+  is_hidden_ = true;
+  HideWithoutMarkingHidden();
 }
 
 void NativeAppWindowCocoa::Close() {
@@ -880,6 +896,21 @@ bool NativeAppWindowCocoa::IsWithinDraggableRegion(NSPoint point) const {
   // while |point| is in local Cocoa coordinate system. Do the conversion
   // to match these two.
   return draggable_region_->contains(point.x, webViewHeight - point.y);
+}
+
+void NativeAppWindowCocoa::HideWithApp() {
+  is_hidden_with_app_ = true;
+  HideWithoutMarkingHidden();
+}
+
+void NativeAppWindowCocoa::ShowWithApp() {
+  is_hidden_with_app_ = false;
+  if (!is_hidden_)
+    ShowInactive();
+}
+
+void NativeAppWindowCocoa::HideWithoutMarkingHidden() {
+  [window() orderOut:window_controller_];
 }
 
 NativeAppWindowCocoa::~NativeAppWindowCocoa() {

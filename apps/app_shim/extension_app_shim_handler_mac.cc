@@ -32,6 +32,8 @@
 
 namespace {
 
+typedef apps::ShellWindowRegistry::ShellWindowList ShellWindowList;
+
 void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
                            Profile* profile,
                            Profile::CreateStatus status) {
@@ -51,11 +53,21 @@ void TerminateIfNoShellWindows() {
     chrome::AttemptExit();
 }
 
+void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
+  ShellWindowList windows =
+      apps::ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(app_id);
+  for (ShellWindowList::const_reverse_iterator it = windows.rbegin();
+       it != windows.rend(); ++it) {
+    if (hidden)
+      (*it)->GetBaseWindow()->HideWithApp();
+    else
+      (*it)->GetBaseWindow()->ShowWithApp();
+  }
+}
+
 }  // namespace
 
 namespace apps {
-
-typedef ShellWindowRegistry::ShellWindowList ShellWindowList;
 
 bool ExtensionAppShimHandler::Delegate::ProfileExistsForPath(
     const base::FilePath& path) {
@@ -168,6 +180,26 @@ void ExtensionAppShimHandler::QuitAppForWindow(ShellWindow* shell_window) {
     // App shims might be disabled or the shim is still starting up.
     ShellWindowRegistry::Get(shell_window->profile())->
         CloseAllShellWindowsForApp(shell_window->extension_id());
+  }
+}
+
+// static
+bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
+    ShellWindow* shell_window) {
+  ExtensionAppShimHandler* handler =
+      g_browser_process->platform_part()->app_shim_host_manager()->
+          extension_app_shim_handler();
+  Profile* profile = shell_window->profile();
+  Host* host = handler->FindHost(profile, shell_window->extension_id());
+  if (host) {
+    // Bring the window to the front without showing it.
+    ShellWindowRegistry::Get(profile)->ShellWindowActivated(shell_window);
+    host->OnAppRequestUserAttention();
+    return true;
+  } else {
+    // Just show the app.
+    SetAppHidden(profile, shell_window->extension_id(), false);
+    return false;
   }
 }
 
@@ -286,15 +318,7 @@ void ExtensionAppShimHandler::OnShimSetHidden(Host* host, bool hidden) {
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
-  const ShellWindowList windows =
-      delegate_->GetWindows(profile, host->GetAppId());
-  for (ShellWindowList::const_reverse_iterator it = windows.rbegin();
-       it != windows.rend(); ++it) {
-    if (hidden)
-      (*it)->GetBaseWindow()->Hide();
-    else
-      (*it)->GetBaseWindow()->ShowInactive();
-  }
+  SetAppHidden(profile, host->GetAppId(), hidden);
 }
 
 void ExtensionAppShimHandler::OnShimQuit(Host* host) {

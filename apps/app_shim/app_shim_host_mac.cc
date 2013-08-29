@@ -114,6 +114,10 @@ void AppShimHost::OnAppClosed() {
   Close();
 }
 
+void AppShimHost::OnAppRequestUserAttention() {
+  Send(new AppShimMsg_RequestUserAttention);
+}
+
 void AppShimHost::Close() {
   DCHECK(CalledOnValidThread());
   delete this;

@@ -32,6 +32,8 @@ class Extension;
 
 namespace apps {
 
+class ShellWindow;
+
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
 class ExtensionAppShimHandler : public AppShimHandler,
@@ -66,6 +68,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
   AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
 
   static void QuitAppForWindow(ShellWindow* shell_window);
+
+  // Brings the window to the front without showing it and instructs the shim to
+  // request user attention. Returns false if there is no shim for this window.
+  static bool RequestUserAttentionForWindow(ShellWindow* shell_window);
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;

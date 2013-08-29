@@ -25,6 +25,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimFocusType,
 IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
                      apps::AppShimLaunchResult /* launch result */)
 
+// Instructs the shim to request user attention.
+IPC_MESSAGE_CONTROL0(AppShimMsg_RequestUserAttention)
+
 // Signals to the main Chrome process that a shim has started indicating the
 // profile and app_id that the shim should be associated with and whether to
 // launch the app immediately.

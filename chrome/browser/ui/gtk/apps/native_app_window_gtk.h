@@ -71,6 +71,8 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+  virtual void HideWithApp() OVERRIDE;
+  virtual void ShowWithApp() OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

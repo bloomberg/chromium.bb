@@ -120,6 +120,12 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
+  // These are used to simulate Mac-style hide/show. Since windows can be hidden
+  // and shown using the app.window API, this sets is_hidden_with_app_ to
+  // differentiate the reason a window was hidden.
+  virtual void ShowWithApp() OVERRIDE;
+  virtual void HideWithApp() OVERRIDE;
+
   // WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
@@ -158,9 +164,19 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
   // Cache |restored_bounds_| only if the window is currently restored.
   void UpdateRestoredBounds();
 
+  // Hides the window unconditionally. Used by Hide and HideWithApp.
+  void HideWithoutMarkingHidden();
+
   apps::ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
 
   bool has_frame_;
+
+  // Whether this window is hidden according to the app.window API. This is set
+  // by Hide, Show, and ShowInactive.
+  bool is_hidden_;
+  // Whether this window last became hidden due to a request to hide the entire
+  // app, e.g. via the dock menu or Cmd+H. This is set by Hide/ShowWithApp.
+  bool is_hidden_with_app_;
 
   bool is_maximized_;
   bool is_fullscreen_;
