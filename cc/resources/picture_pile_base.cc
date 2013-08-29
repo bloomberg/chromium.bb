@@ -152,12 +152,10 @@ void PicturePileBase::Clear() {
 
 void PicturePileBase::UpdateRecordedRegion() {
   recorded_region_.Clear();
-  for (int x = 0; x < num_tiles_x(); ++x) {
-    for (int y = 0; y < num_tiles_y(); ++y) {
-      if (!HasRecordingAt(x, y))
-        continue;
-      recorded_region_.Union(tile_bounds(x, y));
-    }
+  for (PictureListMap::iterator it = picture_list_map_.begin();
+       it != picture_list_map_.end(); ++it) {
+    const PictureListMapKey& key = it->first;
+    recorded_region_.Union(tile_bounds(key.first, key.second));
   }
 }
 
