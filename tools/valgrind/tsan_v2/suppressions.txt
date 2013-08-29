@@ -87,10 +87,6 @@ race:webrtc::EventPosix::StartTimer
 # http://crbug.com/246974
 race:content::GpuWatchdogThread::CheckArmed
 
-# http://crbug.com/248101
-race:sqlite3Config
-race:mem0
-
 # http://crbug.com/257396
 race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 
