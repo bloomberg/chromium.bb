@@ -30,6 +30,20 @@ enum ParsingState {
   KEY_VALUE
 };
 
+#ifdef OS_CHROMEOS
+// Read a file with a single number string and return the number as a uint64.
+static uint64 ReadFileToUint64(const base::FilePath file) {
+  std::string file_as_string;
+  if (!file_util::ReadFileToString(file, &file_as_string))
+    return 0;
+  TrimWhitespaceASCII(file_as_string, TRIM_ALL, &file_as_string);
+  uint64 file_as_uint64 = 0;
+  if (!base::StringToUint64(file_as_string, &file_as_uint64))
+    return 0;
+  return file_as_uint64;
+}
+#endif
+
 // Read /proc/<pid>/status and returns the value for |field|, or 0 on failure.
 // Only works for fields in the form of "Field: value kB".
 size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
@@ -512,5 +526,32 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+void GetSwapInfo(SwapInfo* swap_info) {
+  // Synchronously reading files in /sys/block/zram0 is safe.
+  ThreadRestrictions::ScopedAllowIO allow_io;
+
+  base::FilePath zram_path("/sys/block/zram0");
+  uint64 orig_data_size = ReadFileToUint64(zram_path.Append("orig_data_size"));
+  if (orig_data_size <= 4096) {
+    // A single page is compressed at startup, and has a high compression
+    // ratio. We ignore this as it doesn't indicate any real swapping.
+    swap_info->orig_data_size = 0;
+    swap_info->num_reads = 0;
+    swap_info->num_writes = 0;
+    swap_info->compr_data_size = 0;
+    swap_info->mem_used_total = 0;
+    return;
+  }
+  swap_info->orig_data_size = orig_data_size;
+  swap_info->num_reads = ReadFileToUint64(zram_path.Append("num_reads"));
+  swap_info->num_writes = ReadFileToUint64(zram_path.Append("num_writes"));
+  swap_info->compr_data_size =
+      ReadFileToUint64(zram_path.Append("compr_data_size"));
+  swap_info->mem_used_total =
+      ReadFileToUint64(zram_path.Append("mem_used_total"));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace base

@@ -501,8 +501,8 @@ void MemoryDetails::UpdateHistograms() {
 
 #if defined(OS_CHROMEOS)
 void MemoryDetails::UpdateSwapHistograms() {
-  UMA_HISTOGRAM_BOOLEAN("Memory.Swap.HaveSwapped", swap_data_.num_writes > 0);
-  if (swap_data_.num_writes == 0)
+  UMA_HISTOGRAM_BOOLEAN("Memory.Swap.HaveSwapped", swap_info_.num_writes > 0);
+  if (swap_info_.num_writes == 0)
     return;
 
   // Only record swap info when any swaps have happened, to give us more
@@ -575,25 +575,25 @@ void MemoryDetails::UpdateSwapHistograms() {
   UMA_HISTOGRAM_MEMORY_MB("Memory.Swap.Total", total_sample);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.CompressedDataSize",
-                              swap_data_.compr_data_size / (1024 * 1024),
+                              swap_info_.compr_data_size / (1024 * 1024),
                               1, 4096, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.OriginalDataSize",
-                              swap_data_.orig_data_size / (1024 * 1024),
+                              swap_info_.orig_data_size / (1024 * 1024),
                               1, 4096, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.MemUsedTotal",
-                              swap_data_.mem_used_total / (1024 * 1024),
+                              swap_info_.mem_used_total / (1024 * 1024),
                               1, 4096, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.NumReads",
-                              swap_data_.num_reads,
+                              swap_info_.num_reads,
                               1, 100000000, 100);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Swap.NumWrites",
-                              swap_data_.num_writes,
+                              swap_info_.num_writes,
                               1, 100000000, 100);
 
-  if (swap_data_.orig_data_size > 0 && swap_data_.compr_data_size > 0) {
+  if (swap_info_.orig_data_size > 0 && swap_info_.compr_data_size > 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Memory.Swap.CompressionRatio",
-        swap_data_.orig_data_size / swap_data_.compr_data_size,
+        swap_info_.orig_data_size / swap_info_.compr_data_size,
         1, 20, 20);
   }
 }

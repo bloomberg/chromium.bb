@@ -87,24 +87,6 @@ struct ProcessData {
 class ProcessInfoSnapshot;
 #endif
 
-#if defined(OS_CHROMEOS)
-struct SwapData {
-  SwapData()
-      : num_reads(0),
-        num_writes(0),
-        compr_data_size(0),
-        orig_data_size(0),
-        mem_used_total(0) {
-  }
-
-  uint64 num_reads;
-  uint64 num_writes;
-  uint64 compr_data_size;
-  uint64 orig_data_size;
-  uint64 mem_used_total;
-};
-#endif
-
 // MemoryDetails fetches memory details about current running browsers.
 // Because this data can only be fetched asynchronously, callers use
 // this class via a callback.
@@ -206,7 +188,7 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   UserMetricsMode user_metrics_mode_;
 
 #if defined(OS_CHROMEOS)
-  SwapData swap_data_;
+  base::SwapInfo swap_info_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDetails);

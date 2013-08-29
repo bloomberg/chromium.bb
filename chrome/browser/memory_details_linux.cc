@@ -163,41 +163,6 @@ static std::vector<pid_t> GetAllChildren(const ProcessMap& processes,
   return children;
 }
 
-#if defined(OS_CHROMEOS)
-static uint64 ReadFileToUint64(const base::FilePath file) {
-  std::string file_as_string;
-  if (!file_util::ReadFileToString(file, &file_as_string))
-    return 0;
-  TrimWhitespaceASCII(file_as_string, TRIM_ALL, &file_as_string);
-  uint64 file_as_uint64 = 0;
-  if (!base::StringToUint64(file_as_string, &file_as_uint64))
-    return 0;
-  return file_as_uint64;
-}
-
-static void GetSwapData(SwapData* swap_data) {
-  base::FilePath zram_path("/sys/block/zram0");
-  uint64 orig_data_size = ReadFileToUint64(zram_path.Append("orig_data_size"));
-  if (orig_data_size <= 4096) {
-    // A single page is compressed at startup, and has a high compression
-    // ratio. We ignore this as it doesn't indicate any real swapping.
-    swap_data->orig_data_size = 0;
-    swap_data->num_reads = 0;
-    swap_data->num_writes = 0;
-    swap_data->compr_data_size = 0;
-    swap_data->mem_used_total = 0;
-    return;
-  }
-  swap_data->orig_data_size = orig_data_size;
-  swap_data->num_reads = ReadFileToUint64(zram_path.Append("num_reads"));
-  swap_data->num_writes = ReadFileToUint64(zram_path.Append("num_writes"));
-  swap_data->compr_data_size =
-      ReadFileToUint64(zram_path.Append("compr_data_size"));
-  swap_data->mem_used_total =
-      ReadFileToUint64(zram_path.Append("mem_used_total"));
-}
-#endif
-
 void MemoryDetails::CollectProcessData(
     const std::vector<ProcessMemoryInformation>& child_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -269,7 +234,7 @@ void MemoryDetails::CollectProcessData(
   }
 
 #if defined(OS_CHROMEOS)
-  GetSwapData(&swap_data_);
+  base::GetSwapInfo(&swap_info_);
 #endif
 
   // Finally return to the browser thread.

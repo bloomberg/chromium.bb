@@ -263,6 +263,29 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// Data from files in directory /sys/block/zram0 about ZRAM usage.
+struct BASE_EXPORT SwapInfo {
+  SwapInfo()
+      : num_reads(0),
+        num_writes(0),
+        compr_data_size(0),
+        orig_data_size(0),
+        mem_used_total(0) {
+  }
+
+  uint64 num_reads;
+  uint64 num_writes;
+  uint64 compr_data_size;
+  uint64 orig_data_size;
+  uint64 mem_used_total;
+};
+
+// In ChromeOS, reads files from /sys/block/zram0 that contain ZRAM usage data.
+// Fills in the provided |swap_data| structure.
+BASE_EXPORT void GetSwapInfo(SwapInfo* swap_info);
+#endif  // defined(OS_CHROMEOS)
+
 // Collects and holds performance metrics for system memory and disk.
 // Provides functionality to retrieve the data on various platforms and
 // to serialize the stored data.
