@@ -33,7 +33,7 @@ namespace {
 
 void CompareTrack(const parser::Track& a, const parser::Track& b) {
   EXPECT_EQ(a.id, b.id);
-  EXPECT_EQ(a.location, b.location);
+  EXPECT_EQ(a.location.value(), b.location.value());
 }
 
 void CompareAlbum(const parser::Album& a, const parser::Album& b) {
@@ -90,7 +90,13 @@ class ITunesLibraryParserTest : public testing::Test {
 
   void AddExpectedTrack(uint32 id, const std::string& location,
                         const std::string& artist, const std::string& album) {
-    parser::Track track(id, base::FilePath::FromUTF8Unsafe(location));
+    // On Mac this pretends that C: is a directory.
+#if defined(OS_MACOSX)
+    std::string os_location = "/" + location;
+#else
+    const std::string& os_location = location;
+#endif
+    parser::Track track(id, base::FilePath::FromUTF8Unsafe(os_location));
     expected_library_[artist][album].insert(track);
   }
 
@@ -261,6 +267,17 @@ TEST_F(ITunesLibraryParserTest, AlbumArtist) {
       "  <key>Artist</key><string>Artist B</string>"
       "  <key>Album Artist</key><string>Artist A</string>"
       "</dict>"
+      SIMPLE_FOOTER());
+}
+
+TEST_F(ITunesLibraryParserTest, MacPath) {
+  AddExpectedTrack(1, "dir/Song With Space.mp3", "Artist A", "Album A");
+  TestParser(
+      true,
+      SIMPLE_HEADER()
+      // This path is concatenated with "http://localhost/", so no leading
+      // slash should be used.
+      SIMPLE_TRACK(1, 1, "dir/Song%20With%20Space.mp3", "Artist A", "Album A")
       SIMPLE_FOOTER());
 }
 

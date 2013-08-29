@@ -176,7 +176,12 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
       return;
     std::string xml = "<plist><dict><key>Tracks</key><dict>\n";
     for (size_t i = 0; i < entries.size(); ++i) {
-      GURL location("file://localhost/" + entries[i].location.AsUTF8Unsafe());
+      std::string seperator;
+#if defined(OS_WIN)
+      seperator = "/";
+#endif
+      GURL location("file://localhost" + seperator +
+                    entries[i].location.AsUTF8Unsafe());
       std::string entry_string = base::StringPrintf(
           "<key>%" PRIuS "</key><dict>\n"
           "  <key>Track ID</key><integer>%" PRIuS "</integer>\n"
