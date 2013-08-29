@@ -1,4 +1,5 @@
 CONSOLE MESSAGE: Not allowed to load local resource: index.html
+CONSOLE MESSAGE: line 6: XHR loaded: 1
 
 Running: testNetworkResourceNonCached
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php
@@ -35,4 +36,12 @@ Loading resource from file:///var/www/index.html
 Failed: Couldn't create a loader
 Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
   statusCode: 304
+
+Running: testResourceWithCookie
+Loading resource from http://127.0.0.1:8000/inspector/network/resources/print-cookie.php
+Success: 200
+Logged headers: cache-control, expires, pragma
+Content: "Cookie value: TestCookieValue."
+Dumping request: http://127.0.0.1:8000/inspector/network/resources/print-cookie.php
+  statusCode: 200
 

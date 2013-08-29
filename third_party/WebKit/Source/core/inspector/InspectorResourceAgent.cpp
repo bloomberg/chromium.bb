@@ -731,7 +731,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
     }
 
     ThreadableLoaderOptions options;
-    options.allowCredentials = DoNotAllowStoredCredentials;
+    options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = AllowCrossOriginRequests;
     options.sendLoadCallbacks = SendCallbacks;
 

@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
 <script>
 function test()
 {
@@ -68,6 +69,16 @@ function test()
         function testResourceFromFileScheme(next)
         {
             testLoadForURL("file:///var/www/index.html", undefined, next);
+        },
+
+        function testResourceWithCookie(next)
+        {
+            InspectorTest.makeSimpleXHR("GET", "http://127.0.0.1:8000/inspector/network/resources/set-cookie.php", false, callback)
+
+            function callback()
+            {
+                testLoadForURL("http://127.0.0.1:8000/inspector/network/resources/print-cookie.php", undefined, next);
+            }
         },
     ]);
 }
