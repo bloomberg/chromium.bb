@@ -12506,6 +12506,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Quickoffice.xlsFormattedCellCount">
+  <summary>
+    Records the number of cells that contain formatting data in the default
+    worksheet when a compound binary format spreadsheet is opened.
+  </summary>
+</histogram>
+
 <histogram name="Quickoffice.xlsNonEmptyCellCount">
   <summary>
     Records the number of non-empty cells in the default worksheet when a
@@ -12517,6 +12524,13 @@ other types of suffix sets.
   <summary>
     Records the number of worksheets when a compound binary format spreadsheet
     is opened.
+  </summary>
+</histogram>
+
+<histogram name="Quickoffice.xlsxFormattedCellCount">
+  <summary>
+    Records the number of cells that contain formatting data in the default
+    worksheet when an OOXML format spreadsheet is opened.
   </summary>
 </histogram>
 
