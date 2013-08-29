@@ -1082,7 +1082,6 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& email,
   base::FilePath large_wallpaper_path =
       GetCustomWallpaperPath(kLargeWallpaperSubDir, email, file_name);
 
-  std::vector<unsigned char> image_data = wallpaper.raw_image();
   // Re-encode orginal file to jpeg format and saves the result in case that
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
