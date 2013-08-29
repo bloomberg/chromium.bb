@@ -7,8 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
