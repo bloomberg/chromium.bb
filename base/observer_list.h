@@ -157,9 +157,9 @@ class ObserverListBase
     }
   }
 
+ protected:
   size_t size() const { return observers_.size(); }
 
- protected:
   void Compact() {
     observers_.erase(
         std::remove(observers_.begin(), observers_.end(),
