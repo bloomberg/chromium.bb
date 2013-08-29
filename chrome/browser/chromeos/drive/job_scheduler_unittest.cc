@@ -25,6 +25,9 @@ namespace drive {
 
 namespace {
 
+// Dummy value passed for the |expected_file_size| parameter of DownloadFile().
+const int64 kDummyDownloadFileSize = 0;
+
 void CopyResourceIdFromGetResourceEntryCallback(
     std::vector<std::string>* id_list_out,
     const std::string& requested_id,
@@ -622,6 +625,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       kOutputFilePath,
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),
@@ -674,6 +678,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       kOutputFilePath,
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),
@@ -726,6 +731,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       kOutputFilePath,
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),
@@ -770,6 +776,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   base::FilePath output_file_path;
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       kOutputFilePath,
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),
@@ -834,6 +841,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   expected_types.insert(TYPE_DOWNLOAD_FILE);
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       temp_dir.path().AppendASCII("whatever.txt"),
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),
@@ -929,6 +937,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   // Download job.
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      kDummyDownloadFileSize,
       temp_dir.path().AppendASCII("whatever.txt"),
       "file:2_file_resource_id",
       ClientContext(BACKGROUND),

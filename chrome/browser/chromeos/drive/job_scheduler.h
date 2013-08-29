@@ -172,8 +172,12 @@ class JobScheduler
                        const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
+  // The first two arguments |virtual_path| and |expected_file_size| are used
+  // only for filling JobInfo for the operation so that observers can get the
+  // detail. The actual operation never refers these values.
   JobID DownloadFile(
       const base::FilePath& virtual_path,
+      int64 expected_file_size,
       const base::FilePath& local_cache_path,
       const std::string& resource_id,
       const ClientContext& context,

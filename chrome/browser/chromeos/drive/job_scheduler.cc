@@ -594,6 +594,7 @@ void JobScheduler::AddNewDirectory(
 
 JobID JobScheduler::DownloadFile(
     const base::FilePath& virtual_path,
+    int64 expected_file_size,
     const base::FilePath& local_cache_path,
     const std::string& resource_id,
     const ClientContext& context,
@@ -603,6 +604,7 @@ JobID JobScheduler::DownloadFile(
 
   JobEntry* new_job = CreateNewJob(TYPE_DOWNLOAD_FILE);
   new_job->job_info.file_path = virtual_path;
+  new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
   new_job->task = base::Bind(
       &DriveServiceInterface::DownloadFile,
@@ -1063,7 +1065,8 @@ void JobScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
   DCHECK(job_entry);
 
   job_entry->job_info.num_completed_bytes = progress;
-  job_entry->job_info.num_total_bytes = total;
+  if (total != -1)
+    job_entry->job_info.num_total_bytes = total;
   NotifyJobUpdated(job_entry->job_info);
 }
 
