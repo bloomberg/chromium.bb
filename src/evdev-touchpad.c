@@ -675,19 +675,15 @@ struct evdev_dispatch_interface touchpad_interface = {
 static void
 touchpad_parse_config(struct touchpad_dispatch *touchpad, double diagonal)
 {
-	struct weston_config *config;
+	struct weston_compositor *compositor =
+		touchpad->device->seat->compositor;
 	struct weston_config_section *s;
-	int config_fd;
-
 	double constant_accel_factor;
 	double min_accel_factor;
 	double max_accel_factor;
 
-	config_fd = open_config_file("weston.ini");
-	config = weston_config_parse(config_fd);
-	close(config_fd);
-
-	s = weston_config_get_section(config, "touchpad", NULL, NULL);
+	s = weston_config_get_section(compositor->config,
+				      "touchpad", NULL, NULL);
 	weston_config_section_get_double(s, "constant_accel_factor",
 					 &constant_accel_factor,
 					 DEFAULT_CONSTANT_ACCEL_NUMERATOR);
