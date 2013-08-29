@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
@@ -47,8 +48,13 @@ public abstract class TabBase implements NavigationClient {
     /** Whether or not this tab is an incognito tab. */
     private final boolean mIncognito;
 
-    /** The {@link Context} used to create {@link View}s or other Android components.  This is
-     * purposely an application Context not an activity Context. */
+    /** An Application {@link Context}.  Unlike {@link #mContext}, this is the only one that is
+     * publicly exposed to help prevent leaking the {@link Activity}. */
+    private final Context mApplicationContext;
+
+    /** The {@link Context} used to create {@link View}s and other Android components.  Unlike
+     * {@link #mApplicationContext}, this is not publicly exposed to help prevent leaking the
+     * {@link Activity}. */
     private final Context mContext;
 
     /** Gives {@link TabBase} a way to interact with the Android window. */
@@ -110,9 +116,14 @@ public abstract class TabBase implements NavigationClient {
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public TabBase(int id, boolean incognito, Context context, WindowAndroid window) {
+        // We need a valid Activity Context to build the ContentView with.
+        assert context == null || context instanceof Activity;
+
         mId = generateValidId(id);
         mIncognito = incognito;
-        mContext = context != null ? context.getApplicationContext() : null;
+        // TODO(dtrainor): Only store application context here.
+        mContext = context;
+        mApplicationContext = context != null ? context.getApplicationContext() : null;
         mWindowAndroid = window;
     }
 
@@ -220,7 +231,7 @@ public abstract class TabBase implements NavigationClient {
      * @return The application {@link Context} associated with this tab.
      */
     protected Context getApplicationContext() {
-        return mContext;
+        return mApplicationContext;
     }
 
     /**
