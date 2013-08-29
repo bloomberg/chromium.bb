@@ -726,6 +726,8 @@
       'websockets/CloseEvent.h',
       'websockets/MainThreadWebSocketChannel.cpp',
       'websockets/MainThreadWebSocketChannel.h',
+      'websockets/NewWebSocketChannelImpl.cpp',
+      'websockets/NewWebSocketChannelImpl.h',
       'websockets/ThreadableWebSocketChannelClientWrapper.cpp',
       'websockets/ThreadableWebSocketChannelClientWrapper.h',
       'websockets/WebSocket.cpp',

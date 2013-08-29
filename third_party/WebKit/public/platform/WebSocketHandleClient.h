@@ -36,7 +36,6 @@
 
 namespace WebKit {
 
-class WebData;
 class WebString;
 class WebURL;
 
