@@ -148,8 +148,9 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
       const drive::DriveAppInfo* app_info = drive_apps[i];
       if (default_task.app_id == app_info->app_id) {
         // The drive app is set as default. Files.app should use the doc icon.
-        const GURL doc_icon = util::FindPreferredIcon(app_info->document_icons,
-                                                      util::kPreferredIconSize);
+        const GURL doc_icon =
+            drive::util::FindPreferredIcon(app_info->document_icons,
+                                           drive::util::kPreferredIconSize);
         properties_->SetString("customIconUrl", doc_icon.spec());
       }
     }

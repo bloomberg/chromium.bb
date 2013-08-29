@@ -107,7 +107,7 @@ DriveAppRegistry::~DriveAppRegistry() {
 void DriveAppRegistry::GetAppsForFile(
     const base::FilePath& file_path,
     const std::string& mime_type,
-    ScopedVector<DriveAppInfo>* apps) {
+    ScopedVector<DriveAppInfo>* apps) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SelectorAppList result_map;
@@ -251,7 +251,7 @@ void DriveAppRegistry::AddAppSelectorList(
 void DriveAppRegistry::FindAppsForSelector(
     const std::string& file_selector,
     const DriveAppFileSelectorMap& map,
-    SelectorAppList* apps) {
+    SelectorAppList* apps) const {
   for (DriveAppFileSelectorMap::const_iterator it = map.find(file_selector);
        it != map.end() && it->first == file_selector; ++it) {
     const DriveAppFileSelector* web_app = it->second;
@@ -281,4 +281,30 @@ void DriveAppRegistry::FindAppsForSelector(
   }
 }
 
+namespace util {
+
+GURL FindPreferredIconOfDefaultSize(
+    const google_apis::InstalledApp::IconList& icons) {
+  const int kPreferredIconSize = 16;
+  return FindPreferredIcon(icons, kPreferredIconSize);
+}
+
+GURL FindPreferredIcon(
+    const google_apis::InstalledApp::IconList& icons,
+    int preferred_size) {
+  if (icons.empty())
+    return GURL();
+
+  google_apis::InstalledApp::IconList sorted_icons = icons;
+  std::sort(sorted_icons.begin(), sorted_icons.end());
+  GURL result = sorted_icons.rbegin()->second;
+  for (google_apis::InstalledApp::IconList::const_reverse_iterator
+           iter = sorted_icons.rbegin();
+       iter != sorted_icons.rend() && iter->first >= preferred_size; ++iter) {
+    result = iter->second;
+  }
+  return result;
+}
+
+}  // namespace util
 }  // namespace drive

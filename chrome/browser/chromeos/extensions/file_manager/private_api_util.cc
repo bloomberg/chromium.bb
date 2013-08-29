@@ -24,7 +24,6 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
-using google_apis::InstalledApp;
 
 namespace file_manager {
 namespace util {
@@ -135,19 +134,6 @@ int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
     return 0;
   }
   return ExtensionTabUtil::GetTabId(web_contents);
-}
-
-GURL FindPreferredIcon(const InstalledApp::IconList& icons,
-                       int preferred_size) {
-  GURL result;
-  if (icons.empty())
-    return result;
-  result = icons.rbegin()->second;
-  for (InstalledApp::IconList::const_reverse_iterator iter = icons.rbegin();
-       iter != icons.rend() && iter->first >= preferred_size; ++iter) {
-    result = iter->second;
-  }
-  return result;
 }
 
 base::FilePath GetLocalPathFromURL(

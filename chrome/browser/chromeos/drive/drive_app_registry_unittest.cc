@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,6 +104,44 @@ TEST_F(DriveAppRegistryTest, MultipleUpdate) {
   // The app list should be loaded only once.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, fake_drive_service_->app_list_load_count());
+}
+
+TEST(DriveAppRegistryUtilTest, FindPreferredIcon_Empty) {
+  google_apis::InstalledApp::IconList icons;
+  EXPECT_EQ("",
+            util::FindPreferredIcon(icons, util::kPreferredIconSize).spec());
+}
+
+TEST(DriveAppRegistryUtilTest, FindPreferredIcon_) {
+  const char kSmallerIconUrl[] = "http://example.com/smaller.png";
+  const char kMediumIconUrl[] = "http://example.com/medium.png";
+  const char kBiggerIconUrl[] = "http://example.com/bigger.png";
+  const int kMediumSize = 16;
+
+  google_apis::InstalledApp::IconList icons;
+  // The icons are not sorted by the size.
+  icons.push_back(std::make_pair(kMediumSize,
+                                 GURL(kMediumIconUrl)));
+  icons.push_back(std::make_pair(kMediumSize + 2,
+                                 GURL(kBiggerIconUrl)));
+  icons.push_back(std::make_pair(kMediumSize - 2,
+                                 GURL(kSmallerIconUrl)));
+
+  // Exact match.
+  EXPECT_EQ(kMediumIconUrl,
+            util::FindPreferredIcon(icons, kMediumSize).spec());
+  // The requested size is in-between of smaller.png and
+  // medium.png. medium.png should be returned.
+  EXPECT_EQ(kMediumIconUrl,
+            util::FindPreferredIcon(icons, kMediumSize - 1).spec());
+  // The requested size is smaller than the smallest icon. The smallest icon
+  // should be returned.
+  EXPECT_EQ(kSmallerIconUrl,
+            util::FindPreferredIcon(icons, kMediumSize - 3).spec());
+  // The requested size is larger than the largest icon. The largest icon
+  // should be returned.
+  EXPECT_EQ(kBiggerIconUrl,
+            util::FindPreferredIcon(icons, kMediumSize + 3).spec());
 }
 
 }  // namespace drive

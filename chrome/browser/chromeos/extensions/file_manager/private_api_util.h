@@ -29,17 +29,6 @@ namespace util {
 // error.
 int32 GetTabId(ExtensionFunctionDispatcher* dispatcher);
 
-// Finds an icon in the list of icons. If unable to find an icon of the exact
-// size requested, returns one with the next larger size. If all icons are
-// smaller than the preferred size, we'll return the largest one available.
-// Icons must be sorted by the icon size, smallest to largest. If there are no
-// icons in the list, returns an empty URL.
-GURL FindPreferredIcon(const google_apis::InstalledApp::IconList& icons,
-                       int preferred_size);
-
-// The preferred icon size, which should usually be used for FindPreferredIcon;
-const int kPreferredIconSize = 16;
-
 // Returns the local FilePath associated with |url|. If the file isn't of the
 // type FileSystemBackend handles, returns an empty
 // FilePath. |render_view_host| and |profile| are needed to obtain the

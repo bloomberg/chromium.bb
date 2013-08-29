@@ -211,8 +211,9 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // For the first file, we store all the info.
       for (size_t j = 0; j < app_info_list.size(); ++j) {
         const drive::DriveAppInfo& app_info = *app_info_list[j];
-        GURL icon_url = util::FindPreferredIcon(app_info.app_icons,
-                                                util::kPreferredIconSize);
+        GURL icon_url = drive::util::FindPreferredIcon(
+            app_info.app_icons,
+            drive::util::kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
             file_tasks::MakeDriveAppTaskId(app_info.app_id),
             TaskInfo(app_info.app_name, icon_url)));
@@ -372,7 +373,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
 
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
           extension,
-          util::kPreferredIconSize,
+          drive::util::kPreferredIconSize,
           ExtensionIconSet::MATCH_BIGGER,
           false,  // grayscale
           NULL);  // exists

@@ -68,7 +68,7 @@ class DriveAppRegistry {
   // Returns a list of web app information for the |file| with |mime_type|.
   void GetAppsForFile(const base::FilePath& file_path,
                       const std::string& mime_type,
-                      ScopedVector<DriveAppInfo>* apps);
+                      ScopedVector<DriveAppInfo>* apps) const;
 
   // Updates this registry by fetching the data from the server.
   void Update();
@@ -132,7 +132,7 @@ class DriveAppRegistry {
   // Finds matching |apps| from |map| based on provided file |selector|.
   void FindAppsForSelector(const std::string& selector,
                            const DriveAppFileSelectorMap& map,
-                           SelectorAppList* apps);
+                           SelectorAppList* apps) const;
 
   JobScheduler* scheduler_;
 
@@ -152,6 +152,21 @@ class DriveAppRegistry {
   base::WeakPtrFactory<DriveAppRegistry> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveAppRegistry);
 };
+
+namespace util {
+
+// The preferred icon size, which should usually be used for FindPreferredIcon;
+const int kPreferredIconSize = 16;
+
+// Finds an icon in the list of icons. If unable to find an icon of the exact
+// size requested, returns one with the next larger size. If all icons are
+// smaller than the preferred size, we'll return the largest one available.
+// Icons do not have to be sorted by the icon size. If there are no icons in
+// the list, returns an empty URL.
+GURL FindPreferredIcon(const google_apis::InstalledApp::IconList& icons,
+                       int preferred_size);
+
+}  // namespace util
 
 }  // namespace drive
 
