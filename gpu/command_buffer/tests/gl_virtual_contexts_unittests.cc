@@ -92,6 +92,8 @@ void TestDraw(int size) {
 
 }  // anonymous namespace
 
+// http://crbug.com/281565
+#if !defined(OS_ANDROID)
 TEST_F(GLVirtualContextsTest, Basic) {
   struct TestInfo {
     int size;
@@ -134,6 +136,7 @@ TEST_F(GLVirtualContextsTest, Basic) {
     GLTestHelper::CheckGLError("no errors", __LINE__);
   }
 }
+#endif
 
 }  // namespace gpu
 

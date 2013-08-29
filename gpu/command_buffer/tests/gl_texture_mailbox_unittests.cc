@@ -318,6 +318,8 @@ TEST_F(GLTextureMailboxTest, ProduceFrontBuffer) {
   glDeleteTextures(1, &tex1);
 }
 
+// http://crbug.com/281565
+#if !defined(OS_ANDROID)
 TEST_F(GLTextureMailboxTest, ProduceFrontBufferMultipleContexts) {
   gl1_.MakeCurrent();
   Mailbox mailbox[2];
@@ -366,6 +368,7 @@ TEST_F(GLTextureMailboxTest, ProduceFrontBufferMultipleContexts) {
   gl1_.MakeCurrent();
   glDeleteTextures(2, tex);
 }
+#endif
 
 }  // namespace gpu
 

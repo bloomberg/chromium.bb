@@ -82,6 +82,8 @@ TEST_F(GLStreamDrawTest, Basic) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
+// http://crbug.com/281565
+#if !defined(OS_ANDROID)
 TEST_F(GLStreamDrawTest, DrawElements) {
   static GLfloat float_red[4] = { 1.0f, 0.0f, 0.0f, 1.0f, };
   static GLfloat float_green[4] = { 0.0f, 1.0f, 0.0f, 1.0f, };
@@ -111,6 +113,7 @@ TEST_F(GLStreamDrawTest, DrawElements) {
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
+#endif
 
 TEST_F(GLStreamDrawTest, VertexArrayObjects) {
   if (!GLTestHelper::HasExtension("GL_OES_vertex_array_object")) {

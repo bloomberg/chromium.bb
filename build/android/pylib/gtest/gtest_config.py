@@ -6,6 +6,7 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
+    'gl_tests',
 ]
 
 # Do not modify this list without approval of an android owner.
