@@ -44,13 +44,13 @@ class DriveApiUrlGenerator {
                         bool set_modified_date,
                         bool update_viewed_date) const;
 
+  // Returns a URL to copy a resource specified by |file_id|.
+  GURL GetFilesCopyUrl(const std::string& file_id) const;
+
   // Returns a URL to fetch file list.
   GURL GetFilesListUrl(int max_results,
                        const std::string& page_token,
                        const std::string& q) const;
-
-  // Returns a URL to copy a file specified by |resource_id|.
-  GURL GetFileCopyUrl(const std::string& resource_id) const;
 
   // Returns a URL to touch a resource specified by |resource_id|.
   GURL GetFileTouchUrl(const std::string& resource_id) const;

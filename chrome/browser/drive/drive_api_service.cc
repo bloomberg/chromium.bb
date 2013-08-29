@@ -55,10 +55,10 @@ using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
 using google_apis::drive::ChangesListRequest;
 using google_apis::drive::ContinueGetFileListRequest;
-using google_apis::drive::CopyResourceRequest;
 using google_apis::drive::CreateDirectoryRequest;
 using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
+using google_apis::drive::FilesCopyRequest;
 using google_apis::drive::FilesGetRequest;
 using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::FilesListRequest;
@@ -620,14 +620,13 @@ CancelCallback DriveAPIService::CopyResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new CopyResourceRequest(
-          sender_.get(),
-          url_generator_,
-          resource_id,
-          parent_resource_id,
-          new_title,
-          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
+  FilesCopyRequest* request = new FilesCopyRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_file_id(resource_id);
+  request->add_parent(parent_resource_id);
+  request->set_title(new_title);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::CopyHostedDocument(
@@ -637,14 +636,12 @@ CancelCallback DriveAPIService::CopyHostedDocument(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new CopyResourceRequest(
-          sender_.get(),
-          url_generator_,
-          resource_id,
-          std::string(),  // parent_resource_id.
-          new_title,
-          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
+  FilesCopyRequest* request = new FilesCopyRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_file_id(resource_id);
+  request->set_title(new_title);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::MoveResource(

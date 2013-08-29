@@ -130,6 +130,23 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
   }
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetFilesCopyUrl) {
+  // |file_id| should be embedded into the url.
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/copy",
+            url_generator_.GetFilesCopyUrl("0ADK06pfg").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074/copy",
+            url_generator_.GetFilesCopyUrl("0Bz0bd074").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/file%3Afile_id/copy",
+            url_generator_.GetFilesCopyUrl("file:file_id").spec());
+
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg/copy",
+            test_url_generator_.GetFilesCopyUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074/copy",
+            test_url_generator_.GetFilesCopyUrl("0Bz0bd074").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id/copy",
+            test_url_generator_.GetFilesCopyUrl("file:file_id").spec());
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   struct TestPattern {
     int max_results;
@@ -167,23 +184,6 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
             kTestPatterns[i].max_results, kTestPatterns[i].page_token,
             kTestPatterns[i].q).spec());
   }
-}
-
-TEST_F(DriveApiUrlGeneratorTest, GetFileCopyUrl) {
-  // |file_id| should be embedded into the url.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/copy",
-            url_generator_.GetFileCopyUrl("0ADK06pfg").spec());
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074/copy",
-            url_generator_.GetFileCopyUrl("0Bz0bd074").spec());
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/file%3Afile_id/copy",
-            url_generator_.GetFileCopyUrl("file:file_id").spec());
-
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg/copy",
-            test_url_generator_.GetFileCopyUrl("0ADK06pfg").spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074/copy",
-            test_url_generator_.GetFileCopyUrl("0Bz0bd074").spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id/copy",
-            test_url_generator_.GetFileCopyUrl("file:file_id").spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFileTouchUrl) {

@@ -135,6 +135,46 @@ class FilesPatchRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesPatchRequest);
 };
 
+//============================= FilesCopyRequest ==============================
+
+// This class performs the request for copying a resource.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/copy
+class FilesCopyRequest : public GetDataRequest {
+ public:
+  // Upon completion, |callback| will be called. |callback| must not be null.
+  FilesCopyRequest(RequestSender* sender,
+                   const DriveApiUrlGenerator& url_generator,
+                   const FileResourceCallback& callback);
+  virtual ~FilesCopyRequest();
+
+  // Required parameter.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+
+  // Optional request body.
+  const std::vector<std::string>& parents() const { return parents_; }
+  void add_parent(const std::string& parent) { parents_.push_back(parent); }
+
+  const std::string& title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
+
+ protected:
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  std::string file_id_;
+  std::vector<std::string> parents_;
+  std::string title_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesCopyRequest);
+};
+
 //============================= FilesListRequest =============================
 
 // This class performs the request for fetching FileList.
@@ -346,43 +386,6 @@ class TouchResourceRequest : public GetDataRequest {
   const base::Time last_viewed_by_me_date_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchResourceRequest);
-};
-
-//=========================== CopyResourceRequest ============================
-
-// This class performs the request for copying a resource.
-//
-// Copies the resource with |resource_id| into a directory with
-// |parent_resource_id|. The new resource will be named as |new_title|.
-// |parent_resource_id| can be empty. In the case, the copy will be created
-// directly under the default root directory (this is the default behavior
-// of Drive API v2's copy request).
-//
-// This request corresponds to "Files: copy" request on Drive API v2. See
-// also: https://developers.google.com/drive/v2/reference/files/copy
-class CopyResourceRequest : public GetDataRequest {
- public:
-  // Upon completion, |callback| will be called. |callback| must not be null.
-  CopyResourceRequest(RequestSender* sender,
-                      const DriveApiUrlGenerator& url_generator,
-                      const std::string& resource_id,
-                      const std::string& parent_resource_id,
-                      const std::string& new_title,
-                      const FileResourceCallback& callback);
-  virtual ~CopyResourceRequest();
-
- protected:
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const std::string resource_id_;
-  const std::string parent_resource_id_;
-  const std::string new_title_;
-
-  DISALLOW_COPY_AND_ASSIGN(CopyResourceRequest);
 };
 
 //=========================== MoveResourceRequest ============================

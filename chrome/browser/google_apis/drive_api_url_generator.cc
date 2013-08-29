@@ -90,6 +90,11 @@ GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
   return url;
 }
 
+GURL DriveApiUrlGenerator::GetFilesCopyUrl(const std::string& file_id) const {
+  return base_url_.Resolve(base::StringPrintf(
+      kDriveV2FileCopyUrlFormat, net::EscapePath(file_id).c_str()));
+}
+
 GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
                                            const std::string& page_token,
                                            const std::string& q) const {
@@ -108,13 +113,6 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
     url = net::AppendOrReplaceQueryParameter(url, "q", q);
 
   return url;
-}
-
-GURL DriveApiUrlGenerator::GetFileCopyUrl(
-    const std::string& resource_id) const {
-  return base_url_.Resolve(
-      base::StringPrintf(kDriveV2FileCopyUrlFormat,
-                         net::EscapePath(resource_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetFileTouchUrl(

@@ -203,6 +203,57 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//============================= FilesCopyRequest ==============================
+
+FilesCopyRequest::FilesCopyRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+FilesCopyRequest::~FilesCopyRequest() {
+}
+
+net::URLFetcher::RequestType FilesCopyRequest::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+GURL FilesCopyRequest::GetURL() const {
+  return url_generator_.GetFilesCopyUrl(file_id_);
+}
+
+bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
+                                      std::string* upload_content) {
+  if (parents_.empty() && title_.empty())
+    return false;
+
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+
+  if (!parents_.empty()) {
+    base::ListValue* parents_value = new base::ListValue;
+    for (size_t i = 0; i < parents_.size(); ++i) {
+      base::DictionaryValue* parent = new base::DictionaryValue;
+      parent->SetString("id", parents_[i]);
+      parents_value->Append(parent);
+    }
+    root.Set("parents", parents_value);
+  }
+
+  if (!title_.empty())
+    root.SetString("title", title_);
+
+  base::JSONWriter::Write(&root, upload_content);
+  DVLOG(1) << "FilesCopy data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
 //============================= FilesListRequest =============================
 
 FilesListRequest::FilesListRequest(
@@ -401,58 +452,6 @@ bool TouchResourceRequest::GetContentData(std::string* upload_content_type,
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "TouchResource data: " << *upload_content_type << ", ["
-           << *upload_content << "]";
-  return true;
-}
-
-//=========================== CopyResourceRequest ============================
-
-CopyResourceRequest::CopyResourceRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const std::string& resource_id,
-    const std::string& parent_resource_id,
-    const std::string& new_title,
-    const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
-      url_generator_(url_generator),
-      resource_id_(resource_id),
-      parent_resource_id_(parent_resource_id),
-      new_title_(new_title) {
-  DCHECK(!callback.is_null());
-}
-
-CopyResourceRequest::~CopyResourceRequest() {
-}
-
-net::URLFetcher::RequestType CopyResourceRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
-}
-
-GURL CopyResourceRequest::GetURL() const {
-  return url_generator_.GetFileCopyUrl(resource_id_);
-}
-
-bool CopyResourceRequest::GetContentData(std::string* upload_content_type,
-                                         std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
-
-  base::DictionaryValue root;
-  root.SetString("title", new_title_);
-
-  if (!parent_resource_id_.empty()) {
-    // Set the parent resource (destination directory) of the new resource.
-    base::ListValue* parents = new base::ListValue;
-    root.Set("parents", parents);
-    base::DictionaryValue* parent_value = new base::DictionaryValue;
-    parents->Append(parent_value);
-    parent_value->SetString("id", parent_resource_id_);
-  }
-
-  base::JSONWriter::Write(&root, upload_content);
-
-  DVLOG(1) << "CopyResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }
