@@ -28,7 +28,6 @@ import sys
 
 import isolateserver
 import run_isolated
-import short_expression_finder
 import trace_inputs
 
 # Import here directly so isolate is easier to use as a library.
@@ -39,6 +38,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import tools
+from utils import short_expression_finder
 
 
 __version__ = '0.1'

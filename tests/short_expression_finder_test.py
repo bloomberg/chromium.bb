@@ -11,7 +11,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from short_expression_finder import ShortExpressionFinder, partitions
+from utils.short_expression_finder import ShortExpressionFinder, partitions
 
 
 def matching_configs(expr, variables_and_values):
