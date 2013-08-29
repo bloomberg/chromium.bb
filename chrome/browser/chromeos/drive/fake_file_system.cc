@@ -180,7 +180,7 @@ void FakeFileSystem::ReadDirectoryByPath(
 }
 
 void FakeFileSystem::Search(const std::string& search_query,
-                            const GURL& next_url,
+                            const std::string& page_token,
                             const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

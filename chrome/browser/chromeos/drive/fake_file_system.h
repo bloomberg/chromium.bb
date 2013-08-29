@@ -103,7 +103,7 @@ class FakeFileSystem : public FileSystemInterface {
       const base::FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
-                      const GURL& next_url,
+                      const std::string& page_token,
                       const SearchCallback& callback) OVERRIDE;
   virtual void SearchMetadata(const std::string& query,
                               int options,

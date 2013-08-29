@@ -89,12 +89,12 @@ SearchOperation::~SearchOperation() {
 }
 
 void SearchOperation::Search(const std::string& search_query,
-                             const GURL& next_url,
+                             const std::string& page_token,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (next_url.is_empty()) {
+  if (page_token.empty()) {
     // This is first request for the |search_query|.
     scheduler_->Search(
         search_query,
@@ -102,8 +102,8 @@ void SearchOperation::Search(const std::string& search_query,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   } else {
     // There is the remaining result so fetch it.
-    scheduler_->ContinueGetResourceList(
-        next_url,
+    scheduler_->GetRemainingFileList(
+        page_token,
         base::Bind(&SearchOperation::SearchAfterGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -118,12 +118,14 @@ void SearchOperation::SearchAfterGetResourceList(
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(
+        error, std::string(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
   DCHECK(resource_list);
 
+  // TODO(hidehiko): Replace this to page token.
   GURL next_url;
   resource_list->GetNextFeedURL(&next_url);
 
@@ -132,7 +134,7 @@ void SearchOperation::SearchAfterGetResourceList(
   if (resource_list->entries().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
     // the resource metadata.
-    callback.Run(FILE_ERROR_OK, next_url, result.Pass());
+    callback.Run(FILE_ERROR_OK, next_url.spec(), result.Pass());
     return;
   }
 
@@ -147,13 +149,13 @@ void SearchOperation::SearchAfterGetResourceList(
       base::Bind(&SearchOperation::SearchAfterResolveSearchResult,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 next_url,
+                 next_url.spec(),
                  base::Passed(&result)));
 }
 
 void SearchOperation::SearchAfterResolveSearchResult(
     const SearchCallback& callback,
-    const GURL& next_url,
+    const std::string& page_token,
     scoped_ptr<std::vector<SearchResultInfo> > result,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -161,11 +163,12 @@ void SearchOperation::SearchAfterResolveSearchResult(
   DCHECK(result);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(
+        error, std::string(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
-  callback.Run(error, next_url, result.Pass());
+  callback.Run(error, page_token, result.Pass());
 }
 
 }  // namespace file_system

@@ -396,14 +396,14 @@ bool SearchDriveFunction::RunImpl() {
     return false;
 
   integration_service->file_system()->Search(
-      query, GURL(next_feed),
+      query, next_feed,
       base::Bind(&SearchDriveFunction::OnSearch, this));
   return true;
 }
 
 void SearchDriveFunction::OnSearch(
     drive::FileError error,
-    const GURL& next_feed,
+    const std::string& next_feed,
     scoped_ptr<std::vector<drive::SearchResultInfo> > results) {
   if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
@@ -433,7 +433,7 @@ void SearchDriveFunction::OnSearch(
 
   base::DictionaryValue* result = new DictionaryValue();
   result->Set("entries", entries);
-  result->SetString("nextFeed", next_feed.spec());
+  result->SetString("nextFeed", next_feed);
 
   SetResult(result);
   SendResponse(true);

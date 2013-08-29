@@ -134,7 +134,7 @@ class SearchDriveFunction : public LoggedAsyncExtensionFunction {
  private:
   // Callback for Search().
   void OnSearch(drive::FileError error,
-                const GURL& next_feed,
+                const std::string& next_feed,
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
 };
 
