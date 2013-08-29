@@ -747,8 +747,10 @@ bool AcceleratorController::PerformAction(int action,
     case SHOW_SYSTEM_TRAY_BUBBLE: {
       internal::RootWindowController* controller =
           internal::RootWindowController::ForActiveRootWindow();
-      if (!controller->GetSystemTray()->HasSystemBubble())
+      if (!controller->GetSystemTray()->HasSystemBubble()) {
         controller->GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+        return true;
+      }
       break;
     }
     case SHOW_MESSAGE_CENTER_BUBBLE: {
