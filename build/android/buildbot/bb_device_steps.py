@@ -252,7 +252,6 @@ def RunWebkitLayoutTests(options):
     RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
                          'archive_layout_test_results.py'),
         '--results-dir', '../layout-test-results',
-        '--target', options.target,
         '--build-dir', CHROME_OUT_DIR,
         '--build-number', str(options.build_properties.get('buildnumber', '')),
         '--builder-name', options.build_properties.get('buildername', '')])
