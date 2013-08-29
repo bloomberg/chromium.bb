@@ -270,9 +270,6 @@ std::string GetScreenshotBaseFilename() {
 }
 
 bool GetScreenshotDirectory(base::FilePath* directory) {
-  if (g_browser_process->local_state()->GetBoolean(prefs::kDisableScreenshots))
-    return false;
-
   bool is_logged_in = true;
 
 #if defined(OS_CHROMEOS)
@@ -292,6 +289,30 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
   return true;
 }
 
+const int GetScreenshotNotificationTitle(
+    ScreenshotTakerObserver::Result screenshot_result) {
+  switch (screenshot_result) {
+    case ScreenshotTakerObserver::SCREENSHOTS_DISABLED:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_DISABLED;
+    case ScreenshotTakerObserver::SCREENSHOT_SUCCESS:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS;
+    default:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL;
+  }
+}
+
+const int GetScreenshotNotificationText(
+    ScreenshotTakerObserver::Result screenshot_result) {
+  switch (screenshot_result) {
+    case ScreenshotTakerObserver::SCREENSHOTS_DISABLED:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_DISABLED;
+    case ScreenshotTakerObserver::SCREENSHOT_SUCCESS:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS;
+    default:
+      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL;
+  }
+}
+
 }  // namespace
 
 ScreenshotTaker::ScreenshotTaker()
@@ -303,6 +324,12 @@ ScreenshotTaker::~ScreenshotTaker() {
 }
 
 void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
+  if (g_browser_process->local_state()->
+          GetBoolean(prefs::kDisableScreenshots)) {
+    ShowNotification(ScreenshotTakerObserver::SCREENSHOTS_DISABLED,
+                     base::FilePath());
+    return;
+  }
   base::FilePath screenshot_directory;
   if (!screenshot_directory_for_test_.empty()) {
     screenshot_directory = screenshot_directory_for_test_;
@@ -349,6 +376,12 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
 
 void ScreenshotTaker::HandleTakePartialScreenshot(
     aura::Window* window, const gfx::Rect& rect) {
+  if (g_browser_process->local_state()->
+          GetBoolean(prefs::kDisableScreenshots)) {
+    ShowNotification(ScreenshotTakerObserver::SCREENSHOTS_DISABLED,
+                     base::FilePath());
+    return;
+  }
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   base::FilePath screenshot_directory;
@@ -402,13 +435,9 @@ Notification* ScreenshotTaker::CreateNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(kNotificationOriginUrl),
       l10n_util::GetStringUTF16(
-          success ?
-          IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS :
-          IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL),
+          GetScreenshotNotificationTitle(screenshot_result)),
       l10n_util::GetStringUTF16(
-          success ?
-          IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS :
-          IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL),
+          GetScreenshotNotificationText(screenshot_result)),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
       WebKit::WebTextDirectionDefault,
