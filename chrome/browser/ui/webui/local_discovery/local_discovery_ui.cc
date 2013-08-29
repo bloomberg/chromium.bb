@@ -23,32 +23,35 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddResourcePath("local_discovery.js", IDR_LOCAL_DISCOVERY_JS);
 
   source->SetUseJsonJSFormatV2();
-  source->AddLocalizedString("serviceName",
-                             IDS_LOCAL_DISCOVERY_SERVICE_NAME);
-  source->AddLocalizedString("serviceDomain",
-                             IDS_LOCAL_DISCOVERY_SERVICE_DOMAIN);
-  source->AddLocalizedString("servicePort",
-                             IDS_LOCAL_DISCOVERY_SERVICE_PORT);
-  source->AddLocalizedString("serviceIp",
-                             IDS_LOCAL_DISCOVERY_SERVICE_IP);
-  source->AddLocalizedString("serviceLastseen",
-                             IDS_LOCAL_DISCOVERY_SERVICE_LASTSEEN);
   source->AddLocalizedString("serviceRegister",
                              IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
-  source->AddLocalizedString("registeringService",
-                             IDS_LOCAL_DISCOVERY_REGISTERING_SERVICE);
-  source->AddLocalizedString("registrationFailed",
-                             IDS_LOCAL_DISCOVERY_REGISTRATION_FAILED);
-  source->AddLocalizedString("registrationSucceeded",
-                             IDS_LOCAL_DISCOVERY_REGISTRATION_SUCCEEDED);
-  source->AddLocalizedString("registered",
-                             IDS_LOCAL_DISCOVERY_REGISTERED);
-  source->AddLocalizedString("infoStarted", IDS_LOCAL_DISCOVERY_INFO_STARTED);
-  source->AddLocalizedString("infoFailed", IDS_LOCAL_DISCOVERY_INFO_FAILED);
-  source->AddLocalizedString("serviceInfo",
-                             IDS_LOCAL_DISCOVERY_SERVICE_INFO);
+
+  source->AddLocalizedString("registerConfirmMessage",
+                             IDS_LOCAL_DISCOVERY_REGISTER_CONFIRMATION);
+  source->AddLocalizedString("registerUser",
+                             IDS_LOCAL_DISCOVERY_REGISTER_USER);
+  source->AddLocalizedString("confirmRegistration",
+                             IDS_LOCAL_DISCOVERY_CONFIRM_REGISTRATION);
+  source->AddLocalizedString("addingPrinter",
+                             IDS_LOCAL_DISCOVERY_ADDING_PRINTER);
+  source->AddLocalizedString("addingError",
+                             IDS_LOCAL_DISCOVERY_ERROR_OCURRED);
+  source->AddLocalizedString("addingErrorMessage",
+                             IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE);
+  source->AddLocalizedString("addingMessage1",
+                             IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1);
+  source->AddLocalizedString("addingMessage2",
+                             IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2);
+  source->AddLocalizedString("registeredDevicesTitle",
+                             IDS_LOCAL_DISCOVERY_REGISTERED_DEVICES_TITLE);
+  source->AddLocalizedString("unregisteredDevicesTitle",
+                             IDS_LOCAL_DISCOVERY_UNREGISTERED_DEVICES_TITLE);
+  source->AddLocalizedString("devicesTitle",
+                             IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
 
   source->SetJsonPath("strings.js");
+
+  source->DisableDenyXFrameOptions();
 
   return source;
 }

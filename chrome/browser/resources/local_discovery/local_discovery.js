@@ -10,58 +10,106 @@
  * callbacks from the C++ code saying that a new device is available.
  */
 
+
+<include src="../uber/uber_utils.js" />
+
 cr.define('local_discovery', function() {
   'use strict';
 
   /**
-   * Add a text TD to a TR.
-   * @param {HTMLTableRowElement} row Row in table to be filled.
-   * @param {string} text Text of TD.
+   * Map of service names to corresponding service objects.
+   * @type {Object.<string,Service>}
    */
-  function textTD(row, text) {
-    var td = document.createElement('td');
-    td.textContent = text;
-    row.appendChild(td);
-  }
+  var devices = {};
+
 
   /**
-   * Add a button TD to a TR.
-   * @param {HTMLTableRowElement} row Row in table to be filled.
-   * @param {string} text Text of button.
-   * @param {function()} action Action to be taken when button is pressed.
-   */
-  function buttonTD(row, text, action) {
-    var td = document.createElement('td');
-    var button = document.createElement('button');
-    button.textContent = text;
-    button.addEventListener('click', action);
-    td.appendChild(button);
-    row.appendChild(td);
-  }
-
-  /**
-   * Fill a table row from the provided information.
-   * @param {HTMLTableRowElement} row Row in table to be filled.
-   * @param {string} name Name of the device.
+   * Object that represents a device in the device list.
    * @param {Object} info Information about the device.
+   * @constructor
    */
-  function fillRow(row, name, info) {
-    textTD(row, name);
-    textTD(row, info.domain);
-    textTD(row, info.port);
-    textTD(row, info.ip);
-    textTD(row, info.lastSeen);
-
-    if (!info.registered) {
-      buttonTD(row, loadTimeData.getString('serviceRegister'),
-               sendRegisterDevice.bind(null, name));
-    } else {
-      textTD(row, loadTimeData.getString('registered'));
-    }
-
-    buttonTD(row, loadTimeData.getString('serviceInfo'),
-             sendInfoRequest.bind(null, name));
+  function Device(info) {
+    this.info = info;
+    this.domElement = null;
   }
+
+  Device.prototype = {
+    /**
+     * Update the device.
+     * @param {Object} info New information about the device.
+     */
+    updateDevice: function(info) {
+      if (this.domElement && info.is_mine != this.info.is_mine) {
+        this.deviceContainer(this.info.is_mine).removeChild(this.domElement);
+        this.deviceContainer(info.is_mine).appendChild(this.domElement);
+      }
+      this.info = info;
+      this.renderDevice();
+    },
+
+    /**
+     * Delete the device.
+     */
+    removeDevice: function() {
+      this.deviceContainer(this.info.is_mine).removeChild(this.domElement);
+    },
+
+    /**
+     * Render the device to the device list.
+     */
+    renderDevice: function() {
+      if (this.domElement) {
+        clearElement(this.domElement);
+      } else {
+        this.domElement = document.createElement('div');
+        this.deviceContainer(this.info.is_mine).appendChild(this.domElement);
+      }
+
+      this.domElement.classList.add('device');
+      this.domElement.classList.add('printer-active');
+
+      var deviceInfo = document.createElement('div');
+      deviceInfo.className = 'device-info';
+      this.domElement.appendChild(deviceInfo);
+
+      var deviceName = document.createElement('h3');
+      deviceName.className = 'device-name';
+      deviceName.textContent = this.info.human_readable_name;
+      deviceInfo.appendChild(deviceName);
+
+      var deviceDescription = document.createElement('div');
+      deviceDescription.className = 'device-description';
+      deviceDescription.textContent = this.info.description;
+      deviceInfo.appendChild(deviceDescription);
+
+      var buttonContainer = document.createElement('div');
+      buttonContainer.className = 'button-container';
+      this.domElement.appendChild(buttonContainer);
+
+      var button = document.createElement('button');
+      button.textContent = loadTimeData.getString('serviceRegister');
+
+      if (this.info.registered) {
+        button.disabled = 'disabled';
+      } else {
+        button.addEventListener(
+          'click',
+          sendRegisterDevice.bind(null, this.info.service_name));
+      }
+
+      buttonContainer.appendChild(button);
+    },
+
+    /**
+     * Return the correct container for the device.
+     * @param {boolean} is_mine Whether or not the device is in the 'Registered'
+     *    section.
+     */
+    deviceContainer: function(is_mine) {
+      if (is_mine) return $('registered-devices');
+      return $('unregistered-devices');
+    }
+  };
 
   /**
    * Appends a row to the output table listing the new device.
@@ -69,47 +117,46 @@ cr.define('local_discovery', function() {
    * @param {string} info Additional info of the device, if empty device need to
    *                      be deleted.
    */
-  function onServiceUpdate(name, info) {
-    name = name.replace(/[\r\n]/g, '');
-    var table = $('devices-table');
-
-    for (var i = 0, row; row = table.rows[i]; i++) {
-      if (row.cells[0].textContent == name) {
-        if (!info) {
-          // Delete service from the row.
-          table.removeChild(row);
-        } else {
-          // Replace existing service.
-          while (row.firstChild) {
-            row.removeChild(row.firstChild);
-          }
-
-          fillRow(row, name, info);
-          return;
-        }
+  function onDeviceUpdate(name, info) {
+    if (info) {
+      if (devices.hasOwnProperty(name)) {
+        devices[name].updateDevice(info);
+      } else {
+        devices[name] = new Device(info);
+        devices[name].renderDevice();
       }
+    } else {
+      devices[name].removeDevice();
+      delete devices[name];
     }
-
-    if (!info) {
-      // Service could not be found in the table.
-      return;
-    }
-
-    // Row does not exist. Create it.
-    var tr = document.createElement('tr');
-
-    fillRow(tr, name, info);
-    table.appendChild(tr);
   }
 
   /**
-   * Adds a row to the logging console.
-   * @param {string} msg The message to log.
+   * Hide the register overlay.
    */
-  function logToInfoConsole(msg) {
-    var div = document.createElement('div');
-    div.textContent = msg;
-    $('info-console').appendChild(div);
+  function showRegisterOverlay() {
+    $('register-overlay').classList.add('showing');
+    $('overlay').hidden = false;
+    uber.invokeMethodOnParent('beginInterceptingEvents');
+  }
+
+  /**
+   * Show the register overlay.
+   */
+  function hideRegisterOverlay() {
+    $('register-overlay').classList.remove('showing');
+    $('overlay').hidden = true;
+    uber.invokeMethodOnParent('stopInterceptingEvents');
+  }
+
+  /**
+   * Clear a DOM element of all children.
+   * @param {HTMLElement} element DOM element to clear.
+   */
+  function clearElement(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
   }
 
   /**
@@ -118,204 +165,119 @@ cr.define('local_discovery', function() {
    */
   function sendRegisterDevice(device) {
     chrome.send('registerDevice', [device]);
-    logToInfoConsole(loadTimeData.getStringF('registeringService', device));
   }
 
   /**
    * Announce that a registration failed.
-   * @param {string} reason The error message.
    */
-  function registrationFailed(reason) {
-    logToInfoConsole(loadTimeData.getStringF('registrationFailed', reason));
+  function registrationFailed() {
+    setRegisterPage('register-page-error');
   }
 
   /**
-   * Request the contents of a device's /info page.
-   * @param {string} device The device to query.
+   * Update UI to reflect that registration has been confirmed on the printer.
    */
-  function sendInfoRequest(device) {
-    chrome.send('info', [device]);
-    logToInfoConsole(loadTimeData.getStringF('infoStarted', device));
+  function registrationConfirmedOnPrinter() {
+    setRegisterPage('register-page-adding2');
   }
 
   /**
    * Announce that a registration succeeeded.
-   * @param {string} id The id of the newly registered device.
    */
-  function registrationSuccess(id) {
-    logToInfoConsole(loadTimeData.getStringF('registrationSucceeded', id));
+  function registrationSuccess() {
+    hideRegisterOverlay();
   }
 
   /**
-   * Render an info item onto the info pane.
-   * @param {string} name Name of the item.
-   * @param {?} value Value of the item.
-   * @param {function(?):string} render_type Render function for value
-   *     datatype.
-   * @return {HTMLElement} Rendered info item.
-   */
-  function renderInfoItem(name, value, render_type) {
-    var container = document.createElement('div');
-    container.classList.add('info-item');
-    var nameElem = document.createElement('span');
-    nameElem.classList.add('info-item-name');
-    nameElem.textContent = name;
-    container.appendChild(nameElem);
-    var valueElem = document.createElement('span');
-    valueElem.textContent = render_type(value);
-    container.appendChild(valueElem);
-    return container;
-  }
-
-  /**
-   * Render and append an info item to the info pane, if it exists.
-   * @param {Object} info Info response.
-   * @param {string} name Name of property.
-   * @param {function(?):string} render_type Render function for value.
-   */
-  function infoItem(info, name, render_type) {
-    if (name in info) {
-      $('info-pane').appendChild(renderInfoItem(name, info[name], render_type));
-    }
-  }
-
-  /**
-   * Render a string to an info-pane-displayable string.
-   * @param {?} value Value; not guaranteed to be a string.
-   * @return {string} Rendered value.
-   */
-  function renderTypeString(value) {
-    if (typeof value != 'string') {
-      return 'INVALID';
-    }
-    return value;
-  }
-
-  /**
-   * Render a integer to an info-pane-displayable string.
-   * @param {?} value Value; not guaranteed to be an integer.
-   * @return {string} Rendered value.
-   */
-  function renderTypeInt(value) {
-    if (typeof value != 'number') {
-      return 'INVALID';
-    }
-
-    return value.toString();
-  }
-
-  /**
-   * Render an array to an info-pane-displayable string.
-   * @param {?} value Value; not guaranteed to be an array.
-   * @return {string} Rendered value.
-   */
-  function renderTypeStringList(value) {
-    if (!Array.isArray(value)) {
-      return 'INVALID';
-    }
-
-    var returnValue = '';
-    var valueLength = value.length;
-    for (var i = 0; i < valueLength - 1; i++) {
-      returnValue += value[i];
-      returnValue += ', ';
-    }
-
-    if (value.length != 0) {
-      returnValue += value[value.length - 1];
-    }
-
-    return returnValue;
-  }
-
-  /**
-   * Render info response from JSON.
-   * @param {Object} info Info response.
-   */
-  function renderInfo(info) {
-    // Clear info
-    while ($('info-pane').firstChild) {
-      $('info-pane').removeChild($('info-pane').firstChild);
-    }
-
-    infoItem(info, 'x-privet-token', renderTypeString);
-    infoItem(info, 'id', renderTypeString);
-    infoItem(info, 'name', renderTypeString);
-    infoItem(info, 'description', renderTypeString);
-    infoItem(info, 'type', renderTypeStringList);
-    infoItem(info, 'api', renderTypeStringList);
-    infoItem(info, 'connection_state', renderTypeString);
-    infoItem(info, 'device_state', renderTypeString);
-    infoItem(info, 'manufacturer', renderTypeString);
-    infoItem(info, 'url', renderTypeString);
-    infoItem(info, 'model', renderTypeString);
-    infoItem(info, 'serial_number', renderTypeString);
-    infoItem(info, 'firmware', renderTypeString);
-    infoItem(info, 'uptime', renderTypeInt);
-    infoItem(info, 'setup_url', renderTypeString);
-    infoItem(info, 'support_url', renderTypeString);
-    infoItem(info, 'update_url', renderTypeString);
-  }
-
-  /**
-   * Announce that an info request failed.
-   * @param {string} reason The error message.
-   */
-  function infoFailed(reason) {
-    logToInfoConsole(loadTimeData.getStringF('infoFailed', reason));
-  }
-
-  /*
    * Update visibility status for page.
    */
   function updateVisibility() {
     chrome.send('isVisible', [!document.webkitHidden]);
   }
 
-  /*
+  /**
+   * Set the page that the register wizard is on.
+   * @param {string} page_id ID string for page.
+   */
+  function setRegisterPage(page_id) {
+    var pages = $('register-overlay').querySelectorAll('.register-page');
+    var pagesLength = pages.length;
+    for (var i = 0; i < pagesLength; i++) {
+      pages[i].hidden = true;
+    }
+
+    $(page_id).hidden = false;
+  }
+
+  /**
    * Request a user account from a list.
    * @param {Array} users Array of (index, username) tuples. Username may be
    *    displayed to the user; index must be passed opaquely to the UI handler.
    */
-  function requestUser(users) {
-    while ($('user-list-container').firstChild) {
-      $('user-list-container').removeChild($('user-list-container').firstChild);
-    }
+  function requestUser(users, printerName) {
+    clearElement($('register-user-list'));
 
     var usersLength = users.length;
     for (var i = 0; i < usersLength; i++) {
       var userIndex = users[i][0];
       var userName = users[i][1];
 
-      var button = document.createElement('button');
-      button.textContent = userName;
-      button.addEventListener('click',
-                              selectUser.bind(null, userIndex, userName));
-      $('user-list-container').appendChild(button);
+      var option = document.createElement('option');
+      option.textContent = userName;
+      option.userData = { userIndex: userIndex, userName: userName };
+      $('register-user-list').appendChild(option);
     }
+
+    showRegisterOverlay();
+    setRegisterPage('register-page-choose');
+    $('register-message').textContent =
+      loadTimeData.getStringF('registerConfirmMessage', printerName);
   }
 
-  function selectUser(userIndex, userName) {
-    while ($('user-list-container').firstChild) {
-      $('user-list-container').removeChild($('user-list-container').firstChild);
-    }
-
-    chrome.send('chooseUser', [userIndex, userName]);
+  /**
+   * Send user selection and begin registration.
+   */
+  function beginRegistration() {
+    var userList = $('register-user-list');
+    var selectedOption = userList.options[userList.selectedIndex];
+    var userData = selectedOption.userData;
+    chrome.send('chooseUser', [userData.userIndex, userData.userName]);
+    setRegisterPage('register-page-adding1');
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    uber.onContentFrameLoaded();
+
+    cr.ui.overlay.setupOverlay($('overlay'));
+    cr.ui.overlay.globalInitialization();
+    $('overlay').addEventListener('cancelOverlay', hideRegisterOverlay);
+
+    var cancelButtons = document.querySelectorAll('.register-cancel');
+    var cancelButtonsLength = cancelButtons.length;
+    for (var i = 0; i < cancelButtonsLength; i++) {
+      cancelButtons[i].addEventListener('click', hideRegisterOverlay);
+    }
+
+    $('register-error-exit').addEventListener('click', hideRegisterOverlay);
+
+    $('register-confirmation-continue').addEventListener(
+      'click', beginRegistration);
+
     updateVisibility();
     document.addEventListener('webkitvisibilitychange', updateVisibility,
                               false);
+
+    var title = loadTimeData.getString('devicesTitle');
+    uber.invokeMethodOnParent('setTitle', {title: title});
+
     chrome.send('start');
   });
 
   return {
     registrationSuccess: registrationSuccess,
     registrationFailed: registrationFailed,
-    onServiceUpdate: onServiceUpdate,
-    infoFailed: infoFailed,
-    renderInfo: renderInfo,
-    requestUser: requestUser
+    onDeviceUpdate: onDeviceUpdate,
+    requestUser: requestUser,
+    registrationConfirmedOnPrinter: registrationConfirmedOnPrinter
   };
 });

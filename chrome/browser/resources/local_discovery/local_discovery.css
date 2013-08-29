@@ -2,30 +2,38 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-thead {
-  white-space: nowrap;
+.device-info {
+  -webkit-box-flex: 1;
+  -webkit-padding-start: 55px;
 }
 
-th {
-  background-color: #c0c0c0;
+.device {
+  display: -webkit-box;
+  max-width: 738px;
 }
 
-td {
-  background-color: #f0f0f0;
+.device .button-container {
+  -webkit-padding-end: 10px;
+  display: inline-block;
+  width: 70px;
 }
 
-#info-console {
-  background-color: #f0f0f0;
-  height: 100px;
-  overflow: auto;
+.device .button-container button {
+  margin-top: 0.5em;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
-.info-item {
-  border-bottom: 2px #f0f0f0 solid;
-  margin-bottom: 5px;
+.register-page {
+  padding: 15px;
+  width: 600px;
 }
 
-.info-item .info-item-name {
-  font-weight: bold;
-  padding-right: 20px;
+.register-page .button-list {
+  padding-top: 15px;
+  text-align: right;
+}
+
+html[dir='rtl'] .register-page .button-list {
+  text-align: left;
 }

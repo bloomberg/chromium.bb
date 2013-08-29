@@ -160,7 +160,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, EmptyTest) {
   ui_test_utils::NavigateToURL(browser(), GURL(kChromeDevicesPage));
   condition_devices_listed().Wait();
-  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkTableHasNoRows"));
+  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
@@ -169,21 +169,18 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
   DeviceDescription description;
 
   description.id = kSampleDeviceID;
-  description.address = net::HostPortPair(kSampleDeviceHost, 8888);
-  description.ip_address.push_back(1);
-  description.ip_address.push_back(2);
-  description.ip_address.push_back(3);
-  description.ip_address.push_back(4);
+  description.name = "Sample device";
+  description.description = "Sample device description";
 
   ui_factory()->privet_lister()->delegate()->DeviceChanged(
       true, kSampleServiceName, description);
 
-  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkTableHasOneRow"));
+  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkOneDevice"));
 
   ui_factory()->privet_lister()->delegate()->DeviceRemoved(
       kSampleServiceName);
 
-  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkTableHasNoRows"));
+  EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("checkNoDevices"));
 }
 
 }  // namespace

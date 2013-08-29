@@ -1,35 +1,81 @@
+<!-- TODO(noamsml): i18n before submitting -->
 <!DOCTYPE HTML>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Local Discovery Debug Page</title>
+  <title i18n-content="devicesTitle"></title>
+  <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
+  <link rel="stylesheet" href="chrome://resources/css/overlay.css">
   <link rel="stylesheet" href="local_discovery.css">
+  <link rel="stylesheet" href="../uber/uber_shared.css">
+
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/cr/ui/overlay.js"></script>
   <script src="local_discovery.js"></script>
   <script src="strings.js"></script>
 </head>
-<body>
-  <div>
-    <div id="info-console"></div>
-    <table id="devices-table" width="100%">
-      <thead>
-        <th i18n-content="serviceName"></th>
-        <th i18n-content="serviceDomain"></th>
-        <th i18n-content="servicePort"></th>
-        <th i18n-content="serviceIp"></th>
-        <th i18n-content="serviceLastseen"></th>
-        <th i18n-content="serviceRegister"></th>
-        <th i18n-content="serviceInfo"></th>
-      </thead>
-    </table>
-  </div>
+<body class="uber-frame"
+      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div class="page">
+    <div class="overlay" id="overlay" hidden>
+      <div id="register-overlay" class="page">
+        <div class="close-button"></div>
 
-  <div id="user-list-container">
-  </div>
+        <div id="register-page-choose" class="register-page">
+          <h1 i18n-content="confirmRegistration"></h1>
+          <div id="register-message">
 
-  <div id="info-pane">
+          </div>
+          <div id="register-picker">
+            <label i18n-content="registerUser" for="register-user-list"></label>
+            <select id="register-user-list"></select>
+          </div>
+          <div class="button-list">
+            <button class="register-cancel">Cancel</button>
+            <button class="register-continue"
+                    id="register-confirmation-continue">Continue</button>
+          </div>
+        </div>
+
+        <div id="register-page-adding1" class="register-page">
+          <h1 i18n-content="addingPrinter"></h1>
+          <div i18n-content="addingMessage1"></div>
+          <div class="button-list">
+            <button class="register-cancel">Cancel</button>
+          </div>
+        </div>
+
+        <div id="register-page-adding2" class="register-page">
+          <h1 i18n-content="addingPrinter"></h1>
+          <div i18n-content="addingMessage2"></div>
+          <div class="button-list">
+            <button class="register-cancel">Cancel</button>
+          </div>
+        </div>
+
+        <div id="register-page-error" class="register-page">
+          <h1 i18n-content="addingError"></h1>
+          <div i18n-content="addingErrorMessage"></div>
+          <div class="button-list">
+            <button id="register-error-exit">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <header>
+      <h1 i18n-content="devicesTitle"></h1>
+    </header>
+
+    <h2 i18n-content="registeredDevicesTitle"></h2>
+    <div id="registered-devices" class="device-list">
+    </div>
+
+    <h2 i18n-content="unregisteredDevicesTitle"></h2>
+    <div id="unregistered-devices" class="device-list">
+    </div>
   </div>
 
   <script src="chrome://resources/js/i18n_template2.js"></script>

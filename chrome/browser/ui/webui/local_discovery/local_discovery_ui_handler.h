@@ -27,8 +27,7 @@ namespace local_discovery {
 // into the Javascript to update the page.
 class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public PrivetRegisterOperation::Delegate,
-                                public PrivetDeviceLister::Delegate,
-                                public PrivetInfoOperation::Delegate {
+                                public PrivetDeviceLister::Delegate {
  public:
   class Factory {
    public:
@@ -73,12 +72,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       const DeviceDescription& description) OVERRIDE;
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
 
-  // PrivetInfoOperation::Delegate implementation:
-  virtual void OnPrivetInfoDone(
-      PrivetInfoOperation* operation,
-      int http_code,
-      const base::DictionaryValue* json_value) OVERRIDE;
-
  private:
   // Message handlers:
   // For registering a device.
@@ -86,9 +79,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // For when the page is ready to recieve device notifications.
   void HandleStart(const base::ListValue* args);
-
-  // For when info for a device is requested.
-  void HandleInfoRequested(const base::ListValue* args);
 
   // For when a visibility change occurs.
   void HandleIsVisible(const base::ListValue* args);
@@ -100,9 +90,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void StartRegisterHTTP(
       const std::string& user,
       scoped_ptr<PrivetHTTPClient> http_client);
-
-  // For when the IP address of the printer has been resolved for registration.
-  void StartInfoHTTP(scoped_ptr<PrivetHTTPClient> http_client);
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
@@ -118,14 +105,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       const std::vector<std::string>& accounts,
       const std::string& xsrf_token);
 
-  // Log an error to the web interface.
-  void LogRegisterErrorToWeb(const std::string& error);
+  // Signal to the web interface an error has ocurred while registering.
+  void SendRegisterError();
 
-  // Log a successful registration to the web inteface.
-  void LogRegisterDoneToWeb(const std::string& id);
-
-  // Log an error to the web interface.
-  void LogInfoErrorToWeb(const std::string& error);
+  // Singal to the web interface that registration has finished.
+  void SendRegisterDone();
 
   // Set the visibility of the page.
   void SetIsVisible(bool visible);
@@ -145,8 +129,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;
 
-  // The current info operation (operations are currently exclusive).
-  scoped_ptr<PrivetInfoOperation> current_info_operation_;
+  // Device currently registering.
+  std::string current_register_device_;
 
   // The current register operation. Only one allowed at any time.
   scoped_ptr<PrivetRegisterOperation> current_register_operation_;
@@ -174,9 +158,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // Cloud print account manager to enumerate accounts and get XSRF token.
   scoped_ptr<CloudPrintAccountManager> cloud_print_account_manager_;
-
-  // Device currently registering.
-  std::string current_register_device_;
 
   // XSRF token.
   std::string xsrf_token_for_primary_user_;

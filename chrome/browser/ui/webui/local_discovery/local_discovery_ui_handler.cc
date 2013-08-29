@@ -74,9 +74,6 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
       &LocalDiscoveryUIHandler::HandleRegisterDevice,
       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("info", base::Bind(
-      &LocalDiscoveryUIHandler::HandleInfoRequested,
-      base::Unretained(this)));
   web_ui()->RegisterMessageCallback("chooseUser", base::Bind(
       &LocalDiscoveryUIHandler::HandleChooseUser,
       base::Unretained(this)));
@@ -117,18 +114,6 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   cloud_print_account_manager_->Start();
 }
 
-void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
-  std::string device_name;
-  args->GetString(0, &device_name);
-
-  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-      device_name,
-      device_descriptions_[device_name].address,
-      base::Bind(&LocalDiscoveryUIHandler::StartInfoHTTP,
-                 base::Unretained(this)));
-  privet_resolution_->Start();
-}
-
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
   bool is_visible = false;
   bool rv = args->GetBoolean(0, &is_visible);
@@ -158,7 +143,7 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(
   current_http_client_.swap(http_client);
 
   if (!current_http_client_) {
-    LogRegisterErrorToWeb("Resolution failed");
+    SendRegisterError();
     return;
   }
 
@@ -167,24 +152,14 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(
   current_register_operation_->Start();
 }
 
-void LocalDiscoveryUIHandler::StartInfoHTTP(
-    scoped_ptr<PrivetHTTPClient> http_client) {
-  current_http_client_.swap(http_client);
-  if (!current_http_client_) {
-    LogRegisterErrorToWeb("Resolution failed");
-    return;
-  }
-
-  current_info_operation_ = current_http_client_->CreateInfoOperation(this);
-  current_info_operation_->Start();
-}
-
 void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     PrivetRegisterOperation* operation,
     const std::string& token,
     const GURL& url) {
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.registrationConfirmedOnPrinter");
   if (device_descriptions_.count(current_http_client_->GetName()) == 0) {
-    LogRegisterErrorToWeb("Device no longer exists");
+    SendRegisterError();
     return;
   }
 
@@ -202,7 +177,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
     if (!token_service) {
-      LogRegisterErrorToWeb("Could not get token service");
+      SendRegisterError();
       return;
     }
 
@@ -238,7 +213,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
     int printer_http_code,
     const DictionaryValue* json) {
   // TODO(noamsml): Add detailed error message.
-  LogRegisterErrorToWeb("Registration error");
+  SendRegisterError();
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
@@ -247,7 +222,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
   current_register_operation_.reset();
   current_http_client_.reset();
 
-  LogRegisterDoneToWeb(device_id);
+  SendRegisterDone();
 }
 
 void LocalDiscoveryUIHandler::OnConfirmDone(
@@ -258,7 +233,7 @@ void LocalDiscoveryUIHandler::OnConfirmDone(
     current_register_operation_->CompleteRegistration();
   } else {
     // TODO(noamsml): Add detailed error message.
-    LogRegisterErrorToWeb("Confirm error");
+    SendRegisterError();
   }
 }
 
@@ -268,19 +243,17 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     const DeviceDescription& description) {
   device_descriptions_[name] = description;
 
-  base::StringValue service_name(name);
   base::DictionaryValue info;
-  info.SetString("domain", description.address.host());
-  info.SetInteger("port", description.address.port());
-  std::string ip_addr_string;
-  if (!description.ip_address.empty())
-    ip_addr_string = net::IPAddressToString(description.ip_address);
 
-  info.SetString("ip", ip_addr_string);
-  info.SetString("lastSeen", "unknown");
+  base::StringValue service_name(name);
+
+  info.SetString("service_name", name);
+  info.SetString("human_readable_name", description.name);
+  info.SetString("description", description.description);
   info.SetBoolean("registered", !description.id.empty());
+  info.SetBoolean("is_mine", !description.id.empty());
 
-  web_ui()->CallJavascriptFunction("local_discovery.onServiceUpdate",
+  web_ui()->CallJavascriptFunction("local_discovery.onDeviceUpdate",
                                    service_name, info);
 }
 
@@ -289,40 +262,16 @@ void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
   base::StringValue name_value(name);
 
-  web_ui()->CallJavascriptFunction("local_discovery.onServiceUpdate",
+  web_ui()->CallJavascriptFunction("local_discovery.onDeviceUpdate",
                                    name_value, *null_value);
 }
 
-void LocalDiscoveryUIHandler::LogRegisterErrorToWeb(const std::string& error) {
-  base::StringValue error_value(error);
-  web_ui()->CallJavascriptFunction("local_discovery.registrationFailed",
-                                   error_value);
-  DLOG(ERROR) << error;
+void LocalDiscoveryUIHandler::SendRegisterError() {
+  web_ui()->CallJavascriptFunction("local_discovery.registrationFailed");
 }
 
-void LocalDiscoveryUIHandler::LogRegisterDoneToWeb(const std::string& id) {
-  base::StringValue id_value(id);
-  web_ui()->CallJavascriptFunction("local_discovery.registrationSuccess",
-                                   id_value);
-  DLOG(INFO) << "Registered " << id;
-}
-
-void LocalDiscoveryUIHandler::LogInfoErrorToWeb(const std::string& error) {
-  base::StringValue error_value(error);
-  web_ui()->CallJavascriptFunction("local_discovery.infoFailed", error_value);
-  LOG(ERROR) << error;
-}
-
-void LocalDiscoveryUIHandler::OnPrivetInfoDone(
-    PrivetInfoOperation* operation,
-    int http_code,
-    const base::DictionaryValue* json_value) {
-  if (http_code != net::HTTP_OK || !json_value) {
-    LogInfoErrorToWeb(base::StringPrintf("HTTP error %d", http_code));
-    return;
-  }
-
-  web_ui()->CallJavascriptFunction("local_discovery.renderInfo", *json_value);
+void LocalDiscoveryUIHandler::SendRegisterDone() {
+  web_ui()->CallJavascriptFunction("local_discovery.registrationSuccess");
 }
 
 void LocalDiscoveryUIHandler::OnCloudPrintAccountsResolved(
@@ -351,8 +300,9 @@ void LocalDiscoveryUIHandler::OnCloudPrintAccountsResolved(
     accounts_annotated_list.Append(account_annotated.release());
   }
 
+  base::StringValue device_name(current_register_device_);
   web_ui()->CallJavascriptFunction("local_discovery.requestUser",
-                                   accounts_annotated_list);
+                                   accounts_annotated_list, device_name);
 }
 
 void LocalDiscoveryUIHandler::OnXSRFTokenForSecondaryAccount(
