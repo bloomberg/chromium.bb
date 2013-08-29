@@ -57,6 +57,81 @@ SRCS_NEWLIB_SYSCALL =  [
     'write.c',
 ]
 
+SRCS_NEWLIB_STUBS = [
+    'stubs/access.c',
+    'stubs/chmod.c',
+    'stubs/chown.c',
+    'stubs/endpwent.c',
+    'stubs/environ.c',
+    'stubs/execle.c',
+    'stubs/execvp.c',
+    'stubs/execl.c',
+    'stubs/execv.c',
+    'stubs/execlp.c',
+    'stubs/execve.c',
+    'stubs/_execve.c',
+    'stubs/fcntl.c',
+    'stubs/fchdir.c',
+    'stubs/fchmod.c',
+    'stubs/fchown.c',
+    'stubs/fdatasync.c',
+    'stubs/fork.c',
+    'stubs/fsync.c',
+    'stubs/ftruncate.c',
+    'stubs/get_current_dir_name.c',
+    'stubs/getegid.c',
+    'stubs/geteuid.c',
+    'stubs/getgid.c',
+    'stubs/getlogin.c',
+    'stubs/getrusage.c',
+    'stubs/getppid.c',
+    'stubs/getpwent.c',
+    'stubs/getpwnam.c',
+    'stubs/getpwnam_r.c',
+    'stubs/getpwuid.c',
+    'stubs/getpwuid_r.c',
+    'stubs/getuid.c',
+    'stubs/getwd.c',
+    'stubs/ioctl.c',
+    'stubs/isatty.c',
+    'stubs/issetugid.c',
+    'stubs/kill.c',
+    'stubs/lchown.c',
+    'stubs/link.c',
+    'stubs/llseek.c',
+    'stubs/lstat.c',
+    'stubs/pclose.c',
+    'stubs/pipe.c',
+    'stubs/popen.c',
+    'stubs/pselect.c',
+    'stubs/raise.c',
+    'stubs/readlink.c',
+    'stubs/remove.c',
+    'stubs/rename.c',
+    'stubs/select.c',
+    'stubs/setegid.c',
+    'stubs/seteuid.c',
+    'stubs/setgid.c',
+    'stubs/setpwent.c',
+    'stubs/settimeofday.c',
+    'stubs/setuid.c',
+    'stubs/signal.c',
+    'stubs/sigprocmask.c',
+    'stubs/symlink.c',
+    'stubs/system.c',
+    'stubs/times.c',
+    'stubs/tmpfile.c',
+    'stubs/truncate.c',
+    'stubs/ttyname.c',
+    'stubs/ttyname_r.c',
+    'stubs/umask.c',
+    'stubs/utime.c',
+    'stubs/utimes.c',
+    'stubs/vfork.c',
+    'stubs/wait.c',
+    'stubs/waitpid.c',
+]
+
 SRCS_NEWLIB_MISC = [
     'malloc.c',        # malloc wrapper
     'stacktrace.c',    # stack tracing for use with "-finstrument"
@@ -82,7 +157,10 @@ if env.Bit('nacl_glibc'):
   # we do not build them here.
   sources = SRCS_NACL_EXTENSIONS
 else:
-  sources = SRCS_NACL_EXTENSIONS + SRCS_NEWLIB_SYSCALL + SRCS_NEWLIB_MISC
+  sources = (SRCS_NACL_EXTENSIONS +
+             SRCS_NEWLIB_SYSCALL +
+             SRCS_NEWLIB_STUBS +
+             SRCS_NEWLIB_MISC)
   if env.Bit('target_arm') and not env.Bit('bitcode'):
     sources.append('aeabi_read_tp.S')
 
