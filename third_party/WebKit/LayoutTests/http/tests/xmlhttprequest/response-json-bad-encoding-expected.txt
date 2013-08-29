@@ -1,0 +1,3 @@
+
+PASS Let XMLHttpRequest with responseType set to json handle non-UTF-8 file. 
+
