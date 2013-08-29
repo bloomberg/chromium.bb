@@ -272,6 +272,37 @@ cr.define('local_discovery', function() {
     chrome.send('isVisible', [!document.webkitHidden]);
   }
 
+  /*
+   * Request a user account from a list.
+   * @param {Array} users Array of (index, username) tuples. Username may be
+   *    displayed to the user; index must be passed opaquely to the UI handler.
+   */
+  function requestUser(users) {
+    while ($('user-list-container').firstChild) {
+      $('user-list-container').removeChild($('user-list-container').firstChild);
+    }
+
+    var usersLength = users.length;
+    for (var i = 0; i < usersLength; i++) {
+      var userIndex = users[i][0];
+      var userName = users[i][1];
+
+      var button = document.createElement('button');
+      button.textContent = userName;
+      button.addEventListener('click',
+                              selectUser.bind(null, userIndex, userName));
+      $('user-list-container').appendChild(button);
+    }
+  }
+
+  function selectUser(userIndex, userName) {
+    while ($('user-list-container').firstChild) {
+      $('user-list-container').removeChild($('user-list-container').firstChild);
+    }
+
+    chrome.send('chooseUser', [userIndex, userName]);
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     updateVisibility();
     document.addEventListener('webkitvisibilitychange', updateVisibility,
@@ -284,6 +315,7 @@ cr.define('local_discovery', function() {
     registrationFailed: registrationFailed,
     onServiceUpdate: onServiceUpdate,
     infoFailed: infoFailed,
-    renderInfo: renderInfo
+    renderInfo: renderInfo,
+    requestUser: requestUser
   };
 });

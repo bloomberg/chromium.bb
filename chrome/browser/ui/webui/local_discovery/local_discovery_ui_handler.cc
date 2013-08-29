@@ -26,6 +26,7 @@ namespace {
 // TODO(noamsml): This is a temporary shim until automated_url is in the
 // response.
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
+const int kAccountIndexUseOAuth2 = -1;
 
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
 int g_num_visible = 0;
@@ -76,6 +77,9 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("info", base::Bind(
       &LocalDiscoveryUIHandler::HandleInfoRequested,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("chooseUser", base::Bind(
+      &LocalDiscoveryUIHandler::HandleChooseUser,
+      base::Unretained(this)));
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
@@ -101,12 +105,16 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   bool rv = args->GetString(0, &device_name);
   DCHECK(rv);
 
-  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-      device_name,
-      device_descriptions_[device_name].address,
-      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
-                 base::Unretained(this)));
-  privet_resolution_->Start();
+  current_register_device_ = device_name;
+
+  cloud_print_account_manager_.reset(new CloudPrintAccountManager(
+      Profile::FromWebUI(web_ui())->GetRequestContext(),
+      GetCloudPrintBaseUrl(device_name),
+      0 /* Get XSRF token for primary user */,
+      base::Bind(&LocalDiscoveryUIHandler::OnCloudPrintAccountsResolved,
+                 base::Unretained(this))));
+
+  cloud_print_account_manager_->Start();
 }
 
 void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
@@ -128,7 +136,24 @@ void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
   SetIsVisible(is_visible);
 }
 
+void LocalDiscoveryUIHandler::HandleChooseUser(const base::ListValue* args) {
+  std::string user;
+
+  bool rv = args->GetInteger(0, &current_register_user_index_);
+  DCHECK(rv);
+  rv = args->GetString(1, &user);
+  DCHECK(rv);
+
+  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      current_register_device_,
+      device_descriptions_[current_register_device_].address,
+      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
+                 base::Unretained(this), user));
+  privet_resolution_->Start();
+}
+
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
+    const std::string& user,
     scoped_ptr<PrivetHTTPClient> http_client) {
   current_http_client_.swap(http_client);
 
@@ -137,19 +162,8 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile);
-
-  if (!signin_manager) {
-    LogRegisterErrorToWeb("You must be signed in");
-    return;
-  }
-
-  std::string username = signin_manager->GetAuthenticatedUsername();
-
   current_register_operation_ =
-      current_http_client_->CreateRegisterOperation(username, this);
+      current_http_client_->CreateRegisterOperation(user, this);
   current_register_operation_->Start();
 }
 
@@ -174,29 +188,47 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
+  std::string base_url = GetCloudPrintBaseUrl(current_http_client_->GetName());
+
   GURL automated_claim_url(base::StringPrintf(
       kPrivetAutomatedClaimURLFormat,
-      device_descriptions_[current_http_client_->GetName()].url.c_str(),
+      base_url.c_str(),
       token.c_str()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (current_register_user_index_ == kAccountIndexUseOAuth2) {
+    OAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
-  if (!token_service) {
-    LogRegisterErrorToWeb("Could not get token service");
-    return;
+    if (!token_service) {
+      LogRegisterErrorToWeb("Could not get token service");
+      return;
+    }
+
+    confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
+        profile->GetRequestContext(),
+        token_service,
+        automated_claim_url,
+        base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
+                   base::Unretained(this))));
+    confirm_api_call_flow_->Start();
+  } else {
+    if (current_register_user_index_ == 0) {
+      StartCookieConfirmFlow(current_register_user_index_,
+                             xsrf_token_for_primary_user_,
+                             automated_claim_url);
+    } else {
+      cloud_print_account_manager_.reset(new CloudPrintAccountManager(
+          Profile::FromWebUI(web_ui())->GetRequestContext(),
+          base_url,
+          current_register_user_index_,
+          base::Bind(&LocalDiscoveryUIHandler::OnXSRFTokenForSecondaryAccount,
+                     base::Unretained(this), automated_claim_url)));
+
+      cloud_print_account_manager_->Start();
+    }
   }
-
-  confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
-      profile->GetRequestContext(),
-      token_service,
-      automated_claim_url,
-      base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
-                 base::Unretained(this))));
-
-  confirm_api_call_flow_->Start();
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterError(
@@ -293,11 +325,82 @@ void LocalDiscoveryUIHandler::OnPrivetInfoDone(
   web_ui()->CallJavascriptFunction("local_discovery.renderInfo", *json_value);
 }
 
+void LocalDiscoveryUIHandler::OnCloudPrintAccountsResolved(
+    const std::vector<std::string>& accounts,
+    const std::string& xsrf_token) {
+  xsrf_token_for_primary_user_ = xsrf_token;
+
+  std::string sync_account = GetSyncAccount();
+  base::ListValue accounts_annotated_list;
+
+  if (!sync_account.empty()) {
+    scoped_ptr<base::ListValue> account_annotated(new base::ListValue);
+    account_annotated->AppendInteger(kAccountIndexUseOAuth2);
+    account_annotated->AppendString(sync_account);
+    accounts_annotated_list.Append(account_annotated.release());
+  }
+
+  int account_index = 0;
+  for (std::vector<std::string>::const_iterator i = accounts.begin();
+       i != accounts.end(); i++, account_index++) {
+    if (*i == sync_account) continue;
+
+    scoped_ptr<base::ListValue> account_annotated(new base::ListValue);
+    account_annotated->AppendInteger(account_index);
+    account_annotated->AppendString(*i);
+    accounts_annotated_list.Append(account_annotated.release());
+  }
+
+  web_ui()->CallJavascriptFunction("local_discovery.requestUser",
+                                   accounts_annotated_list);
+}
+
+void LocalDiscoveryUIHandler::OnXSRFTokenForSecondaryAccount(
+    const GURL& automated_claim_url,
+    const std::vector<std::string>& accounts,
+    const std::string& xsrf_token) {
+  StartCookieConfirmFlow(current_register_user_index_,
+                         xsrf_token,
+                         automated_claim_url);
+}
+
 void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
   if (visible != is_visible_) {
     g_num_visible += visible ? 1 : -1;
     is_visible_ = visible;
   }
+}
+
+std::string LocalDiscoveryUIHandler::GetSyncAccount() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile);
+
+  if (!signin_manager) {
+    return "";
+  }
+
+  return signin_manager->GetAuthenticatedUsername();
+}
+
+const std::string& LocalDiscoveryUIHandler::GetCloudPrintBaseUrl(
+    const std::string& device_name) {
+  return device_descriptions_[device_name].url;
+}
+
+void LocalDiscoveryUIHandler::StartCookieConfirmFlow(
+    int user_index,
+    const std::string& xsrf_token,
+    const GURL& automated_claim_url) {
+  confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
+      Profile::FromWebUI(web_ui())->GetRequestContext(),
+      user_index,
+      xsrf_token,
+      automated_claim_url,
+      base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
+                 base::Unretained(this))));
+
+  confirm_api_call_flow_->Start();
 }
 
 }  // namespace local_discovery
