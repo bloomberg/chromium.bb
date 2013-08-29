@@ -97,6 +97,18 @@ class JobScheduler
       const GURL& next_url,
       const google_apis::GetResourceListCallback& callback);
 
+  // Adds GetRemainingChangeList operation to the queue.
+  // |callback| must not be null.
+  void GetRemainingChangeList(
+      const std::string& page_token,
+      const google_apis::GetResourceListCallback& callback);
+
+  // Adds GetRemainingFileList operation to the queue.
+  // |callback| must not be null.
+  void GetRemainingFileList(
+      const std::string& page_token,
+      const google_apis::GetResourceListCallback& callback);
+
   // Adds a GetResourceEntry operation to the queue.
   void GetResourceEntry(const std::string& resource_id,
                         const ClientContext& context,

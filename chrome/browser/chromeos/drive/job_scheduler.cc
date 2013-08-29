@@ -318,6 +318,44 @@ void JobScheduler::ContinueGetResourceList(
   StartJob(new_job);
 }
 
+void JobScheduler::GetRemainingChangeList(
+    const std::string& page_token,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  JobEntry* new_job = CreateNewJob(TYPE_GET_REMAINING_CHANGE_LIST);
+  new_job->task = base::Bind(
+      &DriveServiceInterface::GetRemainingChangeList,
+      base::Unretained(drive_service_),
+      page_token,
+      base::Bind(&JobScheduler::OnGetResourceListJobDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 new_job->job_info.job_id,
+                 callback));
+  new_job->abort_callback = google_apis::CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
+void JobScheduler::GetRemainingFileList(
+    const std::string& page_token,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  JobEntry* new_job = CreateNewJob(TYPE_GET_REMAINING_FILE_LIST);
+  new_job->task = base::Bind(
+      &DriveServiceInterface::GetRemainingFileList,
+      base::Unretained(drive_service_),
+      page_token,
+      base::Bind(&JobScheduler::OnGetResourceListJobDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 new_job->job_info.job_id,
+                 callback));
+  new_job->abort_callback = google_apis::CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
 void JobScheduler::GetResourceEntry(
     const std::string& resource_id,
     const ClientContext& context,
@@ -1049,6 +1087,8 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_SEARCH:
     case TYPE_GET_CHANGE_LIST:
     case TYPE_CONTINUE_GET_RESOURCE_LIST:
+    case TYPE_GET_REMAINING_CHANGE_LIST:
+    case TYPE_GET_REMAINING_FILE_LIST:
     case TYPE_GET_RESOURCE_ENTRY:
     case TYPE_GET_SHARE_URL:
     case TYPE_DELETE_RESOURCE:
