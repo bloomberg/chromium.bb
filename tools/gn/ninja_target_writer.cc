@@ -30,6 +30,13 @@ NinjaTargetWriter::~NinjaTargetWriter() {
 
 // static
 void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
+  // External targets don't get written to disk, we assume they're managed by
+  // an external program. If we're not using an external generator, this is
+  // ignored.
+  if (target->settings()->build_settings()->using_external_generator() &&
+      target->external())
+    return;
+
   const Settings* settings = target->settings();
   NinjaHelper helper(settings->build_settings());
 

@@ -5,6 +5,7 @@
 import("ssl/flags.gni")
 
 component("crypto") {
+  external = true
   sources = [
     "apple_keychain.h",
     "apple_keychain_ios.mm",
@@ -166,6 +167,7 @@ component("crypto") {
 # A minimal crypto subset for core features that small standalone targets can
 # use to reduce code size.
 static_library("crypto_minimal") {
+  external = true
   sources = [
     "hmac.cc",
     "hmac.h",
@@ -187,6 +189,7 @@ static_library("crypto_minimal") {
 }
 
 test("crypto_unittests") {
+  external = true
   sources = [
     # Infrastructure files.
     "run_all_unittests.cc",
@@ -224,9 +227,9 @@ test("crypto_unittests") {
   deps = [
     ":crypto",
     "//base",
-    "//base/test:test_support_base",
-    "//testing/gmock",
-    "//testing/gtest",
+    "//base:test_support_base",
+    "//testing:gmock",
+    "//testing:gtest",
   ]
 
   if (is_mac) {

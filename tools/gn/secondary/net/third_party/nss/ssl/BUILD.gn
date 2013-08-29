@@ -10,6 +10,7 @@ config("crssl_config") {
 
 # Not named "ssl" so the lib doesn't conflict with OpenSSL's libssl
 component("crssl") {
+  external = true
   sources = [
     "authcert.c",
     "cmpcert.c",

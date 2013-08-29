@@ -45,6 +45,7 @@ config("icu_code") {
 }
 
 component("icui18n") {
+  external = true
   sources = [
     "source/i18n/anytrans.cpp",
     "source/i18n/astro.cpp",
@@ -217,6 +218,7 @@ component("icui18n") {
 }
 
 component("icuuc") {
+  external = true
   sources = [
     "source/common/bmpset.cpp",
     "source/common/brkeng.cpp",
@@ -400,11 +402,13 @@ component("icuuc") {
 if (is_win) {
   # On Windows the target DLL is pre-built so just use a copy rule.
   copy("icudata") {
+    external = true
     sources = [ "windows/icudt.dll" ]
     destdir = root_output_dir
   }
 } else {
   static_library("icudata") {
+    external = true
     sources = [
       # These are hand-generated, but will do for now.  The linux version is an
       # identical copy of the (mac) icudt46l_dat.S file, modulo removal of the

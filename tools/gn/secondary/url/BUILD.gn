@@ -6,6 +6,7 @@
 # for a Windows component build, and that will confuse Windows, which has a
 # system DLL with the same name.
 component("url_lib") {
+  external = true
   sources = [
     "gurl.cc",
     "gurl.h",
@@ -48,6 +49,7 @@ component("url_lib") {
 }
 
 test("url_unittests") {
+  external = true
   sources = [
     "gurl_unittest.cc",
     "url_canon_unittest.cc",
@@ -59,8 +61,8 @@ test("url_unittests") {
   deps = [
     ":url_lib",
     "//base:base_i18n",
-    "//base/test:run_all_unittests",
-    "//testing/gtest",
+    "//base:run_all_unittests",
+    "//testing:gtest",
     "//third_party/icu:icuuc",
   ]
 }

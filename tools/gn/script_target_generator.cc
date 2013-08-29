@@ -23,6 +23,7 @@ ScriptTargetGenerator::~ScriptTargetGenerator() {
 void ScriptTargetGenerator::DoRun() {
   target_->set_output_type(Target::CUSTOM);
 
+  FillExternal();
   FillSources();
   FillScript();
   FillScriptArgs();

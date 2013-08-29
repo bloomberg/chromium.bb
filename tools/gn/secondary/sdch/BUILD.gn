@@ -7,6 +7,7 @@ config("sdch_config") {
 }
 
 static_library("sdch") {
+  external = true
   sources = [
     "open-vcdiff/src/addrcache.cc",
     "open-vcdiff/src/blockhash.cc",
@@ -51,5 +52,5 @@ static_library("sdch") {
     includes = [ "win" ]
   }
 
-  deps = [ "//third_party/zlib" ]
+  deps = [ "//third_party/zlib:chrome_zlib" ]
 }

@@ -7,7 +7,8 @@
 #include "tools/gn/filesystem_utils.h"
 
 BuildSettings::BuildSettings()
-    : item_tree_(),
+    : using_external_generator_(false),
+      item_tree_(),
       target_manager_(this),
       toolchain_manager_(this) {
 }

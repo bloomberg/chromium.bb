@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("modp_b64") {
+  external = true
   sources = [
     "modp_b64.cc",
     "modp_b64.h",

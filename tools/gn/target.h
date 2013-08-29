@@ -108,6 +108,9 @@ class Target : public Item {
     forward_dependent_configs_.swap(*t);
   }
 
+  bool external() const { return external_; }
+  void set_external(bool e) { external_ = e; }
+
   const std::set<const Target*>& inherited_libraries() const {
     return inherited_libraries_;
   }
@@ -134,6 +137,8 @@ class Target : public Item {
   std::vector<const Config*> all_dependent_configs_;
   std::vector<const Config*> direct_dependent_configs_;
   std::vector<const Target*> forward_dependent_configs_;
+
+  bool external_;
 
   // Libraries from transitive deps. Libraries need to be linked only
   // with the end target (executable, shared library). These do not get

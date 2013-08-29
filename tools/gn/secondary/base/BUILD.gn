@@ -9,6 +9,7 @@ config("base_libs") {
 }
 
 component("base") {
+  external = true
   sources = [
     "../build/build_config.h",
     "third_party/dmg_fp/dmg_fp.h",
@@ -874,5 +875,149 @@ component("base_i18n") {
   #  'enable_wexit_time_destructors': 1,
   #  'optimize': 'max',
   #},
+}
+
+# TODO(brettw) move to base/test.
+static_library("test_support_base") {
+  external = true
+  sources = [
+    "test/expectations/expectation.cc",
+    "test/expectations/expectation.h",
+    "test/expectations/parser.cc",
+    "test/expectations/parser.h",
+    "test/gtest_xml_util.cc",
+    "test/gtest_xml_util.h",
+    "test/mock_chrome_application_mac.h",
+    "test/mock_chrome_application_mac.mm",
+    "test/mock_devices_changed_observer.cc",
+    "test/mock_devices_changed_observer.h",
+    "test/mock_time_provider.cc",
+    "test/mock_time_provider.h",
+    "test/multiprocess_test.cc",
+    "test/multiprocess_test.h",
+    "test/multiprocess_test_android.cc",
+    "test/null_task_runner.cc",
+    "test/null_task_runner.h",
+    "test/perf_test_suite.cc",
+    "test/perf_test_suite.h",
+    "test/perftimer.cc",
+    "test/scoped_locale.cc",
+    "test/scoped_locale.h",
+    "test/scoped_path_override.cc",
+    "test/scoped_path_override.h",
+    "test/sequenced_task_runner_test_template.cc",
+    "test/sequenced_task_runner_test_template.h",
+    "test/sequenced_worker_pool_owner.cc",
+    "test/sequenced_worker_pool_owner.h",
+    "test/simple_test_clock.cc",
+    "test/simple_test_clock.h",
+    "test/simple_test_tick_clock.cc",
+    "test/simple_test_tick_clock.h",
+    "test/task_runner_test_template.cc",
+    "test/task_runner_test_template.h",
+    "test/test_file_util.h",
+    "test/test_file_util_linux.cc",
+    "test/test_file_util_mac.cc",
+    "test/test_file_util_posix.cc",
+    "test/test_file_util_win.cc",
+    "test/test_launcher.cc",
+    "test/test_launcher.h",
+    "test/test_listener_ios.h",
+    "test/test_listener_ios.mm",
+    "test/test_pending_task.cc",
+    "test/test_pending_task.h",
+    "test/test_process_killer_win.cc",
+    "test/test_process_killer_win.h",
+    "test/test_reg_util_win.cc",
+    "test/test_reg_util_win.h",
+    "test/test_shortcut_win.cc",
+    "test/test_shortcut_win.h",
+    "test/test_simple_task_runner.cc",
+    "test/test_simple_task_runner.h",
+    "test/test_suite.cc",
+    "test/test_suite.h",
+    "test/test_support_android.cc",
+    "test/test_support_android.h",
+    "test/test_support_ios.h",
+    "test/test_support_ios.mm",
+    "test/test_switches.cc",
+    "test/test_switches.h",
+    "test/test_timeouts.cc",
+    "test/test_timeouts.h",
+    "test/thread_test_helper.cc",
+    "test/thread_test_helper.h",
+    "test/trace_event_analyzer.cc",
+    "test/trace_event_analyzer.h",
+    "test/unit_test_launcher.cc",
+    "test/unit_test_launcher.h",
+    "test/unit_test_launcher_ios.cc",
+    "test/values_test_util.cc",
+    "test/values_test_util.h",
+  ]
+  deps = [
+    "//base",
+    "//base:base_static",
+    "//base:base_i18n",
+    "//testing:gmock",
+    "//testing:gtest",
+    "//third_party/libxml:libxml2",
+  ]
+
+  if (!is_posix) {
+    sources -= [
+      "scoped_locale.cc",
+      "scoped_locale.h",
+    ]
+  }
+  if (is_ios) {
+    # Pull in specific Mac files for iOS (which have been filtered out
+    # by file name rules).
+    set_sources_assignment_filter([])
+    sources += "test_file_util_mac.cc"
+  }
+  #if (!is_bsd) {
+  #  sources -= "test/test_file_util_linux.cc"
+  #}
+  #if (use_gtk) {
+  #  deps += "/build/linux/system:gtk"
+  #}
+  #export_dependent_settings [
+  #  'base',
+  #]
+}
+
+# TODO(brettw) move to base/test.
+config("perf_test_config") {
+  defines = [ "PERF_TEST" ]
+}
+
+# TODO(brettw) move to base/test.
+static_library("test_support_perf") {
+  external = true
+  sources = [
+    "test/perftimer.cc",
+    "test/run_all_perftests.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing:gtest",
+  ]
+
+  direct_dependent_configs = [ ":perf_test_config" ]
+
+  #if (toolkit_uses_gtk) {
+  #  deps += "/build/linux/system:gtk",
+  #}
+}
+
+# TODO(brettw) move to base/test.
+static_library("run_all_unittests") {
+  external = true
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+  deps = [
+    ":test_support_base",
+  ]
 }
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 component("ipc") {
+  external = true
   sources = [
     "file_descriptor_set_posix.cc",
     "file_descriptor_set_posix.h",
@@ -79,6 +80,7 @@ component("ipc") {
 }
 
 test("ipc_tests") {
+  external = true
   sources = [
     "file_descriptor_set_posix_unittest.cc",
     "ipc_channel_posix_unittest.cc",
@@ -116,13 +118,14 @@ test("ipc_tests") {
     ":test_support_ipc",
     "//base",
     "//base:base_i18n",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support_base",
-    "//testing/gtest",
+    "//base:run_all_unittests",
+    "//base:test_support_base",
+    "//testing:gtest",
   ]
 }
 
 test("ipc_perftests") {
+  external = true
   sources = [
     "ipc_perftests.cc",
     "ipc_test_base.cc",
@@ -146,13 +149,14 @@ test("ipc_perftests") {
     ":test_support_ipc",
     "//base",
     "//base:base_i18n",
-    "//base/test:test_support_base",
-    "//base/test:test_support_perf",
-    "//testing/gtest",
+    "//base:test_support_base",
+    "//base:test_support_perf",
+    "//testing:gtest",
   ]
 }
 
 static_library("test_support_ipc") {
+  external = true
   sources = [
     "ipc_multiprocess_test.cc",
     "ipc_multiprocess_test.h",
@@ -162,7 +166,7 @@ static_library("test_support_ipc") {
   deps = [
     ":ipc",
     "//base",
-    "//testing/gtest",
+    "//testing:gtest",
   ]
 }
 

@@ -159,6 +159,15 @@ void TargetGenerator::FillDependencies() {
   FillForwardDependentConfigs();
 }
 
+void TargetGenerator::FillExternal() {
+  const Value* value = scope_->GetValue(variables::kExternal, true);
+  if (!value)
+    return;
+  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+    return;
+  target_->set_external(value->boolean_value());
+}
+
 void TargetGenerator::SetToolchainDependency() {
   // TODO(brettw) currently we lock separately for each config, dep, and
   // toolchain we add which is bad! Do this in one lock.

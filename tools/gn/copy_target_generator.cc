@@ -22,6 +22,7 @@ CopyTargetGenerator::~CopyTargetGenerator() {
 void CopyTargetGenerator::DoRun() {
   target_->set_output_type(Target::COPY_FILES);
 
+  FillExternal();
   FillSources();
   FillDestDir();
 

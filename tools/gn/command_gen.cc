@@ -39,6 +39,7 @@ const char kGen_Help[] =
     "\n"
     "  See \"gn help\" for the common command-line switches.\n";
 
+// Note: partially duplicated in command_gyp.cc.
 int RunGen(const std::vector<std::string>& args) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
 

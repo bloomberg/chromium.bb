@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("mach_override") {
+  external = true
   sources = [
     "mach_override.c",
     "mach_override.h",

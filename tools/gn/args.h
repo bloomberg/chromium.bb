@@ -27,7 +27,7 @@ class Args {
 
   // Specifies overrides of the build arguments. These are normally specified
   // on the command line.
-  void SwapInArgOverrides(Scope::KeyValueMap* overrides);
+  void AddArgOverrides(const Scope::KeyValueMap& overrides);
 
   // Sets up the root scope for a toolchain. This applies the default system
   // flags, then any overrides stored in this object, then applies any

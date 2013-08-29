@@ -37,6 +37,7 @@ const CommandInfoMap& GetCommands() {
     INSERT_COMMAND(Args)
     INSERT_COMMAND(Desc)
     INSERT_COMMAND(Gen)
+    INSERT_COMMAND(Gyp)
     INSERT_COMMAND(Help)
     INSERT_COMMAND(Refs)
 

@@ -50,7 +50,9 @@ void NinjaCopyTargetWriter::Run() {
   // Write out the rule for the target to copy all of them.
   out_ << std::endl << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": stamp";
+  out_ << ": "
+       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << "stamp";
   for (size_t i = 0; i < dest_files.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, dest_files[i]);

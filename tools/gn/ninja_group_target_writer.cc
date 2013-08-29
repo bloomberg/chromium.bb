@@ -20,7 +20,9 @@ void NinjaGroupTargetWriter::Run() {
   // the deps in the group.
   out_ << std::endl << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": stamp";
+  out_ << ": "
+       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << "stamp";
 
   const std::vector<const Target*>& deps = target_->deps();
   for (size_t i = 0; i < deps.size(); i++) {

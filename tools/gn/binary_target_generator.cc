@@ -7,6 +7,7 @@
 #include "tools/gn/config_values_generator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/variables.h"
 
 BinaryTargetGenerator::BinaryTargetGenerator(Target* target,
                                              Scope* scope,
@@ -23,6 +24,7 @@ BinaryTargetGenerator::~BinaryTargetGenerator() {
 void BinaryTargetGenerator::DoRun() {
   target_->set_output_type(output_type_);
 
+  FillExternal();
   FillSources();
   FillConfigs();
 

@@ -39,6 +39,13 @@ class BuildSettings {
   }
   void SetSecondarySourcePath(const SourceDir& d);
 
+  // Set when we're running an external generator (e.g. GYP) and should
+  // enable "external" flags on targets.
+  bool using_external_generator() const { return using_external_generator_; }
+  void set_using_external_generator(bool ueg) {
+    using_external_generator_ = ueg;
+  }
+
   // Path of the python executable to run scripts with.
   base::FilePath python_path() const { return python_path_; }
   void set_python_path(const base::FilePath& p) { python_path_ = p; }
@@ -98,6 +105,7 @@ class BuildSettings {
   base::FilePath root_path_;
   std::string root_path_utf8_;
   base::FilePath secondary_source_path_;
+  bool using_external_generator_;
   base::FilePath python_path_;
 
   SourceFile build_config_file_;

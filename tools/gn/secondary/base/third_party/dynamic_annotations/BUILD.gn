@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("dynamic_annotations") {
+  external = true
   sources = [
     "dynamic_annotations.c",
     "dynamic_annotations.h",

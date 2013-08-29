@@ -223,7 +223,9 @@ void NinjaScriptTargetWriter::WriteStamp(
     const std::vector<OutputFile>& output_files) {
   out_ << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": stamp";
+  out_ << ": "
+       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << "stamp";
   for (size_t i = 0; i < output_files.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, output_files[i]);

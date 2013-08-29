@@ -6,6 +6,7 @@ import("//crypto/ssl/flags.gni")
 import("//tools/grit/grit_rule.gni")
 
 component("net") {
+  external = true
   sources = [
     "android/cert_verify_result_android.h",
     "android/cert_verify_result_android_list.h",
@@ -1068,7 +1069,7 @@ component("net") {
     "//sdch",
     "//third_party/icu:icui18n",
     "//third_party/icu:icuuc",
-    "//third_party/zlib",
+    "//third_party/zlib:chrome_zlib",
     "//url:url_lib",
   ]
 
@@ -1198,5 +1199,6 @@ component("net") {
 }
 
 grit("net_resources") {
+  external = true
   source = "base/net_resources.grd"
 }

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("libevent") {
+  external = true
   sources = [
     "buffer.c",
     "epoll.c",

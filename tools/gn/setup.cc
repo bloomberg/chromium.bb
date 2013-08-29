@@ -173,7 +173,7 @@ bool Setup::FillArguments(const CommandLine& cmdline) {
   // Save the result of the command args.
   Scope::KeyValueMap overrides;
   arg_scope.GetCurrentScopeValues(&overrides);
-  build_settings_.build_args().SwapInArgOverrides(&overrides);
+  build_settings_.build_args().AddArgOverrides(overrides);
   return true;
 }
 

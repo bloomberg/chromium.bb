@@ -114,11 +114,14 @@ OutputFile NinjaHelper::GetOutputFileForSource(
 OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   OutputFile ret;
 
-  // This is prepended to the output file name.
+  // This is prepended to the output file name. Some platforms get "lib"
+  // prepended to library names. but be careful not to make a duplicate (e.g.
+  // some targets like "libxml" already have the "lib" in the name).
   const char* prefix;
   if (!target->settings()->IsWin() &&
       (target->output_type() == Target::SHARED_LIBRARY ||
-       target->output_type() == Target::STATIC_LIBRARY))
+       target->output_type() == Target::STATIC_LIBRARY) &&
+      target->label().name().compare(0, 3, "lib") != 0)
     prefix = "lib";
   else
     prefix = "";
@@ -182,8 +185,12 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
 }
 
 std::string NinjaHelper::GetRulePrefix(const Toolchain* toolchain) const {
-  if (toolchain->is_default())
-    return std::string();  // Default toolchain has no prefix.
+  // This code doesn't prefix the default toolchain commands. This is disabled
+  // so we can coexist with GYP's commands (which aren't prefixed). If we don't
+  // need to coexist with GYP anymore, we can uncomment this to make things a
+  // bit prettier.
+  //if (toolchain->is_default())
+  //  return std::string();  // Default toolchain has no prefix.
   return toolchain->label().name() + "_";
 }
 

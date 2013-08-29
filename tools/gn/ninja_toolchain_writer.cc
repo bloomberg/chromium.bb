@@ -17,9 +17,11 @@
 NinjaToolchainWriter::NinjaToolchainWriter(
     const Settings* settings,
     const std::vector<const Target*>& targets,
+    const std::set<std::string>& skip_files,
     std::ostream& out)
     : settings_(settings),
       targets_(targets),
+      skip_files_(skip_files),
       out_(out),
       path_output_(settings_->build_settings()->build_dir(),
                    ESCAPE_NINJA, true),
@@ -37,7 +39,8 @@ void NinjaToolchainWriter::Run() {
 // static
 bool NinjaToolchainWriter::RunAndWriteFile(
     const Settings* settings,
-    const std::vector<const Target*>& targets) {
+    const std::vector<const Target*>& targets,
+    const std::set<std::string>& skip_files) {
   NinjaHelper helper(settings->build_settings());
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForToolchain(settings).GetSourceFile(
@@ -50,7 +53,7 @@ bool NinjaToolchainWriter::RunAndWriteFile(
   if (file.fail())
     return false;
 
-  NinjaToolchainWriter gen(settings, targets, file);
+  NinjaToolchainWriter gen(settings, targets, skip_files, file);
   gen.Run();
   return true;
 }
@@ -90,10 +93,17 @@ void NinjaToolchainWriter::WriteRules() {
 void NinjaToolchainWriter::WriteSubninjas() {
   // Write subninja commands for each generated target.
   for (size_t i = 0; i < targets_.size(); i++) {
-    if (!targets_[i]->item_node()->should_generate())
+    if (!targets_[i]->item_node()->should_generate() ||
+        (targets_[i]->settings()->build_settings()->using_external_generator()
+         && targets_[i]->external()))
       continue;
+
+    OutputFile ninja_file = helper_.GetNinjaFileForTarget(targets_[i]);
+    if (skip_files_.find(ninja_file.value()) != skip_files_.end())
+      continue;
+
     out_ << "subninja ";
-    path_output_.WriteFile(out_, helper_.GetNinjaFileForTarget(targets_[i]));
+    path_output_.WriteFile(out_, ninja_file);
     out_ << std::endl;
   }
   out_ << std::endl;

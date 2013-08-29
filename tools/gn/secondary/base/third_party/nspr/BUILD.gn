@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("nspr") {
+  external = true
   sources = [
     "prcpucfg.h",
     "prcpucfg_freebsd.h",

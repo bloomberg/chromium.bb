@@ -6,7 +6,8 @@ config("zlib_config") {
   includes = [ "." ]
 }
 
-static_library("zlib") {
+static_library("chrome_zlib") {
+  external = true
   sources = [
     "adler32.c",
     "compress.c",
@@ -41,6 +42,7 @@ static_library("zlib") {
 }
 
 static_library("minizip") {
+  external = true
   sources = [
     "contrib/minizip/ioapi.c",
     "contrib/minizip/ioapi.h",
@@ -68,12 +70,13 @@ static_library("minizip") {
     cflags = [ "-Wno-parentheses-equality" ]
   }
 
-  deps = [ ":zlib" ]
+  deps = [ ":chrome_zlib" ]
 
   direct_dependent_configs = [ ":zlib_config" ]
 }
 
 static_library("zip") {
+  external = true
   sources = [
     "google/zip.cc",
     "google/zip.h",

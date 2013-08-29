@@ -9,6 +9,7 @@ static_library("gn_lib") {
     "command_args.cc",
     "command_desc.cc",
     "command_gen.cc",
+    "command_gyp.cc",
     "command_help.cc",
     "command_refs.cc",
     "commands.cc",
@@ -168,9 +169,9 @@ test("gn_unittests") {
   ]
   deps = [
     ":gn_lib",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support_base",
-    "//testing/gtest",
+    "//base:run_all_unittests",
+    "//base:test_support_base",
+    "//testing:gtest",
   ]
 }
 

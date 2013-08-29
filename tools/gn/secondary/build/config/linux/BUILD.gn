@@ -30,12 +30,16 @@ config("gtk") {
   # misconfigured systems.
   gtk_packages = "gmodule-2.0 gtk+-2.0 gthread-2.0"
 
+  defines = [ "TOOLKIT_GTK" ]
+
   cflags = exec_script(pkg_script, [ "--cflags", gtk_packages ], "list lines")
   ldflags = exec_script(pkg_script, [ "--libs", gtk_packages ], "list lines")
 }
 
 config("x11") {
   x11_packages = "x11 xi"
+
+  defines = [ "USE_X11" ]
 
   cflags = exec_script(pkg_script, [ "--cflags", x11_packages ], "list lines")
   ldflags = exec_script(pkg_script, [ "--libs", x11_packages ], "list lines")

@@ -50,6 +50,7 @@ class TargetGenerator {
 
   void FillSources();
   void FillConfigs();
+  void FillExternal();
 
   // Sets the current toolchain as a dependecy of this target. All targets with
   // a dependency on the toolchain should call this function.

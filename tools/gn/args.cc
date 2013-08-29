@@ -55,12 +55,12 @@ Args::Args() {
 Args::~Args() {
 }
 
-void Args::SwapInArgOverrides(Scope::KeyValueMap* overrides) {
-  DCHECK(overrides_.empty());
-  overrides_.swap(*overrides);
-  for (Scope::KeyValueMap::const_iterator i = overrides_.begin();
-       i != overrides_.end(); ++i)
+void Args::AddArgOverrides(const Scope::KeyValueMap& overrides) {
+  for (Scope::KeyValueMap::const_iterator i = overrides.begin();
+       i != overrides.end(); ++i) {
+    overrides_.insert(*i);
     all_overrides_.insert(*i);
+  }
 }
 
 void Args::SetupRootScope(Scope* dest,

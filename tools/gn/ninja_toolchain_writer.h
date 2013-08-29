@@ -6,6 +6,8 @@
 #define TOOLS_GN_NINJA_TOOLCHAIN_WRITER_H_
 
 #include <iosfwd>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "tools/gn/ninja_helper.h"
@@ -18,13 +20,16 @@ class Target;
 class NinjaToolchainWriter {
  public:
   // Takes the settings for the toolchain, as well as the list of all targets
-  // assicoated with the toolchain.
+  // assicoated with the toolchain. Ninja files exactly matching "skip_files"
+  // will not be included in the subninja list.
   static bool RunAndWriteFile(const Settings* settings,
-                              const std::vector<const Target*>& targets);
+                              const std::vector<const Target*>& targets,
+                              const std::set<std::string>& skip_files);
 
  private:
   NinjaToolchainWriter(const Settings* settings,
                        const std::vector<const Target*>& targets,
+                       const std::set<std::string>& skip_files,
                        std::ostream& out);
   ~NinjaToolchainWriter();
 
@@ -35,6 +40,7 @@ class NinjaToolchainWriter {
 
   const Settings* settings_;
   std::vector<const Target*> targets_;
+  const std::set<std::string>& skip_files_;
   std::ostream& out_;
   PathOutput path_output_;
 

@@ -18,4 +18,5 @@ void GroupTargetGenerator::DoRun() {
   target_->set_output_type(Target::GROUP);
   // Groups only have the default types filled in by the target generator
   // base class.
+  FillExternal();
 }
