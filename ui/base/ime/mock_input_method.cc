@@ -83,8 +83,12 @@ bool MockInputMethod::IsActive() {
   return true;
 }
 
-ui::TextInputType MockInputMethod::GetTextInputType() const {
-  return ui::TEXT_INPUT_TYPE_NONE;
+TextInputType MockInputMethod::GetTextInputType() const {
+  return TEXT_INPUT_TYPE_NONE;
+}
+
+TextInputMode MockInputMethod::GetTextInputMode() const {
+  return TEXT_INPUT_MODE_DEFAULT;
 }
 
 bool MockInputMethod::CanComposeInline() const {

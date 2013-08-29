@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
@@ -140,9 +141,17 @@ class InputMethod {
   // is not active.
   virtual bool IsActive() = 0;
 
+  // TODO(yoichio): Following 3 methods(GetTextInputType, GetTextInputMode and
+  // CanComposeInline) calls client's same method and returns its value. It is
+  // not InputMethod itself's infomation. So rename these to
+  // GetClientTextInputType and so on.
   // Gets the text input type of the focused text input client. Returns
   // ui::TEXT_INPUT_TYPE_NONE if there is no focused client.
   virtual TextInputType GetTextInputType() const = 0;
+
+  // Gets the text input mode of the focused text input client. Returns
+  // ui::TEXT_INPUT_TYPE_DEFAULT if there is no focused client.
+  virtual TextInputMode GetTextInputMode() const = 0;
 
   // Checks if the focused text input client supports inline composition.
   virtual bool CanComposeInline() const = 0;

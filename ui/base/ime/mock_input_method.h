@@ -60,6 +60,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
+  virtual TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;

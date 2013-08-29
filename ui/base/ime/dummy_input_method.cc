@@ -72,6 +72,10 @@ TextInputType DummyInputMethod::GetTextInputType() const {
   return TEXT_INPUT_TYPE_NONE;
 }
 
+TextInputMode DummyInputMethod::GetTextInputMode() const {
+  return TEXT_INPUT_MODE_DEFAULT;
+}
+
 bool DummyInputMethod::CanComposeInline() const {
   return true;
 }

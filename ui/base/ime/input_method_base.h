@@ -44,6 +44,7 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
 
   virtual TextInputType GetTextInputType() const OVERRIDE;
+  virtual TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
 
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
