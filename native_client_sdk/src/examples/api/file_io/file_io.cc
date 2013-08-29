@@ -198,7 +198,7 @@ class FileIoInstance : public pp::Instance {
       ShowErrorMessage("File fail to flush", flush_result);
       return;
     }
-    ShowStatusMessage("Save successful");
+    ShowStatusMessage("Save success");
   }
 
   void Load(int32_t /* result */, const std::string& file_name) {
@@ -212,7 +212,7 @@ class FileIoInstance : public pp::Instance {
     int32_t open_result =
         file.Open(ref, PP_FILEOPENFLAG_READ, pp::BlockUntilComplete());
     if (open_result == PP_ERROR_FILENOTFOUND) {
-      ShowStatusMessage("File not found");
+      ShowErrorMessage("File not found", open_result);
       return;
     } else if (open_result != PP_OK) {
       ShowErrorMessage("File open for read failed", open_result);
@@ -233,24 +233,25 @@ class FileIoInstance : public pp::Instance {
     std::vector<char> data(info.size);
     int64_t offset = 0;
     int32_t bytes_read = 0;
-    do {
+    int32_t bytes_to_read = info.size;
+    while (bytes_to_read > 0) {
       bytes_read = file.Read(offset,
                              &data[offset],
                              data.size() - offset,
                              pp::BlockUntilComplete());
-      if (bytes_read > 0)
+      if (bytes_read > 0) {
         offset += bytes_read;
-    } while (bytes_read > 0);
-    // If bytes_read < PP_OK then it indicates the error code.
-    if (bytes_read < PP_OK) {
-      ShowErrorMessage("File read failed", bytes_read);
-      return;
+        bytes_to_read -= bytes_read;
+      } else if (bytes_read < 0) {
+        // If bytes_read < PP_OK then it indicates the error code.
+        ShowErrorMessage("File read failed", bytes_read);
+        return;
+      }
     }
-    PP_DCHECK(bytes_read == 0);
     // Done reading, send content to the user interface
     std::string string_data(data.begin(), data.end());
     PostMessage("DISP|" + string_data);
-    ShowStatusMessage("Load complete");
+    ShowStatusMessage("Load success");
   }
 
   void Delete(int32_t /* result */, const std::string& file_name) {
@@ -268,7 +269,7 @@ class FileIoInstance : public pp::Instance {
       ShowErrorMessage("Deletion failed", result);
       return;
     }
-    ShowStatusMessage("File/Directory deleted");
+    ShowStatusMessage("Delete success");
   }
 
   void List(int32_t /* result */, const std::string& dir_name) {
@@ -301,6 +302,7 @@ class FileIoInstance : public pp::Instance {
       }
     }
     PostMessage(ss.str());
+    ShowStatusMessage("List success");
   }
 
   void MakeDir(int32_t /* result */, const std::string& dir_name) {
@@ -315,7 +317,7 @@ class FileIoInstance : public pp::Instance {
       ShowErrorMessage("Make directory failed", result);
       return;
     }
-    ShowStatusMessage("Made directory");
+    ShowStatusMessage("Make directory success");
   }
 
   /// Encapsulates our simple javascript communication protocol
