@@ -48,6 +48,7 @@ public:
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
     static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
 
+    bool isColor() const { return m_type == TypeColor; }
     bool isImage() const { return m_type == TypeImage; }
     bool isLengthBox() const { return m_type == TypeLengthBox; }
     bool isNumber() const { return m_type == TypeNumber; }
@@ -57,6 +58,7 @@ public:
 
 protected:
     enum AnimatableType {
+        TypeColor,
         TypeImage,
         TypeLengthBox,
         TypeNeutral,

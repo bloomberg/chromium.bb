@@ -28,24 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableColor_h
+#define AnimatableColor_h
 
-#include "CSSPropertyNames.h"
 #include "core/animation/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/platform/graphics/Color.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableColorImpl {
 public:
-    static PassRefPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle*);
+    AnimatableColorImpl(float red, float green, float blue, float alpha);
+    AnimatableColorImpl(Color);
+    Color toColor() const;
+    AnimatableColorImpl interpolateTo(const AnimatableColorImpl&, double fraction) const;
+    AnimatableColorImpl addWith(const AnimatableColorImpl&) const;
+
 private:
-    static PassRefPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle*);
+    float m_alpha;
+    float m_red;
+    float m_green;
+    float m_blue;
 };
+
+class AnimatableColor : public AnimatableValue {
+public:
+    static PassRefPtr<AnimatableColor> create(const AnimatableColorImpl&, const AnimatableColorImpl& visitedLinkColor);
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    Color color() const { return m_color.toColor(); }
+    Color visitedLinkColor() const { return m_visitedLinkColor.toColor(); }
+
+private:
+    AnimatableColor(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
+        : AnimatableValue(TypeColor)
+        , m_color(color)
+        , m_visitedLinkColor(visitedLinkColor)
+    {
+    }
+    const AnimatableColorImpl m_color;
+    const AnimatableColorImpl m_visitedLinkColor;
+};
+
+inline const AnimatableColor* toAnimatableColor(const AnimatableValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isColor());
+    return static_cast<const AnimatableColor*>(value);
+}
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableColor_h
