@@ -2598,7 +2598,7 @@
 {
    bug_280583
    Memcheck:Unaddressable
-   fun:InterpolateRow_SSSE3
+   ...
    fun:_ZN6libyuv21ScaleARGBBilinearDownEiiiiiPKhPhiiii
    fun:_ZN6libyuv16ScaleARGBAnySizeEiiiiiiiiPKhPhiiiiNS_10FilterModeE
    fun:_ZN6libyuv9ScaleARGBEPKhiiiPhiiiiiiiNS_10FilterModeE

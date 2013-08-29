@@ -53,3 +53,6 @@ DeviceOrientationEventPumpTest.*
 
 # http://crbug.com/280495
 SyntheticGestureControllerTest.Tick
+
+# http://crbug.com/280583
+DesktopCaptureDeviceTest.ScreenResolutionChangeVariableResolution
