@@ -237,6 +237,70 @@ class ScrollManager {
   DoubleProperty fling_buffer_min_avg_speed_;
 };
 
+// Helper class for computing the button type of multi-finger clicks.
+class FingerButtonClick {
+ public:
+  // Describes the three classes of fingers we deal with while determining
+  // the type of physical button clicks.
+  enum FingerClickStatus {
+    // A 'recent' finger has recently touched down on the touchpad.
+    STATUS_RECENT,
+    // A 'cold' finger has already been on the touchpad for a while,
+    // but has not been moved.
+    STATUS_COLD,
+    // A 'hot' finger has been moved since it touched down.
+    STATUS_HOT
+  };
+
+  explicit FingerButtonClick(const ImmediateInterpreter* interpreter);
+  ~FingerButtonClick() {};
+
+  // Processes the HardwareState finger data. Categorizes fingers into one of
+  // the FingerClickStatus and sort them according to their original timestamps.
+  // Returns true if further analysis is needed. Returns false in trivial cases
+  // where one is safe to use the HardwareState button data directly.
+  bool Update(const HardwareState& hwstate, stime_t button_down_time);
+
+  // Returns which button type corresponds to which touch count (e.g. 2f = right
+  // click, 3f = middle click).
+  int GetButtonTypeForTouchCount(int touch_count) const;
+
+  // All these following button type evaluation functions are guaranteed to
+  // return a button but the caller must ensure that the requirements are met.
+  //
+  // Evaluates the button type for the 2f case. Needs at least 2 fingers.
+  int EvaluateTwoFingerButtonType();
+
+  // Evaluates the button type for >=3f cases. Needs at least 3 fingers.
+  int EvaluateThreeOrMoreFingerButtonType();
+
+  // Evaluates the button type using finger locations.
+  int EvaluateButtonTypeUsingFigureLocation();
+
+  int num_fingers() const { return num_fingers_; }
+  int num_recent() const { return num_recent_; }
+  int num_cold() const { return num_cold_; }
+  int num_hot() const { return num_hot_; }
+
+ private:
+  // Used to fetch properties and other finger status.
+  const ImmediateInterpreter* interpreter_;
+
+  // Fingers that we are considering for determining the button type.
+  FingerState const * fingers_[4];
+
+  // FingerClickStatus of each finger.
+  FingerClickStatus fingers_status_[4];
+
+  // Number of fingers we are considering.
+  int num_fingers_;
+
+  // Number of fingers of each kind.
+  int num_recent_;
+  int num_cold_;
+  int num_hot_;
+};
+
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest);
   FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
@@ -263,6 +327,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
   FRIEND_TEST(ImmediateInterpreterTest, WarpedFingersTappingTest);
   friend class TapRecord;
+  friend class FingerButtonClick;
 
  public:
   struct Point {
@@ -441,9 +506,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Called when the timeout is fired for UpdateButtons.
   void UpdateButtonsTimeout(stime_t now);
 
-  // Returns which button type corresponds to which touch count.
-  int GetButtonTypeForTouchCount(int touch_count) const;
-
   // By looking at |hwstate| and internal state, determins if a button down
   // at this time would correspond to a left/middle/right click. Returns
   // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
@@ -480,6 +542,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Button data
   // Which button we are going to send/have sent for the physical btn press
   int button_type_;  // left, middle, or right
+
+  FingerButtonClick finger_button_click_;
 
   // If we have sent button down for the currently down button
   bool sent_button_down_;

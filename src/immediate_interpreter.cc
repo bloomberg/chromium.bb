@@ -40,32 +40,20 @@ float MinMag(float a, float b) {
   return b;
 }
 
-// Describes the three classes of fingers we deal with while determining
-// the type of physical button clicks.
-enum FingerButtonClickStatus {
-  // A 'recent' finger has recently touched down on the touchpad.
-  GESTURES_FINGER_STATUS_RECENT,
-  // A 'cold' finger has already been on the touchpad for a while,
-  // but has not been moved.
-  GESTURES_FINGER_STATUS_COLD,
-  // A 'hot' finger has been moved since it touched down.
-  GESTURES_FINGER_STATUS_HOT
-};
-
 // A comparator class for use with STL algorithms that sorts FingerStates
 // by their origin timestamp.
 class FingerOriginCompare {
  public:
-  explicit FingerOriginCompare(ImmediateInterpreter* interpreter)
+  explicit FingerOriginCompare(const ImmediateInterpreter* interpreter)
       : interpreter_(interpreter) {
   }
-  bool operator()(const FingerState* a, const FingerState* b) const {
+  bool operator() (const FingerState* a, const FingerState* b) const {
     return interpreter_->finger_origin_timestamp(a->tracking_id) <
            interpreter_->finger_origin_timestamp(b->tracking_id);
   }
 
  private:
-  ImmediateInterpreter* interpreter_;
+  const ImmediateInterpreter* interpreter_;
 };
 
 }  // namespace {}
@@ -658,10 +646,252 @@ done:
                     GESTURES_FLING_START);
 }
 
+FingerButtonClick::FingerButtonClick(const ImmediateInterpreter* interpreter)
+    : interpreter_(interpreter),
+      fingers_(),
+      fingers_status_(),
+      num_fingers_(0),
+      num_recent_(0),
+      num_cold_(0),
+      num_hot_(0) {
+}
+
+bool FingerButtonClick::Update(const HardwareState& hwstate,
+                               stime_t button_down_time) {
+  const float kMoveDistSq = interpreter_->button_move_dist_.val_ *
+                            interpreter_->button_move_dist_.val_;
+
+  // Copy all fingers to an array, but leave out palms
+  num_fingers_ = 0;
+  for (int i = 0; i < hwstate.touch_cnt; ++i) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (fs.flags & (GESTURES_FINGER_PALM | GESTURES_FINGER_POSSIBLE_PALM))
+      continue;
+    // we don't support more than 4 fingers
+    if (num_fingers_ >= 4)
+      return false;
+    fingers_[num_fingers_++] = &fs;
+  }
+
+  // Single finger is trivial
+  if (num_fingers_ <= 1)
+    return false;
+
+  // Sort fingers array by origin timestamp
+  FingerOriginCompare comparator(interpreter_);
+  std::sort(fingers_, fingers_ + num_fingers_, comparator);
+
+  // The status describes if a finger is recent (touched down recently),
+  // cold (touched down a while ago, but did not move) or hot (has moved).
+  // However thumbs are always forced to be "cold".
+  for (int i = 0; i < num_fingers_; ++i) {
+    stime_t finger_age =
+        button_down_time -
+        interpreter_->finger_origin_timestamp(fingers_[i]->tracking_id);
+    bool moving_finger =
+        SetContainsValue(interpreter_->moving_, fingers_[i]->tracking_id) ||
+        (interpreter_->DistanceTravelledSq(*fingers_[i], true) > kMoveDistSq);
+    if (!SetContainsValue(interpreter_->pointing_, fingers_[i]->tracking_id))
+      fingers_status_[i] = STATUS_COLD;
+    else if (moving_finger)
+      fingers_status_[i] = STATUS_HOT;
+    else if (finger_age < interpreter_->right_click_second_finger_age_.val_)
+      fingers_status_[i] = STATUS_RECENT;
+    else
+      fingers_status_[i] = STATUS_COLD;
+  }
+
+  num_recent_ = 0;
+  for (int i = 0; i < num_fingers_; ++i)
+    num_recent_ += (fingers_status_[i] == STATUS_RECENT);
+
+  num_cold_ = 0;
+  for (int i = 0; i < num_fingers_; ++i)
+    num_cold_ += (fingers_status_[i] == STATUS_COLD);
+
+  num_hot_ = num_fingers_ - num_recent_ - num_cold_;
+  return true;
+}
+
+int FingerButtonClick::GetButtonTypeForTouchCount(int touch_count) const {
+  if (touch_count == 2)
+    return GESTURES_BUTTON_RIGHT;
+  if (touch_count == 3 && interpreter_->three_finger_click_enable_.val_)
+    return GESTURES_BUTTON_MIDDLE;
+  return GESTURES_BUTTON_LEFT;
+}
+
+int FingerButtonClick::EvaluateTwoFingerButtonType() {
+  // Only one finger hot -> moving -> left click
+  if (num_hot_ == 1)
+    return GESTURES_BUTTON_LEFT;
+
+  float start_delta =
+      fabs(interpreter_->finger_origin_timestamp(fingers_[0]->tracking_id) -
+           interpreter_->finger_origin_timestamp(fingers_[1]->tracking_id));
+
+  // check if fingers are too close for a right click
+  const float kMin2fDistThreshSq =
+      interpreter_->tapping_finger_min_separation_.val_ *
+      interpreter_->tapping_finger_min_separation_.val_;
+  float dist_sq = DistSq(*fingers_[0], *fingers_[1]);
+  if ((dist_sq < kMin2fDistThreshSq) &&
+      !(fingers_[0]->flags & GESTURES_FINGER_MERGE))
+    return GESTURES_BUTTON_LEFT;
+
+  // fingers touched down at approx the same time
+  if (start_delta < interpreter_->right_click_start_time_diff_.val_)
+    return GESTURES_BUTTON_RIGHT;
+
+  // 1 finger is cold and in the dampened zone? Probably a thumb!
+  if (num_cold_ == 1 && interpreter_->FingerInDampenedZone(*fingers_[0]))
+    return GESTURES_BUTTON_LEFT;
+
+  // Close fingers -> same hand -> right click
+  // Fingers apart -> second hand finger or thumb -> left click
+  if (interpreter_->TwoFingersGesturing(*fingers_[0], *fingers_[1], true))
+    return GESTURES_BUTTON_RIGHT;
+  else
+    return GESTURES_BUTTON_LEFT;
+}
+
+int FingerButtonClick::EvaluateThreeOrMoreFingerButtonType() {
+  // Treat recent, ambiguous fingers as thumbs if they are in the dampened
+  // zone.
+  int num_dampened_recent = 0;
+  for (int i = num_fingers_ - num_recent_; i < num_fingers_; ++i)
+    num_dampened_recent += interpreter_->FingerInDampenedZone(*fingers_[i]);
+
+  // Re-use the 2f button type logic in case that all recent fingers are
+  // presumed thumbs because the recent fingers could be from thumb splits
+  // due to the increased pressure when doing a physical click and should be
+  // ignored.
+  if ((num_fingers_ - num_recent_ == 2) &&
+      (num_recent_ == num_dampened_recent))
+    return EvaluateTwoFingerButtonType();
+
+  // A single recent touch, or a single cold touch (with all others being hot)
+  // could be a thumb or a second hand finger.
+  if (num_recent_ == 1 || (num_cold_ == 1 && num_hot_ == num_fingers_ - 1)) {
+    // The ambiguous finger is either the most recent one, or the only cold one.
+    const FingerState* ambiguous_finger = fingers_[num_fingers_ - 1];
+    if (num_recent_ != 1) {
+      for (int i = 0; i < num_fingers_; ++i) {
+        if (fingers_status_[i] == STATUS_COLD) {
+          ambiguous_finger = fingers_[i];
+          break;
+        }
+      }
+    }
+    // If it's in the dampened zone we will expect it to be a thumb.
+    // Otherwise it's a second hand finger
+    if (interpreter_->FingerInDampenedZone(*ambiguous_finger))
+      return GetButtonTypeForTouchCount(num_fingers_ - 1);
+    else
+      return GESTURES_BUTTON_LEFT;
+  }
+
+  // If all fingers are recent we can be sure they are from the same hand.
+  if (num_recent_ == num_fingers_) {
+    // Only if all fingers are in the same zone, we can be sure that none
+    // of them is a thumb.
+    Log("EvaluateThreeOrMoreFingerButtonType: Dampened: %d",
+        num_dampened_recent);
+    if (num_dampened_recent == 0 || num_dampened_recent == num_recent_)
+      return GetButtonTypeForTouchCount(num_recent_);
+  }
+
+  // To make a decision after this point we need to figure out if and how
+  // many of the fingers are grouped together. We do so by finding the pair
+  // of closest fingers, and then calculate where we expect the remaining
+  // fingers to be found.
+  // If they are not in the expected place, they will be called separate.
+  Log("EvaluateThreeOrMoreFingerButtonType: Falling back to location based "
+      "detection");
+  return EvaluateButtonTypeUsingFigureLocation();
+}
+
+int FingerButtonClick::EvaluateButtonTypeUsingFigureLocation() {
+  const float kMaxDistSq = interpreter_->button_max_dist_from_expected_.val_ *
+                           interpreter_->button_max_dist_from_expected_.val_;
+
+  // Find pair with the closest distance
+  const FingerState* pair_a = NULL;
+  const FingerState* pair_b = NULL;
+  float pair_dist_sq = std::numeric_limits<float>::infinity();
+  for (int i = 0; i < num_fingers_; ++i) {
+    for (int j = 0; j < i; ++j) {
+      float dist_sq = DistSq(*fingers_[i], *fingers_[j]);
+      if (dist_sq < pair_dist_sq) {
+        pair_a = fingers_[i];
+        pair_b = fingers_[j];
+        pair_dist_sq = dist_sq;
+      }
+    }
+  }
+
+  int num_separate = 0;
+  const FingerState* last_separate = NULL;
+
+  if (interpreter_->metrics_->CloseEnoughToGesture(Vector2(*pair_a),
+                                                   Vector2(*pair_b))) {
+    // Expect the remaining fingers to be next to the pair, all with the same
+    // distance from each other.
+    float dx = pair_b->position_x - pair_a->position_x;
+    float dy = pair_b->position_y - pair_a->position_y;
+    float expected1_x = pair_a->position_x + 2 * dx;
+    float expected1_y = pair_a->position_y + 2 * dy;
+    float expected2_x = pair_b->position_x - 2 * dx;
+    float expected2_y = pair_b->position_y - 2 * dy;
+
+    // Check if remaining fingers are close to the expected positions
+    for (int i = 0; i < num_fingers_; ++i) {
+      if (fingers_[i] == pair_a || fingers_[i] == pair_b)
+        continue;
+      float dist1_sq = DistSqXY(*fingers_[i], expected1_x, expected1_y);
+      float dist2_sq = DistSqXY(*fingers_[i], expected2_x, expected2_y);
+      if (dist1_sq > kMaxDistSq && dist2_sq > kMaxDistSq) {
+        num_separate++;
+        last_separate = fingers_[i];
+      }
+    }
+  } else {
+    // In case the pair is not close we have to fall back to using the
+    // dampened zone
+    Log("EvaluateButtonTypeUsingFigureLocation: Falling back to dampened zone "
+        "separation");
+    for (int i = 0; i < num_fingers_; ++i) {
+      if (interpreter_->FingerInDampenedZone(*fingers_[i])) {
+        num_separate++;
+        last_separate = fingers_[i];
+      }
+    }
+  }
+
+  // All fingers next to each other
+  if (num_separate == 0)
+    return GetButtonTypeForTouchCount(num_fingers_);
+
+  // The group with the last finger counts!
+  // Exception: If the separates have only one finger and it's a thumb
+  //            count the other group
+  int num_pressing;
+  if (fingers_[num_fingers_ - 1] == last_separate &&
+      !(num_separate == 1 &&
+        interpreter_->FingerInDampenedZone(*last_separate))) {
+    num_pressing = num_separate;
+  } else {
+    num_pressing = num_fingers_ - num_separate;
+  }
+  Log("EvaluateButtonTypeUsingFigureLocation: Pressing: %d", num_pressing);
+  return GetButtonTypeForTouchCount(num_pressing);
+}
+
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                            Tracer* tracer)
     : Interpreter(NULL, tracer, false),
       button_type_(0),
+      finger_button_click_(this),
       sent_button_down_(false),
       button_down_timeout_(0.0),
       started_moving_time_(-1.0),
@@ -2032,20 +2262,8 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
   }
 }
 
-int ImmediateInterpreter::GetButtonTypeForTouchCount(int touch_count) const {
-  if (touch_count == 2)
-    return GESTURES_BUTTON_RIGHT;
-  if (touch_count == 3 && three_finger_click_enable_.val_)
-    return GESTURES_BUTTON_MIDDLE;
-  return GESTURES_BUTTON_LEFT;
-}
-
 int ImmediateInterpreter::EvaluateButtonType(
     const HardwareState& hwstate, stime_t button_down_time) {
-  const float kMoveDistSq = button_move_dist_.val_ * button_move_dist_.val_;
-  const float kMaxDistSq = button_max_dist_from_expected_.val_ *
-                           button_max_dist_from_expected_.val_;
-
   // Handle T5R2/SemiMT touchpads
   if ((hwprops_->supports_t5r2 || hwprops_->support_semi_mt) &&
       hwstate.touch_cnt > 2) {
@@ -2055,199 +2273,20 @@ int ImmediateInterpreter::EvaluateButtonType(
     return GESTURES_BUTTON_RIGHT;
   }
 
-  // Copy all fingers to an array, but leave out palms
-  const FingerState* fingers[4] = {0};
-  int num_fingers = 0;
-  for (int i = 0; i < hwstate.touch_cnt; ++i) {
-    const FingerState& fs = hwstate.fingers[i];
-    if (fs.flags & (GESTURES_FINGER_PALM | GESTURES_FINGER_POSSIBLE_PALM))
-      continue;
-    // we don't support more than 4 fingers
-    if (num_fingers >= 4)
-      return hwstate.buttons_down;
-    fingers[num_fingers++] = &fs;
-  }
-
-  // Single finger is trivial
-  if (num_fingers <= 1)
+  // Just return the hardware state button if no further analysis is needed.
+  if (!finger_button_click_.Update(hwstate, button_down_time))
     return hwstate.buttons_down;
-
-  // Sort fingers array by origin timestamp
-  FingerOriginCompare comparator(this);
-  std::sort(fingers, fingers + num_fingers, comparator);
-
-  // The status describes if a finger is recent (touched down recently),
-  // cold (touched down a while ago, but did not move) or hot (has moved).
-  // However thumbs are always forced to be "cold".
-  FingerButtonClickStatus fingers_status[4];
-  for (int i = 0; i < num_fingers; ++i) {
-    stime_t finger_age = button_down_time -
-                         finger_origin_timestamp(fingers[i]->tracking_id);
-    bool moving_finger = SetContainsValue(moving_, fingers[i]->tracking_id)
-                      || (DistanceTravelledSq(*fingers[i], true) > kMoveDistSq);
-    if (!SetContainsValue(pointing_, fingers[i]->tracking_id))
-      fingers_status[i] = GESTURES_FINGER_STATUS_COLD;
-    else if (moving_finger)
-      fingers_status[i] = GESTURES_FINGER_STATUS_HOT;
-    else if (finger_age < right_click_second_finger_age_.val_)
-      fingers_status[i] = GESTURES_FINGER_STATUS_RECENT;
-    else
-      fingers_status[i] = GESTURES_FINGER_STATUS_COLD;
-  }
-
-  int num_recent = 0;
-  for (int i = 0; i < num_fingers; ++i)
-    num_recent += (fingers_status[i] == GESTURES_FINGER_STATUS_RECENT);
-
-  int num_cold = 0;
-  for (int i = 0; i < num_fingers; ++i)
-    num_cold += (fingers_status[i] == GESTURES_FINGER_STATUS_COLD);
-
-  int num_hot = num_fingers-num_recent - num_cold;
-  Log("EvaluateButtonType: R/C/H: %d/%d/%d", num_recent, num_cold, num_hot);
+  Log("EvaluateButtonType: R/C/H: %d/%d/%d",
+      finger_button_click_.num_recent(),
+      finger_button_click_.num_cold(),
+      finger_button_click_.num_hot());
 
   // Handle 2 finger cases:
-  if (num_fingers == 2) {
-    // Only one finger hot -> moving -> left click
-    if (num_hot == 1)
-      return GESTURES_BUTTON_LEFT;
-
-    float start_delta = fabs(finger_origin_timestamp(fingers[0]->tracking_id) -
-                             finger_origin_timestamp(fingers[1]->tracking_id));
-
-    // check if fingers are too close for a right click
-    const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
-        tapping_finger_min_separation_.val_;
-    float dist_sq = TwoFingerDistanceSq(hwstate);
-    if ((dist_sq < kMin2fDistThreshSq) &&
-        !(fingers[0]->flags & GESTURES_FINGER_MERGE))
-      return GESTURES_BUTTON_LEFT;
-
-    // fingers touched down at approx the same time
-    if (start_delta < right_click_start_time_diff_.val_)
-      return GESTURES_BUTTON_RIGHT;
-
-    // 1 finger is cold and in the dampened zone? Probably a thumb!
-    if (num_cold == 1 && FingerInDampenedZone(*fingers[0]))
-      return GESTURES_BUTTON_LEFT;
-
-    // Close fingers -> same hand -> right click
-    // Fingers apart -> second hand finger or thumb -> left click
-    if (TwoFingersGesturing(*fingers[0], *fingers[1], true))
-      return GESTURES_BUTTON_RIGHT;
-    else
-      return GESTURES_BUTTON_LEFT;
-  }
+  if (finger_button_click_.num_fingers() == 2)
+    return finger_button_click_.EvaluateTwoFingerButtonType();
 
   // Handle cases with 3 or more fingers:
-
-  // A single recent touch, or a single cold touch (with all others being hot)
-  // could be a thumb or a second hand finger.
-  if (num_recent == 1 || (num_cold == 1 && num_hot == num_fingers - 1)) {
-    // The ambiguous finger is either the most recent one, or the only cold one.
-    const FingerState* ambiguous_finger = fingers[num_fingers - 1];
-    if (num_recent != 1) {
-      for (int i = 0; i < num_fingers; ++i) {
-        if (fingers_status[i] == GESTURES_FINGER_STATUS_COLD) {
-          ambiguous_finger = fingers[i];
-          break;
-        }
-      }
-    }
-    // If it's in the dampened zone we will expect it to be a thumb.
-    // Otherwise it's a second hand finger
-    if (FingerInDampenedZone(*ambiguous_finger))
-      return GetButtonTypeForTouchCount(num_fingers - 1);
-    else
-      return GESTURES_BUTTON_LEFT;
-  }
-
-  // If all fingers are recent we can be sure they are from the same hand.
-  if (num_recent == num_fingers) {
-    // Only if all fingers are in the same zone, we can be sure that none
-    // of them is a thumb.
-    int num_dampened = 0;
-    for (int i = 0; i < num_fingers; ++i)
-      num_dampened += FingerInDampenedZone(*fingers[i]);
-    Log("EvaluateButtonType: Dampened: %d", num_dampened);
-    if (num_dampened == 0 || num_dampened == num_recent)
-      return GetButtonTypeForTouchCount(num_recent);
-  }
-
-  // To make a decision after this point we need to figure out if and how
-  // many of the fingers are grouped together. We do so by finding the pair
-  // of closest fingers, and then calculate where we expect the remaining
-  // fingers to be found.
-  // If they are not in the expected place, they will be called separate.
-  Log("EvaluateButtonType: Falling back to location based detection");
-
-  // Find pair with the closest distance
-  const FingerState* pair_a = NULL;
-  const FingerState* pair_b = NULL;
-  float pair_dist_sq = std::numeric_limits<float>::infinity();
-  for (int i = 0; i < num_fingers; ++i) {
-    for (int j = 0; j < i; ++j) {
-      float dist_sq = DistSq(*fingers[i], *fingers[j]);
-      if (dist_sq < pair_dist_sq) {
-        pair_a = fingers[i];
-        pair_b = fingers[j];
-        pair_dist_sq = dist_sq;
-      }
-    }
-  }
-
-  int num_separate = 0;
-  const FingerState* last_separate = NULL;
-
-  if (metrics_->CloseEnoughToGesture(Vector2(*pair_a), Vector2(*pair_b))) {
-    // Expect the remaining fingers to be next to the pair, all with the same
-    // distance from each other.
-    float dx = pair_b->position_x - pair_a->position_x;
-    float dy = pair_b->position_y - pair_a->position_y;
-    float expected1_x = pair_a->position_x + 2 * dx;
-    float expected1_y = pair_a->position_y + 2 * dy;
-    float expected2_x = pair_b->position_x - 2 * dx;
-    float expected2_y = pair_b->position_y - 2 * dy;
-
-    // Check if remaining fingers are close to the expected positions
-    for (int i = 0; i < num_fingers; ++i) {
-      if (fingers[i] == pair_a || fingers[i] == pair_b)
-        continue;
-      float dist1_sq = DistSqXY(*fingers[i], expected1_x, expected1_y);
-      float dist2_sq = DistSqXY(*fingers[i], expected2_x, expected2_y);
-      if (dist1_sq > kMaxDistSq && dist2_sq > kMaxDistSq) {
-        num_separate++;
-        last_separate = fingers[i];
-      }
-    }
-  } else {
-    // In case the pair is not close we have to fall back to using the
-    // dampened zone
-    Log("EvaluateButtonType: Falling back to dampened zone separation");
-    for (int i = 0; i < num_fingers; ++i) {
-      if (FingerInDampenedZone(*fingers[i])) {
-        num_separate++;
-        last_separate = fingers[i];
-      }
-    }
-  }
-
-  // All fingers next to each other
-  if (num_separate == 0)
-    return GetButtonTypeForTouchCount(num_fingers);
-
-  // The group with the last finger counts!
-  // Exception: If the separates have only one finger and it's a thumb
-  //            count the other group
-  int num_pressing;
-  if (fingers[num_fingers - 1] == last_separate &&
-      !(num_separate == 1 && FingerInDampenedZone(*last_separate))) {
-      num_pressing = num_separate;
-  } else {
-    num_pressing = num_fingers - num_separate;
-  }
-  Log("EvaluateButtonType: Pressing: %d", num_pressing);
-  return GetButtonTypeForTouchCount(num_pressing);
+  return finger_button_click_.EvaluateThreeOrMoreFingerButtonType();
 }
 
 FingerMap ImmediateInterpreter::UpdateMovingFingers(
