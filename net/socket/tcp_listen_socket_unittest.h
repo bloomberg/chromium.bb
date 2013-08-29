@@ -103,18 +103,25 @@ class TCPListenSocketTester :
   TCPListenSocketTestAction last_action_;
 
   SocketDescriptor test_socket_;
-  static const int kTestPort;
 
-  base::Lock lock_;  // protects |queue_| and wraps |cv_|
+  base::Lock lock_;  // Protects |queue_| and |server_port_|. Wraps |cv_|.
   base::ConditionVariable cv_;
   std::deque<TCPListenSocketTestAction> queue_;
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<TCPListenSocketTester>;
 
   virtual ~TCPListenSocketTester();
 
   virtual scoped_refptr<TCPListenSocket> DoListen();
+
+  // Getters/setters for |server_port_|. They use |lock_| for thread safety.
+  int GetServerPort();
+  void SetServerPort(int server_port);
+
+  // Port the server is using. Must have |lock_| to access. Set by Listen() on
+  // the server's thread.
+  int server_port_;
 };
 
 }  // namespace net

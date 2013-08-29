@@ -10,13 +10,13 @@
 #include "base/bind.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_byteorder.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/socket/socket_descriptor.h"
 #include "testing/platform_test.h"
 
 namespace net {
-
-const int TCPListenSocketTester::kTestPort = 9999;
 
 static const int kReadBufSize = 1024;
 static const char kHelloWorld[] = "HELLO, WORLD";
@@ -25,7 +25,11 @@ static const char kLoopback[] = "127.0.0.1";
 static const int kDefaultTimeoutMs = 5000;
 
 TCPListenSocketTester::TCPListenSocketTester()
-    : loop_(NULL), server_(NULL), connection_(NULL), cv_(&lock_) {}
+    : loop_(NULL),
+      server_(NULL),
+      connection_(NULL),
+      cv_(&lock_),
+      server_port_(0) {}
 
 void TCPListenSocketTester::SetUp() {
   base::Thread::Options options;
@@ -42,13 +46,16 @@ void TCPListenSocketTester::SetUp() {
   ASSERT_FALSE(server_.get() == NULL);
   ASSERT_EQ(ACTION_LISTEN, last_action_.type());
 
+  int server_port = GetServerPort();
+  ASSERT_GT(server_port, 0);
+
   // verify the connect/accept and setup test_socket_
   test_socket_ = CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   ASSERT_NE(kInvalidSocket, test_socket_);
   struct sockaddr_in client;
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
-  client.sin_port = base::HostToNet16(kTestPort);
+  client.sin_port = base::HostToNet16(server_port);
   int ret = HANDLE_EINTR(
       connect(test_socket_, reinterpret_cast<sockaddr*>(&client),
               sizeof(client)));
@@ -125,6 +132,12 @@ void TCPListenSocketTester::Listen() {
   server_ = DoListen();
   ASSERT_TRUE(server_.get());
   server_->AddRef();
+
+  // The server's port will be needed to open the client socket.
+  IPEndPoint local_address;
+  ASSERT_EQ(OK, server_->GetLocalAddress(&local_address));
+  SetServerPort(local_address.port());
+
   ReportAction(TCPListenSocketTestAction(ACTION_LISTEN));
 }
 
@@ -249,10 +262,21 @@ void TCPListenSocketTester::DidClose(StreamListenSocket* sock) {
 TCPListenSocketTester::~TCPListenSocketTester() {}
 
 scoped_refptr<TCPListenSocket> TCPListenSocketTester::DoListen() {
-  return TCPListenSocket::CreateAndListen(kLoopback, kTestPort, this);
+  // Let the OS pick a free port.
+  return TCPListenSocket::CreateAndListen(kLoopback, 0, this);
 }
 
-class TCPListenSocketTest: public PlatformTest {
+int TCPListenSocketTester::GetServerPort() {
+  base::AutoLock locked(lock_);
+  return server_port_;
+}
+
+void TCPListenSocketTester::SetServerPort(int server_port) {
+  base::AutoLock locked(lock_);
+  server_port_ = server_port;
+}
+
+class TCPListenSocketTest : public PlatformTest {
  public:
   TCPListenSocketTest() {
     tester_ = NULL;
