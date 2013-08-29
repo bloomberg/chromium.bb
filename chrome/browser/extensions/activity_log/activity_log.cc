@@ -176,33 +176,7 @@ ActivityLogFactory::~ActivityLogFactory() {
 
 // ActivityLog
 
-void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
-  // Can't use IsLogEnabled() here because this is called from inside Init.
-  if (policy_type != policy_type_ && enabled_) {
-    // Deleting the old policy takes place asynchronously, on the database
-    // thread.  Initializing a new policy below similarly happens
-    // asynchronously.  Since the two operations are both queued for the
-    // database, the queue ordering should ensure that the deletion completes
-    // before database initialization occurs.
-    //
-    // However, changing policies at runtime is still not recommended, and
-    // likely only should be done for unit tests.
-    if (policy_)
-      policy_->Close();
-
-    switch (policy_type) {
-      case ActivityLogPolicy::POLICY_FULLSTREAM:
-        policy_ = new FullStreamUIPolicy(profile_);
-        break;
-      case ActivityLogPolicy::POLICY_COUNTS:
-        policy_ = new CountingPolicy(profile_);
-        break;
-      default:
-        NOTREACHED();
-    }
-    policy_type_ = policy_type;
-  }
-}
+// SET THINGS UP. --------------------------------------------------------------
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(Profile* profile)
@@ -248,6 +222,47 @@ ActivityLog::ActivityLog(Profile* profile)
   ChooseDefaultPolicy();
 }
 
+void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
+  // Can't use IsLogEnabled() here because this is called from inside Init.
+  if (policy_type != policy_type_ && enabled_) {
+    // Deleting the old policy takes place asynchronously, on the database
+    // thread.  Initializing a new policy below similarly happens
+    // asynchronously.  Since the two operations are both queued for the
+    // database, the queue ordering should ensure that the deletion completes
+    // before database initialization occurs.
+    //
+    // However, changing policies at runtime is still not recommended, and
+    // likely only should be done for unit tests.
+    if (policy_)
+      policy_->Close();
+
+    switch (policy_type) {
+      case ActivityLogPolicy::POLICY_FULLSTREAM:
+        policy_ = new FullStreamUIPolicy(profile_);
+        break;
+      case ActivityLogPolicy::POLICY_COUNTS:
+        policy_ = new CountingPolicy(profile_);
+        break;
+      default:
+        NOTREACHED();
+    }
+    policy_type_ = policy_type;
+  }
+}
+
+// SHUT DOWN. ------------------------------------------------------------------
+
+void ActivityLog::Shutdown() {
+  if (tracker_) tracker_->RemoveObserver(this);
+}
+
+ActivityLog::~ActivityLog() {
+  if (policy_)
+    policy_->Close();
+}
+
+// MAINTAIN STATUS. ------------------------------------------------------------
+
 void ActivityLog::InitInstallTracker() {
   tracker_ = InstallTrackerFactory::GetForProfile(profile_);
   tracker_->AddObserver(this);
@@ -259,15 +274,6 @@ void ActivityLog::ChooseDefaultPolicy() {
     SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   else
     SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
-}
-
-void ActivityLog::Shutdown() {
-  if (tracker_) tracker_->RemoveObserver(this);
-}
-
-ActivityLog::~ActivityLog() {
-  if (policy_)
-    policy_->Close();
 }
 
 // static
@@ -324,6 +330,17 @@ void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
+// static
+void ActivityLog::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kWatchdogExtensionActive,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// LOG ACTIONS. ----------------------------------------------------------------
+
 void ActivityLog::LogAction(scoped_refptr<Action> action) {
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(action->extension_id()))
@@ -345,30 +362,6 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   observers_->Notify(&Observer::OnExtensionActivity, action);
   if (testing_mode_)
     LOG(INFO) << action->PrintForDebug();
-}
-
-void ActivityLog::GetActions(
-    const std::string& extension_id,
-    const int day,
-    const base::Callback
-        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (policy_) {
-    policy_->ReadData(extension_id, day, callback);
-  }
-}
-
-void ActivityLog::GetFilteredActions(
-    const std::string& extension_id,
-    const Action::ActionType type,
-    const std::string& api_name,
-    const std::string& page_url,
-    const std::string& arg_url,
-    const base::Callback
-        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (policy_) {
-    policy_->ReadFilteredData(
-        extension_id, type, api_name, page_url, arg_url, callback);
-  }
 }
 
 void ActivityLog::OnScriptsExecuted(
@@ -418,14 +411,33 @@ void ActivityLog::OnScriptsExecuted(
   }
 }
 
-// static
-void ActivityLog::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kWatchdogExtensionActive,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+// LOOKUP ACTIONS. -------------------------------------------------------------
+
+void ActivityLog::GetActions(
+    const std::string& extension_id,
+    const int day,
+    const base::Callback
+        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (policy_) {
+    policy_->ReadData(extension_id, day, callback);
+  }
 }
+
+void ActivityLog::GetFilteredActions(
+    const std::string& extension_id,
+    const Action::ActionType type,
+    const std::string& api_name,
+    const std::string& page_url,
+    const std::string& arg_url,
+    const base::Callback
+        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (policy_) {
+    policy_->ReadFilteredData(
+        extension_id, type, api_name, page_url, arg_url, callback);
+  }
+}
+
+// DELETE ACTIONS. -------------------------------------------------------------
 
 void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   if (!policy_ || !IsLogEnabled()) {
