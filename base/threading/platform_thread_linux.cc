@@ -27,19 +27,15 @@ namespace base {
 
 namespace {
 int ThreadNiceValue(ThreadPriority priority) {
-  static const int threadPriorityAudio = -10;
-  static const int threadPriorityBackground = 10;
-  static const int threadPriorityDefault = 0;
-  static const int threadPriorityDisplay = -6;
   switch (priority) {
     case kThreadPriority_RealtimeAudio:
-      return threadPriorityAudio;
+      return -10;
     case kThreadPriority_Background:
-      return threadPriorityBackground;
+      return 10;
     case kThreadPriority_Normal:
-      return threadPriorityDefault;
+      return 0;
     case kThreadPriority_Display:
-      return threadPriorityDisplay;
+      return -6;
     default:
       NOTREACHED() << "Unknown priority.";
       return 0;
@@ -52,7 +48,7 @@ void PlatformThread::SetName(const char* name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
-#ifndef OS_NACL
+#if !defined(OS_NACL)
   // On linux we can get the thread names to show up in the debugger by setting
   // the process name for the LWP.  We don't want to do this for the main
   // thread because that would rename the process, causing tools like killall
@@ -69,7 +65,7 @@ void PlatformThread::SetName(const char* name) {
   // We expect EPERM failures in sandboxed processes, just ignore those.
   if (err < 0 && errno != EPERM)
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";
-#endif
+#endif  //  !defined(OS_NACL)
 }
 
 // static
@@ -77,13 +73,8 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
 #if !defined(OS_NACL)
   if (priority == kThreadPriority_RealtimeAudio) {
-    const int kRealTimePrio = 8;
-
-    struct sched_param sched_param;
-    memset(&sched_param, 0, sizeof(sched_param));
-    sched_param.sched_priority = kRealTimePrio;
-
-    if (pthread_setschedparam(pthread_self(), SCHED_RR, &sched_param) == 0) {
+    const struct sched_param kRealTimePrio = { 8 };
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
       // Got real time priority, no need to set nice level.
       return;
     }
@@ -94,20 +85,19 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
   // process. Setting this priority will only succeed if the user has been
   // granted permission to adjust nice values on the system.
   DCHECK_NE(handle.id_, kInvalidThreadId);
-  int kNiceSetting = ThreadNiceValue(priority);
-  if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting))
-    LOG(ERROR) << "Failed to set nice value of thread to " << kNiceSetting;
-#endif  // !OS_NACL
+  const int kNiceSetting = ThreadNiceValue(priority);
+  if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting)) {
+    DVPLOG(1) << "Failed to set nice value of thread ("
+              << handle.id_ << ") to " << kNiceSetting;
+  }
+#endif  //  !defined(OS_NACL)
 }
 
-void InitThreading() {
-}
+void InitThreading() {}
 
-void InitOnThread() {
-}
+void InitOnThread() {}
 
-void TerminateOnThread() {
-}
+void TerminateOnThread() {}
 
 size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
   return 0;
