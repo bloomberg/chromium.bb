@@ -62,7 +62,9 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
-  typedef base::Callback<void(GURL, bool)> ClientReportMalwareRequestCallback;
+  // void(GURL original_url, GURL malware_url, bool is_malware).
+  typedef base::Callback<void(GURL, GURL, bool)>
+      ClientReportMalwareRequestCallback;
 
   virtual ~ClientSideDetectionService();
 
@@ -300,7 +302,10 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   struct ClientReportInfo;
   std::map<const net::URLFetcher*, ClientReportInfo*>
       client_phishing_reports_;
-  std::map<const net::URLFetcher*, ClientReportInfo*>
+  // Map of client malware ip request to the corresponding callback that
+  // has to be invoked when the request is done.
+  struct ClientMalwareReportInfo;
+  std::map<const net::URLFetcher*, ClientMalwareReportInfo*>
       client_malware_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls

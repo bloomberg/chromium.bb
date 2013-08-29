@@ -71,6 +71,12 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Otherwise, we do nothing.  Called in UI thread.
   void MaybeShowPhishingWarning(GURL phishing_url, bool is_phishing);
 
+  // Callback that is called when the malware IP server ping back is
+  // done. Display an interstitial if |is_malware| is true.
+  // Otherwise, we do nothing.  Called in UI thread.
+  void MaybeShowMalwareWarning(GURL original_url, GURL malware_url,
+                               bool is_malware);
+
   // Callback that is called when the browser feature extractor is done.
   // This method is responsible for deleting the request object.  Called on
   // the UI thread.

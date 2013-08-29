@@ -449,6 +449,41 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
         ui_manager_->DoDisplayBlockingPage(resource);
       }
     }
+    // If there is true phishing verdict, invalidate weakptr so that no longer
+    // consider the malware vedict.
+    weak_factory_.InvalidateWeakPtrs();
+  }
+}
+
+void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
+                                                      GURL malware_url,
+                                                      bool is_malware) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(2) << "Received server malawre IP verdict for URL:" << malware_url
+          << " is_malware:" << is_malware;
+  if (is_malware && malware_url.is_valid() && original_url.is_valid()) {
+    DCHECK(web_contents());
+    if (ui_manager_.get()) {
+      SafeBrowsingUIManager::UnsafeResource resource;
+      resource.url = malware_url;
+      resource.original_url = original_url;
+      resource.is_subresource = (malware_url.host() != original_url.host());
+      resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+      resource.render_process_host_id =
+          web_contents()->GetRenderProcessHost()->GetID();
+      resource.render_view_id =
+          web_contents()->GetRenderViewHost()->GetRoutingID();
+      if (!ui_manager_->IsWhitelisted(resource)) {
+        // We need to stop any pending navigations, otherwise the interstital
+        // might not get created properly.
+        web_contents()->GetController().DiscardNonCommittedEntries();
+        resource.callback = base::Bind(&EmptyUrlCheckCallback);
+        ui_manager_->DoDisplayBlockingPage(resource);
+      }
+    }
+    // If there is true malware verdict, invalidate weakptr so that no longer
+    // consider the phishing vedict.
+    weak_factory_.InvalidateWeakPtrs();
   }
 }
 
@@ -487,9 +522,11 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   if (request->feature_map_size() > 0) {
     VLOG(1) << "Start sending client malware request.";
     ClientSideDetectionService::ClientReportMalwareRequestCallback callback;
+    callback = base::Bind(&ClientSideDetectionHost::MaybeShowMalwareWarning,
+                          weak_factory_.GetWeakPtr());
     csd_service_->SendClientReportMalwareRequest(
         request.release(),  // The service takes ownership of the request object
-        callback);  // no action after request sent for now
+        callback);
   }
 }
 

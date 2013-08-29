@@ -103,7 +103,8 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
          threat_type == SB_THREAT_TYPE_URL_PHISHING ||
          threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL ||
          threat_type == SB_THREAT_TYPE_BINARY_MALWARE_HASH ||
-         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
+         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
+         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "report", client_name_, version_, std::string());
   std::string threat_list = "none";
@@ -122,6 +123,9 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
       break;
     case SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
       threat_list = "phishcsdhit";
+      break;
+    case SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL:
+      threat_list = "malcsdhit";
       break;
     default:
       NOTREACHED();

@@ -156,7 +156,11 @@ class SafeBrowsingBlockingPageFactoryImpl
     // V2 yet.
     if (unsafe_resources.size() == 1 &&
         (unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING)) {
+         unsafe_resources[0].threat_type ==
+         SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
+         unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         unsafe_resources[0].threat_type ==
+         SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL)) {
       return new SafeBrowsingBlockingPageV2(ui_manager, web_contents,
           unsafe_resources);
     }
@@ -196,7 +200,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
        iter != unsafe_resources_.end(); ++iter) {
     const UnsafeResource& resource = *iter;
     SBThreatType threat_type = resource.threat_type;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       malware = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
@@ -264,7 +269,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User pressed "Learn more".
     GURL url;
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrl));
     } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING ||
                threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) {
@@ -283,7 +289,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User pressed "Learn more".
     GURL url;
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrlV2));
     } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING ||
                threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) {
@@ -390,7 +397,9 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     GURL diagnostic_url(diagnostic);
     diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
     DCHECK(unsafe_resources_[element_index].threat_type ==
-           SB_THREAT_TYPE_URL_MALWARE);
+           SB_THREAT_TYPE_URL_MALWARE ||
+           unsafe_resources_[element_index].threat_type ==
+           SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
     OpenURLParams params(
         diagnostic_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK,
         false);
@@ -848,7 +857,8 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
     const UnsafeResource& resource = *iter;
     SBThreatType threat_type = resource.threat_type;
     DictionaryValue* current_error_strings = new DictionaryValue;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       current_error_strings->SetString("type", "malware");
       current_error_strings->SetString("typeLabel", malware_label);
       current_error_strings->SetString("errorLink", malware_link);
@@ -930,7 +940,9 @@ SafeBrowsingBlockingPageV2::SafeBrowsingBlockingPageV2(
     WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources)
   : SafeBrowsingBlockingPage(ui_manager, web_contents, unsafe_resources) {
-    if (unsafe_resources_[0].threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (unsafe_resources_[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        unsafe_resources_[0].threat_type ==
+        SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       trialCondition_ =
           base::FieldTrialList::FindFullName(kMalwareStudyName);
     } else if (unsafe_resources_[0].threat_type ==
@@ -959,7 +971,8 @@ std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {
     NOTREACHED();
   } else {
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       PopulateMalwareStringDictionary(&strings);
     } else {  // Phishing.
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||

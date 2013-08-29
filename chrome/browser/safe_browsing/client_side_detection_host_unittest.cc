@@ -738,6 +738,65 @@ TEST_F(ClientSideDetectionHostTest,
   ASSERT_FALSE(cb.is_null());
 }
 
+TEST_F(ClientSideDetectionHostTest,
+       OnPhishingDetectionDoneShowMalwareInterstitial) {
+  // Case 10: client thinks the page match malware IP and so does the server.
+  // We show an sub-resource malware interstitial.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      web_contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://not-phishing.com/");
+  verdict.set_client_score(0.1f);
+  verdict.set_is_phishing(false);
+
+  ClientSideDetectionService::ClientReportMalwareRequestCallback cb;
+  GURL malware_landing_url("http://malware.com/");
+  GURL malware_ip_url("http://badip.com");
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url("http://malware.com/");
+  ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
+  feature->set_name("malwareip1.2.3.4");
+  feature->set_value(1.0);
+  feature->add_metainfo("http://badip.com");
+
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _))
+      .WillOnce(SetArgumentPointee<1>(malware_verdict));
+  EXPECT_CALL(*csd_service_,
+              SendClientReportMalwareRequest(
+                  Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(),
+                      SaveArg<1>(&cb)));
+  OnPhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  ASSERT_FALSE(cb.is_null());
+
+  UnsafeResource resource;
+  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_))
+      .WillOnce(SaveArg<0>(&resource));
+  cb.Run(malware_landing_url, malware_ip_url, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
+  EXPECT_EQ(malware_ip_url, resource.url);
+  EXPECT_EQ(malware_landing_url, resource.original_url);
+  EXPECT_TRUE(resource.is_subresource);
+  EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL, resource.threat_type);
+  EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
+            resource.render_process_host_id);
+  EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
+            resource.render_view_id);
+
+  // Make sure the client object will be deleted.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
+                 ui_manager_, resource.callback));
+}
+
 TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
   // Test that canceling pending should classify requests works as expected.
 

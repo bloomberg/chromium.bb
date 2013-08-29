@@ -83,6 +83,12 @@ struct ClientSideDetectionService::ClientReportInfo {
   GURL phishing_url;
 };
 
+struct ClientSideDetectionService::ClientMalwareReportInfo {
+  ClientReportMalwareRequestCallback callback;
+  // This is the original landing url, may not be the malware url.
+  GURL original_url;
+};
+
 ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
     : is_phishing(phish),
       timestamp(time) {}
@@ -146,12 +152,12 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
     STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                    client_phishing_reports_.end());
     client_phishing_reports_.clear();
-    for (std::map<const net::URLFetcher*, ClientReportInfo*>::iterator it =
-             client_malware_reports_.begin();
+    for (std::map<const net::URLFetcher*, ClientMalwareReportInfo*>::iterator it
+             = client_malware_reports_.begin();
          it != client_malware_reports_.end(); ++it) {
-      ClientReportInfo* info = it->second;
+      ClientMalwareReportInfo* info = it->second;
       if (!info->callback.is_null())
-        info->callback.Run(info->phishing_url, false);
+        info->callback.Run(info->original_url, info->original_url, false);
     }
     STLDeleteContainerPairPointers(client_malware_reports_.begin(),
                                    client_malware_reports_.end());
@@ -386,7 +392,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
 
   if (!enabled_) {
     if (!callback.is_null())
-      callback.Run(GURL(request->url()), false);
+      callback.Run(GURL(request->url()), GURL(request->url()), false);
     return;
   }
 
@@ -395,7 +401,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
     DVLOG(1) << "Too many malware report requests sent recently."
              << "Skip sending malware report for " << GURL(request->url());
     if (!callback.is_null())
-      callback.Run(GURL(request->url()), false);
+      callback.Run(GURL(request->url()), GURL(request->url()), false);
     return;
   }
 
@@ -404,7 +410,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
     UpdateEnumUMAHistogram(REPORT_FAILED_SERIALIZATION);
     DVLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     if (!callback.is_null())
-      callback.Run(GURL(request->url()), false);
+      callback.Run(GURL(request->url()), GURL(request->url()), false);
     return;
   }
 
@@ -414,10 +420,9 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
       net::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
-  // TODO: need to modify to malware specific code
-  ClientReportInfo* info = new ClientReportInfo;
+  ClientMalwareReportInfo* info = new ClientMalwareReportInfo;
   info->callback = callback;
-  info->phishing_url = GURL(request->url());
+  info->original_url = GURL(request->url());
   client_malware_reports_[fetcher] = info;
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -508,18 +513,25 @@ void ClientSideDetectionService::HandleMalwareVerdict(
     const net::ResponseCookies& cookies,
     const std::string& data) {
   ClientMalwareResponse response;
-  scoped_ptr<ClientReportInfo> info(client_malware_reports_[source]);
+  scoped_ptr<ClientMalwareReportInfo> info(client_malware_reports_[source]);
   bool should_blacklist = false;
   if (status.is_success() && net::HTTP_OK == response_code &&
       response.ParseFromString(data)) {
     should_blacklist = response.blacklist();
   } else {
     DLOG(ERROR) << "Unable to get the server verdict for URL: "
-                << info->phishing_url << " status: " << status.status() << " "
+                << info->original_url << " status: " << status.status() << " "
                 << "response_code:" << response_code;
   }
-  if (!info->callback.is_null())
-    info->callback.Run(info->phishing_url, should_blacklist);
+
+  if (!info->callback.is_null()) {
+    if (response.has_bad_url())
+      info->callback.Run(info->original_url, GURL(response.bad_url()),
+                         should_blacklist);
+    else
+      info->callback.Run(info->original_url, info->original_url, false);
+  }
+
   client_malware_reports_.erase(source);
   delete source;
 }

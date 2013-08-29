@@ -213,6 +213,10 @@ class ClientSideDetectionServiceTest : public testing::Test {
     feature->set_value(value);
   }
 
+  void CheckConfirmedMalwareUrl(GURL url) {
+    ASSERT_EQ(confirmed_malware_url_, url);
+  }
+
  protected:
   scoped_ptr<ClientSideDetectionService> csd_service_;
   scoped_ptr<net::FakeURLFetcherFactory> factory_;
@@ -225,15 +229,19 @@ class ClientSideDetectionServiceTest : public testing::Test {
     msg_loop_.Quit();
   }
 
-  void SendMalwareRequestDone(GURL url, bool is_malware) {
-    ASSERT_EQ(phishing_url_, url);
+  void SendMalwareRequestDone(GURL original_url, GURL malware_url,
+                              bool is_malware) {
+    ASSERT_EQ(phishing_url_, original_url);
+    confirmed_malware_url_ = malware_url;
     is_malware_ = is_malware;
     msg_loop_.Quit();
   }
+
   scoped_ptr<content::TestBrowserThread> browser_thread_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
 
   GURL phishing_url_;
+  GURL confirmed_malware_url_;
   bool is_phishing_;
   bool is_malware_;
 };
@@ -418,16 +426,22 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
   GURL url("http://a.com/");
 
   base::Time before = base::Time::Now();
-
   // Invalid response body from the server.
   SetClientReportMalwareResponse("invalid proto response", true /* success */);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
-  // Normal behavior.
+  // Missing bad_url.
   ClientMalwareResponse response;
   response.set_blacklist(true);
   SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  EXPECT_FALSE(SendClientReportMalwareRequest(url));
+
+  // Normal behavior.
+  response.set_blacklist(true);
+  response.set_bad_url("http://response-bad.com/");
+  SetClientReportMalwareResponse(response.SerializeAsString(), true);
   EXPECT_TRUE(SendClientReportMalwareRequest(url));
+  CheckConfirmedMalwareUrl(GURL("http://response-bad.com/"));
 
   // This request will fail
   response.set_blacklist(false);

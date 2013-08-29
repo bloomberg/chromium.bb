@@ -115,11 +115,13 @@ message ClientMalwareRequest {
 }
 
 message ClientMalwareResponse {
-    required bool blacklist = 1;
-    // The confirmed blacklisted bad IP, which will be shown in malware warning.
-    // This IP string could be either in IPv4 or IPv6 format, which is the same
-    // as the ones client sent to server.
-    optional string bad_ip = 2;
+  required bool blacklist = 1;
+  // The confirmed blacklisted bad IP and its url, which will be shown in
+  // malware warning, if the blacklist verdict is true.
+  // This IP string could be either in IPv4 or IPv6 format, which is the same
+  // as the ones client sent to server.
+  optional string bad_ip = 2;
+  optional string bad_url = 3;
 }
 
 message ClientDownloadRequest {
