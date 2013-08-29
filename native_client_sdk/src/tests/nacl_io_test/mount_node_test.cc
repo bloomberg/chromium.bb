@@ -98,6 +98,50 @@ TEST(MountNodeTest, File) {
   EXPECT_EQ(NULL_NODE, result_node.get());
 }
 
+TEST(MountNodeTest, FTruncate) {
+  MockMemory file;
+  size_t result_size = 0;
+  int result_bytes = 0;
+
+  char data[1024];
+  char buffer[1024];
+  char zero[1024];
+
+  for (size_t a = 0; a < sizeof(data); a++)
+    data[a] = a;
+  memset(buffer, 0, sizeof(buffer));
+  memset(zero, 0, sizeof(zero));
+
+  // Write the data to the file.
+  ASSERT_EQ(0, file.Write(0, data, sizeof(data), &result_bytes));
+  ASSERT_EQ(sizeof(data), result_bytes);
+
+  // Double the size of the file.
+  EXPECT_EQ(0, file.FTruncate(sizeof(data) * 2));
+  EXPECT_EQ(0, file.GetSize(&result_size));
+  EXPECT_EQ(sizeof(data) * 2, result_size);
+
+  // Read the first half of the file, it shouldn't have changed.
+  EXPECT_EQ(0, file.Read(0, buffer, sizeof(buffer), &result_bytes));
+  EXPECT_EQ(sizeof(buffer), result_bytes);
+  EXPECT_EQ(0, memcmp(buffer, data, sizeof(buffer)));
+
+  // Read the second half of the file, it should be all zeroes.
+  EXPECT_EQ(0, file.Read(sizeof(data), buffer, sizeof(buffer), &result_bytes));
+  EXPECT_EQ(sizeof(buffer), result_bytes);
+  EXPECT_EQ(0, memcmp(buffer, zero, sizeof(buffer)));
+
+  // Decrease the size of the file.
+  EXPECT_EQ(0, file.FTruncate(100));
+  EXPECT_EQ(0, file.GetSize(&result_size));
+  EXPECT_EQ(100, result_size);
+
+  // Data should still be there.
+  EXPECT_EQ(0, file.Read(0, buffer, sizeof(buffer), &result_bytes));
+  EXPECT_EQ(100, result_bytes);
+  EXPECT_EQ(0, memcmp(buffer, data, 100));
+}
+
 TEST(MountNodeTest, Directory) {
   s_AllocNum = 0;
   MockDir root;

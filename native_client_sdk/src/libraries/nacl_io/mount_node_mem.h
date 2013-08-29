@@ -7,6 +7,8 @@
 
 #include "nacl_io/mount_node.h"
 
+#include <vector>
+
 namespace nacl_io {
 
 class MountNodeMem : public MountNode {
@@ -26,8 +28,9 @@ class MountNodeMem : public MountNode {
   virtual Error FTruncate(off_t size);
 
  private:
-  char* data_;
-  size_t capacity_;
+  void Resize(off_t size);
+
+  std::vector<char> data_;
   friend class MountMem;
 };
 
