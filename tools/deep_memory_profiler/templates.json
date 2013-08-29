@@ -1,12 +1,49 @@
 {
-  "l2": ["vm", "map", {
-    "mmap-tcmalloc": ["malloc", "component", {}]
+  "l0": ["vm", "base", {}],
+  "l1": ["vm", "base", {
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "renderer-module", {}]
   }],
-  "details": ["vm", "map", {
-    "mmap-tcmalloc": ["malloc", "component", {
-      "webkit": ["malloc", "webkit-details", {}],
-      "skia": ["malloc", "skia-details", {}]
-    }],
-    "mmap-v8-heap": ["javascript", "type", {}]
+  "l2": ["vm", "base", {
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "renderer-module", {
+      "WebCore": ["malloc", "WebCore", {}]
+    }]
+  }],
+  "linux.browser": ["vm", "base", {
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "browser-module", {}]
+  }],
+  "android.browser": ["vm", "base", {
+    "unhooked-file": ["vm", "android-specific", {}],
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "browser-module", {}]
+  }],
+  "android.renderer": ["vm", "base", {
+    "unhooked-file": ["vm", "android-specific", {}],
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "renderer-module", {
+      "WebCore": ["malloc", "WebCore", {}]
+    }]
+  }],
+  "android.webview": ["vm", "base", {
+    "unhooked-file": ["vm", "android-specific", {}],
+    "mmap-v8": ["vm", "v8", {}],
+    "mmap-gpu": ["vm", "gpu", {}],
+    "mmap-skia": ["vm", "skia", {}],
+    "mmap-tcmalloc": ["malloc", "renderer-module", {
+      "WebCore": ["malloc", "WebCore", {}],
+      "others": ["malloc", "browser-module", {}]
+    }]
   }]
 }

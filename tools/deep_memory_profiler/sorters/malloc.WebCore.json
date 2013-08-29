@@ -1,0 +1,89 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "malloc",
+  "name": "WebCore",
+  "order": {},
+  "rules": [
+    {
+      "name": "RenderArena",
+      "backtrace_function": ".*WebCore::RenderArena::allocate.*"
+    },
+    {
+      "name": "RenderStyle",
+      "backtrace_function": ".*WebCore::RenderStyle::(create|clone).*"
+    },
+    {
+      "name": "SharedBuffer",
+      "backtrace_function": ".*WebCore::SharedBuffer::(create|buffer|append).*"
+    },
+    {
+      "name": "XMLHttpRequest",
+      "backtrace_function": ".*WebCore::XMLHttpRequest::create .*"
+    },
+    {
+      "name": "XMLHttpRequest-received",
+      "backtrace_function": ".*WebCore::XMLHttpRequest::didReceiveData.*"
+    },
+    {
+      "name": "DocumentWriter-addData",
+      "backtrace_function": ".*WebCore::DocumentWriter::addData.*"
+    },
+    {
+      "name": "Element-create",
+      "backtrace_function": ".*WebCore::(HTML[A-Za-z0-9_]*Element|Text|Comment|HTMLDocument|CSSStyleRule|Attribute|DOMWindow)::create .*"
+    },
+    {
+      "name": "Element-factory",
+      "backtrace_function": ".*WebCore::HTML[a-zA-Z0-9_]*Factory::create[a-zA-Z0-9_]*Element.*"
+    },
+    {
+      "name": "ElementWrapper",
+      "backtrace_function": ".*WebCore::createHTML[a-zA-Z0-9_]*ElementWrapper.*"
+    },
+    {
+      "name": "StylePropertySet",
+      "backtrace_function": ".*WebCore::StylePropertySet::create .*"
+    },
+    {
+      "name": "StyleElement-createSheet",
+      "backtrace_function": ".*WebCore::StyleElement::createSheet.*"
+    },
+    {
+      "name": "CachedResource",
+      "backtrace_function": ".*WebCore::CachedResource::(data|load) .*"
+    },
+    {
+      "name": "ScriptElement-execute",
+      "backtrace_function": ".*WebCore::ScriptElement::execute.*"
+    },
+    {
+      "name": "Events",
+      "backtrace_function": ".*WebCore::(createAttributeEventListener|V8LazyEventListener::create|V8EventListener::create|Event::create |EventListener::create ).*"
+    },
+    {
+      "name": "Document-write",
+      "backtrace_function": ".*WebCore::Document::write.*"
+    },
+    {
+      "name": "Node-createRenderer",
+      "backtrace_function": ".*WebCore::Node::createRendererIfNeeded.*"
+    },
+    {
+      "name": "ImageFrameGenerator",
+      "stacktrace": ".*WebCore::ImageFrameGenerator.*"
+    },
+    {
+      "name": "Render",
+      "backtrace_function": ".*WebCore::(RenderLayer|RenderBlock|RenderWidget|RenderView|RenderViewImpl|RenderStyle|RenderText).*"
+    },
+    {
+      "name": "setInnerHTML",
+      "backtrace_function": ".*WebCore::HTMLElement::setInnerHTML.*"
+    },
+    {
+      "name": "Others-create",
+      "backtrace_function": ".*WebCore::[a-zA-Z0-9_]*::create .*"
+    }
+  ]
+}

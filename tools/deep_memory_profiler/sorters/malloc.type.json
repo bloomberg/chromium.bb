@@ -1,0 +1,77 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "malloc",
+  "name": "type",
+  "order": {},
+  "rules": [
+    {
+      "name": "STL-string",
+      "typeinfo": "std::basic_string.*"
+    },
+    {
+      "name": "STL-rbtree",
+      "typeinfo": "std::priv::_Rb_tree::.*"
+    },
+    {
+      "name": "STL-vector",
+      "typeinfo": "std::priv::_Impl_vector::.*"
+    },
+    {
+      "name": "STL-hashtable",
+      "typeinfo": "std::hashtable::.*"
+    },
+    {
+      "name": "STL-others",
+      "typeinfo": "std::.*"
+    },
+    {
+      "name": "WTF-String",
+      "typeinfo": "WTF::String.*"
+    },
+    {
+      "name": "Skia",
+      "typeinfo": "(skia::|SkGlyph).*"
+    },
+    {
+      "name": "WebCore-Style",
+      "typeinfo": "WebCore::Style.*"
+    },
+    {
+      "name": "STL-string",
+      "backtrace_function": ".*std::basic_string::.*"
+    },
+    {
+      "name": "STL-rbtree",
+      "backtrace_function": ".*std::priv::_Rb_tree::.*"
+    },
+    {
+      "name": "STL-rbtree",
+      "backtrace_function": ".*::allocate std::(_Rb_tree|__1::__tree).*"
+    },
+    {
+      "name": "STL-hashtable",
+      "backtrace_function": ".*std::hashtable::.*"
+    },
+    {
+      "name": "STL-hashtable",
+      "backtrace_function": ".*(std::vector::reserve __gnu_cxx::hashtable|::allocate std::_Hashtable|::allocate std::__1::__hash_table).*"
+    },
+    {
+      "name": "STL-vector",
+      "backtrace_function": ".*std::priv::_Impl_vector::.*"
+    },
+    {
+      "name": "STL-vector",
+      "backtrace_function": ".*std::(_Vector_base::_M_allocate|__1::vector::allocate).*"
+    },
+    {
+      "name": "STL-others",
+      "backtrace_function": ".*(__gnu_cxx::new_allocator::allocate|std::__1::allocator::allocate).*"
+    },
+    {
+      "name": "WTF-String",
+      "backtrace_function": ".*WTF::StringImpl::getData16SlowCase.*"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "malloc",
+  "name": "renderer-module",
+  "order": {},
+  "rules": [
+    {
+      "name": "V8",
+      "backtrace_function": ".*v8::.*"
+    },
+    {
+      "name": "Skia",
+      "backtrace_function": ".* Sk[A-Z][A-Za-z0-9_]+::.*"
+    },
+    {
+      "name": "WebCore",
+      "subs": [
+        [ "malloc", "WebCore" ]
+      ],
+      "backtrace_function": ".*WebCore::.*"
+    },
+    {
+      "name": "Blink-others",
+      "backtrace_function": ".*(WTF::|WebKit::).*"
+    },
+    {
+      "name": "others",
+      "backtrace_function": ".*"
+    }
+  ]
+}

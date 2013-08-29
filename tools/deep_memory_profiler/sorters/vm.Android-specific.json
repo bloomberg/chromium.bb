@@ -1,0 +1,77 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "vm",
+  "name": "android-specific",
+  "root": false,
+  "order": {},
+  "rules": [
+    {
+      "name": "ashmem-dalvik-heap",
+      "mapped_pathname": "/dev/ashmem/dalvik-heap.*",
+      "mmap": false
+    },
+    {
+      "name": "ashmem-dalvik-LinearAlloc",
+      "mapped_pathname": "/dev/ashmem/dalvik-LinearAlloc.*",
+      "mmap": false
+    },
+    {
+      "name": "ashmem-dalvik-aux-structure",
+      "mapped_pathname": "/dev/ashmem/dalvik-aux-structure.*",
+      "mmap": false
+    },
+    {
+      "name": "ashmem-dalvik-bitmap",
+      "mapped_pathname": "/dev/ashmem/dalvik-bitmap.*",
+      "mmap": false
+    },
+    {
+      "name": "ashmem-dalvik-other",
+      "mapped_pathname": "/dev/ashmem/dalvik.*",
+      "mmap": false
+    },
+    {
+      "name": "pvrsrvkm",
+      "mapped_pathname": "/dev/pvrsrvkm.*",
+      "mmap": false
+    },
+    {
+      "name": "system-dex",
+      "mapped_pathname": "/data/dalvik-cache/system.*.dex.*",
+      "mmap": false
+    },
+    {
+      "name": "chrome-dex",
+      "mapped_pathname": "^/.*?(chrome|content).*?apk@classes.dex",
+      "mmap": false
+    },
+    {
+      "name": "other-ashmem",
+      "mapped_pathname": "/dev/ashmem/.*",
+      "mmap": false
+    },
+    {
+      "name": "file-exec-lib-chrome",
+      "mapped_pathname": "^/.*?(chromeview|content).*",
+      "mapped_permission": "..x.",
+      "mmap": false
+    },
+    {
+      "name": "file-exec",
+      "mapped_pathname": "^/.*",
+      "mapped_permission": "..x.",
+      "mmap": false
+    },
+    {
+      "name": "file-nonexec-lib-chrome",
+      "mapped_pathname": "^/.*?(chromeview|content).*",
+      "mmap": false
+    },
+    {
+      "name": "file-nonexec",
+      "mapped_pathname": "^/.*",
+      "mmap": false
+    }
+  ]
+}

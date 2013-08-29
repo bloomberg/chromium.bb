@@ -1,0 +1,15 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "vm",
+  "name": "skia",
+  "root": false,
+  "order": {},
+  "rules": [
+    {
+      "name": "font",
+      "backtrace_function": ".*SkTypeface::openStream.*",
+      "mmap": true
+    }
+  ]
+}

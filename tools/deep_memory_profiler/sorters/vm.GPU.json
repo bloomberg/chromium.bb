@@ -1,0 +1,35 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "vm",
+  "name": "gpu",
+  "root": false,
+  "order": {},
+  "rules": [
+    {
+      "name": "mappedmemorymanager",
+      "backtrace_function": ".*gpu::MappedMemoryManager::Alloc.*",
+      "mmap": true
+    },
+    {
+      "name": "command-ringbuffer",
+      "backtrace_function": ".*gpu::CommandBufferHelper::AllocateRingBuffer.*",
+      "mmap": true
+    },
+    {
+      "name": "transfer-ringbuffer",
+      "backtrace_function": ".*gpu::TransferBuffer::AllocateRingBuffer.*",
+      "mmap": true
+    },
+    {
+      "name": "transferbuffermanager",
+      "backtrace_function": ".*gpu::TransferBufferManager::RegisterTransferBuffer.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "gles2-createbuffer",
+      "backtrace_function": ".*gpu::gles2::BufferTracker::CreateBuffer.*",
+      "mmap": true
+    }
+  ]
+}

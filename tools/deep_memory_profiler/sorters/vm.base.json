@@ -1,0 +1,75 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "vm",
+  "name": "base",
+  "root": true,
+  "order": {},
+  "rules": [
+    {
+      "name": "mmap-profiler",
+      "backtrace_function": ".*(TypeProfilerMalloc|ProfilerMalloc|MemoryRegionMap::).*",
+      "mmap": true,
+      "hidden": true
+    },
+    {
+      "name": "unhooked-anonymous",
+      "mapped_pathname": "^$",
+      "mmap": false
+    },
+    {
+      "name": "unhooked-file",
+      "mapped_pathname": "^/.*",
+      "mmap": false
+    },
+    {
+      "name": "unhooked-stack",
+      "mapped_pathname": ".stack.",
+      "mmap": false
+    },
+    {
+      "name": "unhooked-other",
+      "mapped_pathname": ".*",
+      "mmap": false
+    },
+    {
+      "name": "mmap-tcmalloc",
+      "backtrace_function": ".*(DoAllocWithArena|SbrkSysAllocator::Alloc|MmapSysAllocator::Alloc|LowLevelAlloc::Alloc|LowLevelAlloc::AllocWithArena).*",
+      "subs": [
+        [ "malloc", "browser-module" ],
+        [ "malloc", "renderer-module" ],
+        [ "malloc", "type" ]
+      ],
+      "mmap": true
+    },
+    {
+      "name": "mmap-v8",
+      "backtrace_function": ".*v8::.*",
+      "subs": [
+        [ "vm", "v8" ]
+      ],
+      "mmap": true
+    },
+    {
+      "name": "mmap-gpu",
+      "backtrace_function": ".*gpu::.*",
+      "subs": [
+        [ "vm", "gpu" ]
+      ],
+      "mmap": true
+    },
+    {
+      "name": "mmap-skia",
+      "backtrace_function": ".*Sk[a-zA-Z0-9_]*::.*",
+      "subs": [
+        [ "vm", "skia" ]
+      ],
+      "mmap": true
+    },
+    {
+      "name": "mmap-others",
+      "backtrace_function": ".*",
+      "mmap": true
+    }
+  ]
+}

@@ -16,10 +16,16 @@ LOGGER = logging.getLogger('dmprof')
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEFAULT_SORTERS = [
-    os.path.join(BASE_PATH, 'sorter.malloc-component.json'),
-    os.path.join(BASE_PATH, 'sorter.malloc-type.json'),
-    os.path.join(BASE_PATH, 'sorter.vm-map.json'),
-    os.path.join(BASE_PATH, 'sorter.vm-sharing.json'),
+    os.path.join(BASE_PATH, 'sorters', 'malloc.browser-module.json'),
+    os.path.join(BASE_PATH, 'sorters', 'malloc.renderer-module.json'),
+    os.path.join(BASE_PATH, 'sorters', 'malloc.type.json'),
+    os.path.join(BASE_PATH, 'sorters', 'malloc.WebCore.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.Android-specific.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.base.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.GPU.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.sharing.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.Skia.json'),
+    os.path.join(BASE_PATH, 'sorters', 'vm.V8.json'),
     ]
 
 DEFAULT_TEMPLATES = os.path.join(BASE_PATH, 'templates.json')
@@ -439,7 +445,9 @@ class SorterSet(object):
     if not default:
       default = DEFAULT_SORTERS
     self._sorters = {}
+    LOGGER.info('Loading sorters.')
     for filename in default + additional:
+      LOGGER.info('  Loading a sorter "%s".' % filename)
       sorter = AbstractSorter.load(filename)
       if sorter.world not in self._sorters:
         self._sorters[sorter.world] = []

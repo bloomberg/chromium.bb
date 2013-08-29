@@ -1,0 +1,86 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "malloc",
+  "name": "browser-module",
+  "order": {},
+  "rules": [
+    {
+      "name": "V8",
+      "backtrace_function": ".*v8::.*"
+    },
+    {
+      "name": "Skia",
+      "backtrace_function": ".* Sk[A-Z][A-Za-z0-9_]+::.*"
+    },
+    {
+      "name": "disk_cache",
+      "backtrace_function": ".*disk_cache::.*"
+    },
+    {
+      "name": "SQLite",
+      "backtrace_function": ".*sqlite3Mem(Malloc|Realloc).*"
+    },
+    {
+      "name": "Angle",
+      "backtrace_function": ".*TPoolAllocator::allocate.*"
+    },
+    {
+      "name": "CRYPTO",
+      "backtrace_function": ".*(CRYPTO_malloc|CRYPTO_realloc).*"
+    },
+    {
+      "name": "net-IOBuffer",
+      "backtrace_function": ".*net::IOBuffer::IOBuffer.*"
+    },
+    {
+      "name": "syncer",
+      "backtrace_function": ".* syncer::.*"
+    },
+    {
+      "name": "DOMStorage",
+      "backtrace_function": ".*content::DOMStorageMessageFilter::OnMessageReceived.*"
+    },
+    {
+      "name": "SafeBrowsingDatabase",
+      "backtrace_function": ".*SafeBrowsingDatabaseNew::UpdateFinished.*"
+    },
+    {
+      "name": "ThreadContext",
+      "backtrace_function": ".*tracked_objects::ThreadData::InitializeThreadContext.*"
+    },
+    {
+      "name": "LevelDB",
+      "backtrace_function": ".*leveldb::.*"
+    },
+    {
+      "name": "SPDY",
+      "backtrace_sourcefile": ".*\\.\\./\\.\\./net/spdy/.*"
+    },
+    {
+      "name": "net-SSLConnectJob",
+      "backtrace_function": ".*net::SSLConnectJob::DoLoop.*"
+    },
+    {
+      "name": "history-thumbnails",
+      "backtrace_function": ".*history::.*",
+      "backtrace_sourcefile": ".*\\.\\./\\.\\./chrome/browser/thumbnails/.*"
+    },
+    {
+      "name": "history-URLIndexPrivateData",
+      "backtrace_function": ".*history::URLIndexPrivateData::.*"
+    },
+    {
+      "name": "CRLSet",
+      "backtrace_function": ".*CRLSetFetcher::LoadFromDisk.*"
+    },
+    {
+      "name": "ExtensionHost",
+      "backtrace_function": ".*extensions::ExtensionHost::ExtensionHost.*"
+    },
+    {
+      "name": "BookmarkCodec",
+      "backtrace_function": ".*BookmarkCodec::.*"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "type": "sorter",
+  "version": 1,
+  "world": "vm",
+  "name": "v8",
+  "root": false,
+  "order": {},
+  "rules": [
+    {
+      "name": "newspace",
+      "backtrace_function": ".*v8::internal::NewSpace::SetUp.*",
+      "mmap": true
+    },
+    {
+      "name": "coderange",
+      "backtrace_function": ".*v8::internal::CodeRange::SetUp.*",
+      "mmap": true
+    },
+    {
+      "name": "pagedspace",
+      "backtrace_function": ".*v8::internal::PagedSpace::AllocateRaw.*",
+      "mmap": true
+    }
+  ]
+}
