@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS=subdir-objects
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir) \
