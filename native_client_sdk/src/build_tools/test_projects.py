@@ -59,6 +59,9 @@ DISABLED_TESTS = [
     # TODO(binji): Disable 3D examples on linux/win. See
     # http://crbug.com/262379.
     {'name': 'graphics_3d', 'platform': ('win', 'linux')},
+    # TODO(binji): These tests timeout on the trybots because the NEXEs take
+    # more than 40 seconds to load (!). See http://crbug.com/280753
+    {'name': 'nacl_io_test', 'platform': 'win', 'toolchain': 'glibc'},
 ]
 
 def ValidateToolchains(toolchains):
