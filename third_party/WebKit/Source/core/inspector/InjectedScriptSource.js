@@ -848,7 +848,7 @@ InjectedScript.prototype = {
             case 1 /* Node.ELEMENT_NODE */:
                 description += obj.id ? "#" + obj.id : "";
                 var className = obj.className;
-                description += (className && typeof className === "string") ? "." + className : "";
+                description += (className && typeof className === "string") ? "." + className.trim().replace(/\s+/g, ".") : "";
                 break;
             case 10 /*Node.DOCUMENT_TYPE_NODE */:
                 description = "<!DOCTYPE " + description + ">";
