@@ -24,9 +24,21 @@ var WebView = require('binding').Binding.create('webview').generate();
 // API can access it and not external developers.
 var secret = {};
 
+var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
+var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
+var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
+var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
+
 /** @type {Array.<string>} */
-var WEB_VIEW_ATTRIBUTES = ['name', 'partition', 'autosize', 'minheight',
-    'minwidth', 'maxheight', 'maxwidth'];
+var WEB_VIEW_ATTRIBUTES = [
+    'name',
+    'partition',
+    'autosize',
+    WEB_VIEW_ATTRIBUTE_MINHEIGHT,
+    WEB_VIEW_ATTRIBUTE_MINWIDTH,
+    WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
+    WEB_VIEW_ATTRIBUTE_MAXWIDTH
+];
 
 var webViewInstanceIdCounter = 0;
 
@@ -109,6 +121,9 @@ var WEB_VIEW_EVENTS = {
   },
   'sizechanged': {
     evt: CreateEvent('webview.onSizeChanged'),
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.handleSizeChangedEvent_(event, webViewEvent);
+    },
     fields: ['oldHeight', 'oldWidth', 'newHeight', 'newWidth']
   },
   'unresponsive': {
@@ -469,6 +484,54 @@ WebViewInternal.prototype.getEvents_ = function() {
     WEB_VIEW_EVENTS[eventName] = experimentalEvents[eventName];
   }
   return WEB_VIEW_EVENTS;
+};
+
+WebViewInternal.prototype.handleSizeChangedEvent_ =
+    function(event, webViewEvent) {
+  var node = this.webviewNode_;
+
+  // Check the current bounds to make sure we do not resize <webview>
+  // outside of current constraints.
+  var minWidth = 0;
+  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MINWIDTH) &&
+      node[WEB_VIEW_ATTRIBUTE_MINWIDTH]) {
+    minWidth = node[WEB_VIEW_ATTRIBUTE_MINWIDTH];
+  }
+  var maxWidth;
+  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MAXWIDTH) &&
+      node[WEB_VIEW_ATTRIBUTE_MAXWIDTH]) {
+    maxWidth = node[WEB_VIEW_ATTRIBUTE_MAXWIDTH];
+  } else {
+    maxWidth = node.offsetWidth;
+  }
+  if (minWidth > maxWidth) {
+    minWidth = maxWidth;
+  }
+
+  var minHeight = 0;
+  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MINHEIGHT) &&
+      node[WEB_VIEW_ATTRIBUTE_MINHEIGHT]) {
+    minHeight = node[WEB_VIEW_ATTRIBUTE_MINHEIGHT];
+  }
+  var maxHeight;
+  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MAXHEIGHT) &&
+      node[WEB_VIEW_ATTRIBUTE_MAXHEIGHT]) {
+    maxHeight = node[WEB_VIEW_ATTRIBUTE_MAXHEIGHT];
+  } else {
+    maxHeight = node.offsetHeight;
+  }
+  if (minHeight > maxHeight) {
+    minHeight = maxHeight;
+  }
+
+  if (webViewEvent.newWidth >= minWidth &&
+      webViewEvent.newWidth <= maxWidth &&
+      webViewEvent.newHeight >= minHeight &&
+      webViewEvent.newHeight <= maxHeight) {
+    node.style.width = webViewEvent.newWidth + 'px';
+    node.style.height = webViewEvent.newHeight + 'px';
+  }
+  node.dispatchEvent(webViewEvent);
 };
 
 /**

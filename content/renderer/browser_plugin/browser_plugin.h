@@ -252,20 +252,22 @@ class CONTENT_EXPORT BrowserPlugin :
   // allocates a new |pending_damage_buffer_| if in software rendering mode.
   void PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
-      const gfx::Rect& view_size);
+      const gfx::Rect& view_size,
+      bool needs_repaint);
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
   void PopulateAutoSizeParameters(
-      BrowserPluginHostMsg_AutoSize_Params* params, bool current_auto_size);
+      BrowserPluginHostMsg_AutoSize_Params* params, bool auto_size_enabled);
 
   // Populates both AutoSize and ResizeGuest parameters based on the current
   // autosize state.
   void GetDamageBufferWithSizeParams(
       BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
-      BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params);
+      BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
+      bool needs_repaint);
 
   // Informs the guest of an updated autosize state.
-  void UpdateGuestAutoSizeState(bool current_auto_size);
+  void UpdateGuestAutoSizeState(bool auto_size_enabled);
 
   // Indicates whether a damage buffer was used by the guest process for the
   // provided |params|.
@@ -312,14 +314,16 @@ class CONTENT_EXPORT BrowserPlugin :
   scoped_ptr<base::SharedMemory> current_damage_buffer_;
   scoped_ptr<base::SharedMemory> pending_damage_buffer_;
   uint32 damage_buffer_sequence_id_;
-  bool resize_ack_received_;
+  bool paint_ack_received_;
   gfx::Rect plugin_rect_;
   float last_device_scale_factor_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
-  bool auto_size_ack_pending_;
+  bool is_auto_size_state_dirty_;
+  // Maximum size constraint for autosize.
+  gfx::Size max_auto_size_;
   std::string storage_partition_id_;
   bool persist_storage_;
   bool valid_partition_id_;

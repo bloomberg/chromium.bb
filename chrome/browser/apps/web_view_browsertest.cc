@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -253,6 +254,17 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
             strlen("GeolocationAPI"))) {
       ui_test_utils::OverrideGeolocation(10, 20);
     }
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+
+    // Force SW rendering to check autosize bug.
+    if (!strncmp(test_info->name(), "AutoSizeSW", strlen("AutosizeSW")))
+      command_line->AppendSwitch(switches::kDisableForceCompositingMode);
+
+    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
   // This method is responsible for initializing a packaged app, which contains
@@ -563,6 +575,20 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/addremove"))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
+      << message_;
+}
+
+#if !defined(OS_CHROMEOS)
+// This test ensures <webview> doesn't crash in SW rendering when autosize is
+// turned on.
+IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSizeSW) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
+      << message_;
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation",
