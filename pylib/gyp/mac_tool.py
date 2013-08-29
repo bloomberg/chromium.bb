@@ -87,16 +87,14 @@ class MacTool(object):
     #     semicolon in dictionary.
     # on invalid files. Do the same kind of validation.
     import CoreFoundation
-    s = open(source).read()
+    s = open(source, 'rb').read()
     d = CoreFoundation.CFDataCreate(None, s, len(s))
     _, error = CoreFoundation.CFPropertyListCreateFromXMLData(None, d, 0, None)
     if error:
       return
 
-    fp = open(dest, 'w')
-    args = ['/usr/bin/iconv', '--from-code', input_code, '--to-code',
-        'UTF-16', source]
-    subprocess.call(args, stdout=fp)
+    fp = open(dest, 'wb')
+    fp.write(s.decode(input_code).encode('UTF-16'))
     fp.close()
 
   def _DetectInputEncoding(self, file_name):

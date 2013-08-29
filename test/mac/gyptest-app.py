@@ -42,9 +42,13 @@ if sys.platform == 'darwin':
   test.must_not_contain(info_plist, '${MACOSX_DEPLOYMENT_TARGET}');
 
   # Resources
-  test.built_file_must_exist(
+  strings = test.built_file_path(
       'Test App Gyp.app/Contents/Resources/English.lproj/InfoPlist.strings',
       chdir='app-bundle')
+  test.must_exist(strings)
+  # Xcodes writes UTF-16LE with BOM.
+  test.must_contain(strings, '\xff\xfe' + '/* Localized'.encode('utf-16le'))
+
   test.built_file_must_exist(
       'Test App Gyp.app/Contents/Resources/English.lproj/MainMenu.nib',
       chdir='app-bundle')
