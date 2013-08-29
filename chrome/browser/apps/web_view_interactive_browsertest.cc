@@ -467,10 +467,14 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 
 #endif  // (defined(OS_WIN) || defined(OS_LINUX))
 
+// Fails on Windows. crbug.com/236040
+#if defined(OS_WIN)
+#define MAYBE_Focus DISABLED_Focus
+#else
+#define MAYBE_Focus Focus
+#endif
 // Tests that setting focus on the <webview> sets focus on the guest.
-// If this test is flaky please disable it only on the flaky platforms and
-// not all platforms.
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_Focus) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/focus"))
       << message_;
