@@ -20,16 +20,11 @@
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND" file="common/launcher/launcher_background.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER" file="common/launcher/launcher_browser.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="common/launcher/launcher_browser_panel.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="common/chromium-32.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_DIMMING" file="common/launcher/launcher_dimming.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="common/launcher/launcher_appmenu.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_ALTERNATE" file="common/alt_launcher/status_app_menu_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="common/launcher/launcher_appmenu_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="common/launcher/launcher_appmenu_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="common/launcher/launcher_incognito_browser.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="common/launcher/launcher_incognito_browser_panel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_BROWSER" file="common/launcher/window_switcher_icon_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER" file="common/launcher/window_switcher_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW" file="common/launcher/launcher_overflow.png" />
@@ -222,24 +217,14 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW_RTL" file="common/window_fullscreen_shadow_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="common/window_header_base_active.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="common/window_header_base_inactive.png" />
-        <!-- TODO(jamescook): We need updated incognito art for Aura. -->
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="common/window_header_base_incognito_active.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE" file="common/window_header_base_incognito_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_MINIMAL" file="common/window_header_base_minimal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_LEFT" file="common/window_header_shade_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_MIDDLE" file="common/window_header_shade_middle.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_RIGHT" file="common/window_header_shade_right.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="common/window_header_shade_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="common/window_header_shade_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="common/window_header_shade_top_right.png" />
-
-      <!-- Art for experimental "immersive mode" button at top of screen. crbug.com/157612 -->
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER" file="common/window_immersive_enter_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER_H" file="common/window_immersive_enter_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_ENTER_P" file="common/window_immersive_enter_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT" file="common/window_immersive_exit_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT_H" file="common/window_immersive_exit_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_IMMERSIVE_EXIT_P" file="common/window_immersive_exit_pressed.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="common/window_close_tall_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="common/window_close_tall_hover.png" />
