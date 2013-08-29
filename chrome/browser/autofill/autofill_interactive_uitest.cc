@@ -860,14 +860,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
                "我々は重要な、興味深いものになるが、時折状況が発生するため苦労や痛みは"
                "彼にいくつかの素晴らしいを調達することができます。それから、いくつかの利");
 
-  content::WindowedNotificationObserver infobar(
+  content::WindowedNotificationObserver infobar_observer(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::NotificationService::AllSources());
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), url));
 
   // Wait for the translation bar to appear and get it.
-  infobar.Wait();
+  infobar_observer.Wait();
   TranslateInfoBarDelegate* delegate = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())->infobar_at(0)->
           AsTranslateInfoBarDelegate();
@@ -878,13 +878,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   // Simulate translation button press.
   delegate->Translate();
 
-  // Simulate the translate script being retrieved.
-  // Pass fake google.translate lib as the translate script.
-  SimulateURLFetch(true);
-
   content::WindowedNotificationObserver translation_observer(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
       content::NotificationService::AllSources());
+
+  // Simulate the translate script being retrieved.
+  // Pass fake google.translate lib as the translate script.
+  SimulateURLFetch(true);
 
   // Simulate the render notifying the translation has been done.
   translation_observer.Wait();
