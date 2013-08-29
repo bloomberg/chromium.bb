@@ -718,6 +718,12 @@ void APIUtil::DidGetResourceEntry(
     return;
   }
 
+  if (entry->deleted()) {
+    DVLOG(2) << "Got resource entry, the entry was trashed.";
+    callback.Run(google_apis::HTTP_NOT_FOUND, entry.Pass());
+    return;
+  }
+
   DVLOG(2) << "Got resource entry";
   DCHECK(entry);
   callback.Run(error, entry.Pass());
