@@ -57,6 +57,7 @@ private:
     virtual void handleDOMActivateEvent(Event*) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual bool canSetStringValue() const OVERRIDE;
+    virtual bool canChangeFromAnotherType() const OVERRIDE;
     virtual FileList* files() OVERRIDE;
     virtual void setFiles(PassRefPtr<FileList>) OVERRIDE;
     virtual bool canSetValue(const String&) OVERRIDE;

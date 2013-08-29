@@ -25,8 +25,6 @@ PASS input.value is "02:24"
 PASS input.value is "02:24"
 PASS input.value is "02:24"
 PASS input.value is ""
-==> Reset type attribute, and click on the clear button
-PASS input.value is ""
 
 PASS successfullyParsed is true
 

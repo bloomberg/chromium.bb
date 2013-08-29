@@ -407,20 +407,19 @@ void HTMLInputElement::setType(const String& type)
 
 void HTMLInputElement::updateType()
 {
-    const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
+    RefPtr<InputType> newType = InputType::create(this, fastGetAttribute(typeAttr));
     bool hadType = m_hasType;
     m_hasType = true;
-    if (m_inputType->formControlType() == newTypeName)
+    if (m_inputType->formControlType() == newType->formControlType())
         return;
 
-    if (hadType && !InputType::canChangeFromAnotherType(newTypeName)) {
+    if (hadType && !newType->canChangeFromAnotherType()) {
         // Set the attribute back to the old value.
         // Useful in case we were called from inside parseAttribute.
         setAttribute(typeAttr, type());
         return;
     }
 
-    RefPtr<InputType> newType = InputType::create(this, newTypeName);
     removeFromRadioButtonGroup();
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
