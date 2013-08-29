@@ -59,7 +59,7 @@ body {
   right: 0;
   top: 0;
   width: 10px;
-  z-index: 1000;
+  z-index: 500;  /* Must be below the contextmenu (600). */
 }
 
 .scrollbar-button {
@@ -216,7 +216,7 @@ div.splitter {
   margin-right: -3px;
   position: relative;
   width: 6px;
-  z-index: 100;
+  z-index: 500;  /* Must be below the contextmenu (600). */
 }
 
 #navigation-list {
@@ -1443,7 +1443,7 @@ body[drive] .dialog-container[connection='offline'] .dim-offline {
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 1000;  /* Must be above all elements in file manager container. */
 }
 
 /* When the overlay pane is visible hide everything else so that the tab order
@@ -1507,7 +1507,7 @@ body[overlay-visible] > :not(.overlay-pane) {
 }
 
 menu.file-context-menu {
-  z-index: 4;
+  z-index: 600;  /* Must be below the overlay pane (1000). */
 }
 
 menu.chrome-menu hr {
@@ -1638,7 +1638,7 @@ body[drive='error'] #unmounted-panel > .error,
   text-align: center;
   top: 5px;
   white-space: nowrap;
-  z-index: 15;
+  z-index: 600;  /* Must be below the overlay pane (1000). */
 }
 
 .tooltip::after,

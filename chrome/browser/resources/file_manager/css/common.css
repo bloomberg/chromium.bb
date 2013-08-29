@@ -172,7 +172,7 @@ menu.chrome-menu {
   overflow: hidden;
   padding: 5px 0;
   transition: opacity 200ms ease-in;
-  z-index: 15;
+  z-index: 600;  /* Must be below the overlay pane (1000). */
 }
 
 menu.chrome-menu[hidden] {
