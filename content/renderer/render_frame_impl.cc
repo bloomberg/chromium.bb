@@ -117,9 +117,6 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
     return false;
   }
 
-  if (message->routing_id() == MSG_ROUTING_NONE)
-    message->set_routing_id(routing_id_);
-
   return RenderThread::Get()->Send(message);
 }
 
@@ -220,10 +217,9 @@ void RenderFrameImpl::didAccessInitialDocument(WebKit::WebFrame* frame) {
 
 void RenderFrameImpl::didCreateFrame(WebKit::WebFrame* parent,
                                      WebKit::WebFrame* child) {
-  render_view_->Send(
-      new ViewHostMsg_FrameAttached(render_view_->GetRoutingID(),
-                                    parent->identifier(),
-      child->identifier(), UTF16ToUTF8(child->assignedName())));
+  render_view_->Send(new ViewHostMsg_FrameAttached(
+      render_view_->GetRoutingID(), parent->identifier(), child->identifier(),
+      UTF16ToUTF8(child->assignedName())));
 }
 
 void RenderFrameImpl::didDisownOpener(WebKit::WebFrame* frame) {

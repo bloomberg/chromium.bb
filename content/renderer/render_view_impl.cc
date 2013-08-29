@@ -2977,19 +2977,6 @@ void RenderViewImpl::initializeLayerTreeView() {
 
 // WebKit::WebFrameClient -----------------------------------------------------
 
-WebKit::WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
-                                                const WebPluginParams& params) {
-  NOTREACHED();
-  return NULL;
-}
-
-WebSharedWorker* RenderViewImpl::createSharedWorker(
-    WebFrame* frame, const WebURL& url, const WebString& name,
-    unsigned long long document_id) {
-  NOTREACHED();
-  return NULL;
-}
-
 WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     WebFrame* frame, const WebKit::WebURL& url, WebMediaPlayerClient* client) {
   FOR_EACH_OBSERVER(
@@ -3094,12 +3081,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
 }
 
-WebApplicationCacheHost* RenderViewImpl::createApplicationCacheHost(
-    WebFrame* frame, WebApplicationCacheHostClient* client) {
-  NOTREACHED();
-  return NULL;
-}
-
 WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
   return &cookie_jar_;
 }
@@ -3109,10 +3090,6 @@ void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {
   // URL of the main frame, since a URL spoof is now possible.
   if (!frame->parent() && page_id_ == -1)
     Send(new ViewHostMsg_DidAccessInitialDocument(routing_id_));
-}
-
-void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
-  NOTREACHED();
 }
 
 void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
@@ -3133,17 +3110,6 @@ void RenderViewImpl::frameDetached(WebFrame* frame) {
 
 void RenderViewImpl::willClose(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
-}
-
-void RenderViewImpl::didChangeName(WebFrame* frame,
-                                   const WebString& name)  {
-  NOTREACHED();
-}
-
-void RenderViewImpl::loadURLExternally(
-    WebFrame* frame, const WebURLRequest& request,
-    WebNavigationPolicy policy) {
-  NOTREACHED();
 }
 
 void RenderViewImpl::Repaint(const gfx::Size& size) {
@@ -3173,13 +3139,6 @@ SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
                           &ssl_status.security_bits,
                           &ssl_status.connection_status);
   return ssl_status;
-}
-
-void RenderViewImpl::loadURLExternally(
-    WebFrame* frame, const WebURLRequest& request,
-    WebNavigationPolicy policy,
-    const WebString& suggested_name) {
-  NOTREACHED();
 }
 
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(

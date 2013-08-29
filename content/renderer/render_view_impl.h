@@ -549,35 +549,15 @@ class CONTENT_EXPORT RenderViewImpl
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
-  virtual WebKit::WebPlugin* createPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
-  virtual WebKit::WebSharedWorker* createSharedWorker(
-      WebKit::WebFrame* frame, const WebKit::WebURL& url,
-      const WebKit::WebString& name, unsigned long long documentId);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url,
       WebKit::WebMediaPlayerClient* client);
-  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebFrame* frame,
-      WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
   virtual void didAccessInitialDocument(WebKit::WebFrame* frame);
-  virtual void didCreateFrame(WebKit::WebFrame* parent,
-                              WebKit::WebFrame* child);
   virtual void didDisownOpener(WebKit::WebFrame* frame);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
-  virtual void didChangeName(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name);
-  virtual void loadURLExternally(WebKit::WebFrame* frame,
-                                 const WebKit::WebURLRequest& request,
-                                 WebKit::WebNavigationPolicy policy);
-  virtual void loadURLExternally(WebKit::WebFrame* frame,
-                                 const WebKit::WebURLRequest& request,
-                                 WebKit::WebNavigationPolicy policy,
-                                 const WebKit::WebString& suggested_name);
 
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
