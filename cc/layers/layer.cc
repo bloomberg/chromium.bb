@@ -152,14 +152,11 @@ void Layer::SetNeedsFullTreeSync() {
   layer_tree_host_->SetNeedsFullTreeSync();
 }
 
-bool Layer::IsPropertyChangeAllowed() const {
+void Layer::SetNextCommitWaitsForActivation() {
   if (!layer_tree_host_)
-    return true;
+    return;
 
-  if (!layer_tree_host_->settings().strict_layer_property_change_checking)
-    return true;
-
-  return !layer_tree_host_->in_paint_layer_contents();
+  layer_tree_host_->SetNextCommitWaitsForActivation();
 }
 
 void Layer::SetNeedsPushProperties() {
@@ -187,6 +184,16 @@ void Layer::RemoveDependentNeedsPushProperties() {
       parent_->RemoveDependentNeedsPushProperties();
 }
 
+bool Layer::IsPropertyChangeAllowed() const {
+  if (!layer_tree_host_)
+    return true;
+
+  if (!layer_tree_host_->settings().strict_layer_property_change_checking)
+    return true;
+
+  return !layer_tree_host_->in_paint_layer_contents();
+}
+
 gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
   gfx::RectF content_rect =
       gfx::ScaleRect(layer_rect, contents_scale_x(), contents_scale_y());
@@ -196,29 +203,11 @@ gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
   return gfx::ToEnclosingRect(content_rect);
 }
 
-bool Layer::BlocksPendingCommit() const {
-  return false;
-}
-
 skia::RefPtr<SkPicture> Layer::GetPicture() const {
   return skia::RefPtr<SkPicture>();
 }
 
 bool Layer::CanClipSelf() const {
-  return false;
-}
-
-bool Layer::BlocksPendingCommitRecursive() const {
-  if (BlocksPendingCommit())
-    return true;
-  if (mask_layer() && mask_layer()->BlocksPendingCommitRecursive())
-    return true;
-  if (replica_layer() && replica_layer()->BlocksPendingCommitRecursive())
-    return true;
-  for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->BlocksPendingCommitRecursive())
-      return true;
-  }
   return false;
 }
 
