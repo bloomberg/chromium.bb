@@ -101,12 +101,14 @@
         }],
         [ 'target_arch == "arm" and arm_version < 6', {
           'sources': [
+            '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
         }],
         [ 'target_arch == "arm" and arm_version >= 6', {
           'sources': [
+            '../third_party/skia/src/opts/SkBlitMask_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
             '../third_party/skia/src/opts/opts_check_arm.cpp',
@@ -118,6 +120,7 @@
           ],
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
@@ -178,6 +181,7 @@
       ],
       'sources': [
         '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+        '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
         '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
         '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
       ],
