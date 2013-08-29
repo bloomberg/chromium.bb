@@ -5,10 +5,13 @@
 
 """Runs all the buildbot steps for ChromeDriver except for update/compile."""
 
+import csv
+import datetime
 import optparse
 import os
 import platform
 import shutil
+import StringIO
 import subprocess
 import sys
 import tempfile
@@ -78,6 +81,14 @@ def Download():
   os.chmod(os.path.join(build_dir, 'chromedriver2_server'), 0700)
 
 
+def GetDownloads():
+  site = 'https://code.google.com/p/chromedriver/downloads/list'
+  s = urllib2.urlopen(site)
+  downloads = s.read()
+  s.close()
+  return downloads
+
+
 def MaybeRelease(revision):
   # Version is embedded as: const char kChromeDriverVersion[] = "0.1";
   # Minimum supported Chrome version is embedded as:
@@ -98,12 +109,7 @@ def MaybeRelease(revision):
   zip_name = 'chromedriver_%s%s_%s.zip' % (
       util.GetPlatformName(), bitness, version)
 
-  site = 'https://code.google.com/p/chromedriver/downloads/list'
-  s = urllib2.urlopen(site)
-  downloads = s.read()
-  s.close()
-
-  if zip_name in downloads:
+  if zip_name in GetDownloads():
     return 0
 
   util.MarkBuildStepStart('releasing %s' % zip_name)
@@ -128,12 +134,57 @@ def MaybeRelease(revision):
       os.path.join(_THIS_DIR, 'third_party', 'googlecode',
                    'googlecode_upload.py'),
       '--summary',
-      'ChromeDriver server for %s%s (v%s.%s.dyu) supports Chrome v%s-%s' % (
+      'ChromeDriver server for %s%s (v%s.%s) supports Chrome v%s-%s' % (
           util.GetPlatformName(), bitness, version, revision,
           chrome_min_version, chrome_max_version),
       '--project', 'chromedriver',
       '--user', 'chromedriver.bot@gmail.com',
       zip_path
+  ]
+  with open(os.devnull, 'wb') as no_output:
+    if subprocess.Popen(cmd, stdout=no_output, stderr=no_output).wait():
+      util.MarkBuildStepError()
+  MaybeUploadReleaseNotes(version)
+
+def MaybeUploadReleaseNotes(version):
+  name_template = 'release_notes_%s.txt'
+  new_name = name_template % version
+  prev_version = '.'.join([version.split('.')[0],
+                          str(int(version.split('.')[1]) - 1)])
+  old_name = name_template % prev_version
+
+  fixed_issues = []
+  query = ('https://code.google.com/p/chromedriver/issues/csv?'
+           'q=status%3AToBeReleased&colspec=ID%20Summary')
+  issues = StringIO.StringIO(urllib2.urlopen(query).read().split('\n', 1)[1])
+  for issue in csv.reader(issues):
+    if not issue:
+      continue
+    id = issue[0]
+    desc = issue[1]
+    labels = issue[2]
+    fixed_issues += ['Resolved issue %s: %s [%s]' % (id, desc, labels)]
+
+  old_notes = urllib2.urlopen(
+      'https://chromedriver.googlecode.com/files/%s' % old_name).read()
+  new_notes = '----------ChromeDriver v%s (%s)----------\n%s\n\n%s' % (
+      version, datetime.date.today().isoformat(),
+      '\n'.join(fixed_issues),
+      old_notes)
+  release_notes_txt = os.path.join(util.MakeTempDir(), new_name)
+  with open(release_notes_txt, 'w') as f:
+    f.write(new_notes)
+
+  if new_name in GetDownloads():
+    return
+  cmd = [
+      sys.executable,
+      os.path.join(_THIS_DIR, 'third_party', 'googlecode',
+                   'googlecode_upload.py'),
+      '--summary', 'Release notes',
+      '--project', 'chromedriver',
+      '--user', 'chromedriver.bot@gmail.com',
+      release_notes_txt
   ]
   with open(os.devnull, 'wb') as no_output:
     if subprocess.Popen(cmd, stdout=no_output, stderr=no_output).wait():
