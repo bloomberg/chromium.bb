@@ -58,8 +58,11 @@ WindowSlider::WindowSlider(Delegate* delegate,
       owner_(owner),
       delta_x_(0.f),
       weak_factory_(this),
-      horiz_start_threshold_(content::GetOverscrollConfig(
-          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START)),
+      active_start_threshold_(0.f),
+      start_threshold_touchscreen_(content::GetOverscrollConfig(
+          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
+      start_threshold_touchpad_(content::GetOverscrollConfig(
+          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD)),
       complete_threshold_(content::GetOverscrollConfig(
           content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE)) {
   event_window_->AddPreTargetHandler(this);
@@ -89,7 +92,7 @@ void WindowSlider::ChangeOwner(aura::Window* new_owner) {
 }
 
 bool WindowSlider::IsSlideInProgress() const {
-  return fabs(delta_x_) >= horiz_start_threshold_ || slider_.get() ||
+  return fabs(delta_x_) >= active_start_threshold_ || slider_.get() ||
       weak_factory_.HasWeakPtrs();
 }
 
@@ -107,7 +110,7 @@ void WindowSlider::SetupSliderLayer() {
 void WindowSlider::UpdateForScroll(float x_offset, float y_offset) {
   float old_delta = delta_x_;
   delta_x_ += x_offset;
-  if (fabs(delta_x_) < horiz_start_threshold_ && !slider_.get())
+  if (fabs(delta_x_) < active_start_threshold_ && !slider_.get())
     return;
 
   if ((old_delta < 0 && delta_x_ > 0) ||
@@ -127,13 +130,13 @@ void WindowSlider::UpdateForScroll(float x_offset, float y_offset) {
     SetupSliderLayer();
   }
 
-  if (delta_x_ <= -horiz_start_threshold_) {
+  if (delta_x_ <= -active_start_threshold_) {
     translate = owner_->bounds().width() +
-        std::max(delta_x_ + horiz_start_threshold_,
+        std::max(delta_x_ + active_start_threshold_,
                  static_cast<float>(-owner_->bounds().width()));
     translate_layer = slider_.get();
-  } else if (delta_x_ >= horiz_start_threshold_) {
-    translate = std::min(delta_x_ - horiz_start_threshold_,
+  } else if (delta_x_ >= active_start_threshold_) {
+    translate = std::min(delta_x_ - active_start_threshold_,
                          static_cast<float>(owner_->bounds().width()));
     translate_layer = owner_->layer();
   } else {
@@ -153,7 +156,7 @@ void WindowSlider::UpdateForFling(float x_velocity, float y_velocity) {
     return;
 
   int width = owner_->bounds().width();
-  float ratio = (fabs(delta_x_) - horiz_start_threshold_) / width;
+  float ratio = (fabs(delta_x_) - active_start_threshold_) / width;
   if (ratio < complete_threshold_) {
     ResetScroll();
     return;
@@ -245,6 +248,7 @@ void WindowSlider::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void WindowSlider::OnScrollEvent(ui::ScrollEvent* event) {
+  active_start_threshold_ = start_threshold_touchpad_;
   if (event->type() == ui::ET_SCROLL)
     UpdateForScroll(event->x_offset_ordinal(), event->y_offset_ordinal());
   else if (event->type() == ui::ET_SCROLL_FLING_START)
@@ -255,6 +259,7 @@ void WindowSlider::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void WindowSlider::OnGestureEvent(ui::GestureEvent* event) {
+  active_start_threshold_ = start_threshold_touchscreen_;
   const ui::GestureEventDetails& details = event->details();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:

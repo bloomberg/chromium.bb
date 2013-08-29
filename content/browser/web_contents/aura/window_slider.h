@@ -120,7 +120,10 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
 
   base::WeakPtrFactory<WindowSlider> weak_factory_;
 
-  const float horiz_start_threshold_;
+  float active_start_threshold_;
+
+  const float start_threshold_touchscreen_;
+  const float start_threshold_touchpad_;
   const float complete_threshold_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSlider);

@@ -95,7 +95,9 @@ class OverscrollController {
   // Processes horizontal overscroll. This can update both the overscroll mode
   // and the over scroll amount (i.e. |overscroll_mode_|, |overscroll_delta_x_|
   // and |overscroll_delta_y_|).
-  void ProcessOverscroll(float delta_x, float delta_y);
+  void ProcessOverscroll(float delta_x,
+                         float delta_y,
+                         WebKit::WebInputEvent::Type event_type);
 
   // Completes the desired action from the current gesture.
   void CompleteAction();

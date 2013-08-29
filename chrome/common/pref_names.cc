@@ -2505,6 +2505,8 @@ const char kOverscrollVerticalThresholdComplete[] =
     "overscroll.vertical_threshold_complete";
 const char kOverscrollMinimumThresholdStart[] =
     "overscroll.minimum_threshold_start";
+const char kOverscrollMinimumThresholdStartTouchpad[] =
+    "overscroll.minimum_threshold_start_touchpad";
 const char kOverscrollVerticalThresholdStart[] =
     "overscroll.vertical_threshold_start";
 const char kOverscrollHorizontalResistThreshold[] =

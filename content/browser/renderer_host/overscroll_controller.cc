@@ -9,6 +9,8 @@
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_widget_host_view.h"
 
+using WebKit::WebInputEvent;
+
 namespace content {
 
 OverscrollController::OverscrollController(
@@ -234,14 +236,16 @@ void OverscrollController::ProcessEventForOverscroll(
         return;
 
       ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
-                        wheel.deltaY * wheel.accelerationRatioY);
+                        wheel.deltaY * wheel.accelerationRatioY,
+                        wheel.type);
       break;
     }
     case WebKit::WebInputEvent::GestureScrollUpdate: {
       const WebKit::WebGestureEvent& gesture =
           static_cast<const WebKit::WebGestureEvent&>(event);
       ProcessOverscroll(gesture.data.scrollUpdate.deltaX,
-                        gesture.data.scrollUpdate.deltaY);
+                        gesture.data.scrollUpdate.deltaY,
+                        gesture.type);
       break;
     }
     case WebKit::WebInputEvent::GestureFlingStart: {
@@ -276,13 +280,17 @@ void OverscrollController::ProcessEventForOverscroll(
   }
 }
 
-void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
+void OverscrollController::ProcessOverscroll(float delta_x,
+                                             float delta_y,
+                                             WebKit::WebInputEvent::Type type) {
   if (scroll_state_ != STATE_CONTENT_SCROLLING)
     overscroll_delta_x_ += delta_x;
   overscroll_delta_y_ += delta_y;
 
   float horiz_threshold = GetOverscrollConfig(
-      OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START);
+      WebInputEvent::isGestureEventType(type) ?
+          OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN :
+          OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD);
   float vert_threshold = GetOverscrollConfig(
       OVERSCROLL_CONFIG_VERT_THRESHOLD_START);
   if (fabs(overscroll_delta_x_) <= horiz_threshold &&

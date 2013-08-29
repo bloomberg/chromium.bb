@@ -330,8 +330,13 @@ function OverscrollConfig() {
       units: '%'
     },
     {
+      key: 'minimum_threshold_start_touchpad',
+      label: 'Start overscroll gesture (horizontal; touchpad)',
+      units: 'pixels'
+    },
+    {
       key: 'minimum_threshold_start',
-      label: 'Start overscroll gesture (horizontal)',
+      label: 'Start overscroll gesture (horizontal; touchscreen)',
       units: 'pixels'
     },
     {

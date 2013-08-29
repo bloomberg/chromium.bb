@@ -11,7 +11,8 @@ namespace {
 float g_horiz_threshold_complete = 0.25f;
 float g_vert_threshold_complete = 0.20f;
 
-float g_horiz_threshold_start = 50.f;
+float g_horiz_threshold_start_touchscreen = 50.f;
+float g_horiz_threshold_start_touchpad = 50.f;
 float g_vert_threshold_start = 0.f;
 
 float g_horiz_resist_after = 30.f;
@@ -31,8 +32,12 @@ void SetOverscrollConfig(OverscrollConfig config, float value) {
       g_vert_threshold_complete = value;
       break;
 
-    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START:
-      g_horiz_threshold_start = value;
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN:
+      g_horiz_threshold_start_touchscreen = value;
+      break;
+
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD:
+      g_horiz_threshold_start_touchpad = value;
       break;
 
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
@@ -61,8 +66,11 @@ float GetOverscrollConfig(OverscrollConfig config) {
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE:
       return g_vert_threshold_complete;
 
-    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START:
-      return g_horiz_threshold_start;
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN:
+      return g_horiz_threshold_start_touchscreen;
+
+    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD:
+      return g_horiz_threshold_start_touchpad;
 
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
       return g_vert_threshold_start;
