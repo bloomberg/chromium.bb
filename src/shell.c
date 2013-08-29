@@ -1226,13 +1226,15 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
-	surface = weston_surface_get_main_surface(seat->pointer->focus);
-	if (seat->pointer->button_count > 0 && seat->pointer->grab_serial == serial) {
+	if (seat->pointer &&
+	    seat->pointer->button_count > 0 &&
+	    seat->pointer->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->pointer->focus);
 		if ((surface == shsurf->surface) && 
 		    (surface_move(shsurf, seat) < 0))
 			wl_resource_post_no_memory(resource);
-	} else if (seat->touch->grab_serial == serial) {
+	} else if (seat->touch &&
+		   seat->touch->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->touch->focus);
 		if ((surface == shsurf->surface) && 
 		    (surface_touch_move(shsurf, seat) < 0))
