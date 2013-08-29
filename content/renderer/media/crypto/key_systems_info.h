@@ -56,9 +56,6 @@ extern const KeySystemUUIDPair kKeySystemToUUIDMapping[];
 extern const int kNumKeySystemToUUIDMapping;
 #endif  // defined(OS_ANDROID)
 
-// Returns whether |key_system| is compatible with the user's system.
-bool IsSystemCompatible(const std::string& concrete_key_system);
-
 // Returns a concrete key system supported by the platform that most closely
 // corresponds to |key_system|. The result can be passed to other functions that
 // require a concrete key system.
@@ -77,6 +74,9 @@ inline bool IsConcreteKeySystem(const std::string& key_system) {
       key_system == EnsureConcreteKeySystem(key_system);
 }
 
+// Returns true if there is a known incompatibility with the operating system.
+bool IsOSIncompatible(const std::string& actual_key_system);
+
 // Returns true if canPlayType should return an empty string for |key_system|.
 bool IsCanPlayTypeSuppressed(const std::string& key_system);
 
@@ -86,7 +86,7 @@ bool IsCanPlayTypeSuppressed(const std::string& key_system);
 std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system);
 
 // Returns whether built-in AesDecryptor can be used for the given |key_system|.
-bool CanUseBuiltInAesDecryptor(const std::string& key_system);
+bool CanUseAesDecryptorInternal(const std::string& key_system);
 
 }  // namespace content
 

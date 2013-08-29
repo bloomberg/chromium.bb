@@ -48,6 +48,16 @@ using WebKit::WebString;
 #define EXPECT_PROPRIETARY EXPECT_FALSE
 #endif
 
+// Expectations for External Clear Key.
+#if defined(ENABLE_PEPPER_CDMS)
+#define EXPECT_ECK EXPECT_TRUE
+#define EXPECT_ECKPROPRIETARY EXPECT_PROPRIETARY
+#else
+#define EXPECT_ECK EXPECT_FALSE
+#define EXPECT_ECKPROPRIETARY EXPECT_FALSE
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+// Expectations for Widevine.
 #if defined(WIDEVINE_CDM_AVAILABLE)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // TODO(ddorwin): Remove after bots switch to Precise.
@@ -373,9 +383,9 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_MP4) {
 //
 
 TEST_F(KeySystemsTest, ExternalClearKey_Basic) {
-  EXPECT_TRUE(
+  EXPECT_ECK(
       IsConcreteSupportedKeySystem(WebString::fromUTF8(kExternalClearKey)));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kExternalClearKey));
 
   // External Clear Key does not have a UMA name because it is for testing.
@@ -469,18 +479,18 @@ TEST_F(KeySystemsTest,
 TEST_F(KeySystemsTest,
        IsSupportedKeySystemWithMediaMimeType_ExternalClearKey_WebM) {
   // Valid video types.
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kExternalClearKey));
   // The parent should be supported but is not. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), "org.chromium"));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_codec(), kExternalClearKey));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp80_codec(), kExternalClearKey));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kExternalClearKey));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kExternalClearKey));
 
   // Non-Webm codecs.
@@ -492,9 +502,9 @@ TEST_F(KeySystemsTest,
       "video/webm", mixed_codecs(), kExternalClearKey));
 
   // Valid audio types.
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", no_codecs(), kExternalClearKey));
-  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vorbis_codec(), kExternalClearKey));
 
   // Non-audio codecs.
@@ -511,16 +521,16 @@ TEST_F(KeySystemsTest,
 TEST_F(KeySystemsTest,
        IsSupportedKeySystemWithMediaMimeType_ExternalClearKey_MP4) {
   // Valid video types.
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kExternalClearKey));
   // The parent should be supported but is not. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), "org.chromium"));
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kExternalClearKey));
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_and_aac_codecs(), kExternalClearKey));
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", aac_codec(), kExternalClearKey));
 
   // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
@@ -543,9 +553,9 @@ TEST_F(KeySystemsTest,
       "video/mp4", mixed_codecs(), kExternalClearKey));
 
   // Valid audio types.
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kExternalClearKey));
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kExternalClearKey));
 
   // Non-audio codecs.

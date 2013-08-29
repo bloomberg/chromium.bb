@@ -87,7 +87,7 @@ KeySystems::KeySystems() {
 
 bool KeySystems::IsSupportedKeySystem(const std::string& key_system) {
   bool is_supported = key_system_map_.find(key_system) != key_system_map_.end();
-  return is_supported && IsSystemCompatible(key_system);
+  return is_supported && !IsOSIncompatible(key_system);
 }
 
 bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
@@ -105,7 +105,7 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
     return false;
 
   const CodecMappings& codecs = mime_iter->second;
-  return (codecs.find(codec) != codecs.end()) && IsSystemCompatible(key_system);
+  return (codecs.find(codec) != codecs.end()) && !IsOSIncompatible(key_system);
 }
 
 bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
@@ -155,7 +155,7 @@ std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
 }
 
 bool CanUseAesDecryptor(const std::string& key_system) {
-  return CanUseBuiltInAesDecryptor(key_system);
+  return CanUseAesDecryptorInternal(key_system);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)

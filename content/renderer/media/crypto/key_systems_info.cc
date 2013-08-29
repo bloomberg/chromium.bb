@@ -27,8 +27,10 @@ namespace content {
 
 static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
+#if defined(ENABLE_PEPPER_CDMS)
 static const char kExternalClearKeyKeySystem[] =
     "org.chromium.externalclearkey";
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
@@ -67,15 +69,17 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
 #if defined(USE_PROPRIETARY_CODECS)
   { "video/mp4", "avc1,mp4a", kClearKeyKeySystem },
   { "audio/mp4", "mp4a", kClearKeyKeySystem },
-#endif
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
+#if defined(ENABLE_PEPPER_CDMS)
   // External Clear Key (used for testing).
   { "video/webm", "vorbis,vp8,vp8.0", kExternalClearKeyKeySystem },
   { "audio/webm", "vorbis", kExternalClearKeyKeySystem },
 #if defined(USE_PROPRIETARY_CODECS)
   { "video/mp4", "avc1,mp4a", kExternalClearKeyKeySystem },
   { "audio/mp4", "mp4a", kExternalClearKeyKeySystem },
-#endif
+#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   // Widevine.
@@ -120,7 +124,7 @@ const int kNumKeySystemToUUIDMapping =
     ARRAYSIZE_UNSAFE(kKeySystemToUUIDMapping);
 #endif  // defined(OS_ANDROID)
 
-bool IsSystemCompatible(const std::string& concrete_key_system) {
+bool IsOSIncompatible(const std::string& concrete_key_system) {
   DCHECK(IsConcreteKeySystem(concrete_key_system))
       << concrete_key_system << " is not a concrete system";
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
@@ -128,10 +132,10 @@ bool IsSystemCompatible(const std::string& concrete_key_system) {
   if (IsWidevine(concrete_key_system)) {
     Version glibc_version(gnu_get_libc_version());
     DCHECK(glibc_version.IsValid());
-    return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
+    return glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
   }
 #endif
-  return true;
+  return false;
 }
 
 std::string EnsureConcreteKeySystem(const std::string& key_system) {
@@ -142,9 +146,11 @@ std::string EnsureConcreteKeySystem(const std::string& key_system) {
   // No parent names for Clear Key.
   if (key_system == kClearKeyKeySystem)
     return kClearKeyKeySystem;
+#if defined(ENABLE_PEPPER_CDMS)
   // No parent names for External Clear Key.
   if (key_system == kExternalClearKeyKeySystem)
     return kExternalClearKeyKeySystem;
+#endif  // defined(ENABLE_PEPPER_CDMS)
   return std::string();
 }
 
@@ -169,7 +175,7 @@ std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system) {
   return "Unknown";
 }
 
-bool CanUseBuiltInAesDecryptor(const std::string& key_system) {
+bool CanUseAesDecryptorInternal(const std::string& key_system) {
   return  key_system == kClearKeyKeySystem;
 }
 
