@@ -10,6 +10,8 @@
           'target_name': 'components_unittests',
           'type': '<(gtest_target_type)',
           'sources': [
+            'autofill/core/common/form_data_unittest.cc',
+            'autofill/core/common/form_field_data_unittest.cc',
             'auto_login_parser/auto_login_parser_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
@@ -36,6 +38,9 @@
             '../base/base.gyp:test_support_base',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+
+            # Dependencies of autofill
+            'autofill_core_common',
 
             # Dependencies of auto_login_parser
             'auto_login_parser',

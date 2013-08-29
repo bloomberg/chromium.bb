@@ -37,6 +37,13 @@ struct FormData {
   std::vector<FormFieldData> fields;
 };
 
+// Serialize FormData. Used by the PasswordManager to persist FormData
+// pertaining to password forms. Serialized data is appended to |pickle|
+void SerializeFormData(const FormData& form_data, Pickle* pickle);
+// Deserialize FormData. This assumes that |iter| is currently pointing to
+// the part of a pickle created by SerializeFormData. Returns true on success.
+bool DeserializeFormData(PickleIterator* iter, FormData* form_data);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_FORM_DATA_H__

@@ -10,6 +10,9 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 
+class Pickle;
+class PickleIterator;
+
 namespace autofill {
 
 // Stores information about a field in a form.
@@ -45,6 +48,13 @@ struct FormFieldData {
   std::vector<base::string16> option_contents;
 };
 
+// Serialize and deserialize FormFieldData. These are used when FormData objects
+// are serialized and deserialized.
+void SerializeFormFieldData(const FormFieldData& form_field_data,
+                            Pickle* serialized);
+bool DeserializeFormFieldData(PickleIterator* pickle_iterator,
+                              FormFieldData* form_field_data);
+
 // So we can compare FormFieldDatas with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
@@ -66,4 +76,3 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_FORM_FIELD_DATA_H_
-
