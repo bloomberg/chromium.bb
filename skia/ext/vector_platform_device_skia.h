@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkTScopedPtr.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 
 class SkMatrix;
