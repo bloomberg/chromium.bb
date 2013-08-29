@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -38,16 +39,23 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         public static class ShouldInterceptRequestHelper extends CallbackHelper {
             private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
+            private ConcurrentHashMap<String, InterceptedRequestData> mReturnValusByUrls
+                = new ConcurrentHashMap<String, InterceptedRequestData>();
             // This is read from the IO thread, so needs to be marked volatile.
             private volatile InterceptedRequestData mShouldInterceptRequestReturnValue = null;
             void setReturnValue(InterceptedRequestData value) {
                 mShouldInterceptRequestReturnValue = value;
             }
+            void setReturnValueForUrl(String url, InterceptedRequestData value) {
+                mReturnValusByUrls.put(url, value);
+            }
             public List<String> getUrls() {
                 assert getCallCount() > 0;
                 return mShouldInterceptRequestUrls;
             }
-            public InterceptedRequestData getReturnValue() {
+            public InterceptedRequestData getReturnValue(String url) {
+                InterceptedRequestData value = mReturnValusByUrls.get(url);
+                if (value != null) return value;
                 return mShouldInterceptRequestReturnValue;
             }
             public void notifyCalled(String url) {
@@ -72,7 +80,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         @Override
         public InterceptedRequestData shouldInterceptRequest(String url) {
-            InterceptedRequestData returnValue = mShouldInterceptRequestHelper.getReturnValue();
+            InterceptedRequestData returnValue = mShouldInterceptRequestHelper.getReturnValue(url);
             mShouldInterceptRequestHelper.notifyCalled(url);
             return returnValue;
         }
@@ -345,6 +353,33 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
         assertTrue(mShouldInterceptRequestHelper.getUrls().get(1).endsWith(
                 CommonResources.FAVICON_FILENAME));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOnReceivedErrorCallback() throws Throwable {
+        mShouldInterceptRequestHelper.setReturnValue(new InterceptedRequestData(null, null, null));
+        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
+        int onReceivedErrorHelperCallCount = onReceivedErrorHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), "foo://bar");
+        onReceivedErrorHelper.waitForCallback(onReceivedErrorHelperCallCount, 1);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNoOnReceivedErrorCallback() throws Throwable {
+        final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
+        final String imageUrl = mWebServer.setResponseBase64(imagePath,
+                CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
+        final String pageWithImage =
+                addPageToTestServer(mWebServer, "/page_with_image.html",
+                        CommonResources.getOnImageLoadedHtml(CommonResources.FAVICON_FILENAME));
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                imageUrl, new InterceptedRequestData(null, null, null));
+        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
+        int onReceivedErrorHelperCallCount = onReceivedErrorHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithImage);
+        assertEquals(onReceivedErrorHelperCallCount, onReceivedErrorHelper.getCallCount());
     }
 
     @SmallTest

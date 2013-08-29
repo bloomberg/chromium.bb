@@ -197,7 +197,8 @@ AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     return scoped_ptr<InterceptedRequestData>();
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  bool is_main_frame = info && info->IsMainFrame();
+  bool is_main_frame = info &&
+      info->GetResourceType() == ResourceType::MAIN_FRAME;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url =
