@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/net/websocket.h"
 
+#include <string.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,24 +19,49 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/websockets/websocket_frame.h"
+
+#if defined(OS_WIN)
+#include <Winsock2.h>
+#endif
+
+namespace {
+
+bool ResolveHost(const std::string& host, net::IPAddressNumber* address) {
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  struct addrinfo* result;
+  if (getaddrinfo(host.c_str(), NULL, &hints, &result))
+    return false;
+
+  for (struct addrinfo* addr = result; addr; addr = addr->ai_next) {
+    if (addr->ai_family == AF_INET || addr->ai_family == AF_INET6) {
+      net::IPEndPoint end_point;
+      if (!end_point.FromSockAddr(addr->ai_addr, addr->ai_addrlen)) {
+        freeaddrinfo(result);
+        return false;
+      }
+      *address = end_point.address();
+    }
+  }
+  freeaddrinfo(result);
+  return true;
+}
+
+}  // namespace
 
 WebSocket::WebSocket(const GURL& url, WebSocketListener* listener)
     : url_(url),
       listener_(listener),
       state_(INITIALIZED),
       write_buffer_(new net::DrainableIOBuffer(new net::IOBuffer(0), 0)),
-      read_buffer_(new net::IOBufferWithSize(4096)) {
-  net::IPAddressNumber address;
-  CHECK(net::ParseIPLiteralToNumber(url_.HostNoBrackets(), &address));
-  int port = 80;
-  base::StringToInt(url_.port(), &port);
-  net::AddressList addresses(net::IPEndPoint(address, port));
-  net::NetLog::Source source;
-  socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
-}
+      read_buffer_(new net::IOBufferWithSize(4096)) {}
 
 WebSocket::~WebSocket() {
   CHECK(thread_checker_.CalledOnValidThread());
@@ -43,6 +70,20 @@ WebSocket::~WebSocket() {
 void WebSocket::Connect(const net::CompletionCallback& callback) {
   CHECK(thread_checker_.CalledOnValidThread());
   CHECK_EQ(INITIALIZED, state_);
+
+  net::IPAddressNumber address;
+  if (!net::ParseIPLiteralToNumber(url_.HostNoBrackets(), &address)) {
+    if (!ResolveHost(url_.HostNoBrackets(), &address)) {
+      callback.Run(net::ERR_ADDRESS_UNREACHABLE);
+      return;
+    }
+  }
+  int port = 80;
+  base::StringToInt(url_.port(), &port);
+  net::AddressList addresses(net::IPEndPoint(address, port));
+  net::NetLog::Source source;
+  socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
+
   state_ = CONNECTING;
   connect_callback_ = callback;
   int code = socket_->Connect(base::Bind(

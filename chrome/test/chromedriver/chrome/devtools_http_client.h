@@ -18,6 +18,7 @@ class TimeDelta;
 
 class DevToolsClient;
 class Log;
+class NetAddress;
 class Status;
 class URLRequestContextGetter;
 
@@ -58,7 +59,7 @@ class WebViewsInfo {
 class DevToolsHttpClient {
  public:
   DevToolsHttpClient(
-      int port,
+      const NetAddress& address,
       scoped_refptr<URLRequestContextGetter> context_getter,
       const SyncWebSocketFactory& socket_factory,
       Log* log);

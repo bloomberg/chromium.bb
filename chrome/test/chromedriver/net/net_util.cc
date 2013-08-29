@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/net/net_util.h"
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "net/base/ip_endpoint.h"
@@ -62,6 +65,31 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
 };
 
 }  // namespace
+
+NetAddress::NetAddress() : port_(-1) {}
+
+NetAddress::NetAddress(int port) : host_("127.0.0.1"), port_(port) {}
+
+NetAddress::NetAddress(const std::string& host, int port)
+    : host_(host), port_(port) {}
+
+NetAddress::~NetAddress() {}
+
+bool NetAddress::IsValid() const {
+  return port_ >= 0 && port_ < (1 << 16);
+}
+
+std::string NetAddress::ToString() const {
+  return host_ + base::StringPrintf(":%d", port_);
+}
+
+const std::string& NetAddress::host() const {
+  return host_;
+}
+
+int NetAddress::port() const {
+  return port_;
+}
 
 bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,

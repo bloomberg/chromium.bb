@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/chromedriver/net/net_util.h"
 
 namespace base {
 class DictionaryValue;
@@ -41,9 +42,6 @@ struct Capabilities {
   // ChromeDriver dies.
   bool detach;
 
-  // If provided, the remote debugging port on 127.0.0.1 to connect to.
-  int existing_browser_port;
-
   std::string android_package;
   std::string android_activity;
   std::string android_process;
@@ -60,6 +58,9 @@ struct Capabilities {
   // Set of switches which should be removed from default list when launching
   // Chrome.
   std::set<std::string> exclude_switches;
+
+  // If provided, the remote debugging address to connect to.
+  NetAddress use_existing_browser;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_

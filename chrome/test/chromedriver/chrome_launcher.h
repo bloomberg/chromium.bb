@@ -30,7 +30,6 @@ class URLRequestContextGetter;
 
 Status LaunchChrome(
     URLRequestContextGetter* context_getter,
-    int port,
     const SyncWebSocketFactory& socket_factory,
     Log* log,
     DeviceManager* device_manager,

@@ -38,6 +38,7 @@
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome/zip.h"
+#include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "crypto/sha2.h"
 
@@ -151,13 +152,13 @@ Status PrepareCommandLine(int port,
 }
 
 Status WaitForDevToolsAndCheckVersion(
-    int port,
+    const NetAddress& address,
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     Log* log,
     scoped_ptr<DevToolsHttpClient>* user_client) {
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
-      port, context_getter, socket_factory, log));
+      address, context_getter, socket_factory, log));
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
   Status status = client->Init(deadline - base::Time::Now());
   if (status.IsError())
@@ -181,7 +182,6 @@ Status WaitForDevToolsAndCheckVersion(
 
 Status LaunchExistingChromeSession(
     URLRequestContextGetter* context_getter,
-    int port,
     const SyncWebSocketFactory& socket_factory,
     Log* log,
     const Capabilities& capabilities,
@@ -190,9 +190,12 @@ Status LaunchExistingChromeSession(
   Status status(kOk);
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      port, context_getter, socket_factory, log, &devtools_client);
+      capabilities.use_existing_browser, context_getter, socket_factory, log,
+      &devtools_client);
   if (status.IsError()) {
-    return Status(kUnknownError, "Failed to connect to existing chrome");
+    return Status(kUnknownError, "cannot connect to chrome at " +
+                      capabilities.use_existing_browser.ToString(),
+                  status);
   }
   chrome->reset(new ChromeExistingImpl(devtools_client.Pass(),
       devtools_event_listeners,
@@ -247,7 +250,7 @@ Status LaunchDesktopChrome(
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      port, context_getter, socket_factory, log, &devtools_client);
+      NetAddress(port), context_getter, socket_factory, log, &devtools_client);
 
   if (status.IsError()) {
     int exit_code;
@@ -340,7 +343,7 @@ Status LaunchAndroidChrome(
   }
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
-  status = WaitForDevToolsAndCheckVersion(port,
+  status = WaitForDevToolsAndCheckVersion(NetAddress(port),
                                           context_getter,
                                           socket_factory,
                                           log,
@@ -357,19 +360,23 @@ Status LaunchAndroidChrome(
 
 Status LaunchChrome(
     URLRequestContextGetter* context_getter,
-    int port,
     const SyncWebSocketFactory& socket_factory,
     Log* log,
     DeviceManager* device_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
-
   if (capabilities.IsExistingBrowser()) {
     return LaunchExistingChromeSession(
-        context_getter, capabilities.existing_browser_port, socket_factory,
+        context_getter, socket_factory,
         log, capabilities, devtools_event_listeners, chrome);
-  } else if (capabilities.IsAndroid()) {
+  }
+
+  int port;
+  if (!FindOpenPort(&port))
+    return Status(kUnknownError, "failed to find an open port for Chrome");
+
+  if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(
         context_getter, port, socket_factory, log, capabilities,
         devtools_event_listeners, device_manager, chrome);

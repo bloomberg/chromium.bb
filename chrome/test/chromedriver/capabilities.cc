@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "net/base/net_util.h"
 
 namespace {
 
@@ -229,10 +230,12 @@ Status ParseUseExistingBrowser(const base::Value& option,
   if (values.size() != 2)
     return Status(kUnknownError, "must be 'host:port'");
 
-  // Ignoring host input for now, hardcoding to 127.0.0.1.
-  base::StringToInt(values[1], &capabilities->existing_browser_port);
-  if (capabilities->existing_browser_port <= 0)
+  int port = 0;
+  base::StringToInt(values[1], &port);
+  if (port <= 0)
     return Status(kUnknownError, "port must be >= 0");
+
+  capabilities->use_existing_browser = NetAddress(values[0], port);
   return Status(kOk);
 }
 
@@ -310,7 +313,6 @@ Status ParseChromeOptions(
 Capabilities::Capabilities()
     : force_devtools_screenshot(false),
       detach(false),
-      existing_browser_port(0),
       command(CommandLine::NO_PROGRAM) {}
 
 Capabilities::~Capabilities() {}
@@ -320,7 +322,7 @@ bool Capabilities::IsAndroid() const {
 }
 
 bool Capabilities::IsExistingBrowser() const {
-  return existing_browser_port > 0;
+  return use_existing_browser.IsValid();
 }
 
 Status Capabilities::Parse(

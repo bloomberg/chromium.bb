@@ -79,10 +79,6 @@ Status CreateSessionOnSessionThreadHelper(
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value) {
-  int port;
-  if (!FindOpenPort(&port))
-    return Status(kUnknownError, "failed to find an open port for Chrome");
-
   const base::DictionaryValue* desired_caps;
   if (!params.GetDictionary("desiredCapabilities", &desired_caps))
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
@@ -102,7 +98,6 @@ Status CreateSessionOnSessionThreadHelper(
 
   scoped_ptr<Chrome> chrome;
   status = LaunchChrome(bound_params.context_getter.get(),
-                        port,
                         bound_params.socket_factory,
                         bound_params.log,
                         bound_params.device_manager,

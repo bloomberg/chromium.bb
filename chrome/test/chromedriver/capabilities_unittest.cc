@@ -342,5 +342,6 @@ TEST(ParseCapabilities, UseExistingBrowser) {
   Status status = capabilities.Parse(caps, &log);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsExistingBrowser());
-  ASSERT_EQ(123, capabilities.existing_browser_port);
+  ASSERT_EQ("abc", capabilities.use_existing_browser.host());
+  ASSERT_EQ(123, capabilities.use_existing_browser.port());
 }
