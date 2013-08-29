@@ -15,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
+#include "base/i18n/char_iterator.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -5896,15 +5897,22 @@ void RenderViewImpl::OnImeConfirmComposition(const string16& text,
       return;
 
     if (!IsPepperAcceptingCompositionEvents()) {
-      for (size_t i = 0; i < text.size(); ++i) {
+      base::i18n::UTF16CharIterator iterator(&last_text);
+      int32 i = 0;
+      while (iterator.Advance()) {
         WebKit::WebKeyboardEvent char_event;
         char_event.type = WebKit::WebInputEvent::Char;
         char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
         char_event.modifiers = 0;
         char_event.windowsKeyCode = last_text[i];
         char_event.nativeKeyCode = last_text[i];
-        char_event.text[0] = last_text[i];
-        char_event.unmodifiedText[0] = last_text[i];
+
+        const int32 char_start = i;
+        for (; i < iterator.array_pos(); ++i) {
+          char_event.text[i - char_start] = last_text[i];
+          char_event.unmodifiedText[i - char_start] = last_text[i];
+        }
+
         if (webwidget())
           webwidget()->handleInputEvent(char_event);
       }
