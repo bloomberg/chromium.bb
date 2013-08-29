@@ -1165,7 +1165,7 @@ crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ 
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
 crbug.com/247979 [ Mac Linux Debug ] inspector/elements/edit-dom-actions.html [ Pass Timeout ]
 crbug.com/247981 [ Win Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
-crbug.com/247982 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+crbug.com/247982 [ Linux Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ Pass ImageOnlyFailure ]
