@@ -431,7 +431,7 @@ void PanelStackView::MakeStackWindowOwnPanelWindow(
   // window on the taskbar.
   ::SetWindowLongPtr(native_panel_window,
                      GWLP_HWNDPARENT,
-                     reinterpret_cast<LONG>(native_stack_window));
+                     reinterpret_cast<LONG_PTR>(native_stack_window));
 
   // Make sure the background stack window always stays behind the panel window.
   if (native_stack_window) {
