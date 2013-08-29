@@ -2086,6 +2086,11 @@ llvm-sb-configure() {
   esac
 
   spushd "${objdir}"
+  # TODO(jvoung): remove ac_cv_func_getrusage=no once newlib has getrusage
+  # in its headers.  Otherwise, configure thinks that we can link in
+  # getrusage (stub is in libnacl), but we can't actually compile code
+  # that uses ::getrusage because it's not in headers:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3657
   RunWithLog \
       ${LLVM_SB_LOG_PREFIX}.configure \
       env -i \
@@ -2102,7 +2107,8 @@ llvm-sb-configure() {
         --disable-jit \
         --enable-optimized \
         --target=${CROSS_TARGET_ARM} \
-        llvm_cv_link_use_export_dynamic=no
+        llvm_cv_link_use_export_dynamic=no \
+        ac_cv_func_getrusage=no
   spopd
 }
 
