@@ -37,7 +37,7 @@ class MockPrefModelAssociator {
 // Names of the preferences used in this test.
 namespace prefs {
 const char kManagedPref[] = "this.pref.managed";
-const char kManagedUserPref[] = "this.pref.managed_user";
+const char kSupervisedUserPref[] = "this.pref.supervised_user";
 const char kCommandLinePref[] = "this.pref.command_line";
 const char kExtensionPref[] = "this.pref.extension";
 const char kUserPref[] = "this.pref.user";
@@ -51,27 +51,27 @@ namespace managed_pref {
 const char kManagedValue[] = "managed:managed";
 }
 
-namespace managed_user_pref {
-const char kManagedValue[] = "managed_user:managed";
-const char kManagedUserValue[] = "managed_user:managed_user";
+namespace supervised_user_pref {
+const char kManagedValue[] = "supervised_user:managed";
+const char kSupervisedUserValue[] = "supervised_user:supervised_user";
 }
 
 namespace extension_pref {
 const char kManagedValue[] = "extension:managed";
-const char kManagedUserValue[] = "extension:managed_user";
+const char kSupervisedUserValue[] = "extension:supervised_user";
 const char kExtensionValue[] = "extension:extension";
 }
 
 namespace command_line_pref {
 const char kManagedValue[] = "command_line:managed";
-const char kManagedUserValue[] = "command_line:managed_user";
+const char kSupervisedUserValue[] = "command_line:supervised_user";
 const char kExtensionValue[] = "command_line:extension";
 const char kCommandLineValue[] = "command_line:command_line";
 }
 
 namespace user_pref {
 const char kManagedValue[] = "user:managed";
-const char kManagedUserValue[] = "managed_user:managed_user";
+const char kSupervisedUserValue[] = "supervised_user:supervised_user";
 const char kExtensionValue[] = "user:extension";
 const char kCommandLineValue[] = "user:command_line";
 const char kUserValue[] = "user:user";
@@ -79,7 +79,7 @@ const char kUserValue[] = "user:user";
 
 namespace recommended_pref {
 const char kManagedValue[] = "recommended:managed";
-const char kManagedUserValue[] = "recommended:managed_user";
+const char kSupervisedUserValue[] = "recommended:supervised_user";
 const char kExtensionValue[] = "recommended:extension";
 const char kCommandLineValue[] = "recommended:command_line";
 const char kUserValue[] = "recommended:user";
@@ -88,7 +88,7 @@ const char kRecommendedValue[] = "recommended:recommended";
 
 namespace default_pref {
 const char kManagedValue[] = "default:managed";
-const char kManagedUserValue[] = "default:managed_user";
+const char kSupervisedUserValue[] = "default:supervised_user";
 const char kExtensionValue[] = "default:extension";
 const char kCommandLineValue[] = "default:command_line";
 const char kUserValue[] = "default:user";
@@ -101,7 +101,7 @@ class PrefValueStoreTest : public testing::Test {
   virtual void SetUp() {
     // Create TestingPrefStores.
     CreateManagedPrefs();
-    CreateManagedUserPrefs();
+    CreateSupervisedUserPrefs();
     CreateExtensionPrefs();
     CreateCommandLinePrefs();
     CreateUserPrefs();
@@ -110,14 +110,15 @@ class PrefValueStoreTest : public testing::Test {
     sync_associator_.reset(new MockPrefModelAssociator());
 
     // Create a fresh PrefValueStore.
-    pref_value_store_.reset(new PrefValueStore(managed_pref_store_.get(),
-                                               managed_user_pref_store_.get(),
-                                               extension_pref_store_.get(),
-                                               command_line_pref_store_.get(),
-                                               user_pref_store_.get(),
-                                               recommended_pref_store_.get(),
-                                               default_pref_store_.get(),
-                                               &pref_notifier_));
+    pref_value_store_.reset(
+        new PrefValueStore(managed_pref_store_.get(),
+                           supervised_user_pref_store_.get(),
+                           extension_pref_store_.get(),
+                           command_line_pref_store_.get(),
+                           user_pref_store_.get(),
+                           recommended_pref_store_.get(),
+                           default_pref_store_.get(),
+                           &pref_notifier_));
 
     pref_value_store_->set_callback(
         base::Bind(&MockPrefModelAssociator::ProcessPrefChange,
@@ -131,14 +132,14 @@ class PrefValueStoreTest : public testing::Test {
         managed_pref::kManagedValue);
   }
 
-  void CreateManagedUserPrefs() {
-    managed_user_pref_store_ = new TestingPrefStore;
-    managed_user_pref_store_->SetString(
+  void CreateSupervisedUserPrefs() {
+    supervised_user_pref_store_ = new TestingPrefStore;
+    supervised_user_pref_store_->SetString(
         prefs::kManagedPref,
-        managed_user_pref::kManagedValue);
-    managed_user_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        managed_user_pref::kManagedUserValue);
+        supervised_user_pref::kManagedValue);
+    supervised_user_pref_store_->SetString(
+        prefs::kSupervisedUserPref,
+        supervised_user_pref::kSupervisedUserValue);
   }
 
   void CreateExtensionPrefs() {
@@ -147,8 +148,8 @@ class PrefValueStoreTest : public testing::Test {
         prefs::kManagedPref,
         extension_pref::kManagedValue);
     extension_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        extension_pref::kManagedUserValue);
+        prefs::kSupervisedUserPref,
+        extension_pref::kSupervisedUserValue);
     extension_pref_store_->SetString(
         prefs::kExtensionPref,
         extension_pref::kExtensionValue);
@@ -160,8 +161,8 @@ class PrefValueStoreTest : public testing::Test {
         prefs::kManagedPref,
         command_line_pref::kManagedValue);
     command_line_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        command_line_pref::kManagedUserValue);
+        prefs::kSupervisedUserPref,
+        command_line_pref::kSupervisedUserValue);
     command_line_pref_store_->SetString(
         prefs::kExtensionPref,
         command_line_pref::kExtensionValue);
@@ -176,8 +177,8 @@ class PrefValueStoreTest : public testing::Test {
         prefs::kManagedPref,
         user_pref::kManagedValue);
     user_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        user_pref::kManagedUserValue);
+        prefs::kSupervisedUserPref,
+        user_pref::kSupervisedUserValue);
     user_pref_store_->SetString(
         prefs::kCommandLinePref,
         user_pref::kCommandLineValue);
@@ -195,8 +196,8 @@ class PrefValueStoreTest : public testing::Test {
         prefs::kManagedPref,
         recommended_pref::kManagedValue);
     recommended_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        recommended_pref::kManagedUserValue);
+        prefs::kSupervisedUserPref,
+        recommended_pref::kSupervisedUserValue);
     recommended_pref_store_->SetString(
         prefs::kCommandLinePref,
         recommended_pref::kCommandLineValue);
@@ -214,8 +215,8 @@ class PrefValueStoreTest : public testing::Test {
   void CreateDefaultPrefs() {
     default_pref_store_ = new TestingPrefStore;
     default_pref_store_->SetString(
-        prefs::kManagedUserPref,
-        default_pref::kManagedUserValue);
+        prefs::kSupervisedUserPref,
+        default_pref::kSupervisedUserValue);
     default_pref_store_->SetString(
         prefs::kManagedPref,
         default_pref::kManagedValue);
@@ -251,7 +252,7 @@ class PrefValueStoreTest : public testing::Test {
   scoped_ptr<PrefValueStore> pref_value_store_;
 
   scoped_refptr<TestingPrefStore> managed_pref_store_;
-  scoped_refptr<TestingPrefStore> managed_user_pref_store_;
+  scoped_refptr<TestingPrefStore> supervised_user_pref_store_;
   scoped_refptr<TestingPrefStore> extension_pref_store_;
   scoped_refptr<TestingPrefStore> command_line_pref_store_;
   scoped_refptr<TestingPrefStore> user_pref_store_;
@@ -274,12 +275,12 @@ TEST_F(PrefValueStoreTest, GetValue) {
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(managed_pref::kManagedValue, actual_str_value);
 
-  // Test getting a managed user value.
+  // Test getting a supervised user value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kManagedUserPref,
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kSupervisedUserPref,
                                           base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(managed_user_pref::kManagedUserValue, actual_str_value);
+  EXPECT_EQ(supervised_user_pref::kSupervisedUserValue, actual_str_value);
 
   // Test getting an extension value.
   value = NULL;
@@ -342,13 +343,13 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kManagedValue, actual_str_value);
 
-  // Test getting recommended value when a managed user value is present.
+  // Test getting recommended value when a supervised user value is present.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
-      prefs::kManagedUserPref,
+      prefs::kSupervisedUserPref,
       base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(recommended_pref::kManagedUserValue, actual_str_value);
+  EXPECT_EQ(recommended_pref::kSupervisedUserValue, actual_str_value);
 
   // Test getting recommended value when an extension value is present.
   value = NULL;
@@ -407,7 +408,7 @@ TEST_F(PrefValueStoreTest, PrefChanges) {
   CheckAndClearValueChangeNotifications();
 
   ExpectValueChangeNotifications(prefs::kManagedPref);
-  managed_user_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
+  supervised_user_pref_store_->NotifyPrefValueChanged(prefs::kManagedPref);
   CheckAndClearValueChangeNotifications();
 
   ExpectValueChangeNotifications(prefs::kManagedPref);
@@ -484,7 +485,7 @@ TEST_F(PrefValueStoreTest, PrefChanges) {
 TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
   EXPECT_CALL(pref_notifier_, OnInitializationCompleted(true)).Times(0);
   managed_pref_store_->SetInitializationCompleted();
-  managed_user_pref_store_->SetInitializationCompleted();
+  supervised_user_pref_store_->SetInitializationCompleted();
   extension_pref_store_->SetInitializationCompleted();
   command_line_pref_store_->SetInitializationCompleted();
   recommended_pref_store_->SetInitializationCompleted();
@@ -501,7 +502,7 @@ TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
   EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
@@ -520,7 +521,7 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kManagedPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
@@ -539,7 +540,7 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kManagedPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kExtensionPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
@@ -558,7 +559,7 @@ TEST_F(PrefValueStoreTest, PrefValueFromExtensionStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
@@ -577,7 +578,7 @@ TEST_F(PrefValueStoreTest, PrefValueFromUserStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
@@ -596,7 +597,7 @@ TEST_F(PrefValueStoreTest, PrefValueFromRecommendedStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromRecommendedStore(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromRecommendedStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromRecommendedStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromRecommendedStore(
@@ -615,7 +616,7 @@ TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
@@ -634,7 +635,7 @@ TEST_F(PrefValueStoreTest, PrefValueUserModifiable) {
   EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
       prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
@@ -653,7 +654,7 @@ TEST_F(PrefValueStoreTest, PrefValueExtensionModifiable) {
   EXPECT_FALSE(pref_value_store_->PrefValueExtensionModifiable(
       prefs::kManagedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueExtensionModifiable(
-      prefs::kManagedUserPref));
+      prefs::kSupervisedUserPref));
   EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
       prefs::kExtensionPref));
   EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(

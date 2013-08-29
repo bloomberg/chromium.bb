@@ -92,7 +92,7 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(NULL,  // managed
-                                            NULL,  // managed_user
+                                            NULL,  // supervised_user
                                             incognito_extension_prefs,
                                             NULL,  // command_line_prefs
                                             incognito_pref_store,

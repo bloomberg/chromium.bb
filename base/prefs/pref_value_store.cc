@@ -47,7 +47,7 @@ void PrefValueStore::PrefStoreKeeper::OnInitializationCompleted(
 }
 
 PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
-                               PrefStore* managed_user_prefs,
+                               PrefStore* supervised_user_prefs,
                                PrefStore* extension_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
@@ -57,7 +57,7 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
     : pref_notifier_(pref_notifier),
       initialization_failed_(false) {
   InitPrefStore(MANAGED_STORE, managed_prefs);
-  InitPrefStore(MANAGED_USER_STORE, managed_user_prefs);
+  InitPrefStore(SUPERVISED_USER_STORE, supervised_user_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
   InitPrefStore(COMMAND_LINE_STORE, command_line_prefs);
   InitPrefStore(USER_STORE, user_prefs);
@@ -71,7 +71,7 @@ PrefValueStore::~PrefValueStore() {}
 
 PrefValueStore* PrefValueStore::CloneAndSpecialize(
     PrefStore* managed_prefs,
-    PrefStore* managed_user_prefs,
+    PrefStore* supervised_user_prefs,
     PrefStore* extension_prefs,
     PrefStore* command_line_prefs,
     PrefStore* user_prefs,
@@ -81,8 +81,8 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
   DCHECK(pref_notifier);
   if (!managed_prefs)
     managed_prefs = GetPrefStore(MANAGED_STORE);
-  if (!managed_user_prefs)
-    managed_user_prefs = GetPrefStore(MANAGED_USER_STORE);
+  if (!supervised_user_prefs)
+    supervised_user_prefs = GetPrefStore(SUPERVISED_USER_STORE);
   if (!extension_prefs)
     extension_prefs = GetPrefStore(EXTENSION_STORE);
   if (!command_line_prefs)
@@ -95,7 +95,7 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
     default_prefs = GetPrefStore(DEFAULT_STORE);
 
   return new PrefValueStore(
-      managed_prefs, managed_user_prefs, extension_prefs, command_line_prefs,
+      managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
       user_prefs, recommended_prefs, default_prefs, pref_notifier);
 }
 

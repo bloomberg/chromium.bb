@@ -20,7 +20,7 @@ TestingPrefServiceBase<PrefServiceSyncable, user_prefs::PrefRegistrySyncable>::
     : PrefServiceSyncable(
           pref_notifier,
           new PrefValueStore(managed_prefs,
-                             NULL,  // managed_user_prefs
+                             NULL,  // supervised_user_prefs
                              NULL,  // extension_prefs
                              NULL,  // command_line_prefs
                              user_prefs,

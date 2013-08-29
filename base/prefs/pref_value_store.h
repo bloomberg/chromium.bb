@@ -33,6 +33,9 @@ class BASE_PREFS_EXPORT PrefValueStore {
 
   // In decreasing order of precedence:
   //   |managed_prefs| contains all preferences from mandatory policies.
+  //   |supervised_user_prefs| contains all preferences from supervised user
+  //        settings, i.e. settings configured for a supervised user by their
+  //        custodian.
   //   |extension_prefs| contains preference values set by extensions.
   //   |command_line_prefs| contains preference values set by command-line
   //        switches.
@@ -44,7 +47,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // |pref_notifier| facilitates broadcasting preference change notifications
   // to the world.
   PrefValueStore(PrefStore* managed_prefs,
-                 PrefStore* managed_user_prefs,
+                 PrefStore* supervised_user_prefs,
                  PrefStore* extension_prefs,
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
@@ -56,7 +59,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // Creates a clone of this PrefValueStore with PrefStores overwritten
   // by the parameters passed, if unequal NULL.
   PrefValueStore* CloneAndSpecialize(PrefStore* managed_prefs,
-                                     PrefStore* managed_user_prefs,
+                                     PrefStore* supervised_user_prefs,
                                      PrefStore* extension_prefs,
                                      PrefStore* command_line_prefs,
                                      PrefStore* user_prefs,
@@ -118,7 +121,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // PrefStores must be listed here in order from highest to lowest priority.
   //   MANAGED contains all managed preference values that are provided by
   //      mandatory policies (e.g. Windows Group Policy or cloud policy).
-  //   MANAGED_USER contains preferences that are valid for managed users.
+  //   SUPERVISED_USER contains preferences that are valid for supervised users.
   //   EXTENSION contains preference values set by extensions.
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
@@ -130,7 +133,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
     // an invalid marker, e.g. as a return value.
     INVALID_STORE = -1,
     MANAGED_STORE = 0,
-    MANAGED_USER_STORE,
+    SUPERVISED_USER_STORE,
     EXTENSION_STORE,
     COMMAND_LINE_STORE,
     USER_STORE,
