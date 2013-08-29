@@ -136,17 +136,7 @@
                   ]
                 }
               ],
-            }],
-            ['OS=="linux" and chromeos==1 and branding=="Chrome"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)',
-                  'files': [
-                    'browser/extensions/default_extensions/chromeos/extensions/'
-                  ]
-                }
-              ],
-            }],
+            }]
           ],
         },
         {

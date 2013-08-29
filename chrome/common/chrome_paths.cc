@@ -395,9 +395,9 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
       break;
 #endif
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(OS_LINUX) && defined(ENABLE_MANAGED_USERS)
     case chrome::DIR_MANAGED_USERS_DEFAULT_APPS:
-      if (!PathService::Get(chrome::DIR_EXTERNAL_EXTENSIONS, &cur))
+      if (!PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("managed_users"));
       break;
