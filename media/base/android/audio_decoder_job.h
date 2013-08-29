@@ -26,14 +26,17 @@ class AudioDecoderJob : public MediaDecoderJob {
   // the decoder.
   // |media_crypto| - Handle to a Java object that handles the encryption for
   // the audio data.
+  // |request_data_cb| - Callback used to request more data for the decoder.
   static AudioDecoderJob* Create(
       const AudioCodec audio_codec, int sample_rate, int channel_count,
-      const uint8* extra_data, size_t extra_data_size, jobject media_crypto);
+      const uint8* extra_data, size_t extra_data_size, jobject media_crypto,
+      const base::Closure& request_data_cb);
 
   void SetVolume(double volume);
 
  private:
-  AudioDecoderJob(scoped_ptr<AudioCodecBridge> audio_decoder_bridge);
+  AudioDecoderJob(scoped_ptr<AudioCodecBridge> audio_decoder_bridge,
+                  const base::Closure& request_data_cb);
 
   // MediaDecoderJob implementation.
   virtual void ReleaseOutputBuffer(

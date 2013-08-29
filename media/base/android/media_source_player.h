@@ -109,20 +109,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // Starts the |decoder_starvation_callback_| task with the timeout value.
   void StartStarvationCallback(const base::TimeDelta& timeout);
 
-  // Called to sync decoder jobs. This call requests data from chunk demuxer
-  // first. Then it updates |start_time_ticks_| and
-  // |start_presentation_timestamp_| so that video can resync with audio.
-  void SyncAndStartDecoderJobs();
-
-  // Functions that send IPC requests to the renderer process for more
-  // audio/video data. Returns true if a request has been sent and the decoder
-  // needs to wait, or false otherwise.
-  void RequestAudioData();
-  void RequestVideoData();
-
-  // Check whether audio or video data is available for decoders to consume.
-  bool HasAudioData() const;
-  bool HasVideoData() const;
+  // Schedules a seek event in |pending_events_| and calls StopDecode() on all
+  // the MediaDecoderJobs.
+  void ScheduleSeekEventAndStopDecoding();
 
   // Helper function to set the volume.
   void SetVolumeInternal();
@@ -131,12 +120,26 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // video playback.
   bool IsProtectedSurfaceRequired();
 
+  // Called when a MediaDecoderJob finishes prefetching data. Once all
+  // MediaDecoderJobs have prefetched data, then this method updates
+  // |start_time_ticks_| and |start_presentation_timestamp_| so that video can
+  // resync with audio and starts decoding.
+  void OnPrefetchDone();
+
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
     SURFACE_CHANGE_EVENT_PENDING = 1 << 1,
     CONFIG_CHANGE_EVENT_PENDING = 1 << 2,
+    PREFETCH_REQUEST_EVENT_PENDING = 1 << 3,
+    PREFETCH_DONE_EVENT_PENDING = 1 << 4,
   };
+
+  static const char* GetEventName(PendingEventFlags event);
+  bool IsEventPending(PendingEventFlags event) const;
+  void SetPendingEvent(PendingEventFlags event);
+  void ClearPendingEvent(PendingEventFlags event);
+
   // Pending event that the player needs to do.
   unsigned pending_event_;
 
@@ -185,23 +188,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool reconfig_audio_decoder_;
   bool reconfig_video_decoder_;
 
-  // These variables keep track of the current decoding data.
-  // TODO(qinmin): remove these variables when we no longer relies on IPC for
-  // data passing.
-  size_t audio_access_unit_index_;
-  size_t video_access_unit_index_;
-  bool waiting_for_audio_data_;
-  bool waiting_for_video_data_;
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_audio_;
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_video_;
-
   // A cancelable task that is posted when the audio decoder starts requesting
   // new data. This callback runs if no data arrives before the timeout period
   // elapses.
   base::CancelableClosure decoder_starvation_callback_;
-
-  // Whether the audio and video decoder jobs should resync with each other.
-  bool sync_decoder_jobs_;
 
   // Object to calculate the current audio timestamp for A/V sync.
   scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;

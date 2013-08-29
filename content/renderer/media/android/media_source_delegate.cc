@@ -361,9 +361,10 @@ void MediaSourceDelegate::OnBufferReady(
 
   switch (status) {
     case DemuxerStream::kAborted:
-      // Because the abort was caused by the seek, don't respond ack.
       DVLOG(1) << "OnBufferReady() : Aborted";
-      return;
+      params->access_units[index].status = status;
+      params->access_units.resize(index + 1);
+      break;
 
     case DemuxerStream::kConfigChanged:
       // In case of kConfigChanged, need to read decoder_config once

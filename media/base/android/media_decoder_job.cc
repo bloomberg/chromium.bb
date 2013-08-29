@@ -5,6 +5,7 @@
 #include "media/base/android/media_decoder_job.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/bind_to_loop.h"
@@ -18,31 +19,124 @@ static const int kMediaCodecTimeoutInMilliseconds = 250;
 
 MediaDecoderJob::MediaDecoderJob(
     const scoped_refptr<base::MessageLoopProxy>& decoder_loop,
-    MediaCodecBridge* media_codec_bridge)
+    MediaCodecBridge* media_codec_bridge,
+    const base::Closure& request_data_cb)
     : ui_loop_(base::MessageLoopProxy::current()),
       decoder_loop_(decoder_loop),
       media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       input_eos_encountered_(false),
       weak_this_(this),
-      is_decoding_(false) {
+      request_data_cb_(request_data_cb),
+      access_unit_index_(0),
+      stop_decode_pending_(false) {
 }
 
 MediaDecoderJob::~MediaDecoderJob() {}
 
-void MediaDecoderJob::Decode(
-    const AccessUnit& unit,
+void MediaDecoderJob::OnDataReceived(
+    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(!on_data_received_cb_.is_null());
+
+  base::Closure done_cb = base::ResetAndReturn(&on_data_received_cb_);
+
+  if (stop_decode_pending_) {
+    OnDecodeCompleted(DECODE_STOPPED, kNoTimestamp(), 0);
+    return;
+  }
+
+  access_unit_index_ = 0;
+  received_data_ = params;
+  done_cb.Run();
+}
+
+bool MediaDecoderJob::HasData() const {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  return access_unit_index_ < received_data_.access_units.size();
+}
+
+void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(on_data_received_cb_.is_null());
+  DCHECK(decode_cb_.is_null());
+
+  if (HasData()) {
+    ui_loop_->PostTask(FROM_HERE, prefetch_cb);
+    return;
+  }
+
+  RequestData(prefetch_cb);
+}
+
+bool MediaDecoderJob::Decode(
     const base::TimeTicks& start_time_ticks,
     const base::TimeDelta& start_presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback) {
-  DCHECK(!is_decoding_);
+  DCHECK(decode_cb_.is_null());
+  DCHECK(on_data_received_cb_.is_null());
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  is_decoding_ = true;
-  decoder_loop_->PostTask(FROM_HERE, base::Bind(
-      &MediaDecoderJob::DecodeInternal, base::Unretained(this), unit,
-      start_time_ticks, start_presentation_timestamp, needs_flush_,
-      media::BindToLoop(ui_loop_, callback)));
-  needs_flush_ = false;
+
+  decode_cb_ = callback;
+
+  if (!HasData()) {
+    RequestData(base::Bind(&MediaDecoderJob::DecodeNextAccessUnit,
+                           base::Unretained(this),
+                           start_time_ticks,
+                           start_presentation_timestamp));
+    return true;
+  }
+
+  if (DemuxerStream::kConfigChanged ==
+      received_data_.access_units[access_unit_index_].status) {
+    // Clear received data because we need to handle a config change.
+    decode_cb_.Reset();
+    received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+    access_unit_index_ = 0;
+    return false;
+  }
+
+  DecodeNextAccessUnit(start_time_ticks, start_presentation_timestamp);
+  return true;
+}
+
+void MediaDecoderJob::StopDecode() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(is_decoding());
+  stop_decode_pending_ = true;
+}
+
+void MediaDecoderJob::Flush() {
+  DCHECK(decode_cb_.is_null());
+
+  // Do nothing, flush when the next Decode() happens.
+  needs_flush_ = true;
+
+  received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  access_unit_index_ = 0;
+  on_data_received_cb_.Reset();
+}
+
+void MediaDecoderJob::Release() {
+  // If is_decoding() returns false, there is nothing running on the decoder
+  // thread. So it is safe to delete the MediaDecoderJob on the UI thread.
+  // However, if we post a task to the decoder thread to delete object, then we
+  // cannot immediately pass the surface to a new MediaDecoderJob instance
+  // because the java surface is still owned by the old object. New decoder
+  // creation will be blocked on the UI thread until the previous decoder gets
+  // deleted. This introduces extra latency during config changes, and makes the
+  // logic in MediaSourcePlayer more complicated.
+  //
+  // TODO(qinmin): Figure out the logic to passing the surface to a new
+  // MediaDecoderJob instance after the previous one gets deleted on the decoder
+  // thread.
+  if (is_decoding() && !decoder_loop_->BelongsToCurrentThread()) {
+    DCHECK(ui_loop_->BelongsToCurrentThread());
+    decoder_loop_->DeleteSoon(FROM_HERE, this);
+    return;
+  }
+
+  delete this;
 }
 
 MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
@@ -78,6 +172,32 @@ MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
   }
 
   return DECODE_SUCCEEDED;
+}
+
+void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(on_data_received_cb_.is_null());
+
+  received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  access_unit_index_ = 0;
+  on_data_received_cb_ = done_cb;
+
+  request_data_cb_.Run();
+}
+
+void MediaDecoderJob::DecodeNextAccessUnit(
+    const base::TimeTicks& start_time_ticks,
+    const base::TimeDelta& start_presentation_timestamp) {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(!decode_cb_.is_null());
+
+  decoder_loop_->PostTask(FROM_HERE, base::Bind(
+      &MediaDecoderJob::DecodeInternal, base::Unretained(this),
+      received_data_.access_units[access_unit_index_],
+      start_time_ticks, start_presentation_timestamp, needs_flush_,
+      media::BindToLoop(ui_loop_, base::Bind(
+          &MediaDecoderJob::OnDecodeCompleted, base::Unretained(this)))));
+  needs_flush_ = false;
 }
 
 void MediaDecoderJob::DecodeInternal(
@@ -166,36 +286,21 @@ void MediaDecoderJob::DecodeInternal(
   callback.Run(decode_status, start_presentation_timestamp, 0);
 }
 
-void MediaDecoderJob::OnDecodeCompleted() {
+void MediaDecoderJob::OnDecodeCompleted(
+    DecodeStatus status, const base::TimeDelta& presentation_timestamp,
+    size_t audio_output_bytes) {
+  DCHECK(!decode_cb_.is_null());
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  is_decoding_ = false;
-}
 
-void MediaDecoderJob::Flush() {
-  // Do nothing, flush when the next Decode() happens.
-  needs_flush_ = true;
-}
-
-void MediaDecoderJob::Release() {
-  // If |decoding_| is false, there is nothing running on the decoder thread.
-  // So it is safe to delete the MediaDecoderJob on the UI thread. However,
-  // if we post a task to the decoder thread to delete object, then we cannot
-  // immediately pass the surface to a new MediaDecoderJob instance because
-  // the java surface is still owned by the old object. New decoder creation
-  // will be blocked on the UI thread until the previous decoder gets deleted.
-  // This introduces extra latency during config changes, and makes the logic in
-  // MediaSourcePlayer more complicated.
-  //
-  // TODO(qinmin): Figure out the logic to passing the surface to a new
-  // MediaDecoderJob instance after the previous one gets deleted on the decoder
-  // thread.
-  if (is_decoding_ && !decoder_loop_->BelongsToCurrentThread()) {
-    DCHECK(ui_loop_->BelongsToCurrentThread());
-    decoder_loop_->DeleteSoon(FROM_HERE, this);
-    return;
+  if (status != MediaDecoderJob::DECODE_FAILED &&
+      status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER &&
+      status != MediaDecoderJob::DECODE_INPUT_END_OF_STREAM) {
+    access_unit_index_++;
   }
 
-  delete this;
+  stop_decode_pending_ = false;
+  base::ResetAndReturn(&decode_cb_).Run(status, presentation_timestamp,
+                                        audio_output_bytes);
 }
 
 }  // namespace media

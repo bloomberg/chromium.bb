@@ -30,19 +30,21 @@ AudioDecoderJob* AudioDecoderJob::Create(
     int channel_count,
     const uint8* extra_data,
     size_t extra_data_size,
-    jobject media_crypto) {
+    jobject media_crypto,
+    const base::Closure& request_data_cb) {
   scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
   if (codec && codec->Start(audio_codec, sample_rate, channel_count, extra_data,
                             extra_data_size, true, media_crypto)) {
-    return new AudioDecoderJob(codec.Pass());
+    return new AudioDecoderJob(codec.Pass(), request_data_cb);
   }
   return NULL;
 }
 
 AudioDecoderJob::AudioDecoderJob(
-    scoped_ptr<AudioCodecBridge> audio_codec_bridge)
+    scoped_ptr<AudioCodecBridge> audio_codec_bridge,
+    const base::Closure& request_data_cb)
     : MediaDecoderJob(g_audio_decoder_thread.Pointer()->message_loop_proxy(),
-                      audio_codec_bridge.get()),
+                      audio_codec_bridge.get(), request_data_cb),
       audio_codec_bridge_(audio_codec_bridge.Pass()) {
 }
 

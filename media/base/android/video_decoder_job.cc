@@ -27,17 +27,18 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 
 VideoDecoderJob* VideoDecoderJob::Create(
     const VideoCodec video_codec, const gfx::Size& size, jobject surface,
-    jobject media_crypto) {
+    jobject media_crypto, const base::Closure& request_data_cb) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
   if (codec && codec->Start(video_codec, size, surface, media_crypto))
-    return new VideoDecoderJob(codec.Pass());
+    return new VideoDecoderJob(codec.Pass(), request_data_cb);
   return NULL;
 }
 
 VideoDecoderJob::VideoDecoderJob(
-    scoped_ptr<VideoCodecBridge> video_codec_bridge)
+    scoped_ptr<VideoCodecBridge> video_codec_bridge,
+    const base::Closure& request_data_cb)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->message_loop_proxy(),
-                      video_codec_bridge.get()),
+                      video_codec_bridge.get(), request_data_cb),
       video_codec_bridge_(video_codec_bridge.Pass()) {
 }
 
