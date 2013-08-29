@@ -475,7 +475,7 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
 
     if (Frame* frame = document()->frame()) {
         if (frame->selection()->isRange() && userTriggered)
-            dispatchEvent(Event::create(eventNames().selectEvent, true, false));
+            dispatchEvent(Event::createBubble(eventNames().selectEvent));
     }
 }
 

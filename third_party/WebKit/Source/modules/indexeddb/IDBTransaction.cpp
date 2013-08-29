@@ -306,7 +306,7 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
     closeOpenCursors();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
-    enqueueEvent(Event::create(eventNames().abortEvent, true, false));
+    enqueueEvent(Event::createBubble(eventNames().abortEvent));
     m_database->transactionFinished(this);
 }
 

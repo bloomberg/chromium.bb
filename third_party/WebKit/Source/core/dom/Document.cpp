@@ -4252,7 +4252,7 @@ void Document::finishedParsing()
     setParsing(false);
     if (!m_documentTiming.domContentLoadedEventStart)
         m_documentTiming.domContentLoadedEventStart = monotonicallyIncreasingTime();
-    dispatchEvent(Event::create(eventNames().DOMContentLoadedEvent, true, false));
+    dispatchEvent(Event::createBubble(eventNames().DOMContentLoadedEvent));
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
 

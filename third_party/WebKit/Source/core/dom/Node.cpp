@@ -2478,12 +2478,12 @@ bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
 
 void Node::dispatchChangeEvent()
 {
-    dispatchScopedEvent(Event::create(eventNames().changeEvent, true, false));
+    dispatchScopedEvent(Event::createBubble(eventNames().changeEvent));
 }
 
 void Node::dispatchInputEvent()
 {
-    dispatchScopedEvent(Event::create(eventNames().inputEvent, true, false));
+    dispatchScopedEvent(Event::createBubble(eventNames().inputEvent));
 }
 
 void Node::defaultEventHandler(Event* event)
