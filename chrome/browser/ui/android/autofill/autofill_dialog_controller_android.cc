@@ -110,6 +110,33 @@ void FillOutputForSection(
       form_structure, full_wallet, email_address);
 }
 
+// Returns true if |input_type| in |section| is needed for |form_structure|.
+bool IsSectionInputUsedInFormStructure(DialogSection section,
+                                       ServerFieldType input_type,
+                                       const FormStructure& form_structure) {
+  const DetailInput input = { 0, input_type };
+  for (size_t i = 0; i < form_structure.field_count(); ++i) {
+    const AutofillField* field = form_structure.field(i);
+    if (field && common::DetailInputMatchesField(section, input, *field))
+      return true;
+  }
+  return false;
+}
+
+// Returns true if one of |inputs| in |section| is needed for |form_structure|.
+bool IsSectionInputsUsedInFormStructure(DialogSection section,
+                                        const ServerFieldType* input_types,
+                                        const size_t input_types_size,
+                                        const FormStructure& form_structure) {
+  for (size_t i = 0; i < input_types_size; ++i) {
+    if (IsSectionInputUsedInFormStructure(
+        section, input_types[i], form_structure)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 
@@ -205,32 +232,39 @@ void AutofillDialogControllerAndroid::Show() {
     return;
   }
 
-  bool request_full_billing_address = true;
+  const ServerFieldType full_billing_is_necessary_if[] = {
+      ADDRESS_BILLING_LINE1,
+      ADDRESS_BILLING_LINE2,
+      ADDRESS_BILLING_CITY,
+      ADDRESS_BILLING_STATE,
+      PHONE_BILLING_WHOLE_NUMBER
+  };
+  const bool request_full_billing_address =
+      IsSectionInputsUsedInFormStructure(
+          SECTION_BILLING,
+          full_billing_is_necessary_if,
+          arraysize(full_billing_is_necessary_if),
+          form_structure_);
+  const bool request_phone_numbers =
+      IsSectionInputUsedInFormStructure(
+          SECTION_BILLING,
+          PHONE_BILLING_WHOLE_NUMBER,
+          form_structure_) ||
+      IsSectionInputUsedInFormStructure(
+          SECTION_SHIPPING,
+          PHONE_HOME_WHOLE_NUMBER,
+          form_structure_);
+
   bool request_shipping_address = false;
-  bool request_phone_numbers = false;
-
-  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    const ServerFieldType type =
-        form_structure_.field(i)->Type().GetStorableType();
-    if (type == PHONE_HOME_WHOLE_NUMBER || type == PHONE_BILLING_WHOLE_NUMBER) {
-      request_phone_numbers = true;
-    }
-    if (type == NAME_FULL ||
-        type == ADDRESS_HOME_LINE1 || type == ADDRESS_HOME_LINE2 ||
-        type == ADDRESS_HOME_CITY || type == ADDRESS_HOME_STATE ||
-        type == ADDRESS_HOME_ZIP || type == ADDRESS_HOME_COUNTRY ||
-        type == PHONE_HOME_WHOLE_NUMBER) {
-      request_shipping_address = true;
-    }
-    if (type == ADDRESS_BILLING_LINE1 || type == ADDRESS_BILLING_LINE2 ||
-        type == ADDRESS_BILLING_CITY || type == ADDRESS_BILLING_STATE ||
-        type == PHONE_BILLING_WHOLE_NUMBER) {
-      request_full_billing_address = true;
-    }
+  {
+    DetailInputs inputs;
+    common::BuildInputsForSection(SECTION_SHIPPING, &inputs);
+    EmptyDataModelWrapper empty_wrapper;
+    request_shipping_address = empty_wrapper.FillFormStructure(
+        inputs,
+        base::Bind(common::DetailInputMatchesField, SECTION_SHIPPING),
+        &form_structure_);
   }
-
-  if (request_shipping_address)
-    request_full_billing_address = true;
 
   const bool incognito_mode = profile_->IsOffTheRecord();
 
