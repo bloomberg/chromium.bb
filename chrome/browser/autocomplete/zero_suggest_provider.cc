@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
@@ -460,9 +462,9 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
                           GURL(current_query_), current_page_classification_,
                           false, false, true, AutocompleteInput::ALL_MATCHES);
 
-  AutocompleteMatch match(
-      HistoryURLProvider::SuggestExactInput(this, input,
-                                            !HasHTTPScheme(input.text())));
+  AutocompleteMatch match;
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
+      permanent_text_, false, true, &match, NULL);
   match.is_history_what_you_typed_match = false;
   match.allowed_to_be_default_match = true;
 
