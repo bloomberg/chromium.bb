@@ -18,7 +18,7 @@ class Size;
 
 #if defined(OS_ANDROID)
 namespace gfx {
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 #endif
 
@@ -81,7 +81,7 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
   virtual gles2::GLES2Implementation* GetImplementation() = 0;
 
 #if defined(OS_ANDROID)
-  virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+  virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) = 0;
 #endif
 };

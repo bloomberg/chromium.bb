@@ -21,7 +21,7 @@ class VideoLayer;
 }
 
 namespace gfx {
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 
 namespace content {
@@ -45,7 +45,7 @@ class SurfaceTextureTransportClient : public cc::VideoFrameProvider {
   void OnSurfaceTextureFrameAvailable();
 
   scoped_refptr<cc::VideoLayer> video_layer_;
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
   ANativeWindow* window_;
   scoped_refptr<media::VideoFrame> video_frame_;
   uint32 texture_id_;

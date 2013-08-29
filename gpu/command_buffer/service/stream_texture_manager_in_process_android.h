@@ -15,7 +15,7 @@
 
 namespace gfx {
 class Size;
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 
 namespace gpu {
@@ -32,7 +32,7 @@ class StreamTextureManagerInProcess
   virtual void DestroyStreamTexture(uint32 service_id) OVERRIDE;
   virtual gpu::StreamTexture* LookupStreamTexture(uint32 service_id) OVERRIDE;
 
-  scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(uint32 stream_id);
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32 stream_id);
 
  private:
   class StreamTextureImpl : public gpu::StreamTexture {
@@ -46,11 +46,11 @@ class StreamTextureManagerInProcess
 
     void SetSize(gfx::Size size);
 
-    scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture();
+    scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture();
     uint32 stream_id() { return stream_id_; }
 
    private:
-    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge_;
+    scoped_refptr<gfx::SurfaceTexture> surface_texture_;
     uint32 stream_id_;
     gfx::Size size_;
 

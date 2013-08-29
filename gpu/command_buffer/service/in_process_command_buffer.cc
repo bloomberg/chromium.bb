@@ -36,7 +36,7 @@
 
 #if defined(OS_ANDROID)
 #include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #endif
 
 namespace gpu {
@@ -728,7 +728,7 @@ base::Closure InProcessCommandBuffer::WrapCallback(
 }
 
 #if defined(OS_ANDROID)
-scoped_refptr<gfx::SurfaceTextureBridge>
+scoped_refptr<gfx::SurfaceTexture>
 InProcessCommandBuffer::GetSurfaceTexture(uint32 stream_id) {
   DCHECK(stream_texture_manager_);
   return stream_texture_manager_->GetSurfaceTexture(stream_id);

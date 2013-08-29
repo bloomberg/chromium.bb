@@ -19,7 +19,7 @@
 #include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
@@ -54,7 +54,7 @@ class VideoContextProvider
       : context_provider_(context_provider),
         gl_in_process_context_(gl_in_process_context) {}
 
-  virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+  virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) OVERRIDE {
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }

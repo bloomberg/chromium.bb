@@ -15,7 +15,7 @@ import org.chromium.base.JNINamespace;
  * provide a stable JNI API.
  */
 @JNINamespace("gfx")
-class SurfaceTextureBridge {
+class SurfaceTexturePlatformWrapper {
     @CalledByNative
     private static SurfaceTexture create(int textureId) {
         return new SurfaceTexture(textureId);

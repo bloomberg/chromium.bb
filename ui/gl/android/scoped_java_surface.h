@@ -13,7 +13,7 @@
 
 namespace gfx {
 
-class SurfaceTextureBridge;
+class SurfaceTexture;
 
 // A helper class for holding a scoped reference to a Java Surface instance.
 // When going out of scope, Surface.release() is called on the Java object to
@@ -29,7 +29,7 @@ class GL_EXPORT ScopedJavaSurface {
 
   // Creates a Java Surface from a SurfaceTexture and wraps it in a
   // ScopedJavaSurface.
-  explicit ScopedJavaSurface(const SurfaceTextureBridge* surface_texture);
+  explicit ScopedJavaSurface(const SurfaceTexture* surface_texture);
 
   // Move constructor. Take the surface from another ScopedJavaSurface object,
   // the latter no longer owns the surface afterwards.

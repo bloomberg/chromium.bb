@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "jni/Surface_jni.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace {
 
@@ -37,7 +37,7 @@ ScopedJavaSurface::ScopedJavaSurface(
 }
 
 ScopedJavaSurface::ScopedJavaSurface(
-    const SurfaceTextureBridge* surface_texture)
+    const SurfaceTexture* surface_texture)
     : auto_release_(true),
       is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();

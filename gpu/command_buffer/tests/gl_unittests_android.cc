@@ -15,7 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
@@ -38,8 +38,8 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   // abstraction for the SurfaceTexture in this test.
   GLuint texture = 0xFEEDBEEF;
 
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(texture));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(texture));
   gfx::AcceleratedWidget window = surface_texture->CreateSurface();
   EXPECT_TRUE(window != NULL);
 

@@ -13,7 +13,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace media {
 
@@ -221,8 +221,8 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
     return;
 
   // Test video decoder job will be created when surface is valid.
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(0));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
@@ -242,8 +242,8 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
     return;
 
   // Test video decoder job will be created when surface is valid.
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(0));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
@@ -283,8 +283,8 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for a seek ACK.
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(0));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Player is still waiting for SetVideoSurface(), so no request is sent.
@@ -387,8 +387,8 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   Start(params);
   EXPECT_EQ(0, manager_->num_requests());
 
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(0));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   player_->SetVideoSurface(surface.Pass());
   EXPECT_EQ(1u, manager_->last_seek_request_id());
@@ -448,8 +448,8 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
 
   // Test MediaSourcePlayer will not request for new data after input EOS is
   // reached.
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
-      new gfx::SurfaceTextureBridge(0));
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   player_->SetVideoSurface(surface.Pass());
   StartVideoDecoderJob();

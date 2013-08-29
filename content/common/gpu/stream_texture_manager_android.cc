@@ -9,14 +9,14 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 
 StreamTextureManagerAndroid::StreamTextureAndroid::StreamTextureAndroid(
     GpuChannel* channel, int service_id)
-    : surface_texture_bridge_(new gfx::SurfaceTextureBridge(service_id)),
+    : surface_texture_(new gfx::SurfaceTexture(service_id)),
       size_(0, 0),
       has_updated_(false),
       channel_(channel) {
@@ -29,13 +29,13 @@ StreamTextureManagerAndroid::StreamTextureAndroid::~StreamTextureAndroid() {
 void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
   GLint texture_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
-  surface_texture_bridge_->UpdateTexImage();
+  surface_texture_->UpdateTexImage();
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
   if (matrix_callback_.is_null())
     return;
 
   float mtx[16];
-  surface_texture_bridge_->GetTransformMatrix(mtx);
+  surface_texture_->GetTransformMatrix(mtx);
 
   // Only query the matrix once we have bound a valid frame.
   if (has_updated_ && memcmp(current_matrix_, mtx, sizeof(mtx)) != 0) {
@@ -120,7 +120,7 @@ void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
           base::Unretained(this),
           route_id);
     stream_texture->set_matrix_changed_callback(matrix_cb);
-    stream_texture->surface_texture_bridge()->SetFrameAvailableCallback(
+    stream_texture->surface_texture()->SetFrameAvailableCallback(
         frame_cb);
   }
 }
@@ -133,7 +133,7 @@ void StreamTextureManagerAndroid::EstablishStreamTexture(
   if (stream_texture) {
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
         process,
-        stream_texture->surface_texture_bridge(),
+        stream_texture->surface_texture(),
         primary_id,
         secondary_id);
   }

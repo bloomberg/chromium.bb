@@ -18,7 +18,7 @@ namespace {
 // Pass a java surface object to the MediaPlayerAndroid object
 // identified by render process handle, render view ID and player ID.
 static void SetSurfacePeer(
-    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
+    scoped_refptr<gfx::SurfaceTexture> surface_texture,
     base::ProcessHandle render_process_handle,
     int render_view_id,
     int player_id) {
@@ -40,7 +40,7 @@ static void SetSurfacePeer(
           host->media_player_manager()->GetPlayer(player_id);
       if (player &&
           player != host->media_player_manager()->GetFullscreenPlayer()) {
-        gfx::ScopedJavaSurface surface(surface_texture_bridge.get());
+        gfx::ScopedJavaSurface surface(surface_texture.get());
         player->SetVideoSurface(surface.Pass());
       }
     }
@@ -57,14 +57,14 @@ SurfaceTexturePeerBrowserImpl::~SurfaceTexturePeerBrowserImpl() {
 
 void SurfaceTexturePeerBrowserImpl::EstablishSurfaceTexturePeer(
     base::ProcessHandle render_process_handle,
-    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
+    scoped_refptr<gfx::SurfaceTexture> surface_texture,
     int render_view_id,
     int player_id) {
-  if (!surface_texture_bridge.get())
+  if (!surface_texture.get())
     return;
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &SetSurfacePeer, surface_texture_bridge, render_process_handle,
+      &SetSurfacePeer, surface_texture, render_process_handle,
       render_view_id, player_id));
 }
 

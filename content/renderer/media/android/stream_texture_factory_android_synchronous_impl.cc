@@ -16,7 +16,7 @@
 #include "cc/output/context_provider.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace content {
 
@@ -46,7 +46,7 @@ class StreamTextureProxyImpl
 
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       context_provider_;
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   float current_matrix_[16];
   bool has_updated_;
@@ -129,7 +129,7 @@ StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
 
 void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
                                                         int player_id) {
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture =
+  scoped_refptr<gfx::SurfaceTexture> surface_texture =
       context_provider_->GetSurfaceTexture(stream_id);
   if (surface_texture) {
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(

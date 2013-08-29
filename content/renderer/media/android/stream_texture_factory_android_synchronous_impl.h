@@ -9,7 +9,7 @@
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 
 namespace gfx {
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 
 namespace WebKit {
@@ -23,7 +23,7 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
  public:
   class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
    public:
-    virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+    virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
         uint32 stream_id) = 0;
 
     virtual WebKit::WebGraphicsContext3D* Context3d() = 0;

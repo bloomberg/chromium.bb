@@ -17,7 +17,7 @@ struct GpuStreamTextureMsg_MatrixChanged_Params;
 
 namespace gfx {
 class Size;
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 
 namespace content {
@@ -57,8 +57,8 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
     virtual void Update() OVERRIDE;
     virtual gfx::Size GetSize() OVERRIDE;
 
-    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge() {
-        return surface_texture_bridge_;
+    scoped_refptr<gfx::SurfaceTexture> surface_texture() {
+        return surface_texture_;
     }
 
     // Called when a new frame is available.
@@ -78,7 +78,7 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
     }
 
    private:
-    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge_;
+    scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
     // Current transform matrix of the surface texture.
     float current_matrix_[16];

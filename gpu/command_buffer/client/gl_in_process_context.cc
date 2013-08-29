@@ -31,7 +31,7 @@
 #include "ui/gl/gl_image.h"
 
 #if defined(OS_ANDROID)
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #endif
 
 namespace gpu {
@@ -70,7 +70,7 @@ class GLInProcessContextImpl
   virtual gles2::GLES2Implementation* GetImplementation() OVERRIDE;
 
 #if defined(OS_ANDROID)
-  virtual scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+  virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) OVERRIDE;
 #endif
 
@@ -343,7 +343,7 @@ void GLInProcessContextImpl::SignalQuery(
 }
 
 #if defined(OS_ANDROID)
-scoped_refptr<gfx::SurfaceTextureBridge>
+scoped_refptr<gfx::SurfaceTexture>
 GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
   return command_buffer_->GetSurfaceTexture(stream_id);
 }

@@ -33,7 +33,7 @@ class Size;
 
 #if defined(OS_ANDROID)
 namespace gfx {
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 namespace gpu {
 class StreamTextureManagerInProcess;
@@ -126,7 +126,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   };
 
 #if defined(OS_ANDROID)
-  scoped_refptr<gfx::SurfaceTextureBridge> GetSurfaceTexture(
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id);
 #endif
 

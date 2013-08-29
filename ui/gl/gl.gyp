@@ -44,8 +44,8 @@
         'android/gl_jni_registrar.h',
         'android/scoped_java_surface.cc',
         'android/scoped_java_surface.h',
-        'android/surface_texture_bridge.cc',
-        'android/surface_texture_bridge.h',
+        'android/surface_texture.cc',
+        'android/surface_texture.h',
         'android/surface_texture_listener.cc',
         'android/surface_texture_listener.h',
         'gl_bindings.h',
@@ -328,7 +328,7 @@
             'surface_jni_headers',
           ],
           'sources': [
-            '../android/java/src/org/chromium/ui/gfx/SurfaceTextureBridge.java',
+            '../android/java/src/org/chromium/ui/gfx/SurfaceTexturePlatformWrapper.java',
             '../android/java/src/org/chromium/ui/gfx/SurfaceTextureListener.java',
           ],
           'variables': {

@@ -33,7 +33,7 @@ class GL_EXPORT SurfaceTextureListener {
   SurfaceTextureListener(const base::Closure& callback);
   ~SurfaceTextureListener();
 
-  friend class SurfaceTextureBridge;
+  friend class SurfaceTexture;
 
   base::Closure callback_;
 

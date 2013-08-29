@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -14,7 +14,7 @@ namespace gpu {
 StreamTextureManagerInProcess::StreamTextureImpl::StreamTextureImpl(
     uint32 service_id,
     uint32 stream_id)
-    : surface_texture_bridge_(new gfx::SurfaceTextureBridge(service_id)),
+    : surface_texture_(new gfx::SurfaceTexture(service_id)),
       stream_id_(stream_id) {}
 
 StreamTextureManagerInProcess::StreamTextureImpl::~StreamTextureImpl() {}
@@ -22,7 +22,7 @@ StreamTextureManagerInProcess::StreamTextureImpl::~StreamTextureImpl() {}
 void StreamTextureManagerInProcess::StreamTextureImpl::Update() {
   GLint texture_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
-  surface_texture_bridge_->UpdateTexImage();
+  surface_texture_->UpdateTexImage();
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
 }
 
@@ -34,9 +34,9 @@ void StreamTextureManagerInProcess::StreamTextureImpl::SetSize(gfx::Size size) {
   size_ = size;
 }
 
-scoped_refptr<gfx::SurfaceTextureBridge>
+scoped_refptr<gfx::SurfaceTexture>
 StreamTextureManagerInProcess::StreamTextureImpl::GetSurfaceTexture() {
-  return surface_texture_bridge_;
+  return surface_texture_;
 }
 
 StreamTextureManagerInProcess::StreamTextureManagerInProcess() : next_id_(1) {}
@@ -77,7 +77,7 @@ gpu::StreamTexture* StreamTextureManagerInProcess::LookupStreamTexture(
   return NULL;
 }
 
-scoped_refptr<gfx::SurfaceTextureBridge>
+scoped_refptr<gfx::SurfaceTexture>
 StreamTextureManagerInProcess::GetSurfaceTexture(uint32 stream_id) {
   base::AutoLock lock(map_lock_);
   for (TextureMap::iterator it = textures_.begin(); it != textures_.end();

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 #include <android/native_window_jni.h>
 
@@ -10,7 +10,7 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
-#include "jni/SurfaceTextureBridge_jni.h"
+#include "jni/SurfaceTexturePlatformWrapper_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture_listener.h"
 #include "ui/gl/gl_bindings.h"
@@ -26,36 +26,38 @@ bool GlContextMethodsAvailable() {
 
 namespace gfx {
 
-SurfaceTextureBridge::SurfaceTextureBridge(int texture_id) {
+SurfaceTexture::SurfaceTexture(int texture_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  j_surface_texture_.Reset(Java_SurfaceTextureBridge_create(env, texture_id));
+  j_surface_texture_.Reset(
+      Java_SurfaceTexturePlatformWrapper_create(env, texture_id));
 }
 
-SurfaceTextureBridge::~SurfaceTextureBridge() {
+SurfaceTexture::~SurfaceTexture() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SurfaceTextureBridge_destroy(env, j_surface_texture_.obj());
+  Java_SurfaceTexturePlatformWrapper_destroy(env, j_surface_texture_.obj());
 }
 
-void SurfaceTextureBridge::SetFrameAvailableCallback(
+void SurfaceTexture::SetFrameAvailableCallback(
     const base::Closure& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SurfaceTextureBridge_setFrameAvailableCallback(
+  Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
       env,
       j_surface_texture_.obj(),
       reinterpret_cast<int>(new SurfaceTextureListener(callback)));
 }
 
-void SurfaceTextureBridge::UpdateTexImage() {
+void SurfaceTexture::UpdateTexImage() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SurfaceTextureBridge_updateTexImage(env, j_surface_texture_.obj());
+  Java_SurfaceTexturePlatformWrapper_updateTexImage(env,
+                                                    j_surface_texture_.obj());
 }
 
-void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
+void SurfaceTexture::GetTransformMatrix(float mtx[16]) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   base::android::ScopedJavaLocalRef<jfloatArray> jmatrix(
       env, env->NewFloatArray(16));
-  Java_SurfaceTextureBridge_getTransformMatrix(
+  Java_SurfaceTexturePlatformWrapper_getTransformMatrix(
       env, j_surface_texture_.obj(), jmatrix.obj());
 
   jboolean is_copy;
@@ -66,11 +68,11 @@ void SurfaceTextureBridge::GetTransformMatrix(float mtx[16]) {
   env->ReleaseFloatArrayElements(jmatrix.obj(), elements, JNI_ABORT);
 }
 
-void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
+void SurfaceTexture::SetDefaultBufferSize(int width, int height) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   if (width > 0 && height > 0) {
-    Java_SurfaceTextureBridge_setDefaultBufferSize(
+    Java_SurfaceTexturePlatformWrapper_setDefaultBufferSize(
         env, j_surface_texture_.obj(), static_cast<jint>(width),
         static_cast<jint>(height));
   } else {
@@ -79,26 +81,26 @@ void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
   }
 }
 
-void SurfaceTextureBridge::AttachToGLContext() {
+void SurfaceTexture::AttachToGLContext() {
   if (GlContextMethodsAvailable()) {
     int texture_id;
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
     DCHECK(texture_id);
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_SurfaceTextureBridge_attachToGLContext(
+    Java_SurfaceTexturePlatformWrapper_attachToGLContext(
         env, j_surface_texture_.obj(), texture_id);
   }
 }
 
-void SurfaceTextureBridge::DetachFromGLContext() {
+void SurfaceTexture::DetachFromGLContext() {
   if (GlContextMethodsAvailable()) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_SurfaceTextureBridge_detachFromGLContext(
+    Java_SurfaceTexturePlatformWrapper_detachFromGLContext(
         env, j_surface_texture_.obj());
   }
 }
 
-ANativeWindow* SurfaceTextureBridge::CreateSurface() {
+ANativeWindow* SurfaceTexture::CreateSurface() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaSurface surface(this);
   ANativeWindow* native_window = ANativeWindow_fromSurface(
@@ -107,7 +109,7 @@ ANativeWindow* SurfaceTextureBridge::CreateSurface() {
 }
 
 // static
-bool SurfaceTextureBridge::RegisterSurfaceTextureBridge(JNIEnv* env) {
+bool SurfaceTexture::RegisterSurfaceTexture(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

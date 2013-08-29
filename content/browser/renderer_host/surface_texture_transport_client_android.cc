@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ static const uint32 kGLTextureExternalOES = 0x8D65;
 class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
  public:
   SurfaceRefAndroid(
-      const scoped_refptr<gfx::SurfaceTextureBridge>& surface,
+      const scoped_refptr<gfx::SurfaceTexture>& surface,
       ANativeWindow* window)
       : surface_(surface),
         window_(window) {
@@ -39,7 +39,7 @@ class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
     ANativeWindow_release(window_);
   }
 
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_;
+  scoped_refptr<gfx::SurfaceTexture> surface_;
   ANativeWindow* window_;
 };
 
@@ -61,7 +61,7 @@ scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
   // Use a SurfaceTexture to stream frames to the UI thread.
   video_layer_ = cc::VideoLayer::Create(this);
 
-  surface_texture_ = new gfx::SurfaceTextureBridge(0);
+  surface_texture_ = new gfx::SurfaceTexture(0);
   surface_texture_->SetFrameAvailableCallback(
     base::Bind(
         &SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable,

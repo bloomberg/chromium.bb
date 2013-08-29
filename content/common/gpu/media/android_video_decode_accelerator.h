@@ -21,7 +21,7 @@
 #include "media/video/video_decode_accelerator.h"
 
 namespace gfx {
-class SurfaceTextureBridge;
+class SurfaceTexture;
 }
 
 namespace content {
@@ -127,7 +127,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator :
   scoped_ptr<media::VideoCodecBridge> media_codec_;
 
   // A container of texture. Used to set a texture to |media_codec_|.
-  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   // The texture id which is set to |surface_texture_|.
   uint32 surface_texture_id_;

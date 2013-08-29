@@ -15,7 +15,7 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace {
 
@@ -73,7 +73,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   bool Configure(media::VideoCodec codec) {
     AndroidVideoDecodeAccelerator* accelerator =
         static_cast<AndroidVideoDecodeAccelerator*>(accelerator_.get());
-    accelerator->surface_texture_ = new gfx::SurfaceTextureBridge(0);
+    accelerator->surface_texture_ = new gfx::SurfaceTexture(0);
     accelerator->codec_ = codec;
     return accelerator->ConfigureMediaCodec();
   }

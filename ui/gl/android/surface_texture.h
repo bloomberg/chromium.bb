@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
-#define UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
+#ifndef UI_GL_ANDROID_SURFACE_TEXTURE_H_
+#define UI_GL_ANDROID_SURFACE_TEXTURE_H_
 
 #include <jni.h>
 
@@ -18,10 +18,10 @@ namespace gfx {
 
 // This class serves as a bridge for native code to call java functions inside
 // android SurfaceTexture class.
-class GL_EXPORT SurfaceTextureBridge
-    : public base::RefCountedThreadSafe<SurfaceTextureBridge>{
+class GL_EXPORT SurfaceTexture
+    : public base::RefCountedThreadSafe<SurfaceTexture>{
  public:
-  explicit SurfaceTextureBridge(int texture_id);
+  explicit SurfaceTexture(int texture_id);
 
   // Set the listener callback, which will be invoked on the same thread that
   // is being called from here for registration.
@@ -57,18 +57,18 @@ class GL_EXPORT SurfaceTextureBridge
     return j_surface_texture_;
   }
 
-  static bool RegisterSurfaceTextureBridge(JNIEnv* env);
+  static bool RegisterSurfaceTexture(JNIEnv* env);
 
  private:
-  friend class base::RefCountedThreadSafe<SurfaceTextureBridge>;
-  ~SurfaceTextureBridge();
+  friend class base::RefCountedThreadSafe<SurfaceTexture>;
+  ~SurfaceTexture();
 
   // Java SurfaceTexture instance.
   base::android::ScopedJavaGlobalRef<jobject> j_surface_texture_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureBridge);
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTexture);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
+#endif  // UI_GL_ANDROID_SURFACE_TEXTURE_H_

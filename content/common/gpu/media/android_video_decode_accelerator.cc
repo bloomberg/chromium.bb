@@ -102,7 +102,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(
   gl_decoder_->RestoreTextureUnitBindings(0);
   gl_decoder_->RestoreActiveTexture();
 
-  surface_texture_ = new gfx::SurfaceTextureBridge(surface_texture_id_);
+  surface_texture_ = new gfx::SurfaceTexture(surface_texture_id_);
 
   if (!ConfigureMediaCodec()) {
     LOG(ERROR) << "Failed to create MediaCodec instance.";
