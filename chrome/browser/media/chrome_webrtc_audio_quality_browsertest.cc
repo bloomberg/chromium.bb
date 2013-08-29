@@ -97,17 +97,8 @@ base::FilePath GetTestDataDir() {
 //    the recording.
 class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
-  WebrtcAudioQualityBrowserTest()
-      : peerconnection_server_(base::kNullProcessHandle) {}
-
-  virtual void SetUp() OVERRIDE {
-    RunPeerConnectionServer();
-    InProcessBrowserTest::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ShutdownPeerConnectionServer();
-    InProcessBrowserTest::TearDown();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -120,13 +111,17 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
+  }
 
-    // Ensure we have the stuff we need.
+  bool HasAllRequiredResources() {
     base::FilePath reference_file =
         GetTestDataDir().Append(kReferenceFile);
-    EXPECT_TRUE(base::PathExists(reference_file))
-        << "Cannot find the reference file to be used for audio quality "
-        << "comparison: " << reference_file.value();
+    if (!base::PathExists(reference_file)) {
+      LOG(ERROR) << "Cannot find the reference file to be used for audio "
+          << "quality comparison: " << reference_file.value();
+      return false;
+    }
+    return true;
   }
 
   void AddAudioFile(const std::string& input_file_relative_url,
@@ -197,27 +192,7 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
     return wav_filename;
   }
 
- private:
-  void RunPeerConnectionServer() {
-    base::FilePath peerconnection_server;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &peerconnection_server));
-    peerconnection_server = peerconnection_server.Append(kPeerConnectionServer);
-
-    EXPECT_TRUE(base::PathExists(peerconnection_server)) <<
-        "Missing peerconnection_server. You must build "
-        "it so it ends up next to the browser test binary.";
-    EXPECT_TRUE(base::LaunchProcess(
-        CommandLine(peerconnection_server),
-        base::LaunchOptions(),
-        &peerconnection_server_)) << "Failed to launch peerconnection_server.";
-  }
-
-  void ShutdownPeerConnectionServer() {
-    EXPECT_TRUE(base::KillProcess(peerconnection_server_, 0, false)) <<
-        "Failed to shut down peerconnection_server!";
-  }
-
-  base::ProcessHandle peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
 };
 
 class AudioRecorder {
@@ -225,14 +200,15 @@ class AudioRecorder {
   AudioRecorder(): recording_application_(base::kNullProcessHandle) {}
   ~AudioRecorder() {}
 
-  void StartRecording(int duration_sec, const base::FilePath& output_file,
+  // Starts the recording program for the specified duration. Returns true
+  // on success.
+  bool StartRecording(int duration_sec, const base::FilePath& output_file,
                       bool mono) {
     EXPECT_EQ(base::kNullProcessHandle, recording_application_)
         << "Tried to record, but is already recording.";
 
     CommandLine command_line(CommandLine::NO_PROGRAM);
 #if defined(OS_WIN)
-#if defined(_WIN32)
     // This disable is required to run SoundRecorder.exe on 64-bit Windows
     // from a 32-bit binary. We need to load the wow64 disable function from
     // the DLL since it doesn't exist on Windows XP.
@@ -250,12 +226,11 @@ class AudioRecorder {
         wow_64_disable_wow_64_fs_redirection(ignored);
       }
     }
-#endif  // _WIN32
 
     char duration_in_hms[128] = {0};
     struct tm duration_tm = {0};
     duration_tm.tm_sec = duration_sec;
-    ASSERT_NE(0u, strftime(duration_in_hms, arraysize(duration_in_hms),
+    EXPECT_NE(0u, strftime(duration_in_hms, arraysize(duration_in_hms),
                            "%H:%M:%S", &duration_tm));
 
     command_line.SetProgram(
@@ -277,17 +252,15 @@ class AudioRecorder {
 #endif
 
     LOG(INFO) << "Running " << command_line.GetCommandLineString();
-    EXPECT_TRUE(base::LaunchProcess(
-        command_line,
-        base::LaunchOptions(),
-        &recording_application_)) << "Failed to launch recording application.";
+    return base::LaunchProcess(command_line, base::LaunchOptions(),
+                               &recording_application_);
   }
 
-  void WaitForRecordingToEnd() {
-    int exit_code;
-    EXPECT_TRUE(base::WaitForExitCode(recording_application_, &exit_code)) <<
-        "Failed to wait for recording to end.";
-    EXPECT_EQ(0, exit_code);
+  // Joins the recording program. Returns true on success.
+  bool WaitForRecordingToEnd() {
+    int exit_code = -1;
+    base::WaitForExitCode(recording_application_, &exit_code);
+    return exit_code == 0;
   }
  private:
   base::ProcessHandle recording_application_;
@@ -320,8 +293,8 @@ void ForceMicrophoneVolumeTo100Percent() {
 }
 
 // Removes silence from beginning and end of the |input_audio_file| and writes
-// the result to the |output_audio_file|.
-void RemoveSilence(const base::FilePath& input_file,
+// the result to the |output_audio_file|. Returns true on success.
+bool RemoveSilence(const base::FilePath& input_file,
                    const base::FilePath& output_file) {
   // SOX documentation for silence command: http://sox.sourceforge.net/sox.html
   // To remove the silence from both beginning and end of the audio file, we
@@ -358,9 +331,9 @@ void RemoveSilence(const base::FilePath& input_file,
 
   LOG(INFO) << "Running " << command_line.GetCommandLineString();
   std::string result;
-  EXPECT_TRUE(base::GetAppOutput(command_line, &result))
-      << "Failed to launch sox.";
+  bool ok = base::GetAppOutput(command_line, &result);
   LOG(INFO) << "Output was:\n\n" << result;
+  return ok;
 }
 
 bool CanParseAsFloat(const std::string& value) {
@@ -377,8 +350,8 @@ bool CanParseAsFloat(const std::string& value) {
 //
 // The raw score in MOS is written to |raw_mos|, whereas the MOS-LQO score is
 // written to mos_lqo. The scores are returned as floats in string form (e.g.
-// "3.145", etc).
-void RunPesq(const base::FilePath& reference_file,
+// "3.145", etc). Returns true on success.
+bool RunPesq(const base::FilePath& reference_file,
              const base::FilePath& actual_file,
              int sample_rate, std::string* raw_mos, std::string* mos_lqo) {
   // PESQ will break if the paths are too long (!).
@@ -393,6 +366,11 @@ void RunPesq(const base::FilePath& reference_file,
       GetTestDataDir().Append(kToolsPath).Append(FILE_PATH_LITERAL("pesq"));
 #endif
 
+  if (!base::PathExists(pesq_path)) {
+    LOG(ERROR) << "Missing PESQ binary in " << pesq_path.value();
+    return false;
+  }
+
   CommandLine command_line(pesq_path);
   command_line.AppendArg(base::StringPrintf("+%d", sample_rate));
   command_line.AppendArgPath(reference_file);
@@ -400,13 +378,19 @@ void RunPesq(const base::FilePath& reference_file,
 
   LOG(INFO) << "Running " << command_line.GetCommandLineString();
   std::string result;
-  EXPECT_TRUE(base::GetAppOutput(command_line, &result))
-      << "Failed to launch pesq.";
+  if (!base::GetAppOutput(command_line, &result)) {
+    LOG(ERROR) << "Failed to run PESQ.";
+    return false;
+  }
   LOG(INFO) << "Output was:\n\n" << result;
 
   const std::string result_anchor = "Prediction (Raw MOS, MOS-LQO):  = ";
   std::size_t anchor_pos = result.find(result_anchor);
-  EXPECT_NE(std::string::npos, anchor_pos);
+  if (anchor_pos == std::string::npos) {
+    LOG(ERROR) << "PESQ was not able to compute a score; we probably recorded "
+        << "only silence.";
+    return false;
+  }
 
   // There are two tab-separated numbers on the format x.xxx, e.g. 5 chars each.
   std::size_t first_number_pos = anchor_pos + result_anchor.length();
@@ -414,6 +398,8 @@ void RunPesq(const base::FilePath& reference_file,
   EXPECT_TRUE(CanParseAsFloat(*raw_mos)) << "Failed to parse raw MOS number.";
   *mos_lqo = result.substr(first_number_pos + 5 + 1, 5);
   EXPECT_TRUE(CanParseAsFloat(*mos_lqo)) << "Failed to parse MOS LQO number.";
+
+  return true;
 }
 
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -432,8 +418,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
     return;
   }
 #endif
-
-  EXPECT_TRUE(test_server()->Start());
+  ASSERT_TRUE(HasAllRequiredResources());
+  // TODO(phoglund): make this use embedded_test_server when that test server
+  // can handle files > ~400Kb.
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(peerconnection_server_.Start());
 
   ForceMicrophoneVolumeTo100Percent();
 
@@ -470,11 +459,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   // safety margins on each side.
   AudioRecorder recorder;
   static int kRecordingTimeSeconds = 15;
-  recorder.StartRecording(kRecordingTimeSeconds, recording, true);
+  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, true));
 
   PlayAudioFile(left_tab);
 
-  recorder.WaitForRecordingToEnd();
+  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
   LOG(INFO) << "Done recording to " << recording.value() << std::endl;
 
   AssertNoAsynchronousErrors(left_tab);
@@ -489,19 +478,21 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
 
   base::FilePath trimmed_recording = CreateTemporaryWaveFile();
 
-  RemoveSilence(recording, trimmed_recording);
+  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
   LOG(INFO) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
 
   std::string raw_mos;
   std::string mos_lqo;
   base::FilePath reference_file_in_test_dir =
       GetTestDataDir().Append(kReferenceFile);
-  RunPesq(reference_file_in_test_dir, trimmed_recording, 16000, &raw_mos,
-          &mos_lqo);
+  ASSERT_TRUE(RunPesq(reference_file_in_test_dir, trimmed_recording, 16000,
+                      &raw_mos, &mos_lqo));
 
   perf_test::PrintResult("audio_pesq", "", "raw_mos", raw_mos, "score", true);
   perf_test::PrintResult("audio_pesq", "", "mos_lqo", mos_lqo, "score", true);
 
   EXPECT_TRUE(base::DeleteFile(recording, false));
   EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
 }

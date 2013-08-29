@@ -46,39 +46,8 @@ static const char kTestLoggingSessionId[] = "0123456789abcdef";
 // test suite since normal tester machines do not have webcams.
 class WebrtcBrowserTest : public WebRtcTestBase {
  public:
-  // See comment in test where this class is used for purpose.
-  class BrowserMessageFilter : public content::BrowserMessageFilter {
-   public:
-    explicit BrowserMessageFilter(
-        const base::Closure& on_channel_closing)
-        : on_channel_closing_(on_channel_closing) {}
-
-    virtual void OnChannelClosing() OVERRIDE {
-      // Posting on the file thread ensures that the callback is run after
-      // WebRtcLogUploader::UploadLog has finished. See also comment in
-      // MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging test.
-      content::BrowserThread::PostTask(content::BrowserThread::FILE,
-          FROM_HERE, on_channel_closing_);
-    }
-
-    virtual bool OnMessageReceived(const IPC::Message& message,
-                                   bool* message_was_ok) OVERRIDE {
-      return false;
-    }
-
-  private:
-    virtual ~BrowserMessageFilter() {}
-
-    base::Closure on_channel_closing_;
-  };
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
-    peerconnection_server_.Start();
-  }
-
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    peerconnection_server_.Stop();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -208,13 +177,13 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     }
   }
 
- private:
   PeerConnectionServerRunner peerconnection_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
-  EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(peerconnection_server_.Start());
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -249,13 +218,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
 // TODO(phoglund): figure out how to do mach port brokering on Mac.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RendererCpuUsage20Seconds) {
-  EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(peerconnection_server_.Start());
 
   base::FilePath results_file;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&results_file));
@@ -306,12 +278,15 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
 }
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_TestMediaStreamTrackEnableDisable) {
-  EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(peerconnection_server_.Start());
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -354,7 +329,35 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
 }
+
+// See comment in test where this class is used for purpose.
+class BrowserMessageFilter : public content::BrowserMessageFilter {
+ public:
+  explicit BrowserMessageFilter(
+      const base::Closure& on_channel_closing)
+      : on_channel_closing_(on_channel_closing) {}
+
+  virtual void OnChannelClosing() OVERRIDE {
+    // Posting on the file thread ensures that the callback is run after
+    // WebRtcLogUploader::UploadLog has finished. See also comment in
+    // MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging test.
+    content::BrowserThread::PostTask(content::BrowserThread::FILE,
+        FROM_HERE, on_channel_closing_);
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok) OVERRIDE {
+    return false;
+  }
+
+private:
+  virtual ~BrowserMessageFilter() {}
+
+  base::Closure on_channel_closing_;
+};
 
 // Tests WebRTC diagnostic logging. Sets up the browser to save the multipart
 // contents to a buffer instead of uploading it, then verifies it after a call.
@@ -392,6 +395,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
   EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(peerconnection_server_.Start());
 
   // Add command line switch that forces allowing log uploads.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -524,4 +528,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   final_delimiter += "--";
   EXPECT_STREQ(final_delimiter.c_str(), multipart_lines[29].c_str());
   EXPECT_TRUE(multipart_lines[30].empty());
+
+  ASSERT_TRUE(peerconnection_server_.Stop());
 }
