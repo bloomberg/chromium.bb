@@ -30,14 +30,15 @@ FileError UpdateLocalStateForCreateDirectoryRecursively(
   DCHECK(metadata);
   DCHECK(file_path);
 
-  FileError result = metadata->AddEntry(entry);
+  std::string local_id;
+  FileError result = metadata->AddEntry(entry, &local_id);
   // Depending on timing, a metadata may be updated by change list already.
   // So, FILE_ERROR_EXISTS is not an error.
   if (result == FILE_ERROR_EXISTS)
-    result = FILE_ERROR_OK;
+    result = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
 
   if (result == FILE_ERROR_OK)
-    *file_path = metadata->GetFilePath(entry.resource_id());
+    *file_path = metadata->GetFilePath(local_id);
 
   return result;
 }

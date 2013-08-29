@@ -64,14 +64,15 @@ FileError UpdateLocalStateForServerSideCopy(
     internal::ResourceMetadata* metadata,
     const ResourceEntry& entry,
     base::FilePath* file_path) {
-  FileError error = metadata->AddEntry(entry);
+  std::string local_id;
+  FileError error = metadata->AddEntry(entry, &local_id);
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.
   if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
+    error = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
 
   if (error == FILE_ERROR_OK)
-    *file_path = metadata->GetFilePath(entry.resource_id());
+    *file_path = metadata->GetFilePath(local_id);
 
   return error;
 }

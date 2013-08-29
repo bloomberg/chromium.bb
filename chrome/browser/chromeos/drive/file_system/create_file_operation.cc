@@ -85,25 +85,26 @@ FileError UpdateLocalStateForCreateFile(
   DCHECK(file_path);
 
   // Add the entry to the local resource metadata.
-  FileError error = FILE_ERROR_NOT_A_FILE;
   ResourceEntry entry;
   std::string parent_resource_id;
-  if (ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-    entry.set_parent_local_id(parent_resource_id);
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+    return FILE_ERROR_NOT_A_FILE;
 
-    error = metadata->AddEntry(entry);
-  }
+  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_parent_local_id(parent_resource_id);
+
+  std::string local_id;
+  FileError error = metadata->AddEntry(entry, &local_id);
 
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.
   if (error == FILE_ERROR_EXISTS)
-    error = FILE_ERROR_OK;
+    error = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
 
   if (error == FILE_ERROR_OK) {
     // At this point, upload to the server is fully succeeded.
     // Populate the |file_path| which will be used to notify the observer.
-    *file_path = metadata->GetFilePath(entry.resource_id());
+    *file_path = metadata->GetFilePath(local_id);
 
     // Also store an empty file to the cache.
     // Here, failure is not a fatal error, so ignore the returned code.
@@ -111,7 +112,7 @@ FileError UpdateLocalStateForCreateFile(
     base::FilePath empty_file;
     if (file_util::CreateTemporaryFile(&empty_file)) {
       cache_store_error =  cache->Store(
-          entry.resource_id(),
+          local_id,
           entry.file_specific_info().md5(),
           empty_file,
           internal::FileCache::FILE_OPERATION_MOVE);
@@ -119,7 +120,7 @@ FileError UpdateLocalStateForCreateFile(
     DLOG_IF(WARNING, cache_store_error != FILE_ERROR_OK)
         << "Failed to store a cache file: "
         << FileErrorToString(cache_store_error)
-        << ", resource_id: " << entry.resource_id();
+        << ", local_id: " << local_id;
   }
 
   return error;

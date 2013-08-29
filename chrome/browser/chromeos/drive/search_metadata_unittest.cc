@@ -100,34 +100,35 @@ class SearchMetadataTest : public testing::Test {
 
   void AddEntriesToMetadata() {
     ResourceEntry entry;
+    std::string local_id;
 
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
         util::kDriveMyDriveRootDirName, "root", 100,
-        util::kDriveGrandRootSpecialResourceId)));
+        util::kDriveGrandRootSpecialResourceId), &local_id));
 
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Directory 1", "dir1", 1, "root")));
+        "Directory 1", "dir1", 1, "root"), &local_id));
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
-        "SubDirectory File 1.txt", "file1a", 2, "dir1")));
+        "SubDirectory File 1.txt", "file1a", 2, "dir1"), &local_id));
 
     entry = GetFileEntry(
         "Shared To The Account Owner.txt", "file1b", 3, "dir1");
     entry.set_shared_with_me(true);
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry));
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
 
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Directory 2 excludeDir-test", "dir2", 4, "root")));
+        "Directory 2 excludeDir-test", "dir2", 4, "root"), &local_id));
 
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
-        "Slash \xE2\x88\x95 in directory", "dir3", 5, "root")));
+        "Slash \xE2\x88\x95 in directory", "dir3", 5, "root"), &local_id));
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetFileEntry(
-        "Slash SubDir File.txt", "file3a", 6, "dir3")));
+        "Slash SubDir File.txt", "file3a", 6, "dir3"), &local_id));
 
     entry = GetFileEntry(
         "Document 1 excludeDir-test", "doc1", 7, "root");
     entry.mutable_file_specific_info()->set_is_hosted_document(true);
     entry.mutable_file_specific_info()->set_document_extension(".gdoc");
-    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry));
+    EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
   }
 
   // Adds a directory at |path|. Parent directories are added if needed just
@@ -149,13 +150,14 @@ class SearchMetadataTest : public testing::Test {
     const std::string parent_id =
         AddDirectoryToMetadataWithParents(path.DirName(), generator);
     const std::string id = generator->GetId();
+    std::string local_id;
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
         GetDirectoryEntry(path.BaseName().AsUTF8Unsafe(),
                           id,
                           generator->GetLastAccessed(),
-                          parent_id)));
+                          parent_id), &local_id));
     generator->Advance();
-    return id;
+    return local_id;
   }
 
   // Adds entries for |cache_resources| to |resource_metadata_|.  The parent
@@ -168,11 +170,12 @@ class SearchMetadataTest : public testing::Test {
       const base::FilePath path(resource.source_file);
       const std::string parent_id =
           AddDirectoryToMetadataWithParents(path.DirName(), generator);
+      std::string local_id;
       EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
           GetFileEntry(path.BaseName().AsUTF8Unsafe(),
                        resource.resource_id,
                        generator->GetLastAccessed(),
-                       parent_id)));
+                       parent_id), &local_id));
       generator->Advance();
     }
   }

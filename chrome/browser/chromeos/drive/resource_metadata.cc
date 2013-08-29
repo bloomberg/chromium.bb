@@ -85,17 +85,6 @@ void PostFileMoveTask(
       base::Bind(&RunFileMoveCallback, callback, base::Owned(file_path)));
 }
 
-FileError AddEntryWithFilePath(internal::ResourceMetadata* metadata,
-                               const ResourceEntry& entry,
-                               base::FilePath* out_file_path) {
-  DCHECK(metadata);
-  DCHECK(out_file_path);
-  FileError error = metadata->AddEntry(entry);
-  if (error == FILE_ERROR_OK)
-    *out_file_path = metadata->GetFilePath(entry.resource_id());
-  return error;
-}
-
 }  // namespace
 
 EntryInfoResult::EntryInfoResult() : error(FILE_ERROR_FAILED) {
@@ -245,14 +234,18 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
+FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
+                                     std::string* out_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  ResourceEntry existing_entry;
-  if (storage_->GetEntry(entry.resource_id(), &existing_entry))
+  // Multiple entries with the same resource ID should not be present.
+  std::string existing_entry_id;
+  if (!entry.resource_id().empty() &&
+      GetIdByResourceId(entry.resource_id(),
+                        &existing_entry_id) == FILE_ERROR_OK)
     return FILE_ERROR_EXISTS;
 
   ResourceEntry parent;
@@ -260,13 +253,13 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
       !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
-  // TODO(hashimoto): Generate local ID here and pass it to the caller.
-  // crbug.com/26051
-  const std::string& id = entry.resource_id();
+  // TODO(hashimoto): Generate local ID here. crbug.com/26051
+  const std::string local_id = entry.resource_id();
 
-  if (!PutEntryUnderDirectory(id, entry))
+  if (!PutEntryUnderDirectory(local_id, entry))
     return FILE_ERROR_FAILED;
 
+  *out_id = local_id;
   return FILE_ERROR_OK;
 }
 
@@ -400,6 +393,8 @@ FileError ResourceMetadata::ReadDirectoryByPath(
 FileError ResourceMetadata::RefreshEntry(const std::string& id,
                                          const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  // TODO(hashimoto): Return an error if the operation will result in having
+  // multiple entries with the same resource ID.
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
@@ -496,10 +491,13 @@ FileError ResourceMetadata::GetIdByResourceId(const std::string& resource_id,
                                               std::string* out_local_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // TODO(hashimoto): Look up the DB actually and generate new one when not
-  // found. crbug.com/260514
-  *out_local_id = resource_id;
-  return FILE_ERROR_OK;
+  // TODO(hashimoto): Implement the real resource ID to local ID look up.
+  // crbug.com/260514
+  ResourceEntry entry;
+  FileError error = GetResourceEntryById(resource_id, &entry);
+  if (error == FILE_ERROR_OK)
+    *out_local_id = resource_id;
+  return error;
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(

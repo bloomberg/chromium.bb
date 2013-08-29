@@ -79,32 +79,33 @@ ResourceEntry CreateFileEntry(const std::string& title,
 // drive/root/dir1/dir3/file10
 void SetUpEntries(ResourceMetadata* resource_metadata) {
   // Create mydrive root directory.
+  std::string local_id;
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      util::CreateMyDriveRootEntry(kTestRootResourceId)));
+      util::CreateMyDriveRootEntry(kTestRootResourceId), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateDirectoryEntry("dir1", kTestRootResourceId)));
+      CreateDirectoryEntry("dir1", kTestRootResourceId), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateDirectoryEntry("dir2", kTestRootResourceId)));
+      CreateDirectoryEntry("dir2", kTestRootResourceId), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateDirectoryEntry("dir3", "id:dir1")));
+      CreateDirectoryEntry("dir3", "id:dir1"), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file4", "id:dir1")));
+      CreateFileEntry("file4", "id:dir1"), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file5", "id:dir1")));
+      CreateFileEntry("file5", "id:dir1"), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file6", "id:dir2")));
+      CreateFileEntry("file6", "id:dir2"), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file7", "id:dir2")));
+      CreateFileEntry("file7", "id:dir2"), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file8", "id:dir2")));
+      CreateFileEntry("file8", "id:dir2"), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file9", "id:dir3")));
+      CreateFileEntry("file9", "id:dir3"), &local_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      CreateFileEntry("file10", "id:dir3")));
+      CreateFileEntry("file10", "id:dir3"), &local_id));
 
   ASSERT_EQ(FILE_ERROR_OK,
             resource_metadata->SetLargestChangestamp(kTestChangestamp));
@@ -601,22 +602,23 @@ TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
   // dir2/dir101/dir102/dir105
   // dir2/dir101/dir102/dir105/dir106
   // dir2/dir101/dir102/dir105/dir106/dir107
+  std::string local_id;
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir100", "id:dir2")));
+      CreateDirectoryEntry("dir100", "id:dir2"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir101", "id:dir2")));
+      CreateDirectoryEntry("dir101", "id:dir2"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir102", "id:dir101")));
+      CreateDirectoryEntry("dir102", "id:dir101"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir103", "id:dir101")));
+      CreateDirectoryEntry("dir103", "id:dir101"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir104", "id:dir101")));
+      CreateDirectoryEntry("dir104", "id:dir101"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir105", "id:dir102")));
+      CreateDirectoryEntry("dir105", "id:dir102"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir106", "id:dir105")));
+      CreateDirectoryEntry("dir106", "id:dir105"), &local_id));
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateDirectoryEntry("dir107", "id:dir106")));
+      CreateDirectoryEntry("dir107", "id:dir106"), &local_id));
 
   resource_metadata_->GetSubDirectoriesRecursively("id:dir2",
                                                    &sub_directories);
@@ -633,23 +635,26 @@ TEST_F(ResourceMetadataTest, AddEntry) {
   base::FilePath drive_file_path;
 
   // Add a file to dir3.
+  std::string local_id;
   ResourceEntry file_entry = CreateFileEntry("file100", "id:dir3");
-  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(file_entry));
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(file_entry, &local_id));
   EXPECT_EQ("drive/root/dir1/dir3/file100",
-            resource_metadata_->GetFilePath("id:file100").AsUTF8Unsafe());
+            resource_metadata_->GetFilePath(local_id).AsUTF8Unsafe());
 
   // Add a directory.
   ResourceEntry dir_entry = CreateDirectoryEntry("dir101", "id:dir1");
-  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(dir_entry));
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(dir_entry, &local_id));
   EXPECT_EQ("drive/root/dir1/dir101",
-            resource_metadata_->GetFilePath("id:dir101").AsUTF8Unsafe());
+            resource_metadata_->GetFilePath(local_id).AsUTF8Unsafe());
 
   // Add to an invalid parent.
   ResourceEntry file_entry3 = CreateFileEntry("file103", "id:invalid");
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->AddEntry(file_entry3));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            resource_metadata_->AddEntry(file_entry3, &local_id));
 
   // Add an existing file.
-  EXPECT_EQ(FILE_ERROR_EXISTS, resource_metadata_->AddEntry(file_entry));
+  EXPECT_EQ(FILE_ERROR_EXISTS,
+            resource_metadata_->AddEntry(file_entry, &local_id));
 }
 
 TEST_F(ResourceMetadataTest, RemoveEntry) {

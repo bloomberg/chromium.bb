@@ -247,7 +247,8 @@ void ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
 }
 
 void ChangeListProcessor::AddEntry(const ResourceEntry& entry) {
-  FileError error = resource_metadata_->AddEntry(entry);
+  std::string local_id;
+  FileError error = resource_metadata_->AddEntry(entry, &local_id);
 
   if (error == FILE_ERROR_OK)
     UpdateChangedDirs(entry);
@@ -328,8 +329,10 @@ FileError ChangeListProcessor::RefreshDirectory(
     }
 
     error = resource_metadata->RefreshEntry(it->first, entry);
-    if (error == FILE_ERROR_NOT_FOUND)  // If refreshing fails, try adding.
-      error = resource_metadata->AddEntry(entry);
+    if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
+      std::string local_id;
+      error = resource_metadata->AddEntry(entry, &local_id);
+    }
 
     if (error != FILE_ERROR_OK)
       return error;

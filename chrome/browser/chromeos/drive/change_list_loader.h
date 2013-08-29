@@ -213,6 +213,13 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
+  // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
+  void DoLoadDirectoryFromServerAfterAddMyDrive(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      std::string* local_id,
+      FileError error);
+
   // Part of DoLoadDirectoryFromServer() for a normal directory.
   void DoLoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,

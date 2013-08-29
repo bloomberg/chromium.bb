@@ -229,9 +229,10 @@ class FileSystemTest : public testing::Test {
     // drive/root
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
+    std::string local_id;
     ASSERT_EQ(FILE_ERROR_OK,
               resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
-                  root_resource_id)));
+                  root_resource_id), &local_id));
 
     // drive/root/File1
     ResourceEntry file1;
@@ -241,7 +242,7 @@ class FileSystemTest : public testing::Test {
     file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file1));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file1, &local_id));
 
     // drive/root/Dir1
     ResourceEntry dir1;
@@ -249,7 +250,7 @@ class FileSystemTest : public testing::Test {
     dir1.set_resource_id("resource_id:Dir1");
     dir1.set_parent_local_id(root_resource_id);
     dir1.mutable_file_info()->set_is_directory(true);
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir1));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir1, &local_id));
 
     // drive/root/Dir1/File2
     ResourceEntry file2;
@@ -259,7 +260,7 @@ class FileSystemTest : public testing::Test {
     file2.mutable_file_specific_info()->set_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file2));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file2, &local_id));
 
     // drive/root/Dir1/SubDir2
     ResourceEntry dir2;
@@ -267,7 +268,7 @@ class FileSystemTest : public testing::Test {
     dir2.set_resource_id("resource_id:SubDir2");
     dir2.set_parent_local_id(dir1.resource_id());
     dir2.mutable_file_info()->set_is_directory(true);
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir2));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir2, &local_id));
 
     // drive/root/Dir1/SubDir2/File3
     ResourceEntry file3;
@@ -277,7 +278,7 @@ class FileSystemTest : public testing::Test {
     file3.mutable_file_specific_info()->set_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
-    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file3));
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file3, &local_id));
 
     // Recreate resource metadata.
     SetUpResourceMetadataAndFileSystem();

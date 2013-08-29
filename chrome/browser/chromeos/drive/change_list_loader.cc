@@ -585,22 +585,38 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
     return;
   }
 
-  // Grand root will be changed.
-  base::FilePath* changed_directory_path =
-      new base::FilePath(util::GetDriveGrandRootPath());
   // Add "My Drive".
   const std::string& root_resource_id = about_resource->root_folder_id();
+  std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ResourceMetadata::AddEntry,
                  base::Unretained(resource_metadata_),
-                 util::CreateMyDriveRootEntry(root_resource_id)),
-      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
+                 util::CreateMyDriveRootEntry(root_resource_id),
+                 local_id),
+      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback,
-                 base::Owned(changed_directory_path)));
+                 base::Owned(local_id)));
+}
+
+void ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback,
+    std::string* local_id,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(directory_fetch_info.resource_id(),
+            util::kDriveGrandRootSpecialResourceId);
+
+  const base::FilePath changed_directory_path(util::GetDriveGrandRootPath());
+  DoLoadDirectoryFromServerAfterRefresh(directory_fetch_info,
+                                        callback,
+                                        &changed_directory_path,
+                                        error);
 }
 
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(

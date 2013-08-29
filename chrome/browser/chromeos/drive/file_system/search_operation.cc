@@ -40,10 +40,14 @@ FileError ResolveSearchResultOnBlockingPool(
       resource_list->entries();
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
-    const std::string id = entries[i]->resource_id();
-    ResourceEntry entry;
+    std::string local_id;
+    FileError error = resource_metadata->GetIdByResourceId(
+        entries[i]->resource_id(), &local_id);
 
-    FileError error = resource_metadata->GetResourceEntryById(id, &entry);
+    ResourceEntry entry;
+    if (error == FILE_ERROR_OK)
+      error = resource_metadata->GetResourceEntryById(local_id, &entry);
+
     if (error == FILE_ERROR_NOT_FOUND) {
       std::string original_parent_id;
       if (!ConvertToResourceEntry(*entries[i], &entry, &original_parent_id))
@@ -58,12 +62,12 @@ FileError ResolveSearchResultOnBlockingPool(
       // It will be moved to the right place when the metadata gets synced
       // in normal loading process in ChangeListProcessor.
       entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
-      error = resource_metadata->AddEntry(entry);
+      error = resource_metadata->AddEntry(entry, &local_id);
     }
     if (error != FILE_ERROR_OK)
       return error;
-    result->push_back(SearchResultInfo(resource_metadata->GetFilePath(id),
-                                       entry));
+    result->push_back(
+        SearchResultInfo(resource_metadata->GetFilePath(local_id), entry));
   }
 
   return FILE_ERROR_OK;

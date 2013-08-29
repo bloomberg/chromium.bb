@@ -110,9 +110,8 @@ class ResourceMetadata {
   // Synchronous version of SetLargestChangestampOnUIThread.
   FileError SetLargestChangestamp(int64 value);
 
-  // Adds |entry| to the metadata tree based on its parent_local_id
-  // synchronously.
-  FileError AddEntry(const ResourceEntry& entry);
+  // Adds |entry| to the metadata tree based on its parent_local_id.
+  FileError AddEntry(const ResourceEntry& entry, std::string* out_id);
 
   // Removes entry with |id| from its parent.
   FileError RemoveEntry(const std::string& id);
