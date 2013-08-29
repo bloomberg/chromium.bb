@@ -67,6 +67,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
 
+  void SetServiceState(RemoteServiceState state);
+
   // Send notifications to the observers.
   // Can be used in the mock implementation.
   void NotifyRemoteChangeQueueUpdated(int64 pending_changes);
@@ -92,6 +94,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   SyncStatusCode SetConflictResolutionPolicyStub(
       ConflictResolutionPolicy policy);
   ConflictResolutionPolicy GetConflictResolutionPolicyStub() const;
+  RemoteServiceState GetCurrentStateStub() const;
 
   // For default implementation.
   ::testing::NiceMock<MockLocalChangeProcessor> mock_local_change_processor_;
@@ -100,6 +103,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   ObserverList<FileStatusObserver> file_status_observers_;
 
   ConflictResolutionPolicy conflict_resolution_policy_;
+
+  RemoteServiceState state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteFileSyncService);
 };

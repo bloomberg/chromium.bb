@@ -200,4 +200,11 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, ConflictResolutionPolicy) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetServiceStatus) {
+  mock_remote_service()->SetServiceState(
+      sync_file_system::REMOTE_SERVICE_AUTHENTICATION_REQUIRED);
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_service_status"))
+      << message_;
+}
+
 }  // namespace chrome

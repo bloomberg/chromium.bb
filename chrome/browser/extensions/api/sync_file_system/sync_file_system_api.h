@@ -142,6 +142,16 @@ class SyncFileSystemGetConflictResolutionPolicyFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class SyncFileSystemGetServiceStatusFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.getServiceStatus",
+                             SYNCFILESYSTEM_GETSERVICESTATUS)
+
+ protected:
+  virtual ~SyncFileSystemGetServiceStatusFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_

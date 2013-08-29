@@ -19,7 +19,8 @@ using ::testing::Return;
 namespace sync_file_system {
 
 MockRemoteFileSyncService::MockRemoteFileSyncService()
-    : conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_MANUAL) {
+    : conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_MANUAL),
+      state_(REMOTE_SERVICE_OK) {
   typedef MockRemoteFileSyncService self;
   ON_CALL(*this, AddServiceObserver(_))
       .WillByDefault(Invoke(this, &self::AddServiceObserverStub));
@@ -40,7 +41,7 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
   ON_CALL(*this, IsConflicting(_))
       .WillByDefault(Return(false));
   ON_CALL(*this, GetCurrentState())
-      .WillByDefault(Return(REMOTE_SERVICE_OK));
+      .WillByDefault(Invoke(this, &self::GetCurrentStateStub));
   ON_CALL(*this, SetConflictResolutionPolicy(_))
       .WillByDefault(Invoke(this, &self::SetConflictResolutionPolicyStub));
   ON_CALL(*this, GetConflictResolutionPolicy())
@@ -53,6 +54,10 @@ MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 scoped_ptr<base::ListValue> MockRemoteFileSyncService::DumpFiles(
     const GURL& origin) {
   return scoped_ptr<base::ListValue>();
+}
+
+void MockRemoteFileSyncService::SetServiceState(RemoteServiceState state) {
+  state_ = state;
 }
 
 void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
@@ -128,6 +133,10 @@ SyncStatusCode MockRemoteFileSyncService::SetConflictResolutionPolicyStub(
 ConflictResolutionPolicy
 MockRemoteFileSyncService::GetConflictResolutionPolicyStub() const {
   return conflict_resolution_policy_;
+}
+
+RemoteServiceState MockRemoteFileSyncService::GetCurrentStateStub() const {
+  return state_;
 }
 
 }  // namespace sync_file_system

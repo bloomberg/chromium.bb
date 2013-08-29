@@ -123,6 +123,9 @@ namespace syncFileSystem {
   // A callback type for getFileStatuses.
   callback GetFileStatusesCallback = void (FileStatusInfo[] status);
 
+  // A callback type for getServiceStatus.
+  callback GetServiceStatusCallback = void (ServiceStatus status);
+
   // A callback type for getConflictResolutionPolicy.
   callback GetConflictResolutionPolicyCallback =
       void (ConflictResolutionPolicy policy);
@@ -172,6 +175,9 @@ namespace syncFileSystem {
     // Typically called with the result from dirReader.readEntries().
     static void getFileStatuses(object[] fileEntries,
                                 GetFileStatusesCallback callback);
+
+    // Returns the current sync backend status.
+    static void getServiceStatus(GetServiceStatusCallback callback);
   };
 
   interface Events {

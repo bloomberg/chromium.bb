@@ -189,7 +189,7 @@ bool SyncFileSystemGetFileStatusFunction::RunImpl() {
   fileapi::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  SyncFileSystemServiceFactory::GetForProfile(profile())->GetFileSyncStatus(
+  GetSyncFileSystemService(profile())->GetFileSyncStatus(
       file_system_url,
       Bind(&SyncFileSystemGetFileStatusFunction::DidGetFileStatus,
            this));
@@ -234,7 +234,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunImpl() {
   num_results_received_ = 0;
   file_sync_statuses_.clear();
   sync_file_system::SyncFileSystemService* sync_file_system_service =
-      SyncFileSystemServiceFactory::GetForProfile(profile());
+      GetSyncFileSystemService(profile());
   for (unsigned int i = 0; i < num_expected_results_; i++) {
     std::string url;
     file_entry_urls->GetString(i, &url);
@@ -382,6 +382,14 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
           service->GetConflictResolutionPolicy());
   SetResult(new base::StringValue(
           api::sync_file_system::ToString(policy)));
+  return true;
+}
+
+bool SyncFileSystemGetServiceStatusFunction::RunImpl() {
+  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
+      profile());
+  results_ = api::sync_file_system::GetServiceStatus::Results::Create(
+      SyncServiceStateToExtensionEnum(service->GetSyncServiceState()));
   return true;
 }
 
