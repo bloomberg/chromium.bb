@@ -5,6 +5,7 @@
 #include "cc/resources/raster_worker_pool.h"
 
 #include "base/time/time.h"
+#include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -120,7 +121,10 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
 
 class RasterWorkerPoolPerfTest : public testing::Test {
  public:
-  RasterWorkerPoolPerfTest() : num_runs_(0) {}
+  RasterWorkerPoolPerfTest()
+      : timer_(kWarmupRuns,
+               base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+               kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -130,31 +134,10 @@ class RasterWorkerPoolPerfTest : public testing::Test {
     raster_worker_pool_->Shutdown();
   }
 
-  void EndTest() {
-    elapsed_ = base::TimeTicks::HighResNow() - start_time_;
-  }
-
   void AfterTest(const std::string test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf("*RESULT %s: %.2f runs/s\n",
-           test_name.c_str(),
-           num_runs_ / elapsed_.InSecondsF());
-  }
-
-  bool DidRun() {
-    ++num_runs_;
-    if (num_runs_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_runs_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        return false;
-      }
-    }
-
-    return true;
+    printf(
+        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
   void CreateTasks(RasterWorkerPool::RasterTask::Queue* tasks,
@@ -201,14 +184,14 @@ class RasterWorkerPoolPerfTest : public testing::Test {
   void RunBuildTaskGraphTest(const std::string test_name,
                              unsigned num_raster_tasks,
                              unsigned num_image_decode_tasks) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
+    timer_.Reset();
     RasterWorkerPool::RasterTask::Queue tasks;
     CreateTasks(&tasks, num_raster_tasks, num_image_decode_tasks);
     raster_worker_pool_->SetRasterTasks(&tasks);
     do {
       raster_worker_pool_->BuildTaskGraph();
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     AfterTest(test_name);
   }
@@ -219,9 +202,7 @@ class RasterWorkerPoolPerfTest : public testing::Test {
   static void OnImageDecodeTaskCompleted(bool was_canceled) {}
 
   scoped_ptr<PerfRasterWorkerPool> raster_worker_pool_;
-  base::TimeTicks start_time_;
-  base::TimeDelta elapsed_;
-  int num_runs_;
+  LapTimer timer_;
 };
 
 TEST_F(RasterWorkerPoolPerfTest, BuildTaskGraph) {

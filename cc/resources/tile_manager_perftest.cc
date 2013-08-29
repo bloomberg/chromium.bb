@@ -10,6 +10,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
+#include "cc/test/lap_timer.h"
 #include "cc/test/test_tile_priorities.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,10 @@ class TileManagerPerfTest : public testing::Test {
   typedef std::vector<std::pair<scoped_refptr<Tile>, ManagedTileBin> >
       TileBinVector;
 
-  TileManagerPerfTest() : num_runs_(0) {}
+  TileManagerPerfTest()
+      : timer_(kWarmupRuns,
+               base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+               kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -54,31 +58,10 @@ class TileManagerPerfTest : public testing::Test {
     picture_pile_ = NULL;
   }
 
-  void EndTest() {
-    elapsed_ = base::TimeTicks::HighResNow() - start_time_;
-  }
-
   void AfterTest(const std::string test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf("*RESULT %s: %.2f runs/s\n",
-           test_name.c_str(),
-           num_runs_ / elapsed_.InSecondsF());
-  }
-
-  bool DidRun() {
-    ++num_runs_;
-    if (num_runs_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_runs_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        return false;
-      }
-    }
-
-    return true;
+    printf(
+        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
   TilePriority GetTilePriorityFromBin(ManagedTileBin bin) {
@@ -153,10 +136,9 @@ class TileManagerPerfTest : public testing::Test {
                           unsigned priority_change_percent) {
     DCHECK_GE(tile_count, 100u);
     DCHECK_LE(priority_change_percent, 100u);
-    num_runs_ = 0;
     TileBinVector tiles;
     CreateTiles(tile_count, &tiles);
-    start_time_ = base::TimeTicks();
+    timer_.Reset();
     do {
       if (priority_change_percent) {
         for (unsigned i = 0;
@@ -171,7 +153,8 @@ class TileManagerPerfTest : public testing::Test {
       }
 
       tile_manager_->ManageTiles();
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     AfterTest(test_name);
   }
@@ -184,10 +167,7 @@ class TileManagerPerfTest : public testing::Test {
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
-
-  base::TimeTicks start_time_;
-  base::TimeDelta elapsed_;
-  int num_runs_;
+  LapTimer timer_;
 };
 
 TEST_F(TileManagerPerfTest, ManageTiles) {

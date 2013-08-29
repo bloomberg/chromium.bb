@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
+#include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -144,7 +145,10 @@ class PerfWorkerPool : public WorkerPool {
 
 class WorkerPoolPerfTest : public testing::Test {
  public:
-  WorkerPoolPerfTest() : num_runs_(0) {}
+  WorkerPoolPerfTest()
+      : timer_(kWarmupRuns,
+               base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+               kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -155,38 +159,16 @@ class WorkerPoolPerfTest : public testing::Test {
     worker_pool_->CheckForCompletedTasks();
   }
 
-  void EndTest() {
-    elapsed_ = base::TimeTicks::HighResNow() - start_time_;
-  }
-
   void AfterTest(const std::string test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf("*RESULT %s: %.2f runs/s\n",
-           test_name.c_str(),
-           num_runs_ / elapsed_.InSecondsF());
-  }
-
-  bool DidRun() {
-    ++num_runs_;
-    if (num_runs_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_runs_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        return false;
-      }
-    }
-
-    return true;
+    printf(
+        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
   void RunScheduleTasksTest(const std::string test_name,
                             unsigned max_depth,
                             unsigned num_children_per_node) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
+    timer_.Reset();
     do {
       scoped_refptr<PerfControlWorkerPoolTaskImpl> leaf_task(
           new PerfControlWorkerPoolTaskImpl);
@@ -196,7 +178,8 @@ class WorkerPoolPerfTest : public testing::Test {
       worker_pool_->ScheduleTasks(NULL, NULL, 0, 0);
       worker_pool_->CheckForCompletedTasks();
       leaf_task->AllowTaskToFinish();
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     AfterTest(test_name);
   }
@@ -204,8 +187,7 @@ class WorkerPoolPerfTest : public testing::Test {
   void RunExecuteTasksTest(const std::string test_name,
                            unsigned max_depth,
                            unsigned num_children_per_node) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
+    timer_.Reset();
     do {
       scoped_refptr<PerfControlWorkerPoolTaskImpl> root_task(
           new PerfControlWorkerPoolTaskImpl);
@@ -214,16 +196,15 @@ class WorkerPoolPerfTest : public testing::Test {
       root_task->WaitForTaskToStartRunning();
       root_task->AllowTaskToFinish();
       worker_pool_->CheckForCompletedTasks();
-    } while (DidRun());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
 
     AfterTest(test_name);
   }
 
  protected:
   scoped_ptr<PerfWorkerPool> worker_pool_;
-  base::TimeTicks start_time_;
-  base::TimeDelta elapsed_;
-  int num_runs_;
+  LapTimer timer_;
 };
 
 TEST_F(WorkerPoolPerfTest, ScheduleTasks) {

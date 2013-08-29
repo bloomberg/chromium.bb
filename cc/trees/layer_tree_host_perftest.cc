@@ -8,10 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/lap_timer.h"
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
@@ -27,8 +29,10 @@ static const int kTimeCheckInterval = 10;
 class LayerTreeHostPerfTest : public LayerTreeTest {
  public:
   LayerTreeHostPerfTest()
-      : num_draws_(0),
-        num_commits_(0),
+      : draw_timer_(kWarmupRuns,
+                    base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+                    kTimeCheckInterval),
+        commit_timer_(0, base::TimeDelta(), 1),
         full_damage_each_frame_(false),
         animation_driven_drawing_(false),
         measure_commit_cost_(false) {
@@ -47,28 +51,23 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (measure_commit_cost_)
-      commit_start_time_ = base::TimeTicks::HighResNow();
+      commit_timer_.Start();
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (measure_commit_cost_ && num_draws_ >= kWarmupRuns) {
-      total_commit_time_ += base::TimeTicks::HighResNow() - commit_start_time_;
-      ++num_commits_;
+    if (measure_commit_cost_ && draw_timer_.IsWarmedUp()) {
+      commit_timer_.NextLap();
     }
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    ++num_draws_;
-    if (num_draws_ == kWarmupRuns)
-      start_time_ = base::TimeTicks::HighResNow();
-
-    if (!start_time_.is_null() && (num_draws_ % kTimeCheckInterval) == 0) {
-      base::TimeDelta elapsed = base::TimeTicks::HighResNow() - start_time_;
-      if (elapsed >= base::TimeDelta::FromMilliseconds(kTimeLimitMillis)) {
-        elapsed_ = elapsed;
-        EndTest();
-        return;
-      }
+    if (TestEnded()) {
+      return;
+    }
+    draw_timer_.NextLap();
+    if (draw_timer_.HasTimeLimitExpired()) {
+      EndTest();
+      return;
     }
     if (!animation_driven_drawing_)
       impl->SetNeedsRedraw();
@@ -79,34 +78,29 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   virtual void BuildTree() {}
 
   virtual void AfterTest() OVERRIDE {
-    num_draws_ -= kWarmupRuns;
-
     // Format matches chrome/test/perf/perf_test.h:PrintResult
     printf("*RESULT %s: frames: %d, %.2f ms/frame\n",
            test_name_.c_str(),
-           num_draws_,
-           elapsed_.InMillisecondsF() / num_draws_);
+           draw_timer_.NumLaps(),
+           draw_timer_.MsPerLap());
     if (measure_commit_cost_) {
       printf("*RESULT %s: commits: %d, %.2f ms/commit\n",
              test_name_.c_str(),
-             num_commits_,
-             total_commit_time_.InMillisecondsF() / num_commits_);
+             commit_timer_.NumLaps(),
+             commit_timer_.MsPerLap());
     }
   }
 
  protected:
-  base::TimeTicks start_time_;
-  int num_draws_;
-  int num_commits_;
+  LapTimer draw_timer_;
+  LapTimer commit_timer_;
+
   std::string test_name_;
-  base::TimeDelta elapsed_;
   FakeContentLayerClient fake_content_layer_client_;
   bool full_damage_each_frame_;
   bool animation_driven_drawing_;
 
   bool measure_commit_cost_;
-  base::TimeTicks commit_start_time_;
-  base::TimeDelta total_commit_time_;
 };
 
 
