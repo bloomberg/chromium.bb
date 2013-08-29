@@ -539,8 +539,9 @@ FileTransferController.prototype = {
     if (!this.isDocumentWideEvent_())
       return;
 
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canCopyOrDrag_();
+    // queryCommandEnabled returns true if event.defaultPrevented is true.
+    if (this.canCopyOrDrag_())
+      event.preventDefault();
   },
 
   /**
@@ -575,8 +576,9 @@ FileTransferController.prototype = {
   onBeforeCut_: function(event) {
     if (!this.isDocumentWideEvent_())
       return;
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canCutOrDrag_();
+    // queryCommandEnabled returns true if event.defaultPrevented is true.
+    if (this.canCutOrDrag_())
+      event.preventDefault();
   },
 
   /**
@@ -617,9 +619,11 @@ FileTransferController.prototype = {
   onBeforePaste_: function(event) {
     if (!this.isDocumentWideEvent_())
       return;
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canPasteOrDrop_(
-        event.clipboardData, this.currentDirectoryContentPath);
+    // queryCommandEnabled returns true if event.defaultPrevented is true.
+    if (this.canPasteOrDrop_(event.clipboardData,
+                             this.currentDirectoryContentPath)) {
+      event.preventDefault();
+    }
   },
 
   /**
