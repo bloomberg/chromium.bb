@@ -7222,3 +7222,20 @@
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
+{
+   bug_280931
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net10QuicPacket13NewDataPacketEPcmbNS_14QuicGuidLengthEbNS_24QuicSequenceNumberLengthE
+   fun:_ZN3net10QuicFramer15BuildDataPacketERKNS_16QuicPacketHeaderERKSt6vectorINS_9QuicFrameESaIS5_EEm
+   fun:_ZN3net17QuicPacketCreator15SerializePacketEv
+   fun:_ZN3net19QuicPacketGenerator22SerializeAndSendPacketEv
+   fun:_ZN3net19QuicPacketGenerator16SendQueuedFramesEv
+   fun:_ZN3net19QuicPacketGenerator15AddControlFrameERKNS_9QuicFrameE
+   fun:_ZN3net14QuicConnection13SendRstStreamEjNS_22QuicRstStreamErrorCodeE
+   fun:_ZN3net11QuicSession13SendRstStreamEjNS_22QuicRstStreamErrorCodeE
+   fun:_ZN3net17QuicClientSession13SendRstStreamEjNS_22QuicRstStreamErrorCodeE
+   fun:_ZN3net18ReliableQuicStream5CloseENS_22QuicRstStreamErrorCodeE
+   fun:_ZN3net14QuicHttpStream5CloseEb
+   fun:_ZN3net4test40QuicStreamFactoryTest_MaxOpenStream_Test8TestBodyEv
+}
