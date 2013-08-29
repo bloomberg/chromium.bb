@@ -430,7 +430,7 @@ void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
   DownloadParams* params_ptr = params.get();
   JobID id = scheduler_->DownloadFile(
       drive_file_path,
-      entry_ptr->file_info().size(),
+      params_ptr->entry().file_info().size(),
       *temp_download_file_path,
       params_ptr->entry().resource_id(),
       context,
