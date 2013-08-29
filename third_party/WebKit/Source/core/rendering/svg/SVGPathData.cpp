@@ -74,10 +74,7 @@ static void updatePathFromPathElement(SVGElement* element, Path& path)
 
 static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 {
-    ASSERT(element->hasTagName(SVGNames::polygonTag));
-    SVGPolygonElement* polygon = static_cast<SVGPolygonElement*>(element);
-
-    SVGPointList& points = polygon->pointList();
+    SVGPointList& points = toSVGPolygonElement(element)->pointList();
     if (points.isEmpty())
         return;
 

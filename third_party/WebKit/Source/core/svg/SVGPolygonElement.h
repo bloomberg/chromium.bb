@@ -21,6 +21,7 @@
 #ifndef SVGPolygonElement_h
 #define SVGPolygonElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGPolyElement.h"
 
 namespace WebCore {
@@ -32,6 +33,12 @@ public:
 private:
     SVGPolygonElement(const QualifiedName&, Document*);
 };
+
+inline SVGPolygonElement* toSVGPolygonElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::polygonTag));
+    return static_cast<SVGPolygonElement*>(node);
+}
 
 } // namespace WebCore
 
