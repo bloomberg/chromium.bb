@@ -672,8 +672,9 @@ void PnaclCoordinator::DidCheckPnaclInstalled(int32_t pp_error) {
   if (pp_error != PP_OK) {
     ReportNonPpapiError(
         ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client component is not installed"
-                     " or has been disabled."));
+        nacl::string("The Portable Native Client (pnacl) component is not "
+                     "installed. Please consult chrome://components for more "
+                     "information."));
     return;
   }
 
