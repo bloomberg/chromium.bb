@@ -12,6 +12,6 @@ $(function() {
     var menuView = new MenuView(profiler);
 
     // initialize categories according to roots information.
-    profiler.initializeCategories();
+    profiler.initialize();
   });
 });

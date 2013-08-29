@@ -15,23 +15,23 @@ var MenuView = function(model) {
 
 /**
  * Update menu view when model updated.
- * @param {Array.<Object>} categories
+ * @param {Array.<Object>} modelTrees
  */
-MenuView.prototype.redraw = function(categories) {
-  function generateTree(origin, target) {
+MenuView.prototype.redraw = function(modelTrees) {
+  function convert(origin, target) {
     target.label = origin.name;
 
-    if ('breakdowns' in origin) {
+    if ('children' in origin) {
       target.children = [];
-      origin.breakdowns.forEach(function(breakdown) {
-        var child = {};
-        target.children.push(child);
-        generateTree(breakdown, child);
+      origin.children.forEach(function(originChild) {
+        var targetChild = {};
+        target.children.push(targetChild);
+        convert(originChild, targetChild);
       });
     }
   }
 
-  function mergeTree(left, right) {
+  function merge(left, right) {
     if (!('children' in right) && 'children' in left)
       return;
     if ('children' in right && !('children' in left))
@@ -47,23 +47,23 @@ MenuView.prototype.redraw = function(categories) {
         if (index === -1)
           left.children.push(child);
         else
-          mergeTree(child, left.children[index]);
+          merge(child, left.children[index]);
       });
     }
  }
 
   // Merge trees in all snapshots.
   var union = null;
-  categories.forEach(function(category) {
-    var tree = {};
-    generateTree(category, tree);
+  modelTrees.forEach(function(modelTree) {
+    var viewTree = {};
+    convert(modelTree, viewTree);
     if (!union)
-      union = tree;
+      union = viewTree;
     else
-      mergeTree(union, tree);
+      merge(union, viewTree);
   });
 
-  var placeholder = '#breakdown-menu';
+  var placeholder = '#category-menu';
   // Draw breakdown menu.
   $(placeholder).tree({
     data: [union],

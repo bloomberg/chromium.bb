@@ -8,9 +8,11 @@
  */
 var Profiler = function(jsonData) {
   this.jsonData_ = jsonData;
-  // Initialize template and calculate categories with roots information.
+  // Initialize template with templates information.
   // TODO(junjianx): Make file path an argument.
   this.template_ = jsonData.templates['l2'];
+  // Initialize selected category, and nothing selected at first.
+  this.selected_ = null;
 
   // Trigger event.
   this.callbacks_ = {};
@@ -50,11 +52,11 @@ Profiler.prototype.removeListener = function(event, callback) {
 };
 
 /**
- * Calcualte initial categories according default template.
+ * Calcualte initial tree according default template.
  */
-Profiler.prototype.initializeCategories = function() {
-  this.categories_ = this.calculateCategories_();
-  this.emit('changed', this.categories_);
+Profiler.prototype.initialize = function() {
+  this.tree_ = this.parseTemplate_();
+  this.emit('changed', this.tree_);
 };
 
 Profiler.prototype.accumulate_ = function(
@@ -62,23 +64,23 @@ Profiler.prototype.accumulate_ = function(
   var self = this;
   var totalMemory = 0;
   var worldName = template[0];
-  var rootBreakdownName = template[1];
-  var breakdowns = snapshot.worlds[worldName].breakdown[rootBreakdownName];
+  var breakdownName = template[1];
+  var categories = snapshot.worlds[worldName].breakdown[breakdownName];
   // Make deep copy of localUnits.
   var remainderUnits = localUnits.slice(0);
-  var categories = {
-    name: nodeName || worldName + '-' + rootBreakdownName,
+  var node = {
+    name: nodeName || worldName + '-' + breakdownName,
     nodePath: nodePath.slice(0),
-    breakdowns: []
+    children: []
   };
 
-  Object.keys(breakdowns).forEach(function(breakdownName) {
-    var breakdown = breakdowns[breakdownName];
-    if (breakdown['hidden'] === true)
+  Object.keys(categories).forEach(function(categoryName) {
+    var category = categories[categoryName];
+    if (category['hidden'] === true)
       return;
 
-    // Accumulate breakdowns.
-    var matchedUnits = intersection(breakdown.units, localUnits);
+    // Accumulate categories.
+    var matchedUnits = intersection(category.units, localUnits);
     var memory = matchedUnits.reduce(function(previous, current) {
       return previous + worldUnits[worldName][current];
     }, 0);
@@ -86,54 +88,56 @@ Profiler.prototype.accumulate_ = function(
     remainderUnits = difference(remainderUnits, matchedUnits);
 
     // Handle subs options if exists.
-    if (!(breakdownName in template[2])) {
-      categories.breakdowns.push({
-        name: breakdownName,
+    var child = null;
+    if (!(categoryName in template[2])) {
+      // Calculate child for current category.
+      child = {
+        name: categoryName,
         memory: memory
-      });
+      };
+      if ('subs' in category && category.subs.length)
+        node.subs = category.subs;
 
-      if ('subs' in breakdown && breakdown.subs.length) {
-        var length = categories.breakdowns.length;
-        categories.breakdowns[length-1].subs = breakdown.subs;
-      }
+      node.children.push(child);
     } else {
-      var subTemplate = template[2][breakdownName];
+      // Calculate child recursively.
+      var subTemplate = template[2][categoryName];
       var subWorldName = subTemplate[0];
-      var subRootBreakdownName = subTemplate[1];
-      var subNodePath = nodePath.slice(0).concat([breakdownName, 2]);
-      var result = null;
+      var subNodePath = nodePath.slice(0).concat([categoryName, 2]);
+      var returnValue = null;
 
-      // If subs is in the same world, units should be filtered.
       if (subWorldName === worldName) {
-        result = self.accumulate_(subTemplate, snapshot, worldUnits,
-          matchedUnits, subNodePath, breakdownName);
-        categories.breakdowns.push(result.categories);
-        if (!result.remainderUnits.length)
+        // If subs is in the same world, units should be filtered.
+        returnValue = self.accumulate_(subTemplate, snapshot, worldUnits,
+          matchedUnits, subNodePath, categoryName);
+        node.children.push(returnValue.node);
+        if (!returnValue.remainderUnits.length)
           return;
 
         var remainMemory =
-          result.remainderUnits.reduce(function(previous, current) {
+          returnValue.remainderUnits.reduce(function(previous, current) {
             return previous + worldUnits[subWorldName][current];
           }, 0);
 
-        categories.breakdowns.push({
-          name: breakdownName + '-remaining',
+        node.children.push({
+          name: categoryName + '-remaining',
           memory: remainMemory
         });
       } else {
+        // If subs is in different world, use all units in that world.
         var subLocalUnits = Object.keys(worldUnits[subWorldName]);
-        subLocalUnits = subLocalUnits.map(function(unitName) {
-          return parseInt(unitName, 10);
+        subLocalUnits = subLocalUnits.map(function(unitID) {
+          return parseInt(unitID, 10);
         });
 
-        result = self.accumulate_(subTemplate, snapshot, worldUnits,
-          subLocalUnits, subNodePath, breakdownName);
-        categories.breakdowns.push(result.categories);
+        returnValue = self.accumulate_(subTemplate, snapshot, worldUnits,
+          subLocalUnits, subNodePath, categoryName);
+        node.children.push(returnValue.node);
 
-        if (memory > result.totalMemory) {
-          categories.breakdowns.push({
-            name: breakdownName + '-remaining',
-            memory: memory - result.totalMemory
+        if (memory > returnValue.totalMemory) {
+          node.children.push({
+            name: categoryName + '-remaining',
+            memory: memory - returnValue.totalMemory
           });
         }
       }
@@ -141,13 +145,13 @@ Profiler.prototype.accumulate_ = function(
   });
 
   return {
-    categories: categories,
+    node: node,
     totalMemory: totalMemory,
     remainderUnits: remainderUnits
   };
 };
 
-Profiler.prototype.calculateCategories_ = function() {
+Profiler.prototype.parseTemplate_ = function() {
   var self = this;
 
   return self.jsonData_.snapshots.map(function(snapshot) {
@@ -155,16 +159,16 @@ Profiler.prototype.calculateCategories_ = function() {
     for (var worldName in snapshot.worlds) {
       worldUnits[worldName] = {};
       var units = snapshot.worlds[worldName].units;
-      for (var unitName in units)
-        worldUnits[worldName][unitName] = units[unitName][0];
+      for (var unitID in units)
+        worldUnits[worldName][unitID] = units[unitID][0];
     }
     var localUnits = Object.keys(worldUnits[self.template_[0]]);
-    localUnits = localUnits.map(function(unitName) {
-      return parseInt(unitName, 10);
+    localUnits = localUnits.map(function(unitID) {
+      return parseInt(unitID, 10);
     });
 
-    var result =
+    var returnValue =
       self.accumulate_(self.template_, snapshot, worldUnits, localUnits, [2]);
-    return result.categories;
+    return returnValue.node;
   });
 };

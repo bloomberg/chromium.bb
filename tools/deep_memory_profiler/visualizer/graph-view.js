@@ -15,28 +15,28 @@ var GraphView = function(model) {
 
 /**
  * Generate lines for flot plotting.
- * @param {Array.<Object>} categories
+ * @param {Array.<Object>} modelTrees
  * @return {Array.<Object>}
  */
-GraphView.prototype.generateLines_ = function(categories) {
-  function getLeaves(node, breakdowns) {
-    if ('breakdowns' in node) {
-      node.breakdowns.forEach(function(breakdown) {
-        getLeaves(breakdown, breakdowns);
+GraphView.prototype.generateLines_ = function(modelTrees) {
+  function getLeaves(node, categories) {
+    if ('children' in node) {
+      node.children.forEach(function(child) {
+        getLeaves(child, categories);
       });
     } else {
-      breakdowns.push(node);
+      categories.push(node);
     }
   }
 
   var lines = {};
-  var snapshotNum = categories.length;
+  var snapshotNum = modelTrees.length;
   // Initialize lines with all zero.
-  categories.forEach(function(category) {
-    var breakdowns = [];
-    getLeaves(category, breakdowns);
-    breakdowns.forEach(function(breakdown) {
-      var name = breakdown.name;
+  modelTrees.forEach(function(modelTree) {
+    var categories = [];
+    getLeaves(modelTree, categories);
+    categories.forEach(function(category) {
+      var name = category.name;
       if (lines[name])
         return;
       lines[name] = [];
@@ -45,13 +45,13 @@ GraphView.prototype.generateLines_ = function(categories) {
     });
   });
 
-  // Assignment lines with values of categories.
-  categories.forEach(function(category, index) {
-    var breakdowns = [];
-    getLeaves(category, breakdowns);
-    breakdowns.forEach(function(breakdown) {
-      var name = breakdown.name;
-      var memory = breakdown.memory;
+  // Assignment lines with values of modelTrees.
+  modelTrees.forEach(function(modelTree, index) {
+    var categories = [];
+    getLeaves(modelTree, categories);
+    categories.forEach(function(category) {
+      var name = category.name;
+      var memory = category.memory;
       lines[name][index] = [index, memory];
     });
   });
@@ -65,13 +65,13 @@ GraphView.prototype.generateLines_ = function(categories) {
 };
 
 /**
- * Update garph view when model updated.
+ * Update graph view when model updated.
  * TODO(junjianx): use redraw function to improve perfomance.
- * @param {Array.<Object>} categories
+ * @param {Array.<Object>} modelTrees
  */
-GraphView.prototype.redraw = function(categories) {
+GraphView.prototype.redraw = function(modelTrees) {
   var placeholder = '#graph-div';
-  var lines = this.generateLines_(categories);
+  var lines = this.generateLines_(modelTrees);
   var graph = $.plot(placeholder, lines, {
     series: {
       stack: true,
@@ -83,7 +83,7 @@ GraphView.prototype.redraw = function(categories) {
     }
   });
 
-  // Bind click event so that user can select breakdown by clicking stack
+  // Bind click event so that user can select category by clicking stack
   // area. It firstly checks x range which clicked point is in, and all lines
   // share same x values, so it is checked only once at first. Secondly, it
   // checked y range by accumulated y values because this is a stack graph.
