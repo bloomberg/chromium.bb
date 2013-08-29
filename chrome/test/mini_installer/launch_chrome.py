@@ -7,7 +7,7 @@
 This script launches Chrome and waits until its window shows up.
 """
 
-import argparse
+import optparse
 import subprocess
 import sys
 import time
@@ -35,12 +35,11 @@ def WaitForWindow(process_id, class_pattern):
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Launch Chrome.')
-  parser.add_argument('--system-level', dest='system_level',
-                      action='store_const', const=True, default=False,
-                      help='Launch Chrome at the system level.')
-  args = parser.parse_args()
-  chrome_path = chrome_helper.GetChromePath(args.system_level)
+  parser = optparse.OptionParser(description='Launch Chrome.')
+  parser.add_option('--system-level', action='store_true', dest='system_level',
+                    default=False, help='Launch Chrome at system level.')
+  options, _ = parser.parse_args()
+  chrome_path = chrome_helper.GetChromePath(options.system_level)
   process = subprocess.Popen(chrome_path)
   if not WaitForWindow(process.pid, 'Chrome_WidgetWin_'):
     raise Exception('Could not launch Chrome.')

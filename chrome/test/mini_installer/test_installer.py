@@ -9,10 +9,11 @@ each command match the expected machine states. For more details, take a look at
 the design documentation at http://goo.gl/Q0rGM6
 """
 
-import argparse
 import json
+import optparse
 import os
 import subprocess
+import sys
 import unittest
 
 import path_resolver
@@ -189,14 +190,16 @@ def RunTests(config):
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Test the installer.')
-  parser.add_argument('config_filename',
-                      help='The relative/absolute path to the config file.')
-  args = parser.parse_args()
+  usage = 'usage: %prog config_filename'
+  parser = optparse.OptionParser(usage, description='Test the installer.')
+  _, args = parser.parse_args()
+  if len(args) != 1:
+    parser.error('Incorrect number of arguments.')
 
-  config = ParseConfigFile(args.config_filename)
+  config = ParseConfigFile(args[0])
   RunTests(config)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

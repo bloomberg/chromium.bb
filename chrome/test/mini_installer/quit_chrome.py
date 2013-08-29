@@ -8,7 +8,7 @@ This script sends a WM_CLOSE message to each window of Chrome and waits until
 the process terminates.
 """
 
-import argparse
+import optparse
 import sys
 import time
 import win32con
@@ -40,12 +40,11 @@ def CloseWindows(process_path):
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Quit Chrome.')
-  parser.add_argument('--system-level', dest='system_level',
-                      action='store_const', const=True, default=False,
-                      help='Quit Chrome at the system level.')
-  args = parser.parse_args()
-  chrome_path = chrome_helper.GetChromePath(args.system_level)
+  parser = optparse.OptionParser(description='Quit Chrome.')
+  parser.add_option('--system-level', action='store_true', dest='system_level',
+                    default=False, help='Quit Chrome at system level.')
+  options, _ = parser.parse_args()
+  chrome_path = chrome_helper.GetChromePath(options.system_level)
   if not CloseWindows(chrome_path):
     raise Exception('Could not quit Chrome.')
   return 0

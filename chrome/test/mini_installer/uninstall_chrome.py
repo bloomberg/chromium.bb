@@ -9,7 +9,7 @@ the output status code.
 """
 
 import _winreg
-import argparse
+import optparse
 import subprocess
 import sys
 
@@ -17,15 +17,14 @@ import path_resolver
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Uninstall Chrome.')
-  parser.add_argument('--system-level', dest='system_level',
-                      action='store_const', const=True, default=False,
-                      help='Uninstall Chrome at system level.')
-  args = parser.parse_args()
+  parser = optparse.OptionParser(description='Uninstall Chrome.')
+  parser.add_option('--system-level', action='store_true', dest='system_level',
+                    default=False, help='Uninstall Chrome at system level.')
+  options, _ = parser.parse_args()
 
   # TODO(sukolsak): Add support for uninstalling MSI-based Chrome installs when
   # we support testing MSIs.
-  if args.system_level:
+  if options.system_level:
     root_key = _winreg.HKEY_LOCAL_MACHINE
   else:
     root_key = _winreg.HKEY_CURRENT_USER
