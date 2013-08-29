@@ -9492,7 +9492,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    UpdateStreamTextureIfNeeded(source_texture);
     DCHECK(stream_texture_manager());
     StreamTexture* stream_tex =
         stream_texture_manager()->LookupStreamTexture(
