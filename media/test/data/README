@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 bear-320x240.webm - WebM encode of bear.1280x720.mp4 resized to 320x240.
+bear-vp9.webm - VP9 video only WebM file.
+bear-vp9-opus.webm - VP9 Video with Opus Audio.
+bear-vp8-webvtt.webm - WebM VP8 video with WebVTT subtitle track.
+bear-vp8a.webm - WebM VP8 video with alpha channel.
+bear-opus.webm - Opus Audio only WebM file.
+bear-opus-end-trimming.webm - File to test end trimming. It has one byte 
+                              artificially added so that there is maximum 
+                              padding at the end. It is an Opus Audio only WebM 
+                              file.
 no_streams.webm - Header, Info, & Tracks element from bear-320x240.webm slightly corrupted so it looks 
                   like there are no tracks.
 nonzero-start-time.webm - Has the same headers as bear-320x240.webm but the first cluster of this file 
