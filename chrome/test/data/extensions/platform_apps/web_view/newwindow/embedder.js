@@ -279,39 +279,81 @@ function testNewWindowExecuteScript() {
 };
 
 function testNewWindowWebRequest() {
-  var testName = 'testNewWindowExecuteScript';
+  var testName = 'testNewWindowWebRequest';
   var webview = embedder.setUpGuest_('foobar');
 
   var onNewWindow = function(e) {
     chrome.test.log('Embedder notified on newwindow');
     embedder.assertCorrectEvent_(e, '');
 
-    var newwebview = document.createElement('webview');
-    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    var newwebview = new WebView();
     var calledWebRequestEvent = false;
-    e.preventDefault();
-    // The WebRequest API is not exposed until the <webview> MutationObserver
-    // picks up the <webview> in the DOM. Thus, we cannot immediately access
-    // WebRequest API.
-    window.setTimeout(function() {
-      newwebview.onBeforeRequest.addListener(function(e) {
-          if (!calledWebRequestEvent) {
-            calledWebRequestEvent = true;
-            embedder.test.succeed();
-          }
-        }, { urls: ['<all_urls>'] }, ['blocking']);
-      try {
-        e.window.attach(newwebview);
-      } catch (e) {
-        embedder.test.fail();
+    newwebview.request.onBeforeRequest.addListener(function(e) {
+      if (!calledWebRequestEvent) {
+        calledWebRequestEvent = true;
+        embedder.test.succeed();
       }
-    }, 0);
+    }, {urls: ['<all_urls>']});
+    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    e.preventDefault();
+    try {
+      e.window.attach(newwebview);
+    } catch (e) {
+      embedder.test.fail();
+    }
   };
   webview.addEventListener('newwindow', onNewWindow);
 
   // Load a new window with the given name.
   embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 };
+
+function testNewWindowWebRequestRemoveElement() {
+  var testName = 'testNewWindowWebRequestRemoveElement';
+  var dataUrl = 'data:text/html,<body>foobar</body>';
+  var webview = embedder.setUpGuest_('foobar');
+  var calledWebRequestEvent = false;
+  webview.request.onBeforeRequest.addListener(function(e) {
+    if (e.url == embedder.guestURL && calledWebRequestEvent) {
+      embedder.test.succeed();
+    }
+  }, {urls: ['<all_urls>']});
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e, '');
+
+    e.preventDefault();
+    chrome.app.window.create('newwindow.html', {
+      width: 640,
+      height: 480
+    }, function(newwindow) {
+      newwindow.contentWindow.onload = function(evt) {
+        var newwebview =
+            newwindow.contentWindow.document.querySelector('webview');
+        newwebview.request.onBeforeRequest.addListener(function(e) {
+          if (!calledWebRequestEvent) {
+            calledWebRequestEvent = true;
+            newwebview.parentElement.removeChild(newwebview);
+            setTimeout(function() {
+              webview.src = embedder.guestURL;
+            }, 0);
+          }
+        }, {urls: ['<all_urls>']});
+        try {
+          e.window.attach(newwebview);
+        } catch (e) {
+          embedder.test.fail();
+        }
+      };
+    });
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
+};
+
 
 embedder.test.testList = {
   'testNewWindowNameTakesPrecedence': testNewWindowNameTakesPrecedence,
@@ -320,7 +362,8 @@ embedder.test.testList = {
   'testNewWindowRedirect':  testNewWindowRedirect,
   'testNewWindowClose': testNewWindowClose,
   'testNewWindowExecuteScript': testNewWindowExecuteScript,
-  'testNewWindowWebRequest': testNewWindowWebRequest
+  'testNewWindowWebRequest': testNewWindowWebRequest,
+  'testNewWindowWebRequestRemoveElement': testNewWindowWebRequestRemoveElement
 };
 
 onload = function() {

@@ -563,6 +563,14 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
              "web_view/newwindow");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_WebRequestRemoveElement) {
+  TestHelper("testNewWindowWebRequestRemoveElement",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(

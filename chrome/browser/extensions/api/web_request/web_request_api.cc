@@ -1241,6 +1241,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     void* profile,
     const std::string& extension_id,
     int embedder_process_id,
+    int embedder_routing_id,
     int webview_instance_id) {
   // Iterate over all listeners of all WebRequest events to delete
   // any listeners that belong to the provided <webview>.
@@ -1252,7 +1253,10 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     for (std::set<EventListener>::iterator listener_iter = listeners.begin();
          listener_iter != listeners.end(); ++listener_iter) {
       const EventListener& listener = *listener_iter;
+      // TODO(fsamuel): Investigate making <webview> instance IDs unique within
+      // a process.
       if (listener.embedder_process_id == embedder_process_id &&
+          listener.embedder_routing_id == embedder_routing_id &&
           listener.webview_instance_id == webview_instance_id)
         listeners_to_delete.push_back(listener);
     }

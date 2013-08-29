@@ -70,10 +70,15 @@ void RemoveWebViewEventListenersOnIOThread(
     void* profile,
     const std::string& extension_id,
     int embedder_process_id,
+    int embedder_routing_id,
     int guest_instance_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile, extension_id, embedder_process_id, guest_instance_id);
+      profile,
+      extension_id,
+      embedder_process_id,
+      embedder_routing_id,
+      guest_instance_id);
 }
 
 }  // namespace
@@ -380,6 +385,11 @@ void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
   RemoveWebViewFromExtensionRendererState(web_contents);
+  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
+  // reparenting of a <webview> within a single embedder. The lifetime of
+  // WebRequest event listeners should be equal to the lifetime of the embedder
+  // WebContents rather than the guest until http://crbug.com/156219 is
+  // resolved.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -387,6 +397,7 @@ void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
           &RemoveWebViewEventListenersOnIOThread,
           browser_context(), extension_id(),
           embedder_render_process_id(),
+          embedder_routing_id(),
           view_instance_id()));
 }
 
