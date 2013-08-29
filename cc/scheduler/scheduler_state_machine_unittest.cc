@@ -32,6 +32,10 @@ class StateMachine : public SchedulerStateMachine {
   void SetCommitState(CommitState cs) { commit_state_ = cs; }
   CommitState CommitState() const { return commit_state_; }
 
+  OutputSurfaceState output_surface_state() const {
+    return output_surface_state_;
+  }
+
   bool NeedsCommit() const { return needs_commit_; }
 
   void SetNeedsRedraw(bool b) { needs_redraw_ = b; }
@@ -1139,7 +1143,7 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenForcedCommitInProgress) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestSendBeginFrameToMainThreadWhenContextLost) {
+TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1148,10 +1152,31 @@ TEST(SchedulerStateMachineTest, TestSendBeginFrameToMainThreadWhenContextLost) {
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsCommit();
-  state.SetNeedsForcedCommit();
   state.DidLoseOutputSurface();
+
+  // When we are visible, we normally want to begin output surface creation
+  // as soon as possible.
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+            state.NextAction()) << *state.AsValue();
+  state.UpdateState(state.NextAction());
+
+  state.DidCreateAndInitializeOutputSurface();
+  EXPECT_EQ(state.output_surface_state(),
+            SchedulerStateMachine::OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT);
+
+  // We should not send a BeginFrame to them main thread when we are invisible,
+  // even if we've lost the output surface and are trying to get the first
+  // commit, since the main thread will just abort anyway.
+  state.SetVisible(false);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE,
+            state.NextAction()) << *state.AsValue();
+
+  // If there is a forced commit, however, we could be blocking a readback
+  // on the main thread, so we need to unblock it before we can get our
+  // output surface, even if we are not visible.
+  state.SetNeedsForcedCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
-            state.NextAction());
+            state.NextAction()) << *state.AsValue();
 }
 
 TEST(SchedulerStateMachineTest, TestImmediateFinishCommit) {
