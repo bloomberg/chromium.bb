@@ -95,6 +95,12 @@ private:
     bool m_noresize;
 };
 
+inline HTMLFrameSetElement* toHTMLFrameSetElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::framesetTag));
+    return static_cast<HTMLFrameSetElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif // HTMLFrameSetElement_h

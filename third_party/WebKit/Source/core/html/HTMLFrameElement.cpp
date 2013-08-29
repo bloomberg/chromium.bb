@@ -61,7 +61,7 @@ static inline HTMLFrameSetElement* containingFrameSetElement(Node* node)
 {
     while ((node = node->parentNode())) {
         if (node->hasTagName(framesetTag))
-            return static_cast<HTMLFrameSetElement*>(node);
+            return toHTMLFrameSetElement(node);
     }
     return 0;
 }

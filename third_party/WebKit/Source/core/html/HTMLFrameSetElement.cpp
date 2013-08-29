@@ -168,7 +168,7 @@ void HTMLFrameSetElement::attach(const AttachContext& context)
     // FIXME: This is not dynamic.
     for (ContainerNode* node = parentNode(); node; node = node->parentNode()) {
         if (node->hasTagName(framesetTag)) {
-            HTMLFrameSetElement* frameset = static_cast<HTMLFrameSetElement*>(node);
+            HTMLFrameSetElement* frameset = toHTMLFrameSetElement(node);
             if (!m_frameborderSet)
                 m_frameborder = frameset->hasFrameBorder();
             if (m_frameborder) {
