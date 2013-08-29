@@ -44,8 +44,8 @@ bool IsForceCompositingModeBlacklisted() {
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
-#if defined(OS_WIN) && defined(USE_AURA)
-  // We always want compositing on Aura Windows.
+#if defined(USE_AURA)
+  // We always want threaded compositing on Aura.
   return true;
 #endif
 
@@ -58,12 +58,6 @@ bool IsThreadedCompositingEnabled() {
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
       command_line.HasSwitch(switches::kDisableThreadedCompositing))
     return false;
-
-#if defined(OS_CHROMEOS)
-  // We always want threaded compositing on  ChromeOS unless it's explicitly
-  // disabled above.
-  return true;
-#endif
 
   if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
     return true;
@@ -78,8 +72,8 @@ bool IsThreadedCompositingEnabled() {
 }
 
 bool IsForceCompositingModeEnabled() {
-#if defined(OS_WIN) && defined(USE_AURA)
-  // We always want compositing on Aura Windows.
+#if defined(USE_AURA)
+  // We always want compositing on Aura.
   return true;
 #endif
 
@@ -91,11 +85,6 @@ bool IsForceCompositingModeEnabled() {
   // Command line switches take precedence over blacklisting and field trials.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
     return false;
-
-#if defined(OS_CHROMEOS)
-  // We always want compositing ChromeOS unless it's explicitly disabled above.
-  return true;
-#endif
 
   if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
