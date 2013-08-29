@@ -37,8 +37,10 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 
 bool FileDescriptorSet::Add(int fd) {
-  if (descriptors_.size() == kMaxDescriptorsPerMessage)
+  if (descriptors_.size() == kMaxDescriptorsPerMessage) {
+    DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
     return false;
+  }
 
   struct base::FileDescriptor sd;
   sd.fd = fd;
@@ -48,8 +50,10 @@ bool FileDescriptorSet::Add(int fd) {
 }
 
 bool FileDescriptorSet::AddAndAutoClose(int fd) {
-  if (descriptors_.size() == kMaxDescriptorsPerMessage)
+  if (descriptors_.size() == kMaxDescriptorsPerMessage) {
+    DLOG(WARNING) << "Cannot add file descriptor. FileDescriptorSet full.";
     return false;
+  }
 
   struct base::FileDescriptor sd;
   sd.fd = fd;

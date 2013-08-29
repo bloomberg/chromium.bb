@@ -30,7 +30,7 @@ class IPC_EXPORT FileDescriptorSet
   //
   // In debugging mode, it's a fatal error to try and add more than this number
   // of descriptors to a FileDescriptorSet.
-  static const size_t kMaxDescriptorsPerMessage = 5;
+  static const size_t kMaxDescriptorsPerMessage = 7;
 
   // ---------------------------------------------------------------------------
   // Interfaces for building during message serialisation...
