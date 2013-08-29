@@ -374,6 +374,8 @@
         'filters/video_renderer_base.h',
         'filters/vpx_video_decoder.cc',
         'filters/vpx_video_decoder.h',
+        'filters/wsola_internals.cc',
+        'filters/wsola_internals.h',
         'midi/midi_manager.cc',
         'midi/midi_manager.h',
         'midi/midi_manager_mac.cc',
