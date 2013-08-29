@@ -65,15 +65,16 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // Looks up available apps for each file in |path_mime_set| in the
   // |registry|, and returns the intersection of all available apps as a
   // map from task id to TaskInfo.
-  static void GetAvailableDriveTasks(drive::DriveAppRegistry* registry,
+  static void GetAvailableDriveTasks(const drive::DriveAppRegistry& registry,
                                      const PathAndMimeTypeSet& path_mime_set,
                                      TaskInfoMap* task_info_map);
 
   // Looks in the preferences and finds any of the available apps that are
   // also listed as default apps for any of the files in the info list.
-  void FindDefaultDriveTasks(const PathAndMimeTypeSet& path_mime_set,
-                             const TaskInfoMap& task_info_map,
-                             std::set<std::string>* default_tasks);
+  static void FindDefaultDriveTasks(Profile* profile,
+                                    const PathAndMimeTypeSet& path_mime_set,
+                                    const TaskInfoMap& task_info_map,
+                                    std::set<std::string>* default_tasks);
 
   // Creates a list of each task in |task_info_map| and stores the result into
   // |result_list|. If a default task is set in the result list,
@@ -92,27 +93,39 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // "taskId" field in |result_list| will look like
   // "<drive-app-id>|drive|open-with" (See also file_tasks.h).
   // "driveApp" field in |result_list| will be set to "true".
-  void FindDriveAppTasks(const PathAndMimeTypeSet& path_mime_set,
-                         ListValue* result_list,
-                         bool* default_already_set);
+  static void FindDriveAppTasks(Profile* profile,
+                                const PathAndMimeTypeSet& path_mime_set,
+                                ListValue* result_list,
+                                bool* default_already_set);
 
-  // Find the file handler tasks (apps declaring "file_handlers" in
+  // Finds the file handler tasks (apps declaring "file_handlers" in
   // manifest.json) that can be used with the given files, appending them to
   // the |result_list|. See the comment at FindDriveAppTasks() about
   // |default_already_set|
-  void FindFileHandlerTasks(const PathAndMimeTypeSet& path_mime_set,
-                            ListValue* result_list,
-                            bool* default_already_set);
+  static void FindFileHandlerTasks(Profile* profile,
+                                   const PathAndMimeTypeSet& path_mime_set,
+                                   ListValue* result_list,
+                                   bool* default_already_set);
 
-  // Find the file browser handler tasks (app/extensions declaring
+  // Finds the file browser handler tasks (app/extensions declaring
   // "file_browser_handlers" in manifest.json) that can be used with the
   // given files, appending them to the |result_list|. See the comment at
   // FindDriveAppTasks() about |default_already_set|
-  void FindFileBrowserHandlerTasks(
+  static void FindFileBrowserHandlerTasks(
+      Profile* profile,
       const std::vector<GURL>& file_urls,
       const std::vector<base::FilePath>& file_paths,
       ListValue* result_list,
       bool* default_already_set);
+
+  // Finds all types (drive, file handlers, file browser handlers) of
+  // tasks. See the comment at FindDriveAppTasks() about |result_list|.
+  static void FindAllTypesOfTasks(
+    Profile* profile,
+    const PathAndMimeTypeSet& path_mime_set,
+    const std::vector<GURL>& file_urls,
+    const std::vector<base::FilePath>& file_paths,
+    ListValue* result_list);
 };
 
 // Implements the chrome.fileBrowserPrivate.setDefaultTask method.

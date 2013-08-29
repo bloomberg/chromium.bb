@@ -283,12 +283,6 @@ void DriveAppRegistry::FindAppsForSelector(
 
 namespace util {
 
-GURL FindPreferredIconOfDefaultSize(
-    const google_apis::InstalledApp::IconList& icons) {
-  const int kPreferredIconSize = 16;
-  return FindPreferredIcon(icons, kPreferredIconSize);
-}
-
 GURL FindPreferredIcon(
     const google_apis::InstalledApp::IconList& icons,
     int preferred_size) {
