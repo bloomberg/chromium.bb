@@ -276,6 +276,7 @@ std::string CreditCard::GetCreditCardType(const base::string16& number) {
 }
 
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
+  DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME:
       return name_on_card_;
@@ -323,6 +324,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
 
 void CreditCard::SetRawInfo(ServerFieldType type,
                             const base::string16& value) {
+  DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME:
       name_on_card_ = value;

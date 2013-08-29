@@ -168,6 +168,9 @@ AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
 base::string16 AutofillCreditCardWrapper::GetInfo(const AutofillType& type)
     const {
+  if (type.group() != CREDIT_CARD)
+    return base::string16();
+
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 

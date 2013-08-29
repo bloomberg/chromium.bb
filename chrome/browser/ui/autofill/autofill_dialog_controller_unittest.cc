@@ -1167,7 +1167,7 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   EXPECT_EQ(PHONE_BILLING, form_structure()->field(1)->Type().group());
   EXPECT_EQ(shipping_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             form_structure()->field(0)->value);
-  EXPECT_EQ(billing_profile.GetRawInfo(PHONE_BILLING_WHOLE_NUMBER),
+  EXPECT_EQ(billing_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             form_structure()->field(1)->value);
   EXPECT_NE(form_structure()->field(1)->value,
             form_structure()->field(0)->value);

@@ -367,7 +367,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
       // TODO(dgwallinga): Find a way of cleanly deprecating CREDIT_CARD_NAME.
       // code.google.com/p/chromium/issues/detail?id=263498
       if (server_type == CREDIT_CARD_NAME)
-        billing_address_->SetRawInfo(NAME_BILLING_FULL, value);
+        billing_address_->SetRawInfo(NAME_FULL, value);
     } else if (server_type == ADDRESS_HOME_COUNTRY) {
       if (IsBillingGroup(group))
         billing_address_->SetInfo(type, value, autofill_manager_->app_locale());

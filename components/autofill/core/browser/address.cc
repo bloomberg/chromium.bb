@@ -44,8 +44,8 @@ Address& Address::operator=(const Address& address) {
 }
 
 base::string16 Address::GetRawInfo(ServerFieldType type) const {
-  // TODO(isherman): Is GetStorableType even necessary?
-  switch (AutofillType(type).GetStorableType()) {
+  DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
+  switch (type) {
     case ADDRESS_HOME_LINE1:
       return line1_;
 
@@ -70,8 +70,8 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
 }
 
 void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
-  // TODO(isherman): Is GetStorableType even necessary?
-  switch (AutofillType(type).GetStorableType()) {
+  DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
+  switch (type) {
     case ADDRESS_HOME_LINE1:
       line1_ = value;
       break;

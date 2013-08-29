@@ -161,7 +161,8 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
                             iter->second,
                             g_browser_process->GetApplicationLocale());
       } else {
-        form_group->SetRawInfo(type, iter->second);
+        form_group->SetRawInfo(
+            AutofillType(type).GetStorableType(), iter->second);
       }
     }
   }
@@ -200,7 +201,8 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
         if (card)
           card->SetRawInfo(it->first->type, trimmed);
       } else if (profile) {
-        profile->SetRawInfo(it->first->type, trimmed);
+        profile->SetRawInfo(
+            AutofillType(it->first->type).GetStorableType(), trimmed);
       }
     }
   }
@@ -296,7 +298,7 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
     ServerFieldType type = requested_fields[i].type;
     if (type != ADDRESS_HOME_LINE2 &&
         type != CREDIT_CARD_VERIFICATION_CODE &&
-        data_model.GetRawInfo(type).empty()) {
+        data_model.GetRawInfo(AutofillType(type).GetStorableType()).empty()) {
       return false;
     }
   }
