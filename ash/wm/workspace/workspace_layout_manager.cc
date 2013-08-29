@@ -213,16 +213,13 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
   if (!GetTrackedByWorkspace(window))
     return;
 
-  // Use cross fade transition for the maximized window if the adjustment
-  // happens due to the shelf's visibility change. Otherwise the background
-  // can be seen slightly between the bottom edge of resized-window and
-  // the animating shelf.
-  // TODO(mukai): this cause slight blur at the window frame because of the
-  // cross fade. I think this is better, but should reconsider if someone
-  // raises voice for this.
+  // Do not cross fade here: the window's layer hierarchy may be messed up for
+  // the transition between mirroring and extended. See also: crbug.com/267698
+  // TODO(oshima): Differentiate display change and shelf visibility change, and
+  // bring back CrossFade animation.
   if (wm::IsWindowMaximized(window) &&
       reason == ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED) {
-    CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
+    SetChildBoundsDirect(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
         window->parent()->parent()));
     return;
   }
