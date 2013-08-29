@@ -2606,5 +2606,4 @@
    fun:_ZN7content20DesktopCaptureDevice4Core18OnCaptureCompletedEPN6webrtc12DesktopFrameE
    fun:_ZN6webrtc12_GLOBAL__N_117ScreenCapturerMac7CaptureERKNS_13DesktopRegionE
    fun:_ZN7content20DesktopCaptureDevice4Core9DoCaptureEv
-   fun:_ZN7content20DesktopCaptureDevice4Core7DoStartEv
 }
