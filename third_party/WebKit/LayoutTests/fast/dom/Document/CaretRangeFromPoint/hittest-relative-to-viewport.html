@@ -29,13 +29,16 @@
 
     var elementTop = document.getElementById('test-top'),
         elementBottom = document.getElementById('test-bottom');
+        
+    var BASE_DEVICE_PIXEL_RATIO = window.devicePixelRatio;
 
-    function testsWithBaseline(baselinePos, expectedContainer, zoomOrNot) {
+    function testsWithBaseline(baselinePos, expectedContainer) {
         function test(expectedOffset, scrollByX, scrollByY) {
-            var hitPosition = { x: 15, y: 15 },
+            var zoomRatio = BASE_DEVICE_PIXEL_RATIO / window.devicePixelRatio;
+            var hitPosition = { x: 15 * zoomRatio, y: 15 * zoomRatio },
                 range,
                 doesContainerPass = function() { return range.startContainer === expectedContainer },
-                doesOffsetPass = function() { return range.startOffset === expectedOffset };
+                doesOffsetPass = function() { return Math.abs(range.startOffset - expectedOffset) < zoomRatio; };
 
             // Scroll relative to target.
             scrollRelativeToBaseline(scrollByX, scrollByY);
@@ -63,17 +66,10 @@
             window.scrollTo(baselinePos.x + x, baselinePos.y + y);
         }
 
-        if (zoomOrNot == "zoom") {
-            test(0, 0, 0);
-            test(12, 0, 25);
-            test(4, 50, 0);
-            test(16, 50, 25);
-        } else {
-            test(0, 0, 0);
-            test(12, 0, 25);
-            test(2, 25, 0);
-            test(14, 25, 25);
-        }
+        test(0, 0, 0);
+        test(12, 0, 25);
+        test(2, 25, 0);
+        test(14, 25, 25);
 
         debug(" ");
     }
@@ -85,13 +81,13 @@
         bottomBaseline = { x: rectBottom.left - 8, y: rectBottom.top - 8 };
 
      // Testing inside initial containing block (top left)
-    testsWithBaseline(topBaseline, elementTop.firstChild, "none");
+    testsWithBaseline(topBaseline, elementTop.firstChild);
 
     // Testing outside initial containing block (mid-page)
-    testsWithBaseline(bottomBaseline, elementBottom.firstChild, "none");
+    testsWithBaseline(bottomBaseline, elementBottom.firstChild);
 
     eventSender.zoomPageOut();
-    testsWithBaseline(topBaseline, elementTop.firstChild, "zoom");
+    testsWithBaseline(topBaseline, elementTop.firstChild);
 
     if (window.testRunner) {
         var area = document.getElementById('testArea');
