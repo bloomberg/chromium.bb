@@ -17,7 +17,6 @@ extern const char kAlwaysOnTopKey[];
 extern const char kBypassCache[];
 extern const char kCodeKey[];
 extern const char kCurrentWindowKey[];
-extern const char kDrawAttentionKey[];
 extern const char kFaviconUrlKey[];
 extern const char kFileKey[];
 extern const char kFocusedKey[];

@@ -66,14 +66,16 @@ class WindowsCreateFunction : public SyncExtensionFunction {
   virtual ~WindowsCreateFunction() {}
   virtual bool RunImpl() OVERRIDE;
   // Returns whether the window should be created in incognito mode.
+  // |create_data| are the options passed by the extension. It may be NULL.
   // |urls| is the list of urls to open. If we are creating an incognito window,
   // the function will remove these urls which may not be opened in incognito
   // mode.  If window creation leads the browser into an erroneous state,
   // |is_error| is set to true (also, error_ member variable is assigned
   // the proper error message).
-  bool ShouldOpenIncognitoWindow(const base::DictionaryValue* args,
-                                 std::vector<GURL>* urls,
-                                 bool* is_error);
+  bool ShouldOpenIncognitoWindow(
+      const api::windows::Create::Params::CreateData* create_data,
+      std::vector<GURL>* urls,
+      bool* is_error);
   DECLARE_EXTENSION_FUNCTION("windows.create", WINDOWS_CREATE)
 };
 class WindowsUpdateFunction : public SyncExtensionFunction {

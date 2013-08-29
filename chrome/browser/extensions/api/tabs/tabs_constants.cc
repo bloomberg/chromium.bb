@@ -13,7 +13,6 @@ const char kAlwaysOnTopKey[] = "alwaysOnTop";
 const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";
 const char kCurrentWindowKey[] = "currentWindow";
-const char kDrawAttentionKey[] = "drawAttention";
 const char kFaviconUrlKey[] = "favIconUrl";
 const char kFileKey[] = "file";
 const char kFocusedKey[] = "focused";

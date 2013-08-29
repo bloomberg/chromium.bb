@@ -110,10 +110,7 @@ using content::WebContents;
 
 namespace extensions {
 
-namespace Get = api::windows::Get;
-namespace GetAll = api::windows::GetAll;
-namespace GetCurrent = api::windows::GetCurrent;
-namespace GetLastFocused = api::windows::GetLastFocused;
+namespace windows = api::windows;
 namespace errors = extension_manifest_errors;
 namespace keys = tabs_constants;
 namespace tabs = api::tabs;
@@ -227,7 +224,7 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
 // Windows ---------------------------------------------------------------------
 
 bool WindowsGetFunction::RunImpl() {
-  scoped_ptr<Get::Params> params(Get::Params::Create(*args_));
+  scoped_ptr<windows::Get::Params> params(windows::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool populate_tabs = false;
@@ -249,7 +246,8 @@ bool WindowsGetFunction::RunImpl() {
 }
 
 bool WindowsGetCurrentFunction::RunImpl() {
-  scoped_ptr<GetCurrent::Params> params(GetCurrent::Params::Create(*args_));
+  scoped_ptr<windows::GetCurrent::Params> params(
+      windows::GetCurrent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool populate_tabs = false;
@@ -270,8 +268,8 @@ bool WindowsGetCurrentFunction::RunImpl() {
 }
 
 bool WindowsGetLastFocusedFunction::RunImpl() {
-  scoped_ptr<GetLastFocused::Params> params(
-      GetLastFocused::Params::Create(*args_));
+  scoped_ptr<windows::GetLastFocused::Params> params(
+      windows::GetLastFocused::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool populate_tabs = false;
@@ -297,7 +295,8 @@ bool WindowsGetLastFocusedFunction::RunImpl() {
 }
 
 bool WindowsGetAllFunction::RunImpl() {
-  scoped_ptr<GetAll::Params> params(GetAll::Params::Create(*args_));
+  scoped_ptr<windows::GetAll::Params> params(
+      windows::GetAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool populate_tabs = false;
@@ -322,16 +321,14 @@ bool WindowsGetAllFunction::RunImpl() {
 }
 
 bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
-    const base::DictionaryValue* args,
-    std::vector<GURL>* urls,
-    bool* is_error) {
+    const windows::Create::Params::CreateData* create_data,
+    std::vector<GURL>* urls, bool* is_error) {
   *is_error = false;
   const IncognitoModePrefs::Availability incognito_availability =
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   bool incognito = false;
-  if (args && args->HasKey(keys::kIncognitoKey)) {
-    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
-                                                 &incognito));
+  if (create_data && create_data->incognito) {
+    incognito = *create_data->incognito;
     if (incognito && incognito_availability == IncognitoModePrefs::DISABLED) {
       error_ = keys::kIncognitoModeIsDisabled;
       *is_error = true;
@@ -372,69 +369,49 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
 }
 
 bool WindowsCreateFunction::RunImpl() {
-  base::DictionaryValue* args = NULL;
+  scoped_ptr<windows::Create::Params> params(
+      windows::Create::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
   std::vector<GURL> urls;
   TabStripModel* source_tab_strip = NULL;
   int tab_index = -1;
 
-  if (HasOptionalArgument(0))
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+  windows::Create::Params::CreateData* create_data = params->create_data.get();
 
   // Look for optional url.
-  if (args) {
-    if (args->HasKey(keys::kUrlKey)) {
-      Value* url_value;
-      std::vector<std::string> url_strings;
-      args->Get(keys::kUrlKey, &url_value);
+  if (create_data && create_data->url) {
+    std::vector<std::string> url_strings;
+    // First, get all the URLs the client wants to open.
+    if (create_data->url->as_string)
+      url_strings.push_back(*create_data->url->as_string);
+    else if (create_data->url->as_strings)
+      url_strings.swap(*create_data->url->as_strings);
 
-      // First, get all the URLs the client wants to open.
-      if (url_value->IsType(Value::TYPE_STRING)) {
-        std::string url_string;
-        url_value->GetAsString(&url_string);
-        url_strings.push_back(url_string);
-      } else if (url_value->IsType(Value::TYPE_LIST)) {
-        const base::ListValue* url_list =
-            static_cast<const base::ListValue*>(url_value);
-        for (size_t i = 0; i < url_list->GetSize(); ++i) {
-          std::string url_string;
-          EXTENSION_FUNCTION_VALIDATE(url_list->GetString(i, &url_string));
-          url_strings.push_back(url_string);
-        }
+    // Second, resolve, validate and convert them to GURLs.
+    for (std::vector<std::string>::iterator i = url_strings.begin();
+         i != url_strings.end(); ++i) {
+      GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
+          *i, GetExtension());
+      if (!url.is_valid()) {
+        error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError, *i);
+        return false;
       }
-
-      // Second, resolve, validate and convert them to GURLs.
-      for (std::vector<std::string>::iterator i = url_strings.begin();
-           i != url_strings.end(); ++i) {
-        GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
-            *i, GetExtension());
-        if (!url.is_valid()) {
-          error_ = ErrorUtils::FormatErrorMessage(
-              keys::kInvalidUrlError, *i);
-          return false;
-        }
-        // Don't let the extension crash the browser or renderers.
-        if (ExtensionTabUtil::IsCrashURL(url)) {
-          error_ = keys::kNoCrashBrowserError;
-          return false;
-        }
-        urls.push_back(url);
+      // Don't let the extension crash the browser or renderers.
+      if (ExtensionTabUtil::IsCrashURL(url)) {
+        error_ = keys::kNoCrashBrowserError;
+        return false;
       }
+      urls.push_back(url);
     }
   }
 
   // Look for optional tab id.
-  if (args) {
-    int tab_id = -1;
-    if (args->HasKey(keys::kTabIdKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabIdKey, &tab_id));
-
-      // Find the tab. |source_tab_strip| and |tab_index| will later be used to
-      // move the tab into the created window.
-      if (!GetTabById(tab_id, profile(), include_incognito(),
-                      NULL, &source_tab_strip,
-                      NULL, &tab_index, &error_))
-        return false;
-    }
+  if (create_data && create_data->tab_id) {
+    // Find the tab. |source_tab_strip| and |tab_index| will later be used to
+    // move the tab into the created window.
+    if (!GetTabById(*create_data->tab_id, profile(), include_incognito(), NULL,
+                    &source_tab_strip, NULL, &tab_index, &error_))
+      return false;
   }
 
   Profile* window_profile = profile();
@@ -451,7 +428,7 @@ bool WindowsCreateFunction::RunImpl() {
 
   // Decide whether we are opening a normal window or an incognito window.
   bool is_error = true;
-  bool open_incognito_window = ShouldOpenIncognitoWindow(args, &urls,
+  bool open_incognito_window = ShouldOpenIncognitoWindow(create_data, &urls,
                                                          &is_error);
   if (is_error) {
     // error_ member variable is set inside of ShouldOpenIncognitoWindow.
@@ -461,18 +438,16 @@ bool WindowsCreateFunction::RunImpl() {
     window_profile = window_profile->GetOffTheRecordProfile();
   }
 
-  if (args) {
+  if (create_data) {
     // Figure out window type before figuring out bounds so that default
     // bounds can be set according to the window type.
-    std::string type_str;
-    if (args->HasKey(keys::kWindowTypeKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kWindowTypeKey,
-                                                  &type_str));
-      if (type_str == keys::kWindowTypeValuePopup) {
+    switch (create_data->type) {
+      case windows::Create::Params::CreateData::TYPE_POPUP:
         window_type = Browser::TYPE_POPUP;
         extension_id = GetExtension()->id();
-      } else if (type_str == keys::kWindowTypeValuePanel ||
-                 type_str == keys::kWindowTypeValueDetachedPanel) {
+        break;
+      case windows::Create::Params::CreateData::TYPE_PANEL:
+      case windows::Create::Params::CreateData::TYPE_DETACHED_PANEL: {
         extension_id = GetExtension()->id();
         bool use_panels = false;
 #if !defined(OS_ANDROID)
@@ -482,16 +457,22 @@ bool WindowsCreateFunction::RunImpl() {
           create_panel = true;
 #if !defined(OS_CHROMEOS)
           // Non-ChromeOS has both docked and detached panel types.
-          if (type_str == keys::kWindowTypeValueDetachedPanel)
+          if (create_data->type ==
+              windows::Create::Params::CreateData::TYPE_DETACHED_PANEL) {
             panel_create_mode = PanelManager::CREATE_AS_DETACHED;
+          }
 #endif
         } else {
           window_type = Browser::TYPE_POPUP;
         }
-      } else if (type_str != keys::kWindowTypeValueNormal) {
+        break;
+      }
+      case windows::Create::Params::CreateData::TYPE_NONE:
+      case windows::Create::Params::CreateData::TYPE_NORMAL:
+        break;
+      default:
         error_ = keys::kInvalidWindowTypeError;
         return false;
-      }
     }
 
     // Initialize default window bounds according to window type.
@@ -519,34 +500,20 @@ bool WindowsCreateFunction::RunImpl() {
     }
 
     // Any part of the bounds can optionally be set by the caller.
-    int bounds_val = -1;
-    if (args->HasKey(keys::kLeftKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
-                                                   &bounds_val));
-      window_bounds.set_x(bounds_val);
-    }
+    if (create_data->left)
+      window_bounds.set_x(*create_data->left);
 
-    if (args->HasKey(keys::kTopKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTopKey,
-                                                   &bounds_val));
-      window_bounds.set_y(bounds_val);
-    }
+    if (create_data->top)
+      window_bounds.set_y(*create_data->top);
 
-    if (args->HasKey(keys::kWidthKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kWidthKey,
-                                                   &bounds_val));
-      window_bounds.set_width(bounds_val);
-    }
+    if (create_data->width)
+      window_bounds.set_width(*create_data->width);
 
-    if (args->HasKey(keys::kHeightKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
-                                                   &bounds_val));
-      window_bounds.set_height(bounds_val);
-    }
+    if (create_data->height)
+      window_bounds.set_height(*create_data->height);
 
-    if (args->HasKey(keys::kFocusedKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kFocusedKey,
-                                                   &focused));
+    if (create_data->focused) {
+      focused = *create_data->focused;
       saw_focus_key = true;
     }
   }
@@ -662,13 +629,13 @@ bool WindowsCreateFunction::RunImpl() {
 }
 
 bool WindowsUpdateFunction::RunImpl() {
-  int window_id = extension_misc::kUnknownWindowId;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
-  base::DictionaryValue* update_props;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
+  scoped_ptr<windows::Update::Params> params(
+      windows::Update::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this, window_id, &controller))
+  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
+                                            &controller))
     return false;
 
 #if defined(OS_WIN)
@@ -680,22 +647,24 @@ bool WindowsUpdateFunction::RunImpl() {
 #endif
 
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
-  std::string state_str;
-  if (update_props->HasKey(keys::kShowStateKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetString(keys::kShowStateKey,
-                                                        &state_str));
-    if (state_str == keys::kShowStateValueNormal) {
+  switch (params->update_info.state) {
+    case windows::Update::Params::UpdateInfo::STATE_NORMAL:
       show_state = ui::SHOW_STATE_NORMAL;
-    } else if (state_str == keys::kShowStateValueMinimized) {
+      break;
+    case windows::Update::Params::UpdateInfo::STATE_MINIMIZED:
       show_state = ui::SHOW_STATE_MINIMIZED;
-    } else if (state_str == keys::kShowStateValueMaximized) {
+      break;
+    case windows::Update::Params::UpdateInfo::STATE_MAXIMIZED:
       show_state = ui::SHOW_STATE_MAXIMIZED;
-    } else if (state_str == keys::kShowStateValueFullscreen) {
+      break;
+    case windows::Update::Params::UpdateInfo::STATE_FULLSCREEN:
       show_state = ui::SHOW_STATE_FULLSCREEN;
-    } else {
+      break;
+    case windows::Update::Params::UpdateInfo::STATE_NONE:
+      break;
+    default:
       error_ = keys::kInvalidWindowStateError;
       return false;
-    }
   }
 
   if (show_state != ui::SHOW_STATE_FULLSCREEN &&
@@ -730,36 +699,23 @@ bool WindowsUpdateFunction::RunImpl() {
   bool set_bounds = false;
 
   // Any part of the bounds can optionally be set by the caller.
-  int bounds_val;
-  if (update_props->HasKey(keys::kLeftKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-        keys::kLeftKey,
-        &bounds_val));
-    bounds.set_x(bounds_val);
+  if (params->update_info.left) {
+    bounds.set_x(*params->update_info.left);
     set_bounds = true;
   }
 
-  if (update_props->HasKey(keys::kTopKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-        keys::kTopKey,
-        &bounds_val));
-    bounds.set_y(bounds_val);
+  if (params->update_info.top) {
+    bounds.set_y(*params->update_info.top);
     set_bounds = true;
   }
 
-  if (update_props->HasKey(keys::kWidthKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-        keys::kWidthKey,
-        &bounds_val));
-    bounds.set_width(bounds_val);
+  if (params->update_info.width) {
+    bounds.set_width(*params->update_info.width);
     set_bounds = true;
   }
 
-  if (update_props->HasKey(keys::kHeightKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-        keys::kHeightKey,
-        &bounds_val));
-    bounds.set_height(bounds_val);
+  if (params->update_info.height) {
+    bounds.set_height(*params->update_info.height);
     set_bounds = true;
   }
 
@@ -775,11 +731,8 @@ bool WindowsUpdateFunction::RunImpl() {
     controller->window()->SetBounds(bounds);
   }
 
-  bool active_val = false;
-  if (update_props->HasKey(keys::kFocusedKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
-        keys::kFocusedKey, &active_val));
-    if (active_val) {
+  if (params->update_info.focused) {
+    if (*params->update_info.focused) {
       if (show_state == ui::SHOW_STATE_MINIMIZED) {
         error_ = keys::kInvalidWindowStateError;
         return false;
@@ -795,12 +748,8 @@ bool WindowsUpdateFunction::RunImpl() {
     }
   }
 
-  bool draw_attention = false;
-  if (update_props->HasKey(keys::kDrawAttentionKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
-        keys::kDrawAttentionKey, &draw_attention));
-    controller->window()->FlashFrame(draw_attention);
-  }
+  if (params->update_info.draw_attention)
+    controller->window()->FlashFrame(*params->update_info.draw_attention);
 
   SetResult(controller->CreateWindowValue());
 
@@ -808,11 +757,13 @@ bool WindowsUpdateFunction::RunImpl() {
 }
 
 bool WindowsRemoveFunction::RunImpl() {
-  int window_id = -1;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
+  scoped_ptr<windows::Remove::Params> params(
+      windows::Remove::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this, window_id, &controller))
+  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
+                                           &controller))
     return false;
 
 #if defined(OS_WIN)
