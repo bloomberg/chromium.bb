@@ -6,9 +6,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/synchronization/lock.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
@@ -262,7 +263,7 @@ TextureLayer::MailboxHolder::MainThreadReference::~MainThreadReference() {
 }
 
 TextureLayer::MailboxHolder::MailboxHolder(const TextureMailbox& mailbox)
-    : message_loop_(base::MessageLoopProxy::current()),
+    : message_loop_(BlockingTaskRunner::current()),
       internal_references_(0),
       mailbox_(mailbox),
       sync_point_(mailbox.sync_point()),
@@ -280,6 +281,7 @@ TextureLayer::MailboxHolder::Create(const TextureMailbox& mailbox) {
 }
 
 void TextureLayer::MailboxHolder::Return(unsigned sync_point, bool is_lost) {
+  base::AutoLock lock(arguments_lock_);
   sync_point_ = sync_point;
   is_lost_ = is_lost;
 }
@@ -301,22 +303,15 @@ void TextureLayer::MailboxHolder::InternalRelease() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   if (!--internal_references_) {
     mailbox_.RunReleaseCallback(sync_point_, is_lost_);
-    mailbox_ = TextureMailbox();
+    DCHECK(mailbox_.callback().is_null());
   }
-}
-
-void TextureLayer::MailboxHolder::ReturnAndReleaseOnMainThread(
-    unsigned sync_point, bool is_lost) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  Return(sync_point, is_lost);
-  InternalRelease();
 }
 
 void TextureLayer::MailboxHolder::ReturnAndReleaseOnImplThread(
     unsigned sync_point, bool is_lost) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &MailboxHolder::ReturnAndReleaseOnMainThread,
-      this, sync_point, is_lost));
+  Return(sync_point, is_lost);
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&MailboxHolder::InternalRelease, this));
 }
 
 }  // namespace cc

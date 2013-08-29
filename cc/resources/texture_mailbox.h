@@ -47,12 +47,9 @@ class CC_EXPORT TextureMailbox {
   bool ContainsMailbox(const gpu::Mailbox&) const;
   bool ContainsHandle(base::SharedMemoryHandle handle) const;
 
-  const ReleaseCallback& callback() const { return callback_; }
   const int8* data() const { return name_.name; }
   const gpu::Mailbox& name() const { return name_; }
   void ResetSyncPoint() { sync_point_ = 0; }
-  void RunReleaseCallback(unsigned sync_point, bool lost_resource) const;
-  void SetName(const gpu::Mailbox&);
   unsigned target() const { return target_; }
   unsigned sync_point() const { return sync_point_; }
 
@@ -60,7 +57,16 @@ class CC_EXPORT TextureMailbox {
   gfx::Size shared_memory_size() const { return shared_memory_size_; }
   size_t shared_memory_size_in_bytes() const;
 
+  // TODO(danakj): ReleaseCallback should be separate from this class, and stop
+  // storing a TextureMailbox in ResourceProvider. Then we can remove this.
+  void SetName(const gpu::Mailbox& name);
+
+  // TODO(danakj): ReleaseCallback should be a separate scoped_ptr outside this
+  // class to avoid silently adding references to the callback's internals.
+  void RunReleaseCallback(unsigned sync_point, bool lost_resource);
+
   TextureMailbox CopyWithNewCallback(const ReleaseCallback& callback) const;
+  const ReleaseCallback& callback() const { return callback_; }
 
  private:
   gpu::Mailbox name_;

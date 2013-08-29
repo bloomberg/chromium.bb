@@ -4,6 +4,7 @@
 
 #include "cc/resources/texture_mailbox.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -97,15 +98,15 @@ bool TextureMailbox::ContainsHandle(base::SharedMemoryHandle handle) const {
   return shared_memory_ && shared_memory_->handle() == handle;
 }
 
-void TextureMailbox::RunReleaseCallback(unsigned sync_point,
-                                        bool lost_resource) const {
-  if (!callback_.is_null())
-    callback_.Run(sync_point, lost_resource);
+void TextureMailbox::SetName(const gpu::Mailbox& name) {
+  DCHECK(shared_memory_ == NULL);
+  name_ = name;
 }
 
-void TextureMailbox::SetName(const gpu::Mailbox& other) {
-  DCHECK(shared_memory_ == NULL);
-  name_.SetName(other.name);
+void TextureMailbox::RunReleaseCallback(unsigned sync_point,
+                                        bool lost_resource) {
+  if (!callback_.is_null())
+    base::ResetAndReturn(&callback_).Run(sync_point, lost_resource);
 }
 
 TextureMailbox TextureMailbox::CopyWithNewCallback(

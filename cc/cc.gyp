@@ -361,6 +361,8 @@
         'scheduler/texture_uploader.cc',
         'scheduler/texture_uploader.h',
         'scheduler/time_source.h',
+        'trees/blocking_task_runner.cc',
+        'trees/blocking_task_runner.h',
         'trees/damage_tracker.cc',
         'trees/damage_tracker.h',
         'trees/layer_sorter.cc',

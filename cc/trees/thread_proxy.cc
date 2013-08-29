@@ -18,6 +18,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/frame_rate_controller.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -223,6 +224,7 @@ void ThreadProxy::SetLayerTreeHostClientReadyOnImplThread() {
 void ThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT0("cc", "ThreadProxy::SetVisible");
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+
   CompletionEvent completion;
   Proxy::ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
@@ -582,6 +584,7 @@ void ThreadProxy::Start(scoped_ptr<OutputSurface> first_output_surface) {
   DCHECK(IsMainThread());
   DCHECK(Proxy::HasImplThread());
   DCHECK(first_output_surface);
+
   // Create LayerTreeHostImpl.
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
   CompletionEvent completion;
@@ -818,6 +821,11 @@ void ThreadProxy::BeginFrameOnMainThread(
     TRACE_EVENT0("cc", "ThreadProxy::BeginFrameOnMainThread::commit");
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+
+    // This CapturePostTasks should be destroyed before CommitComplete() is
+    // called since that goes out to the embedder, and we want the embedder
+    // to receive its callbacks before that.
+    BlockingTaskRunner::CapturePostTasks blocked;
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();

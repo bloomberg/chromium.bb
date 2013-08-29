@@ -11,6 +11,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_controller.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -186,6 +187,11 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
   {
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     DebugScopedSetImplThread impl(this);
+
+    // This CapturePostTasks should be destroyed before CommitComplete() is
+    // called since that goes out to the embedder, and we want the embedder
+    // to receive its callbacks before that.
+    BlockingTaskRunner::CapturePostTasks blocked;
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
