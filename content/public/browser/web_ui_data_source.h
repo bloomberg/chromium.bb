@@ -79,9 +79,7 @@ class WebUIDataSource {
   // pages, see URLDataSource::ShouldAddContentSecurityPolicy and talk to
   // tsepez.
 
-  // Currently only used by embedders for WebUIs with multiple instances, could
-  // have been useful for NTP as well if it wasn't implementing URLDataSource
-  // itself.
+  // Currently only used by embedders for WebUIs with multiple instances.
   virtual void DisableReplaceExistingSource() = 0;
   virtual void DisableContentSecurityPolicy() = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
