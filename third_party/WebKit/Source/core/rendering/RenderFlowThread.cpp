@@ -293,17 +293,17 @@ void RenderFlowThread::paintFlowThreadPortionInRegion(PaintInfo& paintInfo, Rend
     IntRect regionClippingRect = pixelSnappedIntRect(computeRegionClippingRect(adjustedPaintOffset + portionLocation, flowThreadPortionRect, flowThreadPortionOverflowRect));
 
     PaintInfo info(paintInfo);
-    info.rect().intersect(regionClippingRect);
+    info.rect.intersect(regionClippingRect);
 
-    if (!info.rect().isEmpty()) {
+    if (!info.rect.isEmpty()) {
         context->save();
 
         context->clip(regionClippingRect);
 
         context->translate(adjustedPaintOffset.x(), adjustedPaintOffset.y());
-        info.rect().moveBy(-adjustedPaintOffset);
+        info.rect.moveBy(-adjustedPaintOffset);
 
-        layer()->paint(context, info.rect(), 0, 0, region, RenderLayer::PaintLayerTemporaryClipRects);
+        layer()->paint(context, info.rect, 0, 0, region, RenderLayer::PaintLayerTemporaryClipRects);
 
         context->restore();
     }

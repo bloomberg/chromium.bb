@@ -412,7 +412,7 @@ void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     // This avoids painting garbage between columns if there is a column gap.
     if (m_frameView && m_frameView->pagination().mode != Pagination::Unpaginated)
-        paintInfo.context->fillRect(paintInfo.rect(), m_frameView->baseBackgroundColor());
+        paintInfo.context->fillRect(paintInfo.rect, m_frameView->baseBackgroundColor());
 
     paintObject(paintInfo, paintOffset);
 }
@@ -498,10 +498,10 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
         if (baseColor.alpha()) {
             CompositeOperator previousOperator = paintInfo.context->compositeOperation();
             paintInfo.context->setCompositeOperation(CompositeCopy);
-            paintInfo.context->fillRect(paintInfo.rect(), baseColor);
+            paintInfo.context->fillRect(paintInfo.rect, baseColor);
             paintInfo.context->setCompositeOperation(previousOperator);
         } else {
-            paintInfo.context->clearRect(paintInfo.rect());
+            paintInfo.context->clearRect(paintInfo.rect);
         }
     }
 }

@@ -1337,7 +1337,7 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
 {
     PaintPhase paintPhase = paintInfo.phase;
 
-    LayoutRect localRepaintRect = paintInfo.rect();
+    LayoutRect localRepaintRect = paintInfo.rect;
     localRepaintRect.moveBy(-paintOffset);
     localRepaintRect.inflate(maximalOutlineSize(paintPhase));
 
