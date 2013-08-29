@@ -224,12 +224,10 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& es)
     return m_responseText;
 }
 
-ScriptString XMLHttpRequest::responseJSONSource(ExceptionState& es)
+ScriptString XMLHttpRequest::responseJSONSource()
 {
-    if (m_responseTypeCode != ResponseTypeJSON) {
-        es.throwDOMException(InvalidStateError);
-        return ScriptString();
-    }
+    ASSERT(m_responseTypeCode == ResponseTypeJSON);
+
     if (m_error || m_state != DONE)
         return ScriptString();
     return m_responseText;

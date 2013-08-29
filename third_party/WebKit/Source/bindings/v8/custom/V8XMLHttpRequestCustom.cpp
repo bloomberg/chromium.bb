@@ -97,7 +97,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(v8::Local<v8::String> name,
             v8::Isolate* isolate = info.GetIsolate();
 
             ExceptionState es(isolate);
-            ScriptString jsonSource = xmlHttpRequest->responseJSONSource(es);
+            ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
             if (es.throwIfNeeded())
                 return;
 

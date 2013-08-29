@@ -113,7 +113,7 @@ public:
     String getAllResponseHeaders(ExceptionState&) const;
     String getResponseHeader(const AtomicString& name, ExceptionState&) const;
     ScriptString responseText(ExceptionState&);
-    ScriptString responseJSONSource(ExceptionState&);
+    ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
     Blob* responseBlob();
     unsigned long timeout() const { return m_timeoutMilliseconds; }
