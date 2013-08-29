@@ -105,6 +105,9 @@ const int kMaximumAppMenuItemLength = 350;
 const int kRipOffDistance = 48;
 const int kReinsertDistance = 32;
 
+// The rip off drag and drop proxy image should get scaled by this factor.
+const float kDragAndDropProxyScale = 1.5f;
+
 namespace {
 
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
@@ -410,6 +413,7 @@ LauncherView::LauncherView(LauncherModel* model,
       drag_and_drop_item_pinned_(false),
       drag_and_drop_launcher_id_(0),
       dragged_off_shelf_(false),
+      snap_back_from_rip_off_view_(NULL),
       item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
@@ -999,9 +1003,10 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
     return;
   }
 
-  // If this is not a drag and drop host operation, check if the item got
-  // ripped off the shelf - if it did we are done.
-  if (!drag_and_drop_launcher_id_ && ash::switches::UseDragOffShelf()) {
+  // If this is not a drag and drop host operation and not the app list item,
+  // check if the item got ripped off the shelf - if it did we are done.
+  if (!drag_and_drop_launcher_id_ && ash::switches::UseDragOffShelf() &&
+      RemovableByRipOff(current_index) != NOT_REMOVABLE) {
     if (HandleRipOffDrag(event))
       return;
     // The rip off handler could have changed the location of the item.
@@ -1074,7 +1079,7 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     // rip off distance to avoid flickering.
     if (delta < kReinsertDistance) {
       // Destroy our proxy view item.
-      // TODO(skuhne): Do it!
+      DestroyDragIconProxy();
       // Re-insert the item and return simply false since the caller will handle
       // the move as in any normal case.
       dragged_off_shelf_ = false;
@@ -1082,17 +1087,27 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       return false;
     }
     // Move our proxy view item.
-    // TODO(skuhne): Do it!
+    UpdateDragIconProxy(event.root_location());
     return true;
   }
   // Check if we are too far away from the shelf to enter the ripped off state.
   if (delta > kRipOffDistance) {
     // Create a proxy view item which can be moved anywhere.
-    // TODO(skuhne): Do it!
-    // Move the item to the end of the launcher and hide it.
+    LauncherButton* button = static_cast<LauncherButton*>(drag_view_);
+    CreateDragIconProxy(event.root_location(),
+                        button->GetImage(),
+                        drag_view_,
+                        gfx::Vector2d(0, 0),
+                        kDragAndDropProxyScale);
     drag_view_->layer()->SetOpacity(0.0f);
-    model_->Move(current_index, model_->item_count() - 1);
-    AnimateToIdealBounds();
+    if (RemovableByRipOff(current_index) == REMOVABLE) {
+      // Move the item to the end of the launcher and hide it.
+      model_->Move(current_index, model_->item_count() - 1);
+      AnimateToIdealBounds();
+      // Make the item partially disappear to show that it will get removed if
+      // dropped.
+      drag_image_->SetOpacity(0.5f);
+    }
     dragged_off_shelf_ = true;
     return true;
   }
@@ -1108,42 +1123,65 @@ void LauncherView::FinalizeRipOffDrag(bool cancel) {
   // Coming here we should always have a |drag_view_|.
   DCHECK(drag_view_);
   int current_index = view_model_->GetIndexOfView(drag_view_);
-  // If the view isn't part of the model anymore, a sync operation must have
-  // removed it. In that case we shouldn't change the model and only delete the
-  // proxy image.
+  // If the view isn't part of the model anymore (|current_index| == -1), a sync
+  // operation must have removed it. In that case we shouldn't change the model
+  // and only delete the proxy image.
   if (current_index == -1) {
-    // TODO(skuhne): Destroy the proxy immediately.
-  } else {
-    // Items which cannot be dragged off will be handled as a cancel.
-    if (!cancel) {
-      // Make sure we do not try to remove un-removable items like items which
-      // were not pinned or have to be always there.
-      LauncherItemType type = model_->items()[current_index].type;
+    DestroyDragIconProxy();
+    return;
+  }
+
+  // Set to true when the animation should snap back to where it was before.
+  bool snap_back = false;
+  // Items which cannot be dragged off will be handled as a cancel.
+  if (!cancel) {
+    // Make sure we do not try to remove un-removable items like items which
+    // were not pinned or have to be always there.
+    if (RemovableByRipOff(current_index) != REMOVABLE) {
+      cancel = true;
+      snap_back = true;
+    } else {
+      // Make sure the item stays invisible upon removal.
+      drag_view_->SetVisible(false);
       std::string app_id =
           delegate_->GetAppIDForLauncherID(model_->items()[current_index].id);
-      if (type == TYPE_APP_LIST ||
-          type == TYPE_BROWSER_SHORTCUT ||
-          !delegate_->IsAppPinned(app_id)) {
-        cancel = true;
-      } else {
-        // Make sure the item stays invisible upon removal.
-        drag_view_->SetVisible(false);
-        delegate_->UnpinAppWithID(app_id);
-      }
-    }
-    if (cancel) {
-      // TODO(skuhne): This is not correct since it shows the animation from
-      // the outer rim towards the old location instead of the animation from
-      // the proxy towards the original location.
-      if (!cancelling_drag_model_changed_) {
-        // When a cancelling drag model is happening, the view model is diverged
-        // from the menu model and movements / animations should not be done.
-        model_->Move(current_index, start_drag_index_);
-        AnimateToIdealBounds();
-      }
-      drag_view_->layer()->SetOpacity(1.0f);
+      delegate_->UnpinAppWithID(app_id);
     }
   }
+  if (cancel || snap_back) {
+    if (!cancelling_drag_model_changed_) {
+      // Only do something if the change did not come through a model change.
+      gfx::Rect drag_bounds = drag_image_->GetBoundsInScreen();
+      gfx::Point relative_to = GetBoundsInScreen().origin();
+      gfx::Rect target(
+          gfx::PointAtOffsetFromOrigin(drag_bounds.origin()- relative_to),
+          drag_bounds.size());
+      drag_view_->SetBoundsRect(target);
+      // Hide the status from the active item since we snap it back now. Upon
+      // animation end the flag gets cleared if |snap_back_from_rip_off_view_|
+      // is set.
+      snap_back_from_rip_off_view_ = drag_view_;
+      LauncherButton* button = static_cast<LauncherButton*>(drag_view_);
+      button->AddState(LauncherButton::STATE_HIDDEN);
+      // When a canceling drag model is happening, the view model is diverged
+      // from the menu model and movements / animations should not be done.
+      model_->Move(current_index, start_drag_index_);
+      AnimateToIdealBounds();
+    }
+    drag_view_->layer()->SetOpacity(1.0f);
+  }
+  DestroyDragIconProxy();
+}
+
+LauncherView::RemovableState LauncherView::RemovableByRipOff(int index) {
+  LauncherItemType type = model_->items()[index].type;
+  if (type == TYPE_APP_LIST)
+    return NOT_REMOVABLE;
+  std::string app_id =
+      delegate_->GetAppIDForLauncherID(model_->items()[index].id);
+  // Note: Only pinned app shortcuts can be removed!
+  return (type == TYPE_APP_SHORTCUT && delegate_->IsAppPinned(app_id)) ?
+      REMOVABLE : DRAGGABLE;
 }
 
 bool LauncherView::SameDragType(LauncherItemType typea,
@@ -1778,6 +1816,23 @@ void LauncherView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 }
 
 void LauncherView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
+  if (snap_back_from_rip_off_view_ && animator == bounds_animator_) {
+    if (!animator->IsAnimating(snap_back_from_rip_off_view_)) {
+      // Coming here the animation of the LauncherButton is finished and the
+      // previously hidden status can be shown again. Since the button itself
+      // might have gone away or changed locations we check that the button
+      // is still in the shelf and show its status again.
+      for (int index = 0; index < view_model_->view_size(); index++) {
+        views::View* view = view_model_->view_at(index);
+        if (view == snap_back_from_rip_off_view_) {
+          LauncherButton* button = static_cast<LauncherButton*>(view);
+          button->ClearState(LauncherButton::STATE_HIDDEN);
+          break;
+        }
+      }
+      snap_back_from_rip_off_view_ = NULL;
+    }
+  }
 }
 
 bool LauncherView::IsUsableEvent(const ui::Event& event) {

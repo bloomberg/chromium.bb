@@ -293,6 +293,10 @@ void LauncherButton::SetImage(const gfx::ImageSkia& image) {
       skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
 }
 
+const gfx::ImageSkia& LauncherButton::GetImage() const {
+  return icon_view_->GetImage();
+}
+
 void LauncherButton::AddState(State state) {
   if (!(state_ & state)) {
     if (!ash::switches::UseAlternateShelfLayout() &&
@@ -511,8 +515,23 @@ bool LauncherButton::IsShelfHorizontal() const {
 }
 
 void LauncherButton::UpdateState() {
-  // Even if not shown, the activation state image has an influence on the
-  // layout. To avoid any odd movement we assign a bitmap here.
+  UpdateBar();
+
+  icon_view_->SetHorizontalAlignment(
+      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
+                                              views::ImageView::LEADING));
+  icon_view_->SetVerticalAlignment(
+      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::LEADING,
+                                              views::ImageView::CENTER));
+  SchedulePaint();
+}
+
+void LauncherButton::UpdateBar() {
+  if (state_ & STATE_HIDDEN) {
+    bar_->SetVisible(false);
+    return;
+  }
+
   int bar_id = 0;
   if (ash::switches::UseAlternateShelfLayout()) {
     if (state_ & STATE_ACTIVE)
@@ -557,14 +576,6 @@ void LauncherButton::UpdateState() {
   }
 
   bar_->SetVisible(bar_id != 0 && state_ != STATE_NORMAL);
-
-  icon_view_->SetHorizontalAlignment(
-      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
-                                              views::ImageView::LEADING));
-  icon_view_->SetVerticalAlignment(
-      shelf_layout_manager_->PrimaryAxisValue(views::ImageView::LEADING,
-                                              views::ImageView::CENTER));
-  SchedulePaint();
 }
 
 }  // namespace internal

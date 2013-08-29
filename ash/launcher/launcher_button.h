@@ -33,6 +33,8 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
     // Underlying LauncherItem needs user's attention.
     STATE_ATTENTION = 1 << 3,
     STATE_FOCUSED   = 1 << 4,
+    // Hide the status (temporarily for some animations).
+    STATE_HIDDEN = 1 << 5,
   };
 
   virtual ~LauncherButton();
@@ -44,6 +46,9 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
 
   // Sets the image to display for this entry.
   void SetImage(const gfx::ImageSkia& image);
+
+  // Retrieve the image to show proxy operations.
+  const gfx::ImageSkia& GetImage() const;
 
   // |state| is or'd into the current state.
   void AddState(State state);
@@ -125,6 +130,9 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   // Updates the parts of the button to reflect the current |state_| and
   // alignment. This may add or remove views, layout and paint.
   void UpdateState();
+
+  // Updates the status bar (bitmap, orientation, visibility).
+  void UpdateBar();
 
   LauncherButtonHost* host_;
   IconView* icon_view_;

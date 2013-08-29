@@ -58,6 +58,10 @@ void DragImageView::SetScreenPosition(const gfx::Point& position) {
   widget_->SetBounds(gfx::Rect(position, widget_size_));
 }
 
+gfx::Rect DragImageView::GetBoundsInScreen() const {
+  return widget_->GetWindowBoundsInScreen();
+}
+
 void DragImageView::SetWidgetVisible(bool visible) {
   if (visible != widget_->IsVisible()) {
     if (visible)
@@ -65,6 +69,12 @@ void DragImageView::SetWidgetVisible(bool visible) {
     else
       widget_->Hide();
   }
+}
+
+void DragImageView::SetOpacity(float visibility) {
+  DCHECK_GE(visibility, 0.0f);
+  DCHECK_LE(visibility, 1.0f);
+  widget_->SetOpacity(static_cast<int>(0xff * visibility));
 }
 
 void DragImageView::OnPaint(gfx::Canvas* canvas) {

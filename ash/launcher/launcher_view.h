@@ -133,6 +133,12 @@ class ASH_EXPORT LauncherView : public views::View,
     gfx::Rect overflow_bounds;
   };
 
+  enum RemovableState {
+    REMOVABLE,     // Item can be removed when dragged away.
+    DRAGGABLE,     // Item can be removed, but will snap always back to origin.
+    NOT_REMOVABLE, // Item is fixed and can never be removed.
+  };
+
   bool is_overflow_mode() const {
     return first_visible_index_ > 0;
   }
@@ -178,6 +184,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Finalize the rip off dragging by either |cancel| the action or validating.
   void FinalizeRipOffDrag(bool cancel);
+
+  // Check if an item can be ripped off or not.
+  RemovableState RemovableByRipOff(int index);
 
   // Returns true if |typea| and |typeb| should be in the same drag range.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
@@ -386,6 +395,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // True when the icon was dragged off the shelf.
   bool dragged_off_shelf_;
+
+  // The rip off view when a snap back operation is underway.
+  views::View* snap_back_from_rip_off_view_;
 
   // Holds LauncherItemDelegateManager.
   LauncherItemDelegateManager* item_manager_;

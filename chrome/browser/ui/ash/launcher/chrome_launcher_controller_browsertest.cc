@@ -284,15 +284,19 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     base::MessageLoop::current()->RunUntilIdle();
     generator->MoveMouseTo(rip_off_point.x(), rip_off_point.y());
     base::MessageLoop::current()->RunUntilIdle();
+    test->RunMessageLoopUntilAnimationsDone();
     if (command == RIP_OFF_ITEM_AND_RETURN) {
       generator->MoveMouseTo(start_point.x(), start_point.y());
       base::MessageLoop::current()->RunUntilIdle();
+      test->RunMessageLoopUntilAnimationsDone();
     } else if (command == RIP_OFF_ITEM_AND_CANCEL) {
       // This triggers an internal cancel. Using VKEY_ESCAPE was too unreliable.
       button->OnMouseCaptureLost();
     }
-    if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE)
+    if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE) {
       generator->ReleaseLeftButton();
+      test->RunMessageLoopUntilAnimationsDone();
+    }
   }
 
   ash::Launcher* launcher_;
@@ -1607,6 +1611,10 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(browser_index,
             GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT));
+  // Make sure that the hide state has been unset after the snap back animation
+  // finished.
+  ash::internal::LauncherButton* button = test.GetButton(browser_index);
+  EXPECT_FALSE(button->state() & ash::internal::LauncherButton::STATE_HIDDEN);
 
   // Test #2: Ripping out the application and canceling the operation should
   // not change anything.

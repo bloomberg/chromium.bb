@@ -14,6 +14,10 @@ class Widget;
 namespace ash {
 namespace internal {
 
+// This class allows to show a (native) view always on top of everything. It
+// does this by creating a widget and setting the content as the given view. The
+// caller can then use this object to freely move / drag it around on the
+// desktop in screen coordinates.
 class DragImageView : public views::ImageView {
  public:
   explicit DragImageView(gfx::NativeView context);
@@ -28,8 +32,14 @@ class DragImageView : public views::ImageView {
   // Sets the position of the native widget.
   void SetScreenPosition(const gfx::Point& position);
 
+  // Gets the image position in screen coordinates.
+  gfx::Rect GetBoundsInScreen() const;
+
   // Sets the visibility of the native widget.
   void SetWidgetVisible(bool visible);
+
+  // Sets the |opacity| of the image view between 0.0 and 1.0.
+  void SetOpacity(float opacity);
 
  private:
   // Overridden from views::ImageView.
