@@ -58,7 +58,12 @@ HMODULE LoadChromeWithDirectory(string16* dir) {
   // performance loss.
   if (!cmd_line.HasSwitch(switches::kProcessType)) {
     const size_t kStepSize = 1024 * 1024;
-    uint8 percent = base::win::GetVersion() > base::win::VERSION_XP ? 25 : 0;
+    // Pre-read 100% of the binary. This was the fallback behaviour for an
+    // expired pre-read experiment as well as the standard behaviour before
+    // the pre-read experiment. Performance regressed when the experiment
+    // (and fallback to 100%) was removed. See http://crbug/245435
+    // TODO(rogerm): Revive the pre-read experiment under finch.
+    uint8 percent = 100;
     ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
   }
 #endif
