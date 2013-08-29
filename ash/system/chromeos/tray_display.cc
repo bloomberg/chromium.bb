@@ -175,7 +175,9 @@ base::string16 GetTrayDisplayMessage(base::string16* additional_message_out) {
   return base::string16();
 }
 
-void OpenSettings(user::LoginStatus login_status) {
+void OpenSettings() {
+  user::LoginStatus login_status =
+      Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
   if (login_status == ash::user::LOGGED_IN_USER ||
       login_status == ash::user::LOGGED_IN_OWNER ||
       login_status == ash::user::LOGGED_IN_GUEST) {
@@ -189,8 +191,7 @@ const char TrayDisplay::kNotificationId[] = "chrome://settings/display";
 
 class DisplayView : public ash::internal::ActionableView {
  public:
-  explicit DisplayView(user::LoginStatus login_status)
-      : login_status_(login_status) {
+  explicit DisplayView() {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
@@ -246,7 +247,7 @@ class DisplayView : public ash::internal::ActionableView {
 
   // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
-    OpenSettings(login_status_);
+    OpenSettings();
     return true;
   }
 
@@ -257,47 +258,10 @@ class DisplayView : public ash::internal::ActionableView {
     PreferredSizeChanged();
   }
 
-  user::LoginStatus login_status_;
   views::ImageView* image_;
   views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayView);
-};
-
-class DisplayNotificationView : public TrayNotificationView {
- public:
-  DisplayNotificationView(user::LoginStatus login_status,
-                          TrayDisplay* tray_item,
-                          const base::string16& message)
-      : TrayNotificationView(tray_item, IDR_AURA_UBER_TRAY_DISPLAY),
-        login_status_(login_status) {
-    StartAutoCloseTimer(kTrayPopupAutoCloseDelayForTextInSeconds);
-    Update(message);
-  }
-
-  virtual ~DisplayNotificationView() {}
-
-  void Update(const base::string16& message) {
-    if (message.empty()) {
-      owner()->HideNotificationView();
-    } else {
-      views::Label* label = new views::Label(message);
-      label->SetMultiLine(true);
-      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      UpdateView(label);
-      RestartAutoCloseTimer();
-    }
-  }
-
-  // Overridden from TrayNotificationView:
-  virtual void OnClickAction() OVERRIDE {
-    OpenSettings(login_status_);
-  }
-
- private:
-  user::LoginStatus login_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayNotificationView);
 };
 
 TrayDisplay::TrayDisplay(SystemTray* system_tray)
@@ -402,15 +366,13 @@ void TrayDisplay::CreateOrUpdateNotification(
       message_center::NotifierId(NOTIFIER_DISPLAY),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
-          base::Bind(&OpenSettings,
-                     Shell::GetInstance()->system_tray_delegate()->
-                     GetUserLoginStatus()))));
+          base::Bind(&OpenSettings))));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
   DCHECK(default_ == NULL);
-  default_ = new DisplayView(status);
+  default_ = new DisplayView();
   return default_;
 }
 

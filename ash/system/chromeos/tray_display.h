@@ -21,8 +21,6 @@ class AshTestBase;
 
 namespace internal {
 
-class DisplayNotificationView;
-
 class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                public DisplayController::Observer {
  public:
