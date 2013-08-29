@@ -43,4 +43,9 @@ v8::Local<v8::String> WebScriptBindings::toV8String(const WebString& string, v8:
     return v8String(string, isolate);
 }
 
+WebString WebScriptBindings::toWebString(v8::Handle<v8::String> v8String)
+{
+    return v8StringToWebCoreString<String>(v8String, Externalize);
+}
+
 } // namespace WebKit
