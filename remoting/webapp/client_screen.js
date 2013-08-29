@@ -296,6 +296,12 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
       pinField.value = '';
       if (event.target == pinForm) {
         event.preventDefault();
+
+        // Set the focus away from the password field. This has to be done
+        // before the password field gets hidden, to work around a Blink
+        // clipboard-handling bug - http://crbug.com/281523.
+        document.getElementById('pin-connect-button').focus();
+
         remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
         onPinFetched(pin);
         if (/** @type {boolean} */(rememberPinCheckbox.checked)) {
