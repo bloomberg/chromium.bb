@@ -8,6 +8,11 @@
 An example usage:
 tools/run-bisect-manual-test.py -g 201281 -b 201290
 
+On Linux platform, follow the instructions in this document
+https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+to setup the sandbox manually before running the script. Otherwise the script
+fails to launch Chrome and exits with an error.
+
 """
 
 import os
@@ -108,6 +113,13 @@ def main():
     print error_msg
     parser.print_help()
     return 1
+
+  if sys.platform.startswith('linux'):
+    if not os.environ.get('CHROME_DEVEL_SANDBOX'):
+      print 'SUID sandbox has not been setup.'\
+            ' See https://code.google.com/p/chromium/wiki/'\
+            'LinuxSUIDSandboxDevelopment for more information.'
+      return 1
 
   return _RunBisectionScript(options)
 
