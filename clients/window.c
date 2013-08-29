@@ -2904,18 +2904,18 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
+	input->sx = sx;
+	input->sy = sy;
+
+	if (!window)
+		return;
+
 	/* when making the window smaller - e.g. after a unmaximise we might
 	 * still have a pending motion event that the compositor has picked
 	 * based on the old surface dimensions
 	 */
 	if (sx > window->main_surface->allocation.width ||
 	    sy > window->main_surface->allocation.height)
-		return;
-
-	input->sx = sx;
-	input->sy = sy;
-
-	if (!window)
 		return;
 
 	if (!(input->grab && input->grab_button)) {
