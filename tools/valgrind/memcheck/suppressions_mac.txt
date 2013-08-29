@@ -2595,3 +2595,16 @@
    fun:_ZN10disk_cache15SimpleIndexFile19SyncRestoreFromDiskERKN4base8FilePathE
    fun:_ZN10disk_cache15SimpleIndexFile20SyncLoadIndexEntriesERKN4base8FilePathE13scoped_refptrINS1_22SingleThreadTaskRunnerEERKNS1_8CallbackIFv10scoped_ptrIN9__gnu_cxx8hash_mapIyNS_13EntryMetadataENSA_4hashIyEESt8equal_toIyESaISC_EEENS1_14DefaultDeleterISI_EEEbEEE
 }
+{
+   bug_280583
+   Memcheck:Unaddressable
+   fun:InterpolateRow_SSSE3
+   fun:_ZN6libyuv21ScaleARGBBilinearDownEiiiiiPKhPhiiii
+   fun:_ZN6libyuv16ScaleARGBAnySizeEiiiiiiiiPKhPhiiiiNS_10FilterModeE
+   fun:_ZN6libyuv9ScaleARGBEPKhiiiPhiiiiiiiNS_10FilterModeE
+   fun:ARGBScale
+   fun:_ZN7content20DesktopCaptureDevice4Core18OnCaptureCompletedEPN6webrtc12DesktopFrameE
+   fun:_ZN6webrtc12_GLOBAL__N_117ScreenCapturerMac7CaptureERKNS_13DesktopRegionE
+   fun:_ZN7content20DesktopCaptureDevice4Core9DoCaptureEv
+   fun:_ZN7content20DesktopCaptureDevice4Core7DoStartEv
+}
