@@ -260,8 +260,7 @@ scoped_ptr<SyncedNotification>
   bool is_well_formed_read_notification =
       (static_cast<SyncedNotification::ReadState>(
           specifics.coalesced_notification().read_state()) ==
-       SyncedNotification::kRead &&
-       specifics.coalesced_notification().has_render_info());
+       SyncedNotification::kRead);
   bool is_well_formed_dismissed_notification =
       (static_cast<SyncedNotification::ReadState>(
           specifics.coalesced_notification().read_state()) ==
