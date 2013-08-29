@@ -103,7 +103,7 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
     // doesn't optimize it out, and it will appear in mini-dumps).
     if (count == 0x1234) {
       for (size_t i = 0; i < kMaxStackTracesToCopyOntoStack; ++i)
-        stacktraces[i].PrintBacktrace();
+        stacktraces[i].Print();
     }
   }
 

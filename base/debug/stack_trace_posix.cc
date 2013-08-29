@@ -253,7 +253,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   }
   PrintToStderr("\n");
 
-  debug::StackTrace().PrintBacktrace();
+  debug::StackTrace().Print();
 
 #if defined(OS_LINUX)
 #if ARCH_CPU_X86_FAMILY
@@ -474,7 +474,7 @@ StackTrace::StackTrace() {
   count_ = std::max(backtrace(trace_, arraysize(trace_)), 0);
 }
 
-void StackTrace::PrintBacktrace() const {
+void StackTrace::Print() const {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 

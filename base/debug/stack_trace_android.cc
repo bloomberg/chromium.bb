@@ -75,7 +75,7 @@ StackTrace::StackTrace() {
   count_ = state.frame_count;
 }
 
-void StackTrace::PrintBacktrace() const {
+void StackTrace::Print() const {
   std::string backtrace = ToString();
   __android_log_write(ANDROID_LOG_ERROR, "chromium", backtrace.c_str());
 }

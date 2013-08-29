@@ -186,8 +186,7 @@ class LoggingJsEventHandler
 };
 
 void LogUnrecoverableErrorContext() {
-  base::debug::StackTrace stack_trace;
-  stack_trace.PrintBacktrace();
+  base::debug::StackTrace().Print();
 }
 
 notifier::NotifierOptions ParseNotifierOptions(

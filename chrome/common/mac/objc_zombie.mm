@@ -175,7 +175,7 @@ BOOL GetZombieRecord(id object, ZombieRecord* record) {
 // easy to use DCHECK to dump only in debug builds.
 BOOL DumpDeallocTrace(const void* const* array, int size) {
   fprintf(stderr, "Backtrace from -dealloc:\n");
-  base::debug::StackTrace(array, size).PrintBacktrace();
+  base::debug::StackTrace(array, size).Print();
 
   return YES;
 }

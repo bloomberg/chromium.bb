@@ -128,7 +128,7 @@ TEST_F(StackTraceTest, DebugOutputToStream) {
 
 // The test is used for manual testing, e.g., to see the raw output.
 TEST_F(StackTraceTest, DebugPrintBacktrace) {
-  StackTrace().PrintBacktrace();
+  StackTrace().Print();
 }
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)

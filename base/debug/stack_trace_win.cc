@@ -30,7 +30,7 @@ LPTOP_LEVEL_EXCEPTION_FILTER g_previous_filter = NULL;
 // Prints the exception call stack.
 // This is the unit tests exception filter.
 long WINAPI StackDumpExceptionFilter(EXCEPTION_POINTERS* info) {
-  debug::StackTrace(info).PrintBacktrace();
+  debug::StackTrace(info).Print();
   if (g_previous_filter)
     return g_previous_filter(info);
   return EXCEPTION_CONTINUE_SEARCH;
@@ -248,7 +248,7 @@ StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
     trace_[i] = NULL;
 }
 
-void StackTrace::PrintBacktrace() const {
+void StackTrace::Print() const {
   OutputToStream(&std::cerr);
 }
 

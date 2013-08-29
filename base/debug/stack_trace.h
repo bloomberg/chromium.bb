@@ -55,8 +55,8 @@ class BASE_EXPORT StackTrace {
   // number of elements in the returned array.
   const void* const* Addresses(size_t* count) const;
 
-  // Prints a backtrace to stderr
-  void PrintBacktrace() const;
+  // Prints the stack trace to stderr.
+  void Print() const;
 
   // Resolves backtrace to symbols and write to stream.
   void OutputToStream(std::ostream* os) const;

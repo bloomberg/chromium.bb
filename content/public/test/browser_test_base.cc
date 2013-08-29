@@ -52,7 +52,7 @@ static void DumpStackTraceSignalHandler(int signal) {
     logging::RawLog(logging::LOG_ERROR,
                     "BrowserTestBase signal handler received SIGTERM. "
                     "Backtrace:\n");
-    base::debug::StackTrace().PrintBacktrace();
+    base::debug::StackTrace().Print();
   }
   _exit(128 + signal);
 }
