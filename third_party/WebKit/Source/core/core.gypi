@@ -527,8 +527,6 @@
             'accessibility/AccessibilityTableRow.cpp',
             'accessibility/AccessibilityTableRow.h',
             'animation/ActiveAnimations.h',
-            'animation/AnimatableColor.h',
-            'animation/AnimatableColor.cpp',
             'animation/AnimatableImage.cpp',
             'animation/AnimatableImage.h',
             'animation/AnimatableLengthBox.cpp',
@@ -3790,7 +3788,6 @@
             'platform/chromium/support/WrappedResourceResponse.h',
         ],
         'core_unittest_files': [
-            'animation/AnimatableColorTest.cpp',
             'animation/AnimatableNeutralTest.cpp',
             'animation/AnimatableNumberTest.cpp',
             'animation/AnimatableUnknownTest.cpp',
