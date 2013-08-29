@@ -64,9 +64,11 @@ bool GeolocationInfoBarDelegate::Accept() {
 
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
-  controller_->OnPermissionSet(id_, requesting_frame_,
-                               web_contents()->GetURL(),
-                               update_content_setting, allowed);
+  if (web_contents()) {
+    controller_->OnPermissionSet(id_, requesting_frame_,
+                                 web_contents()->GetURL(),
+                                 update_content_setting, allowed);
+  }
 }
 
 void GeolocationInfoBarDelegate::InfoBarDismissed() {
