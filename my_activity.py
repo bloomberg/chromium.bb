@@ -118,10 +118,12 @@ gerrit_instances = [
   {
     'url': 'gerrit.chromium.org',
     'port': 29418,
+    'shorturl': 'crosreview.com',
   },
   {
     'url': 'gerrit-int.chromium.org',
     'port': 29419,
+    'shorturl': 'crosreview.com/i',
   },
 ]
 
@@ -394,15 +396,18 @@ class MyActivity(object):
     issues = map(json.loads, issues)
 
     # TODO(cjhopman): should we filter abandoned changes?
-    issues = map(self.process_gerrit_issue, issues)
+    issues = [self.process_gerrit_issue(instance, issue) for issue in issues]
     issues = filter(self.filter_issue, issues)
     issues = sorted(issues, key=lambda i: i['modified'], reverse=True)
 
     return issues
 
-  def process_gerrit_issue(self, issue):
+  def process_gerrit_issue(self, instance, issue):
     ret = {}
     ret['review_url'] = issue['url']
+    if 'shorturl' in instance:
+      ret['review_url'] = 'http://%s/%s' % (instance['shorturl'],
+                                            issue['number'])
     ret['header'] = issue['subject']
     ret['owner'] = issue['owner']['email']
     ret['author'] = ret['owner']
