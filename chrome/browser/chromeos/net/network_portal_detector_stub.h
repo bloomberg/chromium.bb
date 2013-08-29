@@ -21,6 +21,11 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   NetworkPortalDetectorStub();
   virtual ~NetworkPortalDetectorStub();
 
+  void SetDefaultNetworkPathForTesting(const std::string& service_path);
+  void SetDetectionResultsForTesting(const std::string& service_path,
+                                     const CaptivePortalState& state);
+  void NotifyObserversForTesting();
+
   // NetworkPortalDetector implementation:
   virtual void Init() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
@@ -36,15 +41,9 @@ class NetworkPortalDetectorStub : public NetworkPortalDetector {
   virtual void DisableLazyDetection() OVERRIDE;
 
  private:
-  friend class UpdateScreenTest;
-
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
-  void SetDefaultNetworkPathForTesting(const std::string& service_path);
-  void SetDetectionResultsForTesting(const std::string& service_path,
-                                     const CaptivePortalState& state);
-  void NotifyObserversForTesting();
 
   ObserverList<Observer> observers_;
   scoped_ptr<NetworkState> default_network_;

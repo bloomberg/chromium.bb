@@ -966,6 +966,8 @@
         'browser/managed_mode/managed_user_refresh_token_fetcher.h',
         'browser/managed_mode/managed_user_registration_utility.cc',
         'browser/managed_mode/managed_user_registration_utility.h',
+        'browser/managed_mode/managed_user_registration_utility_stub.cc',
+        'browser/managed_mode/managed_user_registration_utility_stub.h',
         'browser/managed_mode/managed_user_service.cc',
         'browser/managed_mode/managed_user_service.h',
         'browser/managed_mode/managed_user_service_factory.cc',

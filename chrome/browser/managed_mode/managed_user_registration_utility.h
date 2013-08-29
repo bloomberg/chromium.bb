@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -39,8 +40,7 @@ struct ManagedUserRegistrationInfo {
 // management server and associating it with its custodian. Each instance
 // of this class handles registering a single managed user and should not
 // be used afterwards.
-class ManagedUserRegistrationUtility
-    : public ManagedUserSyncServiceObserver {
+class ManagedUserRegistrationUtility {
  public:
   // Callback for Register() below. If registration is successful, |token| will
   // contain an OAuth2 refresh token for the newly registered managed user,
@@ -50,8 +50,9 @@ class ManagedUserRegistrationUtility
                               const std::string& /* token */)>
       RegistrationCallback;
 
-  virtual ~ManagedUserRegistrationUtility();
+  virtual ~ManagedUserRegistrationUtility() {}
 
+  // Creates ManagedUserRegistrationUtility for a given |profile|.
   static scoped_ptr<ManagedUserRegistrationUtility> Create(Profile* profile);
 
   static std::string GenerateNewManagedUserId();
@@ -63,68 +64,38 @@ class ManagedUserRegistrationUtility
   // name of the  the user. |callback| is called with the result of the
   // registration. We use the info here and not the profile, because on
   // Chrome OS the profile of the managed user does not yet exist.
-  void Register(const std::string& managed_user_id,
-                const ManagedUserRegistrationInfo& info,
-                const RegistrationCallback& callback);
+  virtual void Register(const std::string& managed_user_id,
+                        const ManagedUserRegistrationInfo& info,
+                        const RegistrationCallback& callback) = 0;
 
-  // ManagedUserSyncServiceObserver:
-  virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
-      OVERRIDE;
-  virtual void OnManagedUsersSyncingStopped() OVERRIDE;
+ protected:
+  ManagedUserRegistrationUtility() {}
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ManagedUserRegistrationUtilityTest, Register);
-  FRIEND_TEST_ALL_PREFIXES(ManagedUserRegistrationUtilityTest,
-                           RegisterBeforeInitialSync);
-  FRIEND_TEST_ALL_PREFIXES(ManagedUserRegistrationUtilityTest,
-                           SyncServiceShutdownBeforeRegFinish);
-  FRIEND_TEST_ALL_PREFIXES(ManagedUserRegistrationUtilityTest,
-                           StopSyncingBeforeRegFinish);
+  friend class ScopedTestingManagedUserRegistrationUtility;
+  friend class ManagedUserRegistrationUtilityTest;
 
-  // Use the |Create(...)| method to get instances of this class.
-  ManagedUserRegistrationUtility(
+  // Creates implementation with explicit dependencies, can be used for testing.
+  static ManagedUserRegistrationUtility* CreateImpl(
       PrefService* prefs,
       scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
       ManagedUserSyncService* service);
-  // Fetches the managed user token when we have the device name.
-  void FetchToken(const std::string& client_name);
 
-  // Called when we have received a token for the managed user.
-  void OnReceivedToken(const GoogleServiceAuthError& error,
-                       const std::string& token);
+  // Set the instance of ManagedUserRegistrationUtility that will be returned
+  // by next Create() call. Takes ownership of the |utility|.
+  static void SetUtilityForTests(ManagedUserRegistrationUtility* utility);
+};
 
-  // Dispatches the callback and cleans up if all the conditions have been met.
-  void CompleteRegistrationIfReady();
+// Class that sets the instance of ManagedUserRegistrationUtility that will be
+// returned by next Create() call, and correctly destroys it if Create() was
+// not called.
+class ScopedTestingManagedUserRegistrationUtility {
+ public:
+  // Delegates ownership of the |instance| to ManagedUserRegistrationUtility.
+  ScopedTestingManagedUserRegistrationUtility(
+      ManagedUserRegistrationUtility* instance);
 
-  // Aborts any registration currently in progress. If |run_callback| is true,
-  // calls the callback specified in Register() with the given |error|.
-  void AbortPendingRegistration(bool run_callback,
-                                const GoogleServiceAuthError& error);
-
-  // If |run_callback| is true, dispatches the callback with the saved token
-  // (which may be empty) and the given |error|. In any case, resets internal
-  // variables to be ready for the next registration.
-  void CompleteRegistration(bool run_callback,
-                            const GoogleServiceAuthError& error);
-
-  // Cancels any registration currently in progress, without calling the
-  // callback or reporting an error.
-  void CancelPendingRegistration();
-
-  base::WeakPtrFactory<ManagedUserRegistrationUtility> weak_ptr_factory_;
-  PrefService* prefs_;
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
-
-  // A |BrowserContextKeyedService| owned by the custodian profile.
-  ManagedUserSyncService* managed_user_sync_service_;
-
-  std::string pending_managed_user_id_;
-  std::string pending_managed_user_token_;
-  bool pending_managed_user_acknowledged_;
-  bool is_existing_managed_user_;
-  RegistrationCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationUtility);
+  ~ScopedTestingManagedUserRegistrationUtility();
 };
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_REGISTRATION_UTILITY_H_

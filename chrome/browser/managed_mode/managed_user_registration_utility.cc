@@ -27,15 +27,151 @@
 
 using base::DictionaryValue;
 
+namespace {
+
 const char kAcknowledged[] = "acknowledged";
 const char kName[] = "name";
 const char kMasterKey[] = "masterKey";
+
+ManagedUserRegistrationUtility* g_instance_for_tests = NULL;
+
+// Actual implementation of ManagedUserRegistrationUtility.
+class ManagedUserRegistrationUtilityImpl
+    : public ManagedUserRegistrationUtility,
+      public ManagedUserSyncServiceObserver {
+ public:
+  ManagedUserRegistrationUtilityImpl(
+      PrefService* prefs,
+      scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
+      ManagedUserSyncService* service);
+
+  virtual ~ManagedUserRegistrationUtilityImpl();
+
+  // Registers a new managed user with the server. |managed_user_id| is a new
+  // unique ID for the new managed user. If its value is the same as that of
+  // of one of the existing managed users, then the same user will be created
+  // on this machine. |info| contains necessary information like the display
+  // name of the  the user. |callback| is called with the result of the
+  // registration. We use the info here and not the profile, because on
+  // Chrome OS the profile of the managed user does not yet exist.
+  virtual void Register(const std::string& managed_user_id,
+                        const ManagedUserRegistrationInfo& info,
+                        const RegistrationCallback& callback) OVERRIDE;
+
+  // ManagedUserSyncServiceObserver:
+  virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
+      OVERRIDE;
+  virtual void OnManagedUsersSyncingStopped() OVERRIDE;
+
+ private:
+  // Fetches the managed user token when we have the device name.
+  void FetchToken(const std::string& client_name);
+
+  // Called when we have received a token for the managed user.
+  void OnReceivedToken(const GoogleServiceAuthError& error,
+                       const std::string& token);
+
+  // Dispatches the callback and cleans up if all the conditions have been met.
+  void CompleteRegistrationIfReady();
+
+  // Aborts any registration currently in progress. If |run_callback| is true,
+  // calls the callback specified in Register() with the given |error|.
+  void AbortPendingRegistration(bool run_callback,
+                                const GoogleServiceAuthError& error);
+
+  // If |run_callback| is true, dispatches the callback with the saved token
+  // (which may be empty) and the given |error|. In any case, resets internal
+  // variables to be ready for the next registration.
+  void CompleteRegistration(bool run_callback,
+                            const GoogleServiceAuthError& error);
+
+  // Cancels any registration currently in progress, without calling the
+  // callback or reporting an error.
+  void CancelPendingRegistration();
+
+  base::WeakPtrFactory<ManagedUserRegistrationUtilityImpl> weak_ptr_factory_;
+  PrefService* prefs_;
+  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
+
+  // A |BrowserContextKeyedService| owned by the custodian profile.
+  ManagedUserSyncService* managed_user_sync_service_;
+
+  std::string pending_managed_user_id_;
+  std::string pending_managed_user_token_;
+  bool pending_managed_user_acknowledged_;
+  bool is_existing_managed_user_;
+  RegistrationCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationUtilityImpl);
+};
+
+} // namespace
 
 ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(const string16& name)
     : name(name) {
 }
 
-ManagedUserRegistrationUtility::ManagedUserRegistrationUtility(
+ScopedTestingManagedUserRegistrationUtility::
+    ScopedTestingManagedUserRegistrationUtility(
+        ManagedUserRegistrationUtility* instance) {
+  ManagedUserRegistrationUtility::SetUtilityForTests(instance);
+}
+
+ScopedTestingManagedUserRegistrationUtility::
+    ~ScopedTestingManagedUserRegistrationUtility() {
+  ManagedUserRegistrationUtility::SetUtilityForTests(NULL);
+}
+
+// static
+scoped_ptr<ManagedUserRegistrationUtility>
+ManagedUserRegistrationUtility::Create(Profile* profile) {
+  if (g_instance_for_tests) {
+    ManagedUserRegistrationUtility* result = g_instance_for_tests;
+    g_instance_for_tests = NULL;
+    return make_scoped_ptr(result);
+  }
+  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher =
+      ManagedUserRefreshTokenFetcher::Create(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          profile->GetRequestContext());
+  ManagedUserSyncService* managed_user_sync_service =
+      ManagedUserSyncServiceFactory::GetForProfile(profile);
+  return make_scoped_ptr(ManagedUserRegistrationUtility::CreateImpl(
+      profile->GetPrefs(),
+      token_fetcher.Pass(),
+      managed_user_sync_service));
+}
+
+// static
+std::string ManagedUserRegistrationUtility::GenerateNewManagedUserId() {
+  std::string new_managed_user_id;
+  bool success = base::Base64Encode(base::RandBytesAsString(8),
+                                    &new_managed_user_id);
+  DCHECK(success);
+  return new_managed_user_id;
+}
+
+// static
+void ManagedUserRegistrationUtility::SetUtilityForTests(
+    ManagedUserRegistrationUtility* utility) {
+  if (g_instance_for_tests)
+    delete g_instance_for_tests;
+  g_instance_for_tests = utility;
+}
+
+// static
+ManagedUserRegistrationUtility* ManagedUserRegistrationUtility::CreateImpl(
+      PrefService* prefs,
+      scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
+      ManagedUserSyncService* service) {
+  return new ManagedUserRegistrationUtilityImpl(prefs,
+                                                token_fetcher.Pass(),
+                                                service);
+}
+
+namespace {
+
+ManagedUserRegistrationUtilityImpl::ManagedUserRegistrationUtilityImpl(
     PrefService* prefs,
     scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
     ManagedUserSyncService* service)
@@ -48,34 +184,12 @@ ManagedUserRegistrationUtility::ManagedUserRegistrationUtility(
   managed_user_sync_service_->AddObserver(this);
 }
 
-ManagedUserRegistrationUtility::~ManagedUserRegistrationUtility() {
+ManagedUserRegistrationUtilityImpl::~ManagedUserRegistrationUtilityImpl() {
   managed_user_sync_service_->RemoveObserver(this);
   CancelPendingRegistration();
 }
 
-// static
-scoped_ptr<ManagedUserRegistrationUtility>
-ManagedUserRegistrationUtility::Create(Profile* profile) {
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher =
-      ManagedUserRefreshTokenFetcher::Create(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          profile->GetRequestContext());
-  ManagedUserSyncService* managed_user_sync_service =
-      ManagedUserSyncServiceFactory::GetForProfile(profile);
-  return make_scoped_ptr(new ManagedUserRegistrationUtility(
-      profile->GetPrefs(), token_fetcher.Pass(), managed_user_sync_service));
-}
-
-// static
-std::string ManagedUserRegistrationUtility::GenerateNewManagedUserId() {
-  std::string new_managed_user_id;
-  bool success = base::Base64Encode(base::RandBytesAsString(8),
-                                    &new_managed_user_id);
-  DCHECK(success);
-  return new_managed_user_id;
-}
-
-void ManagedUserRegistrationUtility::Register(
+void ManagedUserRegistrationUtilityImpl::Register(
     const std::string& managed_user_id,
     const ManagedUserRegistrationInfo& info,
     const RegistrationCallback& callback) {
@@ -95,17 +209,17 @@ void ManagedUserRegistrationUtility::Register(
   }
 
   browser_sync::DeviceInfo::GetClientName(
-      base::Bind(&ManagedUserRegistrationUtility::FetchToken,
+      base::Bind(&ManagedUserRegistrationUtilityImpl::FetchToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManagedUserRegistrationUtility::CancelPendingRegistration() {
+void ManagedUserRegistrationUtilityImpl::CancelPendingRegistration() {
   AbortPendingRegistration(
       false,  // Don't run the callback. The error will be ignored.
       GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 
-void ManagedUserRegistrationUtility::OnManagedUserAcknowledged(
+void ManagedUserRegistrationUtilityImpl::OnManagedUserAcknowledged(
     const std::string& managed_user_id) {
   DCHECK_EQ(pending_managed_user_id_, managed_user_id);
   DCHECK(!pending_managed_user_acknowledged_);
@@ -113,21 +227,21 @@ void ManagedUserRegistrationUtility::OnManagedUserAcknowledged(
   CompleteRegistrationIfReady();
 }
 
-void ManagedUserRegistrationUtility::OnManagedUsersSyncingStopped() {
+void ManagedUserRegistrationUtilityImpl::OnManagedUsersSyncingStopped() {
   AbortPendingRegistration(
       true,  // Run the callback.
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
-void ManagedUserRegistrationUtility::FetchToken(
+void ManagedUserRegistrationUtilityImpl::FetchToken(
     const std::string& client_name) {
   token_fetcher_->Start(
       pending_managed_user_id_, client_name,
-      base::Bind(&ManagedUserRegistrationUtility::OnReceivedToken,
+      base::Bind(&ManagedUserRegistrationUtilityImpl::OnReceivedToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ManagedUserRegistrationUtility::OnReceivedToken(
+void ManagedUserRegistrationUtilityImpl::OnReceivedToken(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   if (error.state() != GoogleServiceAuthError::NONE) {
@@ -140,7 +254,7 @@ void ManagedUserRegistrationUtility::OnReceivedToken(
   CompleteRegistrationIfReady();
 }
 
-void ManagedUserRegistrationUtility::CompleteRegistrationIfReady() {
+void ManagedUserRegistrationUtilityImpl::CompleteRegistrationIfReady() {
   bool require_acknowledgment =
       !pending_managed_user_acknowledged_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -152,14 +266,14 @@ void ManagedUserRegistrationUtility::CompleteRegistrationIfReady() {
   CompleteRegistration(true, error);
 }
 
-void ManagedUserRegistrationUtility::AbortPendingRegistration(
+void ManagedUserRegistrationUtilityImpl::AbortPendingRegistration(
     bool run_callback,
     const GoogleServiceAuthError& error) {
   pending_managed_user_token_.clear();
   CompleteRegistration(run_callback, error);
 }
 
-void ManagedUserRegistrationUtility::CompleteRegistration(
+void ManagedUserRegistrationUtilityImpl::CompleteRegistration(
     bool run_callback,
     const GoogleServiceAuthError& error) {
   if (callback_.is_null())
@@ -182,3 +296,5 @@ void ManagedUserRegistrationUtility::CompleteRegistration(
     callback_.Run(error, pending_managed_user_token_);
   callback_.Reset();
 }
+
+} // namespace

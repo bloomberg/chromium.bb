@@ -502,7 +502,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
           [managerId, managerPassword]);
     },
 
-
     /**
      * Does sanity check and calls backend with user display name/password pair
      * to create a user.

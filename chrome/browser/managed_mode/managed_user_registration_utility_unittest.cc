@@ -94,6 +94,8 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
   ManagedUserRegistrationUtility::RegistrationCallback
       GetRegistrationCallback();
 
+  ManagedUserRegistrationUtility* GetRegistrationUtility();
+
   void Acknowledge();
 
   PrefService* prefs() { return profile_.GetTestingPrefService(); }
@@ -113,6 +115,7 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
   base::WeakPtrFactory<ManagedUserRegistrationUtilityTest> weak_ptr_factory_;
   TestingProfile profile_;
   ManagedUserSyncService* service_;
+  scoped_ptr<ManagedUserRegistrationUtility> registration_utility_;
 
   // Owned by the ManagedUserSyncService.
   MockChangeProcessor* change_processor_;
@@ -176,6 +179,20 @@ ManagedUserRegistrationUtilityTest::GetRegistrationCallback() {
       weak_ptr_factory_.GetWeakPtr());
 }
 
+ManagedUserRegistrationUtility*
+ManagedUserRegistrationUtilityTest::GetRegistrationUtility() {
+  if (registration_utility_.get())
+    return registration_utility_.get();
+
+  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
+      new MockManagedUserRefreshTokenFetcher);
+  registration_utility_.reset(
+      ManagedUserRegistrationUtility::CreateImpl(prefs(),
+                                                 token_fetcher.Pass(),
+                                                 service()));
+  return registration_utility_.get();
+}
+
 void ManagedUserRegistrationUtilityTest::Acknowledge() {
   SyncChangeList new_changes;
   const SyncChangeList& changes = change_processor()->changes();
@@ -207,12 +224,7 @@ void ManagedUserRegistrationUtilityTest::OnManagedUserRegistered(
 
 TEST_F(ManagedUserRegistrationUtilityTest, Register) {
   StartInitialSync();
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
-      new MockManagedUserRefreshTokenFetcher);
-  ManagedUserRegistrationUtility registration_utility(prefs(),
-                                                      token_fetcher.Pass(),
-                                                      service());
-  registration_utility.Register(
+  GetRegistrationUtility()->Register(
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Dug")),
       GetRegistrationCallback());
@@ -225,12 +237,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, Register) {
 }
 
 TEST_F(ManagedUserRegistrationUtilityTest, RegisterBeforeInitialSync) {
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
-      new MockManagedUserRefreshTokenFetcher);
-  ManagedUserRegistrationUtility registration_utility(prefs(),
-                                                      token_fetcher.Pass(),
-                                                      service());
-  registration_utility.Register(
+  GetRegistrationUtility()->Register(
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Nemo")),
       GetRegistrationCallback());
@@ -245,12 +252,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, RegisterBeforeInitialSync) {
 
 TEST_F(ManagedUserRegistrationUtilityTest, SyncServiceShutdownBeforeRegFinish) {
   StartInitialSync();
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
-      new MockManagedUserRefreshTokenFetcher);
-  ManagedUserRegistrationUtility registration_utility(prefs(),
-                                                      token_fetcher.Pass(),
-                                                      service());
-  registration_utility.Register(
+  GetRegistrationUtility()->Register(
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Remy")),
       GetRegistrationCallback());
@@ -264,12 +266,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, SyncServiceShutdownBeforeRegFinish) {
 
 TEST_F(ManagedUserRegistrationUtilityTest, StopSyncingBeforeRegFinish) {
   StartInitialSync();
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
-      new MockManagedUserRefreshTokenFetcher);
-  ManagedUserRegistrationUtility registration_utility(prefs(),
-                                                      token_fetcher.Pass(),
-                                                      service());
-  registration_utility.Register(
+  GetRegistrationUtility()->Register(
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Mike")),
       GetRegistrationCallback());

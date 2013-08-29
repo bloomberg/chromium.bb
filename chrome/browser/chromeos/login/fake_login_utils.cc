@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -15,6 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -25,6 +27,11 @@ FakeLoginUtils::~FakeLoginUtils() {}
 
 void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {
+
+  if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
+      UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
+      return;
+  }
   login_host->BeforeSessionStart();
   if (should_launch_browser_) {
     StartupBrowserCreator browser_creator;
@@ -60,6 +67,10 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
     g_browser_process->profile_manager()->
         RegisterTestingProfile(profile, false, false);
   }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources(),
+      content::Details<Profile>(profile));
   if (delegate)
     delegate->OnProfilePrepared(profile);
 }

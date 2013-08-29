@@ -307,14 +307,18 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
 
 void LoginDisplayHostImpl::Finalize() {
   DVLOG(1) << "Session starting";
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->
+        desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
   if (!IsRunningUserAdding()) {
     // Display host is deleted once animation is completed
     // since sign in screen widget has to stay alive.
-    StartAnimation();
+    if (ash::Shell::HasInstance()) {
+      StartAnimation();
+    }
   }
   ShutdownDisplayHost(false);
 }
