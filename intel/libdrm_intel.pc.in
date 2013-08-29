@@ -3,8 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libdrm
-Description: Userspace interface to kernel DRM services
+Name: libdrm_intel
+Description: Userspace interface to intel kernel DRM services
 Version: @PACKAGE_VERSION@
 Requires: libdrm
 Libs: -L${libdir} -ldrm_intel
