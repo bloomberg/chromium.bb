@@ -774,6 +774,15 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
                            panel::APPLY_TO_ALL : panel::NO_MODIFIER);
 }
 
+- (void)onTitlebarDoubleClicked:(int)modifierFlags {
+  // Double-clicking is only allowed to minimize docked panels.
+  Panel* panel = windowShim_->panel();
+  if (panel->collection()->type() != PanelCollection::DOCKED ||
+      panel->IsMinimized())
+    return;
+  [self minimizeButtonClicked:modifierFlags];
+}
+
 - (int)titlebarHeightInScreenCoordinates {
   NSView* titlebar = [self titlebarView];
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);

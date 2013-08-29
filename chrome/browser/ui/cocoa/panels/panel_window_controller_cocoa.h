@@ -101,6 +101,9 @@ class PanelCocoa;
 // Minimized/Restored states.
 - (void)onTitlebarMouseClicked:(int)modifierFlags;
 
+// Invoked when user double-clicks on the titlebar.
+- (void)onTitlebarDoubleClicked:(int)modifierFlags;
+
 // NSAnimationDelegate method, invoked when bounds animation is finished.
 - (void)animationDidEnd:(NSAnimation*)animation;
 // Terminates current bounds animation, if any.
