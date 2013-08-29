@@ -8,9 +8,11 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
@@ -130,6 +132,38 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
+}
+
+// Verifies the touch target for the RootWindow gets reset on releasing capture.
+TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
+  // Create a window inside the RootWindow.
+  scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  aura::test::EventGenerator event_generator1(root_window());
+  event_generator1.PressTouch();
+  w1->SetCapture();
+  // Both capture clients should return the same capture window.
+  EXPECT_EQ(w1.get(), GetCaptureWindow());
+  EXPECT_EQ(w1.get(), GetSecondCaptureWindow());
+
+  // Build a window in the second RootWindow and give it capture. Both capture
+  // clients should return the same capture window.
+  scoped_ptr<aura::Window> w2(CreateNormalWindow(2, second_root_.get(), NULL));
+  w2->SetCapture();
+  EXPECT_EQ(w2.get(), GetCaptureWindow());
+  EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
+
+  // Release capture on the window. Releasing capture should reset the touch
+  // target of the first RootWindow (as it no longer contains the capture
+  // target).
+  w2->ReleaseCapture();
+  EXPECT_EQ(static_cast<aura::Window*>(NULL), GetCaptureWindow());
+  EXPECT_EQ(static_cast<aura::Window*>(NULL), GetSecondCaptureWindow());
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), 0, 0, ui::EventTimeForNow(), 1.0f,
+      1.0f, 1.0f, 1.0f);
+  EXPECT_EQ(static_cast<ui::GestureConsumer*>(NULL),
+            root_window()->gesture_recognizer()->GetTouchLockedTarget(
+                &touch_event));
 }
 
 }  // namespace views

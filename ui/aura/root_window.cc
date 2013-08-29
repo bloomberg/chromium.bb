@@ -654,6 +654,14 @@ bool RootWindow::CanReceiveEvents() const {
 
 void RootWindow::UpdateCapture(Window* old_capture,
                                Window* new_capture) {
+  if (!new_capture && old_capture && old_capture->GetRootWindow() != this) {
+    // If we no longer contain the window that had capture make sure we clean
+    // state in the GestureRecognizer. Since we don't contain the window we'll
+    // never get notification of its destruction and clean up state.
+    // We do this early on as OnCaptureLost() may delete |old_capture|.
+    gesture_recognizer_->CleanupStateForConsumer(old_capture);
+  }
+
   if (old_capture && old_capture->GetRootWindow() == this &&
       old_capture->delegate()) {
     // Send a capture changed event with bogus location data.
@@ -674,9 +682,8 @@ void RootWindow::UpdateCapture(Window* old_capture,
   }
 
   if (new_capture) {
-    // Make all subsequent mouse events and touch go to the capture window. We
-    // shouldn't need to send an event here as OnCaptureLost should take care of
-    // that.
+    // Make all subsequent mouse events go to the capture window. We shouldn't
+    // need to send an event here as OnCaptureLost() should take care of that.
     if (mouse_moved_handler_ || Env::GetInstance()->is_mouse_button_down())
       mouse_moved_handler_ = new_capture;
   } else {
