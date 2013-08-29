@@ -43,14 +43,45 @@ send_intent() {
 }
 
 download_latest_trace() {
-  TRACE_FILE=$(adb logcat -d | \
-      grep "Logging performance trace to file: " | \
-      tail -1 | \
-      perl -pi -e "s/.*\/storage\/emulated\/.+\/([^\r]+).*/\/sdcard\/Download\/\\1/g")
-  if [ -z "$TRACE_FILE" ]; then
-    echo "Unable to determine trace file name"
-    exit 1
-  fi
+  (adb logcat -d | grep -q "Logging performance trace to file") || {
+    echo "WARNING: Trace start marker not found. Is the correct version of Chrome running?"
+  }
+
+  local ITERATION=0
+  while true; do
+    # Chrome logs two different messages related to tracing:
+    #
+    # 1. "Logging performance trace to file [...]"
+    # 2. "Profiler finished. Results are in [...]"
+    #
+    # The first one is printed when tracing starts and the second one indicates
+    # that the trace file is ready to be downloaded.
+    #
+    # We have to look for both of these messages to make sure we get the results
+    # from the latest trace and that the trace file is complete. This is done by
+    # first looking for the last instance of the first message and then checking
+    # for the second message in the remaining part of the log.
+    TRACE_FILE=$(adb logcat -d | \
+        tac | \
+        grep --max-count=1 --before-context=100000 "Logging performance trace to file" | \
+        tac | \
+        grep "Profiler finished[.] Results are in " | \
+        perl -pi -e "s{.*/storage/emulated/.+/([^\r]+)[.].*}{/sdcard/Download/\\1}g")
+    if [ -n "$TRACE_FILE" ]; then
+      break
+    fi
+    if [ $ITERATION -eq 0 ]; then
+      echo -n "Waiting for Chrome to finish tracing..."
+    else
+      echo -n "."
+    fi
+    let ITERATION=ITERATION+1
+    if [ $ITERATION -eq 60 ]; then
+      echo "Timed out"
+      exit 1
+    fi
+    sleep 1
+  done
 
   adb pull $TRACE_FILE 2> /dev/null
   LOCAL_TRACE_FILE=$(basename $TRACE_FILE)
@@ -72,7 +103,6 @@ do_timed_capture() {
   echo "done"
 
   echo -n "Downloading trace..."
-  sleep $[${INTERVAL} / 4 + 1]
   download_latest_trace
   echo "done"
 
