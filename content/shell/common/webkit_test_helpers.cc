@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "third_party/WebKit/public/testing/WebPreferences.h"
 #include "webkit/common/webpreferences.h"
@@ -55,7 +56,7 @@ void ExportLayoutTestSpecificPreferences(
 // of the defaults are controlled via command line flags which are
 // automatically set for layout tests.
 void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   prefs->allow_universal_access_from_file_urls = true;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
@@ -100,6 +101,8 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->threaded_html_parser = true;
   prefs->accelerated_2d_canvas_enabled =
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
+  prefs->force_compositing_mode =
+      command_line.HasSwitch(switches::kForceCompositingMode);
   prefs->accelerated_compositing_for_video_enabled = false;
   prefs->mock_scrollbars_enabled = false;
   prefs->fixed_position_creates_stacking_context = false;
