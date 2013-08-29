@@ -13,4 +13,7 @@ include_rules = [
   # "+content/public/browser" rule.
   "-content",
   "+content/public/common",
+
+  # Dependencies of variations component.
+  "+third_party/mt19937ar",
 ]
