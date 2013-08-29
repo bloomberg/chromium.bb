@@ -53,6 +53,10 @@ Status IgnoreDeprecatedOption(
   return Status(kOk);
 }
 
+Status IgnoreCapability(const base::Value& option, Capabilities* capabilities) {
+  return Status(kOk);
+}
+
 Status ParseChromeBinary(
     const base::Value& option,
     Capabilities* capabilities) {
@@ -256,6 +260,10 @@ Status ParseChromeOptions(
   bool is_existing = chrome_options->HasKey("useExistingBrowser");
 
   std::map<std::string, Parser> parser_map;
+  // Ignore 'binary' and 'extensions' capability, since the Java client
+  // always passes them.
+  parser_map["binary"] = base::Bind(&IgnoreCapability);
+  parser_map["extensions"] = base::Bind(&IgnoreCapability);
   if (is_android) {
     parser_map["androidActivity"] =
         base::Bind(&ParseString, &capabilities->android_activity);
@@ -267,6 +275,7 @@ Status ParseChromeOptions(
         base::Bind(&ParseString, &capabilities->android_process);
     parser_map["args"] = base::Bind(&ParseArgs, true);
   } else if (is_existing) {
+    parser_map["args"] = base::Bind(&IgnoreCapability);
     parser_map["useExistingBrowser"] = base::Bind(&ParseUseExistingBrowser);
   } else {
     parser_map["forceDevToolsScreenshot"] = base::Bind(
