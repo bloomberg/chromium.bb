@@ -197,8 +197,6 @@
             'v8/custom/V8HTMLMediaElementCustom.cpp',
             'v8/custom/V8HTMLOptionsCollectionCustom.cpp',
             'v8/custom/V8HTMLPlugInElementCustom.cpp',
-            'v8/custom/V8HTMLSelectElementCustom.cpp',
-            'v8/custom/V8HTMLSelectElementCustom.h',
             'v8/custom/V8HistoryCustom.cpp',
             'v8/custom/V8IDBAnyCustom.cpp',
             'v8/custom/V8ImageDataCustom.cpp',

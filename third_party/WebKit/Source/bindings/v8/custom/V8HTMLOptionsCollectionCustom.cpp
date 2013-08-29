@@ -36,7 +36,6 @@
 #include "V8NodeList.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
@@ -68,13 +67,6 @@ void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackIn
 {
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
     getNamedItems(imp, toWebCoreString(args[0]), args);
-}
-
-void V8HTMLOptionsCollection::removeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
-    HTMLSelectElement* base = toHTMLSelectElement(imp->ownerNode());
-    removeElement(base, args);
 }
 
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

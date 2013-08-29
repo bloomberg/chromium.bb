@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -37,9 +38,9 @@ interface HTMLSelectElement : HTMLElement {
     Node namedItem([Default=Undefined] optional DOMString name);
      [RaisesException] void add([Default=Undefined] optional HTMLElement element,
                             [Default=Undefined] optional HTMLElement before);
-    // In JavaScript, we support both option index and option object parameters.
-    // As of this writing this cannot be auto-generated.
-    [Custom] void remove(/* indexOrOption */);
+    void remove(long index);
+    void remove(HTMLOptionElement option); // Non standard.
+    [RaisesException] void remove();
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;
     [TreatNullAs=NullString] attribute DOMString value;

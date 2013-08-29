@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,6 +33,7 @@
 
     [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option,
                       optional unsigned long index);
-    [Custom] void remove([Default=Undefined] optional unsigned long index);
+    void remove([Default=Undefined] optional unsigned long index);
+    void remove(HTMLOptionElement option); // Non standard.
 };
 
