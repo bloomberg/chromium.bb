@@ -193,7 +193,7 @@ void WebViewGuest::LoadAbort(bool is_top_level,
                              const std::string& error_type) {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
-  args->SetString(guestview::kUrl, url.spec());
+  args->SetString(guestview::kUrl, url.possibly_invalid_spec());
   args->SetString(guestview::kReason, error_type);
   DispatchEvent(new GuestView::Event(webview::kEventLoadAbort, args.Pass()));
 }

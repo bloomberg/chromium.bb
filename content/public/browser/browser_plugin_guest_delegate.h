@@ -41,7 +41,8 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
-  // Notification that a load in the guest resulted in abort.
+  // Notification that a load in the guest resulted in abort. Note that |url|
+  // may be invalid.
   virtual void LoadAbort(bool is_top_level,
                          const GURL& url,
                          const std::string& error_type) {}

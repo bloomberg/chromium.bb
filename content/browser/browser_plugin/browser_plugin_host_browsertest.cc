@@ -13,6 +13,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_plugin/test_browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
+#include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -809,6 +811,36 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VerifyInputMethodActive) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_guest()->web_contents()->GetRenderViewHost());
   EXPECT_TRUE(rvh->input_method_active());
+}
+
+// Verify that navigating to an invalid URL (e.g. 'http:') doesn't cause
+// a crash.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DoNotCrashOnInvalidNavigation) {
+  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
+  TestBrowserPluginGuestDelegate* delegate =
+      new TestBrowserPluginGuestDelegate();
+  test_guest()->SetDelegate(delegate);
+
+  const char kValidSchemeWithEmptyURL[] = "http:";
+  ExecuteSyncJSFunction(
+      test_embedder()->web_contents()->GetRenderViewHost(),
+      base::StringPrintf("SetSrc('%s');", kValidSchemeWithEmptyURL));
+  EXPECT_TRUE(delegate->load_aborted());
+  EXPECT_FALSE(delegate->load_aborted_url().is_valid());
+  EXPECT_EQ(kValidSchemeWithEmptyURL,
+            delegate->load_aborted_url().possibly_invalid_spec());
+
+  delegate->ResetStates();
+
+  // Attempt a navigation to chrome-guest://abc123, which is a valid URL. But it
+  // should be blocked because the scheme isn't web-safe or a pseudo-scheme.
+  ExecuteSyncJSFunction(
+      test_embedder()->web_contents()->GetRenderViewHost(),
+      base::StringPrintf("SetSrc('%s://abc123');",
+                         chrome::kGuestScheme));
+  EXPECT_TRUE(delegate->load_aborted());
+  EXPECT_TRUE(delegate->load_aborted_url().is_valid());
 }
 
 }  // namespace content
