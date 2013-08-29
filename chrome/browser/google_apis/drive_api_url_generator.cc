@@ -88,15 +88,6 @@ GURL DriveApiUrlGenerator::GetFilesUrl() const {
   return base_url_.Resolve(kDriveV2FilesUrl);
 }
 
-GURL DriveApiUrlGenerator::GetFilelistUrl(
-    const std::string& search_string, int max_results) const {
-  GURL url = base_url_.Resolve(kDriveV2FilesUrl);
-  url = AddMaxResultParam(url, max_results);
-  return search_string.empty() ?
-      url :
-      net::AppendOrReplaceQueryParameter(url, "q", search_string);
-}
-
 GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
 }
@@ -114,6 +105,26 @@ GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
   // updateViewedDate is "true" by default.
   if (!update_viewed_date)
     url = net::AppendOrReplaceQueryParameter(url, "updateViewedDate", "false");
+
+  return url;
+}
+
+GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
+                                           const std::string& page_token,
+                                           const std::string& q) const {
+  GURL url = base_url_.Resolve(kDriveV2FilesUrl);
+
+  // maxResults is 100 by default.
+  if (max_results != 100) {
+    url = net::AppendOrReplaceQueryParameter(
+        url, "maxResults", base::IntToString(max_results));
+  }
+
+  if (!page_token.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "pageToken", page_token);
+
+  if (!q.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "q", q);
 
   return url;
 }

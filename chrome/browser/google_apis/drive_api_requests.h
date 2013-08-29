@@ -15,12 +15,18 @@
 namespace google_apis {
 
 class FileResource;
+class FileList;
 
 // Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<FileResource> entry)>
     FileResourceCallback;
+
+// Callback used for requests that the server returns FileList data
+// formatted into JSON value.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<FileList> entry)> FileListCallback;
 
 //============================ GetChangelistRequest ==========================
 
@@ -56,38 +62,6 @@ class GetChangelistRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(GetChangelistRequest);
 };
 
-//============================= GetFilelistRequest ===========================
-
-// This class performs the request for fetching Filelist.
-// The result may contain only first part of the result. The remaining result
-// should be able to be fetched by ContinueGetFileListRequest defined below.
-class GetFilelistRequest : public GetDataRequest {
- public:
-  GetFilelistRequest(RequestSender* sender,
-                     const DriveApiUrlGenerator& url_generator,
-                     const std::string& search_string,
-                     int max_results,
-                     const GetDataCallback& callback);
-  virtual ~GetFilelistRequest();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const std::string search_string_;
-  const int max_results_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetFilelistRequest);
-};
-
-// This namespace is introduced to avoid class name confliction between
-// the requests for Drive API v2 and GData WAPI for transition.
-// And, when the migration is done and GData WAPI's code is cleaned up,
-// classes inside this namespace should be moved to the google_apis namespace.
-// TODO(hidehiko): Move all the requests defined in this file into drive
-// namespace.  crbug.com/180808
 namespace drive {
 
 //=============================== FilesGetRequest =============================
@@ -187,6 +161,46 @@ class FilesPatchRequest : public GetDataRequest {
   std::vector<std::string> parents_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesPatchRequest);
+};
+
+//============================= FilesListRequest =============================
+
+// This class performs the request for fetching FileList.
+// The result may contain only first part of the result. The remaining result
+// should be able to be fetched by ContinueGetFileListRequest defined below,
+// or by FilesListRequest with setting page token.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/list
+class FilesListRequest : public GetDataRequest {
+ public:
+  FilesListRequest(RequestSender* sender,
+                   const DriveApiUrlGenerator& url_generator,
+                   const FileListCallback& callback);
+  virtual ~FilesListRequest();
+
+  // Optional parameter
+  int max_results() const { return max_results_; }
+  void set_max_results(int max_results) { max_results_ = max_results; }
+
+  const std::string& page_token() const { return page_token_; }
+  void set_page_token(const std::string& page_token) {
+    page_token_ = page_token;
+  }
+
+  const std::string& q() const { return q_; }
+  void set_q(const std::string& q) { q_ = q; }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  int max_results_;
+  std::string page_token_;
+  std::string q_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesListRequest);
 };
 
 //============================== AboutGetRequest =============================

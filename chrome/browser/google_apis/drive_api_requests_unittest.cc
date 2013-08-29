@@ -512,24 +512,23 @@ TEST_F(DriveApiRequestsTest, GetChangelistRequest) {
   EXPECT_TRUE(result);
 }
 
-TEST_F(DriveApiRequestsTest, GetFilelistRequest) {
+TEST_F(DriveApiRequestsTest, FilesListRequest) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "drive/filelist.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result;
+  scoped_ptr<FileList> result;
 
   {
     base::RunLoop run_loop;
-    GetFilelistRequest* request = new GetFilelistRequest(
-        request_sender_.get(),
-        *url_generator_,
-        "\"abcde\" in parents",
-        50,  // max results
+    drive::FilesListRequest* request = new drive::FilesListRequest(
+        request_sender_.get(), *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &result)));
+    request->set_max_results(50);
+    request->set_q("\"abcde\" in parents");
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }

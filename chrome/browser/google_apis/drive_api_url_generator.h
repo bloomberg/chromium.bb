@@ -48,18 +48,18 @@ class DriveApiUrlGenerator {
   // a file metadata or creating a new directory.
   GURL GetFilesUrl() const;
 
-  // Returns a URL to fetch a list of files with the given |search_string|.
-  // search_string: The search query.
-  // max_results: The max of the number of files resource in the response.
-  GURL GetFilelistUrl(const std::string& search_string, int max_results) const;
-
-  // Returns a URL to fetch a file content.
+  // Returns a URL to fetch a file metadata.
   GURL GetFilesGetUrl(const std::string& file_id) const;
 
   // Returns a URL to patch file metadata.
   GURL GetFilesPatchUrl(const std::string& file_id,
                         bool set_modified_date,
                         bool update_viewed_date) const;
+
+  // Returns a URL to fetch file list.
+  GURL GetFilesListUrl(int max_results,
+                       const std::string& page_token,
+                       const std::string& q) const;
 
   // Returns a URL to copy a file specified by |resource_id|.
   GURL GetFileCopyUrl(const std::string& resource_id) const;

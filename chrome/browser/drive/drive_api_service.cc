@@ -38,7 +38,6 @@ using google_apis::GDataErrorCode;
 using google_apis::AboutResourceCallback;
 using google_apis::GetChangelistRequest;
 using google_apis::GetContentCallback;
-using google_apis::GetFilelistRequest;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
 using google_apis::GetResourceListCallback;
@@ -62,6 +61,7 @@ using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::FilesGetRequest;
 using google_apis::drive::FilesPatchRequest;
+using google_apis::drive::FilesListRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
@@ -148,7 +148,7 @@ void ParseResourceListOnBlockingPoolAndRun(
     return;
   }
 
-  PostTaskAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner.get(),
       FROM_HERE,
       base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
@@ -178,6 +178,35 @@ void ConvertFileEntryToResourceEntryAndRun(
   }
 
   callback.Run(error, entry.Pass());
+}
+
+// Thin adapter of CreateFromFileList.
+scoped_ptr<ResourceList> ConvertFileListToResourceList(
+    scoped_ptr<FileList> file_list) {
+  return ResourceList::CreateFromFileList(*file_list);
+}
+
+// Converts the FileList value to ResourceList on blocking pool and runs
+// |callback| on the UI thread.
+void ConvertFileListToResourceListOnBlockingPoolAndRun(
+    scoped_refptr<base::TaskRunner> blocking_task_runner,
+    const GetResourceListCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<FileList> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<ResourceList>());
+    return;
+  }
+
+  // Convert the value on blocking pool.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner.get(),
+      FROM_HERE,
+      base::Bind(&ConvertFileListToResourceList, base::Passed(&value)),
+      base::Bind(&DidParseResourceListOnBlockingPool, callback));
 }
 
 // Parses the FileResource value to ResourceEntry for upload range request,
@@ -347,18 +376,16 @@ CancelCallback DriveAPIService::GetResourceListInDirectory(
   // code up by moving the responsibility to include "parents" in the query
   // to client side.
   // We aren't interested in files in trash in this context, neither.
-  return sender_->StartRequestWithRetry(
-      new GetFilelistRequest(
-          sender_.get(),
-          url_generator_,
-          base::StringPrintf(
-              "'%s' in parents and trashed = false",
-              drive::util::EscapeQueryStringValue(
-                  directory_resource_id).c_str()),
-          kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
+  FilesListRequest* request = new FilesListRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_max_results(kMaxNumFilesResourcePerRequest);
+  request->set_q(base::StringPrintf(
+      "'%s' in parents and trashed = false",
+      drive::util::EscapeQueryStringValue(directory_resource_id).c_str()));
+
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::Search(
@@ -368,15 +395,14 @@ CancelCallback DriveAPIService::Search(
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new GetFilelistRequest(
-          sender_.get(),
-          url_generator_,
-          drive::util::TranslateQuery(search_query),
-          kMaxNumFilesResourcePerRequestForSearch,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
+  FilesListRequest* request = new FilesListRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_max_results(kMaxNumFilesResourcePerRequestForSearch);
+  request->set_q(drive::util::TranslateQuery(search_query));
+
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::SearchByTitle(
@@ -397,15 +423,14 @@ CancelCallback DriveAPIService::SearchByTitle(
   }
   query += " and trashed = false";
 
-  return sender_->StartRequestWithRetry(
-      new GetFilelistRequest(
-          sender_.get(),
-          url_generator_,
-          query,
-          kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
+  FilesListRequest* request = new FilesListRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_max_results(kMaxNumFilesResourcePerRequest);
+  request->set_q(query);
+
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetChangeList(

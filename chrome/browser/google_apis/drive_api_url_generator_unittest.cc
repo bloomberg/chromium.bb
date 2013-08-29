@@ -81,20 +81,6 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesUrl) {
             test_url_generator_.GetFilesUrl().spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {
-  // Do not add q parameter if |search_string| is empty.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files?maxResults=50",
-            url_generator_.GetFilelistUrl(std::string(), 50).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?maxResults=50",
-            test_url_generator_.GetFilelistUrl(std::string(), 50).spec());
-
-  // Set q parameter if non-empty |search_string| is given.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files?maxResults=50&q=query",
-            url_generator_.GetFilelistUrl("query", 50).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?maxResults=50&q=query",
-            test_url_generator_.GetFilelistUrl("query", 50).spec());
-}
-
 TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg",
@@ -125,7 +111,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
     { true, false, "?setModifiedDate=true&updateViewedDate=false" },
   };
 
-  for (size_t i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
     EXPECT_EQ(
         "https://www.googleapis.com/drive/v2/files/0ADK06pfg" +
             kTestPatterns[i].expected_query,
@@ -174,6 +160,45 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
             "file:file_id",
             kTestPatterns[i].set_modified_date,
             kTestPatterns[i].update_viewed_date).spec());
+  }
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
+  struct TestPattern {
+    int max_results;
+    const std::string page_token;
+    const std::string q;
+    const std::string expected_query;
+  };
+  const TestPattern kTestPatterns[] = {
+    { 100, "", "", "" },
+    { 150, "", "", "?maxResults=150" },
+    { 10, "", "", "?maxResults=10" },
+    { 100, "token", "", "?pageToken=token" },
+    { 150, "token", "", "?maxResults=150&pageToken=token" },
+    { 10, "token", "", "?maxResults=10&pageToken=token" },
+    { 100, "", "query", "?q=query" },
+    { 150, "", "query", "?maxResults=150&q=query" },
+    { 10, "", "query", "?maxResults=10&q=query" },
+    { 100, "token", "query", "?pageToken=token&q=query" },
+    { 150, "token", "query", "?maxResults=150&pageToken=token&q=query" },
+    { 10, "token", "query", "?maxResults=10&pageToken=token&q=query" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+    EXPECT_EQ(
+        "https://www.googleapis.com/drive/v2/files" +
+            kTestPatterns[i].expected_query,
+        url_generator_.GetFilesListUrl(
+            kTestPatterns[i].max_results, kTestPatterns[i].page_token,
+            kTestPatterns[i].q).spec());
+
+    EXPECT_EQ(
+        "http://127.0.0.1:12345/drive/v2/files" +
+            kTestPatterns[i].expected_query,
+        test_url_generator_.GetFilesListUrl(
+            kTestPatterns[i].max_results, kTestPatterns[i].page_token,
+            kTestPatterns[i].q).spec());
   }
 }
 

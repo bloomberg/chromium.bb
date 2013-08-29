@@ -7,8 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/request_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 
@@ -39,6 +42,48 @@ void ParseJsonAndRun(
   }
 
   callback.Run(error, resource.Pass());
+}
+
+// Thin adapter of T::CreateFrom.
+template<typename T>
+scoped_ptr<T> ParseJsonOnBlockingPool(scoped_ptr<base::Value> value) {
+  return T::CreateFrom(*value);
+}
+
+// Runs |callback| with given |error| and |value|. If |value| is null,
+// overwrites |error| to GDATA_PARSE_ERROR.
+template<typename T>
+void ParseJsonOnBlockingPoolAndRunAfterBlockingPoolTask(
+    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
+    GDataErrorCode error, scoped_ptr<T> value) {
+  if (!value)
+    error = GDATA_PARSE_ERROR;
+  callback.Run(error, value.Pass());
+}
+
+// Parses the JSON value to a resource typed |T| and runs |callback| on
+// blocking pool, and then run on the current thread.
+// TODO(hidehiko): Move this and ParseJsonAndRun defined above into base with
+// merging the tasks running on blocking pool into one.
+template<typename T>
+void ParseJsonOnBlockingPoolAndRun(
+    scoped_refptr<base::TaskRunner> blocking_task_runner,
+    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
+    GDataErrorCode error,
+    scoped_ptr<base::Value> value) {
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<T>());
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner,
+      FROM_HERE,
+      base::Bind(&ParseJsonOnBlockingPool<T>, base::Passed(&value)),
+      base::Bind(&ParseJsonOnBlockingPoolAndRunAfterBlockingPoolTask<T>,
+                 callback, error));
 }
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
@@ -92,28 +137,6 @@ GURL GetChangelistRequest::GetURL() const {
   return url_generator_.GetChangelistUrl(
       include_deleted_, start_changestamp_, max_results_);
 }
-
-//============================= GetFilelistRequest ===========================
-
-GetFilelistRequest::GetFilelistRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const std::string& search_string,
-    int max_results,
-    const GetDataCallback& callback)
-    : GetDataRequest(sender, callback),
-      url_generator_(url_generator),
-      search_string_(search_string),
-      max_results_(max_results) {
-  DCHECK(!callback.is_null());
-}
-
-GetFilelistRequest::~GetFilelistRequest() {}
-
-GURL GetFilelistRequest::GetURL() const {
-  return url_generator_.GetFilelistUrl(search_string_, max_results_);
-}
-
 
 namespace drive {
 
@@ -202,6 +225,28 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
   DVLOG(1) << "FilesPatch data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
+}
+
+//============================= FilesListRequest =============================
+
+FilesListRequest::FilesListRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileListCallback& callback)
+    : GetDataRequest(
+          sender,
+          base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
+                     make_scoped_refptr(sender->blocking_task_runner()),
+                     callback)),
+      url_generator_(url_generator),
+      max_results_(100) {
+  DCHECK(!callback.is_null());
+}
+
+FilesListRequest::~FilesListRequest() {}
+
+GURL FilesListRequest::GetURL() const {
+  return url_generator_.GetFilesListUrl(max_results_, page_token_, q_);
 }
 
 //============================== AboutGetRequest =============================
