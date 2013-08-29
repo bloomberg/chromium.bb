@@ -12,7 +12,7 @@
 namespace gfx {
 class Screen;
 class VSyncProvider;
-} //  namespace gfx
+}  // namespace gfx
 
 namespace ui {
 
