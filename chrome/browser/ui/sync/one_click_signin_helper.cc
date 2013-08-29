@@ -147,6 +147,107 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
 }
 
 
+// ConfirmEmailDialogDelegate -------------------------------------------------
+
+class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
+ public:
+  enum Action {
+    CREATE_NEW_USER,
+    START_SYNC,
+    CLOSE
+  };
+
+  // Callback indicating action performed by the user.
+  typedef base::Callback<void(Action)> Callback;
+
+  // Ask the user for confirmation before starting to sync.
+  static void AskForConfirmation(content::WebContents* contents,
+                                 const std::string& last_email,
+                                 const std::string& email,
+                                 Callback callback);
+
+ private:
+  ConfirmEmailDialogDelegate(content::WebContents* contents,
+                             const std::string& last_email,
+                             const std::string& email,
+                             Callback callback);
+  virtual ~ConfirmEmailDialogDelegate();
+
+  // TabModalConfirmDialogDelegate:
+  virtual string16 GetTitle() OVERRIDE;
+  virtual string16 GetMessage() OVERRIDE;
+  virtual string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual string16 GetCancelButtonTitle() OVERRIDE;
+  virtual void OnAccepted() OVERRIDE;
+  virtual void OnCanceled() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
+
+  std::string last_email_;
+  std::string email_;
+  Callback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConfirmEmailDialogDelegate);
+};
+
+// static
+void ConfirmEmailDialogDelegate::AskForConfirmation(
+    content::WebContents* contents,
+    const std::string& last_email,
+    const std::string& email,
+    Callback callback) {
+  TabModalConfirmDialog::Create(
+      new ConfirmEmailDialogDelegate(contents, last_email, email,
+                                     callback), contents);
+}
+
+ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
+    content::WebContents* contents,
+    const std::string& last_email,
+    const std::string& email,
+    Callback callback)
+  : TabModalConfirmDialogDelegate(contents),
+    last_email_(last_email),
+    email_(email),
+    callback_(callback) {
+}
+
+ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
+}
+
+string16 ConfirmEmailDialogDelegate::GetTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
+}
+
+string16 ConfirmEmailDialogDelegate::GetMessage() {
+  return l10n_util::GetStringFUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
+      UTF8ToUTF16(last_email_), UTF8ToUTF16(email_));
+}
+
+string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
+}
+
+string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
+}
+
+void ConfirmEmailDialogDelegate::OnAccepted() {
+  base::ResetAndReturn(&callback_).Run(CREATE_NEW_USER);
+}
+
+void ConfirmEmailDialogDelegate::OnCanceled() {
+  base::ResetAndReturn(&callback_).Run(START_SYNC);
+}
+
+void ConfirmEmailDialogDelegate::OnClosed() {
+  base::ResetAndReturn(&callback_).Run(CLOSE);
+}
+
+
 // Helpers --------------------------------------------------------------------
 
 // Add a specific email to the list of emails rejected for one-click
@@ -279,16 +380,17 @@ void StartSync(const StartSyncArgs& args,
 void StartExplicitSync(const StartSyncArgs& args,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
-                       int button) {
-  if (button == IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON) {
-    contents->GetController().LoadURL(
-        GURL(chrome::kChromeUINewTabURL), content::Referrer(),
-        content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-    chrome::ShowSettingsSubPage(args.browser,
-                                std::string(chrome::kSearchUsersSubPage));
-  } else {
+                       ConfirmEmailDialogDelegate::Action action) {
+  if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
     RedirectToNtpOrAppsPageIfNecessary(contents, args.source);
+  } else {
+    if (signin::IsContinueUrlForWebBasedSigninFlow(contents->GetVisibleURL()))
+      RedirectToNtpOrAppsPage(contents, args.source);
+    if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
+      chrome::ShowSettingsSubPage(args.browser,
+                                  std::string(chrome::kSearchUsersSubPage));
+    }
   }
 }
 
@@ -379,100 +481,6 @@ bool AreWeShowingSignin(GURL url, signin::Source source, std::string email) {
        url.spec().find("ChromeLoginPrompt") != std::string::npos &&
        !email.empty());
 }
-
-
-// ConfirmEmailDialogDelegate -------------------------------------------------
-
-class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
- public:
-  // Callback indicating action performed by the user.  The argument to the
-  // callback is the ID of the button pressed by the user.
-  typedef base::Callback<void(int)> Callback;
-
-  // Ask the user for confirmation before starting to sync.
-  static void AskForConfirmation(content::WebContents* contents,
-                                 const std::string& last_email,
-                                 const std::string& email,
-                                 Callback callback);
-
- private:
-  ConfirmEmailDialogDelegate(content::WebContents* contents,
-                             const std::string& last_email,
-                             const std::string& email,
-                             Callback callback);
-  virtual ~ConfirmEmailDialogDelegate();
-
-  // TabModalConfirmDialogDelegate:
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
-  virtual string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual string16 GetCancelButtonTitle() OVERRIDE;
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-
-  std::string last_email_;
-  std::string email_;
-  Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmEmailDialogDelegate);
-};
-
-// static
-void ConfirmEmailDialogDelegate::AskForConfirmation(
-    content::WebContents* contents,
-    const std::string& last_email,
-    const std::string& email,
-    Callback callback) {
-  TabModalConfirmDialog::Create(
-      new ConfirmEmailDialogDelegate(contents, last_email, email,
-                                     callback), contents);
-}
-
-ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
-    content::WebContents* contents,
-    const std::string& last_email,
-    const std::string& email,
-    Callback callback)
-  : TabModalConfirmDialogDelegate(contents),
-    last_email_(last_email),
-    email_(email),
-    callback_(callback) {
-}
-
-ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
-}
-
-string16 ConfirmEmailDialogDelegate::GetTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
-}
-
-string16 ConfirmEmailDialogDelegate::GetMessage() {
-  return l10n_util::GetStringFUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
-      UTF8ToUTF16(last_email_), UTF8ToUTF16(email_));
-}
-
-string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
-}
-
-string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
-}
-
-void ConfirmEmailDialogDelegate::OnAccepted() {
-  base::ResetAndReturn(&callback_).Run(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
-}
-
-void ConfirmEmailDialogDelegate::OnCanceled() {
-  base::ResetAndReturn(&callback_).Run(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
-}
-
 
 // CurrentHistoryCleaner ------------------------------------------------------
 
@@ -1264,8 +1272,8 @@ void OneClickSigninHelper::DidStopLoading(
 
         // No need to display a second confirmation so pass false below.
         // TODO(atwilson): Move this into OneClickSigninSyncStarter.
-        // If |contents| is deleted before the callback execution,
-        // the tab modal dialog is closed and the callback is never executed.
+        // The tab modal dialog always executes its callback before |contents|
+        // is deleted.
         ConfirmEmailDialogDelegate::AskForConfirmation(
             contents,
             last_email,
