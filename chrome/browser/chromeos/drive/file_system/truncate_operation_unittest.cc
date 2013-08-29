@@ -48,7 +48,7 @@ TEST_F(TruncateOperationTest, Truncate) {
   base::FilePath local_path;
   error = FILE_ERROR_FAILED;
   cache()->GetFileOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
@@ -107,7 +107,7 @@ TEST_F(TruncateOperationTest, Extend) {
   base::FilePath local_path;
   error = FILE_ERROR_FAILED;
   cache()->GetFileOnUIThread(
-      src_entry.resource_id(),
+      GetLocalId(file_in_root),
       google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);

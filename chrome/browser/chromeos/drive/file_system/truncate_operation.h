@@ -54,7 +54,6 @@ class TruncateOperation {
  private:
   // Part of Truncate(). Called after EnsureFileDownloadedByPath() is complete.
   void TruncateAfterEnsureFileDownloadedByPath(
-      const base::FilePath& file_path,
       int64 length,
       const FileOperationCallback& callback,
       FileError error,
@@ -63,12 +62,13 @@ class TruncateOperation {
 
   // Part of Truncate(). Called after TruncateOnBlockingPool() is complete.
   void TruncateAfterTruncateOnBlockingPool(
-      const std::string& resource_id,
+      const std::string* local_id,
       const FileOperationCallback& callback,
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
+  internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 
   scoped_ptr<DownloadOperation> download_operation_;
