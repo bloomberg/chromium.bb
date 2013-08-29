@@ -127,8 +127,13 @@ public class TemplateUrlService {
      * @return {@link TemplateUrlService.TemplateUrl} for the default search engine.
      */
     public TemplateUrl getDefaultSearchEngineTemplateUrl() {
+        if (!isLoaded()) return null;
+
+        int defaultSearchEngineIndex = getDefaultSearchEngineIndex();
+        assert defaultSearchEngineIndex >= 0;
+
         return nativeGetPrepopulatedTemplateUrlAt(
-                mNativeTemplateUrlServiceAndroid, getDefaultSearchEngineIndex());
+                mNativeTemplateUrlServiceAndroid, defaultSearchEngineIndex);
     }
 
     public void setSearchEngine(int selectedIndex) {
