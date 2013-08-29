@@ -67,8 +67,13 @@ public:
     // Add data to the stream referred by the URL.
     virtual void addDataToStream(const WebURL&, WebThreadSafeData&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
-    // Tell the registry that this stream won't receive any more data.
+    // Tell the registry that construction of this stream has completed
+    // successfully and so it won't receive any more data.
     virtual void finalizeStream(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); }
+
+    // Tell the registry that construction of this stream has been aborted and
+    // so it won't receive any more data.
+    virtual void abortStream(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Unregisters a stream referred by the URL.
     virtual void unregisterStreamURL(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); }

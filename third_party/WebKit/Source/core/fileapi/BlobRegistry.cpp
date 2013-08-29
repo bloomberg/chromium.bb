@@ -273,6 +273,24 @@ void BlobRegistry::finalizeStream(const KURL& url)
     }
 }
 
+static void abortStreamTask(void* context)
+{
+    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->abortStream(blobRegistryContext->url);
+}
+
+void BlobRegistry::abortStream(const KURL& url)
+{
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->abortStream(url);
+    } else {
+        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
+        callOnMainThread(&abortStreamTask, context.leakPtr());
+    }
+}
+
 static void unregisterStreamURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));

@@ -58,6 +58,7 @@ public:
     static void registerStreamURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
     static void addDataToStream(const KURL&, PassRefPtr<RawData>);
     static void finalizeStream(const KURL&);
+    static void abortStream(const KURL&);
     static void unregisterStreamURL(const KURL&);
 };
 
