@@ -44,14 +44,15 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-    class Document;
-    class KURL;
-    class ResourceRequest;
-    class SecurityOrigin;
-    class ThreadableLoaderClient;
 
-    class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private RawResourceClient  {
-        WTF_MAKE_FAST_ALLOCATED;
+class Document;
+class KURL;
+class ResourceRequest;
+class SecurityOrigin;
+class ThreadableLoaderClient;
+
+class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private RawResourceClient  {
+    WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(Document*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
         static PassRefPtr<DocumentThreadableLoader> create(Document*, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
@@ -92,8 +93,8 @@ namespace WebCore {
         void didFail(unsigned long identifier, const ResourceError&);
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
-        void makeSimpleCrossOriginAccessRequest(const ResourceRequest& request);
-        void makeCrossOriginAccessRequestWithPreflight(const ResourceRequest& request);
+        void makeSimpleCrossOriginAccessRequest(const ResourceRequest&);
+        void makeCrossOriginAccessRequestWithPreflight(const ResourceRequest&);
         void preflightSuccess();
         void preflightFailure(unsigned long identifier, const String& url, const String& errorDescription);
 
@@ -102,6 +103,7 @@ namespace WebCore {
         bool isAllowedByPolicy(const KURL&) const;
 
         SecurityOrigin* securityOrigin() const;
+        bool checkCrossOriginAccessRedirectionUrl(const KURL&, String& errorDescription);
 
         ResourcePtr<RawResource> m_resource;
         ThreadableLoaderClient* m_client;
@@ -110,7 +112,7 @@ namespace WebCore {
         bool m_sameOriginRequest;
         bool m_simpleRequest;
         bool m_async;
-        OwnPtr<ResourceRequest> m_actualRequest;  // non-null during Access Control preflight checks
+        OwnPtr<ResourceRequest> m_actualRequest; // non-null during Access Control preflight checks
         Timer<DocumentThreadableLoader> m_timeoutTimer;
     };
 

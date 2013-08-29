@@ -276,6 +276,9 @@ interface InspectorInstrumentation {
     [Timeline, Resource]
     void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime);
 
+    [Resource]
+    void didReceiveCORSRedirectResponse(Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
     void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoader*, const ResourceError&);
 

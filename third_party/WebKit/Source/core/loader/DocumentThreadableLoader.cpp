@@ -206,13 +206,17 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     // scheme and not contain the userinfo production. In addition, the redirect response must pass the access control check if the
     // original request was not same-origin.
     if (m_options.crossOriginRequestPolicy == UseAccessControl) {
+
+        InspectorInstrumentation::didReceiveCORSRedirectResponse(m_document->frame(), resource->identifier(), m_document->frame()->loader()->documentLoader(), redirectResponse, 0);
+
         bool allowRedirect = false;
+        String accessControlErrorDescription;
+
         if (m_simpleRequest) {
-            String accessControlErrorDescription;
-            allowRedirect = SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())
-                            && request.url().user().isEmpty()
-                            && request.url().pass().isEmpty()
+            allowRedirect = checkCrossOriginAccessRedirectionUrl(request.url(), accessControlErrorDescription)
                             && (m_sameOriginRequest || passesAccessControlCheck(redirectResponse, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription));
+        } else {
+            accessControlErrorDescription = "The request was redirected to '"+ request.url().string() + "', which is disallowed for cross-origin requests that require preflight.";
         }
 
         if (allowRedirect) {
@@ -243,9 +247,12 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
             makeCrossOriginAccessRequest(request);
             return;
         }
-    }
 
-    m_client->didFailRedirectCheck();
+        ResourceError error(errorDomainWebKitInternal, 0, redirectResponse.url().string(), accessControlErrorDescription);
+        m_client->didFailAccessControlCheck(error);
+    } else {
+        m_client->didFailRedirectCheck();
+    }
     request = ResourceRequest();
 }
 
@@ -490,6 +497,21 @@ bool DocumentThreadableLoader::isAllowedByPolicy(const KURL& url) const
 SecurityOrigin* DocumentThreadableLoader::securityOrigin() const
 {
     return m_options.securityOrigin ? m_options.securityOrigin.get() : m_document->securityOrigin();
+}
+
+bool DocumentThreadableLoader::checkCrossOriginAccessRedirectionUrl(const KURL& requestUrl, String& errorDescription)
+{
+    if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestUrl.protocol())) {
+        errorDescription = "The request was redirected to a URL ('" + requestUrl.string() + "') which has a disallowed scheme for cross-origin requests.";
+        return false;
+    }
+
+    if (!(requestUrl.user().isEmpty() && requestUrl.pass().isEmpty())) {
+        errorDescription = "The request was redirected to a URL ('" + requestUrl.string() + "') containing userinfo, which is disallowed for cross-origin requests.";
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace WebCore

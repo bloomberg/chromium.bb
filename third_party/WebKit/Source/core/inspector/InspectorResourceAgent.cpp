@@ -398,6 +398,13 @@ void InspectorResourceAgent::didFinishLoading(unsigned long identifier, Document
     m_frontend->loadingFinished(requestId, finishTime);
 }
 
+void InspectorResourceAgent::didReceiveCORSRedirectResponse(unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+{
+    // Update the response and finish loading
+    didReceiveResourceResponse(identifier, loader, response, resourceLoader);
+    didFinishLoading(identifier, loader, 0);
+}
+
 void InspectorResourceAgent::didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
