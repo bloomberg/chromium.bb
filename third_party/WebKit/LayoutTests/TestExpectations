@@ -1036,6 +1036,7 @@ crbug.com/248938 virtual/threaded/transitions/transition-hit-test-transform.html
 crbug.com/248938 virtual/threaded/transitions/transition-duration-cleared-in-transitionend-crash.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Mac Release ] virtual/threaded/animations/3d/change-transform-in-end-event.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Mac Release ] virtual/threaded/animations/interpolation/sample-interpolation-template-reftest.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Release ] virtual/threaded/animations/interpolation/clip-interpolation.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/fill-mode-transform.html [ Pass Timeout ]
 crbug.com/248938 [ Mac Debug ] virtual/threaded/animations/fill-mode-transform.html [ Pass Timeout ]
@@ -1253,4 +1254,5 @@ crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Fail
 
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
 crbug.com/280921 inspector-protocol/page/enable-disable.html [ Failure Pass ]
+crbug.com/280932 [ Linux Mac Debug ] inspector/elements/elements-panel-limited-children.html [ Failure Pass ]
 crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
