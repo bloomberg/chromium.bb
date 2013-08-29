@@ -11,7 +11,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/test/logging/win/test_log_collector.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -20,6 +19,7 @@
 #include "chrome_frame/test/test_scrubber.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
+#include "components/variations/entropy_provider.h"
 
 // To enable ATL-based code to run in this module
 class ChromeFrameUnittestsModule

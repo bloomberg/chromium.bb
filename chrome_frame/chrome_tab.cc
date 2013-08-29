@@ -29,7 +29,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_active_document.h"
@@ -43,6 +42,7 @@
 #include "chrome_frame/pin_module.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
+#include "components/variations/entropy_provider.h"
 #include "grit/chrome_frame_resources.h"
 #include "url/url_util.h"
 
