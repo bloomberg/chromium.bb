@@ -165,6 +165,8 @@ void RecordLastRunAppBundlePath() {
   // real, user-visible app bundle directory. (The alternatives give either the
   // framework's path or the initial app's path, which may be an app mode shim
   // or a unit test.)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   base::FilePath appBundlePath =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
   CFPreferencesSetAppValue(
@@ -671,8 +673,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [NSApp setHelpMenu:helpMenu_];
 
   // Record the path to the (browser) app bundle; this is used by the app mode
-  // shim.
-  RecordLastRunAppBundlePath();
+  // shim.  It has to be done in FILE thread because getting the path requires
+  // I/O.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&RecordLastRunAppBundlePath));
 
   // Makes "Services" menu items available.
   [self registerServicesMenuTypesTo:[notify object]];
