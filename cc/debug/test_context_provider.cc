@@ -4,9 +4,13 @@
 
 #include "cc/debug/test_context_provider.h"
 
+#include <set>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 
 namespace cc {
@@ -120,6 +124,14 @@ bool TestContextProvider::BindToCurrentThread() {
       new SwapBuffersCompleteCallbackProxy(this));
 
   return true;
+}
+
+ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->test_capabilities();
 }
 
 WebKit::WebGraphicsContext3D* TestContextProvider::Context3d() {

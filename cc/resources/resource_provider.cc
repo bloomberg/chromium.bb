@@ -709,24 +709,14 @@ bool ResourceProvider::InitializeGL() {
 
   default_resource_type_ = GLTexture;
 
-  std::string extensions_string =
-      UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
-  std::vector<std::string> extensions;
-  base::SplitString(extensions_string, ' ', &extensions);
-  bool use_map_sub = false;
-  bool use_bgra = false;
-  for (size_t i = 0; i < extensions.size(); ++i) {
-    if (extensions[i] == "GL_EXT_texture_storage")
-      use_texture_storage_ext_ = true;
-    else if (extensions[i] == "GL_ANGLE_texture_usage")
-      use_texture_usage_hint_ = true;
-    else if (extensions[i] == "GL_CHROMIUM_map_sub")
-      use_map_sub = true;
-    else if (extensions[i] == "GL_CHROMIUM_shallow_flush")
-      use_shallow_flush_ = true;
-    else if (extensions[i] == "GL_EXT_texture_format_BGRA8888")
-      use_bgra = true;
-  }
+  const ContextProvider::Capabilities& caps =
+      output_surface_->context_provider()->ContextCapabilities();
+
+  bool use_map_sub = caps.map_sub;
+  bool use_bgra = caps.texture_format_bgra8888;
+  use_texture_storage_ext_ = caps.texture_storage;
+  use_shallow_flush_ = caps.shallow_flush;
+  use_texture_usage_hint_ = caps.texture_usage;
 
   texture_uploader_ =
       TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);

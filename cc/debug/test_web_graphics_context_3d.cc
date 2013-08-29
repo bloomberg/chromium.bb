@@ -61,9 +61,6 @@ scoped_ptr<TestWebGraphicsContext3D> TestWebGraphicsContext3D::Create() {
 TestWebGraphicsContext3D::TestWebGraphicsContext3D()
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),
-      support_swapbuffers_complete_callback_(true),
-      have_extension_io_surface_(false),
-      have_extension_egl_image_(false),
       times_make_current_succeeds_(-1),
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
@@ -79,6 +76,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
+  test_capabilities_.swapbuffers_complete_callback = true;
 }
 
 TestWebGraphicsContext3D::TestWebGraphicsContext3D(
@@ -86,9 +84,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),
       attributes_(attributes),
-      support_swapbuffers_complete_callback_(true),
-      have_extension_io_surface_(false),
-      have_extension_egl_image_(false),
       times_make_current_succeeds_(-1),
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
@@ -104,6 +99,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
+  test_capabilities_.swapbuffers_complete_callback = true;
 }
 
 void TestWebGraphicsContext3D::CreateNamespace() {
@@ -175,19 +171,7 @@ WebGraphicsContext3D::Attributes
 }
 
 WebKit::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
-  std::string string;
-
-  if (support_swapbuffers_complete_callback_)
-    string += "GL_CHROMIUM_swapbuffers_complete_callback";
-
-  if (name == GL_EXTENSIONS) {
-    if (have_extension_io_surface_)
-      string += " GL_CHROMIUM_iosurface GL_ARB_texture_rectangle";
-    if (have_extension_egl_image_)
-      string += " GL_OES_EGL_image_external";
-  }
-
-  return WebKit::WebString::fromUTF8(string.c_str());
+  return WebKit::WebString();
 }
 
 WGC3Dint TestWebGraphicsContext3D::getUniformLocation(
@@ -427,7 +411,7 @@ void TestWebGraphicsContext3D::signalQuery(
 
 void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
     WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
-  if (support_swapbuffers_complete_callback_)
+  if (test_capabilities_.swapbuffers_complete_callback)
     swap_buffers_callback_ = callback;
 }
 

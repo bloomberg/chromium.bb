@@ -287,17 +287,11 @@ void OutputSurface::SetUpContext3d() {
   DCHECK(context_provider_);
   DCHECK(client_);
 
-  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  const ContextProvider::Capabilities& caps =
+      context_provider_->ContextCapabilities();
 
-  string extensions_string =
-      UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
-  vector<string> extensions_list;
-  base::SplitString(extensions_string, ' ', &extensions_list);
-  set<string> extensions(extensions_list.begin(), extensions_list.end());
-  has_gl_discard_backbuffer_ =
-      extensions.count("GL_CHROMIUM_discard_backbuffer") > 0;
-  has_swap_buffers_complete_callback_ =
-       extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
+  has_gl_discard_backbuffer_ = caps.discard_backbuffer;
+  has_swap_buffers_complete_callback_ = caps.swapbuffers_complete_callback;
 
   context_provider_->SetLostContextCallback(
       base::Bind(&OutputSurface::DidLoseOutputSurface,

@@ -29,6 +29,7 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
+  virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(
@@ -56,11 +57,15 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
       const WebKit::WebGraphicsMemoryAllocation& allocation);
 
  private:
+  void InitializeCapabilities();
+
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
+
+  cc::ContextProvider::Capabilities capabilities_;
 
   LostContextCallback lost_context_callback_;
   SwapBuffersCompleteCallback swap_buffers_complete_callback_;

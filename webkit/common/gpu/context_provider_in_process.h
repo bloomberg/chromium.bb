@@ -33,8 +33,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   static scoped_refptr<ContextProviderInProcess> CreateOffscreen();
 
   virtual bool BindToCurrentThread() OVERRIDE;
-  virtual webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl*
-      Context3d() OVERRIDE;
+  virtual Capabilities ContextCapabilities() OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;

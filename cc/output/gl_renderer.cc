@@ -176,25 +176,18 @@ bool GLRenderer::Initialize() {
       context_);
   context_->pushGroupMarkerEXT(unique_context_name.c_str());
 
-  std::string extensions_string =
-      UTF16ToASCII(context_->getString(GL_EXTENSIONS));
-  std::vector<std::string> extensions_list;
-  base::SplitString(extensions_string, ' ', &extensions_list);
-  std::set<std::string> extensions(extensions_list.begin(),
-                                   extensions_list.end());
+  ContextProvider::Capabilities context_caps =
+    output_surface_->context_provider()->ContextCapabilities();
 
   capabilities_.using_partial_swap =
       Settings().partial_swap_enabled &&
-      extensions.count("GL_CHROMIUM_post_sub_buffer");
+      context_caps.post_sub_buffer;
 
-  capabilities_.using_set_visibility =
-      extensions.count("GL_CHROMIUM_set_visibility") > 0;
+  capabilities_.using_set_visibility = context_caps.set_visibility;
 
-  if (extensions.count("GL_CHROMIUM_iosurface") > 0)
-    DCHECK_GT(extensions.count("GL_ARB_texture_rectangle"), 0u);
+  DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
 
-  capabilities_.using_egl_image =
-      extensions.count("GL_OES_EGL_image_external") > 0;
+  capabilities_.using_egl_image = context_caps.egl_image_external;
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
@@ -204,17 +197,14 @@ bool GLRenderer::Initialize() {
 
   // Check for texture fast paths. Currently we always use MO8 textures,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
-  capabilities_.avoid_pow2_textures =
-      extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures") > 0;
+  capabilities_.avoid_pow2_textures = context_caps.fast_npot_mo8_textures;
 
   capabilities_.using_offscreen_context3d = true;
 
   capabilities_.using_map_image =
-      extensions.count("GL_CHROMIUM_map_image") > 0 &&
-      Settings().use_map_image;
+      Settings().use_map_image && context_caps.map_image;
 
-  is_using_bind_uniform_ =
-      extensions.count("GL_CHROMIUM_bind_uniform_location") > 0;
+  is_using_bind_uniform_ = context_caps.bind_uniform_location;
 
   if (!InitializeSharedObjects())
     return false;

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "cc/base/cc_export.h"
 
 class GrContext;
 namespace WebKit { class WebGraphicsContext3D; }
@@ -24,6 +25,28 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
 
   virtual WebKit::WebGraphicsContext3D* Context3d() = 0;
   virtual class GrContext* GrContext() = 0;
+
+  struct Capabilities {
+    bool bind_uniform_location;
+    bool discard_backbuffer;
+    bool egl_image_external;
+    bool fast_npot_mo8_textures;
+    bool iosurface;
+    bool map_image;
+    bool map_sub;
+    bool post_sub_buffer;
+    bool set_visibility;
+    bool shallow_flush;
+    bool swapbuffers_complete_callback;
+    bool texture_format_bgra8888;
+    bool texture_rectangle;
+    bool texture_storage;
+    bool texture_usage;
+
+    CC_EXPORT Capabilities();
+  };
+  // Returns the capabilities of the currently bound 3d context.
+  virtual Capabilities ContextCapabilities() = 0;
 
   // Ask the provider to check if the contexts are valid or lost. If they are,
   // this should invalidate the provider so that it can be replaced with a new

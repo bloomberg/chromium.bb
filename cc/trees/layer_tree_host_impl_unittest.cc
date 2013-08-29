@@ -3131,7 +3131,11 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
 
 class SwapTrackerContext : public TestWebGraphicsContext3D {
  public:
-  SwapTrackerContext() : last_update_type_(NoUpdate) {}
+  SwapTrackerContext()
+      : last_update_type_(NoUpdate) {
+    test_capabilities_.post_sub_buffer = true;
+    test_capabilities_.set_visibility = true;
+  }
 
   virtual void prepareTexture() OVERRIDE {
     update_rect_ = gfx::Rect(width_, height_);
@@ -3142,15 +3146,6 @@ class SwapTrackerContext : public TestWebGraphicsContext3D {
       OVERRIDE {
     update_rect_ = gfx::Rect(x, y, width, height);
     last_update_type_ = PostSubBuffer;
-  }
-
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
-    if (name == GL_EXTENSIONS) {
-      return WebKit::WebString(
-          "GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_set_visibility");
-    }
-
-    return WebKit::WebString();
   }
 
   gfx::Rect update_rect() const { return update_rect_; }
@@ -3327,7 +3322,6 @@ class MockContext : public TestWebGraphicsContext3D {
                                   WebKit::WGC3Dsizei count,
                                   WebKit::WGC3Denum type,
                                   WebKit::WGC3Dintptr offset));
-  MOCK_METHOD1(getString, WebKit::WebString(WebKit::WGC3Denum name));
   MOCK_METHOD0(getRequestableExtensionsCHROMIUM, WebKit::WebString());
   MOCK_METHOD1(enable, void(WebKit::WGC3Denum cap));
   MOCK_METHOD1(disable, void(WebKit::WGC3Denum cap));
@@ -3344,6 +3338,8 @@ class MockContextHarness {
  public:
   explicit MockContextHarness(MockContext* context)
       : context_(context) {
+    context_->set_have_post_sub_buffer(true);
+
     // Catch "uninteresting" calls
     EXPECT_CALL(*context_, useProgram(_))
         .Times(0);
@@ -3357,19 +3353,6 @@ class MockContextHarness {
 
     EXPECT_CALL(*context_, uniform4f(_, _, _, _, _))
         .WillRepeatedly(Return());
-
-    // Any other strings are empty
-    EXPECT_CALL(*context_, getString(_))
-        .WillRepeatedly(Return(WebKit::WebString()));
-
-    // Support for partial swap, if needed
-    EXPECT_CALL(*context_, getString(GL_EXTENSIONS))
-        .WillRepeatedly(Return(
-            WebKit::WebString("GL_CHROMIUM_post_sub_buffer")));
-
-    EXPECT_CALL(*context_, getRequestableExtensionsCHROMIUM())
-        .WillRepeatedly(Return(
-            WebKit::WebString("GL_CHROMIUM_post_sub_buffer")));
 
     // Any un-sanctioned calls to enable() are OK
     EXPECT_CALL(*context_, enable(_))
@@ -3487,14 +3470,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
 
 class PartialSwapContext : public TestWebGraphicsContext3D {
  public:
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
-    if (name == GL_EXTENSIONS)
-      return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
-    return WebKit::WebString();
-  }
-
-  virtual WebKit::WebString getRequestableExtensionsCHROMIUM() OVERRIDE {
-    return WebKit::WebString("GL_CHROMIUM_post_sub_buffer");
+  PartialSwapContext() {
+    test_capabilities_.post_sub_buffer = true;
   }
 
   // Unlimited texture size.
@@ -3630,7 +3607,10 @@ class TrackingWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
   TrackingWebGraphicsContext3D()
       : TestWebGraphicsContext3D(),
-        num_textures_(0) {}
+        num_textures_(0) {
+    test_capabilities_.iosurface = true;
+    test_capabilities_.texture_rectangle = true;
+  }
 
   virtual WebKit::WebGLId createTexture() OVERRIDE {
     WebKit::WebGLId id = TestWebGraphicsContext3D::createTexture();
@@ -3646,15 +3626,6 @@ class TrackingWebGraphicsContext3D : public TestWebGraphicsContext3D {
 
     textures_[id] = false;
     --num_textures_;
-  }
-
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
-    if (name == GL_EXTENSIONS) {
-      return WebKit::WebString(
-          "GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
-    }
-
-    return WebKit::WebString();
   }
 
   unsigned num_textures() const { return num_textures_; }
@@ -6326,15 +6297,6 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OffscreenContext) {
   EXPECT_TRUE(did_lose_output_surface_);
 }
 
-class ContextThatDoesNotSupportMemoryManagmentExtensions
-    : public TestWebGraphicsContext3D {
- public:
-  // WebGraphicsContext3D methods.
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) {
-    return WebKit::WebString();
-  }
-};
-
 // Checks that we have a non-0 default allocation if we pass a context that
 // doesn't support memory management extensions.
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
@@ -6345,8 +6307,7 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
                                          &stats_instrumentation_);
 
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(scoped_ptr<TestWebGraphicsContext3D>(
-          new ContextThatDoesNotSupportMemoryManagmentExtensions)));
+      FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
   host_impl_->InitializeRenderer(output_surface.Pass());
   EXPECT_LT(0ul, host_impl_->memory_allocation_limit_bytes());
 }

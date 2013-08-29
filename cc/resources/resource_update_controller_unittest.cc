@@ -35,8 +35,9 @@ class ResourceUpdateControllerTest;
 class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
  public:
   explicit WebGraphicsContext3DForUploadTest(ResourceUpdateControllerTest* test)
-      : test_(test),
-        support_shallow_flush_(true) {}
+      : test_(test) {
+    test_capabilities_.shallow_flush = true;
+  }
 
   virtual void flush(void) OVERRIDE;
   virtual void shallowFlushCHROMIUM(void) OVERRIDE;
@@ -52,12 +53,6 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
       const void* pixels) OVERRIDE;
   virtual GrGLInterface* onCreateGrGLInterface() OVERRIDE { return NULL; }
 
-  virtual WebString getString(WGC3Denum name) OVERRIDE {
-    if (support_shallow_flush_)
-      return WebString("GL_CHROMIUM_shallow_flush");
-    return WebString("");
-  }
-
   virtual void getQueryObjectuivEXT(
       WebGLId id,
       WGC3Denum pname,
@@ -65,7 +60,6 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
 
  private:
   ResourceUpdateControllerTest* test_;
-  bool support_shallow_flush_;
 };
 
 class ResourceUpdateControllerTest : public Test {

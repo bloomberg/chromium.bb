@@ -117,19 +117,16 @@ TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 
 class FrameCountingContext : public TestWebGraphicsContext3D {
  public:
-  FrameCountingContext() : frame_(0) {}
+  FrameCountingContext()
+      : frame_(0) {
+    test_capabilities_.set_visibility = true;
+    test_capabilities_.discard_backbuffer = true;
+  }
 
   // WebGraphicsContext3D methods.
 
   // This method would normally do a glSwapBuffers under the hood.
   virtual void prepareTexture() { frame_++; }
-  virtual WebString getString(WebKit::WGC3Denum name) {
-    if (name == GL_EXTENSIONS)
-      return WebString(
-          "GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager "
-          "GL_CHROMIUM_discard_backbuffer");
-    return WebString();
-  }
 
   // Methods added for test.
   int frame_count() { return frame_; }
@@ -571,11 +568,7 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
   }
 
   virtual WebString getString(WGC3Denum name) {
-    // We allow querying the extension string.
-    // TODO(enne): It'd be better to check that we only do this before starting
-    // any other expensive work (like starting a compilation)
-    if (name != GL_EXTENSIONS)
-      ADD_FAILURE();
+    ADD_FAILURE() << name;
     return WebString();
   }
 
@@ -776,7 +769,10 @@ class VisibilityChangeIsLastCallTrackingContext
     : public TestWebGraphicsContext3D {
  public:
   VisibilityChangeIsLastCallTrackingContext()
-      : last_call_was_set_visibility_(false) {}
+      : last_call_was_set_visibility_(false) {
+    test_capabilities_.set_visibility = true;
+    test_capabilities_.discard_backbuffer = true;
+  }
 
   // WebGraphicsContext3D methods.
   virtual void setVisibilityCHROMIUM(bool visible) {
@@ -803,15 +799,6 @@ class VisibilityChangeIsLastCallTrackingContext
   }
   virtual void ensureBackbufferCHROMIUM() {
     last_call_was_set_visibility_ = false;
-  }
-
-  // This method would normally do a glSwapBuffers under the hood.
-  virtual WebString getString(WebKit::WGC3Denum name) {
-    if (name == GL_EXTENSIONS)
-      return WebString(
-          "GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager "
-          "GL_CHROMIUM_discard_backbuffer");
-    return WebString();
   }
 
   // Methods added for test.
@@ -855,12 +842,9 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
 
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {
  public:
-  TextureStateTrackingContext() : active_texture_(GL_INVALID_ENUM) {}
-
-  virtual WebString getString(WGC3Denum name) {
-    if (name == GL_EXTENSIONS)
-      return WebString("GL_OES_EGL_image_external");
-    return WebString();
+  TextureStateTrackingContext()
+      : active_texture_(GL_INVALID_ENUM) {
+    test_capabilities_.egl_image_external = true;
   }
 
   MOCK_METHOD3(texParameteri,
@@ -1452,6 +1436,11 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
  public:
+  OutputSurfaceMockContext() {
+    test_capabilities_.discard_backbuffer = true;
+    test_capabilities_.post_sub_buffer = true;
+  }
+
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
   // framebuffer-related GL calls directly. Instead these are supposed to go
@@ -1467,13 +1456,6 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
                     WGC3Dsizei count,
                     WGC3Denum type,
                     WGC3Dintptr offset));
-
-  virtual WebString getString(WebKit::WGC3Denum name) {
-    if (name == GL_EXTENSIONS)
-      return WebString(
-          "GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_discard_backbuffer");
-    return WebString();
-  }
 };
 
 class MockOutputSurface : public OutputSurface {

@@ -4,8 +4,13 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
+#include <set>
+#include <vector>
+
 #include "base/callback_helpers.h"
+#include "base/strings/string_split.h"
 #include "cc/output/managed_memory_policy.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/common/gpu/managed_memory_policy_convert.h"
 
@@ -119,6 +124,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (!context3d_->makeContextCurrent())
     return false;
 
+  InitializeCapabilities();
+
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   swap_buffers_complete_callback_proxy_.reset(
       new SwapBuffersCompleteCallbackProxy(this));
@@ -147,6 +154,15 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   gr_context_.reset(
       new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
   return gr_context_->get();
+}
+
+cc::ContextProvider::Capabilities
+ContextProviderCommandBuffer::ContextCapabilities() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return capabilities_;
 }
 
 void ContextProviderCommandBuffer::VerifyContexts() {
@@ -197,6 +213,60 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
   memory_policy_changed_callback_.Run(
       policy, discard_backbuffer_when_not_visible);
 }
+
+void ContextProviderCommandBuffer::InitializeCapabilities() {
+  // The command buffer provides the following capabilities always.
+  // TODO(jamesr): This information is duplicated with
+  // gpu::gles2::FeatureInfo::AddFeatures().
+  Capabilities caps;
+  caps.bind_uniform_location = true;
+  caps.discard_backbuffer = true;
+  caps.set_visibility = true;
+
+  // TODO(jamesr): These are also added in
+  // gpu::gles2::GLES2Implementation::GetStringHelper() on the client side.
+  caps.map_sub = true;
+  caps.shallow_flush = true;
+
+  // The swapbuffers complete callback is always supported by multi-process
+  // command buffer implementations.
+  caps.swapbuffers_complete_callback = true;
+
+  std::string extensions = reinterpret_cast<const char*>(
+      context3d_->GetImplementation()->GetString(0x1F03 /* GL_EXTENSIONS */));
+  std::vector<std::string> extension_list;
+  base::SplitString(extensions, ' ', &extension_list);
+  std::set<std::string> extension_set(extension_list.begin(),
+                                      extension_list.end());
+
+
+  // caps.map_image depends on GL_CHROMIUM_map_image, which is set client-side
+  // based on the presence of GpuControl.
+  caps.map_image = extension_set.count("GL_CHROMIUM_map_image") > 0;
+
+  // caps.fast_npot_mo8_textures depends on
+  //    workarounds_.enable_chromium_fast_npot_mo8_textures which controls
+  //    GL_CHROMIUM_fast_NPOT_MO8_textures
+  caps.fast_npot_mo8_textures =
+      extension_set.count("GL_CHROMIUM_fast_NPOT_MO8_textures") > 0;
+
+  caps.egl_image_external =
+      extension_set.count("GL_OES_EGL_image_external") > 0;
+
+  caps.texture_format_bgra8888 =
+      extension_set.count("GL_EXT_texture_format_BGRA8888") > 0;
+  caps.texture_rectangle = extension_set.count("GL_ARB_texture_rectangle") > 0;
+
+  // TODO(jamesr): This is unconditionally true on mac, no need to test for it
+  // at runtime.
+  caps.iosurface = extension_set.count("GL_CHROMIUM_iosurface") > 0;
+
+  caps.texture_usage = extension_set.count("GL_ANGLE_texture_usage") > 0;
+  caps.texture_storage = extension_set.count("GL_EXT_texture_storage") > 0;
+
+  capabilities_ = caps;
+}
+
 
 bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());

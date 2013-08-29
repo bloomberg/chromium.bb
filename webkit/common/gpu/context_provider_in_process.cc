@@ -133,8 +133,23 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   return true;
 }
 
-webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl*
-ContextProviderInProcess::Context3d() {
+cc::ContextProvider::Capabilities
+ContextProviderInProcess::ContextCapabilities() {
+  // We always use a WebGraphicsContext3DInProcessCommandBufferImpl which
+  // provides the following capabilities:
+  Capabilities caps;
+  caps.bind_uniform_location = true;
+  caps.discard_backbuffer = true;
+  caps.map_image = true;
+  caps.map_sub = true;
+  caps.set_visibility = true;
+  caps.shallow_flush = true;
+  caps.texture_format_bgra8888 = true;
+  caps.texture_rectangle = true;
+  return caps;
+}
+
+WebKit::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());

@@ -2364,6 +2364,11 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
 
 class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
+  MockIOSurfaceWebGraphicsContext3D() {
+    test_capabilities_.iosurface = true;
+    test_capabilities_.texture_rectangle = true;
+  }
+
   virtual WebKit::WebGLId createTexture() OVERRIDE {
     return 1;
   }
@@ -2394,8 +2399,6 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     scoped_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = mock_context_owned.get();
-
-    mock_context_->set_have_extension_io_surface(true);
 
     scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
         mock_context_owned.PassAs<TestWebGraphicsContext3D>()));
