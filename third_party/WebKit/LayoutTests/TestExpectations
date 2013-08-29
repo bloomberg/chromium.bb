@@ -1035,6 +1035,8 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [
 crbug.com/248938 virtual/threaded/transitions/transition-hit-test-transform.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/transition-duration-cleared-in-transitionend-crash.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Mac Release ] virtual/threaded/animations/3d/change-transform-in-end-event.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Release ] virtual/threaded/animations/interpolation/clip-interpolation.html [ Pass Timeout ]
 
 crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
 
