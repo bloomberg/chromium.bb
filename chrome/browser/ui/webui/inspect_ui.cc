@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -371,6 +372,7 @@ bool InspectMessageHandler::GetRemotePageId(const ListValue* args,
 
 class InspectUI::WorkerCreationDestructionListener
     : public WorkerServiceObserver,
+      public content::BrowserChildProcessObserver,
       public base::RefCountedThreadSafe<WorkerCreationDestructionListener> {
  public:
   WorkerCreationDestructionListener()
@@ -380,6 +382,7 @@ class InspectUI::WorkerCreationDestructionListener
     DCHECK(workers_ui);
     DCHECK(!discovery_ui_);
     discovery_ui_ = workers_ui;
+    BrowserChildProcessObserver::Add(this);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::RegisterObserver,
@@ -389,13 +392,14 @@ class InspectUI::WorkerCreationDestructionListener
   void InspectUIDestroyed() {
     DCHECK(discovery_ui_);
     discovery_ui_ = NULL;
+    BrowserChildProcessObserver::Remove(this);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::UnregisterObserver,
                    this));
   }
 
-  void InitUI() {
+  void UpdateUI() {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::CollectWorkersData,
@@ -416,6 +420,18 @@ class InspectUI::WorkerCreationDestructionListener
 
   virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
     CollectWorkersData();
+  }
+
+  virtual void BrowserChildProcessHostConnected(
+      const content::ChildProcessData& data) OVERRIDE {
+    if (data.process_type == content::PROCESS_TYPE_WORKER)
+      UpdateUI();
+  }
+
+  virtual void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) OVERRIDE {
+    if (data.process_type == content::PROCESS_TYPE_WORKER)
+      UpdateUI();
   }
 
   void CollectWorkersData() {
@@ -442,6 +458,8 @@ class InspectUI::WorkerCreationDestructionListener
 
     ListValue target_list;
     for (size_t i = 0; i < worker_info.size(); ++i) {
+      if (!worker_info[i].handle)
+        continue;  // Process is still being created.
       target_list.Append(BuildTargetDescriptor(
           kWorkerTargetType,
           HasClientHost(worker_info[i].process_id, worker_info[i].route_id),
@@ -480,7 +498,7 @@ void InspectUI::InitUI() {
   PopulateLists();
   UpdatePortForwardingEnabled();
   UpdatePortForwardingConfig();
-  observer_->InitUI();
+  observer_->UpdateUI();
 }
 
 void InspectUI::InspectRemotePage(const std::string& id) {
