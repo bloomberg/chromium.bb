@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/udp/udp_net_log_parameters.h"
 
 namespace {
@@ -381,7 +382,7 @@ void UDPSocketLibevent::LogRead(int result,
 
 int UDPSocketLibevent::CreateSocket(const IPEndPoint& address) {
   addr_family_ = address.GetSockAddrFamily();
-  socket_ = socket(addr_family_, SOCK_DGRAM, 0);
+  socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, 0);
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
   if (SetNonBlocking(socket_)) {

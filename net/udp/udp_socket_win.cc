@@ -20,6 +20,7 @@
 #include "net/base/net_util.h"
 #include "net/base/winsock_init.h"
 #include "net/base/winsock_util.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/udp/udp_net_log_parameters.h"
 
 namespace {

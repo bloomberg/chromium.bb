@@ -90,7 +90,7 @@ int SetupSocket(int socket) {
 // Creates a new socket and sets default parameters for it. Returns
 // the OS error code (or 0 on success).
 int CreateSocket(int family, int* socket) {
-  *socket = ::socket(family, SOCK_STREAM, IPPROTO_TCP);
+  *socket = CreatePlatformSocket(family, SOCK_STREAM, IPPROTO_TCP);
   if (*socket == kInvalidSocket)
     return errno;
   int error = SetupSocket(*socket);

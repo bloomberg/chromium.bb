@@ -11,6 +11,7 @@
 #include "net/base/net_util.h"
 #include "net/base/winsock_init.h"
 #include "net/base/winsock_util.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
 #include "net/socket/tcp_client_socket.h"
 
@@ -44,7 +45,8 @@ int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
     return ERR_FAILED;
   }
 
-  socket_ = socket(address.GetSockAddrFamily(), SOCK_STREAM, IPPROTO_TCP);
+  socket_ = CreatePlatformSocket(address.GetSockAddrFamily(), SOCK_STREAM,
+                                 IPPROTO_TCP);
   if (socket_ == INVALID_SOCKET) {
     PLOG(ERROR) << "socket() returned an error";
     return MapSystemError(WSAGetLastError());

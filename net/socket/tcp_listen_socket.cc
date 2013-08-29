@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "net/base/winsock_init.h"
+#include "net/socket/socket_descriptor.h"
 
 using std::string;
 
@@ -47,11 +48,7 @@ TCPListenSocket::TCPListenSocket(SocketDescriptor s,
 TCPListenSocket::~TCPListenSocket() {}
 
 SocketDescriptor TCPListenSocket::CreateAndBind(const string& ip, int port) {
-#if defined(OS_WIN)
-  EnsureWinsockInit();
-#endif
-
-  SocketDescriptor s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  SocketDescriptor s = CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s != kInvalidSocket) {
 #if defined(OS_POSIX)
     // Allow rapid reuse.

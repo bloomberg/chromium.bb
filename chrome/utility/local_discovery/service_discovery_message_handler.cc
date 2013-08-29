@@ -7,18 +7,12 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/utility_thread.h"
-
-#if defined(OS_WIN)
-
-#include "base/lazy_instance.h"
-#include "net/base/winsock_init.h"
-#include "net/base/winsock_util.h"
-
-#endif  // OS_WIN
+#include "net/socket/socket_descriptor.h"
 
 namespace local_discovery {
 
@@ -37,11 +31,8 @@ class SocketFactory : public net::PlatformSocketFactory {
   SocketFactory()
       : socket_v4_(NULL),
         socket_v6_(NULL) {
-    net::EnsureWinsockInit();
-    socket_v4_ = WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0,
-                           WSA_FLAG_OVERLAPPED);
-    socket_v6_ = WSASocket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP, NULL, 0,
-                           WSA_FLAG_OVERLAPPED);
+    socket_v4_ = net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    socket_v6_ = net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
   }
 
   void Reset() {

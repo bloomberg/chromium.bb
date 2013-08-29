@@ -21,6 +21,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/winsock_init.h"
 #include "net/base/winsock_util.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
 
 namespace net {

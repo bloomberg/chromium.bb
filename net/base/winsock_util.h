@@ -24,26 +24,6 @@ void AssertEventNotSignaled(WSAEVENT hEvent);
 // optimization.  The code still works if this function simply returns false.
 bool ResetEventIfSignaled(WSAEVENT hEvent);
 
-// Interface to create Windows Socket.
-// Usually such factories are used for testing purposes, which is not true in
-// this case. This interface is used to substitute WSASocket to make possible
-// execution of some network code in sandbox.
-class NET_EXPORT PlatformSocketFactory {
- public:
-  PlatformSocketFactory() {}
-  virtual ~PlatformSocketFactory() {}
-
-  // Creates Windows socket. See WSASocket documentation of parameters.
-  virtual SOCKET CreateSocket(int family, int type, int protocol) = 0;
-
-  // Replace WSASocket with given factory. The factory will be used by
-  // CreatePlatformSocket.
-  static void SetInstance(PlatformSocketFactory* factory);
-};
-
-// Creates Windows Socket. See WSASocket documentation of parameters.
-SOCKET CreatePlatformSocket(int family, int type, int protocol);
-
 }  // namespace net
 
 #endif  // NET_BASE_WINSOCK_UTIL_H_

@@ -188,7 +188,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
   }
 
   SocketDescriptor CreateClientSocket() {
-    const SocketDescriptor sock = socket(PF_UNIX, SOCK_STREAM, 0);
+    const SocketDescriptor sock = CreatePlatformSocket(PF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
       LOG(ERROR) << "socket() error";
       return kInvalidSocket;

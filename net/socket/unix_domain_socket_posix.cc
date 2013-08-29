@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/socket/socket_descriptor.h"
 
 namespace net {
 
@@ -106,7 +107,7 @@ SocketDescriptor UnixDomainSocket::CreateAndBind(const std::string& path,
   static const size_t kPathMax = sizeof(addr.sun_path);
   if (use_abstract_namespace + path.size() + 1 /* '\0' */ > kPathMax)
     return kInvalidSocket;
-  const SocketDescriptor s = socket(PF_UNIX, SOCK_STREAM, 0);
+  const SocketDescriptor s = CreatePlatformSocket(PF_UNIX, SOCK_STREAM, 0);
   if (s == kInvalidSocket)
     return kInvalidSocket;
   memset(&addr, 0, sizeof(addr));

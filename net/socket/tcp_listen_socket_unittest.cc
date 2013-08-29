@@ -11,6 +11,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_util.h"
+#include "net/socket/socket_descriptor.h"
 #include "testing/platform_test.h"
 
 namespace net {
@@ -42,7 +43,7 @@ void TCPListenSocketTester::SetUp() {
   ASSERT_EQ(ACTION_LISTEN, last_action_.type());
 
   // verify the connect/accept and setup test_socket_
-  test_socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  test_socket_ = CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   ASSERT_NE(kInvalidSocket, test_socket_);
   struct sockaddr_in client;
   client.sin_family = AF_INET;
