@@ -56,6 +56,16 @@ base::DictionaryValue* CreateValueFromMountPoint(
   return mount_info;
 }
 
+base::DictionaryValue* CreateDownloadsMountPointInfo() {
+  base::DictionaryValue* result = new base::DictionaryValue;
+  result->SetString("mountPath", "Downloads");
+  result->SetString(
+      "mountCondition",
+      DiskMountManager::MountConditionToString(
+          chromeos::disks::MOUNT_CONDITION_NONE));
+  return result;
+}
+
 }  // namespace
 
 AddMountFunction::AddMountFunction() {
@@ -242,7 +252,14 @@ bool GetMountPointsFunction::RunImpl() {
       disk_mount_manager->mount_points();
 
   std::string log_string = "[";
-  const char *separator = "";
+
+  // TODO(hidehiko): Returns Drive if available.
+
+  // Always return "Downloads".
+  log_string += "Downloads";
+  mounts->Append(CreateDownloadsMountPointInfo());
+
+  const char *kSeparator = ", ";
   for (DiskMountManager::MountPointMap::const_iterator it =
            mount_points.begin();
        it != mount_points.end();
@@ -250,8 +267,7 @@ bool GetMountPointsFunction::RunImpl() {
     mounts->Append(CreateValueFromMountPoint(profile_,
                                              it->second,
                                              extension_->id()));
-    log_string += separator + it->first;
-    separator = ", ";
+    log_string += kSeparator + it->first;
   }
 
   log_string += "]";

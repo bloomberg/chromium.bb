@@ -58,6 +58,10 @@ var expectedDownloadsVolume = {
 //       and values sorted by mountPath.
 var expectedMountPoints = [
   {
+    mountPath: 'Downloads',
+    mountCondition: ''
+  },
+  {
     sourcePath: 'archive_path',
     mountPath: 'archive/archive_mount_path',
     mountType: 'file',

@@ -136,10 +136,12 @@
           },
           "sourcePath": {
             "type": "string",
+            "optional": true,
             "description": "The path to the mounted device, archive file or network resource."
           },
           "mountType": {
             "type": "string",
+            "optional": true,
             "enum": ["device", "file", "network"],
             "description": "Type of the mount."
           },
