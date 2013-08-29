@@ -230,8 +230,9 @@ gfx::NativeView Shell::GetContentView() {
 
 WebContents* Shell::OpenURLFromTab(WebContents* source,
                                    const OpenURLParams& params) {
-  // The only one we implement for now.
-  DCHECK(params.disposition == CURRENT_TAB);
+  // CURRENT_TAB is the only one we implement for now.
+  if (params.disposition != CURRENT_TAB)
+      return NULL;
   NavigationController::LoadURLParams load_url_params(params.url);
   load_url_params.referrer = params.referrer;
   load_url_params.transition_type = params.transition;
