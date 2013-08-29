@@ -63,6 +63,12 @@ class ExtensionInstallPrompt
     NUM_PROMPT_TYPES
   };
 
+  enum DetailsType {
+    PERMISSIONS_DETAILS = 0,
+    OAUTH_DETAILS,
+    RETAINED_FILES_DETAILS,
+  };
+
   // Extra information needed to display an installation or uninstallation
   // prompt. Gets populated with raw data and exposes getters for formatted
   // strings so that the GTK/views/Cocoa install dialogs don't have to repeat
@@ -76,6 +82,9 @@ class ExtensionInstallPrompt
     void SetPermissions(const std::vector<string16>& permissions);
     // Sets the permission list details for this prompt.
     void SetPermissionsDetails(const std::vector<string16>& details);
+    void SetIsShowingDetails(DetailsType type,
+                             size_t index,
+                             bool is_showing_details);
     void SetInlineInstallWebstoreData(const std::string& localized_user_count,
                                       bool show_user_count,
                                       double average_rating,
@@ -116,6 +125,7 @@ class ExtensionInstallPrompt
     size_t GetPermissionsDetailsCount() const;
     string16 GetPermission(size_t index) const;
     string16 GetPermissionsDetails(size_t index) const;
+    bool GetIsShowingDetails(DetailsType type, size_t index) const;
     size_t GetOAuthIssueCount() const;
     const IssueAdviceInfoEntry& GetOAuthIssue(size_t index) const;
     size_t GetRetainedFileCount() const;
@@ -150,6 +160,9 @@ class ExtensionInstallPrompt
     // permissions if only additional ones are being requested)
     std::vector<string16> permissions_;
     std::vector<string16> details_;
+    std::vector<bool> is_showing_details_for_permissions_;
+    std::vector<bool> is_showing_details_for_oauth_;
+    bool is_showing_details_for_retained_files_;
 
     // Descriptions and details for OAuth2 permissions to display to the user.
     // These correspond to permission scopes.

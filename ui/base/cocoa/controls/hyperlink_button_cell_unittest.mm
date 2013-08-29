@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#import "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -113,6 +114,17 @@ TEST_F(HyperlinkButtonCellTest, UnderlineOnHover) {
   EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
   [cell_ mouseExited:nil];
   EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
+}
+
+TEST_F(HyperlinkButtonCellTest, Copy) {
+  base::scoped_nsobject<HyperlinkButtonCell> cell1([[HyperlinkButtonCell alloc]
+      initTextCell:@"Cell"]);
+  [cell1 setTextColor:[NSColor redColor]];
+
+  base::scoped_nsobject<HyperlinkButtonCell> cell2([cell1 copy]);
+  EXPECT_NSEQ([cell1 textColor], [cell2 textColor]);
+  [cell1 setTextColor:[NSColor purpleColor]];
+  [cell2 setTextColor:[NSColor greenColor]];
 }
 
 }  // namespace

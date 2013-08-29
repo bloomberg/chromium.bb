@@ -188,6 +188,7 @@ gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
 
 ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
+      is_showing_details_for_retained_files_(false),
       extension_(NULL),
       bundle_(NULL),
       average_rating_(0.0),
@@ -206,10 +207,34 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
 void ExtensionInstallPrompt::Prompt::SetPermissionsDetails(
     const std::vector<string16>& details) {
   details_ = details;
+  is_showing_details_for_permissions_.clear();
+  for (size_t i = 0; i < details.size(); ++i)
+    is_showing_details_for_permissions_.push_back(false);
+}
+
+void ExtensionInstallPrompt::Prompt::SetIsShowingDetails(
+    DetailsType type,
+    size_t index,
+    bool is_showing_details) {
+  switch (type) {
+    case PERMISSIONS_DETAILS:
+      is_showing_details_for_permissions_[index] = is_showing_details;
+      break;
+    case OAUTH_DETAILS:
+      is_showing_details_for_oauth_[index] = is_showing_details;
+      break;
+    case RETAINED_FILES_DETAILS:
+      is_showing_details_for_retained_files_ = is_showing_details;
+      break;
+  }
 }
 
 void ExtensionInstallPrompt::Prompt::SetOAuthIssueAdvice(
     const IssueAdviceInfo& issue_advice) {
+  is_showing_details_for_oauth_.clear();
+  for (size_t i = 0; i < issue_advice.size(); ++i)
+    is_showing_details_for_oauth_.push_back(false);
+
   oauth_issue_advice_ = issue_advice;
 }
 
@@ -405,6 +430,21 @@ string16 ExtensionInstallPrompt::Prompt::GetPermissionsDetails(
     size_t index) const {
   CHECK_LT(index, details_.size());
   return details_[index];
+}
+
+bool ExtensionInstallPrompt::Prompt::GetIsShowingDetails(
+    DetailsType type, size_t index) const {
+  switch (type) {
+    case PERMISSIONS_DETAILS:
+      CHECK_LT(index, is_showing_details_for_permissions_.size());
+      return is_showing_details_for_permissions_[index];
+    case OAUTH_DETAILS:
+      CHECK_LT(index, is_showing_details_for_oauth_.size());
+      return is_showing_details_for_oauth_[index];
+    case RETAINED_FILES_DETAILS:
+      return is_showing_details_for_retained_files_;
+  }
+  return false;
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetOAuthIssueCount() const {

@@ -175,7 +175,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
       PermissionsData::GetPermissionMessageDetailsStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   ASSERT_EQ(1u, warnings_details.size());
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
   EXPECT_EQ("Access your data on 5 website(s)", UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("- www.a.com\n- www.b.com\n- www.c.com\n- www.d.com\n- www.e.com",
             UTF16ToUTF8(warnings_details[0]));

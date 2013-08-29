@@ -45,7 +45,7 @@ PermissionMessage PermissionMessage::CreateFromHostList(
     default:
       message_id = kHosts4OrMore;
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     message = l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PROMPT_WARNING_HOSTS,
         base::IntToString16(host_list.size()));

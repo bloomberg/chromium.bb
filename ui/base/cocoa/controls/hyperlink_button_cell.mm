@@ -52,6 +52,14 @@
   return self;
 }
 
+- (id)copyWithZone:(NSZone*)zone {
+  NSColor* color = textColor_.release();
+  HyperlinkButtonCell* cell = [super copyWithZone:zone];
+  cell->textColor_.reset([color copy]);
+  textColor_.reset(color);
+  return cell;
+}
+
 // Because an NSButtonCell has multiple initializers, this method performs the
 // common cell customization code.
 - (void)customizeButtonCell {
