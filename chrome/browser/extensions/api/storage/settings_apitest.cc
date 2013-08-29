@@ -514,7 +514,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && defined(USE_AURA))
 // Flakily times out. http://crbug.com/171477
 #define MAYBE_ManagedStorageEvents DISABLED_ManagedStorageEvents
 #else
