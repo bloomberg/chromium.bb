@@ -431,6 +431,8 @@
         'wm/mru_window_tracker.h',
         'wm/overlay_event_filter.cc',
         'wm/overlay_event_filter.h',
+        'wm/overview/window_overview.cc',
+        'wm/overview/window_overview.h',
         'wm/overview/window_selector.cc',
         'wm/overview/window_selector.h',
         'wm/overview/window_selector_controller.cc',

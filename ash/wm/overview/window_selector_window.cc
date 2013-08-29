@@ -153,8 +153,6 @@ WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
       minimized_(window->GetProperty(aura::client::kShowStateKey) ==
                  ui::SHOW_STATE_MINIMIZED),
       original_transform_(window->layer()->GetTargetTransform()) {
-  if (minimized_)
-    window_->Show();
 }
 
 WindowSelectorWindow::~WindowSelectorWindow() {
@@ -162,7 +160,8 @@ WindowSelectorWindow::~WindowSelectorWindow() {
     WindowSelectorAnimationSettings animation_settings(window_);
     gfx::Transform transform;
     window_->SetTransform(original_transform_);
-    if (minimized_) {
+    if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
+        ui::SHOW_STATE_MINIMIZED) {
       // Setting opacity 0 and visible false ensures that the property change
       // to SHOW_STATE_MINIMIZED will not animate the window from its original
       // bounds to the minimized position.
@@ -210,6 +209,10 @@ void WindowSelectorWindow::OnWindowDestroyed() {
 void WindowSelectorWindow::TransformToFitBounds(
     aura::RootWindow* root_window,
     const gfx::Rect& target_bounds) {
+  if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED) {
+    window_->Show();
+  }
   fit_bounds_ = target_bounds;
   const gfx::Rect bounds = window_->GetBoundsInScreen();
   float scale = std::min(1.0f,

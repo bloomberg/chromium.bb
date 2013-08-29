@@ -25,6 +25,10 @@ class EventHandler;
 
 namespace ash {
 
+namespace internal {
+class WindowSelectorTest;
+}
+
 class WindowSelector;
 
 // Manages a window selector which displays an overview of all windows and
@@ -65,6 +69,8 @@ class ASH_EXPORT WindowSelectorController
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
+  friend class internal::WindowSelectorTest;
+
   // Stores the currently focused window and removes focus from it.
   void RemoveFocusAndSetRestoreWindow();
 

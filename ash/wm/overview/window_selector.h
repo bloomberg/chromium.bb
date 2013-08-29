@@ -7,12 +7,12 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_handler.h"
-#include "ui/gfx/transform.h"
 
 namespace aura {
 class RootWindow;
@@ -22,20 +22,20 @@ namespace ui {
 class LocatedEvent;
 }
 
-namespace views {
-class Widget;
-}
-
 namespace ash {
 
+namespace internal {
+class WindowSelectorTest;
+}
+
+class WindowOverview;
 class WindowSelectorDelegate;
 class WindowSelectorWindow;
 
-// The WindowSelector shows a grid of all of your windows and allows selecting
-// a window by clicking or tapping on it (OVERVIEW mode) or by alt-tabbing to
-// it (CYCLE mode).
-class WindowSelector : public ui::EventHandler,
-                       public aura::WindowObserver {
+// The WindowSelector allows selecting a window by alt-tabbing (CYCLE mode) or
+// by clicking or tapping on it (OVERVIEW mode). A WindowOverview will be shown
+// in OVERVIEW mode or if the user lingers on a window while alt tabbing.
+class ASH_EXPORT WindowSelector : public aura::WindowObserver {
  public:
   enum Direction {
     FORWARD,
@@ -56,41 +56,25 @@ class WindowSelector : public ui::EventHandler,
   // Step to the next window in |direction|.
   void Step(Direction direction);
 
-  // Select the current window.
+  // Choose the currently selected window.
   void SelectWindow();
 
-  Mode mode() { return mode_; }
+  // Choose |window| from the available windows to select.
+  void SelectWindow(aura::Window* window);
 
-  // ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  // Cancels window selection.
+  void CancelSelection();
+
+  Mode mode() { return mode_; }
 
   // aura::WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
-  // Returns the target of |event| or NULL if the event is not targeted at
-  // any of the windows in the selector.
-  WindowSelectorWindow* GetEventTarget(ui::LocatedEvent* event);
+  friend class internal::WindowSelectorTest;
 
-  // Handles a selection event for |target|.
-  void HandleSelectionEvent(WindowSelectorWindow* target);
-
-  // Position all of the windows based on the current selection mode.
-  void PositionWindows();
-  // Position all of the windows from |root_window| on |root_window|.
-  void PositionWindowsFromRoot(aura::RootWindow* root_window);
-  // Position all of the |windows| to fit on the |root_window|.
-  void PositionWindowsOnRoot(aura::RootWindow* root_window,
-                             const std::vector<WindowSelectorWindow*>& windows);
-
-  void InitializeSelectionWidget();
-
-  // Updates the selection widget's location to the currently selected window.
-  // If |animate| the transition to the new location is animated.
-  void UpdateSelectionLocation(bool animate);
+  // Begins positioning windows such that all windows are visible on the screen.
+  void StartOverview();
 
   // The collection of windows in the overview wrapped by a helper class which
   // restores their state and helps transform them to other root windows.
@@ -99,19 +83,15 @@ class WindowSelector : public ui::EventHandler,
   // The window selection mode.
   Mode mode_;
 
+  base::DelayTimer<WindowSelector> start_overview_timer_;
+  scoped_ptr<WindowOverview> window_overview_;
+
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
   WindowSelectorDelegate* delegate_;
 
   // Index of the currently selected window if the mode is CYCLE.
   size_t selected_window_;
-
-  // Widget indicating which window is currently selected.
-  scoped_ptr<views::Widget> selection_widget_;
-
-  // In CYCLE mode, the root window in which selection is taking place.
-  // NULL otherwise.
-  aura::RootWindow* selection_root_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

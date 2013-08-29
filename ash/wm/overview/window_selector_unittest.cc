@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -54,6 +55,15 @@ class WindowSelectorTest : public test::AshTestBase {
 
   void StopCycling() {
     ash::Shell::GetInstance()->window_selector_controller()->AltKeyReleased();
+  }
+
+  void FireOverviewStartTimer() {
+    // Calls the method to start overview mode which is normally called by the
+    // timer. The timer will still fire and call this method triggering the
+    // DCHECK that overview mode was not already started, except that we call
+    // StopCycling before the timer has a chance to fire.
+    ash::Shell::GetInstance()->window_selector_controller()->window_selector_->
+        StartOverview();
   }
 
   gfx::RectF GetTransformedBounds(aura::Window* window) {
@@ -135,6 +145,24 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+}
+
+// Verifies that overview mode only begins after a delay when cycling.
+TEST_F(WindowSelectorTest, CycleOverviewDelay) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
+
+  // When cycling first starts, the windows will still be overlapping.
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
+
+  // Once the overview timer fires, the windows should no longer overlap.
+  FireOverviewStartTimer();
+  EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
+  StopCycling();
 }
 
 // Tests that exiting overview mode without selecting a window restores focus
