@@ -35,6 +35,7 @@
 #include <limits>
 #include "core/platform/DateComponents.h"
 #include "core/platform/Language.h"
+#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "wtf/CurrentTime.h"
@@ -129,7 +130,7 @@ static LCID LCIDFromLocaleInternal(LCID userDefaultLCID, const String& userDefau
     return localeNameToLCID(locale.charactersWithNullTermination().data(), 0);
 }
 
-static LCID LCIDFromLocale(const AtomicString& locale)
+static LCID LCIDFromLocale(const AtomicString& locale, bool defaultsForLocale)
 {
     // LocaleNameToLCID() is available since Windows Vista.
     LocaleNameToLCIDPtr localeNameToLCID = reinterpret_cast<LocaleNameToLCIDPtr>(::GetProcAddress(::GetModuleHandle(L"kernel32"), "LocaleNameToLCID"));
@@ -139,7 +140,7 @@ static LCID LCIDFromLocale(const AtomicString& locale)
     // According to MSDN, 9 is enough for LOCALE_SISO639LANGNAME.
     const size_t languageCodeBufferSize = 9;
     WCHAR lowercaseLanguageCode[languageCodeBufferSize];
-    ::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, lowercaseLanguageCode, languageCodeBufferSize);
+    ::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME | (defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), lowercaseLanguageCode, languageCodeBufferSize);
     String userDefaultLanguageCode = String(lowercaseLanguageCode);
 
     LCID lcid = LCIDFromLocaleInternal(LOCALE_USER_DEFAULT, userDefaultLanguageCode, localeNameToLCID, String(locale));
@@ -150,25 +151,28 @@ static LCID LCIDFromLocale(const AtomicString& locale)
 
 PassOwnPtr<Locale> Locale::create(const AtomicString& locale)
 {
-    return LocaleWin::create(LCIDFromLocale(locale));
+    // Whether the default settings for the locale should be used, ignoring user overrides.
+    bool defaultsForLocale = isRunningLayoutTest();
+    return LocaleWin::create(LCIDFromLocale(locale, defaultsForLocale), defaultsForLocale);
 }
 
-inline LocaleWin::LocaleWin(LCID lcid)
+inline LocaleWin::LocaleWin(LCID lcid, bool defaultsForLocale)
     : m_lcid(lcid)
     , m_didInitializeNumberData(false)
+    , m_defaultsForLocale(defaultsForLocale)
 {
 #if ENABLE(CALENDAR_PICKER)
     DWORD value = 0;
-    getLocaleInfo(LOCALE_IFIRSTDAYOFWEEK, value);
+    getLocaleInfo(LOCALE_IFIRSTDAYOFWEEK | (defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), value);
     // 0:Monday, ..., 6:Sunday.
     // We need 1 for Monday, 0 for Sunday.
     m_firstDayOfWeek = (value + 1) % 7;
 #endif
 }
 
-PassOwnPtr<LocaleWin> LocaleWin::create(LCID lcid)
+PassOwnPtr<LocaleWin> LocaleWin::create(LCID lcid, bool defaultsForLocale)
 {
-    return adoptPtr(new LocaleWin(lcid));
+    return adoptPtr(new LocaleWin(lcid, defaultsForLocale));
 }
 
 LocaleWin::~LocaleWin()
@@ -177,11 +181,11 @@ LocaleWin::~LocaleWin()
 
 String LocaleWin::getLocaleInfoString(LCTYPE type)
 {
-    int bufferSizeWithNUL = ::GetLocaleInfo(m_lcid, type, 0, 0);
+    int bufferSizeWithNUL = ::GetLocaleInfo(m_lcid, type | (m_defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), 0, 0);
     if (bufferSizeWithNUL <= 0)
         return String();
     StringBuffer<UChar> buffer(bufferSizeWithNUL);
-    ::GetLocaleInfo(m_lcid, type, buffer.characters(), bufferSizeWithNUL);
+    ::GetLocaleInfo(m_lcid, type | (m_defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), buffer.characters(), bufferSizeWithNUL);
     buffer.shrink(bufferSizeWithNUL - 1);
     return String::adopt(buffer);
 }

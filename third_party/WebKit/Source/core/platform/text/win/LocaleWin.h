@@ -44,7 +44,7 @@ struct DateFormatToken;
 
 class LocaleWin : public Locale {
 public:
-    static PassOwnPtr<LocaleWin> create(LCID);
+    static PassOwnPtr<LocaleWin> create(LCID, bool defaultsForLocale);
     ~LocaleWin();
 #if ENABLE(CALENDAR_PICKER)
     virtual const Vector<String>& weekDayShortLabels() OVERRIDE;
@@ -67,7 +67,7 @@ public:
     static String dateFormat(const String&);
 
 private:
-    explicit LocaleWin(LCID);
+    explicit LocaleWin(LCID, bool defaultsForLocale);
     String getLocaleInfoString(LCTYPE);
     void getLocaleInfo(LCTYPE, DWORD&);
     void ensureShortMonthLabels();
@@ -94,6 +94,7 @@ private:
     unsigned m_firstDayOfWeek;
 #endif
     bool m_didInitializeNumberData;
+    bool m_defaultsForLocale;
 };
 
 } // namespace WebCore
