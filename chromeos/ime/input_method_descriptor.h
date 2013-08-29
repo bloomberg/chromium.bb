@@ -23,6 +23,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
                         const std::string& name,
                         const std::vector<std::string>& keyboard_layouts,
                         const std::vector<std::string>& language_codes,
+                        bool is_login_keyboard,
                         const GURL& options_page_url);
   ~InputMethodDescriptor();
 
@@ -36,6 +37,8 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   const std::vector<std::string>& keyboard_layouts() const {
     return keyboard_layouts_;
   }
+
+  bool is_login_keyboard() const { return is_login_keyboard_; }
 
   // Returns preferred keyboard layout.
   std::string GetPreferredKeyboardLayout() const;
@@ -55,6 +58,9 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
 
   // Language code like "ko", "ja", "en-US", and "zh-CN".
   std::vector<std::string> language_codes_;
+
+  // True if this input method can be used on login screen.
+  bool is_login_keyboard_;
 
   // Options page URL e.g.
   // "chrome-extension://ceaajjmckiakobniehbjpdcidfpohlin/options.html".

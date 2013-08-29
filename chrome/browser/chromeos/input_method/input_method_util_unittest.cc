@@ -66,6 +66,7 @@ class InputMethodUtilTest : public testing::Test {
                                      "Pinyin input for testing",
                                      layouts,
                                      languages,
+                                     false,
                                      GURL(""));
     input_methods.push_back(pinyin_ime);
 
@@ -75,6 +76,7 @@ class InputMethodUtilTest : public testing::Test {
                                      "Zhuyin input for testing",
                                      layouts,
                                      languages,
+                                     false,
                                      GURL(""));
     input_methods.push_back(zhuyin_ime);
 
@@ -92,6 +94,7 @@ class InputMethodUtilTest : public testing::Test {
                                  "",
                                  layouts,
                                  languages,
+                                 true,
                                  GURL());  // options page url
   }
 

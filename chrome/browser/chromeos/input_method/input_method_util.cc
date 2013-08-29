@@ -637,6 +637,7 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
                                "",
                                layouts,
                                languages,
+                               true,  // login keyboard.
                                GURL());  // options page, not available.
 }
 

@@ -16,6 +16,9 @@
 #    two-letter upper-case country code should be added (ex. "en-US", "zh-TW").
 #    See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
 #    We can specify multiple language code with comma separator.
+# 4) The additional attibution.
+#    no-login: Spcified keyboard layout will not be used on login screen or lock
+#              screen.
 #
 # Notes:
 #   When adding a line to this list, please also add a mapping from the input
@@ -34,83 +37,75 @@
 #   in chrome/browser/ui/ash/event_rewriter.cc. Otherwise, Mod3Mask might be
 #   removed unexpectedly by the rewriter.
 #
-#   If you add a new language such that some of its layouts can be used at
-#   signin screen (e.g. it is "Full Latin Keyboard Layout" therefore allowing
-#   input of gmail password), you should also update
-#   kHasLatinKeyboardLanguageList[] in
-#   chrome/browser/chromeos/input_method/input_method_manager_impl_ll.cc
-#
-#   If you add a new keyboard layout for existing language, please ensure
-#   that information in kHasLatinKeyboardLanguageList[] is still correct.
 
 # U.S. English
-xkb:us::eng	us	en-US,en-AU,id,fil,ms
-xkb:us:intl:eng	us(intl)	en-US,nl,pt-BR
-xkb:us:altgr-intl:eng	us(altgr-intl)	en-US
-xkb:us:dvorak:eng	us(dvorak)	en-US
-xkb:us:colemak:eng	us(colemak)	en-US
+xkb:us::eng	us	en-US,en-AU,id,fil,ms login
+xkb:us:intl:eng	us(intl)	en-US,nl,pt-BR login
+xkb:us:altgr-intl:eng	us(altgr-intl)	en-US login
+xkb:us:dvorak:eng	us(dvorak)	en-US login
+xkb:us:colemak:eng	us(colemak)	en-US login
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nl
+xkb:be::nld	be	nl login
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
-xkb:fr::fra	fr	fr
-xkb:be::fra	be	fr
-xkb:ca::fra	ca	fr
-xkb:ch:fr:fra	ch(fr)	fr
-xkb:ca:multix:fra ca(multix) fr
+xkb:fr::fra	fr	fr login
+xkb:be::fra	be	fr login
+xkb:ca::fra	ca	fr login
+xkb:ch:fr:fra	ch(fr)	fr login
+xkb:ca:multix:fra ca(multix) fr login
 
 # German
-xkb:de::ger	de	de
-xkb:de:neo:ger	de(neo)	de
-xkb:be::ger	be	de
-xkb:ch::ger	ch	de
+xkb:de::ger	de	de login
+xkb:de:neo:ger	de(neo)	de login
+xkb:be::ger	be	de login
+xkb:ch::ger	ch	de login
 
 # Japanese
 # |kMozcJaInputMethodIds| in ibus_ui_controller.cc should also be updated when
 # a new Mozc Japanese IME for another keyboard layout is added.
-xkb:jp::jpn	jp	ja
+xkb:jp::jpn	jp	ja login
 
 # Russian
 xkb:ru::rus	ru	ru
 xkb:ru:phonetic:rus	ru(phonetic)	ru
 
 # Keyboard layouts.
-xkb:br::por	br	pt-BR
+xkb:br::por	br	pt-BR login
 xkb:bg::bul	bg	bg
 xkb:bg:phonetic:bul	bg(phonetic)	bg
-xkb:ca:eng:eng	ca(eng)	en-CA
-xkb:cz::cze	cz	cs
-xkb:cz:qwerty:cze	cz(qwerty)	cs
-xkb:ee::est	ee	et
-xkb:es::spa	es	es
-xkb:es:cat:cat	es(cat)	ca
-xkb:dk::dan	dk	da
+xkb:ca:eng:eng	ca(eng)	en-CA login
+xkb:cz::cze	cz	cs login
+xkb:cz:qwerty:cze	cz(qwerty)	cs login
+xkb:ee::est	ee	et login
+xkb:es::spa	es	es login
+xkb:es:cat:cat	es(cat)	ca login
+xkb:dk::dan	dk	da login
 xkb:gr::gre	gr	el
 xkb:il::heb	il	he
-xkb:latam::spa	latam	es,es-419
-xkb:lt::lit	lt	lt
-xkb:lv:apostrophe:lav	lv(apostrophe)	lv
-xkb:hr::scr	hr	hr
-xkb:gb:extd:eng	gb(extd)	en-GB
-xkb:gb:dvorak:eng	gb(dvorak)	en-GB
-xkb:fi::fin	fi	fi
-xkb:hu::hun	hu	hu
-xkb:it::ita	it	it
-xkb:is::ice	is	is
-xkb:no::nob	no	nb
-xkb:pl::pol	pl	pl
-xkb:pt::por	pt	pt-PT
-xkb:ro::rum	ro	ro
-xkb:se::swe	se	sv
+xkb:latam::spa	latam	es,es-419 login
+xkb:lt::lit	lt	lt login
+xkb:lv:apostrophe:lav	lv(apostrophe)	lv login
+xkb:hr::scr	hr	hr login
+xkb:gb:extd:eng	gb(extd)	en-GB login
+xkb:gb:dvorak:eng	gb(dvorak)	en-GB login
+xkb:fi::fin	fi	fi login
+xkb:hu::hun	hu	hu login
+xkb:it::ita	it	it login
+xkb:is::ice	is	is login
+xkb:no::nob	no	nb login
+xkb:pl::pol	pl	pl login
+xkb:pt::por	pt	pt-PT login
+xkb:ro::rum	ro	ro login
+xkb:se::swe	se	sv login
 xkb:sk::slo	sk	sk
-xkb:si::slv	si	sl
+xkb:si::slv	si	sl login
 xkb:rs::srp	rs	sr
-xkb:tr::tur	tr	tr
-xkb:ua::ukr	ua	uk
+xkb:tr::tur	tr	tr login
+xkb:ua::ukr	ua	uk login
 xkb:by::bel	by	be
 xkb:am:phonetic:arm	am	hy
 xkb:ge::geo	ge	ka

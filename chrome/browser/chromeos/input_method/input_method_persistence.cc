@@ -33,7 +33,7 @@ static void SetUserLRUInputMethod(
     const chromeos::input_method::InputMethodManager* const manager) {
   // Skip if it's not a keyboard layout. Drop input methods including
   // extension ones.
-  if (!InputMethodUtil::IsKeyboardLayout(input_method))
+  if (!manager->IsLoginKeyboard(input_method))
     return;
 
   PrefService* const local_state = g_browser_process->local_state();
@@ -43,7 +43,7 @@ static void SetUserLRUInputMethod(
   if (profile == NULL)
     return;
 
-  if (!manager->IsFullLatinKeyboard(input_method))
+  if (!manager->IsLoginKeyboard(input_method))
     return;
 
   const std::string username = profile->GetProfileName();
@@ -124,7 +124,7 @@ void InputMethodPersistence::InputMethodChanged(
   // Save the new input method id depending on the current browser state.
   switch (state_) {
     case InputMethodManager::STATE_LOGIN_SCREEN:
-      if (!InputMethodUtil::IsKeyboardLayout(current_input_method)) {
+      if (!manager->IsLoginKeyboard(current_input_method)) {
         DVLOG(1) << "Only keyboard layouts are supported: "
                  << current_input_method;
         return;

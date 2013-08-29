@@ -192,7 +192,7 @@ class CHROMEOS_EXPORT InputMethodManager {
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
 
   // If keyboard layout can be uset at login screen
-  virtual bool IsFullLatinKeyboard(const std::string& layout) const = 0;
+  virtual bool IsLoginKeyboard(const std::string& layout) const = 0;
 };
 
 }  // namespace input_method

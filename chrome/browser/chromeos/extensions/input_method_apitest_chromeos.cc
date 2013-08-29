@@ -18,9 +18,9 @@
 
 namespace {
 
-const char kLoginScreenUILanguage[] = "ru";
+const char kLoginScreenUILanguage[] = "fr";
 const char kInitialInputMethodOnLoginScreen[] = "xkb:us::eng";
-const char kNewInputMethod[] = "ru::rus";
+const char kNewInputMethod[] = "fr::fra";
 const char kSetInputMethodMessage[] = "setInputMethod";
 const char kSetInputMethodDone[] = "done";
 

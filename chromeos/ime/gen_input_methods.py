@@ -26,13 +26,14 @@ struct InputMethodsInfo {
   const char* input_method_id;
   const char* language_code;
   const char* xkb_keyboard_id;
+  bool is_login_keyboard;
 };
 const InputMethodsInfo kInputMethods[] = {
-  {"mozc-chewing", "zh-TW", "us"},
-  {"xkb:us::eng", "en-US", "us"},
-  {"xkb:us:dvorak:eng", "en-US", "us(dvorak)"},
-  {"xkb:be::fra", "fr", "be"},
-  {"xkb:br::por", "pt-BR", "br"},
+  {"xkb:us::eng", "en-US", "us", true},
+  {"xkb:us:dvorak:eng", "en-US", "us(dvorak)", true},
+  {"xkb:be::fra", "fr", "be", true},
+  {"xkb:br::por", "pt-BR", "br", true},
+  {"xkb:ru::rus", "ru", "ru", false},
 };
 
 }  // namespace input_method
@@ -57,13 +58,14 @@ struct InputMethodsInfo {
   const char* input_method_id;
   const char* language_code;
   const char* xkb_layout_id;
+  bool is_login_keyboard;
 };
 const InputMethodsInfo kInputMethods[] = {
 """
 
 CPP_FORMAT = '#if %s\n'
 ENGINE_FORMAT = ('  {"%(input_method_id)s", "%(language_code)s", ' +
-                 '"%(xkb_layout_id)s"},\n')
+                 '"%(xkb_layout_id)s", %(is_login_keyboard)s},\n')
 
 OUTPUT_FOOTER = """
 };
@@ -110,8 +112,11 @@ def main(argv):
     engine['input_method_id'] = columns[0]
     engine['xkb_layout_id'] = columns[1]
     engine['language_code'] = columns[2]
+    is_login_keyboard = "false"
     if len(columns) == 4:
-      engine['if'] = columns[3]
+      assert columns[3] == "login", "Invalid attribute: " + columns[3]
+      is_login_keyboard = "true"
+    engine['is_login_keyboard'] = is_login_keyboard
     engines.append(engine)
 
   output = CreateEngineHeader(engines)

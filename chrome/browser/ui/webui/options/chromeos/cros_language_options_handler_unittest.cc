@@ -50,6 +50,7 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
                                  "",  // name
                                  layouts,
                                  languages,
+                                 true,  // use on login screen.
                                  GURL());  // options page url
   }
 };

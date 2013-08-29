@@ -404,8 +404,6 @@
         'browser/chromeos/input_method/input_method_engine.h',
         'browser/chromeos/input_method/input_method_manager_impl.cc',
         'browser/chromeos/input_method/input_method_manager_impl.h',
-        'browser/chromeos/input_method/input_method_manager_impl_ll.cc',
-        'browser/chromeos/input_method/input_method_manager_impl_ll.h',
         'browser/chromeos/input_method/input_method_persistence.cc',
         'browser/chromeos/input_method/input_method_persistence.h',
         'browser/chromeos/input_method/input_method_util.cc',

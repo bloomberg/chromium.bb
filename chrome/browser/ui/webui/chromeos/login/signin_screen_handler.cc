@@ -340,7 +340,7 @@ static bool SetUserInputMethodImpl(
   if (input_method.empty())
     return false;
 
-  if (!manager->IsFullLatinKeyboard(input_method)) {
+  if (!manager->IsLoginKeyboard(input_method)) {
     LOG(WARNING) << "SetUserInputMethod('" << username
                  << "'): stored user LRU input method '" << input_method
                  << "' is no longer Full Latin Keyboard Language"
