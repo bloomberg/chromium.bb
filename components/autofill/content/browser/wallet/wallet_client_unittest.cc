@@ -815,7 +815,7 @@ class WalletClientTest : public testing::Test {
 
   void TestWalletErrorCode(
       const std::string& error_type_string,
-      const std::string& buyer_error_type_string,
+      const std::string& message_type_for_buyer_string,
       WalletClient::ErrorType expected_error_type,
       AutofillMetrics::WalletErrorMetric expected_autofill_metric) {
     static const char kResponseTemplate[] =
@@ -853,9 +853,9 @@ class WalletClientTest : public testing::Test {
                                            statistics,
                                            "google_transaction_id");
     std::string buyer_error;
-    if (!buyer_error_type_string.empty()) {
-      buyer_error = base::StringPrintf("\"buyer_error_type\":\"%s\",",
-                                       buyer_error_type_string.c_str());
+    if (!message_type_for_buyer_string.empty()) {
+      buyer_error = base::StringPrintf("\"message_type_for_buyer\":\"%s\",",
+                                       message_type_for_buyer_string.c_str());
     }
     std::string response = base::StringPrintf(kResponseTemplate,
                                               error_type_string.c_str(),
@@ -893,11 +893,11 @@ class WalletClientTest : public testing::Test {
 TEST_F(WalletClientTest, WalletErrorCodes) {
   struct {
     std::string error_type_string;
-    std::string buyer_error_type_string;
+    std::string message_type_for_buyer_string;
     WalletClient::ErrorType expected_error_type;
     AutofillMetrics::WalletErrorMetric expected_autofill_metric;
   } test_cases[] = {
-      // General |BUYER_ACCOUNT_ERROR| with no |buyer_error_type_string|.
+      // General |BUYER_ACCOUNT_ERROR| with no |message_type_for_buyer_string|.
       {
           "buyer_account_error",
           "",
@@ -905,21 +905,22 @@ TEST_F(WalletClientTest, WalletErrorCodes) {
           AutofillMetrics::WALLET_BUYER_ACCOUNT_ERROR
       },
       // |BUYER_ACCOUNT_ERROR| with "buyer_legal_address_not_supported" in
-      // buyer_error_type field.
+      // message_type_for_buyer field.
       {
           "buyer_account_error",
           "bla_country_not_supported",
           WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,
           AutofillMetrics::WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED
       },
-      // |BUYER_ACCOUNT_ERROR| with KYC error code in buyer_error_type field.
+      // |BUYER_ACCOUNT_ERROR| with KYC error code in message_type_for_buyer
+      // field.
       {
           "buyer_account_error",
           "buyer_kyc_error",
           WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS,
           AutofillMetrics::WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS
       },
-      // |BUYER_ACCOUNT_ERROR| with un-recognizable |buyer_error_type|.
+      // |BUYER_ACCOUNT_ERROR| with un-recognizable |message_type_for_buyer|.
       {
           "buyer_account_error",
           "random_string",
@@ -974,11 +975,12 @@ TEST_F(WalletClientTest, WalletErrorCodes) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     SCOPED_TRACE(
-        base::StringPrintf("%s - %s",
-                           test_cases[i].error_type_string.c_str(),
-                           test_cases[i].buyer_error_type_string.c_str()));
+        base::StringPrintf(
+            "%s - %s",
+            test_cases[i].error_type_string.c_str(),
+            test_cases[i].message_type_for_buyer_string.c_str()));
     TestWalletErrorCode(test_cases[i].error_type_string,
-                        test_cases[i].buyer_error_type_string,
+                        test_cases[i].message_type_for_buyer_string,
                         test_cases[i].expected_error_type,
                         test_cases[i].expected_autofill_metric);
   }
