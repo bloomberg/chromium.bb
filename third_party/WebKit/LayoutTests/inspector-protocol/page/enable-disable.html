@@ -25,7 +25,10 @@ function test()
 
     function eventRecorded(msg)
     {
-        InspectorTest.log("Timeline.eventRecorded: " + msg.params.record.type);
+        var type = msg.params.record.type;
+        if (type.indexOf("GC") !== -1)
+            return;
+        InspectorTest.log("Timeline.eventRecorded: " + type);
     }
 }
 
