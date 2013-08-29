@@ -138,11 +138,11 @@ void ExecuteTaskFunction::OnTaskExecuted(bool success) {
 }
 
 struct GetFileTasksFunction::TaskInfo {
-  TaskInfo(const string16& app_name, const GURL& icon_url)
+  TaskInfo(const std::string& app_name, const GURL& icon_url)
       : app_name(app_name), icon_url(icon_url) {
   }
 
-  string16 app_name;
+  std::string app_name;
   GURL icon_url;
 };
 

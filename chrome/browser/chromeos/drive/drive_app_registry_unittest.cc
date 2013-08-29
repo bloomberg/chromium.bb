@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -45,8 +44,8 @@ class DriveAppRegistryTest : public testing::Test {
       const DriveAppInfo* app = *it;
       if (web_store_id == app->web_store_id) {
         EXPECT_EQ(app_id, app->app_id);
-        EXPECT_EQ(app_name, UTF16ToUTF8(app->app_name));
-        EXPECT_EQ(object_type, UTF16ToUTF8(app->object_type));
+        EXPECT_EQ(app_name, app->app_name);
+        EXPECT_EQ(object_type, app->object_type);
         EXPECT_EQ(is_primary, app->is_primary_selector);
         found = true;
         break;

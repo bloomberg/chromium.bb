@@ -36,8 +36,8 @@ struct DriveAppInfo {
                const google_apis::InstalledApp::IconList& app_icons,
                const google_apis::InstalledApp::IconList& document_icons,
                const std::string& web_store_id,
-               const string16& app_name,
-               const string16& object_type,
+               const std::string& app_name,
+               const std::string& object_type,
                bool is_primary_selector);
   ~DriveAppInfo();
 
@@ -52,9 +52,9 @@ struct DriveAppInfo {
   // Web store id/extension id;
   std::string web_store_id;
   // App name.
-  string16 app_name;
+  std::string app_name;
   // Object (file) type description handled by this app.
-  string16 object_type;
+  std::string object_type;
   // Is app the primary selector for file (default open action).
   bool is_primary_selector;
 };
@@ -81,7 +81,7 @@ class DriveAppRegistry {
         const GURL& product_link,
         const google_apis::InstalledApp::IconList& app_icons,
         const google_apis::InstalledApp::IconList& document_icons,
-        const string16& object_type,
+        const std::string& object_type,
         const std::string& app_id,
         bool is_primary_selector);
     ~DriveAppFileSelector();
@@ -94,7 +94,7 @@ class DriveAppRegistry {
     // a side in pixels).
     google_apis::InstalledApp::IconList document_icons;
     // Object (file) type description.
-    string16 object_type;
+    std::string object_type;
     // Drive app id
     std::string app_id;
     // True if the selector is the default one. The default selector should

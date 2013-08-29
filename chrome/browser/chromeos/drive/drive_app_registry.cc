@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -56,8 +55,8 @@ DriveAppInfo::DriveAppInfo(
     const google_apis::InstalledApp::IconList& app_icons,
     const google_apis::InstalledApp::IconList& document_icons,
     const std::string& web_store_id,
-    const string16& app_name,
-    const string16& object_type,
+    const std::string& app_name,
+    const std::string& object_type,
     bool is_primary_selector)
     : app_id(app_id),
       app_icons(app_icons),
@@ -77,7 +76,7 @@ DriveAppRegistry::DriveAppFileSelector::DriveAppFileSelector(
     const GURL& product_link,
     const google_apis::InstalledApp::IconList& app_icons,
     const google_apis::InstalledApp::IconList& document_icons,
-    const string16& object_type,
+    const std::string& object_type,
     const std::string& app_id,
     bool is_primary_selector)
     : product_link(product_link),
@@ -242,7 +241,7 @@ void DriveAppRegistry::AddAppSelectorList(
         *value, new DriveAppFileSelector(product_link,
                                          app_icons,
                                          document_icons,
-                                         UTF8ToUTF16(object_type),
+                                         object_type,
                                          app_id,
                                          is_primary_selector)));
   }
@@ -275,7 +274,7 @@ void DriveAppRegistry::FindAppsForSelector(
                          web_app->app_icons,
                          web_app->document_icons,
                          web_store_id,
-                         UTF8ToUTF16(product_iter->second),   // app name.
+                         product_iter->second,  // app name
                          web_app->object_type,
                          web_app->is_primary_selector)));
   }
