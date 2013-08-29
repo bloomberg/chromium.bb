@@ -45,16 +45,9 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
 
 class FileSystemEntryFunction : public AsyncExtensionFunction {
  protected:
-  enum EntryType {
-    READ_ONLY,
-    WRITABLE
-  };
-
   FileSystemEntryFunction();
 
   virtual ~FileSystemEntryFunction() {}
-
-  bool HasFileSystemWritePermission();
 
   // This is called when writable file entries are being returned. The function
   // will ensure the files exist, creating them if necessary, and also check
@@ -76,13 +69,10 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
                           const std::string& id_override);
 
   // called on the UI thread if there is a problem checking a writable file.
-  void HandleWritableFileError(const std::string& error);
+  void HandleWritableFileError(const base::FilePath& error_path);
 
   // Whether multiple entries have been requested.
   bool multiple_;
-
-  // The type of the entry or entries to return.
-  EntryType entry_type_;
 
   // The dictionary to send as the response.
   base::DictionaryValue* response_;

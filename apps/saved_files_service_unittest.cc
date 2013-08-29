@@ -71,7 +71,6 @@ class SavedFilesServiceUnitTest : public testing::Test {
     ASSERT_TRUE(entry);
     EXPECT_EQ(id_string, entry->id);
     EXPECT_EQ(path_, entry->path);
-    EXPECT_TRUE(entry->writable);
     EXPECT_EQ(sequence_number, entry->sequence_number);
   }
 
@@ -90,9 +89,9 @@ class SavedFilesServiceUnitTest : public testing::Test {
 };
 
 TEST_F(SavedFilesServiceUnitTest, RetainTwoFilesTest) {
-  service_->RegisterFileEntry(extension_->id(), GenerateId(1), path_, true);
-  service_->RegisterFileEntry(extension_->id(), GenerateId(2), path_, true);
-  service_->RegisterFileEntry(extension_->id(), GenerateId(3), path_, true);
+  service_->RegisterFileEntry(extension_->id(), GenerateId(1), path_);
+  service_->RegisterFileEntry(extension_->id(), GenerateId(2), path_);
+  service_->RegisterFileEntry(extension_->id(), GenerateId(3), path_);
 
   // Test that no entry has a sequence number.
   TRACE_CALL(CheckEntrySequenceNumber(1, 0));
@@ -152,7 +151,7 @@ TEST_F(SavedFilesServiceUnitTest, NoRetainEntriesPermissionTest) {
   extension_ = env_.MakeExtension(*base::test::ParseJson(
       "{\"app\": {\"background\": {\"scripts\": [\"background.js\"]}},"
       "\"permissions\": [\"fileSystem\"]}"));
-  service_->RegisterFileEntry(extension_->id(), GenerateId(1), path_, true);
+  service_->RegisterFileEntry(extension_->id(), GenerateId(1), path_);
   TRACE_CALL(CheckEntrySequenceNumber(1, 0));
   SavedFileEntry entry;
   service_->EnqueueFileEntry(extension_->id(), GenerateId(1));
@@ -171,10 +170,10 @@ TEST_F(SavedFilesServiceUnitTest, NoRetainEntriesPermissionTest) {
 TEST_F(SavedFilesServiceUnitTest, EvictionTest) {
   SavedFilesService::SetLruSizeForTest(10);
   for (int i = 0; i < 10; i++) {
-    service_->RegisterFileEntry(extension_->id(), GenerateId(i), path_, true);
+    service_->RegisterFileEntry(extension_->id(), GenerateId(i), path_);
     service_->EnqueueFileEntry(extension_->id(), GenerateId(i));
   }
-  service_->RegisterFileEntry(extension_->id(), GenerateId(10), path_, true);
+  service_->RegisterFileEntry(extension_->id(), GenerateId(10), path_);
 
   // Expect that entries 0 to 9 are in the queue, but 10 is not.
   TRACE_CALL(CheckRangeEnqueuedInOrder(0, 10));
@@ -209,7 +208,7 @@ TEST_F(SavedFilesServiceUnitTest, SequenceNumberCompactionTest) {
   SavedFilesService::SetMaxSequenceNumberForTest(8);
   SavedFilesService::SetLruSizeForTest(8);
   for (int i = 0; i < 4; i++) {
-    service_->RegisterFileEntry(extension_->id(), GenerateId(i), path_, true);
+    service_->RegisterFileEntry(extension_->id(), GenerateId(i), path_);
     service_->EnqueueFileEntry(extension_->id(), GenerateId(i));
   }
   service_->EnqueueFileEntry(extension_->id(), GenerateId(2));

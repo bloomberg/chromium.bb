@@ -1,0 +1,20 @@
+{
+  "name": "Platform App Launch Test",
+  "version": "1",
+  "file_handlers": {
+    "text": {
+      "types": [
+        "text/*"
+      ],
+      "title": "Test editor"
+    }
+  },
+  "app": {
+    "background": {
+      "scripts": ["test.js", "test_util.js"]
+    }
+  },
+  "permissions": [
+    {"fileSystem": ["write"]}
+  ]
+}

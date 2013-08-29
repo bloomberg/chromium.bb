@@ -58,8 +58,7 @@ void SetLastChooseEntryDirectoryToAppDirectory(
 void AddSavedEntry(const base::FilePath& path_to_save,
                    apps::SavedFilesService* service,
                    const Extension* extension) {
-  service->RegisterFileEntry(
-      extension->id(), "magic id", path_to_save, /* writable */ true);
+  service->RegisterFileEntry(extension->id(), "magic id", path_to_save);
 }
 
 }  // namespace
@@ -72,6 +71,10 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
         .AppendASCII("file_system");
     FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
         "test_root", test_root_folder_);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ClearCommandLineArgs();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -436,8 +439,19 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/is_writable_file_entry"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiIsWritableWithWritePermissionTest) {
+  base::FilePath test_file = TempFilePath("writable.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
   ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/is_writable_file_entry")) << message_;
+      "api_test/file_system/is_writable_file_entry_with_write"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
@@ -452,7 +466,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
   ASSERT_EQ(1u, file_entries.size());
   EXPECT_EQ(test_file, file_entries[0].path);
   EXPECT_EQ(1, file_entries[0].sequence_number);
-  EXPECT_FALSE(file_entries[0].writable);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {

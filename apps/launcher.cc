@@ -46,11 +46,13 @@
 namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
+using extensions::app_file_handler_util::CheckWritableFiles;
 using extensions::app_file_handler_util::FileHandlerForId;
 using extensions::app_file_handler_util::FileHandlerCanHandleFile;
 using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::GrantedFileEntry;
+using extensions::app_file_handler_util::HasFileSystemWritePermission;
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionSystem;
@@ -125,15 +127,18 @@ class PlatformAppPathLauncher
 
     DCHECK(file_path_.IsAbsolute());
 
-#if defined(OS_CHROMEOS)
-    if (drive::util::IsUnderDriveMountPoint(file_path_)) {
-      GetMimeTypeAndLaunchForDriveFile();
+    if (HasFileSystemWritePermission(extension_)) {
+      std::vector<base::FilePath> paths;
+      paths.push_back(file_path_);
+      CheckWritableFiles(
+          paths,
+          profile_,
+          base::Bind(&PlatformAppPathLauncher::OnFileValid, this),
+          base::Bind(&PlatformAppPathLauncher::OnFileInvalid, this));
       return;
     }
-#endif
 
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-            &PlatformAppPathLauncher::GetMimeTypeAndLaunch, this));
+    OnFileValid();
   }
 
   void LaunchWithHandler(const std::string& handler_id) {
@@ -145,6 +150,24 @@ class PlatformAppPathLauncher
   friend class base::RefCountedThreadSafe<PlatformAppPathLauncher>;
 
   virtual ~PlatformAppPathLauncher() {}
+
+  void OnFileValid() {
+#if defined(OS_CHROMEOS)
+    if (drive::util::IsUnderDriveMountPoint(file_path_)) {
+      PlatformAppPathLauncher::GetMimeTypeAndLaunchForDriveFile();
+      return;
+    }
+#endif
+
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&PlatformAppPathLauncher::GetMimeTypeAndLaunch, this));
+  }
+
+  void OnFileInvalid(const base::FilePath& /* error_path */) {
+    LaunchWithNoLaunchData();
+  }
 
   void GetMimeTypeAndLaunch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -261,11 +284,7 @@ class PlatformAppPathLauncher
     }
 
     GrantedFileEntry file_entry = CreateFileEntry(
-        profile_,
-        extension_->id(),
-        host->render_process_host()->GetID(),
-        file_path_,
-        false);
+        profile_, extension_, host->render_process_host()->GetID(), file_path_);
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, handler_id_, mime_type, file_entry);
   }

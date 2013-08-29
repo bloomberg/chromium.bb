@@ -36,9 +36,6 @@ const char kFileEntries[] = "file_entries";
 // The path to a file entry that the app had permission to access.
 const char kFileEntryPath[] = "path";
 
-// Whether or not the app had write access to a file entry.
-const char kFileEntryWritable[] = "writable";
-
 // The sequence number in the LRU of the file entry.
 const char kFileEntrySequenceNumber[] = "sequence_number";
 
@@ -62,7 +59,6 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
 
   DictionaryValue* file_entry_dict = new DictionaryValue();
   file_entry_dict->Set(kFileEntryPath, CreateFilePathValue(file_entry.path));
-  file_entry_dict->SetBoolean(kFileEntryWritable, file_entry.writable);
   file_entry_dict->SetInteger(kFileEntrySequenceNumber,
                               file_entry.sequence_number);
   file_entries->SetWithoutPathExpansion(file_entry.id, file_entry_dict);
@@ -122,31 +118,25 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
     base::FilePath file_path;
     if (!GetValueAsFilePath(*path_value, &file_path))
       continue;
-    bool writable = false;
-    if (!file_entry->GetBoolean(kFileEntryWritable, &writable))
-      continue;
     int sequence_number = 0;
     if (!file_entry->GetInteger(kFileEntrySequenceNumber, &sequence_number))
       continue;
     if (!sequence_number)
       continue;
-    result.push_back(
-        SavedFileEntry(it.key(), file_path, writable, sequence_number));
+    result.push_back(SavedFileEntry(it.key(), file_path, sequence_number));
   }
   return result;
 }
 
 }  // namespace
 
-SavedFileEntry::SavedFileEntry() : writable(false), sequence_number(0) {}
+SavedFileEntry::SavedFileEntry() : sequence_number(0) {}
 
 SavedFileEntry::SavedFileEntry(const std::string& id,
                                const base::FilePath& path,
-                               bool writable,
                                int sequence_number)
     : id(id),
       path(path),
-      writable(writable),
       sequence_number(sequence_number) {}
 
 class SavedFilesService::SavedFiles {
@@ -155,8 +145,7 @@ class SavedFilesService::SavedFiles {
   ~SavedFiles();
 
   void RegisterFileEntry(const std::string& id,
-                         const base::FilePath& file_path,
-                         bool writable);
+                         const base::FilePath& file_path);
   void EnqueueFileEntry(const std::string& id);
   bool IsRegistered(const std::string& id) const;
   const SavedFileEntry* GetFileEntry(const std::string& id) const;
@@ -230,9 +219,8 @@ void SavedFilesService::Observe(int type,
 
 void SavedFilesService::RegisterFileEntry(const std::string& extension_id,
                                           const std::string& id,
-                                          const base::FilePath& file_path,
-                                          bool writable) {
-  GetOrInsert(extension_id)->RegisterFileEntry(id, file_path, writable);
+                                          const base::FilePath& file_path) {
+  GetOrInsert(extension_id)->RegisterFileEntry(id, file_path);
 }
 
 void SavedFilesService::EnqueueFileEntry(const std::string& extension_id,
@@ -315,13 +303,12 @@ SavedFilesService::SavedFiles::~SavedFiles() {}
 
 void SavedFilesService::SavedFiles::RegisterFileEntry(
     const std::string& id,
-    const base::FilePath& file_path,
-    bool writable) {
+    const base::FilePath& file_path) {
   if (ContainsKey(registered_file_entries_, id))
     return;
 
   registered_file_entries_.insert(
-      std::make_pair(id, new SavedFileEntry(id, file_path, writable, 0)));
+      std::make_pair(id, new SavedFileEntry(id, file_path, 0)));
 }
 
 void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -51,9 +52,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {
 }
 
 // Tests chrome.runtime.getPackageDirectory with an app.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        ChromeRuntimeGetPackageDirectoryEntryApp) {
-  ASSERT_TRUE(RunPlatformAppTest("runtime/get_package_directory/app"))
+  ClearCommandLineArgs();
+  ASSERT_TRUE(RunPlatformAppTest("api_test/runtime/get_package_directory/app"))
       << message_;
 }
 

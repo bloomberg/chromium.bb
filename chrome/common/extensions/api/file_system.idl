@@ -24,8 +24,10 @@ namespace fileSystem {
 
   enum ChooseEntryType {
 
-    // Prompts the user to open an existing file and returns a read-only
-    // FileEntry on success.
+    // Prompts the user to open an existing file and returns a FileEntry on
+    // success. From Chrome 31 onwards, the FileEntry will be writable if the
+    // application has the 'write' permission under 'fileSystem'; otherwise, the
+    // FileEntry will be read-only.
     openFile,
 
     // Prompts the user to open an existing file and returns a writable
@@ -40,7 +42,10 @@ namespace fileSystem {
   };
 
   dictionary ChooseEntryOptions {
-    // Type of the prompt to show. The default is 'openFile'.
+    // Type of the prompt to show. The default is 'openFile'. From Chrome 31
+    // onwards, 'openWritableFile' is deprecated and 'openFile' will return a
+    // writable file entry for apps with the 'write' permission under
+    // 'fileSystem'.
     ChooseEntryType? type;
 
     // The suggested file name that will be presented to the user as the

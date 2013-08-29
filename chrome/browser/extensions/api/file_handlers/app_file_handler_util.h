@@ -58,10 +58,18 @@ struct GrantedFileEntry {
 // registers a new file system for |path|.
 GrantedFileEntry CreateFileEntry(
     Profile* profile,
-    const std::string& extension_id,
+    const Extension* extension,
     int renderer_id,
-    const base::FilePath& path,
-    bool writable);
+    const base::FilePath& path);
+
+void CheckWritableFiles(
+    const std::vector<base::FilePath>& paths,
+    Profile* profile,
+    const base::Closure& on_success,
+    const base::Callback<void(const base::FilePath&)>& on_failure);
+
+// Returns whether |extension| has the fileSystem.write permission.
+bool HasFileSystemWritePermission(const Extension* extension);
 
 }  // namespace app_file_handler_util
 

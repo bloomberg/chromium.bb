@@ -611,7 +611,18 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
       << message_;
 }
 
-#endif  // defined(OS_CHROMEOS)
+// Tests that the file is created if the file does not exist and the app has the
+// fileSystem.write permission.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNewFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ClearCommandLineArgs();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendArgPath(temp_dir.path().AppendASCII("new_file.txt"));
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_new_file")) << message_;
+}
+
+#endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_TRUE(StartEmbeddedTestServer());

@@ -136,8 +136,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
   extension_prefs->SetExtensionRunning(extension->id(), true);
   for (std::vector<SavedFileEntry>::const_iterator it = file_entries.begin();
        it != file_entries.end(); ++it) {
-    saved_files_service->RegisterFileEntry(
-        extension->id(), it->id, it->path, it->writable);
+    saved_files_service->RegisterFileEntry(extension->id(), it->id, it->path);
   }
 
   apps::AppRestoreServiceFactory::GetForProfile(browser()->profile())->
