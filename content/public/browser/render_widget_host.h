@@ -28,6 +28,7 @@ class Rect;
 }
 
 namespace WebKit {
+class WebMouseEvent;
 struct WebScreenInfo;
 }
 
@@ -295,6 +296,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const KeyPressEventCallback& callback) = 0;
   virtual void RemoveKeyPressEventCallback(
       const KeyPressEventCallback& callback) = 0;
+
+  // Add/remove a callback that can handle all kinds of mouse events.
+  typedef base::Callback<bool(const WebKit::WebMouseEvent&)> MouseEventCallback;
+  virtual void AddMouseEventCallback(const MouseEventCallback& callback) = 0;
+  virtual void RemoveMouseEventCallback(const MouseEventCallback& callback) = 0;
 
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) = 0;

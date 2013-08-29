@@ -177,6 +177,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const KeyPressEventCallback& callback) OVERRIDE;
   virtual void RemoveKeyPressEventCallback(
       const KeyPressEventCallback& callback) OVERRIDE;
+  virtual void AddMouseEventCallback(
+      const MouseEventCallback& callback) OVERRIDE;
+  virtual void RemoveMouseEventCallback(
+      const MouseEventCallback& callback) OVERRIDE;
   virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) OVERRIDE;
   virtual void GetSnapshotFromRenderer(
       const gfx::Rect& src_subrect,
@@ -825,6 +829,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // Keyboard event listeners.
   std::vector<KeyPressEventCallback> key_press_event_callbacks_;
+
+  // Mouse event callbacks.
+  std::vector<MouseEventCallback> mouse_event_callbacks_;
 
   // If true, then we should repaint when restoring even if we have a
   // backingstore.  This flag is set to true if we receive a paint message

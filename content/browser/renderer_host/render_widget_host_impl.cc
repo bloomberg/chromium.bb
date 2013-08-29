@@ -1016,6 +1016,12 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
     const MouseEventWithLatencyInfo& mouse_event) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent",
                "x", mouse_event.event.x, "y", mouse_event.event.y);
+
+  for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
+    if (mouse_event_callbacks_[i].Run(mouse_event.event))
+      return;
+  }
+
   input_router_->SendMouseEvent(mouse_event);
 }
 
@@ -1134,6 +1140,21 @@ void RenderWidgetHostImpl::RemoveKeyPressEventCallback(
     if (key_press_event_callbacks_[i].Equals(callback)) {
       key_press_event_callbacks_.erase(
           key_press_event_callbacks_.begin() + i);
+      return;
+    }
+  }
+}
+
+void RenderWidgetHostImpl::AddMouseEventCallback(
+    const MouseEventCallback& callback) {
+  mouse_event_callbacks_.push_back(callback);
+}
+
+void RenderWidgetHostImpl::RemoveMouseEventCallback(
+    const MouseEventCallback& callback) {
+  for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
+    if (mouse_event_callbacks_[i].Equals(callback)) {
+      mouse_event_callbacks_.erase(mouse_event_callbacks_.begin() + i);
       return;
     }
   }

@@ -605,13 +605,19 @@ class MockPaintingObserver : public NotificationObserver {
 
 class RenderWidgetHostTest : public testing::Test {
  public:
-  RenderWidgetHostTest() : process_(NULL), handle_key_press_event_(false) {
+  RenderWidgetHostTest()
+      : process_(NULL),
+        handle_key_press_event_(false),
+        handle_mouse_event_(false) {
   }
   virtual ~RenderWidgetHostTest() {
   }
 
-  bool KeyPressEventCallback(const NativeWebKeyboardEvent& event) {
+  bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
     return handle_key_press_event_;
+  }
+  bool MouseEventCallback(const WebKit::WebMouseEvent& /* event */) {
+    return handle_mouse_event_;
   }
 
  protected:
@@ -817,6 +823,7 @@ class RenderWidgetHostTest : public testing::Test {
   scoped_ptr<TestView> view_;
   scoped_ptr<gfx::Screen> screen_;
   bool handle_key_press_event_;
+  bool handle_mouse_event_;
 
  private:
   WebTouchEvent touch_event_;
@@ -2516,6 +2523,24 @@ TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
   host_->mock_input_router()->sent_keyboard_event_ = false;
   SimulateKeyboardEvent(WebInputEvent::Char);
   EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
+}
+
+TEST_F(RenderWidgetHostTest, MouseEventCallbackCanHandleEvent) {
+  host_->SetupForInputRouterTest();
+
+  host_->AddMouseEventCallback(
+      base::Bind(&RenderWidgetHostTest::MouseEventCallback,
+                 base::Unretained(this)));
+
+  handle_mouse_event_ = true;
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+
+  EXPECT_FALSE(host_->mock_input_router()->sent_mouse_event_);
+
+  handle_mouse_event_ = false;
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+
+  EXPECT_TRUE(host_->mock_input_router()->sent_mouse_event_);
 }
 
 TEST_F(RenderWidgetHostTest, InputRouterReceivesHandleInputEvent_ACK) {
