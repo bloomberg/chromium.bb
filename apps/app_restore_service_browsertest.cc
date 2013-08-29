@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
 }
 
 // Flaky: crbug.com/269613
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_FileAccessIsRestored DISABLED_FileAccessIsRestored
 #else
 #define MAYBE_FileAccessIsRestored FileAccessIsRestored
