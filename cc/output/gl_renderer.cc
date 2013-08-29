@@ -503,6 +503,7 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
 
 static SkBitmap ApplyImageFilter(GLRenderer* renderer,
                                  ContextProvider* offscreen_contexts,
+                                 gfx::Point origin,
                                  SkImageFilter* filter,
                                  ScopedResource* source_texture_resource) {
   if (!filter)
@@ -567,6 +568,11 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   SkPaint paint;
   paint.setImageFilter(filter);
   canvas.clear(SK_ColorTRANSPARENT);
+
+  // TODO(senorblanco): in addition to the origin translation here, the canvas
+  // should also be scaled to accomodate device pixel ratio and pinch zoom. See
+  // crbug.com/281516 and crbug.com/281518.
+  canvas.translate(SkIntToScalar(-origin.x()), SkIntToScalar(-origin.y()));
   canvas.drawSprite(source, 0, 0, &paint);
 
   // Flush skia context so that all the rendered stuff appears on the
@@ -768,6 +774,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     } else {
       filter_bitmap = ApplyImageFilter(this,
                                        frame->offscreen_context_provider,
+                                       quad->rect.origin(),
                                        quad->filter.get(),
                                        contents_texture);
     }
