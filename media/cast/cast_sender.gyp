@@ -22,6 +22,7 @@
         'congestion_control',
         'pacing/paced_sender.gyp:paced_sender',
         'rtcp/rtcp.gyp:cast_rtcp',
+        'rtp_sender/rtp_sender.gyp:cast_rtp_sender',
 #       'video_sender',
       ], # dependencies
     },
