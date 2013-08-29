@@ -115,8 +115,8 @@ MediaConstraints* UserMediaRequest::videoConstraints() const
 
 Document* UserMediaRequest::ownerDocument()
 {
-    if (m_scriptExecutionContext) {
-        return toDocument(m_scriptExecutionContext);
+    if (ScriptExecutionContext* context = scriptExecutionContext()) {
+        return toDocument(context);
     }
 
     return 0;
@@ -130,10 +130,10 @@ void UserMediaRequest::start()
 
 void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescriptor)
 {
-    if (!m_scriptExecutionContext)
+    if (!scriptExecutionContext())
         return;
 
-    RefPtr<MediaStream> stream = MediaStream::create(m_scriptExecutionContext, streamDescriptor);
+    RefPtr<MediaStream> stream = MediaStream::create(scriptExecutionContext(), streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {
@@ -150,7 +150,7 @@ void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescripto
 
 void UserMediaRequest::fail(const String& description)
 {
-    if (!m_scriptExecutionContext)
+    if (!scriptExecutionContext())
         return;
 
     if (m_errorCallback) {
@@ -162,7 +162,7 @@ void UserMediaRequest::fail(const String& description)
 void UserMediaRequest::failConstraint(const String& constraintName, const String& description)
 {
     ASSERT(!constraintName.isEmpty());
-    if (!m_scriptExecutionContext)
+    if (!scriptExecutionContext())
         return;
 
     if (m_errorCallback) {

@@ -38,7 +38,6 @@ DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(DOMWindow* window)
 
 DOMWindowLifecycleObserver::~DOMWindowLifecycleObserver()
 {
-    observeContext(0, DOMWindowLifecycleObserverType);
 }
 
 DOMWindow* DOMWindowLifecycleObserver::window() const

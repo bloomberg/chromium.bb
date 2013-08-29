@@ -194,11 +194,11 @@ bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
 
 bool DatabaseContext::allowDatabaseAccess() const
 {
-    if (m_scriptExecutionContext->isDocument()) {
-        Document* document = toDocument(m_scriptExecutionContext);
+    if (scriptExecutionContext()->isDocument()) {
+        Document* document = toDocument(scriptExecutionContext());
         return document->page();
     }
-    ASSERT(m_scriptExecutionContext->isWorkerGlobalScope());
+    ASSERT(scriptExecutionContext()->isWorkerGlobalScope());
     // allowDatabaseAccess is not yet implemented for workers.
     return true;
 }

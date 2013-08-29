@@ -32,39 +32,17 @@
 namespace WebCore {
 
 ContextLifecycleObserver::ContextLifecycleObserver(ScriptExecutionContext* scriptExecutionContext, Type type)
-    : LifecycleObserver(scriptExecutionContext)
-    , m_scriptExecutionContext(0)
+    : LifecycleObserver(scriptExecutionContext, type)
 {
-    observeContext(scriptExecutionContext, type);
 }
 
 ContextLifecycleObserver::~ContextLifecycleObserver()
 {
-    if (m_scriptExecutionContext)
-        observeContext(0, GenericType);
 }
 
-void ContextLifecycleObserver::observeContext(ScriptExecutionContext* scriptExecutionContext, Type as)
+ScriptExecutionContext* ContextLifecycleObserver::scriptExecutionContext() const
 {
-    if (m_scriptExecutionContext) {
-        ASSERT(m_scriptExecutionContext->isContextThread());
-        m_scriptExecutionContext->wasUnobservedBy(this, as);
-    }
-
-    m_scriptExecutionContext = scriptExecutionContext;
-    m_lifecycleContext = scriptExecutionContext;
-
-    if (m_scriptExecutionContext) {
-        ASSERT(m_scriptExecutionContext->isContextThread());
-        m_scriptExecutionContext->wasObservedBy(this, as);
-    }
-}
-
-void ContextLifecycleObserver::contextDestroyed()
-{
-    m_scriptExecutionContext = 0;
-
-    LifecycleObserver::contextDestroyed();
+    return static_cast<ScriptExecutionContext*>(m_lifecycleContext);
 }
 
 } // namespace WebCore

@@ -38,7 +38,6 @@ PageLifecycleObserver::PageLifecycleObserver(Page* page)
 
 PageLifecycleObserver::~PageLifecycleObserver()
 {
-    observeContext(0, PageLifecycleObserverType);
 }
 
 Page* PageLifecycleObserver::page() const

@@ -48,13 +48,13 @@ LifecycleNotifier::~LifecycleNotifier()
     }
 }
 
-void LifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void LifecycleNotifier::addObserver(LifecycleObserver* observer)
 {
     RELEASE_ASSERT(!m_inDestructor);
     m_observers.add(observer);
 }
 
-void LifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void LifecycleNotifier::removeObserver(LifecycleObserver* observer)
 {
     RELEASE_ASSERT(!m_inDestructor);
     m_observers.remove(observer);

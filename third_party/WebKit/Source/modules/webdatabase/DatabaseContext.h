@@ -41,7 +41,7 @@ class DatabaseTaskSynchronizer;
 class DatabaseThread;
 class ScriptExecutionContext;
 
-class DatabaseContext : public ThreadSafeRefCounted<DatabaseContext>, ActiveDOMObject {
+class DatabaseContext : public ThreadSafeRefCounted<DatabaseContext>, public ActiveDOMObject {
 public:
     virtual ~DatabaseContext();
 

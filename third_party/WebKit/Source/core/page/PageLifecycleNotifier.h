@@ -43,8 +43,8 @@ public:
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(Frame*);
 
-    virtual void addObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
+    virtual void addObserver(LifecycleObserver*) OVERRIDE;
+    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
 
 private:
     explicit PageLifecycleNotifier(LifecycleContext*);

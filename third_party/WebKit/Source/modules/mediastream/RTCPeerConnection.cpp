@@ -141,7 +141,7 @@ RTCPeerConnection::RTCPeerConnection(ScriptExecutionContext* context, PassRefPtr
     , m_stopped(false)
 {
     ScriptWrappable::init(this);
-    Document* document = toDocument(m_scriptExecutionContext);
+    Document* document = toDocument(scriptExecutionContext());
 
     if (!document->frame()) {
         es.throwDOMException(NotSupportedError);

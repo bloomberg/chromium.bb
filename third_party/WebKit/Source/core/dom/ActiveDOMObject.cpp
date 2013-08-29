@@ -38,10 +38,7 @@ ActiveDOMObject::ActiveDOMObject(ScriptExecutionContext* scriptExecutionContext)
     , m_suspendIfNeededCalled(false)
 #endif
 {
-    if (!m_scriptExecutionContext)
-        return;
-
-    ASSERT(m_scriptExecutionContext->isContextThread());
+    ASSERT(!scriptExecutionContext || scriptExecutionContext->isContextThread());
 }
 
 ActiveDOMObject::~ActiveDOMObject()
@@ -52,12 +49,11 @@ ActiveDOMObject::~ActiveDOMObject()
     // ContextLifecycleObserver::contextDestroyed() (which we implement /
     // inherit). Hence, we should ensure that this is not 0 before use it
     // here.
-    if (!m_scriptExecutionContext)
+    if (!scriptExecutionContext())
         return;
 
     ASSERT(m_suspendIfNeededCalled);
-    ASSERT(m_scriptExecutionContext->isContextThread());
-    observeContext(0, ActiveDOMObjectType);
+    ASSERT(scriptExecutionContext()->isContextThread());
 }
 
 void ActiveDOMObject::suspendIfNeeded()
@@ -66,10 +62,8 @@ void ActiveDOMObject::suspendIfNeeded()
     ASSERT(!m_suspendIfNeededCalled);
     m_suspendIfNeededCalled = true;
 #endif
-    if (!m_scriptExecutionContext)
-        return;
-
-    m_scriptExecutionContext->suspendActiveDOMObjectIfNeeded(this);
+    if (ScriptExecutionContext* context = scriptExecutionContext())
+        scriptExecutionContext()->suspendActiveDOMObjectIfNeeded(this);
 }
 
 bool ActiveDOMObject::hasPendingActivity() const

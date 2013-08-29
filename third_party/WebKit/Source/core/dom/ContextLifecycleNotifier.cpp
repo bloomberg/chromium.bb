@@ -42,23 +42,23 @@ ContextLifecycleNotifier::~ContextLifecycleNotifier()
 {
 }
 
-void ContextLifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void ContextLifecycleNotifier::addObserver(LifecycleObserver* observer)
 {
-    LifecycleNotifier::addObserver(observer, type);
+    LifecycleNotifier::addObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    if (type == LifecycleObserver::ActiveDOMObjectType) {
+    if (observer->observerType() == LifecycleObserver::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.add(static_cast<ActiveDOMObject*>(observer));
     }
 }
 
-void ContextLifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void ContextLifecycleNotifier::removeObserver(LifecycleObserver* observer)
 {
-    LifecycleNotifier::removeObserver(observer, type);
+    LifecycleNotifier::removeObserver(observer);
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    if (type == LifecycleObserver::ActiveDOMObjectType) {
+    if (observer->observerType() == LifecycleObserver::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
     }

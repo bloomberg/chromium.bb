@@ -40,12 +40,12 @@ DatabaseContext* DatabaseBackendContext::frontend()
 
 SecurityOrigin* DatabaseBackendContext::securityOrigin() const
 {
-    return m_scriptExecutionContext->securityOrigin();
+    return scriptExecutionContext()->securityOrigin();
 }
 
 bool DatabaseBackendContext::isContextThread() const
 {
-    return m_scriptExecutionContext->isContextThread();
+    return scriptExecutionContext()->isContextThread();
 }
 
 } // namespace WebCore

@@ -34,24 +34,24 @@ PageLifecycleNotifier::PageLifecycleNotifier(LifecycleContext* context)
 {
 }
 
-void PageLifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void PageLifecycleNotifier::addObserver(LifecycleObserver* observer)
 {
-    if (type == LifecycleObserver::PageLifecycleObserverType) {
+    if (observer->observerType() == LifecycleObserver::PageLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverPageObservers);
         m_pageObservers.add(static_cast<PageLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::addObserver(observer, type);
+    LifecycleNotifier::addObserver(observer);
 }
 
-void PageLifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void PageLifecycleNotifier::removeObserver(LifecycleObserver* observer)
 {
-    if (type == LifecycleObserver::PageLifecycleObserverType) {
+    if (observer->observerType() == LifecycleObserver::PageLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverPageObservers);
         m_pageObservers.remove(static_cast<PageLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::removeObserver(observer, type);
+    LifecycleNotifier::removeObserver(observer);
 }
 
 } // namespace WebCore

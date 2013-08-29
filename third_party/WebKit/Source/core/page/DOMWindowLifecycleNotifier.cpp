@@ -34,24 +34,24 @@ DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LifecycleContext* context
 {
 }
 
-void DOMWindowLifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void DOMWindowLifecycleNotifier::addObserver(LifecycleObserver* observer)
 {
-    if (type == LifecycleObserver::DOMWindowLifecycleObserverType) {
+    if (observer->observerType() == LifecycleObserver::DOMWindowLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
         m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::addObserver(observer, type);
+    LifecycleNotifier::addObserver(observer);
 }
 
-void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer)
 {
-    if (type == LifecycleObserver::DOMWindowLifecycleObserverType) {
+    if (observer->observerType() == LifecycleObserver::DOMWindowLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
         m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier::removeObserver(observer, type);
+    LifecycleNotifier::removeObserver(observer);
 }
 
 PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LifecycleContext* context)

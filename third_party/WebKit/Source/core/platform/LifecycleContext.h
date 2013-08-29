@@ -46,10 +46,10 @@ public:
     virtual bool isContextThread() const { return true; }
 
     // Called from the constructor of observers.
-    void wasObservedBy(LifecycleObserver*, LifecycleObserver::Type);
+    void wasObservedBy(LifecycleObserver*);
 
     // Called from the destructor of observers.
-    void wasUnobservedBy(LifecycleObserver*, LifecycleObserver::Type);
+    void wasUnobservedBy(LifecycleObserver*);
 
 protected:
     LifecycleNotifier* lifecycleNotifier();

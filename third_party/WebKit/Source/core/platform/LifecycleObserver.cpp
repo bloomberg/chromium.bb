@@ -33,28 +33,28 @@ namespace WebCore {
 
 LifecycleObserver::LifecycleObserver(LifecycleContext* lifecycleContext, Type type)
     : m_lifecycleContext(0)
+    , m_observerType(type)
 {
-    observeContext(lifecycleContext, type);
+    observeContext(lifecycleContext);
 }
 
 LifecycleObserver::~LifecycleObserver()
 {
-    if (m_lifecycleContext)
-        observeContext(0, GenericType);
+    observeContext(0);
 }
 
-void LifecycleObserver::observeContext(LifecycleContext* context, Type type)
+void LifecycleObserver::observeContext(LifecycleContext* context)
 {
     if (m_lifecycleContext) {
         ASSERT(m_lifecycleContext->isContextThread());
-        m_lifecycleContext->wasUnobservedBy(this, type);
+        m_lifecycleContext->wasUnobservedBy(this);
     }
 
     m_lifecycleContext = context;
 
     if (m_lifecycleContext) {
         ASSERT(m_lifecycleContext->isContextThread());
-        m_lifecycleContext->wasObservedBy(this, type);
+        m_lifecycleContext->wasObservedBy(this);
     }
 }
 

@@ -48,8 +48,8 @@ public:
 
     const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
 
-    virtual void addObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
-    virtual void removeObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
+    virtual void addObserver(LifecycleObserver*) OVERRIDE;
+    virtual void removeObserver(LifecycleObserver*) OVERRIDE;
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);

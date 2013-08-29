@@ -43,7 +43,6 @@ class DatabaseBackendContext : public DatabaseContext {
 public:
     DatabaseContext* frontend();
 
-    ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; }
     SecurityOrigin* securityOrigin() const;
 
     bool isContextThread() const;

@@ -36,17 +36,10 @@ class ScriptExecutionContext;
 class ContextLifecycleObserver : public LifecycleObserver {
 public:
     explicit ContextLifecycleObserver(ScriptExecutionContext*, Type = GenericType);
-
-    virtual void contextDestroyed() OVERRIDE;
-
-    ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; }
+    ScriptExecutionContext* scriptExecutionContext() const;
 
 protected:
     virtual ~ContextLifecycleObserver();
-
-    void observeContext(ScriptExecutionContext*, Type);
-
-    ScriptExecutionContext* m_scriptExecutionContext;
 };
 
 } // namespace WebCore

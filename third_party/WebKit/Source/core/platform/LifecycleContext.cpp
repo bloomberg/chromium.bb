@@ -39,14 +39,14 @@ LifecycleContext::~LifecycleContext()
 {
 }
 
-void LifecycleContext::wasObservedBy(LifecycleObserver* observer, LifecycleObserver::Type type)
+void LifecycleContext::wasObservedBy(LifecycleObserver* observer)
 {
-    lifecycleNotifier()->addObserver(observer, type);
+    lifecycleNotifier()->addObserver(observer);
 }
 
-void LifecycleContext::wasUnobservedBy(LifecycleObserver* observer, LifecycleObserver::Type type)
+void LifecycleContext::wasUnobservedBy(LifecycleObserver* observer)
 {
-    lifecycleNotifier()->removeObserver(observer, type);
+    lifecycleNotifier()->removeObserver(observer);
 }
 
 LifecycleNotifier* LifecycleContext::lifecycleNotifier()
