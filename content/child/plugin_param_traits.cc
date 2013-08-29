@@ -80,8 +80,8 @@ bool ParamTraits<NPVariant_Param>::Read(const Message* m,
     result = ReadParam(m, iter, &r->string_value);
   } else if (r->type == content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
              r->type == content::NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
-    result = ReadParam(m, iter, &r->npobject_routing_id);
-    result = ReadParam(m, iter, &r->npobject_owner_id);
+    result = ReadParam(m, iter, &r->npobject_routing_id) &&
+        ReadParam(m, iter, &r->npobject_owner_id);
   } else if ((r->type == content::NPVARIANT_PARAM_VOID) ||
              (r->type == content::NPVARIANT_PARAM_NULL)) {
     result = true;
