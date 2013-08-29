@@ -1697,6 +1697,7 @@ ScopedTrace::ScopedTrace(
         TRACE_EVENT_FLAG_NONE);     // flags
   } else {
     category_group_enabled_ = NULL;
+    name_ = NULL;
   }
 }
 
