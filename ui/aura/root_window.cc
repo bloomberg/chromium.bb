@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -1058,19 +1057,28 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
-  base::AutoReset<Window*> reset(&mouse_event_dispatch_target_, target);
+  // WARNING: because of nested message loops |this| may be deleted after
+  // dispatching any event. Do not use AutoReset or the like here.
+  WindowTracker destroyed_tracker;
+  destroyed_tracker.Add(this);
+  Window* old_mouse_event_dispatch_target = mouse_event_dispatch_target_;
+  mouse_event_dispatch_target_ = target;
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {
     case ui::ET_MOUSE_EXITED:
       if (!target) {
         DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
+        if (!destroyed_tracker.Contains(this))
+          return false;
         mouse_moved_handler_ = NULL;
       }
       break;
     case ui::ET_MOUSE_MOVED:
       mouse_event_dispatch_target_ = target;
       HandleMouseMoved(*event, target);
+      if (!destroyed_tracker.Contains(this))
+        return false;
       if (mouse_event_dispatch_target_ != target)
         return false;
       break;
@@ -1092,14 +1100,20 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
     default:
       break;
   }
+  bool result;
   if (target) {
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
     if (IsNonClientLocation(target, event->location()))
       event->set_flags(event->flags() | ui::EF_IS_NON_CLIENT);
     ProcessEvent(target, event);
-    return event->handled();
+    if (!destroyed_tracker.Contains(this))
+      return false;
+    result = event->handled();
+  } else {
+    result = false;
   }
-  return false;
+  mouse_event_dispatch_target_ = old_mouse_event_dispatch_target;
+  return result;
 }
 
 bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {

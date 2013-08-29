@@ -1695,6 +1695,116 @@ TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
   EXPECT_TRUE(widget.GetNativeView()->IsVisible());
 }
 
+// The following code verifies we can correctly destroy a Widget from a mouse
+// enter/exit. We could test move/drag/enter/exit but in general we don't run
+// nested message loops from such events, nor has the code ever really dealt
+// with this situation.
+
+// Class that closes the widget (which ends up deleting it immediately) when the
+// appropriate event is received.
+class CloseWidgetView : public View {
+ public:
+  explicit CloseWidgetView(ui::EventType event_type)
+      : event_type_(event_type) {
+  }
+
+  // View overrides:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    if (!CloseWidget(event))
+      View::OnMousePressed(event);
+    return true;
+  }
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
+    if (!CloseWidget(event))
+      View::OnMouseDragged(event);
+    return true;
+  }
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    if (!CloseWidget(event))
+      View::OnMouseReleased(event);
+  }
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
+    if (!CloseWidget(event))
+      View::OnMouseMoved(event);
+  }
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    if (!CloseWidget(event))
+      View::OnMouseEntered(event);
+  }
+
+ private:
+  bool CloseWidget(const ui::LocatedEvent& event) {
+    if (event.type() == event_type_) {
+      // Go through NativeWidgetPrivate to simulate what happens if the OS
+      // deletes the NativeWindow out from under us.
+      GetWidget()->native_widget_private()->CloseNow();
+      return true;
+    }
+    return false;
+  }
+
+  const ui::EventType event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseWidgetView);
+};
+
+// Generates two moves (first generates enter, second real move), a press, drag
+// and release stopping at |last_event_type|.
+void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
+  const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
+  ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
+                            screen_bounds.CenterPoint(), 0);
+  aura::RootWindowHostDelegate* rwhd =
+      widget->GetNativeWindow()->GetRootWindow()->AsRootWindowHostDelegate();
+  rwhd->OnHostMouseEvent(&move_event);
+  if (last_event_type == ui::ET_MOUSE_ENTERED)
+    return;
+  rwhd->OnHostMouseEvent(&move_event);
+  if (last_event_type == ui::ET_MOUSE_MOVED)
+    return;
+
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
+                             screen_bounds.CenterPoint(), 0);
+  rwhd->OnHostMouseEvent(&press_event);
+  if (last_event_type == ui::ET_MOUSE_PRESSED)
+    return;
+
+  gfx::Point end_point(screen_bounds.CenterPoint());
+  end_point.Offset(1, 1);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point, 0);
+  rwhd->OnHostMouseEvent(&drag_event);
+  if (last_event_type == ui::ET_MOUSE_DRAGGED)
+    return;
+
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point, 0);
+  rwhd->OnHostMouseEvent(&release_event);
+}
+
+// Creates a widget and invokes GenerateMouseEvents() with |last_event_type|.
+void RunCloseWidgetDuringDispatchTest(WidgetTest* test,
+                                      ui::EventType last_event_type) {
+  // |widget| is deleted by CloseWidgetView.
+  Widget* widget = new Widget;
+  Widget::InitParams params =
+      test->CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = new DesktopNativeWidgetAura(widget);
+  params.bounds = gfx::Rect(0, 0, 50, 100);
+  widget->Init(params);
+  widget->SetContentsView(new CloseWidgetView(last_event_type));
+  widget->Show();
+  GenerateMouseEvents(widget, last_event_type);
+}
+
+// Verifies deleting the widget from a mouse pressed event doesn't crash.
+TEST_F(WidgetTest, CloseWidgetDuringMousePress) {
+  RunCloseWidgetDuringDispatchTest(this, ui::ET_MOUSE_PRESSED);
+}
+
+// Verifies deleting the widget from a mouse released event doesn't crash.
+TEST_F(WidgetTest, CloseWidgetDuringMouseReleased) {
+  RunCloseWidgetDuringDispatchTest(this, ui::ET_MOUSE_RELEASED);
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 // Tests that wheel events generated from scroll events are targetted to the
