@@ -42,11 +42,8 @@
       'inputs': [
         # Files that are known to be involved in this step.
         '<(DEPTH)/tools/swarm_client/isolate.py',
-        '<(DEPTH)/tools/swarm_client/isolateserver_archive.py',
         '<(DEPTH)/tools/swarm_client/run_isolated.py',
         '<(DEPTH)/tools/swarm_client/googletest/run_test_cases.py',
-        '<(DEPTH)/tools/swarm_client/short_expression_finder.py',
-        '<(DEPTH)/tools/swarm_client/trace_inputs.py',
 
         # Disable file tracking by the build driver for now. This means the
         # project must have the proper build-time dependency for their runtime
