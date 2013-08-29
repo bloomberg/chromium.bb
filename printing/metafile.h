@@ -27,8 +27,7 @@ class Rect;
 class Size;
 }
 
-class SkDevice;
-typedef SkDevice SkBaseDevice;
+class SkBaseDevice;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {

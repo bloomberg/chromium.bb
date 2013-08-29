@@ -293,12 +293,12 @@ void BitmapPlatformDevice::DrawToNativeContext(HDC dc, int x, int y,
     data_->ReleaseBitmapDC();
 }
 
-const SkBitmap& BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
+const SkBitmap& BitmapPlatformDevice::onAccessBitmap() {
   // FIXME(brettw) OPTIMIZATION: We should only flush if we know a GDI
   // operation has occurred on our DC.
   if (data_->IsBitmapDCCreated())
     GdiFlush();
-  return *bitmap;
+  return SkBitmapDevice::onAccessBitmap();
 }
 
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(

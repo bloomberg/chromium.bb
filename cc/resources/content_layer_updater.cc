@@ -44,7 +44,7 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   canvas->translate(SkFloatToScalar(-origin.x()),
                     SkFloatToScalar(-origin.y()));
 
-  SkDevice* device = canvas->getDevice();
+  SkBaseDevice* device = canvas->getDevice();
   gfx::Rect content_rect(origin, gfx::Size(device->width(), device->height()));
 
   gfx::Rect layer_rect = content_rect;

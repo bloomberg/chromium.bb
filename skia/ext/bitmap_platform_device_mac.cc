@@ -248,11 +248,6 @@ void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
     data_->ReleaseBitmapContext();
 }
 
-const SkBitmap& BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
-  // Not needed in CoreGraphics
-  return *bitmap;
-}
-
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
