@@ -62,9 +62,13 @@ class PageCycler(page_measurement.PageMeasurement):
     io.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
 
-    # Temporarily disable typical_25 page set on mac.
-    if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
-      print 'typical_25 is currently disabled on mac. Skipping test.'
+    # A disk cache bug causes some page cyclers to hang on mac.
+    # TODO(tonyg): Re-enable these tests when crbug.com/268646 is fixed.
+    if (sys.platform == 'darwin' and
+        (sys.argv[-1].endswith('/intl_hi_ru.json') or
+         sys.argv[-1].endswith('/tough_layout_cases.json') or
+         sys.argv[-1].endswith('/typical_25.json'))):
+      print '%s is currently disabled on mac. Skipping test.' % sys.argv[-1]
       sys.exit(0)
 
   def MeasurePage(self, page, tab, results):
