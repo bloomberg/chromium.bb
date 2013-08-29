@@ -275,7 +275,8 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
       return;
     }
     // No special configure or setup for |network|, show the settings UI.
-    ShowNetworkSettingsPage(service_path);
+    if (LoginState::Get()->IsUserLoggedIn())
+      ShowNetworkSettingsPage(service_path);
     return;
   }
   NOTREACHED();

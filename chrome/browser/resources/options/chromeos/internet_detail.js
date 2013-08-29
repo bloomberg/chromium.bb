@@ -389,8 +389,12 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wimax-details', !this.wimax);
       updateHidden('#details-internet-page .vpn-details', !this.vpn);
       updateHidden('#details-internet-page .proxy-details', !this.showProxy);
-      updateHidden('#details-internet-page .gsm-only', !this.gsm);
-      updateHidden('#details-internet-page .cdma-only', this.gsm);
+      // Conditionally call updateHidden on .gsm-only, so that we don't unhide
+      // a previously hidden element.
+      if (this.gsm)
+        updateHidden('#details-internet-page .cdma-only', true);
+      else
+        updateHidden('#details-internet-page .gsm-only', true);
       /* Network information merged into the Wifi tab for wireless networks
          unless the option is set for enabling a static IP configuration. */
       updateHidden('#details-internet-page .network-details',
@@ -1097,11 +1101,15 @@ cr.define('options.internet', function() {
       $('firmware-revision').textContent = data.firmwareRevision;
       $('hardware-revision').textContent = data.hardwareRevision;
       $('mdn').textContent = data.mdn;
-      $('min').textContent = data.min;
       $('operator-name').textContent = data.operatorName;
       $('operator-code').textContent = data.operatorCode;
 
-      // Show IMEI/ESN/MEID only if they are available.
+      // Make sure that GSM/CDMA specific properties that shouldn't be hidden
+      // are visible.
+      updateHidden('#details-internet-page .gsm-only', false);
+      updateHidden('#details-internet-page .cdma-only', false);
+
+      // Show IMEI/ESN/MEID/MIN/PRL only if they are available.
       (function() {
         var setContentOrHide = function(property) {
           var value = data[property];
@@ -1113,6 +1121,7 @@ cr.define('options.internet', function() {
         setContentOrHide('esn');
         setContentOrHide('imei');
         setContentOrHide('meid');
+        setContentOrHide('min');
         setContentOrHide('prl-version');
       })();
       detailsPage.gsm = data.gsm;
