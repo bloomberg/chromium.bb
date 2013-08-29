@@ -136,7 +136,7 @@ class RemoteTryJob(object):
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
 
-    ref_base = os.path.join('refs/tryjobs', self.user, current_time)
+    ref_base = os.path.join('refs/tryjobs', self.user_email, current_time)
     for patch in self.local_patches:
       # Isolate the name; if it's a tag or a remote, let through.
       # Else if it's a branch, get the full branch name minus refs/heads.
