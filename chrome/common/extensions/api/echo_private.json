@@ -12,6 +12,48 @@
     "platforms": ["chromeos"],
     "functions": [
       {
+        "name": "setOfferInfo",
+        "description": "Sets the offer info in Local State.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The service id of the echo offer."
+          },
+          {
+            "name": "offerInfo",
+            "type": "object",
+            "additionalProperties": { "type": "any" },
+            "description": "The offer info."
+          }
+        ]
+      },
+      {
+        "name": "getOfferInfo",
+        "description": "Check in Local State for the offer info.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The service id of the offer eligibility check."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "additionalProperties": { "type": "any" },
+                "description": "The returned offer info. If the offer info is not available, api will raise error."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getRegistrationCode",
         "description": "Get the group or coupon code from underlying storage.",
         "type": "function",

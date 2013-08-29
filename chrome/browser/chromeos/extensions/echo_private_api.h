@@ -9,9 +9,20 @@
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
 #include "chrome/browser/extensions/extension_function.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
+
 class EchoDialogView;
-}
+
+// Namespace to register the EchoCheckedOffers field in Local State.
+namespace echo_offer {
+
+void RegisterPrefs(PrefRegistrySimple* registry);
+
+}  // namespace echo_offer
+
+}  // namespace chromeos
 
 class EchoPrivateGetRegistrationCodeFunction : public SyncExtensionFunction {
  public:
@@ -39,6 +50,32 @@ class EchoPrivateGetOobeTimestampFunction : public AsyncExtensionFunction {
   bool GetOobeTimestampOnFileThread();
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getOobeTimestamp",
                              ECHOPRIVATE_GETOOBETIMESTAMP)
+};
+
+class EchoPrivateSetOfferInfoFunction : public SyncExtensionFunction {
+ public:
+  EchoPrivateSetOfferInfoFunction();
+
+ protected:
+  virtual ~EchoPrivateSetOfferInfoFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("echoPrivate.setOfferInfo",
+                             ECHOPRIVATE_SETOFFERINFO)
+};
+
+class EchoPrivateGetOfferInfoFunction : public SyncExtensionFunction {
+ public:
+  EchoPrivateGetOfferInfoFunction();
+
+ protected:
+  virtual ~EchoPrivateGetOfferInfoFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("echoPrivate.getOfferInfo",
+                             ECHOPRIVATE_GETOFFERINFO)
 };
 
 // TODO(tbarzic): Remove this once echo.getUserConsent function is up and

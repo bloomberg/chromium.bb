@@ -2204,6 +2204,10 @@ const char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 // Dictionary of per-user Least Recently Used input method (used at login
 // screen).
 extern const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
+
+// A dictionary pref of the echo offer check flag. It sets offer info when
+// an offer is checked.
+extern const char kEchoCheckedOffers[] = "EchoCheckedOffers";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
