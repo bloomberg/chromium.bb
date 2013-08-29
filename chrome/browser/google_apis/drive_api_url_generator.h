@@ -32,18 +32,6 @@ class DriveApiUrlGenerator {
   // Returns a URL to invoke "Apps: list" method.
   GURL GetAppsListUrl() const;
 
-  // Returns a URL to fetch a list of changes.
-  // include_deleted:
-  //   Set to true if the requesting change list should contain the deleted
-  //   entries. Otherwise false.
-  // start_changestamp:
-  //   The starting point of the requesting change list, or 0 if all changes
-  //   are necessary.
-  // max_results:
-  //   The max of the number of files resource in the response.
-  GURL GetChangelistUrl(
-      bool include_deleted, int64 start_changestamp, int max_results) const;
-
   // Returns a URL to edit (especially add) a resource, such as inserting
   // a file metadata or creating a new directory.
   GURL GetFilesUrl() const;
@@ -72,6 +60,12 @@ class DriveApiUrlGenerator {
   // document: https://developers.google.com/drive/v2/reference/files/trash
   // but we use the term "resource" for consistency in our code.
   GURL GetFileTrashUrl(const std::string& resource_id) const;
+
+  // Returns a URL to fetch a list of changes.
+  GURL GetChangesListUrl(bool include_deleted,
+                         int max_results,
+                         const std::string& page_token,
+                         int64 start_change_id) const;
 
   // Returns a URL to add a resource to a directory with |resource_id|.
   // Note that the |resource_id| is corresponding to the "folder id" in the

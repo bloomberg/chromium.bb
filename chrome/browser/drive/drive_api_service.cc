@@ -36,7 +36,6 @@ using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDATA_PARSE_ERROR;
 using google_apis::GDataErrorCode;
 using google_apis::AboutResourceCallback;
-using google_apis::GetChangelistRequest;
 using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
@@ -54,6 +53,7 @@ using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
+using google_apis::drive::ChangesListRequest;
 using google_apis::drive::ContinueGetFileListRequest;
 using google_apis::drive::CopyResourceRequest;
 using google_apis::drive::CreateDirectoryRequest;
@@ -209,6 +209,35 @@ void ConvertFileListToResourceListOnBlockingPoolAndRun(
       base::Bind(&DidParseResourceListOnBlockingPool, callback));
 }
 
+// Thin adapter of CreateFromChangeList.
+scoped_ptr<ResourceList> ConvertChangeListToResourceList(
+    scoped_ptr<ChangeList> change_list) {
+  return ResourceList::CreateFromChangeList(*change_list);
+}
+
+// Converts the FileList value to ResourceList on blocking pool and runs
+// |callback| on the UI thread.
+void ConvertChangeListToResourceListOnBlockingPoolAndRun(
+    scoped_refptr<base::TaskRunner> blocking_task_runner,
+    const GetResourceListCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<ChangeList> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<ResourceList>());
+    return;
+  }
+
+  // Convert the value on blocking pool.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner.get(),
+      FROM_HERE,
+      base::Bind(&ConvertChangeListToResourceList, base::Passed(&value)),
+      base::Bind(&DidParseResourceListOnBlockingPool, callback));
+}
+
 // Parses the FileResource value to ResourceEntry for upload range request,
 // and runs |callback| on the UI thread.
 void ParseResourceEntryForUploadRangeAndRun(
@@ -350,16 +379,12 @@ CancelCallback DriveAPIService::GetAllResourceList(
   // but it seems impossible to know the returned list's changestamp.
   // Thus, instead, we use changes.list method with includeDeleted=false here.
   // The returned list should contain only resources currently existing.
-  return sender_->StartRequestWithRetry(
-      new GetChangelistRequest(
-          sender_.get(),
-          url_generator_,
-          false,  // include deleted
-          0,
-          kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
+  ChangesListRequest* request = new ChangesListRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertChangeListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_include_deleted(false);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetResourceListInDirectory(
@@ -439,16 +464,13 @@ CancelCallback DriveAPIService::GetChangeList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new GetChangelistRequest(
-          sender_.get(),
-          url_generator_,
-          true,  // include deleted
-          start_changestamp,
-          kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
+  ChangesListRequest* request = new ChangesListRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertChangeListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_max_results(kMaxNumFilesResourcePerRequest);
+  request->set_start_change_id(start_changestamp);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::ContinueGetResourceList(

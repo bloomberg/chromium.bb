@@ -41,39 +41,6 @@ TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
             test_url_generator_.GetAppsListUrl().spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
-  // Do not add startChangeId parameter if |start_changestamp| is 0.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?maxResults=500",
-            url_generator_.GetChangelistUrl(true, 0, 500).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?maxResults=500",
-            test_url_generator_.GetChangelistUrl(true, 0, 500).spec());
-
-  // Set includeDeleted parameter if |include_deleted| is set to false.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes"
-            "?includeDeleted=false&maxResults=500",
-            url_generator_.GetChangelistUrl(false, 0, 500).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes"
-            "?includeDeleted=false&maxResults=500",
-            test_url_generator_.GetChangelistUrl(false, 0, 500).spec());
-
-  // Set startChangeId parameter if |start_changestamp| is given.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes"
-            "?startChangeId=100&maxResults=500",
-            url_generator_.GetChangelistUrl(true, 100, 500).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes"
-            "?startChangeId=100&maxResults=500",
-            test_url_generator_.GetChangelistUrl(true, 100, 500).spec());
-
-  // includeDeleted and startChangeId parameter can be set at the same time.
-  EXPECT_EQ(
-      "https://www.googleapis.com/drive/v2/changes"
-      "?includeDeleted=false&startChangeId=100&maxResults=500",
-      url_generator_.GetChangelistUrl(false, 100, 500).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?"
-            "includeDeleted=false&startChangeId=100&maxResults=500",
-            test_url_generator_.GetChangelistUrl(false, 100, 500).spec());
-}
-
 TEST_F(DriveApiUrlGeneratorTest, GetFilesUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
             url_generator_.GetFilesUrl().spec());
@@ -240,6 +207,76 @@ TEST_F(DriveApiUrlGeneratorTest, GetFileTouchUrl) {
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id"
             "?setModifiedDate=true&updateViewedDate=false",
             test_url_generator_.GetFileTouchUrl("file:file_id").spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
+  struct TestPattern {
+    bool include_deleted;
+    int max_results;
+    const std::string page_token;
+    int64 start_change_id;
+    const std::string expected_query;
+  };
+  const TestPattern kTestPatterns[] = {
+    { true, 100, "", 0, "" },
+    { false, 100, "", 0, "?includeDeleted=false" },
+    { true, 150, "", 0, "?maxResults=150" },
+    { false, 150, "", 0, "?includeDeleted=false&maxResults=150" },
+    { true, 10, "", 0, "?maxResults=10" },
+    { false, 10, "", 0, "?includeDeleted=false&maxResults=10" },
+
+    { true, 100, "token", 0, "?pageToken=token" },
+    { false, 100, "token", 0, "?includeDeleted=false&pageToken=token" },
+    { true, 150, "token", 0, "?maxResults=150&pageToken=token" },
+    { false, 150, "token", 0,
+      "?includeDeleted=false&maxResults=150&pageToken=token" },
+    { true, 10, "token", 0, "?maxResults=10&pageToken=token" },
+    { false, 10, "token", 0,
+      "?includeDeleted=false&maxResults=10&pageToken=token" },
+
+    { true, 100, "", 12345, "?startChangeId=12345" },
+    { false, 100, "", 12345, "?includeDeleted=false&startChangeId=12345" },
+    { true, 150, "", 12345, "?maxResults=150&startChangeId=12345" },
+    { false, 150, "", 12345,
+      "?includeDeleted=false&maxResults=150&startChangeId=12345" },
+    { true, 10, "", 12345, "?maxResults=10&startChangeId=12345" },
+    { false, 10, "", 12345,
+      "?includeDeleted=false&maxResults=10&startChangeId=12345" },
+
+    { true, 100, "token", 12345, "?pageToken=token&startChangeId=12345" },
+    { false, 100, "token", 12345,
+      "?includeDeleted=false&pageToken=token&startChangeId=12345" },
+    { true, 150, "token", 12345,
+      "?maxResults=150&pageToken=token&startChangeId=12345" },
+    { false, 150, "token", 12345,
+      "?includeDeleted=false&maxResults=150&pageToken=token"
+      "&startChangeId=12345" },
+    { true, 10, "token", 12345,
+      "?maxResults=10&pageToken=token&startChangeId=12345" },
+    { false, 10, "token", 12345,
+      "?includeDeleted=false&maxResults=10&pageToken=token"
+      "&startChangeId=12345" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+    EXPECT_EQ(
+        "https://www.googleapis.com/drive/v2/changes" +
+            kTestPatterns[i].expected_query,
+        url_generator_.GetChangesListUrl(
+            kTestPatterns[i].include_deleted,
+            kTestPatterns[i].max_results,
+            kTestPatterns[i].page_token,
+            kTestPatterns[i].start_change_id).spec());
+
+    EXPECT_EQ(
+        "http://127.0.0.1:12345/drive/v2/changes" +
+            kTestPatterns[i].expected_query,
+        test_url_generator_.GetChangesListUrl(
+            kTestPatterns[i].include_deleted,
+            kTestPatterns[i].max_results,
+            kTestPatterns[i].page_token,
+            kTestPatterns[i].start_change_id).spec());
+  }
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetChildrenUrl) {

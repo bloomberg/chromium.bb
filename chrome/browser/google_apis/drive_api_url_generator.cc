@@ -65,25 +65,6 @@ GURL DriveApiUrlGenerator::GetAppsListUrl() const {
   return base_url_.Resolve(kDriveV2AppsUrl);
 }
 
-GURL DriveApiUrlGenerator::GetChangelistUrl(
-    bool include_deleted, int64 start_changestamp, int max_results) const {
-  DCHECK_GE(start_changestamp, 0);
-
-  GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);
-  if (!include_deleted) {
-    // If include_deleted is set to "false", set the query parameter,
-    // because its default parameter is "true".
-    url = net::AppendOrReplaceQueryParameter(url, "includeDeleted", "false");
-  }
-
-  if (start_changestamp > 0) {
-    url = net::AppendOrReplaceQueryParameter(
-        url, "startChangeId", base::Int64ToString(start_changestamp));
-  }
-
-  return AddMaxResultParam(url, max_results);
-}
-
 GURL DriveApiUrlGenerator::GetFilesUrl() const {
   return base_url_.Resolve(kDriveV2FilesUrl);
 }
@@ -155,6 +136,34 @@ GURL DriveApiUrlGenerator::GetFileTrashUrl(const std::string& file_id) const {
   return base_url_.Resolve(
       base::StringPrintf(kDriveV2FileTrashUrlFormat,
                          net::EscapePath(file_id).c_str()));
+}
+
+GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
+                                             int max_results,
+                                             const std::string& page_token,
+                                             int64 start_change_id) const {
+  DCHECK_GE(start_change_id, 0);
+
+  GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);
+
+  // includeDeleted is "true" by default.
+  if (!include_deleted)
+    url = net::AppendOrReplaceQueryParameter(url, "includeDeleted", "false");
+
+  // maxResults is "100" by default.
+  if (max_results != 100) {
+    url = net::AppendOrReplaceQueryParameter(
+        url, "maxResults", base::IntToString(max_results));
+  }
+
+  if (!page_token.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "pageToken", page_token);
+
+  if (start_change_id > 0)
+    url = net::AppendOrReplaceQueryParameter(
+        url, "startChangeId", base::Int64ToString(start_change_id));
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetChildrenUrl(

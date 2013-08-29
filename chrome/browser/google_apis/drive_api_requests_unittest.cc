@@ -482,32 +482,31 @@ TEST_F(DriveApiRequestsTest, AppsListRequest) {
   EXPECT_TRUE(app_list);
 }
 
-TEST_F(DriveApiRequestsTest, GetChangelistRequest) {
+TEST_F(DriveApiRequestsTest, ChangesListRequest) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "drive/changelist.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result;
+  scoped_ptr<ChangeList> result;
 
   {
     base::RunLoop run_loop;
-    GetChangelistRequest* request = new GetChangelistRequest(
-        request_sender_.get(),
-        *url_generator_,
-        true,  // include deleted
-        100,  // start changestamp
-        500,  // max results
+    drive::ChangesListRequest* request = new drive::ChangesListRequest(
+        request_sender_.get(), *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &result)));
+    request->set_include_deleted(true);
+    request->set_start_change_id(100);
+    request->set_max_results(500);
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/drive/v2/changes?startChangeId=100&maxResults=500",
+  EXPECT_EQ("/drive/v2/changes?maxResults=500&startChangeId=100",
             http_request_.relative_url);
   EXPECT_TRUE(result);
 }

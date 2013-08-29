@@ -114,30 +114,6 @@ void ParseFileResourceWithUploadRangeAndRun(
 
 }  // namespace
 
-//============================ GetChangelistRequest ==========================
-
-GetChangelistRequest::GetChangelistRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    bool include_deleted,
-    int64 start_changestamp,
-    int max_results,
-    const GetDataCallback& callback)
-    : GetDataRequest(sender, callback),
-      url_generator_(url_generator),
-      include_deleted_(include_deleted),
-      start_changestamp_(start_changestamp),
-      max_results_(max_results) {
-  DCHECK(!callback.is_null());
-}
-
-GetChangelistRequest::~GetChangelistRequest() {}
-
-GURL GetChangelistRequest::GetURL() const {
-  return url_generator_.GetChangelistUrl(
-      include_deleted_, start_changestamp_, max_results_);
-}
-
 namespace drive {
 
 //=============================== FilesGetRequest =============================
@@ -265,6 +241,31 @@ AboutGetRequest::~AboutGetRequest() {}
 
 GURL AboutGetRequest::GetURL() const {
   return url_generator_.GetAboutGetUrl();
+}
+
+//============================ ChangesListRequest ===========================
+
+ChangesListRequest::ChangesListRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const ChangeListCallback& callback)
+    : GetDataRequest(
+          sender,
+          base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
+                     make_scoped_refptr(sender->blocking_task_runner()),
+                     callback)),
+      url_generator_(url_generator),
+      include_deleted_(true),
+      max_results_(100),
+      start_change_id_(0) {
+  DCHECK(!callback.is_null());
+}
+
+ChangesListRequest::~ChangesListRequest() {}
+
+GURL ChangesListRequest::GetURL() const {
+  return url_generator_.GetChangesListUrl(
+      include_deleted_, max_results_, page_token_, start_change_id_);
 }
 
 //============================== AppsListRequest ===========================

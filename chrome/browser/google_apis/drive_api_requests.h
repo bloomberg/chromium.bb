@@ -14,6 +14,7 @@
 
 namespace google_apis {
 
+class ChangeList;
 class FileResource;
 class FileList;
 
@@ -28,39 +29,10 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<FileList> entry)> FileListCallback;
 
-//============================ GetChangelistRequest ==========================
-
-// This class performs the request for fetching changelist.
-// The result may contain only first part of the result. The remaining result
-// should be able to be fetched by ContinueGetFileListRequest defined below.
-class GetChangelistRequest : public GetDataRequest {
- public:
-  // |include_deleted| specifies if the response should contain the changes
-  // for deleted entries or not.
-  // |start_changestamp| specifies the starting point of change list or 0 if
-  // all changes are necessary.
-  // |max_results| specifies the max of the number of files resource in the
-  // response.
-  GetChangelistRequest(RequestSender* sender,
-                       const DriveApiUrlGenerator& url_generator,
-                       bool include_deleted,
-                       int64 start_changestamp,
-                       int max_results,
-                       const GetDataCallback& callback);
-  virtual ~GetChangelistRequest();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const bool include_deleted_;
-  const int64 start_changestamp_;
-  const int max_results_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetChangelistRequest);
-};
+// Callback used for requests that the server returns ChangeList data
+// formatted into JSON value.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<ChangeList> entry)> ChangeListCallback;
 
 namespace drive {
 
@@ -223,6 +195,54 @@ class AboutGetRequest : public GetDataRequest {
   const DriveApiUrlGenerator url_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutGetRequest);
+};
+
+//============================ ChangesListRequest ============================
+
+// This class performs the request for fetching ChangeList.
+// The result may contain only first part of the result. The remaining result
+// should be able to be fetched by ContinueGetFileListRequest defined below.
+// or by ChangesListRequest with setting page token.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/changes/list
+class ChangesListRequest : public GetDataRequest {
+ public:
+  ChangesListRequest(RequestSender* sender,
+                     const DriveApiUrlGenerator& url_generator,
+                     const ChangeListCallback& callback);
+  virtual ~ChangesListRequest();
+
+  // Optional parameter
+  bool include_deleted() const { return include_deleted_; }
+  void set_include_deleted(bool include_deleted) {
+    include_deleted_ = include_deleted;
+  }
+
+  int max_results() const { return max_results_; }
+  void set_max_results(int max_results) { max_results_ = max_results; }
+
+  const std::string& page_token() const { return page_token_; }
+  void set_page_token(const std::string& page_token) {
+    page_token_ = page_token;
+  }
+
+  int64 start_change_id() const { return start_change_id_; }
+  void set_start_change_id(int64 start_change_id) {
+    start_change_id_ = start_change_id;
+  }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  bool include_deleted_;
+  int max_results_;
+  std::string page_token_;
+  int64 start_change_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChangesListRequest);
 };
 
 //============================= AppsListRequest ============================
