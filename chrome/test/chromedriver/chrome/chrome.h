@@ -16,6 +16,14 @@ class Chrome {
  public:
   virtual ~Chrome() {}
 
+  enum Type {
+    DESKTOP,
+    ANDROID,
+    EXISTING
+  };
+
+  virtual Type GetType() = 0;
+
   virtual std::string GetVersion() = 0;
 
   virtual int GetBuildNo() = 0;
@@ -28,6 +36,9 @@ class Chrome {
 
   // Closes the specified WebView.
   virtual Status CloseWebView(const std::string& id) = 0;
+
+  // Activates the specified WebView.
+  virtual Status ActivateWebView(const std::string& id) = 0;
 
   // Gets the automation extension.
   virtual Status GetAutomationExtension(AutomationExtension** extension) = 0;

@@ -72,6 +72,8 @@ class DevToolsHttpClient {
 
   Status CloseWebView(const std::string& id);
 
+  Status ActivateWebView(const std::string& id);
+
   const std::string& version() const;
   int build_no() const;
 

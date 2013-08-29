@@ -68,7 +68,11 @@ function executeAsyncScript(script, args, isUserSupplied, opt_timeoutMillis) {
   function reportScriptError(error) {
     var code = isUserSupplied ? StatusCode.JAVASCRIPT_ERROR :
                                 (error.code || StatusCode.UNKNOWN_ERROR);
-    report(code, error.message);
+    var message = error.message;
+    if (error.stack) {
+      message += "\nJavaScript stack:\n" + error.stack;
+    }
+    report(code, message);
   }
   args.push(reportValue);
   if (!isUserSupplied)

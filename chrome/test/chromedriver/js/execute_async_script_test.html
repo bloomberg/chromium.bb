@@ -52,12 +52,12 @@ function testNonUserScript() {
 
   executeAsyncScript('arguments[2](new Error("ERR"))', [33], false);
   assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
-  assertEquals('ERR', info.result.value);
+  assertEquals(0, info.result.value.indexOf('ERR'));
 
   executeAsyncScript('var e = new Error("ERR"); e.code = 111; arguments[1](e)',
                      [], false);
   assertEquals(111, info.result.status);
-  assertEquals('ERR', info.result.value);
+  assertEquals(0, info.result.value.indexOf('ERR'));
 }
 
 function testNoResultBeforeTimeout() {

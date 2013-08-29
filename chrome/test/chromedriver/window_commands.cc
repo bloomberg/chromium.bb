@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
@@ -730,10 +731,25 @@ Status ExecuteScreenshot(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  std::string screenshot;
-  Status status = web_view->CaptureScreenshot(&screenshot);
+  Status status = session->chrome->ActivateWebView(web_view->GetId());
   if (status.IsError())
     return status;
+
+  std::string screenshot;
+  if (session->chrome->GetType() == Chrome::DESKTOP &&
+      !session->force_devtools_screenshot) {
+    AutomationExtension* extension = NULL;
+    Status status = session->chrome->GetAutomationExtension(&extension);
+    if (status.IsError())
+      return status;
+    status = extension->CaptureScreenshot(&screenshot);
+    if (status.IsError())
+      return status;
+  } else {
+    Status status = web_view->CaptureScreenshot(&screenshot);
+    if (status.IsError())
+      return status;
+  }
   value->reset(new base::StringValue(screenshot));
   return Status(kOk);
 }

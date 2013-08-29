@@ -32,6 +32,10 @@ struct Capabilities {
 
   Status Parse(const base::DictionaryValue& desired_caps, Log* log);
 
+  // True if should always use DevTools for taking screenshots.
+  // This is experimental and may be removed at a later point.
+  bool force_devtools_screenshot;
+
   // Whether the lifetime of the started Chrome browser process should be
   // bound to ChromeDriver's process. If true, Chrome will not quit if
   // ChromeDriver dies.

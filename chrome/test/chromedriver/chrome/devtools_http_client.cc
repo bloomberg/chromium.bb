@@ -166,6 +166,14 @@ Status DevToolsHttpClient::CloseWebView(const std::string& id) {
   return Status(kUnknownError, "failed to close window in 20 seconds");
 }
 
+Status DevToolsHttpClient::ActivateWebView(const std::string& id) {
+  std::string data;
+  if (!FetchUrlAndLog(
+          server_url_ + "/json/activate/" + id, context_getter_.get(), &data))
+    return Status(kUnknownError, "cannot activate web view");
+  return Status(kOk);
+}
+
 const std::string& DevToolsHttpClient::version() const {
   return version_;
 }

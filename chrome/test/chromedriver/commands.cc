@@ -124,6 +124,7 @@ Status CreateSessionOnSessionThreadHelper(
   session->devtools_logs.swap(devtools_logs);
   session->window = web_view_ids.front();
   session->detach = capabilities.detach;
+  session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   out_value->reset(session->capabilities->DeepCopy());
   lazy_tls_session.Pointer()->Set(session.release());
   return Status(kOk);

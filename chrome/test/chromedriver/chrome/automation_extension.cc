@@ -14,6 +14,22 @@ AutomationExtension::AutomationExtension(scoped_ptr<WebView> web_view)
 
 AutomationExtension::~AutomationExtension() {}
 
+Status AutomationExtension::CaptureScreenshot(std::string* screenshot) {
+  base::ListValue args;
+  scoped_ptr<base::Value> result;
+  Status status = web_view_->CallAsyncFunction(
+      std::string(),
+      "captureScreenshot",
+      args,
+      base::TimeDelta::FromSeconds(10),
+      &result);
+  if (status.IsError())
+    return Status(kUnknownError, "cannot take screenshot", status);
+  if (!result->GetAsString(screenshot))
+    return Status(kUnknownError, "screenshot is not a string");
+  return Status(kOk);
+}
+
 Status AutomationExtension::GetWindowPosition(int* x, int* y) {
   int temp_width, temp_height;
   return GetWindowInfo(x, y, &temp_width, &temp_height);

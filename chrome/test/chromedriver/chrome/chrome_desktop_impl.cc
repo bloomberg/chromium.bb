@@ -124,6 +124,10 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
   return status;
 }
 
+Chrome::Type ChromeDesktopImpl::GetType() {
+  return DESKTOP;
+}
+
 Status ChromeDesktopImpl::GetAutomationExtension(
     AutomationExtension** extension) {
   if (!automation_extension_) {

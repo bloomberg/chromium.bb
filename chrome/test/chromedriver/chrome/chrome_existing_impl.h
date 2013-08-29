@@ -19,11 +19,12 @@ class ChromeExistingImpl : public ChromeImpl {
       scoped_ptr<DevToolsHttpClient> client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       Log* log);
- virtual ~ChromeExistingImpl();
+  virtual ~ChromeExistingImpl();
 
- // Overridden from Chrome.
- virtual std::string GetOperatingSystemName() OVERRIDE;
- virtual Status Quit() OVERRIDE;
+  // Overridden from Chrome.
+  virtual Type GetType() OVERRIDE;
+  virtual std::string GetOperatingSystemName() OVERRIDE;
+  virtual Status Quit() OVERRIDE;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_EXISTING_IMPL_H_

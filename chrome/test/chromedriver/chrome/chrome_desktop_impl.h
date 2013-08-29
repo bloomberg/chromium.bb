@@ -40,6 +40,7 @@ class ChromeDesktopImpl : public ChromeImpl {
                            scoped_ptr<WebView>* web_view);
 
   // Overridden from Chrome:
+  virtual Type GetType() OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;

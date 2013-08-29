@@ -21,11 +21,24 @@ namespace {
 
 typedef base::Callback<Status(const base::Value&, Capabilities*)> Parser;
 
-Status ParseDetach(
+Status ParseBoolean(
+    bool* to_set,
     const base::Value& option,
     Capabilities* capabilities) {
-  if (!option.GetAsBoolean(&capabilities->detach))
-    return Status(kUnknownError, "'detach' must be a boolean");
+  if (!option.GetAsBoolean(to_set))
+    return Status(kUnknownError, "value must be a boolean");
+  return Status(kOk);
+}
+
+Status ParseString(std::string* to_set,
+                   const base::Value& option,
+                   Capabilities* capabilities) {
+  std::string str;
+  if (!option.GetAsString(&str))
+    return Status(kUnknownError, "value must be a string");
+  if (str.empty())
+    return Status(kUnknownError, "value cannot be empty");
+  *to_set = str;
   return Status(kOk);
 }
 
@@ -201,18 +214,6 @@ Status ParseExcludeSwitches(const base::Value& option,
   return Status(kOk);
 }
 
-Status ParseString(std::string* to_set,
-                   const base::Value& option,
-                   Capabilities* capabilities) {
-  std::string str;
-  if (!option.GetAsString(&str))
-    return Status(kUnknownError, "value must be a string");
-  if (str.empty())
-    return Status(kUnknownError, "value cannot be empty");
-  *to_set = str;
-  return Status(kOk);
-}
-
 Status ParseUseExistingBrowser(const base::Value& option,
                                Capabilities* capabilities) {
   std::string server_addr;
@@ -268,9 +269,11 @@ Status ParseChromeOptions(
   } else if (is_existing) {
     parser_map["useExistingBrowser"] = base::Bind(&ParseUseExistingBrowser);
   } else {
+    parser_map["forceDevToolsScreenshot"] = base::Bind(
+        &ParseBoolean, &capabilities->force_devtools_screenshot);
     parser_map["args"] = base::Bind(&ParseArgs, false);
     parser_map["binary"] = base::Bind(&ParseChromeBinary);
-    parser_map["detach"] = base::Bind(&ParseDetach);
+    parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["extensions"] = base::Bind(&ParseExtensions);
     parser_map["loadAsync"] =
@@ -296,7 +299,8 @@ Status ParseChromeOptions(
 }  // namespace
 
 Capabilities::Capabilities()
-    : detach(false),
+    : force_devtools_screenshot(false),
+      detach(false),
       existing_browser_port(0),
       command(CommandLine::NO_PROGRAM) {}
 

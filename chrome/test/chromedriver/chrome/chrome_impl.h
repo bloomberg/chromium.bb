@@ -34,6 +34,7 @@ class ChromeImpl : public Chrome {
   virtual Status GetWebViewById(const std::string& id,
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
+  virtual Status ActivateWebView(const std::string& id) OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
 

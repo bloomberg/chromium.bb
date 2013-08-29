@@ -24,6 +24,7 @@ class ChromeAndroidImpl : public ChromeImpl {
   virtual ~ChromeAndroidImpl();
 
   // Overridden from Chrome:
+  virtual Type GetType() OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
   virtual Status Quit() OVERRIDE;
 

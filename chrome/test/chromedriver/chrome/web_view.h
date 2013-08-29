@@ -50,6 +50,7 @@ class WebView {
   // the result. |frame| is a frame ID or an empty string for the main frame.
   // If the expression evaluates to a element, it will be bound to a unique ID
   // (per frame) and the ID will be returned.
+  // |result| will never be NULL on success.
   virtual Status EvaluateScript(const std::string& frame,
                                 const std::string& expression,
                                 scoped_ptr<base::Value>* result) = 0;
@@ -59,6 +60,7 @@ class WebView {
   // frame. |args| may contain IDs that refer to previously returned elements.
   // These will be translated back to their referred objects before invoking the
   // function.
+  // |result| will never be NULL on success.
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
@@ -68,6 +70,7 @@ class WebView {
   // two callbacks. The first may be invoked with a value to return to the user.
   // The second may be used to report an error. This function waits until
   // one of the callbacks is invoked or the timeout occurs.
+  // |result| will never be NULL on success.
   virtual Status CallAsyncFunction(const std::string& frame,
                                    const std::string& function,
                                    const base::ListValue& args,
@@ -77,6 +80,7 @@ class WebView {
   // Same as |CallAsyncFunction|, except no additional error callback is passed
   // to the function. Also, |kJavaScriptError| or |kScriptTimeout| is used
   // as the error code instead of |kUnknownError| in appropriate cases.
+  // |result| will never be NULL on success.
   virtual Status CallUserAsyncFunction(const std::string& frame,
                                        const std::string& function,
                                        const base::ListValue& args,

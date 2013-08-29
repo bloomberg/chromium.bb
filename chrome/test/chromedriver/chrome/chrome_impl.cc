@@ -99,6 +99,10 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
   return Status(kOk);
 }
 
+Status ChromeImpl::ActivateWebView(const std::string& id) {
+  return devtools_http_client_->ActivateWebView(id);
+}
+
 Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
   return Status(kUnknownError, "automation extension not supported");
 }

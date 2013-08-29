@@ -26,6 +26,7 @@ Session::Session(const std::string& id)
     : id(id),
       quit(false),
       detach(false),
+      force_devtools_screenshot(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
       page_load_timeout(
@@ -35,6 +36,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
       quit(false),
       detach(false),
+      force_devtools_screenshot(false),
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),

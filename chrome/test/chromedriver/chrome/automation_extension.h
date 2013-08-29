@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_AUTOMATION_EXTENSION_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_AUTOMATION_EXTENSION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -20,6 +22,9 @@ class AutomationExtension {
  public:
   explicit AutomationExtension(scoped_ptr<WebView> web_view);
   ~AutomationExtension();
+
+  // Captures the visible part of the current tab as a base64-encoded PNG.
+  Status CaptureScreenshot(std::string* screenshot);
 
   // Gets the position of the current window.
   Status GetWindowPosition(int* x, int* y);
