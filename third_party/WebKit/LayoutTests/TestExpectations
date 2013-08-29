@@ -1219,6 +1219,23 @@ crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
+# Needs rebaselines
+crbug.com/265268 [ Linux Android ] canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/dom/vertical-scrollbar-in-rtl.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/text/international/arabic-vertical-offset.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] svg/custom/use-referencing-nonexisting-symbol.svg [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] svg/hixie/viewbox/002.xml [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] svg/hixie/viewbox/003.xml [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] virtual/gpu/canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] css3/font-feature-settings-rendering.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/forms/button-sizes.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/forms/caret-rtl.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/forms/input-button-sizes.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/forms/searchfield-heights.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
+crbug.com/265268 [ Linux Android ] fast/writing-mode/vertical-align-table-baseline.html [ NeedsRebaseline ]
+
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 

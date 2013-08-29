@@ -89,9 +89,8 @@ void SimpleFontData::platformInit()
         ascent = vdmxAscent;
         descent = -vdmxDescent;
     } else {
-        SkScalar height = -metrics.fAscent + metrics.fDescent + metrics.fLeading;
         ascent = SkScalarRound(-metrics.fAscent);
-        descent = SkScalarRound(height) - ascent;
+        descent = SkScalarRound(metrics.fDescent);
 #if OS(LINUX) || OS(ANDROID)
         // When subpixel positioning is enabled, if the descent is rounded down, the descent part
         // of the glyph may be truncated when displayed in a 'overflow: hidden' container.
