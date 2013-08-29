@@ -189,8 +189,6 @@ crbug.com/24182 [ Release ] jquery/event.html [ Slow ]
 # The test has been timing out since landed in r130587.
 webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
-webkit.org/b/100985 media/progress-events-generated-correctly.html [ Slow ]
-
 # Test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 
