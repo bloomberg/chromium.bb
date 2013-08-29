@@ -198,7 +198,7 @@ bool MediaSource::isTypeSupported(const String& type)
     String codecs = contentType.parameter("codecs");
 
     // 2. If type does not contain a valid MIME type string, then return false.
-    if (contentType.type().isEmpty() || codecs.isEmpty())
+    if (contentType.type().isEmpty())
         return false;
 
     // 3. If type contains a media type or media subtype that the MediaSource does not support, then return false.

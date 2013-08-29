@@ -101,7 +101,7 @@ bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
 
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
 {
-    return !mimeType.isEmpty() && !codecs.isEmpty()
+    return !mimeType.isEmpty()
         && WebKit::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType, codecs);
 }
 
