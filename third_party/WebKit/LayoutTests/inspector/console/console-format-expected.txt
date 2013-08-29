@@ -87,7 +87,7 @@ globals[5]
 function () { return 1; } console-format.html:54
 [function] console-format.html:55
 globals[6]
-function () { return 1; }
+function () { return 1; } console-format.html:31
 function () {
         return 2;
     } console-format.html:54
@@ -95,7 +95,7 @@ function () {
 globals[7]
 function () {
         return 2;
-    }
+    } console-format.html:32
 0.12 console-format.html:54
 [0.12] console-format.html:55
 globals[8]
