@@ -2226,13 +2226,16 @@ bool RenderViewImpl::RunJavaScriptMessage(JavaScriptMessageType type,
                                           const string16& default_value,
                                           const GURL& frame_url,
                                           string16* result) {
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   bool success = false;
   string16 result_temp;
   if (!result)
     result = &result_temp;
 
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunJavaScriptMessage(
-      routing_id_, message, default_value, frame_url, type, &success, result));
+      routing_id_, message, default_value, frame_url, type, user_gesture,
+      &success, result));
+  WebUserGestureIndicator::consumeUserGesture();
   return success;
 }
 

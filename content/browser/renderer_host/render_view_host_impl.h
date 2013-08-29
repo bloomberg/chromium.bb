@@ -539,6 +539,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                               const string16& default_prompt,
                               const GURL& frame_url,
                               JavaScriptMessageType type,
+                              bool user_gesture,
                               IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(const GURL& frame_url,
                                 const string16& message,

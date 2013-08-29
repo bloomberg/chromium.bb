@@ -21,6 +21,7 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
     content::JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
+    bool user_gesture,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
   AwContentsClientBridgeBase* bridge =
