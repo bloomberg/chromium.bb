@@ -1,0 +1,106 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
+#define MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
+
+#include "media/cast/rtcp/rtcp.h"
+#include "media/cast/rtcp/rtcp_defines.h"
+#include "media/cast/rtcp/rtcp_utility.h"
+
+namespace media {
+namespace cast {
+
+class RtcpReceiverFeedback {
+ public:
+  virtual void OnReceivedSenderReport(
+      const RtcpSenderInfo& remote_sender_info) = 0;
+
+  virtual void OnReceiverReferenceTimeReport(
+      const RtcpReceiverReferenceTimeReport& remote_time_report) = 0;
+
+  virtual void OnReceivedSendReportRequest() = 0;
+
+  virtual ~RtcpReceiverFeedback() {}
+};
+
+class RtcpRttFeedback {
+ public:
+  virtual void OnReceivedDelaySinceLastReport(
+      uint32 receivers_ssrc,
+      uint32 last_report,
+      uint32 delay_since_last_report) = 0;
+
+  virtual ~RtcpRttFeedback() {}
+};
+
+class RtcpReceiver {
+ public:
+  explicit RtcpReceiver(RtcpSenderFeedback* sender_feedback,
+                        RtcpReceiverFeedback* receiver_feedback,
+                        RtcpRttFeedback* rtt_feedback,
+                        uint32 local_ssrc);
+  virtual ~RtcpReceiver();
+
+  void SetRemoteSSRC(uint32 ssrc);
+
+  void IncomingRtcpPacket(RtcpParser* rtcp_parser);
+
+ private:
+  void HandleSenderReport(RtcpParser* rtcp_parser);
+
+  void HandleReceiverReport(RtcpParser* rtcp_parser);
+
+  void HandleReportBlock(const RtcpField* rtcp_field,
+                         uint32 remote_ssrc);
+
+  void HandleSDES(RtcpParser* rtcp_parser);
+  void HandleSDESChunk(RtcpParser* rtcp_parser);
+
+  void HandleBYE(RtcpParser* rtcp_parser);
+
+  void HandleXr(RtcpParser* rtcp_parser);
+  void HandleRrtr(RtcpParser* rtcp_parser, uint32 remote_ssrc);
+  void HandleDlrr(RtcpParser* rtcp_parser);
+
+  //  Generic RTP Feedback.
+  void HandleNACK(RtcpParser* rtcp_parser);
+  void HandleNACKItem(const RtcpField* rtcp_field,
+                      std::list<uint16>* nack_sequence_numbers);
+
+  void HandleSendReportRequest(RtcpParser* rtcp_parser);
+
+  // Payload-specific.
+  void HandlePLI(RtcpParser* rtcp_parser);
+
+  void HandleSLI(RtcpParser* rtcp_parser);
+  void HandleSLIItem(RtcpField* rtcpPacket);
+
+  void HandleRpsi(RtcpParser* rtcp_parser);
+
+  void HandleFIR(RtcpParser* rtcp_parser);
+  void HandleFIRItem(const RtcpField* rtcp_field);
+
+  void HandlePayloadSpecificApp(RtcpParser* rtcp_parser);
+  void HandlePayloadSpecificRembItem(RtcpParser* rtcp_parser);
+  void HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser);
+  void HandlePayloadSpecificCastNackItem(
+      const RtcpField* rtcp_field,
+      std::map<uint8, std::set<uint16> >* missing_frames_and_packets);
+
+  const uint32 ssrc_;
+  uint32 remote_ssrc_;
+
+  // Not owned by this class.
+  RtcpSenderFeedback* const sender_feedback_;
+  RtcpReceiverFeedback* const receiver_feedback_;
+  RtcpRttFeedback* const rtt_feedback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpReceiver);
+};
+
+}  // namespace cast
+}  // namespace media
+
+#endif  // MEDIA_CAST_RTCP_RTCP_RECEIVER_H_

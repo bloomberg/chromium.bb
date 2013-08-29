@@ -20,7 +20,8 @@
       'dependencies': [
 #       'audio_sender',
         'congestion_control',
-        'pacing/paced_sender.gyp:*',
+        'pacing/paced_sender.gyp:paced_sender',
+        'rtcp/rtcp.gyp:cast_rtcp',
 #       'video_sender',
       ], # dependencies
     },
