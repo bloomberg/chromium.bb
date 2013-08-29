@@ -101,10 +101,18 @@ bool FindChrome(base::FilePath* browser_exe) {
 #endif
   std::vector<base::FilePath> browser_exes(
       browser_exes_array, browser_exes_array + arraysize(browser_exes_array));
-  std::vector<base::FilePath> locations;
   base::FilePath module_dir;
-  if (PathService::Get(base::DIR_MODULE, &module_dir))
-    locations.push_back(module_dir);
+  if (PathService::Get(base::DIR_MODULE, &module_dir)) {
+    for (size_t i = 0; i < browser_exes.size(); ++i) {
+      base::FilePath path = module_dir.Append(browser_exes[i]);
+      if (base::PathExists(path)) {
+        *browser_exe = path;
+        return true;
+      }
+    }
+  }
+
+  std::vector<base::FilePath> locations;
   GetApplicationDirs(&locations);
   return internal::FindExe(
       base::Bind(&base::PathExists),
