@@ -4466,6 +4466,25 @@ void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHead
     contentSecurityPolicy()->didReceiveHeaders(headers);
 }
 
+bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)
+{
+    if (!contentSecurityPolicy()->allowInlineEventHandlers(contextURL, contextLine))
+        return false;
+
+    // HTML says that inline script needs browsing context to create its execution environment.
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#event-handler-attributes
+    // Also, if the listening node came from other document, which happens on context-less event dispatching,
+    // we also need to ask the owner document of the node.
+    if (!m_frame)
+        return false;
+    if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript))
+        return false;
+    if (node && node->document() != this && !node->document()->allowInlineEventHandlers(node, listener, contextURL, contextLine))
+        return false;
+
+    return true;
+}
+
 void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)

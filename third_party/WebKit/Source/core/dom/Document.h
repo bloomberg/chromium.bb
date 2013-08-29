@@ -920,6 +920,8 @@ public:
     void initSecurityContext(const DocumentInit&);
     void initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders&);
 
+    bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
+
     void statePopped(PassRefPtr<SerializedScriptValue>);
 
     enum LoadEventProgress {

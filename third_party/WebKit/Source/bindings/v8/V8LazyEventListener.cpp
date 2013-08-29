@@ -110,7 +110,7 @@ static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value
 
 void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 {
-    if (context->isDocument() && !toDocument(context)->contentSecurityPolicy()->allowInlineEventHandlers(m_sourceURL, m_position.m_line)) {
+    if (context->isDocument() && !toDocument(context)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
         clearListenerObject();
         return;
     }
@@ -119,12 +119,6 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         return;
 
     ASSERT(context->isDocument());
-    Frame* frame = toDocument(context)->frame();
-    if (!frame)
-        return;
-
-    if (!frame->script()->canExecuteScripts(NotAboutToExecuteScript))
-        return;
 
     v8::HandleScope handleScope;
 
@@ -137,7 +131,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     v8::Context::Scope scope(v8Context);
 
-    String listenerSource =  InspectorInstrumentation::preprocessEventListener(frame, m_code, m_sourceURL, m_functionName);
+    String listenerSource =  InspectorInstrumentation::preprocessEventListener(toDocument(context)->frame(), m_code, m_sourceURL, m_functionName);
 
     // FIXME: Remove the following 'with' hack.
     //
