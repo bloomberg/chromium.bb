@@ -1410,22 +1410,24 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
  * Service all pending delete tasks, as well as any that might appear during the
  * deletion.
  *
+ * Must not be called if there is an in-flight delete task.
+ *
  * @private
  */
 FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
-  var self = this;
+  // Returns the urls of the given task's entries.
+  var getTaskUrls = function(task) {
+    return task.entries.map(function(entry) {
+      return util.makeFilesystemUrl(entry.fullPath);
+    });
+  };
 
   var onTaskSuccess = function() {
-    var task = self.deleteTasks_[0];
-    self.deleteTasks_.shift();
-    if (!self.deleteTasks_.length) {
+    var urls = getTaskUrls(this.deleteTasks_.shift());
+    if (!this.deleteTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      self.eventRouter_.sendDeleteEvent(
-          'SUCCESS',
-          task.entries.map(function(e) {
-            return util.makeFilesystemUrl(e.fullPath);
-          }));
-      self.maybeScheduleCloseBackgroundPage_();
+      this.eventRouter_.sendDeleteEvent('SUCCESS', urls);
+      this.maybeScheduleCloseBackgroundPage_();
       return;
     }
 
@@ -1433,31 +1435,21 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
     // right after one task finished in the queue. We treat all tasks as one
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
-    self.eventRouter_.sendDeleteEvent(
-        'PROGRESS',
-        task.entries.map(function(e) {
-          return util.makeFilesystemUrl(e.fullPath);
-        }));
-    self.serviceDeleteTask_(self.deleteTasks_[0], onTaskSuccess, onTaskFailure);
-  };
+    this.eventRouter_.sendDeleteEvent('PROGRESS', urls);
 
-  var onTaskFailure = function(task) {
-    self.deleteTasks_ = [];
-    self.eventRouter_.sendDeleteEvent(
-        'ERROR',
-        task.entries.map(function(e) {
-          return util.makeFilesystemUrl(e.fullPath);
-        }));
-    self.maybeScheduleCloseBackgroundPage_();
-  };
+    this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
+  }.bind(this);
+
+  var onTaskFailure = function(error) {
+    var urls = getTaskUrls(this.deleteTasks_[0]);
+    this.deleteTasks_ = [];
+    this.eventRouter_.sendDeleteEvent('ERROR', urls);
+    this.maybeScheduleCloseBackgroundPage_();
+  }.bind(this);
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
-  this.eventRouter_.sendDeleteEvent(
-      'BEGIN',
-      this.deleteTasks_[0].entries.map(function(e) {
-        return util.makeFilesystemUrl(e.fullPath);
-      }));
+  this.eventRouter_.sendDeleteEvent('BEGIN', getTaskUrls(this.deleteTasks_[0]));
   this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
 };
 
