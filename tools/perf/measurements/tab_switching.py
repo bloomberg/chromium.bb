@@ -36,7 +36,7 @@ class TabSwitching(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     """Although this is called MeasurePage, we're actually using this function
     to cycle through each tab that was opened via DidNavigateToPage and
-    thenrecord a single histogram for the tab switching metric.
+    then record a single histogram for the tab switching metric.
     """
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = histogram_util.BROWSER_HISTOGRAM
