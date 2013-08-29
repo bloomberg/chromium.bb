@@ -2,42 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/webstore_result_icon_source.h"
+#include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 
 #include <string>
 
 #include "content/public/browser/browser_thread.h"
-#include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 using content::BrowserThread;
 
 namespace app_list {
 
-WebstoreResultIconSource::WebstoreResultIconSource(
+UrlIconSource::UrlIconSource(
     const IconLoadedCallback& icon_loaded_callback,
     net::URLRequestContextGetter* context_getter,
     const GURL& icon_url,
-    int icon_size)
+    int icon_size,
+    int default_icon_resource_id)
     : icon_loaded_callback_(icon_loaded_callback),
       context_getter_(context_getter),
       icon_url_(icon_url),
       icon_size_(icon_size),
+      default_icon_resource_id_(default_icon_resource_id),
       icon_fetch_attempted_(false) {
   DCHECK(!icon_loaded_callback_.is_null());
 }
 
-WebstoreResultIconSource::~WebstoreResultIconSource() {
+UrlIconSource::~UrlIconSource() {
   if (image_decoder_.get())
     image_decoder_->set_delegate(NULL);
 }
 
-void WebstoreResultIconSource::StartIconFetch() {
+void UrlIconSource::StartIconFetch() {
   icon_fetch_attempted_ = true;
 
   icon_fetcher_.reset(
@@ -47,33 +47,20 @@ void WebstoreResultIconSource::StartIconFetch() {
   icon_fetcher_->Start();
 }
 
-gfx::ImageSkiaRep WebstoreResultIconSource::CreateBadgedIcon(
-    ui::ScaleFactor scale_factor) {
-  gfx::Canvas canvas(gfx::Size(icon_size_, icon_size_), scale_factor, false);
-
-  canvas.DrawImageInt(icon_, 0, 0);
-
-  const gfx::ImageSkia& badge = *ui::ResourceBundle::GetSharedInstance().
-       GetImageSkiaNamed(IDR_WEBSTORE_ICON_16);
-  canvas.DrawImageInt(
-      badge, icon_.width() - badge.width(), icon_.height() - badge.height());
-
-  return canvas.ExtractImageRep();
-}
-
-gfx::ImageSkiaRep WebstoreResultIconSource::GetImageForScale(
+gfx::ImageSkiaRep UrlIconSource::GetImageForScale(
     ui::ScaleFactor scale_factor) {
   if (!icon_fetch_attempted_)
     StartIconFetch();
 
   if (!icon_.isNull())
-    return CreateBadgedIcon(scale_factor);
+    return icon_.GetRepresentation(scale_factor);
 
   return ui::ResourceBundle::GetSharedInstance()
-      .GetImageSkiaNamed(IDR_WEBSTORE_ICON_32)->GetRepresentation(scale_factor);
+      .GetImageSkiaNamed(default_icon_resource_id_)->GetRepresentation(
+          scale_factor);
 }
 
-void WebstoreResultIconSource::OnURLFetchComplete(
+void UrlIconSource::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(icon_fetcher_.get(), source);
 
@@ -93,18 +80,19 @@ void WebstoreResultIconSource::OnURLFetchComplete(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
 }
 
-void WebstoreResultIconSource::OnImageDecoded(const ImageDecoder* decoder,
-                                              const SkBitmap& decoded_image) {
+void UrlIconSource::OnImageDecoded(const ImageDecoder* decoder,
+                                   const SkBitmap& decoded_image) {
   icon_ = gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia::CreateFrom1xBitmap(decoded_image),
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(icon_size_, icon_size_));
+
   icon_loaded_callback_.Run();
 }
 
-void WebstoreResultIconSource::OnDecodeImageFailed(
+void UrlIconSource::OnDecodeImageFailed(
     const ImageDecoder* decoder) {
-  // Failed to decode image. Do nothing and just use web store icon.
+  // Failed to decode image. Do nothing and just use the default icon.
 }
 
 }  // namespace app_list

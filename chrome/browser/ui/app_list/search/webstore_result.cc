@@ -15,14 +15,47 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 #include "chrome/browser/ui/app_list/search/webstore_installer.h"
-#include "chrome/browser/ui/app_list/search/webstore_result_icon_source.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
+
+
+namespace {
+
+const int kIconSize = 32;
+
+// BadgedImageSource adds a webstore badge to a webstore app icon.
+class BadgedIconSource : public gfx::CanvasImageSource {
+ public:
+  explicit BadgedIconSource(const gfx::ImageSkia& icon)
+      : CanvasImageSource(gfx::Size(kIconSize, kIconSize), false),
+        icon_(icon) {
+  }
+
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+    canvas->DrawImageInt(icon_, 0, 0);
+    const gfx::ImageSkia& badge = *ui::ResourceBundle::GetSharedInstance().
+         GetImageSkiaNamed(IDR_WEBSTORE_ICON_16);
+    canvas->DrawImageInt(
+        badge, icon_.width() - badge.width(), icon_.height() - badge.height());
+  }
+
+ private:
+  gfx::ImageSkia icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadgedIconSource);
+};
+
+}  // namespace
 
 namespace app_list {
 
@@ -46,14 +79,13 @@ WebstoreResult::WebstoreResult(Profile* profile,
 
   UpdateActions();
 
-  const int kIconSize = 32;
   icon_ = gfx::ImageSkia(
-      new WebstoreResultIconSource(
-          base::Bind(&WebstoreResult::OnIconLoaded,
-                     weak_factory_.GetWeakPtr()),
-          profile_->GetRequestContext(),
-          icon_url_,
-          kIconSize),
+      new UrlIconSource(base::Bind(&WebstoreResult::OnIconLoaded,
+                                   weak_factory_.GetWeakPtr()),
+                        profile_->GetRequestContext(),
+                        icon_url_,
+                        kIconSize,
+                        IDR_WEBSTORE_ICON_32),
       gfx::Size(kIconSize, kIconSize));
   SetIcon(icon_);
 
@@ -116,6 +148,9 @@ void WebstoreResult::OnIconLoaded() {
   const std::vector<gfx::ImageSkiaRep>& image_reps = icon_.image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i)
     icon_.RemoveRepresentation(image_reps[i].scale_factor());
+
+  icon_ = gfx::ImageSkia(new BadgedIconSource(icon_),
+                         gfx::Size(kIconSize, kIconSize));
 
   SetIcon(icon_);
 }
