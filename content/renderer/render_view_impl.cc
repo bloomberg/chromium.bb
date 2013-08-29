@@ -4224,13 +4224,17 @@ bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
 void RenderViewImpl::reportFindInPageMatchCount(int request_id,
                                                 int count,
                                                 bool final_update) {
-  NOTREACHED();
+  // TODO(jam): switch PepperPluginInstanceImpl to take a RenderFrame
+  main_render_frame_->reportFindInPageMatchCount(
+      request_id, count, final_update);
 }
 
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-  NOTREACHED();
+  // TODO(jam): switch PepperPluginInstanceImpl to take a RenderFrame
+  main_render_frame_->reportFindInPageSelection(
+      request_id, active_match_ordinal, selection_rect);
 }
 
 void RenderViewImpl::requestStorageQuota(
