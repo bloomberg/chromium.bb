@@ -20,7 +20,7 @@
 namespace media {
 
 typedef bool (*CodecIDValidatorFunction)(
-    const std::string& codecs_id, const media::LogCB& log_cb);
+    const std::string& codecs_id, const LogCB& log_cb);
 
 struct CodecInfo {
   enum Type {
@@ -46,9 +46,9 @@ struct CodecInfo {
   HistogramTag tag;
 };
 
-typedef media::StreamParser* (*ParserFactoryFunction)(
+typedef StreamParser* (*ParserFactoryFunction)(
     const std::vector<std::string>& codecs,
-    const media::LogCB& log_cb);
+    const LogCB& log_cb);
 
 struct SupportedTypeInfo {
   const char* type;
@@ -75,10 +75,10 @@ static const CodecInfo* kAudioWebMCodecs[] = {
   NULL
 };
 
-static media::StreamParser* BuildWebMParser(
+static StreamParser* BuildWebMParser(
     const std::vector<std::string>& codecs,
-    const media::LogCB& log_cb) {
-  return new media::WebMStreamParser();
+    const LogCB& log_cb) {
+  return new WebMStreamParser();
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -87,7 +87,7 @@ static const int kAACLCObjectType = 2;
 static const int kAACSBRObjectType = 5;
 
 static int GetMP4AudioObjectType(const std::string& codec_id,
-                                 const media::LogCB& log_cb) {
+                                 const LogCB& log_cb) {
   int audio_object_type;
   std::vector<std::string> tokens;
   if (Tokenize(codec_id, ".", &tokens) != 3 ||
@@ -101,8 +101,7 @@ static int GetMP4AudioObjectType(const std::string& codec_id,
   return audio_object_type;
 }
 
-bool ValidateMP4ACodecID(const std::string& codec_id,
-                         const media::LogCB& log_cb) {
+bool ValidateMP4ACodecID(const std::string& codec_id, const LogCB& log_cb) {
   int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
   if (audio_object_type == kAACLCObjectType ||
       audio_object_type == kAACSBRObjectType) {
@@ -145,8 +144,8 @@ static const CodecInfo* kAudioMP4Codecs[] = {
   NULL
 };
 
-static media::StreamParser* BuildMP4Parser(
-    const std::vector<std::string>& codecs, const media::LogCB& log_cb) {
+static StreamParser* BuildMP4Parser(
+    const std::vector<std::string>& codecs, const LogCB& log_cb) {
   std::set<int> audio_object_types;
   bool has_sbr = false;
 #if defined(ENABLE_EAC3_PLAYBACK)
@@ -156,12 +155,12 @@ static media::StreamParser* BuildMP4Parser(
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
     if (MatchPattern(codec_id, kMPEG2AACLCCodecInfo.pattern)) {
-      audio_object_types.insert(media::mp4::kISO_13818_7_AAC_LC);
+      audio_object_types.insert(mp4::kISO_13818_7_AAC_LC);
     } else if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
       int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
       DCHECK_GT(audio_object_type, 0);
 
-      audio_object_types.insert(media::mp4::kISO_14496_3);
+      audio_object_types.insert(mp4::kISO_14496_3);
 
       if (audio_object_type == kAACSBRObjectType) {
         has_sbr = true;
@@ -169,12 +168,12 @@ static media::StreamParser* BuildMP4Parser(
       }
 #if defined(ENABLE_EAC3_PLAYBACK)
     } else if (enable_eac3 && MatchPattern(codec_id, kEAC3CodecInfo.pattern)) {
-      audio_object_types.insert(media::mp4::kEAC3);
+      audio_object_types.insert(mp4::kEAC3);
 #endif
     }
   }
 
-  return new media::mp4::MP4StreamParser(audio_object_types, has_sbr);
+  return new mp4::MP4StreamParser(audio_object_types, has_sbr);
 }
 #endif
 
@@ -241,16 +240,22 @@ static bool VerifyCodec(
 static bool CheckTypeAndCodecs(
     const std::string& type,
     const std::vector<std::string>& codecs,
-    const media::LogCB& log_cb,
+    const LogCB& log_cb,
     ParserFactoryFunction* factory_function,
     std::vector<CodecInfo::HistogramTag>* audio_codecs,
     std::vector<CodecInfo::HistogramTag>* video_codecs) {
-  DCHECK_GT(codecs.size(), 0u);
 
   // Search for the SupportedTypeInfo for |type|.
   for (size_t i = 0; i < arraysize(kSupportedTypeInfo); ++i) {
     const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
     if (type == type_info.type) {
+
+      if (codecs.size() == 0u) {
+        MEDIA_LOG(log_cb) << "A codecs parameter must be provided for '"
+                          << type << "'";
+        return false;
+      }
+
       // Make sure all the codecs specified in |codecs| are
       // in the supported type info.
       for (size_t j = 0; j < codecs.size(); ++j) {
@@ -287,16 +292,16 @@ static bool CheckTypeAndCodecs(
 
 bool StreamParserFactory::IsTypeSupported(
     const std::string& type, const std::vector<std::string>& codecs) {
-  return CheckTypeAndCodecs(type, codecs, media::LogCB(), NULL, NULL, NULL);
+  return CheckTypeAndCodecs(type, codecs, LogCB(), NULL, NULL, NULL);
 }
 
-scoped_ptr<media::StreamParser> StreamParserFactory::Create(
+scoped_ptr<StreamParser> StreamParserFactory::Create(
     const std::string& type,
     const std::vector<std::string>& codecs,
-    const media::LogCB& log_cb,
+    const LogCB& log_cb,
     bool* has_audio,
     bool* has_video) {
-  scoped_ptr<media::StreamParser> stream_parser;
+  scoped_ptr<StreamParser> stream_parser;
   ParserFactoryFunction factory_function;
   std::vector<CodecInfo::HistogramTag> audio_codecs;
   std::vector<CodecInfo::HistogramTag> video_codecs;

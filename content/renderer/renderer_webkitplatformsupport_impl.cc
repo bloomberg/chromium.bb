@@ -444,7 +444,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
   std::vector<std::string> parsed_codec_ids;
   net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
-  if (mime_type_ascii.empty() || parsed_codec_ids.size() == 0)
+  if (mime_type_ascii.empty())
     return false;
   return media::StreamParserFactory::IsTypeSupported(
       mime_type_ascii, parsed_codec_ids);

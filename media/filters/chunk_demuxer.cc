@@ -874,7 +874,6 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
 ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                                          const std::string& type,
                                          std::vector<std::string>& codecs) {
-  DCHECK_GT(codecs.size(), 0u);
   base::AutoLock auto_lock(lock_);
 
   if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
