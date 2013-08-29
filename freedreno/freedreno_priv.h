@@ -48,7 +48,7 @@
 
 #include "freedreno_drmif.h"
 #include "freedreno_ringbuffer.h"
-#include "drm/drm.h"
+#include "drm.h"
 
 struct fd_device_funcs {
 	int (*bo_new_handle)(struct fd_device *dev, uint32_t size,
