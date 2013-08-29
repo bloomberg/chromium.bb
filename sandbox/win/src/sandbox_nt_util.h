@@ -5,6 +5,8 @@
 #ifndef SANDBOX_SRC_SANDBOX_NT_UTIL_H_
 #define SANDBOX_SRC_SANDBOX_NT_UTIL_H_
 
+#include <intrin.h>
+
 #include "base/basictypes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
@@ -47,6 +49,11 @@ void __cdecl operator delete(void* memory, void* buffer,
 
 namespace sandbox {
 
+#if defined(_M_X64)
+#pragma intrinsic(_InterlockedCompareExchange)
+#pragma intrinsic(_InterlockedCompareExchangePointer)
+
+#elif defined(_M_IX86)
 extern "C" long _InterlockedCompareExchange(long volatile* destination,
                                             long exchange, long comperand);
 
@@ -63,6 +70,11 @@ __forceinline void* _InterlockedCompareExchangePointer(
 
   return reinterpret_cast<void*>(static_cast<size_t>(ret));
 }
+
+#else
+#error Architecture not supported.
+
+#endif
 
 // Returns a pointer to the IPC shared memory.
 void* GetGlobalIPCMemory();
