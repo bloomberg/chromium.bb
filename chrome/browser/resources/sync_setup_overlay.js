@@ -90,6 +90,12 @@ cr.define('options', function() {
     closeOverlay_: function() {
       this.syncConfigureArgs_ = null;
       this.dataTypeBoxes_ = {};
+
+      // Required in order to determine whether to give focus to the OK button
+      // or passphrase field. See crbug.com/279770.
+      $('confirm-sync-preferences').hidden = true;
+      $('customize-sync-preferences').hidden = true;
+
       var overlay = $('sync-setup-overlay');
       if (!overlay.hidden)
         OptionsPage.closeOverlay();
@@ -461,13 +467,8 @@ cr.define('options', function() {
                           DataTypeSelection.SYNC_EVERYTHING :
                           DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
           this.showCustomizePage_(args, index);
-          if (args.showPassphrase)
-            $('passphrase').focus();
-          else
-            $('choose-datatypes-ok').focus();
         } else {
           this.showSyncEverythingPage_();
-          $('confirm-everything-ok').focus();
         }
       }
     },
@@ -483,6 +484,9 @@ cr.define('options', function() {
     },
 
     showSyncEverythingPage_: function() {
+      // Determine whether to bring the OK button into focus.
+      var wasConfirmPageHidden = $('confirm-sync-preferences').hidden;
+
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
 
@@ -497,6 +501,10 @@ cr.define('options', function() {
 
       if (!this.useEncryptEverything_ && !this.usePassphrase_)
         $('basic-encryption-option').checked = true;
+
+      // Give the OK button focus only when the dialog wasn't already visible.
+      if (wasConfirmPageHidden)
+        $('confirm-everything-ok').focus();
     },
 
     /**
@@ -571,6 +579,9 @@ cr.define('options', function() {
      * @private
      */
     showCustomizePage_: function(args, index) {
+      // Determine whether to bring the OK button field into focus.
+      var wasCustomizePageHidden = $('customize-sync-preferences').hidden;
+
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = false;
 
@@ -584,8 +595,16 @@ cr.define('options', function() {
       this.setDataTypeCheckboxesEnabled_(
           index == DataTypeSelection.CHOOSE_WHAT_TO_SYNC);
 
+      // Give the OK button focus only when the dialog wasn't already visible.
+      if (wasCustomizePageHidden)
+        $('choose-datatypes-ok').focus();
+
       if (args && args.showPassphrase) {
         this.showPassphraseContainer_(args);
+        // Give the passphrase field focus only when the dialog wasn't already
+        // visible.
+        if (wasCustomizePageHidden)
+          $('passphrase').focus();
       } else {
         // We only show the 'Use Default' link if we're not prompting for an
         // existing passphrase.
