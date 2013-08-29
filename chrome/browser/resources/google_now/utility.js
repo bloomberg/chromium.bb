@@ -699,19 +699,24 @@ function buildAuthenticationManager() {
     listeners.push(callback);
   }
 
-  // Tracks the last answer of isSignedIn. checkAndNotifyListeners will not
-  // notify the listeners if this is null because technically, no sign in
-  // state change occurred.
-  var lastReturnedSignedInState = null;
-
+  /**
+   * Checks if the last signed in state matches the specified one.
+   * If it doesn't, it notifies the listeners of the change.
+   * @param {boolean} currentSignedInState The current signed in state.
+   */
   function checkAndNotifyListeners(currentSignedInState) {
-    if ((lastReturnedSignedInState !== currentSignedInState) &&
-        (lastReturnedSignedInState !== null)) {
-      for (var listenerIndex in listeners) {
-        listeners[listenerIndex]();
+    instrumented.storage.local.get('lastSignedInState', function(items) {
+      items = items || {};
+      if (items.lastSignedInState != currentSignedInState) {
+        chrome.storage.local.set(
+            {lastSignedInState: currentSignedInState});
+        if (items.lastSignedInState != undefined) {
+          listeners.forEach(function(callback) {
+            callback();
+          });
+        }
       }
-    }
-    lastReturnedSignedInState = currentSignedInState;
+    });
   }
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
