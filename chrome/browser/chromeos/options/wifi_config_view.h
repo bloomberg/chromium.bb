@@ -94,6 +94,8 @@ class WifiConfigView : public ChildNetworkConfigView,
                                      const std::string& key);
 
  private:
+  friend class internal::UserCertComboboxModel;
+
   // Initializes UI.  If |show_8021x| includes 802.1x config options.
   void Init(bool show_8021x);
 

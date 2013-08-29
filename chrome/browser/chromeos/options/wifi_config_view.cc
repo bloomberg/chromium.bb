@@ -153,7 +153,7 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
 
 class UserCertComboboxModel : public ui::ComboboxModel {
  public:
-  UserCertComboboxModel();
+  explicit UserCertComboboxModel(WifiConfigView* owner);
   virtual ~UserCertComboboxModel();
 
   // Overridden from ui::ComboboxModel:
@@ -161,6 +161,8 @@ class UserCertComboboxModel : public ui::ComboboxModel {
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
+  WifiConfigView* owner_;
+
   DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
 };
 
@@ -301,13 +303,16 @@ string16 ServerCACertComboboxModel::GetItemAt(int index) {
 
 // UserCertComboboxModel -------------------------------------------------------
 
-UserCertComboboxModel::UserCertComboboxModel() {
+UserCertComboboxModel::UserCertComboboxModel(WifiConfigView* owner)
+    : owner_(owner) {
 }
 
 UserCertComboboxModel::~UserCertComboboxModel() {
 }
 
 int UserCertComboboxModel::GetItemCount() const {
+  if (!owner_->UserCertActive())
+    return 0;
   if (CertLibrary::Get()->CertificatesLoading())
     return 1;  // "Loading"
   int num_certs =
@@ -318,6 +323,8 @@ int UserCertComboboxModel::GetItemCount() const {
 }
 
 string16 UserCertComboboxModel::GetItemAt(int index) {
+  if (!owner_->UserCertActive())
+    return string16();
   if (CertLibrary::Get()->CertificatesLoading())
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
@@ -803,8 +810,8 @@ std::string WifiConfigView::GetEapSubjectMatch() const {
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
   DCHECK(user_cert_combobox_);
-  if (!HaveUserCerts()) {
-    return std::string();  // "None installed"
+  if (!HaveUserCerts() || !UserCertActive()) {
+    return std::string();  // No certificate selected or not required.
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_->selected_index();
@@ -1016,7 +1023,7 @@ void WifiConfigView::Init(bool show_8021x) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT);
     user_cert_label_ = new views::Label(user_cert_label_text);
     layout->AddView(user_cert_label_);
-    user_cert_combobox_model_.reset(new internal::UserCertComboboxModel());
+    user_cert_combobox_model_.reset(new internal::UserCertComboboxModel(this));
     user_cert_combobox_ = new views::Combobox(user_cert_combobox_model_.get());
     user_cert_combobox_->SetAccessibleName(user_cert_label_text);
     user_cert_label_->SetEnabled(false);
