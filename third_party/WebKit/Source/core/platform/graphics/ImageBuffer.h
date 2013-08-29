@@ -116,13 +116,9 @@ public:
 
     void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem = LogicalCoordinateSystem);
 
-    void convertToLuminanceMask();
-
     String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
     void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
-    static const Vector<uint8_t>& getLinearRgbLUT();
-    static const Vector<uint8_t>& getDeviceRgbLUT();
     WebKit::WebLayer* platformLayer() const;
 
     // FIXME: current implementations of this method have the restriction that they only work
@@ -135,11 +131,13 @@ private:
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
     void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);
+    static PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
     friend class GraphicsContext;
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
     friend class GeneratorGeneratedImage;
+    friend class SkiaImageFilterBuilder;
 
     IntSize m_size;
     IntSize m_logicalSize;

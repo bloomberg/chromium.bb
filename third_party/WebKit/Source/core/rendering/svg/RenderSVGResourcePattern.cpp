@@ -265,7 +265,7 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
             continue;
         if (node->renderer()->needsLayout())
             return nullptr;
-        SVGRenderingContext::renderSubtreeToImageBuffer(tileImage.get(), node->renderer(), contentTransformation);
+        SVGRenderingContext::renderSubtree(tileImage->context(), node->renderer(), contentTransformation);
     }
 
     return tileImage.release();

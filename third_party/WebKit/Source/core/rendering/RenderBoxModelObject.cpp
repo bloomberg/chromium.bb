@@ -767,8 +767,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             paint(info, scrolledPaintRect.location() - localOffset);
         }
 
-        context->endTransparencyLayer();
-        context->endTransparencyLayer();
+        context->endLayer();
+        context->endLayer();
     }
 }
 
@@ -1688,7 +1688,7 @@ void RenderBoxModelObject::paintTranslucentBorderSides(GraphicsContext* graphics
         paintBorderSides(graphicsContext, style, outerBorder, innerBorder, innerBorderAdjustment, edges, commonColorEdgeSet, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias, &commonColor);
 
         if (useTransparencyLayer)
-            graphicsContext->endTransparencyLayer();
+            graphicsContext->endLayer();
 
         edgesToDraw &= ~commonColorEdgeSet;
     }

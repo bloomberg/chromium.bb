@@ -1447,7 +1447,7 @@ void RenderInline::paintOutline(PaintInfo& paintInfo, const LayoutPoint& paintOf
         paintOutlineForLine(graphicsContext, paintOffset, rects.at(i - 1), rects.at(i), rects.at(i + 1), outlineColor);
 
     if (useTransparencyLayer)
-        graphicsContext->endTransparencyLayer();
+        graphicsContext->endLayer();
 }
 
 void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const LayoutPoint& paintOffset,

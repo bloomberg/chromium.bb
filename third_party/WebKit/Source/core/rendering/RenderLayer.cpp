@@ -3674,6 +3674,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     // Apply clip-path to context.
     bool hasClipPath = false;
     RenderStyle* style = renderer()->style();
+    RenderSVGResourceClipper* resourceClipper = 0;
     if (renderer()->hasClipPath() && !context->paintingDisabled() && style) {
         ASSERT(style->clipPath());
         if (style->clipPath()->getOperationType() == ClipPathOperation::SHAPE) {
@@ -3699,7 +3700,11 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 }
 
                 // FIXME: This should use a safer cast such as toRenderSVGResourceContainer().
-                static_cast<RenderSVGResourceClipper*>(element->renderer())->applyClippingToContext(renderer(), rootRelativeBounds, paintingInfo.paintDirtyRect, context);
+                resourceClipper = static_cast<RenderSVGResourceClipper*>(element->renderer());
+                if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds, paintingInfo.paintDirtyRect, context)) {
+                    // No need to post-apply the clipper if this failed.
+                    resourceClipper = 0;
+                }
             }
         }
     }
@@ -3820,10 +3825,13 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     // End our transparency layer
     if (haveTransparency && m_usedTransparency && !m_paintingInsideReflection) {
-        context->endTransparencyLayer();
+        context->endLayer();
         context->restore();
         m_usedTransparency = false;
     }
+
+    if (resourceClipper)
+        resourceClipper->postApplyResource(renderer(), context, ApplyToDefaultMode, 0, 0);
 
     if (hasClipPath)
         context->restore();

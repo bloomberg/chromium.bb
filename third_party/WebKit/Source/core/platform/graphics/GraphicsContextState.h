@@ -34,6 +34,7 @@
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/StrokeData.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
@@ -56,7 +57,6 @@ private:
         , m_xferMode(SkXfermode::kSrcOver_Mode)
         , m_compositeOperator(CompositeSourceOver)
         , m_blendMode(BlendModeNormal)
-        , m_clip(SkRect::MakeEmpty())
 #if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
         , m_interpolationQuality(InterpolationLow)
 #else
@@ -77,9 +77,9 @@ private:
         , m_textDrawingMode(other.m_textDrawingMode)
         , m_alpha(other.m_alpha)
         , m_xferMode(other.m_xferMode)
+        , m_colorFilter(other.m_colorFilter)
         , m_compositeOperator(other.m_compositeOperator)
         , m_blendMode(other.m_blendMode)
-        , m_clip(other.m_clip)
         , m_interpolationQuality(other.m_interpolationQuality)
         , m_shouldAntialias(other.m_shouldAntialias)
         , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
@@ -124,16 +124,11 @@ private:
     // Common shader state.
     float m_alpha;
     SkXfermode::Mode m_xferMode;
+    RefPtr<SkColorFilter> m_colorFilter;
 
     // Compositing control, for the CSS and Canvas compositing spec.
     CompositeOperator m_compositeOperator;
     BlendMode m_blendMode;
-
-    // If non-empty, the current State is clipped to this image.
-    SkBitmap m_imageBufferClip;
-
-    // If m_imageBufferClip is non-empty, this is the region the image is clipped to.
-    SkRect m_clip;
 
     // Image interpolation control.
     InterpolationQuality m_interpolationQuality;

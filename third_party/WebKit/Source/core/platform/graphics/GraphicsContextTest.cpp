@@ -215,17 +215,6 @@ TEST(GraphicsContextTest, trackOpaqueClipTest)
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
     context.restore();
-
-    OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
-    alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
-
-    // Clipping with a non-opaque Image (there is no way to mark an ImageBuffer as opaque today).
-    context.save();
-    context.clipToImageBuffer(alphaImage.get(), FloatRect(30, 30, 10, 10));
-    context.fillRect(FloatRect(10, 10, 90, 90), opaque, CompositeSourceOver);
-    context.restore();
-    EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
-    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
 TEST(GraphicsContextTest, trackImageMask)
@@ -259,8 +248,8 @@ TEST(GraphicsContextTest, trackImageMask)
     context.setCompositeOperation(CompositeSourceOver);
     context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
-    context.endTransparencyLayer();
-    context.endTransparencyLayer();
+    context.endLayer();
+    context.endLayer();
 
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
@@ -300,8 +289,8 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     // We can't have an opaque mask actually, but we can pretend here like it would look if we did.
     context.fillRect(FloatRect(12, 12, 3, 3), opaque, CompositeSourceOver);
 
-    context.endTransparencyLayer();
-    context.endTransparencyLayer();
+    context.endLayer();
+    context.endLayer();
 
     EXPECT_EQ_RECT(IntRect(12, 12, 3, 3), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
@@ -960,7 +949,7 @@ TEST(GraphicsContextTest, contextTransparencyLayerTest)
     context.save();
     context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
     context.restore();
-    context.endTransparencyLayer();
+    context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 
     context.clearRect(FloatRect(20, 20, 10, 10));
@@ -968,7 +957,7 @@ TEST(GraphicsContextTest, contextTransparencyLayerTest)
 
     context.beginTransparencyLayer(0.5);
     context.fillRect(FloatRect(20, 20, 10, 10), opaque, CompositeSourceOver);
-    context.endTransparencyLayer();
+    context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 }
 
@@ -1067,8 +1056,8 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     path.addLineTo(FloatPoint(40, 40));
     context.strokePath(path);
 
-    context.endTransparencyLayer();
-    context.endTransparencyLayer();
+    context.endLayer();
+    context.endLayer();
     EXPECT_EQ_RECT(IntRect(10, 10, 40, 40), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 
@@ -1079,7 +1068,7 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     // This should destroy the device opaqueness.
     context.fillRect(FloatRect(10, 10, 40, 40), opaque, CompositeSourceOver);
 
-    context.endTransparencyLayer();
+    context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 
@@ -1094,7 +1083,7 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     path.addLineTo(FloatPoint(40, 40));
     context.strokePath(path);
 
-    context.endTransparencyLayer();
+    context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }

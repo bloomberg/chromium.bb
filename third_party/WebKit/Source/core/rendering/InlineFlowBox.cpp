@@ -1366,7 +1366,7 @@ void InlineFlowBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     bool hasBoxImage = maskBoxImage && maskBoxImage->canRender(renderer(), renderer()->style()->effectiveZoom());
     if (!hasBoxImage || !maskBoxImage->isLoaded()) {
         if (pushTransparencyLayer)
-            paintInfo.context->endTransparencyLayer();
+            paintInfo.context->endLayer();
         return; // Don't paint anything while we wait for the image to load.
     }
 
@@ -1395,7 +1395,7 @@ void InlineFlowBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     if (pushTransparencyLayer)
-        paintInfo.context->endTransparencyLayer();
+        paintInfo.context->endLayer();
 }
 
 InlineBox* InlineFlowBox::firstLeafChild() const

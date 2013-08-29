@@ -43,6 +43,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
+#include "third_party/skia/include/effects/SkLumaXfermode.h"
 #include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -68,7 +69,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
     , m_annotationMode(0)
 #if !ASSERT_DISABLED
     , m_annotationCount(0)
-    , m_transparencyCount(0)
+    , m_layerCount(0)
 #endif
     , m_trackOpaqueRegion(false)
     , m_trackTextRegion(false)
@@ -86,7 +87,7 @@ GraphicsContext::~GraphicsContext()
 {
     ASSERT(m_stateStack.size() == 1);
     ASSERT(!m_annotationCount);
-    ASSERT(!m_transparencyCount);
+    ASSERT(!m_layerCount);
 }
 
 const SkBitmap* GraphicsContext::bitmap() const
@@ -128,11 +129,6 @@ void GraphicsContext::restore()
     if (m_stateStack.size() == 1) {
         LOG_ERROR("ERROR void GraphicsContext::restore() stack is empty");
         return;
-    }
-
-    if (!m_state->m_imageBufferClip.empty()) {
-        applyClipFromImage(m_state->m_clip, m_state->m_imageBufferClip);
-        m_canvas->restore();
     }
 
     m_stateStack.removeLast();
@@ -370,6 +366,11 @@ void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation
     m_state->m_xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
 }
 
+void GraphicsContext::setColorSpaceConversion(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
+{
+    m_state->m_colorFilter = ImageBuffer::createColorSpaceFilter(srcColorSpace, dstColorSpace);
+}
+
 bool GraphicsContext::readPixels(SkBitmap* bitmap, int x, int y, SkCanvas::Config8888 config8888)
 {
     if (paintingDisabled())
@@ -398,7 +399,7 @@ bool GraphicsContext::concat(const SkMatrix& matrix)
     return m_canvas->concat(matrix);
 }
 
-void GraphicsContext::beginTransparencyLayer(float opacity)
+void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)
 {
     if (paintingDisabled())
         return;
@@ -413,65 +414,48 @@ void GraphicsContext::beginTransparencyLayer(float opacity)
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
     layerPaint.setXfermodeMode(m_state->m_xferMode);
 
-    saveLayer(0, &layerPaint, saveFlags);
+    if (bounds) {
+        SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);
+        saveLayer(&skBounds, &layerPaint, saveFlags);
+    } else {
+        saveLayer(0, &layerPaint, saveFlags);
+    }
+
 
 #if !ASSERT_DISABLED
-    ++m_transparencyCount;
+    ++m_layerCount;
 #endif
 }
 
-void GraphicsContext::endTransparencyLayer()
+void GraphicsContext::beginMaskedLayer(const FloatRect& bounds, MaskType maskType)
+{
+    if (paintingDisabled())
+        return;
+
+    SkPaint layerPaint;
+    layerPaint.setXfermode(maskType == AlphaMaskType
+        ? SkXfermode::Create(SkXfermode::kSrcIn_Mode)
+        : SkLumaMaskXfermode::Create(SkXfermode::kSrcIn_Mode));
+
+    SkRect skBounds = WebCoreFloatRectToSKRect(bounds);
+    saveLayer(&skBounds, &layerPaint);
+
+#if !ASSERT_DISABLED
+    ++m_layerCount;
+#endif
+}
+
+void GraphicsContext::endLayer()
 {
     if (paintingDisabled())
         return;
 
     restoreLayer();
 
-    ASSERT(m_transparencyCount > 0);
+    ASSERT(m_layerCount > 0);
 #if !ASSERT_DISABLED
-    --m_transparencyCount;
+    --m_layerCount;
 #endif
-}
-
-void GraphicsContext::clipToImageBuffer(const ImageBuffer* imageBuffer, const FloatRect& rect)
-{
-    if (paintingDisabled())
-        return;
-
-    SkRect bounds = WebCoreFloatRectToSKRect(rect);
-
-    if (imageBuffer->internalSize().isEmpty()) {
-        clipRect(bounds);
-        return;
-    }
-
-    // Skia doesn't support clipping to an image, so we create a layer. The next
-    // time restore is invoked the layer and |imageBuffer| are combined to
-    // create the resulting image.
-    m_state->m_clip = bounds;
-
-    // Get the absolute coordinates of the stored clipping rectangle to make it
-    // independent of any transform changes.
-    getTotalMatrix().mapRect(&m_state->m_clip);
-
-    SkCanvas::SaveFlags saveFlags = static_cast<SkCanvas::SaveFlags>(SkCanvas::kHasAlphaLayer_SaveFlag | SkCanvas::kFullColorLayer_SaveFlag);
-    saveLayer(&bounds, 0, saveFlags);
-
-    const SkBitmap* bitmap = imageBuffer->context()->bitmap();
-
-    if (m_trackOpaqueRegion) {
-        SkRect opaqueRect = bitmap->isOpaque() ? m_state->m_clip : SkRect::MakeEmpty();
-        m_opaqueRegion.setImageMask(opaqueRect);
-    }
-
-    // Copy off the image as |imageBuffer| may be deleted before restore is invoked.
-    if (bitmap->isImmutable())
-        m_state->m_imageBufferClip = *bitmap;
-    else {
-        // We need to make a deep-copy of the pixels themselves, so they don't
-        // change on us between now and when we want to apply them in restore()
-        bitmap->copyTo(&m_state->m_imageBufferClip, SkBitmap::kARGB_8888_Config);
-    }
 }
 
 void GraphicsContext::setupPaintForFilling(SkPaint* paint) const
@@ -1719,6 +1703,7 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
     paint->setAntiAlias(m_state->m_shouldAntialias);
     paint->setXfermodeMode(m_state->m_xferMode);
     paint->setLooper(m_state->m_looper.get());
+    paint->setColorFilter(m_state->m_colorFilter.get());
 }
 
 void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int width)
@@ -1868,23 +1853,6 @@ void GraphicsContext::setupShader(SkPaint* paint, Gradient* grad, Pattern* pat, 
 
     paint->setColor(m_state->applyAlpha(color));
     paint->setShader(shader.get());
-}
-
-
-void GraphicsContext::applyClipFromImage(const SkRect& rect, const SkBitmap& imageBuffer)
-{
-    if (paintingDisabled())
-        return;
-
-    // NOTE: this assumes the image mask contains opaque black for the portions that are to be shown, as such we
-    // only look at the alpha when compositing. I'm not 100% sure this is what WebKit expects for image clipping.
-    SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-    realizeSave(SkCanvas::kMatrixClip_SaveFlag);
-    m_canvas->save(SkCanvas::kMatrix_SaveFlag);
-    m_canvas->resetMatrix();
-    m_canvas->drawBitmapRect(imageBuffer, 0, rect, &paint);
-    m_canvas->restore();
 }
 
 void GraphicsContext::didDrawTextInRect(const SkRect& textRect)

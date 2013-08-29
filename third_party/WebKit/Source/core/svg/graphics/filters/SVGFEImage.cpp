@@ -135,7 +135,7 @@ void FEImage::applySoftware()
         }
 
         AffineTransform contentTransformation;
-        SVGRenderingContext::renderSubtreeToImageBuffer(resultImage, renderer, contentTransformation);
+        SVGRenderingContext::renderSubtree(resultImage->context(), renderer, contentTransformation);
         return;
     }
 

@@ -191,20 +191,11 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, Co
 
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
     SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace) {
-    if ((srcColorSpace == dstColorSpace)
-        || (srcColorSpace != ColorSpaceLinearRGB && srcColorSpace != ColorSpaceDeviceRGB)
-        || (dstColorSpace != ColorSpaceLinearRGB && dstColorSpace != ColorSpaceDeviceRGB))
+
+    RefPtr<SkColorFilter> colorFilter = ImageBuffer::createColorSpaceFilter(srcColorSpace, dstColorSpace);
+    if (!colorFilter)
         return input;
 
-    const uint8_t* lut = 0;
-    if (dstColorSpace == ColorSpaceLinearRGB)
-        lut = &ImageBuffer::getLinearRgbLUT()[0];
-    else if (dstColorSpace == ColorSpaceDeviceRGB)
-        lut = &ImageBuffer::getDeviceRgbLUT()[0];
-    else
-        return input;
-
-    RefPtr<SkColorFilter> colorFilter(adoptRef(SkTableColorFilter::CreateARGB(0, lut, lut, lut)));
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input));
 }
 

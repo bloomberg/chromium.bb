@@ -1215,7 +1215,7 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
     drawLineForBoxSide(graphicsContext, leftOuter, bottomInner, rightOuter, bottomOuter, BSBottom, outlineColor, outlineStyle, outlineWidth, outlineWidth);
 
     if (useTransparencyLayer)
-        graphicsContext->endTransparencyLayer();
+        graphicsContext->endLayer();
 }
 
 IntRect RenderObject::absoluteBoundingBoxRect(bool useTransforms) const

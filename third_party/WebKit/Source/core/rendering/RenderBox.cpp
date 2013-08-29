@@ -1167,7 +1167,7 @@ void RenderBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& pai
         paintBorder(paintInfo, paintRect, style(), bleedAvoidance);
 
     if (bleedAvoidance == BackgroundBleedUseTransparencyLayer)
-        paintInfo.context->endTransparencyLayer();
+        paintInfo.context->endLayer();
 }
 
 void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, BackgroundBleedAvoidance bleedAvoidance)
@@ -1371,7 +1371,7 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& pa
     }
 
     if (pushTransparencyLayer)
-        paintInfo.context->endTransparencyLayer();
+        paintInfo.context->endLayer();
 }
 
 LayoutRect RenderBox::maskClipRect()
@@ -1433,7 +1433,7 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
         paintFillLayer(paintInfo, c, *it, rect, bleedAvoidance, op, backgroundObject);
 
     if (shouldDrawBackgroundInSeparateBuffer)
-        context->endTransparencyLayer();
+        context->endLayer();
 }
 
 void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,

@@ -116,6 +116,8 @@ enum TextDrawingMode {
 };
 typedef unsigned TextDrawingModeFlags;
 
+enum MaskType { AlphaMaskType, LuminanceMaskType };
+
 String compositeOperatorName(CompositeOperator, BlendMode);
 bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
 

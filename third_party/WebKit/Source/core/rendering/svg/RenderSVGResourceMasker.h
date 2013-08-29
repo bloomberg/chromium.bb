@@ -33,10 +33,6 @@
 
 namespace WebCore {
 
-struct MaskerData {
-    OwnPtr<ImageBuffer> maskImage;
-};
-
 class RenderSVGResourceMasker FINAL : public RenderSVGResourceContainer {
 public:
     RenderSVGResourceMasker(SVGMaskElement*);
@@ -46,7 +42,8 @@ public:
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true);
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true);
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode);
+    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
+    virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short, const Path*, const RenderSVGShape*) OVERRIDE;
     virtual FloatRect resourceBoundingBox(RenderObject*);
 
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(node())->maskUnitsCurrentValue(); }
@@ -56,11 +53,10 @@ public:
     static RenderSVGResourceType s_resourceType;
 
 private:
-    bool drawContentIntoMaskImage(MaskerData*, ColorSpace, const SVGMaskElement*, RenderObject*);
     void calculateMaskContentRepaintRect();
+    void drawMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
 
     FloatRect m_maskContentBoundaries;
-    HashMap<RenderObject*, MaskerData*> m_masker;
 };
 
 }

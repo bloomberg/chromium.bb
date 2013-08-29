@@ -56,15 +56,30 @@ SVGRenderingContext::~SVGRenderingContext()
 
     ASSERT(m_object && m_paintInfo);
 
-    if (m_renderingFlags & EndFilterLayer) {
-        ASSERT(m_filter);
-        m_filter->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
-        m_paintInfo->context = m_savedContext;
-        m_paintInfo->setRect(m_savedPaintRect);
+    if (m_renderingFlags & PostApplyResources) {
+        ASSERT(m_masker || m_clipper || m_filter);
+        ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object));
+
+        if (m_filter) {
+            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->filter() == m_filter);
+            m_filter->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
+            m_paintInfo->context = m_savedContext;
+            m_paintInfo->setRect(m_savedPaintRect);
+        }
+
+        if (m_clipper) {
+            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
+            m_clipper->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
+        }
+
+        if (m_masker) {
+            ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->masker() == m_masker);
+            m_masker->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
+        }
     }
 
     if (m_renderingFlags & EndOpacityLayer)
-        m_paintInfo->context->endTransparencyLayer();
+        m_paintInfo->context->endLayer();
 
     if (m_renderingFlags & RestoreGraphicsContext)
         m_paintInfo->context->restore();
@@ -136,6 +151,8 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
         if (RenderSVGResourceMasker* masker = resources->masker()) {
             if (!masker->applyResource(m_object, style, m_paintInfo->context, ApplyToDefaultMode))
                 return;
+            m_masker = masker;
+            m_renderingFlags |= PostApplyResources;
         }
     }
 
@@ -143,6 +160,8 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     if (!clipPathOperation && clipper) {
         if (!clipper->applyResource(m_object, style, m_paintInfo->context, ApplyToDefaultMode))
             return;
+        m_clipper = clipper;
+        m_renderingFlags |= PostApplyResources;
     }
 
     if (!isRenderingMask) {
@@ -152,7 +171,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             m_savedPaintRect = m_paintInfo->rect();
             // Return with false here may mean that we don't need to draw the content
             // (because it was either drawn before or empty) but we still need to apply the filter.
-            m_renderingFlags |= EndFilterLayer;
+            m_renderingFlags |= PostApplyResources;
             if (!m_filter->applyResource(m_object, style, m_paintInfo->context, ApplyToDefaultMode))
                 return;
 
@@ -256,13 +275,12 @@ bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteT
     return true;
 }
 
-void SVGRenderingContext::renderSubtreeToImageBuffer(ImageBuffer* image, RenderObject* item, const AffineTransform& subtreeContentTransformation)
+void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item, const AffineTransform& subtreeContentTransformation)
 {
     ASSERT(item);
-    ASSERT(image);
-    ASSERT(image->context());
+    ASSERT(context);
 
-    PaintInfo info(image->context(), PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
+    PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
 
     AffineTransform& contentTransformation = currentContentTransformation();
     AffineTransform savedContentTransformation = contentTransformation;
@@ -272,25 +290,6 @@ void SVGRenderingContext::renderSubtreeToImageBuffer(ImageBuffer* image, RenderO
     item->paint(info, IntPoint());
 
     contentTransformation = savedContentTransformation;
-}
-
-void SVGRenderingContext::clipToImageBuffer(GraphicsContext* context, const AffineTransform& absoluteTransform, const FloatRect& targetRect, OwnPtr<ImageBuffer>& imageBuffer, bool safeToClear)
-{
-    ASSERT(context);
-    ASSERT(imageBuffer);
-
-    FloatRect absoluteTargetRect = calculateImageBufferRect(targetRect, absoluteTransform);
-
-    // The mask image has been created in the absolute coordinate space, as the image should not be scaled.
-    // So the actual masking process has to be done in the absolute coordinate space as well.
-    context->concatCTM(absoluteTransform.inverse());
-    context->clipToImageBuffer(imageBuffer.get(), absoluteTargetRect);
-    context->concatCTM(absoluteTransform);
-
-    // When nesting resources, with objectBoundingBox as content unit types, there's no use in caching the
-    // resulting image buffer as the parent resource already caches the result.
-    if (safeToClear && !currentContentTransformation().isIdentity())
-        imageBuffer.clear();
 }
 
 FloatRect SVGRenderingContext::clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect)

@@ -340,7 +340,7 @@ TEST(TransparencyWin, OpaqueCompositeLayerPixel)
     }
 
     // Finish the compositing.
-    src->context()->endTransparencyLayer();
+    src->context()->endLayer();
 
     // Check that we got the right values, it should be like the rectangle was
     // drawn with half opacity even though the alpha channel got messed up.
@@ -504,7 +504,7 @@ TEST(TransparencyWin, RotateOpaqueCompositeLayer)
     }
 
     // Finish the compositing.
-    src->context()->endTransparencyLayer();
+    src->context()->endLayer();
 
     // Top corner should be the original background.
     EXPECT_EQ(white, getPixelAt(src->context(), 0, 0));
@@ -673,7 +673,7 @@ TEST(TransparencyWin, ScaleTransparency)
 
     // Finish the layer.
     src->context()->restore();
-    src->context()->endTransparencyLayer();
+    src->context()->endLayer();
 
     Color redBackground(0xFFFF8080); // 50% red composited on white.
     EXPECT_EQ(redBackground, getPixelAt(src->context(), 0, 0));
