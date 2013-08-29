@@ -85,16 +85,6 @@ int64 GetFileOffsetFromKeyAndDataOffset(const std::string& key,
   return headers_size + data_offset;
 }
 
-// TODO(clamy, gavinp): this should go in base
-bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
-  DCHECK(out_mtime);
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
-    return false;
-  *out_mtime = file_info.last_modified;
-  return true;
-}
-
-}  // namespace simple_backend
+}  // namespace simple_util
 
 }  // namespace disk_cache

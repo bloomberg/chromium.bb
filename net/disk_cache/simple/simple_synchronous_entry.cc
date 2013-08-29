@@ -503,16 +503,12 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
       PlatformFileInfo file_info;
       bool success = GetPlatformFileInfo(files_[i], &file_info);
-      base::Time file_last_modified;
       if (!success) {
         DLOG(WARNING) << "Could not get platform file info.";
         continue;
       }
       out_entry_stat->last_used = file_info.last_accessed;
-      if (simple_util::GetMTime(path_, &file_last_modified))
-        out_entry_stat->last_modified = file_last_modified;
-      else
-        out_entry_stat->last_modified = file_info.last_modified;
+      out_entry_stat->last_modified = file_info.last_modified;
 
       base::TimeDelta entry_age =
           base::Time::Now() - out_entry_stat->last_modified;
