@@ -422,6 +422,11 @@ static void CopyPcmDataToBus(int input_fd,
       ++decoded_frames;
     }
   }
+
+  // number_of_frames is only an estimate.  Resize the buffer with the
+  // actual number of received frames.
+  if (decoded_frames < number_of_frames)
+    destination_bus->resizeSmaller(decoded_frames);
 }
 
 // The number of frames is unknown, so keep reading and buffering
@@ -466,6 +471,11 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
     }
     ++decoded_frames;
   }
+
+  // number_of_frames is only an estimate.  Resize the buffer with the
+  // actual number of received frames.
+  if (decoded_frames < number_of_frames)
+    destination_bus->resizeSmaller(decoded_frames);
 }
 
 static bool TryWAVEFileDecoder(WebKit::WebAudioBus* destination_bus,
