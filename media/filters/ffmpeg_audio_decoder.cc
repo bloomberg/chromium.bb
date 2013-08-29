@@ -357,7 +357,6 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   codec_context_->opaque = this;
   codec_context_->get_buffer2 = GetAudioBufferImpl;
-  codec_context_->refcounted_frames = 1;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec || avcodec_open2(codec_context_, codec, NULL) < 0) {
@@ -397,8 +396,10 @@ void FFmpegAudioDecoder::ReleaseFFmpegResources() {
     av_free(codec_context_);
   }
 
-  if (av_frame_)
-    av_frame_free(&av_frame_);
+  if (av_frame_) {
+    av_free(av_frame_);
+    av_frame_ = NULL;
+  }
 }
 
 void FFmpegAudioDecoder::ResetTimestampState() {
@@ -425,6 +426,9 @@ void FFmpegAudioDecoder::RunDecodeLoop(
   // want to hand it to the decoder at least once, otherwise we would end up
   // skipping end of stream packets since they have a size of zero.
   do {
+    // Reset frame to default values.
+    avcodec_get_frame_defaults(av_frame_);
+
     int frame_decoded = 0;
     int result = avcodec_decode_audio4(
         codec_context_, av_frame_, &frame_decoded, &packet);
@@ -483,7 +487,6 @@ void FFmpegAudioDecoder::RunDecodeLoop(
         // This is an unrecoverable error, so bail out.
         QueuedAudioBuffer queue_entry = { kDecodeError, NULL };
         queued_audio_.push_back(queue_entry);
-        av_frame_unref(av_frame_);
         break;
       }
 
@@ -506,10 +509,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
       }
 
       decoded_frames = output->frame_count();
-      av_frame_unref(av_frame_);
     }
-
-    // WARNING: |av_frame_| no longer has valid data at this point.
 
     if (decoded_frames > 0) {
       // Set the timestamp/duration once all the extra frames have been
