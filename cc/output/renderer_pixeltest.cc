@@ -1416,6 +1416,79 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
       ExactPixelComparator(true)));
 }
 
+// Not WithSkiaGPUBackend since that path currently requires tiles for opacity.
+TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
+  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  // One viewport-filling 0.5-opacity green quad.
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint green_paint;
+  green_paint.setColor(SK_ColorGREEN);
+  green_pile->add_draw_rect_with_paint(viewport, green_paint);
+  green_pile->RerecordPile();
+
+  gfx::Transform green_content_to_target_transform;
+  scoped_ptr<SharedQuadState> green_shared_state =
+      CreateTestSharedQuadState(green_content_to_target_transform, viewport);
+  green_shared_state->opacity = 0.5f;
+
+  scoped_ptr<PictureDrawQuad> green_quad = PictureDrawQuad::Create();
+  green_quad->SetNew(green_shared_state.get(),
+                     viewport,
+                     gfx::Rect(),
+                     gfx::RectF(0, 0, 1, 1),
+                     viewport.size(),
+                     contents_swizzled,
+                     viewport,
+                     1.f,
+                     use_skia_gpu_backend,
+                     green_pile);
+  pass->quad_list.push_back(green_quad.PassAs<DrawQuad>());
+
+  // One viewport-filling white quad.
+  scoped_refptr<FakePicturePileImpl> white_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint white_paint;
+  white_paint.setColor(SK_ColorWHITE);
+  white_pile->add_draw_rect_with_paint(viewport, white_paint);
+  white_pile->RerecordPile();
+
+  gfx::Transform white_content_to_target_transform;
+  scoped_ptr<SharedQuadState> white_shared_state =
+      CreateTestSharedQuadState(white_content_to_target_transform, viewport);
+
+  scoped_ptr<PictureDrawQuad> white_quad = PictureDrawQuad::Create();
+  white_quad->SetNew(white_shared_state.get(),
+                     viewport,
+                     gfx::Rect(),
+                     gfx::RectF(0, 0, 1, 1),
+                     viewport.size(),
+                     contents_swizzled,
+                     viewport,
+                     1.f,
+                     use_skia_gpu_backend,
+                     white_pile);
+  pass->quad_list.push_back(white_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
            PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);

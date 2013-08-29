@@ -19,7 +19,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "skia/ext/opacity_draw_filter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -313,27 +313,19 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
       SkMatrix::kFill_ScaleToFit);
   current_canvas_->concat(content_matrix);
 
-  if (quad->ShouldDrawWithBlending()) {
-    TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad with blending");
-    SkBitmap temp_bitmap;
-    temp_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                          quad->texture_size.width(),
-                          quad->texture_size.height());
-    temp_bitmap.allocPixels();
-    SkBitmapDevice temp_device(temp_bitmap);
-    SkCanvas temp_canvas(&temp_device);
+  // TODO(aelias): This isn't correct in all cases. We should detect these
+  // cases and fall back to a persistent bitmap backing
+  // (http://crbug.com/280374).
+  DCHECK(!current_canvas_->getDrawFilter());
+  current_canvas_->setDrawFilter(new skia::OpacityDrawFilter(quad->opacity(),
+                                                             true));
 
-    quad->picture_pile->RasterToBitmap(
-        &temp_canvas, quad->content_rect, quad->contents_scale, NULL);
+  TRACE_EVENT0("cc",
+               "SoftwareRenderer::DrawPictureQuad");
+  quad->picture_pile->RasterDirect(
+      current_canvas_, quad->content_rect, quad->contents_scale, NULL);
 
-    current_paint_.setFilterBitmap(true);
-    current_canvas_->drawBitmap(temp_bitmap, 0, 0, &current_paint_);
-  } else {
-    TRACE_EVENT0("cc",
-                 "SoftwareRenderer::DrawPictureQuad direct from PicturePile");
-    quad->picture_pile->RasterDirect(
-        current_canvas_, quad->content_rect, quad->contents_scale, NULL);
-  }
+  current_canvas_->setDrawFilter(NULL);
 }
 
 void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
