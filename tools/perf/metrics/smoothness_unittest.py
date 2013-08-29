@@ -8,8 +8,8 @@ from metrics import smoothness
 from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.page import page
 from telemetry.page.page_measurement_results import PageMeasurementResults
-from telemetry.core.chrome.tracing_backend import RawTraceResultImpl
-from telemetry.core.chrome.trace_result import TraceResult
+from telemetry.core.backends.chrome.tracing_backend import RawTraceResultImpl
+from telemetry.core.backends.chrome.trace_result import TraceResult
 
 class MockTimer(object):
   """ An instance of this class is used as a global timer to generate
