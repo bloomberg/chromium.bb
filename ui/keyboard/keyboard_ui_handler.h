@@ -25,6 +25,10 @@ class KeyboardUIHandler : public content::WebUIMessageHandler {
   // Callback for the "insertText" message.
   void HandleInsertTextMessage(const base::ListValue* args);
 
+  // Callback for the "getInputContext" message. The first element in
+  // |args| should be an integer representing request ID.
+  void HandleGetInputContextMessage(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIHandler);
 };
 
