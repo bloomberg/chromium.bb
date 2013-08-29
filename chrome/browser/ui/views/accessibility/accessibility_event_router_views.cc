@@ -305,7 +305,6 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
   std::string name = UTF16ToUTF8(state.name);
-  std::string value = UTF16ToUTF8(state.value);
   std::string context = GetViewContext(view);
   AccessibilityCheckboxInfo info(
       profile,
