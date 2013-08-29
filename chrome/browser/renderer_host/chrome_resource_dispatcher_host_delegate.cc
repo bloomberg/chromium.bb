@@ -36,6 +36,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -420,6 +421,10 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
         child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
+
+  RenderViewHost* view = RenderViewHost::FromID(child_id, route_id);
+  if (view && view->GetProcess()->IsGuest())
+    return false;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
