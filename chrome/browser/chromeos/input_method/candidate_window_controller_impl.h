@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
-#include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
 
@@ -31,8 +30,7 @@ class DelayableWidget;
 class CandidateWindowControllerImpl
     : public CandidateWindowController,
       public CandidateWindowView::Observer,
-      public IBusPanelCandidateWindowHandlerInterface,
-      public IBusDaemonController::Observer {
+      public IBusPanelCandidateWindowHandlerInterface {
  public:
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
@@ -94,10 +92,6 @@ class CandidateWindowControllerImpl
                                  bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& utf8_text,
                                  unsigned int cursor, bool visible) OVERRIDE;
-
-  // IBusDaemonController::Observer override
-  virtual void OnConnected() OVERRIDE;
-  virtual void OnDisconnected() OVERRIDE;
 
   // Updates infolist bounds, if current bounds is up-to-date, this function
   // does nothing.
