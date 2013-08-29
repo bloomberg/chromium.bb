@@ -707,7 +707,7 @@ void ExynosVideoEncodeAccelerator::DequeueMfc() {
       return;
     }
     const bool key_frame = ((dqbuf.flags & V4L2_BUF_FLAG_KEYFRAME) != 0);
-    const size_t output_size = dqbuf.m.planes[0].bytesused;
+    size_t output_size = dqbuf.m.planes[0].bytesused;
     MfcOutputRecord& output_record = mfc_output_buffer_map_[dqbuf.index];
     DCHECK(output_record.at_device);
     DCHECK(output_record.buffer_ref.get());
@@ -724,6 +724,7 @@ void ExynosVideoEncodeAccelerator::DequeueMfc() {
       // Insert stream header before every keyframe.
       memmove(data + stream_header_size_, data, output_size);
       memcpy(data, stream_header_.get(), stream_header_size_);
+      output_size += stream_header_size_;
     }
     DVLOG(3) << "DequeueMfc(): returning "
                 "bitstream_buffer_id=" << output_record.buffer_ref->id
@@ -733,7 +734,7 @@ void ExynosVideoEncodeAccelerator::DequeueMfc() {
         base::Bind(&Client::BitstreamBufferReady,
                    client_,
                    output_record.buffer_ref->id,
-                   dqbuf.m.planes[0].bytesused,
+                   output_size,
                    key_frame));
     output_record.at_device = false;
     output_record.buffer_ref.reset();
