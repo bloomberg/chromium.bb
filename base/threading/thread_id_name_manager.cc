@@ -20,7 +20,8 @@ static std::string* g_default_name;
 }
 
 ThreadIdNameManager::ThreadIdNameManager()
-    : main_process_id_(kInvalidThreadId) {
+    : main_process_name_(NULL),
+      main_process_id_(kInvalidThreadId) {
   g_default_name = new std::string(kDefaultName);
 
   AutoLock locked(lock_);
