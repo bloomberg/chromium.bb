@@ -9,6 +9,11 @@
         {"exists": true}
   },
   "RegistryEntries": {
-    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY": {"exists": true}
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
+      "exists": true,
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    }
   }
 }
