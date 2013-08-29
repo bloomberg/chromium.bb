@@ -236,33 +236,32 @@ is_motion_event(struct input_event *e)
 }
 
 static void
-transform_absolute(struct evdev_device *device)
+transform_absolute(struct evdev_device *device, int32_t *x, int32_t *y)
 {
-	int32_t x, y;
+       if (!device->abs.apply_calibration) {
+               *x = device->abs.x;
+               *y = device->abs.y;
+               return;
+       } else {
+               *x = device->abs.x * device->abs.calibration[0] +
+                       device->abs.y * device->abs.calibration[1] +
+                       device->abs.calibration[2];
 
-	if (!device->abs.apply_calibration)
-		return;
-
-	x = device->abs.x * device->abs.calibration[0] +
-		device->abs.y * device->abs.calibration[1] +
-		device->abs.calibration[2];
-
-	y = device->abs.x * device->abs.calibration[3] +
-		device->abs.y * device->abs.calibration[4] +
-		device->abs.calibration[5];
-
-	device->abs.x = x;
-	device->abs.y = y;
+               *y = device->abs.x * device->abs.calibration[3] +
+                       device->abs.y * device->abs.calibration[4] +
+                       device->abs.calibration[5];
+       }
 }
 
 static void
 evdev_flush_motion(struct evdev_device *device, uint32_t time)
 {
-	struct weston_seat *master = device->seat;
-	wl_fixed_t x, y;
-	int slot;
+       struct weston_seat *master = device->seat;
+       wl_fixed_t x, y;
+       int32_t cx, cy;
+       int slot;
 
-	if (!(device->pending_events & EVDEV_SYN))
+       if (!(device->pending_events & EVDEV_SYN))
 		return;
 
 	slot = device->mt.slot;
@@ -296,16 +295,15 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_UP) {
 		notify_touch(master, time, device->mt.slot, 0, 0,
 			     WL_TOUCH_UP);
-		device->pending_events &= ~EVDEV_ABSOLUTE_MT_UP;
-	}
-	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
-		transform_absolute(device);
-		weston_output_transform_coordinate(device->output,
-						   device->abs.x,
-						   device->abs.y, &x, &y);
+               device->pending_events &= ~EVDEV_ABSOLUTE_MT_UP;
+       }
+       if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
+               transform_absolute(device, &cx, &cy);
+               weston_output_transform_coordinate(device->output,
+                                                  cx, cy, &x, &y);
 
-		if (device->caps & EVDEV_TOUCH) {
-			if (master->num_tp == 0)
+               if (device->caps & EVDEV_TOUCH) {
+                       if (master->num_tp == 0)
 				notify_touch(master, time, 0,
 					     x, y, WL_TOUCH_DOWN);
 			else
