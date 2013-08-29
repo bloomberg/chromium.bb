@@ -21,13 +21,15 @@ from pylib import android_commands
 from pylib import constants
 from pylib.gtest import gtest_config
 
+CHROME_SRC_DIR = bb_utils.CHROME_SRC
+CHROME_OUT_DIR = bb_utils.CHROME_OUT_DIR
 sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
+    CHROME_SRC_DIR, 'third_party', 'android_testrunner'))
 import errors
 
 
-CHROME_SRC = constants.DIR_SOURCE_ROOT
-LOGCAT_DIR = os.path.join(CHROME_SRC, 'out', 'logcat')
+SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
+LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
@@ -220,7 +222,7 @@ def RunWebkitLayoutTests(options):
         '--exit-after-n-failures', '5000',
         '--exit-after-n-crashes-or-timeouts', '100',
         '--debug-rwt-logging',
-        '--results-directory', '..layout-test-results',
+        '--results-directory', '../layout-test-results',
         '--target', options.target,
         '--builder-name', options.build_properties.get('buildername', ''),
         '--build-number', str(options.build_properties.get('buildnumber', '')),
@@ -235,21 +237,31 @@ def RunWebkitLayoutTests(options):
 
   for f in options.factory_properties.get('additional_expectations', []):
     cmd_args.extend(
-        ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
+        ['--additional-expectations=%s' % os.path.join(CHROME_SRC_DIR, *f)])
 
   # TODO(dpranke): Remove this block after
   # https://codereview.chromium.org/12927002/ lands.
   for f in options.factory_properties.get('additional_expectations_files', []):
     cmd_args.extend(
-        ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
+        ['--additional-expectations=%s' % os.path.join(CHROME_SRC_DIR, *f)])
 
   RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args)
+
+  if options.factory_properties.get('archive_webkit_results', False):
+    bb_annotations.PrintNamedStep('archive_webkit_results')
+    RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
+                         'archive_layout_test_results.py'),
+        '--results-dir', '../layout-test-results',
+        '--target', options.target,
+        '--build-dir', CHROME_OUT_DIR,
+        '--build-number', str(options.build_properties.get('buildnumber', '')),
+        '--builder-name', options.build_properties.get('buildername', '')])
 
 
 def SpawnLogcatMonitor():
   shutil.rmtree(LOGCAT_DIR, ignore_errors=True)
   bb_utils.SpawnCmd([
-      os.path.join(CHROME_SRC, 'build', 'android', 'adb_logcat_monitor.py'),
+      os.path.join(CHROME_SRC_DIR, 'build', 'android', 'adb_logcat_monitor.py'),
       LOGCAT_DIR])
 
   # Wait for logcat_monitor to pull existing logcat
@@ -348,7 +360,7 @@ def GenerateJavaCoverageReport(options):
   coverage_html = os.path.join(options.coverage_dir, 'coverage_html')
   RunCmd(['build/android/generate_emma_html.py',
           '--coverage-dir', options.coverage_dir,
-          '--metadata-dir', os.path.join(CHROME_SRC, 'out', options.target),
+          '--metadata-dir', os.path.join(CHROME_OUT_DIR, options.target),
           '--cleanup',
           '--output', os.path.join(coverage_html, 'index.html')])
   UploadCoverageData(options, coverage_html, 'java')
@@ -357,10 +369,11 @@ def GenerateJavaCoverageReport(options):
 def LogcatDump(options):
   # Print logcat, kill logcat monitor
   bb_annotations.PrintNamedStep('logcat_dump')
-  logcat_file = os.path.join(CHROME_SRC, 'out', options.target, 'full_log')
+  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
   with open(logcat_file, 'w') as f:
     RunCmd([
-        os.path.join(CHROME_SRC, 'build', 'android', 'adb_logcat_printer.py'),
+        os.path.join(CHROME_SRC_DIR, 'build', 'android',
+                     'adb_logcat_printer.py'),
         LOGCAT_DIR], stdout=f)
   RunCmd(['cat', logcat_file])
 
@@ -368,7 +381,7 @@ def LogcatDump(options):
 def GenerateTestReport(options):
   bb_annotations.PrintNamedStep('test_report')
   for report in glob.glob(
-      os.path.join(CHROME_SRC, 'out', options.target, 'test_logs', '*.log')):
+      os.path.join(CHROME_OUT_DIR, options.target, 'test_logs', '*.log')):
     RunCmd(['cat', report])
     os.remove(report)
 
@@ -448,7 +461,7 @@ def main(argv):
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
   if options.coverage_bucket:
     setattr(options, 'coverage_dir',
-            os.path.join(CHROME_SRC, 'out', options.target, 'coverage'))
+            os.path.join(CHROME_OUT_DIR, options.target, 'coverage'))
 
   MainTestWrapper(options)
 
