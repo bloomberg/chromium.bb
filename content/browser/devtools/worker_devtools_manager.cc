@@ -32,6 +32,16 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
       worker_route_id);
 }
 
+// Called on the UI thread.
+// static
+bool DevToolsAgentHost::HasForWorker(
+    int worker_process_id,
+    int worker_route_id) {
+  return WorkerDevToolsManager::HasDevToolsAgentHostForWorker(
+      worker_process_id,
+      worker_route_id);
+}
+
 namespace {
 
 typedef std::map<WorkerDevToolsManager::WorkerId,
@@ -218,6 +228,14 @@ DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
   if (it == g_agent_map.Get().end())
     return new WorkerDevToolsAgentHost(id);
   return it->second;
+}
+
+// static
+bool WorkerDevToolsManager::HasDevToolsAgentHostForWorker(
+    int worker_process_id,
+    int worker_route_id) {
+  WorkerId id(worker_process_id, worker_route_id);
+  return g_agent_map.Get().find(id) != g_agent_map.Get().end();
 }
 
 WorkerDevToolsManager::WorkerDevToolsManager() {

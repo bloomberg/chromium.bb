@@ -135,6 +135,15 @@ bool HasClientHost(RenderViewHost* rvh) {
   return agent->IsAttached();
 }
 
+bool HasClientHost(int process_id, int route_id) {
+  if (!DevToolsAgentHost::HasForWorker(process_id, route_id))
+    return false;
+
+  scoped_refptr<DevToolsAgentHost> agent(
+      DevToolsAgentHost::GetForWorker(process_id, route_id));
+  return agent->IsAttached();
+}
+
 DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   std::string title;
@@ -411,26 +420,10 @@ class InspectUI::WorkerCreationDestructionListener
 
   void CollectWorkersData() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    scoped_ptr<ListValue> target_list(new ListValue());
-    std::vector<WorkerService::WorkerInfo> worker_info =
-        WorkerService::GetInstance()->GetWorkers();
-    for (size_t i = 0; i < worker_info.size(); ++i) {
-      target_list->Append(BuildTargetDescriptor(
-          kWorkerTargetType,
-          false,
-          worker_info[i].url,
-          UTF16ToUTF8(worker_info[i].name),
-          GURL(),
-          "",
-          worker_info[i].process_id,
-          worker_info[i].route_id,
-          worker_info[i].handle));
-    }
-
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::PopulateWorkersList,
-                   this, base::Owned(target_list.release())));
+                   this, WorkerService::GetInstance()->GetWorkers()));
   }
 
   void RegisterObserver() {
@@ -441,12 +434,27 @@ class InspectUI::WorkerCreationDestructionListener
     WorkerService::GetInstance()->RemoveObserver(this);
   }
 
-  void PopulateWorkersList(ListValue* target_list) {
+  void PopulateWorkersList(
+      const std::vector<WorkerService::WorkerInfo>& worker_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (discovery_ui_) {
-      discovery_ui_->web_ui()->CallJavascriptFunction(
-          "populateWorkersList", *target_list);
+    if (!discovery_ui_)
+      return;
+
+    ListValue target_list;
+    for (size_t i = 0; i < worker_info.size(); ++i) {
+      target_list.Append(BuildTargetDescriptor(
+          kWorkerTargetType,
+          HasClientHost(worker_info[i].process_id, worker_info[i].route_id),
+          worker_info[i].url,
+          UTF16ToUTF8(worker_info[i].name),
+          GURL(),
+          "",
+          worker_info[i].process_id,
+          worker_info[i].route_id,
+          worker_info[i].handle));
     }
+    discovery_ui_->web_ui()->CallJavascriptFunction(
+        "populateWorkersList", target_list);
   }
 
   InspectUI* discovery_ui_;
