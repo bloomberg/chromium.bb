@@ -175,31 +175,38 @@
           },
           "devicePath": {
             "type": "string",
+            "optional": true,
             "description": "Disk volume device path."
           },
           "systemPath": {
             "type": "string",
+            "optional": true,
             "description": "Disk volume system path."
           },
           "filePath": {
             "type": "string",
+            "optional": true,
             "description": "Disk volume file path."
           },
           "deviceLabel": {
             "type": "string",
+            "optional": true,
             "description": "Volume label."
           },
           "driveLabel": {
             "type": "string",
+            "optional": true,
             "description": "Volume's disk label."
           },
           "deviceType": {
             "type": "string",
+            "optional": true,
             "enum": ["usb", "sd", "optical", "mobile", "unknown"],
             "description": "Device type."
           },
           "isParent": {
             "type": "boolean",
+            "optional": true,
             "description": "Flag that specifies if volume is a parent device."
           },
           "isReadOnly": {
@@ -208,14 +215,17 @@
           },
           "hasMedia": {
             "type": "boolean",
+            "optional": true,
             "description": "Flag that specifies if volume has any media."
           },
           "isOnBootDevice": {
             "type": "boolean",
+            "optional": true,
             "description": "Flag that specifies if volume is on boot device."
           },
           "totalSize": {
             "type": "integer",
+            "optional": true,
             "description": "Total disk volume size."
           }
         }

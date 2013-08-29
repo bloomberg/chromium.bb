@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <utime.h>
 
+#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -94,6 +95,13 @@ base::DictionaryValue* CreateValueFromDisk(
   volume_info->SetBoolean("hasMedia", volume->has_media());
   volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
 
+  return volume_info;
+}
+
+base::DictionaryValue* CreateDownloadsVolumeMetadata() {
+  base::DictionaryValue* volume_info = new base::DictionaryValue;
+  volume_info->SetString("mountPath", "Downloads");
+  volume_info->SetBoolean("isReadOnly", false);
   return volume_info;
 }
 
@@ -509,11 +517,16 @@ bool GetVolumeMetadataFunction::RunImpl() {
 
   results_.reset();
 
-  const DiskMountManager::Disk* volume = GetVolumeAsDisk(file_path.value());
-  if (volume) {
-    DictionaryValue* volume_info =
-        CreateValueFromDisk(profile_, extension_->id(), volume);
-    SetResult(volume_info);
+  base::FilePath home_path;
+  // TODO(hidehiko): Return the volume info for Drive File System.
+  if (PathService::Get(base::DIR_HOME, &home_path) &&
+      file_path == home_path.AppendASCII("Downloads")) {
+    // Return simple (fake) volume metadata for Downloads volume.
+    SetResult(CreateDownloadsVolumeMetadata());
+  } else {
+    const DiskMountManager::Disk* volume = GetVolumeAsDisk(file_path.value());
+    if (volume)
+      SetResult(CreateValueFromDisk(profile_, extension_->id(), volume));
   }
 
   SendResponse(true);

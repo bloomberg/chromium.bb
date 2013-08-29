@@ -48,6 +48,11 @@ var expectedVolume3 = {
   isOnBootDevice: true
 };
 
+var expectedDownloadsVolume = {
+  mountPath: 'Downloads',
+  isReadOnly: false,
+};
+
 // List of expected mount points.
 // NOTE: this has to be synced with values in file_browser_private_apitest.cc
 //       and values sorted by mountPath.
@@ -143,6 +148,16 @@ chrome.test.runTests([
     }));
   },
 
+  function getVolumeMetadataDownloads() {
+    chrome.fileBrowserPrivate.getVolumeMetadata(
+        createFileUrl(expectedDownloadsVolume.mountPath),
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertTrue(
+              validateObject(result, expectedDownloadsVolume, 'volume'),
+              'getVolumeMetadata result for downloads volume not as expected');
+        }));
+  },
+
   function getVolumeMetadataNonExistentPath() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
         createFileUrl('removable/non_existent_device_path'),
@@ -150,7 +165,6 @@ chrome.test.runTests([
           chrome.test.assertEq(undefined, result);
     }));
   },
-
 
   function getVolumeMetadataArchive() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
