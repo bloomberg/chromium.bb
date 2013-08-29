@@ -35,6 +35,16 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSApplication (LionSDKDeclarations)
+- (void)disableRelaunchOnLogin;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
 namespace {
 
 const app_mode::ChromeAppModeInfo* g_info;
@@ -109,6 +119,10 @@ void AppShimController::Init() {
   DCHECK(g_io_thread);
 
   SetUpMenu();
+
+  // Chrome will relaunch shims when relaunching apps.
+  if (base::mac::IsOSLionOrLater())
+    [NSApp disableRelaunchOnLogin];
 
   // The user_data_dir for shims actually contains the app_data_path.
   // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/
