@@ -51,7 +51,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/network/NetworkStateNotifier.h"
 #include "core/plugins/PluginData.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespace.h"
 #include "wtf/HashMap.h"
@@ -104,7 +103,6 @@ Page::Page(PageClients& pageClients)
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
     , m_backForwardController(BackForwardController::create(this, pageClients.backForwardClient))
-    , m_theme(RenderTheme::themeForPage(this))
     , m_editorClient(pageClients.editorClient)
     , m_validationMessageClient(0)
     , m_subframeCount(0)

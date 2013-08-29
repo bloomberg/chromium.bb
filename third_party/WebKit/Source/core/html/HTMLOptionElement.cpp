@@ -193,7 +193,7 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (oldDisabled != m_disabled) {
             didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
             if (renderer() && renderer()->style()->hasAppearance())
-                renderer()->theme()->stateChanged(renderer(), EnabledState);
+                RenderTheme::theme().stateChanged(renderer(), EnabledState);
         }
     } else if (name == selectedAttr) {
         if (bool willBeSelected = !value.isNull())

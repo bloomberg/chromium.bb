@@ -341,8 +341,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     bool shouldAddPickerIndicator = false;
     if (InputType::themeSupportsDataListUI(this))
         shouldAddPickerIndicator = true;
-    RefPtr<RenderTheme> theme = document->page() ? document->page()->theme() : RenderTheme::defaultTheme();
-    if (theme->supportsCalendarPicker(formControlType())) {
+    if (RenderTheme::theme().supportsCalendarPicker(formControlType())) {
         shouldAddPickerIndicator = true;
         m_pickerIndicatorIsAlwaysVisible = true;
     }
@@ -419,9 +418,8 @@ void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
 void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     Document* document = element()->document();
-    RefPtr<RenderTheme> theme = document->page() ? document->page()->theme() : RenderTheme::defaultTheme();
     if (m_pickerIndicatorIsVisible
-        && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (theme->shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
+        && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (RenderTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
         if (PickerIndicatorElement* element = pickerIndicatorElement())
             element->openPopup();
         event->setDefaultHandled();

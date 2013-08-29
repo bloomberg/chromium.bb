@@ -106,8 +106,6 @@ public:
 
     void setNeedsRecalcStyleInAllFrames();
 
-    RenderTheme* theme() const { return m_theme.get(); }
-
     ViewportArguments viewportArguments() const;
 
     static void refreshPlugins(bool reload);
@@ -280,8 +278,6 @@ private:
     RefPtr<Frame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
-
-    const RefPtr<RenderTheme> m_theme;
 
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;

@@ -55,15 +55,8 @@ public:
     virtual ~RenderTheme() { }
 
     // This function is to be implemented in your platform-specific theme implementation to hand back the
-    // appropriate platform theme. When the theme is needed in non-page dependent code, a default theme is
-    // used as fallback, which is returned for a nulled page, so the platform code needs to account for this.
-    static PassRefPtr<RenderTheme> themeForPage(Page* page);
-
-    // When the theme is needed in non-page dependent code, the defaultTheme() is used as fallback.
-    static inline PassRefPtr<RenderTheme> defaultTheme()
-    {
-        return themeForPage(0);
-    };
+    // appropriate platform theme.
+    static RenderTheme& theme();
 
     static void setSizeIfAuto(RenderStyle*, const IntSize&);
 
@@ -356,7 +349,7 @@ private:
     static const RGBA32 defaultTapHighlightColor = 0x66000000;
 
 #if USE(NEW_THEME)
-    Theme* m_theme; // The platform-specific theme.
+    Theme* m_platformTheme; // The platform-specific theme.
 #endif
 };
 

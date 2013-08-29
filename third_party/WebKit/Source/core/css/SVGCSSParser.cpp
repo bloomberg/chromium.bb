@@ -189,7 +189,7 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
             else if (id == CSSValueCurrentcolor)
                 parsedValue = SVGPaint::createCurrentColor();
             else if (isSystemColor(id))
-                parsedValue = SVGPaint::createColor(RenderTheme::defaultTheme()->systemColor(id));
+                parsedValue = SVGPaint::createColor(RenderTheme::theme().systemColor(id));
             else if (value->unit == CSSPrimitiveValue::CSS_URI) {
                 RGBA32 c = Color::transparent;
                 if (m_valueList->next()) {
@@ -212,7 +212,7 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
         if (isSystemColor(id))
-            parsedValue = SVGColor::createFromColor(RenderTheme::defaultTheme()->systemColor(id));
+            parsedValue = SVGColor::createFromColor(RenderTheme::theme().systemColor(id));
         else if ((id >= CSSValueAqua && id <= CSSValueTransparent) ||
                 (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) || id == CSSValueGrey)
             parsedValue = SVGColor::createFromString(value->string);

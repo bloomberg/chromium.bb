@@ -186,7 +186,7 @@ WebCore::LayoutUnit AutofillPopupMenuClient::clientPaddingLeft() const
     if (!style)
        return 0;
 
-    return RenderTheme::defaultTheme()->popupInternalPaddingLeft(style);
+    return RenderTheme::theme().popupInternalPaddingLeft(style);
 }
 
 WebCore::LayoutUnit AutofillPopupMenuClient::clientPaddingRight() const
@@ -196,7 +196,7 @@ WebCore::LayoutUnit AutofillPopupMenuClient::clientPaddingRight() const
     if (!style)
         return 0;
 
-    return RenderTheme::defaultTheme()->popupInternalPaddingRight(style);
+    return RenderTheme::theme().popupInternalPaddingRight(style);
 }
 
 void AutofillPopupMenuClient::popupDidHide()
@@ -279,7 +279,7 @@ void AutofillPopupMenuClient::initialize(
     }
 
     FontDescription regularFontDescription;
-    RenderTheme::defaultTheme()->systemFont(CSSValueWebkitControl,
+    RenderTheme::theme().systemFont(CSSValueWebkitControl,
                                             regularFontDescription);
     RenderStyle* style = m_textField->computedStyle();
     regularFontDescription.setComputedSize(style->fontDescription().computedSize());

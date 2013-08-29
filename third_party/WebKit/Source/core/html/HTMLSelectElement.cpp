@@ -190,9 +190,7 @@ void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelec
 
 bool HTMLSelectElement::usesMenuList() const
 {
-    const Page* page = document()->page();
-    RefPtr<RenderTheme> renderTheme = page ? page->theme() : RenderTheme::defaultTheme();
-    if (renderTheme->delegatesMenuListRendering())
+    if (RenderTheme::theme().delegatesMenuListRendering())
         return true;
 
     return !m_multiple && m_size <= 1;
@@ -1064,10 +1062,7 @@ void HTMLSelectElement::reset()
 #if !OS(WINDOWS)
 bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
 {
-    const Page* page = document()->page();
-    RefPtr<RenderTheme> renderTheme = page ? page->theme() : RenderTheme::defaultTheme();
-
-    if (!renderTheme->popsMenuByArrowKeys())
+    if (!RenderTheme::theme().popsMenuByArrowKeys())
         return false;
 
     if (!isSpatialNavigationEnabled(document()->frame())) {
@@ -1097,8 +1092,7 @@ bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
 
 void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 {
-    const Page* page = document()->page();
-    RefPtr<RenderTheme> renderTheme = page ? page->theme() : RenderTheme::defaultTheme();
+    RenderTheme& renderTheme = RenderTheme::theme();
 
     if (event->type() == eventNames().keydownEvent) {
         if (!renderer() || !event->isKeyboardEvent())
@@ -1158,7 +1152,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             return;
         }
 
-        if (renderTheme->popsMenuBySpaceOrReturn()) {
+        if (renderTheme.popsMenuBySpaceOrReturn()) {
             if (keyCode == ' ' || keyCode == '\r') {
                 focus();
 
@@ -1176,7 +1170,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
                     menuList->showPopup();
                 handled = true;
             }
-        } else if (renderTheme->popsMenuByArrowKeys()) {
+        } else if (renderTheme.popsMenuByArrowKeys()) {
             if (keyCode == ' ') {
                 focus();
 

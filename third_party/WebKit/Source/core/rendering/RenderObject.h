@@ -64,7 +64,6 @@ class RenderLayerModelObject;
 class RenderNamedFlowThread;
 class RenderSVGResourceContainer;
 class RenderTable;
-class RenderTheme;
 class TransformState;
 
 struct PaintInfo;
@@ -143,8 +142,6 @@ public:
     // marked as anonymous in the constructor.
     explicit RenderObject(Node*);
     virtual ~RenderObject();
-
-    RenderTheme* theme() const;
 
     virtual const char* renderName() const = 0;
 

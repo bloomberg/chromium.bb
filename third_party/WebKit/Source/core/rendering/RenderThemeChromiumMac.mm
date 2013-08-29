@@ -1897,10 +1897,10 @@ NSView* FlippedView()
     return view;
 }
 
-PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page*)
+RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* rt = RenderThemeChromiumMac::create().leakRef();
-    return rt;
+    static RenderTheme* renderTheme = RenderThemeChromiumMac::create().leakRef();
+    return *renderTheme;
 }
 
 PassRefPtr<RenderTheme> RenderThemeChromiumMac::create()

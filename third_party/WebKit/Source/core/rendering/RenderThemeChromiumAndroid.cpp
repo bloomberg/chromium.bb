@@ -47,10 +47,10 @@ PassRefPtr<RenderTheme> RenderThemeChromiumAndroid::create()
     return adoptRef(new RenderThemeChromiumAndroid());
 }
 
-PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
+RenderTheme& RenderTheme::theme()
 {
     static RenderTheme* renderTheme = RenderThemeChromiumAndroid::create().leakRef();
-    return renderTheme;
+    return *renderTheme;
 }
 
 RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()

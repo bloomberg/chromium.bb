@@ -55,7 +55,7 @@ HTMLMeterElement* MeterShadowElement::meterElement() const
 bool MeterShadowElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     RenderObject* render = meterElement()->renderer();
-    return render && !render->theme()->supportsMeter(render->style()->appearance()) && HTMLDivElement::rendererIsNeeded(context);
+    return render && !RenderTheme::theme().supportsMeter(render->style()->appearance()) && HTMLDivElement::rendererIsNeeded(context);
 }
 
 inline MeterInnerElement::MeterInnerElement(Document* document)
@@ -76,7 +76,7 @@ bool MeterInnerElement::rendererIsNeeded(const NodeRenderingContext& context)
         return HTMLDivElement::rendererIsNeeded(context);
 
     RenderObject* render = meterElement()->renderer();
-    return render && !render->theme()->supportsMeter(render->style()->appearance()) && HTMLDivElement::rendererIsNeeded(context);
+    return render && !RenderTheme::theme().supportsMeter(render->style()->appearance()) && HTMLDivElement::rendererIsNeeded(context);
 }
 
 RenderObject* MeterInnerElement::createRenderer(RenderStyle*)

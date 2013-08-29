@@ -2799,8 +2799,7 @@ void FrameView::updateControlTints()
     if (!m_frame || m_frame->document()->url().isEmpty())
         return;
 
-    RenderView* renderView = this->renderView();
-    if ((renderView && renderView->theme()->supportsControlTints()) || hasCustomScrollbars())
+    if (RenderTheme::theme().supportsControlTints() || hasCustomScrollbars())
         paintControlTints();
 }
 

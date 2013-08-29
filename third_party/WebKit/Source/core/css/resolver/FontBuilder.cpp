@@ -121,7 +121,7 @@ void FontBuilder::fromSystemFont(CSSValueID valueId, float effectiveZoom)
     FontDescriptionChangeScope scope(this);
 
     FontDescription fontDescription;
-    RenderTheme::defaultTheme()->systemFont(valueId, fontDescription);
+    RenderTheme::theme().systemFont(valueId, fontDescription);
 
     // Double-check and see if the theme did anything. If not, don't bother updating the font.
     if (!fontDescription.isAbsoluteSize())

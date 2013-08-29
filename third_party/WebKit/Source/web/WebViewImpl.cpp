@@ -485,11 +485,6 @@ WebViewImpl::~WebViewImpl()
     ASSERT(m_helperPluginsPendingClose.isEmpty());
 }
 
-RenderTheme* WebViewImpl::theme() const
-{
-    return m_page ? m_page->theme() : RenderTheme::defaultTheme().get();
-}
-
 WebFrameImpl* WebViewImpl::mainFrameImpl()
 {
     return m_page ? WebFrameImpl::fromFrame(m_page->mainFrame()) : 0;
@@ -3581,7 +3576,7 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned inactiveForegroundColor) {
 #if ENABLE(DEFAULT_RENDER_THEME)
     RenderThemeChromiumDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
-    theme()->platformColorsDidChange();
+    RenderTheme::theme().platformColorsDidChange();
 #endif
 }
 

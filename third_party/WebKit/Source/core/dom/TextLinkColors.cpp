@@ -91,7 +91,7 @@ static Color colorForCSSValue(CSSValueID cssValueId)
         if (col->cssValueId == cssValueId)
             return col->color;
     }
-    return RenderTheme::defaultTheme()->systemColor(cssValueId);
+    return RenderTheme::theme().systemColor(cssValueId);
 }
 
 StyleColor TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, bool forVisitedLink) const

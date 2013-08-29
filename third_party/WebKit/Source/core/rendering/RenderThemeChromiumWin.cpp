@@ -163,10 +163,10 @@ PassRefPtr<RenderTheme> RenderThemeChromiumWin::create()
     return adoptRef(new RenderThemeChromiumWin);
 }
 
-PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
+RenderTheme& RenderTheme::theme()
 {
-    static RenderTheme* rt = RenderThemeChromiumWin::create().leakRef();
-    return rt;
+    static RenderTheme* renderTheme = RenderThemeChromiumWin::create().leakRef();
+    return *renderTheme;
 }
 
 bool RenderThemeChromiumWin::supportsFocusRing(const RenderStyle* style) const

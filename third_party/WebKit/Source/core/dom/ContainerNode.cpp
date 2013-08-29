@@ -905,7 +905,7 @@ void ContainerNode::setActive(bool down, bool pause)
         if (renderStyle()->affectedByActive() || (isElementNode() && toElement(this)->childrenAffectedByActive()))
             setNeedsStyleRecalc();
         if (renderStyle()->hasAppearance())
-            renderer()->theme()->stateChanged(renderer(), PressedState);
+            RenderTheme::theme().stateChanged(renderer(), PressedState);
     }
 }
 
@@ -933,7 +933,7 @@ void ContainerNode::setHovered(bool over)
         if (renderStyle()->affectedByHover() || (isElementNode() && toElement(this)->childrenAffectedByHover()))
             setNeedsStyleRecalc();
         if (renderer() && renderer()->style()->hasAppearance())
-            renderer()->theme()->stateChanged(renderer(), HoverState);
+            RenderTheme::theme().stateChanged(renderer(), HoverState);
     }
 }
 

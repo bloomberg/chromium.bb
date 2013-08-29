@@ -89,7 +89,7 @@ static WebKit::WebFallbackThemeEngine::State getWebFallbackThemeState(const Rend
 
 RenderTheme::RenderTheme()
 #if USE(NEW_THEME)
-    : m_theme(platformTheme())
+    : m_platformTheme(platformTheme())
 #endif
 {
     m_selectionColorsValid = 0;
@@ -133,7 +133,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
     case ButtonPart: {
         // Border
         LengthBox borderBox(style->borderTopWidth(), style->borderRightWidth(), style->borderBottomWidth(), style->borderLeftWidth());
-        borderBox = m_theme->controlBorder(part, style->font(), borderBox, style->effectiveZoom());
+        borderBox = m_platformTheme->controlBorder(part, style->font(), borderBox, style->effectiveZoom());
         if (borderBox.top().value() != static_cast<int>(style->borderTopWidth())) {
             if (borderBox.top().value())
                 style->setBorderTopWidth(borderBox.top().value());
@@ -162,32 +162,32 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
         }
 
         // Padding
-        LengthBox paddingBox = m_theme->controlPadding(part, style->font(), style->paddingBox(), style->effectiveZoom());
+        LengthBox paddingBox = m_platformTheme->controlPadding(part, style->font(), style->paddingBox(), style->effectiveZoom());
         if (paddingBox != style->paddingBox())
             style->setPaddingBox(paddingBox);
 
         // Whitespace
-        if (m_theme->controlRequiresPreWhiteSpace(part))
+        if (m_platformTheme->controlRequiresPreWhiteSpace(part))
             style->setWhiteSpace(PRE);
 
         // Width / Height
         // The width and height here are affected by the zoom.
         // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
-        LengthSize controlSize = m_theme->controlSize(part, style->font(), LengthSize(style->width(), style->height()), style->effectiveZoom());
+        LengthSize controlSize = m_platformTheme->controlSize(part, style->font(), LengthSize(style->width(), style->height()), style->effectiveZoom());
         if (controlSize.width() != style->width())
             style->setWidth(controlSize.width());
         if (controlSize.height() != style->height())
             style->setHeight(controlSize.height());
 
         // Min-Width / Min-Height
-        LengthSize minControlSize = m_theme->minimumControlSize(part, style->font(), style->effectiveZoom());
+        LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style->font(), style->effectiveZoom());
         if (minControlSize.width() != style->minWidth())
             style->setMinWidth(minControlSize.width());
         if (minControlSize.height() != style->minHeight())
             style->setMinHeight(minControlSize.height());
 
         // Font
-        FontDescription controlFont = m_theme->controlFont(part, style->font(), style->effectiveZoom());
+        FontDescription controlFont = m_platformTheme->controlFont(part, style->font(), style->effectiveZoom());
         if (controlFont != style->font().fontDescription()) {
             // Reset our line-height
             style->setLineHeight(RenderStyle::initialLineHeight());
@@ -292,7 +292,7 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     case SquareButtonPart:
     case ButtonPart:
     case InnerSpinButtonPart:
-        m_theme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->style()->effectiveZoom(), o->view()->frameView());
+        m_platformTheme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->style()->effectiveZoom(), o->view()->frameView());
         return false;
     default:
         break;
@@ -665,7 +665,7 @@ int RenderTheme::baselinePosition(const RenderObject* o) const
     const RenderBox* box = toRenderBox(o);
 
 #if USE(NEW_THEME)
-    return box->height() + box->marginTop() + m_theme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
+    return box->height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
 #else
     return box->height() + box->marginTop();
 #endif
@@ -726,7 +726,7 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle&
 void RenderTheme::adjustRepaintRect(const RenderObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
-    m_theme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
+    m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
 #else
     UNUSED_PARAM(o);
     UNUSED_PARAM(r);
@@ -1214,7 +1214,7 @@ Color RenderTheme::platformInactiveTextSearchHighlightColor() const
 
 Color RenderTheme::tapHighlightColor()
 {
-    return defaultTheme()->platformTapHighlightColor();
+    return theme().platformTapHighlightColor();
 }
 
 void RenderTheme::setCustomFocusRingColor(const Color& c)
@@ -1224,7 +1224,7 @@ void RenderTheme::setCustomFocusRingColor(const Color& c)
 
 Color RenderTheme::focusRingColor()
 {
-    return customFocusRingColor().isValid() ? customFocusRingColor().color() : defaultTheme()->platformFocusRingColor();
+    return customFocusRingColor().isValid() ? customFocusRingColor().color() : theme().platformFocusRingColor();
 }
 
 String RenderTheme::fileListDefaultLabel(bool multipleFilesAllowed) const

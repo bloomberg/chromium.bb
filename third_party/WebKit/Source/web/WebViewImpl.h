@@ -373,8 +373,6 @@ public:
         return m_page.get();
     }
 
-    WebCore::RenderTheme* theme() const;
-
     // Returns the main frame associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
     WebFrameImpl* mainFrameImpl();

@@ -109,7 +109,7 @@ bool MediaControlsChromium::initializeControls(Document* document)
     if (es.hadException())
         return false;
 
-    if (document->page()->theme()->supportsClosedCaptioning()) {
+    if (RenderTheme::theme().supportsClosedCaptioning()) {
         RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
         m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
         panel->appendChild(toggleClosedCaptionsButton.release(), es);
@@ -156,7 +156,7 @@ void MediaControlsChromium::reset()
         return;
 
     double duration = m_mediaController->duration();
-    m_durationDisplay->setInnerText(page->theme()->formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
+    m_durationDisplay->setInnerText(RenderTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
     m_durationDisplay->setCurrentValue(duration);
 
     MediaControls::reset();
@@ -186,7 +186,7 @@ void MediaControlsChromium::updateCurrentTimeDisplay()
     }
 
     // Allow the theme to format the time.
-    m_currentTimeDisplay->setInnerText(page->theme()->formatMediaControlsCurrentTime(now, duration), IGNORE_EXCEPTION);
+    m_currentTimeDisplay->setInnerText(RenderTheme::theme().formatMediaControlsCurrentTime(now, duration), IGNORE_EXCEPTION);
     m_currentTimeDisplay->setCurrentValue(now);
 }
 

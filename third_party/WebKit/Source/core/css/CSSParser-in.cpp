@@ -1268,7 +1268,7 @@ bool CSSParser::parseSystemColor(RGBA32& color, const String& string, Document* 
     if (id <= 0)
         return false;
 
-    color = document->page()->theme()->systemColor(id).rgb();
+    color = RenderTheme::theme().systemColor(id).rgb();
     return true;
 }
 

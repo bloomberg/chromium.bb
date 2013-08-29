@@ -148,10 +148,10 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
         addProperty("suggestionValues", m_parameters.suggestionValues, writer);
         addProperty("localizedSuggestionValues", m_parameters.localizedSuggestionValues, writer);
         addProperty("suggestionLabels", m_parameters.suggestionLabels, writer);
-        addProperty("showOtherDateEntry", WebCore::RenderTheme::defaultTheme()->supportsCalendarPicker(m_parameters.type), writer);
+        addProperty("showOtherDateEntry", WebCore::RenderTheme::theme().supportsCalendarPicker(m_parameters.type), writer);
         addProperty("otherDateLabel", otherDateLabelString, writer);
-        addProperty("suggestionHighlightColor", WebCore::RenderTheme::defaultTheme()->activeListBoxSelectionBackgroundColor().serialized(), writer);
-        addProperty("suggestionHighlightTextColor", WebCore::RenderTheme::defaultTheme()->activeListBoxSelectionForegroundColor().serialized(), writer);
+        addProperty("suggestionHighlightColor", WebCore::RenderTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), writer);
+        addProperty("suggestionHighlightTextColor", WebCore::RenderTheme::theme().activeListBoxSelectionForegroundColor().serialized(), writer);
     }
     addString("}\n", writer);
 
