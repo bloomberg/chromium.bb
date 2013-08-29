@@ -138,7 +138,7 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
       file_path_, file_specific_info.content_mime_type(), &drive_apps);
   if (!drive_apps.empty()) {
     std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-        profile_,
+        *profile_->GetPrefs(),
         file_specific_info.content_mime_type(),
         file_path_.Extension());
     file_tasks::TaskDescriptor default_task;

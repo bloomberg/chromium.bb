@@ -6,6 +6,7 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
@@ -100,15 +101,15 @@ bool FileBrowserHasAccessPermissionForFiles(
 
 }  // namespace
 
-void UpdateDefaultTask(Profile* profile,
+void UpdateDefaultTask(PrefService* pref_service,
                        const std::string& task_id,
                        const std::set<std::string>& suffixes,
                        const std::set<std::string>& mime_types) {
-  if (!profile || !profile->GetPrefs())
+  if (!pref_service)
     return;
 
   if (!mime_types.empty()) {
-    DictionaryPrefUpdate mime_type_pref(profile->GetPrefs(),
+    DictionaryPrefUpdate mime_type_pref(pref_service,
                                         prefs::kDefaultTasksByMimeType);
     for (std::set<std::string>::const_iterator iter = mime_types.begin();
         iter != mime_types.end(); ++iter) {
@@ -118,7 +119,7 @@ void UpdateDefaultTask(Profile* profile,
   }
 
   if (!suffixes.empty()) {
-    DictionaryPrefUpdate mime_type_pref(profile->GetPrefs(),
+    DictionaryPrefUpdate mime_type_pref(pref_service,
                                         prefs::kDefaultTasksBySuffix);
     for (std::set<std::string>::const_iterator iter = suffixes.begin();
         iter != suffixes.end(); ++iter) {
@@ -130,7 +131,7 @@ void UpdateDefaultTask(Profile* profile,
   }
 }
 
-std::string GetDefaultTaskIdFromPrefs(Profile* profile,
+std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
                                       const std::string& mime_type,
                                       const std::string& suffix) {
   VLOG(1) << "Looking for default for MIME type: " << mime_type
@@ -138,7 +139,7 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
   std::string task_id;
   if (!mime_type.empty()) {
     const DictionaryValue* mime_task_prefs =
-        profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksByMimeType);
+        pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
     DCHECK(mime_task_prefs);
     LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
     if (mime_task_prefs &&
@@ -149,7 +150,7 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
   }
 
   const DictionaryValue* suffix_task_prefs =
-      profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksBySuffix);
+      pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
   DCHECK(suffix_task_prefs);
   LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
   std::string lower_suffix = StringToLowerASCII(suffix);

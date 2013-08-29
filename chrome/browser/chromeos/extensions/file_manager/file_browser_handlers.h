@@ -17,6 +17,7 @@
 
 class FileBrowserHandler;
 class GURL;
+class PrefService;
 class Profile;
 
 namespace base {
@@ -46,7 +47,7 @@ bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler);
 // |file_list|. If no handlers are set as default, choose the the firstly
 // found fallback handler as default.
 FileBrowserHandlerList FindDefaultFileBrowserHandlers(
-    Profile* profile,
+    const PrefService& pref_service,
     const std::vector<base::FilePath>& file_list,
     const FileBrowserHandlerList& common_tasks);
 

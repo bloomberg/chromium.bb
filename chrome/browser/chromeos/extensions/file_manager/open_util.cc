@@ -226,7 +226,7 @@ bool OpenFileWithHandler(Profile* profile, const base::FilePath& file_path) {
 
   std::string mime_type = GetMimeTypeForPath(file_path);
   std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-      profile, mime_type, file_path.Extension());
+      *profile->GetPrefs(), mime_type, file_path.Extension());
 
   // We choose the file handler from the following in decreasing priority or
   // fail if none support the file type:

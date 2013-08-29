@@ -535,7 +535,7 @@ bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler) {
 }
 
 FileBrowserHandlerList FindDefaultFileBrowserHandlers(
-    Profile* profile,
+    const PrefService& pref_service,
     const std::vector<base::FilePath>& file_list,
     const FileBrowserHandlerList& common_handlers) {
   FileBrowserHandlerList default_handlers;
@@ -544,7 +544,7 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
   for (std::vector<base::FilePath>::const_iterator it = file_list.begin();
        it != file_list.end(); ++it) {
     std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-        profile, "", it->Extension());
+        pref_service, "", it->Extension());
     if (!task_id.empty())
       default_ids.insert(task_id);
   }
@@ -643,7 +643,9 @@ const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
   file_paths.push_back(file_path);
 
   FileBrowserHandlerList default_handlers =
-      FindDefaultFileBrowserHandlers(profile, file_paths, common_handlers);
+      FindDefaultFileBrowserHandlers(*profile->GetPrefs(),
+                                     file_paths,
+                                     common_handlers);
 
   // If there's none, or more than one, then we don't have a canonical default.
   if (!default_handlers.empty()) {

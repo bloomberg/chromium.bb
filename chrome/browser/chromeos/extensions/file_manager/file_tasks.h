@@ -118,6 +118,7 @@
 #include "base/callback_forward.h"
 
 class GURL;
+class PrefService;
 class Profile;
 
 namespace fileapi {
@@ -155,7 +156,7 @@ struct TaskDescriptor {
 
 // Update the default file handler for the given sets of suffixes and MIME
 // types.
-void UpdateDefaultTask(Profile* profile,
+void UpdateDefaultTask(PrefService* pref_service,
                        const std::string& task_id,
                        const std::set<std::string>& suffixes,
                        const std::set<std::string>& mime_types);
@@ -164,7 +165,7 @@ void UpdateDefaultTask(Profile* profile,
 // combination. If it finds a MIME type match, then it prefers that over a
 // suffix match. If it a default can't be found, then it returns the empty
 // string.
-std::string GetDefaultTaskIdFromPrefs(Profile* profile,
+std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
                                       const std::string& mime_type,
                                       const std::string& suffix);
 

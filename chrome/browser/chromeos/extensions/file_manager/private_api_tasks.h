@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
+class PrefService;
+
 namespace drive {
 class DriveAppRegistry;
 }
@@ -71,7 +73,7 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
 
   // Looks in the preferences and finds any of the available apps that are
   // also listed as default apps for any of the files in the info list.
-  static void FindDefaultDriveTasks(Profile* profile,
+  static void FindDefaultDriveTasks(const PrefService& pref_service,
                                     const PathAndMimeTypeSet& path_mime_set,
                                     const TaskInfoMap& task_info_map,
                                     std::set<std::string>* default_tasks);

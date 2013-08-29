@@ -206,7 +206,7 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
 
 // static
 void GetFileTasksFunction::FindDefaultDriveTasks(
-    Profile* profile,
+    const PrefService& pref_service,
     const PathAndMimeTypeSet& path_mime_set,
     const TaskInfoMap& task_info_map,
     std::set<std::string>* default_tasks) {
@@ -217,7 +217,7 @@ void GetFileTasksFunction::FindDefaultDriveTasks(
     const base::FilePath& file_path = it->first;
     const std::string& mime_type = it->second;
     std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-        profile, mime_type, file_path.Extension());
+        pref_service, mime_type, file_path.Extension());
     if (task_info_map.find(task_id) != task_info_map.end())
       default_tasks->insert(task_id);
   }
@@ -279,7 +279,7 @@ void GetFileTasksFunction::FindDriveAppTasks(
                          &task_info_map);
 
   std::set<std::string> default_tasks;
-  FindDefaultDriveTasks(profile,
+  FindDefaultDriveTasks(*profile->GetPrefs(),
                         path_mime_set,
                         task_info_map,
                         &default_tasks);
@@ -304,7 +304,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
   for (PathAndMimeTypeSet::iterator it = path_mime_set.begin();
        it != path_mime_set.end(); ++it) {
     default_tasks.insert(file_tasks::GetDefaultTaskIdFromPrefs(
-        profile, it->second, it->first.Extension()));
+        *profile->GetPrefs(), it->second, it->first.Extension()));
   }
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
@@ -374,7 +374,7 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
     return;
   file_browser_handlers::FileBrowserHandlerList default_tasks =
       file_browser_handlers::FindDefaultFileBrowserHandlers(
-          profile, file_paths, common_tasks);
+          *profile->GetPrefs(), file_paths, common_tasks);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -574,7 +574,10 @@ bool SetDefaultTaskFunction::RunImpl() {
     return true;
   }
 
-  file_tasks::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
+  file_tasks::UpdateDefaultTask(profile_->GetPrefs(),
+                                task_id,
+                                suffixes,
+                                mime_types);
 
   return true;
 }
