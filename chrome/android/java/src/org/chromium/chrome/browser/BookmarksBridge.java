@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
+ * Provides the communication channel for Android to fetch and manipulate the
+ * bookmark model stored in native.
  */
 public class BookmarksBridge {
 
@@ -99,8 +100,16 @@ public class BookmarksBridge {
         }
     }
 
+    /**
+     * Deletes a specified bookmark node.
+     * @param bookmarkId The ID of the bookmark to be deleted.
+     */
+    public void deleteBookmark(long bookmarkId) {
+        nativeDeleteBookmark(mNativeBookmarksBridge, bookmarkId);
+    }
+
     @CalledByNative
-    public void bookmarkModelLoaded() {
+    private void bookmarkModelLoaded() {
         mIsNativeBookmarkModelLoaded = true;
         if (!mDelayedBookmarkCallbacks.isEmpty()) {
             for (int i = 0; i < mDelayedBookmarkCallbacks.size(); i++) {
@@ -117,8 +126,8 @@ public class BookmarksBridge {
 
     @CalledByNative
     private static void create(List<BookmarkItem> bookmarksList, long id, String title, String url,
-            boolean isFolder, long parentId) {
-        bookmarksList.add(new BookmarkItem(id, title, url, isFolder, parentId));
+            boolean isFolder, long parentId, boolean isEditable) {
+        bookmarksList.add(new BookmarkItem(id, title, url, isFolder, parentId, isEditable));
     }
 
     private native void nativeGetBookmarksForFolder(int nativeBookmarksBridge,
@@ -127,6 +136,7 @@ public class BookmarksBridge {
     private native void nativeGetCurrentFolderHierarchy(int nativeBookmarksBridge,
             long folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
+    private native void nativeDeleteBookmark(int nativeBookmarksBridge, long bookmarkId);
     private native int nativeInit(Profile profile);
     private native void nativeDestroy(int nativeBookmarksBridge);
 
@@ -140,48 +150,46 @@ public class BookmarksBridge {
         private final long mId;
         private final boolean mIsFolder;
         private final long mParentId;
+        private final boolean mIsEditable;
 
-        private BookmarkItem(long id, String title, String url, boolean isFolder, long parentId) {
+        private BookmarkItem(long id, String title, String url, boolean isFolder, long parentId,
+                boolean isEditable) {
             mId = id;
             mTitle = title;
             mUrl = url;
             mIsFolder = isFolder;
             mParentId = parentId;
+            mIsEditable = isEditable;
         }
 
-        /**
-         * @return Title of the bookmark item.
-         */
+        /** @return Title of the bookmark item. */
         public String getTitle() {
             return mTitle;
         }
 
-        /**
-         * @return Url of the bookmark item.
-         */
+        /** @return Url of the bookmark item. */
         public String getUrl() {
             return mUrl;
         }
 
-        /**
-         * @return Id of the bookmark item.
-         */
+        /** @return Id of the bookmark item. */
         public long getId() {
             return mId;
         }
 
-        /**
-         * @return Whether item is a folder or a bookmark.
-         */
+        /** @return Whether item is a folder or a bookmark. */
         public boolean isFolder() {
             return mIsFolder;
         }
 
-        /**
-         * @return Parent id of the bookmark item.
-         */
+        /** @return Parent id of the bookmark item. */
         public long getParentId() {
             return mParentId;
+        }
+
+        /** @return Whether this bookmark can be edited. */
+        public boolean isEditable() {
+            return mIsEditable;
         }
     }
 

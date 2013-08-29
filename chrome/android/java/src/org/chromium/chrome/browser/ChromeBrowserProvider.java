@@ -1280,9 +1280,9 @@ public class ChromeBrowserProvider extends ContentProvider {
      * Call to get the intent to create a bookmark shortcut on homescreen.
      */
     public static Intent getShortcutToBookmark(String url, String title, Bitmap favicon, int rValue,
-            int gValue, int bValue, Activity activity) {
-        return BookmarkUtils.createAddToHomeIntent(activity, url, title, favicon, rValue, gValue,
-                bValue);
+            int gValue, int bValue, Context context) {
+        return BookmarkUtils.createAddToHomeIntent(
+                context, url, title, favicon, rValue, gValue, bValue);
     }
 
     private native int nativeInit();

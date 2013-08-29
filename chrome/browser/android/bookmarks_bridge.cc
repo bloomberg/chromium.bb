@@ -5,10 +5,12 @@
 #include "chrome/browser/android/bookmarks_bridge.h"
 
 #include "base/android/jni_string.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BookmarksBridge_jni.h"
 
@@ -25,11 +27,12 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
+  pref_service_ = profile->GetPrefs();
+
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
-  if (bookmark_model_->loaded()) {
+  if (bookmark_model_->loaded())
     Java_BookmarksBridge_bookmarkModelLoaded(env, obj);
-  }
 }
 
 BookmarksBridge::~BookmarksBridge() {
@@ -85,6 +88,22 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
       env, j_callback_obj, folder->id(), j_result_obj);
 }
 
+void BookmarksBridge::DeleteBookmark(JNIEnv* env,
+                                     jobject obj,
+                                     jlong bookmark_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(bookmark_model_->loaded());
+
+  const BookmarkNode* node = bookmark_model_->GetNodeByID(bookmark_id);
+  if (!IsEditable(node)) {
+    NOTREACHED();
+    return;
+  }
+
+  const BookmarkNode* parent_node = node->parent();
+  bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
+}
+
 void BookmarksBridge::ExtractBookmarkNodeInformation(
     const BookmarkNode* node,
     jobject j_result_obj) {
@@ -100,7 +119,7 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(
       env, j_result_obj, node->id(),
       ConvertUTF16ToJavaString(env, node->GetTitle()).obj(),
       ConvertUTF8ToJavaString(env, url).obj(),
-      node->is_folder(), parent_id);
+      node->is_folder(), parent_id, IsEditable(node));
 }
 
 const BookmarkNode* BookmarksBridge::GetFolderNodeFromId(jlong folder_id) {
@@ -114,6 +133,13 @@ const BookmarkNode* BookmarksBridge::GetFolderNodeFromId(jlong folder_id) {
   if (!folder)
     folder = bookmark_model_->mobile_node();
   return folder;
+}
+
+bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
+  return node &&
+         (node->type() == BookmarkNode::FOLDER ||
+          node->type() == BookmarkNode::URL) &&
+         pref_service_->GetBoolean(prefs::kEditBookmarksEnabled);
 }
 
 // ------------- Observer-related methods ------------- //

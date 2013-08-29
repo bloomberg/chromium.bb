@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
+class PrefService;
 class Profile;
 
 // The delegate to fetch bookmarks information for the Android native
@@ -37,6 +38,10 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
                                  jobject j_callback_obj,
                                  jobject j_result_obj);
 
+  void DeleteBookmark(JNIEnv* env,
+                      jobject obj,
+                      jlong bookmark_id);
+
  private:
   virtual ~BookmarksBridge();
 
@@ -44,6 +49,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
       const BookmarkNode* node,
       jobject j_result_obj);
   const BookmarkNode* GetFolderNodeFromId(jlong folder_id);
+  // Returns true if |node| can be modified by the user.
+  bool IsEditable(const BookmarkNode* node) const;
 
   // Override BaseBookmarkModelObserver.
   virtual void BookmarkModelChanged() OVERRIDE;
@@ -51,7 +58,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
-  BookmarkModel* bookmark_model_;
+  BookmarkModel* bookmark_model_;  // weak
+  PrefService* pref_service_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksBridge);
 };
