@@ -74,6 +74,7 @@ Utterance::Utterance(Profile* profile)
       id_(next_utterance_id_++),
       src_id_(-1),
       event_delegate_(NULL),
+      gender_(TTS_GENDER_NONE),
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
