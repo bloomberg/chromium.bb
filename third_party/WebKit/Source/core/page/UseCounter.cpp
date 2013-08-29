@@ -666,6 +666,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case FileError:
         return "FileError is deprecated. Please use the 'name' or 'message' attributes of DOMError rather than 'code'.";
 
+    case EventReturnValue:
+        return "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

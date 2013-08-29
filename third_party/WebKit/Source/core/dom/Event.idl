@@ -69,7 +69,7 @@
 
     // IE Extensions
     readonly attribute EventTarget      srcElement;
-             attribute boolean          returnValue;
+    [ImplementedAs=legacyReturnValue, DeprecateAs=EventReturnValue] attribute boolean returnValue;
              attribute boolean          cancelBubble;
 
     [EnabledAtRuntime=ShadowDOM] readonly attribute NodeList path;
