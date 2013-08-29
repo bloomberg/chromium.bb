@@ -14,6 +14,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/shell/browser/shell_speech_recognition_manager_delegate.h"
 
 namespace content {
 
@@ -58,6 +59,8 @@ class ShellContentBrowserClient : public ContentBrowserClient,
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
+  virtual SpeechRecognitionManagerDelegate*
+      GetSpeechRecognitionManagerDelegate() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,

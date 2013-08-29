@@ -124,6 +124,8 @@
         'shell/browser/shell_quota_permission_context.h',
         'shell/browser/shell_resource_dispatcher_host_delegate.cc',
         'shell/browser/shell_resource_dispatcher_host_delegate.h',
+        'shell/browser/shell_speech_recognition_manager_delegate.cc',
+        'shell/browser/shell_speech_recognition_manager_delegate.h',
         'shell/browser/shell_url_request_context_getter.cc',
         'shell/browser/shell_url_request_context_getter.h',
         'shell/browser/shell_web_contents_view_delegate_android.cc',

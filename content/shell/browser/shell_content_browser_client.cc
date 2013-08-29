@@ -188,6 +188,11 @@ ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
 }
 
+SpeechRecognitionManagerDelegate*
+    ShellContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+  return new ShellSpeechRecognitionManagerDelegate();
+}
+
 net::NetLog* ShellContentBrowserClient::GetNetLog() {
   return shell_browser_main_parts_->net_log();
 }
