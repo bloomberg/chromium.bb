@@ -323,7 +323,7 @@ void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
 
   // The plug-in has been removed from the page. Destroy the old plug-in
   // (which will destroy us).
-  if (element.parentNode().isNull()) {
+  if (!element.pluginContainer()) {
     plugin_->destroy();
     return;
   }
