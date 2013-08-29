@@ -426,6 +426,19 @@ def SetupPlatformBuildEnvironment(opts):
   return True
 
 
+def CheckIfBisectDepotExists(opts):
+  """Checks if the bisect directory already exists.
+
+  Args:
+    opts: The options parsed from the command line through parse_args().
+
+  Returns:
+    Returns True if it exists.
+  """
+  path_to_dir = os.path.join(opts.working_directory, 'bisect', 'src')
+  return os.path.exists(path_to_dir)
+
+
 def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
