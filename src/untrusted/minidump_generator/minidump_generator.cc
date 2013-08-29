@@ -437,8 +437,8 @@ static int CaptureModulesCallback(
              std::min(size, sizeof(module->build_id)));
       found_build_id = true;
     } else if (!found_code &&
-               (info->dlpi_phdr[i].p_type == PT_LOAD ||
-               (info->dlpi_phdr[i].p_flags & PROT_EXEC) != 0)) {
+               info->dlpi_phdr[i].p_type == PT_LOAD &&
+               (info->dlpi_phdr[i].p_flags & PF_X) != 0) {
       module->code_segment_start = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
       module->code_segment_size = info->dlpi_phdr[i].p_memsz;
       found_code = true;
