@@ -145,6 +145,14 @@ void EventGenerator::ReleaseRightButton() {
   ReleaseButton(ui::EF_RIGHT_MOUSE_BUTTON);
 }
 
+void EventGenerator::SendMouseExit() {
+  gfx::Point exit_location(current_location_);
+  ConvertPointToTarget(current_root_window_, &exit_location);
+  ui::MouseEvent mouseev(ui::ET_MOUSE_EXITED, exit_location, exit_location,
+                         flags_);
+  Dispatch(&mouseev);
+}
+
 void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
       ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;

@@ -409,6 +409,23 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
   EXPECT_EQ(window, helper_->GetTooltipWindow());
 }
 
+// Verifies a mouse exit event hides the tooltips.
+TEST_F(TooltipControllerTest, HideOnExit) {
+  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  generator_->MoveMouseToCenterOf(GetWindow());
+  string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
+  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  generator_->SendMouseExit();
+  EXPECT_FALSE(helper_->IsTooltipVisible());
+}
+
 }  // namespace test
 }  // namespace corewm
 }  // namespace views

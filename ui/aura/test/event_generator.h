@@ -135,6 +135,9 @@ class EventGenerator {
   // Generates a right button release event.
   void ReleaseRightButton();
 
+  // Generates a mouse exit.
+  void SendMouseExit();
+
   // Generates events to move mouse to be the given |point| in the
   // |current_root_window_|'s host window coordinates.
   void MoveMouseToInHost(const gfx::Point& point_in_host);

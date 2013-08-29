@@ -256,13 +256,17 @@ void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
 void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
+    case ui::ET_MOUSE_EXITED:
+      target = NULL;
+      // Fall through.
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
       if (tooltip_window_ != target) {
         if (tooltip_window_)
           tooltip_window_->RemoveObserver(this);
         tooltip_window_ = target;
-        tooltip_window_->AddObserver(this);
+        if (tooltip_window_)
+          tooltip_window_->AddObserver(this);
       }
       curr_mouse_loc_ = event->location();
       if (tooltip_timer_.IsRunning())
