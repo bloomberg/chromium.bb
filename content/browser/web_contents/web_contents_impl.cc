@@ -2873,16 +2873,14 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
       NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       Source<WebContents>(this),
       Details<RenderViewHost>(render_view_host));
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (!entry)
-    return;
 
   // When we're creating views, we're still doing initial setup, so we always
   // use the pending Web UI rather than any possibly existing committed one.
   if (render_manager_.pending_web_ui())
     render_manager_.pending_web_ui()->RenderViewCreated(render_view_host);
 
-  if (entry->IsViewSourceMode()) {
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (entry && entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
     render_view_host->Send(
         new ViewMsg_EnableViewSourceMode(render_view_host->GetRoutingID()));
