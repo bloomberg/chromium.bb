@@ -104,10 +104,6 @@
         'audio/cras/cras_input.h',
         'audio/cras/cras_unified.cc',
         'audio/cras/cras_unified.h',
-        'audio/cross_process_notification.cc',
-        'audio/cross_process_notification.h',
-        'audio/cross_process_notification_posix.cc',
-        'audio/cross_process_notification_win.cc',
         'audio/fake_audio_consumer.cc',
         'audio/fake_audio_consumer.h',
         'audio/fake_audio_input_stream.cc',
@@ -394,7 +390,6 @@
         'video/capture/mac/video_capture_device_mac.mm',
         'video/capture/mac/video_capture_device_qtkit_mac.h',
         'video/capture/mac/video_capture_device_qtkit_mac.mm',
-
         'video/capture/video_capture.h',
         'video/capture/video_capture_device.cc',
         'video/capture/video_capture_device.h',
@@ -921,7 +916,6 @@
         'audio/audio_output_proxy_unittest.cc',
         'audio/audio_parameters_unittest.cc',
         'audio/audio_power_monitor_unittest.cc',
-        'audio/cross_process_notification_unittest.cc',
         'audio/fake_audio_consumer_unittest.cc',
         'audio/ios/audio_manager_ios_unittest.cc',
         'audio/linux/alsa_output_unittest.cc',
@@ -1362,17 +1356,6 @@
           ],
         },
         {
-          'target_name': 'seek_tester',
-          'type': 'executable',
-          'dependencies': [
-            'media',
-            '../base/base.gyp:base',
-          ],
-          'sources': [
-            'tools/seek_tester/seek_tester.cc',
-          ],
-        },
-        {
           'target_name': 'demuxer_bench',
           'type': 'executable',
           'dependencies': [
@@ -1381,60 +1364,6 @@
           ],
           'sources': [
             'tools/demuxer_bench/demuxer_bench.cc',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        },
-      ],
-    }],
-    ['(OS=="win" or toolkit_uses_gtk==1) and use_aura!=1', {
-      'targets': [
-        {
-          'target_name': 'shader_bench',
-          'type': 'executable',
-          'dependencies': [
-            'media',
-            '../base/base.gyp:base',
-            '../ui/gl/gl.gyp:gl',
-            '../ui/ui.gyp:ui',
-          ],
-          'sources': [
-            'tools/shader_bench/cpu_color_painter.cc',
-            'tools/shader_bench/cpu_color_painter.h',
-            'tools/shader_bench/gpu_color_painter.cc',
-            'tools/shader_bench/gpu_color_painter.h',
-            'tools/shader_bench/gpu_painter.cc',
-            'tools/shader_bench/gpu_painter.h',
-            'tools/shader_bench/painter.cc',
-            'tools/shader_bench/painter.h',
-            'tools/shader_bench/shader_bench.cc',
-            'tools/shader_bench/window.cc',
-            'tools/shader_bench/window.h',
-          ],
-          'conditions': [
-            ['toolkit_uses_gtk==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-              'sources': [
-                'tools/shader_bench/window_linux.cc',
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/angle_dx11/src/build_angle.gyp:libEGL',
-                '../third_party/angle_dx11/src/build_angle.gyp:libGLESv2',
-              ],
-              'sources': [
-                'tools/shader_bench/window_win.cc',
-              ],
-            }],
-            # See http://crbug.com/162998#c4 for why this is needed.
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
@@ -1652,34 +1581,6 @@
               ],
             }],
           ],
-        },
-        {
-          'target_name': 'ffmpeg_tests',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-            'media',
-          ],
-          'sources': [
-            'test/ffmpeg_tests/ffmpeg_tests.cc',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        },
-        {
-          'target_name': 'media_bench',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-            'media',
-          ],
-          'sources': [
-            'tools/media_bench/media_bench.cc',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
         },
       ],
     }],
