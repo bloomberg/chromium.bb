@@ -781,7 +781,7 @@ static struct crtc *pipe_find_crtc(struct device *dev, struct pipe_arg *pipe)
 
 static int pipe_find_crtc_and_mode(struct device *dev, struct pipe_arg *pipe)
 {
-	drmModeModeInfo *mode;
+	drmModeModeInfo *mode = NULL;
 	int i;
 
 	pipe->mode = NULL;
@@ -838,8 +838,8 @@ struct property_arg {
 
 static void set_property(struct device *dev, struct property_arg *p)
 {
-	drmModeObjectProperties *props;
-	drmModePropertyRes **props_info;
+	drmModeObjectProperties *props = NULL;
+	drmModePropertyRes **props_info = NULL;
 	const char *obj_type;
 	int ret;
 	int i;
