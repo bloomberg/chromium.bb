@@ -2055,6 +2055,7 @@
         ['disable_nacl==1', {
           'sources!':[
             'browser/nacl_host/nacl_file_host_unittest.cc',
+            'browser/nacl_host/nacl_process_host_unittest.cc',
             'browser/nacl_host/nacl_validation_cache_unittest.cc',
             'browser/nacl_host/pnacl_host_unittest.cc',
             'browser/nacl_host/pnacl_translation_cache_unittest.cc',
