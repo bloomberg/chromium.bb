@@ -177,6 +177,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuffer.h"
+#include "wtf/text/TextEncodingRegistry.h"
 
 using namespace std;
 using namespace WTF;
@@ -3944,6 +3945,26 @@ void Document::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
 
 void Document::setEncoding(const WTF::TextEncoding& encoding)
 {
+    if (m_encoding == encoding)
+        return;
+
+    // It's possible for the encoding of the document to change while we're decoding
+    // data. That can only occur while we're processing the <head> portion of the
+    // document. There isn't much user-visible content in the <head>, but there is
+    // the <title> element. This function detects that situation and re-decodes the
+    // document's title so that the user doesn't see an incorrectly decoded title
+    // in the title bar.
+    if (m_titleElement
+        && !m_titleElement->firstElementChild()
+        && m_encoding == Latin1Encoding()
+        && m_titleElement->textContent().containsOnlyLatin1()) {
+
+        CString originalBytes = m_titleElement->textContent().latin1();
+        OwnPtr<TextCodec> codec = newTextCodec(encoding);
+        String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
+        m_titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
+    }
+
     m_encoding = encoding;
 }
 
