@@ -42,6 +42,7 @@
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "ui/gfx/android/device_display_info.h"
 #endif  // OS_ANDROID
 
@@ -278,12 +279,15 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
   bool is_nexus10 =
       gpu_info.machine_model.find("Nexus 10") != std::string::npos;
 
+  int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
+
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
   // QualComm, NVIDIA: Crashes with share groups
-  if (is_vivante || is_img || is_mali_t604 || is_nvidia || is_qualcomm ||
-      is_broadcom)
+  if (is_vivante || is_img || is_mali_t604 ||
+      ((is_nvidia || is_qualcomm) && sdk_int < 18) || is_broadcom) {
     command_line->AppendSwitch(switches::kEnableVirtualGLContexts);
+  }
 
   gfx::DeviceDisplayInfo info;
   int default_tile_size = 256;
