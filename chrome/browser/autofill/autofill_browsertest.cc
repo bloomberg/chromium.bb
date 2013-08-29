@@ -202,13 +202,17 @@ class AutofillTest : public InProcessBrowserTest {
     CHECK(file_util::ReadFileToString(data_file, &data));
     std::vector<std::string> lines;
     base::SplitString(data, '\n', &lines);
+    int parsed_profiles = 0;
     for (size_t i = 0; i < lines.size(); ++i) {
       if (StartsWithASCII(lines[i], "#", false))
         continue;
+
       std::vector<std::string> fields;
       base::SplitString(lines[i], '|', &fields);
       if (fields.empty())
         continue;  // Blank line.
+
+      ++parsed_profiles;
       CHECK_EQ(12u, fields.size());
 
       FormMap data;
@@ -227,7 +231,7 @@ class AutofillTest : public InProcessBrowserTest {
 
       FillFormAndSubmit("duplicate_profiles_test.html", data);
     }
-    return lines.size();
+    return parsed_profiles;
   }
 
   void ExpectFieldValue(const std::string& field_name,
@@ -694,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
 // DISABLED: http://crbug.com/150084
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedProfilesWithSameAddress) {
-  AggregateProfilesIntoAutofillPrefs("dataset_2.txt");
+  AggregateProfilesIntoAutofillPrefs("dataset_same_address.txt");
 
   ASSERT_EQ(3u, personal_data_manager()->GetProfiles().size());
 }
@@ -717,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedDuplicatedProfiles) {
   int num_of_profiles =
-      AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
+      AggregateProfilesIntoAutofillPrefs("dataset_duplicated_profiles.txt");
 
   ASSERT_GT(num_of_profiles,
             static_cast<int>(personal_data_manager()->GetProfiles().size()));
