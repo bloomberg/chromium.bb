@@ -32,6 +32,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/event_utils.h"
+#include "ui/views/focus/view_storage.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/views_delegate.h"
@@ -523,7 +524,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   if (!part.is_scroll() && part.menu &&
       !(part.menu->HasSubmenu() &&
         (event.flags() & ui::EF_LEFT_MOUSE_BUTTON))) {
-    if (active_mouse_view_) {
+    if (GetActiveMouseView()) {
       SendMouseReleaseToActiveView(source, event);
       return;
     }
@@ -864,7 +865,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
   if (!blocking_run_)
     return;
 
-  DCHECK(!active_mouse_view_);
+  DCHECK(!GetActiveMouseView());
 
   MenuPart part = GetMenuPart(source, event.location());
   if (part.is_scroll())
@@ -1161,7 +1162,7 @@ MenuController::MenuController(ui::NativeTheme* theme,
       last_drop_operation_(MenuDelegate::DROP_UNKNOWN),
       showing_submenu_(false),
       menu_button_(NULL),
-      active_mouse_view_(NULL),
+      active_mouse_view_id_(ViewStorage::GetInstance()->CreateStorageID()),
       delegate_(delegate),
       message_loop_depth_(0),
       menu_config_(theme),
@@ -1582,7 +1583,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
 void MenuController::MenuChildrenChanged(MenuItemView* item) {
   DCHECK(item);
   // Menu shouldn't be updated during drag operation.
-  DCHECK(!active_mouse_view_);
+  DCHECK(!GetActiveMouseView());
 
   // If the current item or pending item is a descendant of the item
   // that changed, move the selection back to the changed item.
@@ -2193,62 +2194,75 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     if (target == target_menu || !target->enabled())
       target = NULL;
   }
-  if (target != active_mouse_view_) {
+  View* active_mouse_view = GetActiveMouseView();
+  if (target != active_mouse_view) {
     SendMouseCaptureLostToActiveView();
-    active_mouse_view_ = target;
-    if (active_mouse_view_) {
+    active_mouse_view = target;
+    SetActiveMouseView(active_mouse_view);
+    if (active_mouse_view) {
       gfx::Point target_point(target_menu_loc);
       View::ConvertPointToTarget(
-          target_menu, active_mouse_view_, &target_point);
+          target_menu, active_mouse_view, &target_point);
       ui::MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED,
                                          target_point, target_point,
                                          0);
-      active_mouse_view_->OnMouseEntered(mouse_entered_event);
+      active_mouse_view->OnMouseEntered(mouse_entered_event);
 
       ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED,
                                          target_point, target_point,
                                          event.flags());
-      active_mouse_view_->OnMousePressed(mouse_pressed_event);
+      active_mouse_view->OnMousePressed(mouse_pressed_event);
     }
   }
 
-  if (active_mouse_view_) {
+  if (active_mouse_view) {
     gfx::Point target_point(target_menu_loc);
-    View::ConvertPointToTarget(target_menu, active_mouse_view_, &target_point);
+    View::ConvertPointToTarget(target_menu, active_mouse_view, &target_point);
     ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED,
                                        target_point, target_point,
                                        event.flags());
-    active_mouse_view_->OnMouseDragged(mouse_dragged_event);
+    active_mouse_view->OnMouseDragged(mouse_dragged_event);
   }
 }
 
 void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
                                                   const ui::MouseEvent& event) {
-  if (!active_mouse_view_)
+  View* active_mouse_view = GetActiveMouseView();
+  if (!active_mouse_view)
     return;
 
   gfx::Point target_loc(event.location());
   View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                              &target_loc);
-  View::ConvertPointToTarget(NULL, active_mouse_view_, &target_loc);
+  View::ConvertPointToTarget(NULL, active_mouse_view, &target_loc);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc, target_loc,
                                event.flags());
-  // Reset the active_mouse_view_ before sending mouse released. That way if it
-  // calls back to us, we aren't in a weird state.
-  View* active_view = active_mouse_view_;
-  active_mouse_view_ = NULL;
-  active_view->OnMouseReleased(release_event);
+  // Reset active mouse view before sending mouse released. That way if it calls
+  // back to us, we aren't in a weird state.
+  SetActiveMouseView(NULL);
+  active_mouse_view->OnMouseReleased(release_event);
 }
 
 void MenuController::SendMouseCaptureLostToActiveView() {
-  if (!active_mouse_view_)
+  View* active_mouse_view = GetActiveMouseView();
+  if (!active_mouse_view)
     return;
 
   // Reset the active_mouse_view_ before sending mouse capture lost. That way if
   // it calls back to us, we aren't in a weird state.
-  View* active_view = active_mouse_view_;
-  active_mouse_view_ = NULL;
-  active_view->OnMouseCaptureLost();
+  SetActiveMouseView(NULL);
+  active_mouse_view->OnMouseCaptureLost();
+}
+
+void MenuController::SetActiveMouseView(View* view) {
+  if (view)
+    ViewStorage::GetInstance()->StoreView(active_mouse_view_id_, view);
+  else
+    ViewStorage::GetInstance()->RemoveView(active_mouse_view_id_);
+}
+
+View* MenuController::GetActiveMouseView() {
+  return ViewStorage::GetInstance()->RetrieveView(active_mouse_view_id_);
 }
 
 void MenuController::SetExitType(ExitType type) {

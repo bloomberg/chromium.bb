@@ -445,7 +445,7 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   // Stops scrolling.
   void StopScrolling();
 
-  // Updates |active_mouse_view_| from the location of the event and sends it
+  // Updates active mouse view from the location of the event and sends it
   // the appropriate events. This is used to send mouse events to child views so
   // that they react to click-drag-release as if the user clicked on the view
   // itself.
@@ -453,14 +453,18 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
                              const ui::MouseEvent& event,
                              View* target_menu);
 
-  // Sends a mouse release event to the current |active_mouse_view_| and sets
+  // Sends a mouse release event to the current active mouse view and sets
   // it to null.
   void SendMouseReleaseToActiveView(SubmenuView* event_source,
                                     const ui::MouseEvent& event);
 
-  // Sends a mouse capture lost event to the current |active_mouse_view_| and
-  // sets it to null.
+  // Sends a mouse capture lost event to the current active mouse view and sets
+  // it to null.
   void SendMouseCaptureLostToActiveView();
+
+  // Sets/gets the active mouse view. See UpdateActiveMouseView() for details.
+  void SetActiveMouseView(View* view);
+  View* GetActiveMouseView();
 
   // Sets exit type.
   void SetExitType(ExitType type);
@@ -556,9 +560,9 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
 
   MenuButton* menu_button_;
 
-  // If non-null mouse drag events are forwarded to this view. See
-  // UpdateActiveMouseView for details.
-  View* active_mouse_view_;
+  // ViewStorage id used to store the view mouse drag events are forwarded to.
+  // See UpdateActiveMouseView() for details.
+  const int active_mouse_view_id_;
 
   internal::MenuControllerDelegate* delegate_;
 
