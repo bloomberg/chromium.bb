@@ -5,8 +5,14 @@
 var ClientRenderer = (function() {
   var ClientRenderer = function() {
     this.playerListElement = document.getElementById('player-list');
+    this.audioStreamListElement = document.getElementById('audio-stream-list');
     this.propertiesTable = document.getElementById('property-table');
+    this.logTable = document.getElementById('log');
+
     this.selectedPlayer = null;
+    this.selectedStream = null;
+
+    this.selectedPlayerLogIndex = 0;
   };
 
   function removeChildren(element) {
@@ -15,14 +21,39 @@ var ClientRenderer = (function() {
     }
   };
 
+  function createButton(text, select_cb) {
+    var button = document.createElement('button');
+
+    button.appendChild(document.createTextNode(text));
+    button.onclick = function() {
+      select_cb();
+    };
+
+    return button;
+  };
+
   ClientRenderer.prototype = {
+    audioStreamAdded: function(audioStreams, audioStreamAdded) {
+      this.redrawAudioStreamList_(audioStreams);
+    },
+
+    audioStreamUpdated: function(audioStreams, stream, key, value) {
+      if (stream === this.selectedStream) {
+        this.drawProperties_(stream);
+      }
+    },
+
+    audioStreamRemoved: function(audioStreams, audioStreamRemoved) {
+      this.redrawAudioStreamList_(audioStreams);
+    },
+
     /**
      * Called when a player is added to the collection.
      * @param players The entire map of id -> player.
      * @param player_added The player that is added.
      */
-    playerAdded: function(players, player_added) {
-      this.redrawList_(players);
+    playerAdded: function(players, playerAdded) {
+      this.redrawPlayerList_(players);
     },
 
     /**
@@ -30,8 +61,8 @@ var ClientRenderer = (function() {
      * @param players The entire map of id -> player.
      * @param player_added The player that was removed.
      */
-    playerRemoved: function(players, player_removed) {
-      this.redrawList_(players);
+    playerRemoved: function(players, playerRemoved) {
+      this.redrawPlayerList_(players);
     },
 
     /**
@@ -43,47 +74,63 @@ var ClientRenderer = (function() {
      */
     playerUpdated: function(players, player, key, value) {
       if (player === this.selectedPlayer) {
-        this.drawSelectedPlayer_();
+        this.drawProperties_(player.properties);
+        this.drawLog_();
       }
       if (key === 'name' || key === 'url') {
-        this.redrawList_(players);
+        this.redrawPlayerList_(players);
       }
     },
 
-    redrawList_: function(players) {
+    redrawAudioStreamList_: function(streams) {
+      removeChildren(this.audioStreamListElement);
+
+      for (id in streams) {
+        var li = document.createElement('li');
+        li.appendChild(createButton(
+            id, this.selectAudioStream_.bind(this, streams[id])));
+        this.audioStreamListElement.appendChild(li);
+      }
+    },
+
+    selectAudioStream_: function(audioStream) {
+      this.selectedStream = audioStream;
+      this.selectedPlayer = null;
+      this.drawProperties_(audioStream);
+      removeChildren(this.logTable.querySelector('tbody'));
+    },
+
+    redrawPlayerList_: function(players) {
       removeChildren(this.playerListElement);
 
-      function createButton(player, select_cb) {
-        var button = document.createElement('button');
+      for (id in players) {
+        var li = document.createElement('li');
+        var player = players[id];
         var usableName = player.properties.name ||
             player.properties.url ||
             'player ' + player.id;
 
-        button.appendChild(document.createTextNode(usableName));
-        button.onclick = function() {
-          select_cb(player);
-        };
-
-        return button;
-      };
-
-      for (id in players) {
-        var li = document.createElement('li');
-        li.appendChild(createButton(players[id], this.select_.bind(this)));
+        li.appendChild(createButton(
+            usableName, this.selectPlayer_.bind(this, player)));
         this.playerListElement.appendChild(li);
       }
     },
 
-    select_: function(player) {
+    selectPlayer_: function(player) {
       this.selectedPlayer = player;
-      this.drawSelectedPlayer_();
+      this.selectedPlayerLogIndex = 0;
+      this.selectedStream = null;
+      this.drawProperties_(player.properties);
+
+      removeChildren(this.logTable.querySelector('tbody'));
+      this.drawLog_();
     },
 
-    drawSelectedPlayer_: function() {
+    drawProperties_: function(propertyMap) {
       removeChildren(this.propertiesTable);
 
-      for (key in this.selectedPlayer.properties) {
-        var value = this.selectedPlayer.properties[key];
+      for (key in propertyMap) {
+        var value = propertyMap[key];
         var row = this.propertiesTable.insertRow(-1);
         var keyCell = row.insertCell(-1);
         var valueCell = row.insertCell(-1);
@@ -91,6 +138,22 @@ var ClientRenderer = (function() {
         keyCell.appendChild(document.createTextNode(key));
         valueCell.appendChild(document.createTextNode(value));
       }
+    },
+
+    appendEventToLog_: function(event) {
+      var row = this.logTable.querySelector('tbody').insertRow(-1);
+
+      row.insertCell(-1).appendChild(document.createTextNode(
+          util.millisecondsToString(event.time)));
+      row.insertCell(-1).appendChild(document.createTextNode(event.key));
+      row.insertCell(-1).appendChild(document.createTextNode(event.value));
+    },
+
+    drawLog_: function() {
+      var toDraw = this.selectedPlayer.allEvents.slice(
+          this.selectedPlayerLogIndex);
+      toDraw.forEach(this.appendEventToLog_.bind(this));
+      this.selectedPlayerLogIndex = this.selectedPlayer.allEvents.length;
     }
   };
 

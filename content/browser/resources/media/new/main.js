@@ -8,68 +8,29 @@
 var media = (function() {
   'use strict';
 
-  var manager = null;
+  var manager_ = null;
 
   /**
    * Users of |media| must call initialize prior to calling other methods.
    */
-  function initialize(playerManager) {
-    manager = playerManager;
-  }
-
-  /**
-   * Call to modify or add a system property.
-   */
-  function onSystemProperty(timestamp, key, value) {
-    console.log('System properties not yet implemented');
-  }
-
-  /**
-   * Call to modify or add a property on a player.
-   */
-  function onPlayerProperty(id, timestamp, key, value) {
-    manager.updatePlayerInfo(id, timestamp, key, value);
-  }
-
-  function onPlayerPropertyNoRecord(id, timestamp, key, value) {
-    manager.updatePlayerInfoNoRecord(id, timestamp, key, value);
-  }
-
-  /**
-   * Call to add a player.
-   */
-  function onPlayerOpen(id, timestamp) {
-    manager.addPlayer(id, timestamp);
-  }
-
-  /**
-   * Call to remove a player.
-   */
-  function onPlayerClose(id) {
-    manager.removePlayer(id);
-  }
-
-  var media = {
-    onSystemProperty: onSystemProperty,
-    onPlayerProperty: onPlayerProperty,
-    onPlayerPropertyNoRecord: onPlayerPropertyNoRecord,
-    onPlayerOpen: onPlayerOpen,
-    onPlayerClose: onPlayerClose,
-
-    initialize: initialize
+  media.initialize = function(manager) {
+    manager_ = manager;
   };
 
-  // Everything beyond this point is for backwards compatibility reasons.
-  // It will go away when the backend is updated.
+  media.onReceiveEverything = function(everything) {
+    for (var key in everything.audio_streams) {
+      media.updateAudioStream(everything.audio_streams[key]);
+    }
+  };
 
   media.onNetUpdate = function(update) {
     // TODO(tyoverby): Implement
   };
 
   media.onRendererTerminated = function(renderId) {
-    util.object.forEach(manager.players_, function(playerInfo, id) {
+    util.object.forEach(manager_.players_, function(playerInfo, id) {
       if (playerInfo.properties['render_id'] == renderId) {
-        media.onPlayerClose(id);
+        manager_.removePlayer(id);
       }
     });
   };
@@ -79,31 +40,39 @@ var media = (function() {
   media.addAudioStream = function(event) {
     switch (event.status) {
       case 'created':
-        media.onPlayerOpen(event.id);
-        // We have to simulate the timestamp since it isn't provided to us.
-        media.onPlayerProperty(
-            event.id, (new Date()).getTime(), 'playing', event.playing);
+        manager_.addAudioStream(event.id);
+        manager_.updateAudioStream(event.id, { 'playing': event.playing });
         break;
       case 'closed':
-        media.onPlayerClose(event.id);
+        manager_.removeAudioStream(event.id);
         break;
     }
   };
+
+  media.updateAudioStream = function(stream) {
+    manager_.addAudioStream(stream.id);
+    manager_.updateAudioStream(stream.id, stream);
+  };
+
   media.onItemDeleted = function() {
     // This only gets called when an audio stream is removed, which
     // for whatever reason is also handled by addAudioStream...
     // Because it is already handled, we can safely ignore it.
   };
 
+  media.onPlayerOpen = function(id, timestamp) {
+    manager_.addPlayer(id, timestamp);
+  };
+
   media.onMediaEvent = function(event) {
     var source = event.renderer + ':' + event.player;
 
     // Although this gets called on every event, there is nothing we can do
-    // about this because there is no onOpen event.
+    // because there is no onOpen event.
     media.onPlayerOpen(source);
-    media.onPlayerPropertyNoRecord(
+    manager_.updatePlayerInfoNoRecord(
         source, event.ticksMillis, 'render_id', event.renderer);
-    media.onPlayerPropertyNoRecord(
+    manager_.updatePlayerInfoNoRecord(
         source, event.ticksMillis, 'player_id', event.player);
 
     var propertyCount = 0;
@@ -116,16 +85,16 @@ var media = (function() {
           key === 'buffer_end' ||
           key === 'buffer_current' ||
           key === 'is_downloading_data') {
-        media.onPlayerPropertyNoRecord(
+        manager_.updatePlayerInfoNoRecord(
             source, event.ticksMillis, key, value);
       } else {
-        media.onPlayerProperty(source, event.ticksMillis, key, value);
+        manager_.updatePlayerInfo(source, event.ticksMillis, key, value);
       }
       propertyCount += 1;
     });
 
     if (propertyCount === 0) {
-      media.onPlayerProperty(
+      manager_.updatePlayerInfo(
           source, event.ticksMillis, 'EVENT', event.type);
     }
   };

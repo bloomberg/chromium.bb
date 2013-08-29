@@ -8,11 +8,48 @@ found in the LICENSE file.
 <head>
   <meta charset="utf-8">
   <title i18n-content="Media Internals"></title>
+  <link rel="stylesheet" href="media_internals.css">
 </head>
 
 <body>
-  <ul id="player-list"></ul>
-  <table id="property-table"></table>
+  <div id="container">
+    <div id="list-wrapper">
+      <div id="player-list-wrapper">
+        <h2>Players</h2>
+        <ul id="player-list"></ul>
+      </div>
+      <div id="audio-stream-list-wrapper">
+        <h2>Audio Streams</h2>
+        <ul id="audio-stream-list"></ul>
+      </div>
+    </div>
+    <div id="property-wrapper">
+      <h2>Properties</h2>
+      <table id="property-table">
+        <thead>
+          <tr>
+            <td>Property Name</td> <td>Value</td>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <div id="log-wrapper">
+      <h2>
+        Log
+      </h2>
+      <table id="log">
+        <thead>
+          <tr>
+            <td>Timestamp</td>
+            <td>Property</td>
+            <td>Value</td>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <script src="chrome://media-internals/media_internals.js"></script>
 </body>
 </html>

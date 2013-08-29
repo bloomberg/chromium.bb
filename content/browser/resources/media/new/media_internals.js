@@ -10,4 +10,4 @@ var media = {};
 <include src="client_renderer.js"/>
 <include src="main.js"/>
 
-media.initialize(new PlayerManager(new ClientRenderer()));
+media.initialize(new Manager(new ClientRenderer()));

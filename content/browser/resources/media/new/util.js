@@ -29,6 +29,19 @@ var util = (function() {
       }
     }
   };
+  util.millisecondsToString = function(timeMillis) {
+    function pad(num) {
+      num = num.toString();
+      if (num.length < 2) {
+        return '0' + num;
+      }
+      return num;
+    }
+
+    var date = new Date(timeMillis);
+    return pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' +
+        pad(date.getUTCSeconds()) + ' ' + pad((date.getMilliseconds()) % 1000);
+  };
 
   return util;
 }());

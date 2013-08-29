@@ -12,13 +12,16 @@ found in the LICENSE file.
         var mockClientRenderer = {
           playerUpdated: doNothing,
           playerRemoved: doNothing,
-          playerAdded: doNothing
+          playerAdded: doNothing,
+          audioStreamUpdated: doNothing,
+          audioStreamAdded: doNothing,
+          audioStreamRemoved: doNothing
         };
 
-        var manager = new PlayerManager(mockClientRenderer);
+        var manager = new Manager(mockClientRenderer);
         media.initialize(manager);
 
-        window.playerManager = manager;
+        window.manager= manager;
       };
 
       // The renderer and player ids are completely arbitrarily.
@@ -39,7 +42,7 @@ found in the LICENSE file.
         };
 
         window.media.onMediaEvent(event);
-        var info = window.playerManager.players_[TEST_NAME];
+        var info = window.manager.players_[TEST_NAME];
 
         assertEquals(event.ticksMillis, info.firstTimestamp_);
         assertEquals(TEST_NAME, info.id);
@@ -51,7 +54,7 @@ found in the LICENSE file.
         window.testOnMediaEvent();
 
         window.media.onRendererTerminated(TEST_RENDERER);
-        assertEquals(undefined, window.playerManager.players_[TEST_NAME]);
+        assertEquals(undefined, window.manager.players_[TEST_NAME]);
       };
 
       // Audio Streams are weird, they are handled separately
@@ -64,9 +67,9 @@ found in the LICENSE file.
 
         window.media.addAudioStream(event);
 
-        var player = window.playerManager.players_[event.id];
+        var player = window.manager.audioStreams_[event.id];
         assertTrue(undefined !== player);
-        assertEquals(event.playing, player.properties['playing']);
+        assertEquals(event.playing, player['playing']);
       };
     </script>
   </body>

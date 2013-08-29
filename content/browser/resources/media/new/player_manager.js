@@ -3,21 +3,56 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Keeps track of all the existing
- * PlayerInfo objects and is the entry-point for messages from the backend.
+ * @fileoverview Keeps track of all the existing PlayerInfo and
+ * audio stream objects and is the entry-point for messages from the backend.
  *
- * The events captured by PlayerManager (add, remove, update) are relayed
+ * The events captured by Manager (add, remove, update) are relayed
  * to the clientRenderer which it can choose to use to modify the UI.
  */
-var PlayerManager = (function() {
+var Manager = (function() {
   'use strict';
 
-  function PlayerManager(clientRenderer) {
+  function Manager(clientRenderer) {
     this.players_ = {};
+    this.audioStreams_ = {};
     this.clientRenderer_ = clientRenderer;
   }
 
-  PlayerManager.prototype = {
+  Manager.prototype = {
+    /**
+     * Adds an audio-stream to the dictionary of audio-streams to manage.
+     * @param id The unique-id of the audio-stream.
+     */
+    addAudioStream: function(id) {
+      this.audioStreams_[id] = this.audioStreams_[id] || {};
+      this.clientRenderer_.audioStreamAdded(this.audioStreams_,
+                                            this.audioStreams_[id]);
+    },
+
+    /**
+     * Sets properties of an audiostream.
+     * @param id The unique-id of the audio-stream.
+     * @param properties A dictionary of properties to be added to the
+     * audio-stream.
+     */
+    updateAudioStream: function(id, properties) {
+      for (var key in properties) {
+        this.audioStreams_[id][key] = properties[key];
+      }
+      this.clientRenderer_.audioStreamAdded(
+          this.audioStreams_, this.audioStreams_[id]);
+    },
+
+    /**
+     * Removes an audio-stream from the manager.
+     * @param id The unique-id of the audio-stream.
+     */
+    removeAudioStream: function(id) {
+      this.clientRenderer_.audioStreamRemoved(
+          this.audioStreams_, this.audioStreams_[id]);
+      delete this.audioStreams_[id];
+    },
+
 
     /**
      * Adds a player to the list of players to manage.
@@ -75,5 +110,5 @@ var PlayerManager = (function() {
     }
   };
 
-  return PlayerManager;
+  return Manager;
 }());

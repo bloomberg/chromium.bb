@@ -1,0 +1,91 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html,
+body,
+#container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+
+  font-family: 'Lucida Grande', sans-serif;
+}
+
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid black;
+}
+thead {
+  color: rgb(50,50,50);
+  font-size: 1.1em;
+}
+
+h1,
+h2,
+h3 {
+  color: rgb(50,50,50);
+}
+
+#container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: stretch;
+}
+
+#container > * {
+  padding: 0;
+  padding-left: 25px;
+  margin: 0;
+  max-height: 100%;
+}
+
+#list-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: stretch;
+  height: 100%;
+}
+
+#player-list-wrapper,
+#audio-stream-list-wrapper {
+  flex-grow: 1;
+  align-self: stretch;
+  min-width: 200px;
+  max-width: 200px;
+  overflow: auto;
+}
+
+#player-list-wrapper ul,
+#player-list-wrapper li,
+#audio-stream-list-wrapper ul,
+#audio-stream-list-wrapper li {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+#list-wrapper button {
+  margin: 0;
+  padding: 0;
+  width: 170px;
+}
+
+#property-wrapper,
+#log-wrapper {
+  display:block;
+  flex-grow: 0.5;
+  align-self: stretch;
+  overflow: auto;
+}
+
+#log-wrapper > thead {
+  position: fixed;
+}
