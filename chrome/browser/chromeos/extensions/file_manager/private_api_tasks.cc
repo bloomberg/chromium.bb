@@ -38,41 +38,6 @@ const char kInvalidFileUrl[] = "Invalid file URL";
 // Default icon path for drive docs.
 const char kDefaultIcon[] = "images/filetype_generic.png";
 
-// Logs the default task for debugging.
-void LogDefaultTask(const std::set<std::string>& mime_types,
-                    const std::set<std::string>& suffixes,
-                    const std::string& task_id) {
-  if (!mime_types.empty()) {
-    std::string mime_types_str;
-    for (std::set<std::string>::const_iterator iter = mime_types.begin();
-         iter != mime_types.end(); ++iter) {
-      if (iter == mime_types.begin()) {
-        mime_types_str = *iter;
-      } else {
-        mime_types_str += ", " + *iter;
-      }
-    }
-    VLOG(1) << "Associating task " << task_id
-            << " with the following MIME types: ";
-    VLOG(1) << "  " << mime_types_str;
-  }
-
-  if (!suffixes.empty()) {
-    std::string suffixes_str;
-    for (std::set<std::string>::const_iterator iter = suffixes.begin();
-         iter != suffixes.end(); ++iter) {
-      if (iter == suffixes.begin()) {
-        suffixes_str = *iter;
-      } else {
-        suffixes_str += ", " + *iter;
-      }
-    }
-    VLOG(1) << "Associating task " << task_id
-            << " with the following suffixes: ";
-    VLOG(1) << "  " << suffixes_str;
-  }
-}
-
 // Make a set of unique filename suffixes out of the list of file URLs.
 std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
                                         fileapi::FileSystemContext* context) {
@@ -597,9 +562,6 @@ bool SetDefaultTaskFunction::RunImpl() {
       return false;
     mime_types = GetUniqueMimeTypes(mime_type_list);
   }
-
-  if (VLOG_IS_ON(1))
-    LogDefaultTask(mime_types, suffixes, task_id);
 
   // If there weren't any mime_types, and all the suffixes were blank,
   // then we "succeed", but don't actually associate with anything.
