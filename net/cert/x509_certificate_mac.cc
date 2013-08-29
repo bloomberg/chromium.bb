@@ -283,9 +283,9 @@ class ScopedEncodedCertResults {
       for (uint32 i = 0; i < results_->NumberOfResults; i++) {
         crypto::CSSMFree(encCert[i].CertBlob.Data);
       }
+      crypto::CSSMFree(results_->Results);
+      crypto::CSSMFree(results_);
     }
-    crypto::CSSMFree(results_->Results);
-    crypto::CSSMFree(results_);
   }
 
  private:
