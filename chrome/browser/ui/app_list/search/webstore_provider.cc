@@ -8,17 +8,15 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore_result.h"
-#include "chrome/browser/ui/app_list/search/webstore_search_fetcher.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/url_constants.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -30,7 +28,6 @@ const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
 const size_t kMinimumQueryLength = 3u;
-const int kWebstoreQueryThrottleIntrevalInMs = 100;
 
 // Returns true if the launcher should send queries to the web store server.
 bool UseWebstoreSearch() {
@@ -39,55 +36,12 @@ bool UseWebstoreSearch() {
   return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
 }
 
-// Returns whether or not the user's input string, |query|, might contain any
-// sensitive information, based purely on its value and not where it came from.
-bool IsSensitiveInput(const string16& query) {
-  const GURL query_as_url(query);
-  if (!query_as_url.is_valid())
-    return false;
-
-  // The input can be interpreted as a URL. Check to see if it is potentially
-  // sensitive. (Code shamelessly copied from search_provider.cc's
-  // IsQuerySuitableForSuggest function.)
-
-  // First we check the scheme: if this looks like a URL with a scheme that is
-  // file, we shouldn't send it. Sending such things is a waste of time and a
-  // disclosure of potentially private, local data. If the scheme is OK, we
-  // still need to check other cases below.
-  if (LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kFileScheme))
-    return true;
-
-  // Don't send URLs with usernames, queries or refs. Some of these are
-  // private, and the Suggest server is unlikely to have any useful results
-  // for any of them. Also don't send URLs with ports, as we may initially
-  // think that a username + password is a host + port (and we don't want to
-  // send usernames/passwords), and even if the port really is a port, the
-  // server is once again unlikely to have and useful results.
-  if (!query_as_url.username().empty() ||
-      !query_as_url.port().empty() ||
-      !query_as_url.query().empty() ||
-      !query_as_url.ref().empty()) {
-    return true;
-  }
-
-  // Don't send anything for https except the hostname. Hostnames are OK
-  // because they are visible when the TCP connection is established, but the
-  // specific path may reveal private information.
-  if (LowerCaseEqualsASCII(query_as_url.scheme(), content::kHttpsScheme) &&
-      !query_as_url.path().empty() && query_as_url.path() != "/") {
-    return true;
-  }
-
-  return false;
-}
-
 }  // namespace
 
 WebstoreProvider::WebstoreProvider(Profile* profile,
                                    AppListControllerDelegate* controller)
   : profile_(profile),
-    controller_(controller),
-    use_throttling_(true) {}
+    controller_(controller) {}
 
 WebstoreProvider::~WebstoreProvider() {}
 
@@ -119,24 +73,14 @@ void WebstoreProvider::Start(const base::string16& query) {
 
   if (UseWebstoreSearch() && chrome::IsSuggestPrefEnabled(profile_)) {
     if (!webstore_search_) {
-      webstore_search_.reset(new WebstoreSearchFetcher(
+      webstore_search_.reset(new JSONResponseFetcher(
           base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
                      base::Unretained(this)),
           profile_->GetRequestContext()));
     }
 
-    base::TimeDelta interval =
-        base::TimeDelta::FromMilliseconds(kWebstoreQueryThrottleIntrevalInMs);
-    if (!use_throttling_ || base::Time::Now() - last_keytyped_ > interval) {
-      query_throttler_.Stop();
-      StartQuery();
-    } else {
-      query_throttler_.Start(
-          FROM_HERE,
-          interval,
-          base::Bind(&WebstoreProvider::StartQuery, base::Unretained(this)));
-    }
-    last_keytyped_ = base::Time::Now();
+    StartThrottledQuery(base::Bind(&WebstoreProvider::StartQuery,
+                                   base::Unretained(this)));
   }
 
   // Add a placeholder result which when clicked will run the user's query in a
@@ -155,7 +99,8 @@ void WebstoreProvider::StartQuery() {
   if (!webstore_search_ || query_.empty())
     return;
 
-  webstore_search_->Start(query_, g_browser_process->GetApplicationLocale());
+  webstore_search_->Start(extension_urls::GetWebstoreJsonSearchUrl(
+      query_, g_browser_process->GetApplicationLocale()));
 }
 
 void WebstoreProvider::OnWebstoreSearchFetched(

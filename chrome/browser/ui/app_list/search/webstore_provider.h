@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore_cache.h"
 
 class AppListControllerDelegate;
@@ -27,12 +27,12 @@ class WebstoreProviderTest;
 }
 
 class ChromeSearchResult;
-class WebstoreSearchFetcher;
+class JSONResponseFetcher;
 
 // WebstoreProvider fetches search results from the web store server.
 // A "Search in web store" result will be returned if the server does not
 // return any results.
-class WebstoreProvider : public SearchProvider {
+class WebstoreProvider : public WebserviceSearchProvider{
  public:
   WebstoreProvider(Profile* profile, AppListControllerDelegate* controller);
   virtual ~WebstoreProvider();
@@ -56,11 +56,9 @@ class WebstoreProvider : public SearchProvider {
     webstore_search_fetched_callback_ = callback;
   }
 
-  void set_use_throttling(bool use) { use_throttling_ = use; }
-
   Profile* profile_;
   AppListControllerDelegate* controller_;
-  scoped_ptr<WebstoreSearchFetcher> webstore_search_;
+  scoped_ptr<JSONResponseFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
 
   // The cache of the search result which will be valid only in a single
@@ -75,9 +73,6 @@ class WebstoreProvider : public SearchProvider {
 
   // The current query.
   std::string query_;
-
-  // The flag for tests. It prevents the throttling If set to false.
-  bool use_throttling_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreProvider);
 };

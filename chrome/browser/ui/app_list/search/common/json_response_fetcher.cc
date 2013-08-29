@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/webstore_search_fetcher.h"
+#include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/safe_json_parser.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 namespace app_list {
 
-const char kBadResponse[] = "Bad Web Store search response";
+const char kBadResponse[] = "Bad Web Service search response";
 
-WebstoreSearchFetcher::WebstoreSearchFetcher(
+JSONResponseFetcher::JSONResponseFetcher(
     const Callback& callback,
     net::URLRequestContextGetter* context_getter)
     : callback_(callback),
@@ -25,14 +25,13 @@ WebstoreSearchFetcher::WebstoreSearchFetcher(
   DCHECK(!callback_.is_null());
 }
 
-WebstoreSearchFetcher::~WebstoreSearchFetcher() {}
+JSONResponseFetcher::~JSONResponseFetcher() {}
 
-void WebstoreSearchFetcher::Start(const std::string& query,
-                                  const std::string& hl) {
+void JSONResponseFetcher::Start(const GURL& query_url) {
   Stop();
 
   fetcher_.reset(net::URLFetcher::Create(
-      extension_urls::GetWebstoreJsonSearchUrl(query, hl),
+      query_url,
       net::URLFetcher::GET,
       this));
   fetcher_->SetRequestContext(context_getter_);
@@ -41,12 +40,12 @@ void WebstoreSearchFetcher::Start(const std::string& query,
   fetcher_->Start();
 }
 
-void WebstoreSearchFetcher::Stop() {
+void JSONResponseFetcher::Stop() {
   fetcher_.reset();
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void WebstoreSearchFetcher::OnJsonParseSuccess(
+void JSONResponseFetcher::OnJsonParseSuccess(
     scoped_ptr<base::Value> parsed_json) {
   if (!parsed_json->IsType(base::Value::TYPE_DICTIONARY)) {
     OnJsonParseError(kBadResponse);
@@ -57,11 +56,12 @@ void WebstoreSearchFetcher::OnJsonParseSuccess(
       static_cast<base::DictionaryValue*>(parsed_json.release())));
 }
 
-void WebstoreSearchFetcher::OnJsonParseError(const std::string& error) {
+void JSONResponseFetcher::OnJsonParseError(const std::string& error) {
   callback_.Run(scoped_ptr<base::DictionaryValue>());
 }
 
-void WebstoreSearchFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void JSONResponseFetcher::OnURLFetchComplete(
+    const net::URLFetcher* source) {
   CHECK_EQ(fetcher_.get(), source);
 
   scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
@@ -77,10 +77,12 @@ void WebstoreSearchFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   scoped_refptr<SafeJsonParser> parser =
       new SafeJsonParser(webstore_json_data,
-                         base::Bind(&WebstoreSearchFetcher::OnJsonParseSuccess,
-                                    weak_factory_.GetWeakPtr()),
-                         base::Bind(&WebstoreSearchFetcher::OnJsonParseError,
-                                    weak_factory_.GetWeakPtr()));
+                         base::Bind(
+                             &JSONResponseFetcher::OnJsonParseSuccess,
+                             weak_factory_.GetWeakPtr()),
+                         base::Bind(
+                             &JSONResponseFetcher::OnJsonParseError,
+                             weak_factory_.GetWeakPtr()));
   // The parser will call us back via one of the callbacks.
   parser->Start();
 }
