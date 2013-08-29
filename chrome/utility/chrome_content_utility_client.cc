@@ -356,7 +356,6 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
 
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
-      std::vector<char> font_data;
       content::UtilityThread::Get()->PreCacheFont(logfont);
       rv = GetFontData(hdc, table, offset, buffer, length);
       content::UtilityThread::Get()->ReleaseCachedFonts();
