@@ -302,10 +302,8 @@ crbug.com/258896 virtual/web-animations-css/animations/cross-fade-border-image-s
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-list-style-image.html [ NeedsRebaseline ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-image.html [ NeedsRebaseline ]
-crbug.com/258896 virtual/web-animations-css/animations/empty-keyframe-animation.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 crbug.com/258896 [ Debug ] virtual/web-animations-css/animations/width-using-ems.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/wrong-keyframe-name.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
@@ -324,7 +322,9 @@ crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animati
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
 crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Timeout Pass ]
+crbug.com/258896 virtual/web-animations-css/animations/empty-keyframe-animation.html [ Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-forwards.html [ Timeout Pass ]
+crbug.com/258896 virtual/web-animations-css/animations/wrong-keyframe-name.html [ Timeout ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
