@@ -24,9 +24,6 @@ BB_BUILD_DIR = os.path.abspath(
 CHROME_SRC = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-# TODO: Figure out how to merge this with pylib.cmd_helper.OutDirectory().
-CHROME_OUT_DIR = os.path.join(CHROME_SRC, 'out')
-
 GOMA_DIR = os.environ.get('GOMA_DIR', os.path.join(BB_BUILD_DIR, 'goma'))
 
 GSUTIL_PATH = os.path.join(BB_BUILD_DIR, 'third_party', 'gsutil', 'gsutil')
