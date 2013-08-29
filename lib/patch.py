@@ -1099,7 +1099,7 @@ class GerritPatch(GitRepoPatch):
     if current_revision_info:
       approvals = []
       for label, label_data in change['labels'].iteritems():
-        for review_data in label_data['all']:
+        for review_data in label_data.get('all', []):
           granted_on = review_data.get('date', change['created'])
           approvals.append({
               'type': constants.GERRIT_ON_BORG_LABELS[label],
