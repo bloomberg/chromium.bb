@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Veja aqui todas as suas notificações de aplicativos, extensões e websites do Google Chrome.</translation>
 <translation id="2704356438731803243">Se você preferir manter seus dados existentes do Google Chrome separadamente, pode criar um novo usuário do Chrome para <ph name="USER_NAME"/> .</translation>
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
+<translation id="1225016890511909183">O Google Chrome armazena suas informações com segurança para que não seja necessário digitá-las novamente, mas você ainda precisa confirmar o código de segurança de seu cartão para pagamentos futuros.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Obter ajuda para usar o Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Google Chrome OS.</translation>
 <translation id="4309555186815777032">(requer a <ph name="BEGIN_BUTTON"/>reinicialização<ph name="END_BUTTON"/> do Google Chrome)</translation>
+<translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">O Frame do Google Chrome foi atualizado. Reinicie seu navegador. Versão do Google Chrome: <ph name="TODO_0001"/>, versão do Frame do Google Chrome: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Você precisa ter feito login no Google Chrome para usar aplicativos. Isso permite que o Google Chrome sincronize aplicativos, favoritos, histórico, senhas e outras configurações com outros dispositivos.</translation>
 <translation id="5775197990071433230">Este computador já possui uma versão mais recente dos componentes do Google Chrome. Use um instalador mais recente.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Obter ajuda para usar o Google Chrome</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS"/>. Use a mesma conta para fazer login novamente.</translation>
 <translation id="1697213158865901863">Frame do Google Chrome</translation>
+<translation id="4513711165509885787">Seus dados para cobrança foram salvos no Google Chrome.</translation>
+<translation id="7098166902387133879">O Google Chrome está usando seu microfone.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="6423071462708908582">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado. Nenhuma informação está disponível para indicar se o certificado foi comprometido desde a expiração. Isso significa que o Google Chrome não pode garantir que você está se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/>. Isso está correto? Caso contrário, você deve corrigir o erro e atualizar esta página.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Aplicativos Canary do Google Chrome</translation>
 <translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Google Chrome - Notificações</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
@@ -87,6 +92,7 @@
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="6557998774620459028">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade que não é confiável para o sistema operacional do seu computador. Isso pode significar que o servidor gerou suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar como informações de identidade, ou que um invasor está tentando interceptar suas comunicações.</translation>
 <translation id="5170938038195470297">Seu perfil não pode ser utilizado pois foi criado em uma versão mais recente do Google Chrome. Alguns recursos podem não estar disponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
+<translation id="7282192067747128786">Google Chrome – Notificações (<ph name="QUANTITY"/> não lidas)</translation>
 <translation id="6011049234605203654">Vá para
           no menu do Google Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -117,6 +123,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2874156562296220396">O Google Chrome foi possibilitado pelo projeto de código aberto <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> e outros <ph name="BEGIN_LINK_OSS"/>softwares de código aberto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">O Google Chrome pode usar serviços da web  para melhorar sua experiência de navegação.</translation>
 <translation id="7436949144778751379">O Google Chrome requer Windows XP ou superior. Alguns recursos talvez não funcionem.</translation>
+<translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="103396972844768118">Informação importante sobre seus dados do Google Chrome</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Não estou a fim</translation>
@@ -144,7 +151,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="8547799825197623713">Iniciador de aplicativos do Google Chrome no Canary</translation>
 <translation id="5577648424992741236">Este computador já tem uma versão mais recente do Frame do Google Chrome. Caso e o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="6326175484149238433">Remover do Google Chrome</translation>
-<translation id="2871893339301912279">Você fez login no Google Chrome.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="1686446242839005801">Você está fazendo login no Google Chrome usando sua conta <ph name="USER_EMAIL_ADDRESS"/>. Assim, poderá acessar seus favoritos, histórico e outras configurações em todos os dispositivos conectados.</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
@@ -156,6 +162,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="870251953148363156">Atualizar o Google Chrome</translation>
 <translation id="130631256467250065">As alterações entrarão em vigor na próxima vez que você reiniciar o dispositivo.</translation>
 <translation id="163860049029591106">Primeiros passos com o Chrome OS</translation>
+<translation id="1587223624401073077">O Google Chrome está usando sua câmera.</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Caso o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="576822117893741893">Mostrar o menu do Google Chrome</translation>
 <translation id="3444832043240812445">Esta página mostra apenas informações sobre suas falhas recentes se você <ph name="BEGIN_LINK"/>ativar relatórios de erros<ph name="END_LINK"/>.</translation>
@@ -166,9 +173,10 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="5046764976540625289">Sair do Chrome</translation>
 <translation id="4251615635259297716">Vincular seus dados do Google Chrome a esta conta?</translation>
 <translation id="9039578207253536065">Operador do Google Chrome</translation>
-<translation id="2680623880102270805">O Google Chrome não consegue criar um atalho do aplicativo, porque não é possível determinar o ambiente de computador atual.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>answer=161796</translation>
 <translation id="8865765905101981392">Navegador da internet</translation>
+<translation id="8142608456917638009">O Google Chrome não conseguiu criar um atalho para o aplicativo.</translation>
+<translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
 <translation id="2189123953385179981">O Google ChromeOS não suporta a inicialização de um aplicativo externo para manipular links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Permitir que o Google Chrome acesse a rede em suas configurações de
         firewall ou antivírus.</translation>

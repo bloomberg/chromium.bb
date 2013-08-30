@@ -2,22 +2,26 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
-<translation id="5250713215130379958">ตัวเรียกใช้งานแบบซ่อนอัตโนมัติ</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> กับ <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">สถานะพอร์ทัล</translation>
 <translation id="30155388420722288">ปุ่มแบบโอเวอร์โฟลว์</translation>
+<translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">เปิดใช้งานบลูทูธแล้ว</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> หมุนเวียนเป็น <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="2268130516524549846">ปิดใช้งานบลูทูธแล้ว</translation>
+<translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
 <translation id="3775358506042162758">คุณสามารถมีได้มากสุดสามบัญชีเท่านั้นในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="370649949373421643">เปิดใช้งาน Wi-Fi</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
+<translation id="595202126637698455">เปิดใช้งานการติดตามการปฏิบัติงานแล้ว</translation>
 <translation id="8054466585765276473">กำลังคำนวณเวลาใช้งานแบตเตอรี่</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
 <translation id="5565793151875479467">พร็อกซี...</translation>
 <translation id="938582441709398163">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="4387004326333427325">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากระยะไกล</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
+<translation id="3683428399328702079">ความละเอียดของ <ph name="DISPLAY_NAME"/> เปลี่ยนเป็น <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">การรับ HTTP ล้มเหลว</translation>
 <translation id="2297568595583585744">ถาดสถานะ</translation>
 <translation id="1661867754829461514">ไม่พบ PIN</translation>
@@ -34,39 +38,41 @@
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
 <translation id="3026237328237090306">ตั้งค่าข้อมูลมือถือ</translation>
+<translation id="5871632337994001636">จัดการอุปกรณ์...</translation>
 <translation id="785750925697875037">ดูบัญชีมือถือ</translation>
 <translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
 <translation id="4628814525959230255">กำลังแชร์การควบคุมหน้าจอของคุณด้วย <ph name="HELPER_NAME"/> ผ่านแฮงเอาท์</translation>
-<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> ถูกหมุนเวียน</translation>
 <translation id="7864539943188674973">ปิดใช้งานบลูทูธ</translation>
 <translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="2268813581635650749">ออกจากระบบทั้งหมด</translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="7320906967354320621">ไม่ทำงาน</translation>
-<translation id="6303423059719347535">มีแบตเตอรี่ <ph name="PERCENTAGE"/>%</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
-<translation id="2778346081696727092">ไม่สามารถตรวจสอบสิทธิ์ชื่อผู้ใช้หรือรหัสผ่านที่ให้มาได้</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
 <translation id="2903907270192926896">อินพุต</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
 <translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
+<translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">การกำหนดค่า</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="4957722034734105353">เรียนรู้เพิ่มเติม...</translation>
 <translation id="2964193600955408481">ปิดใช้งาน WiFi</translation>
-<translation id="811680302244032017">เพิ่มอุปกรณ์...</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
+<translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
 <translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="7823564328645135659">เปลี่ยนภาษาจาก &quot;<ph name="FROM_LOCALE"/>&quot; เป็น &quot;<ph name="TO_LOCALE"/>&quot; หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
 <translation id="8340999562596018839">การตอบสนองด้วยเสียง</translation>
 <translation id="8654520615680304441">เปิด WiFi...</translation>
+<translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/> แล้ว
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="2562916301614567480">เครือข่ายส่วนบุคคล</translation>
@@ -83,11 +89,12 @@
 <translation id="3626637461649818317">เหลืออีก <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2614835198358683673">Chromebook ของคุณอาจไม่ได้ชาร์จในขณะที่เปิดอยู่ ลองใช้ที่ชาร์จมาตรฐาน</translation>
 <translation id="1895658205118569222">ปิด</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
+<translation id="8681498213689260554">รีสตาร์ทและ Powerwash เพื่ออัปเดต</translation>
 <translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
-<translation id="6356500677799115505">แบตเตอรี่เต็มและกำลังชาร์จ</translation>
 <translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="1383876407941801731">เครื่องมือค้นหา</translation>
@@ -96,7 +103,6 @@
 <translation id="2204305834655267233">ข้อมูลเครือข่าย</translation>
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ออกจากเซสชันผู้มาเยือน</translation>
-<translation id="4471417012762451363">มีแบตเตอรี่ <ph name="PERCENTAGE"/>% และกำลังชาร์จ</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
 <translation id="4666297444214622512">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
 <translation id="1346748346194534595">ขวา</translation>
@@ -114,6 +120,7 @@
 <translation id="6312403991423642364">ข้อผิดพลาดเครือข่ายที่ไม่รู้จัก</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="5543001071567407895">SMS</translation>
+<translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">ย่อ</translation>
@@ -123,7 +130,6 @@
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
 <translation id="3784455785234192852">ล็อก</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> ถูกปรับขนาดเป็น <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">การเปิดใช้งานล้มเหลว</translation>
 <translation id="5097002363526479830">ไม่สามารถเชื่อมต่อเครือข่าย &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
@@ -131,6 +137,7 @@
 <translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
 <translation id="8678698760965522072">สถานะออนไลน์</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
 <translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
@@ -153,20 +160,24 @@
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
+<translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE"/>%</translation>
 <translation id="2983818520079887040">การตั้งค่า...</translation>
+<translation id="1195412055398077112">โอเวอร์สแกน</translation>
 <translation id="1717216362413677834">โหมดแท่นชาร์จ</translation>
+<translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="8927026611342028580">ขอเชื่อมต่อ</translation>
 <translation id="8300849813060516376">OTASP ล้มเหลว</translation>
 <translation id="2792498699870441125">Alt+ค้นหา</translation>
 <translation id="8660803626959853127">กำลังซิงค์ <ph name="COUNT"/> ไฟล์</translation>
+<translation id="5958529069007801266">ผู้ใช้ภายใต้การดูแล</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
 <translation id="6248847161401822652">กด Control Shift Q สองครั้งเพื่อออก</translation>
+<translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE"/>% และกำลังชาร์จ</translation>
 <translation id="6267036997247669271"><ph name="NAME"/> กำลังเปิดใช้งาน...</translation>
+<translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="1391854757121130358">คุณอาจใช้ข้อมูลมือถือถึงขีดจำกัดแล้ว</translation>
-<translation id="5413208160176941586">ผู้ใช้ที่ได้รับการจัดการในเครื่อง</translation>
-<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
-<translation id="4864165860509564259">ตำแหน่งของตัวเรียกใช้งาน</translation>
+<translation id="5947494881799873997">ย้อนกลับ</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="3050422059534974565">CAPS LOCK เปิดอยู่
@@ -179,22 +190,24 @@
 <translation id="6692173217867674490">ข้อความรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
+<translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">เซสชันนี้จะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING"/> ระบบจะลงชื่อออกให้คุณโดยอัตโนมัติ</translation>
 <translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
 <translation id="6636709850131805001">สถานะที่ไม่รู้จัก</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น &quot;<ph name="FROM_LOCALE"/>&quot; (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="8103386449138765447">ข้อความ SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">การตั้งค่า Google ไดรฟ์...</translation>
-<translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
 <translation id="7209101170223508707">CAPS LOCK เปิดอยู่
 กด Alt+ค้นหา หรือ Shift เพื่อยกเลิก</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE"/>%)</translation>
+<translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="5102001756192215136">เหลืออีก <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">กำลังแชร์การควบคุมหน้าจอผ่านแฮงเอาท์</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="4015692727874266537">ลงชื่อเข้าใช้บัญชีอื่น...</translation>
 <translation id="5941711191222866238">ย่อ</translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">อีก <ph name="HOUR"/>ชม. <ph name="MINUTE"/>นาทีจึงจะเต็ม</translation>
 <translation id="6359806961507272919">SMS จาก <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">ผู้ให้บริการ</translation>

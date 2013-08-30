@@ -2,22 +2,26 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="3595596368722241419">Betri imejaa</translation>
-<translation id="5250713215130379958">Kizinduzi cha Kuficha otomatiki</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> na <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Hali ya lango</translation>
 <translation id="30155388420722288">Kitufe Jalizi</translation>
+<translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth imewezeshwa</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> ilizungushwa hadi <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth imelemazwa</translation>
+<translation id="7165320105431587207">Ilishindwa kusanidi mtandao</translation>
 <translation id="3775358506042162758">Unaweza tu kuwa na hadi akaunti tatu zilizoingiwa kwa wakati mmoja</translation>
 <translation id="370649949373421643">Wezesha Wi-Fi</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
+<translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="5565793151875479467">Proksi...</translation>
 <translation id="938582441709398163">Mtandazo wa Kibodi</translation>
 <translation id="4387004326333427325">Cheti cha uthibitishaji kimekataliwa kwa mbali</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
+<translation id="3683428399328702079">Ubora wa <ph name="DISPLAY_NAME"/> ulibadilishwa hadi <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP imeshindikana</translation>
 <translation id="2297568595583585744">Treya ya hali</translation>
 <translation id="1661867754829461514">PIN inakosekana</translation>
@@ -34,39 +38,41 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
 <translation id="3026237328237090306">Sanidi data ya simu</translation>
+<translation id="5871632337994001636">Simamia vifaa...</translation>
 <translation id="785750925697875037">Ona akaunti ya simu ya mkononi</translation>
 <translation id="153454903766751181">Inaanzisha modemu ya simu za mkononi...</translation>
 <translation id="4628814525959230255">Inashiriki udhibiti wa skrini yako na <ph name="HELPER_NAME"/> kupitia Hangouts.</translation>
-<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> limezungushwa</translation>
 <translation id="7864539943188674973">Lemaza Bluetooth</translation>
 <translation id="939252827960237676">Imeshindwa kuhifadhi picha ya skrini</translation>
 <translation id="3126069444801937830">Anzisha upya ili kusasisha</translation>
 <translation id="2268813581635650749">Ondoa wote</translation>
 <translation id="735745346212279324">VPN imekatwa muunganisho</translation>
 <translation id="7320906967354320621">Tulivu</translation>
-<translation id="6303423059719347535">Betri imejaa <ph name="PERCENTAGE"/>%</translation>
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
-<translation id="2778346081696727092">Imeshindwa kuthibitisha kwa jina la mtumiaji au nenosiri lililotolewa</translation>
 <translation id="3294437725009624529">Mgeni</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="2942516765047364088">Nafasi ya rafu</translation>
 <translation id="2903907270192926896">INGIZO</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="7170041865419449892">Nje ya eneo</translation>
 <translation id="4804818685124855865">Tenganisha</translation>
 <translation id="2544853746127077729">Cheti cha uthibitishaji kimekataliwa na mtandao</translation>
 <translation id="5222676887888702881">Ondoka</translation>
+<translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Usanidi</translation>
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="4957722034734105353">Pata maelezo zaidi...</translation>
 <translation id="2964193600955408481">Lemaza Wi-Fi</translation>
-<translation id="811680302244032017">Ongeza kifaa...</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
+<translation id="7973962044839454485">Uthibitishaji wa PPP ulishindwa kutokana na jina la mtumiaji na nenosiri lisilo sahihi</translation>
 <translation id="2509468283778169019">Caps Lock imewashwa.</translation>
 <translation id="3892641579809465218">Onyesho la Ndani</translation>
 <translation id="7823564328645135659">Lugha imebadilika kutoka &quot;<ph name="FROM_LOCALE"/> &quot;na kuwa&quot; <ph name="TO_LOCALE"/>&quot; baada ya kulinganisha mipangilio yako.</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
 <translation id="8340999562596018839">Maoni ya yaliyotamkwa</translation>
 <translation id="8654520615680304441">Washa Wi-Fi...</translation>
+<translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Mbinu ingizo yako imebadilika hadi <ph name="INPUT_METHOD_ID"/>.
 Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="2562916301614567480">Mtandao Binafsi</translation>
@@ -83,11 +89,12 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% inayobaki</translation>
 <translation id="9089416786594320554">Mbinu Ingizo</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2825619548187458965">Rafu</translation>
 <translation id="2614835198358683673">Chromebook yako huenda isichaji ikiwa imewashwa. Fikiria kutumia chaja rasmi.</translation>
 <translation id="1895658205118569222">Funga</translation>
 <translation id="4430019312045809116">Kiwango</translation>
+<translation id="8681498213689260554">Zima na uwashe na Powerwash ili kusasisha</translation>
 <translation id="4442424173763614572">Mwonekano wa DNS umeshindikana</translation>
-<translation id="6356500677799115505">Betri imejaa na inachajiwa.</translation>
 <translation id="7874779702599364982">Inatafuta mitandao ya simu za mkononi...</translation>
 <translation id="583281660410589416">Siojulikana</translation>
 <translation id="1383876407941801731">Tafuta</translation>
@@ -96,7 +103,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="2204305834655267233">Maelezo ya Mtandao</translation>
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Maliza Ugeni</translation>
-<translation id="4471417012762451363">Betri imejaa <ph name="PERCENTAGE"/>% na inachaji</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="4666297444214622512">Huwezi kuingia katika akaunti nyingine.</translation>
 <translation id="1346748346194534595">Kulia</translation>
@@ -114,6 +120,7 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="6312403991423642364">Hitilafu isiyojulikana ya mtandao</translation>
 <translation id="1467432559032391204">Kushoto</translation>
 <translation id="5543001071567407895">SMS</translation>
+<translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Tanua</translation>
@@ -123,7 +130,6 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="3784455785234192852">Funga</translation>
 <translation id="2805756323405976993">Programu</translation>
-<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> imebadilishwa ukubwa kuwa <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">Kushindwa kwa uamilishaji</translation>
 <translation id="5097002363526479830">Imeshindwa kuunganisha kwenye mtandao '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
@@ -131,6 +137,7 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="8678698760965522072">Hali ya mtandaoni</translation>
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Hitilafu ya ndani</translation>
 <translation id="3019353588588144572">Muda unaosalia hadi betri itakapochajiwa kikamilifu, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
@@ -153,20 +160,24 @@ Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
+<translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Mipangilio...</translation>
+<translation id="1195412055398077112">angalia kwa ujumla:</translation>
 <translation id="1717216362413677834">Hali ya kufungwa</translation>
+<translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
 <translation id="8927026611342028580">Muunganisho Umeombwa</translation>
 <translation id="8300849813060516376">OTASP imeshindikana</translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
 <translation id="8660803626959853127">Inalinganisha faili <ph name="COUNT"/></translation>
+<translation id="5958529069007801266">Mtumiaji anayesimamiwa</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
 <translation id="6248847161401822652">Bofya &quot;Control&quot; na &quot;Shift&quot; na Q kwa pamoja mara mbili ili kuacha.</translation>
+<translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE"/>% na inachaji.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Inaanza kutumia...</translation>
+<translation id="4895488851634969361">Betri imejaa.</translation>
 <translation id="1391854757121130358">Inawezekana umemaliza mgawo wako wa data ya simu ya mkononi.</translation>
-<translation id="5413208160176941586">Mtumiaji anayedhibitiwa karibu</translation>
-<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
-<translation id="4864165860509564259">Sehemu ya kizinduzi</translation>
+<translation id="5947494881799873997">Rejesha</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="3050422059534974565">CAPS LOCK imeamilishwa. 
@@ -179,22 +190,24 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="6692173217867674490">Kaulisiri mbovu</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="9046895021617826162">Muunganisho umeshindikana</translation>
+<translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Kipindi hiki kitaisha katika <ph name="SESSION_TIME_REMAINING"/>. Utaondolewa kiotomatiki.</translation>
 <translation id="8372369524088641025">Kitufe kibovu cha WEP</translation>
 <translation id="6636709850131805001">Hali isiyotambulika</translation>
 <translation id="3573179567135747900">Badilisha hadi &quot;<ph name="FROM_LOCALE"/>&quot; (inahitaji uzime na uwashe)</translation>
 <translation id="8103386449138765447">Ujumbe wa SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Mipangilio ya Hifadhi ya Google...</translation>
-<translation id="1510238584712386396">Kizindua</translation>
 <translation id="7209101170223508707">CAPS LOCK imeamilishwa. 
 Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE"/>%)</translation>
+<translation id="4918086044614829423">Kubali</translation>
 <translation id="5102001756192215136">Imesalia <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">Kushiriki udhibiti wa skrini yako kupitia Hangouts.</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="4015692727874266537">Ingia katika akaunti nyingine...</translation>
 <translation id="5941711191222866238">Punguza</translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Saa<ph name="HOUR"/> dakika<ph name="MINUTE"/> ili ijae</translation>
 <translation id="6359806961507272919">SMS kutoka <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mtoa huduma</translation>

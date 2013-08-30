@@ -17,6 +17,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="4167057906098955729">Zde se zobrazují všechna oznámení z aplikací, rozšíření a webů Chrome.</translation>
 <translation id="2704356438731803243">Pokud chcete svá stávající data prohlížeče Chrome uchovávat odděleně, můžete pro účet <ph name="USER_NAME"/> vytvořit nového uživatele prohlížeče Chrome.</translation>
 <translation id="386202838227397562">Zavřete prosím všechna okna prohlížeče Google Chrome a zkuste to znovu.</translation>
+<translation id="1225016890511909183">Prohlížeč Chrome vaše informace bezpečně uloží, abyste je nemuseli zadávat znovu. I přesto však bude třeba ověřit bezpečnostní kód karty pro budoucí platby.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
@@ -36,6 +37,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
 <translation id="6982337800632491844">Doména <ph name="DOMAIN"/> vyžaduje, abyste si před použitím tohoto zařízení přečetli a odsouhlasili následující smluvní podmínky. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Google Chrome OS.</translation>
 <translation id="4309555186815777032">(vyžaduje <ph name="BEGIN_BUTTON"/>restartování<ph name="END_BUTTON"/> prohlížeče Chrome)</translation>
+<translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Plugin Chrome Frame byl aktualizován. Restartujte prosím prohlížeč. Verze prohlížeče Chrome: <ph name="TODO_0001"/>, verze pluginu Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Chcete-li používat aplikace, musíte být do Chromu přihlášeni. To Chromu umožňuje synchronizovat vaše aplikace, záložky, historii, hesla a další nastavení mezi zařízeními.</translation>
 <translation id="5775197990071433230">V tomto počítači je již používána novější verze komponent aplikace Google Chrome. Použijte prosím novější instalátor.</translation>
@@ -62,6 +64,8 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1393853151966637042">Pomoc s používáním Chromu</translation>
 <translation id="7398801000654795464">K prohlížeči Chrome jste byli přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
 <translation id="4053720452172726777">Přizpůsobit a ovládat Google Chrome</translation>
 <translation id="6423071462708908582">Pokusili jste se přejít na web &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, avšak server předložil certifikát, jehož platnost vypršela. Nejsou k dispozici žádné informace, které by umožňovaly zjistit, zda nebyl certifikát od vypršení platnosti prolomen. To znamená, že Google Chrome nemůže zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
@@ -69,6 +73,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1434626383986940139">Aplikace Chrome Canary</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome – oznámení</translation>
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
@@ -94,6 +99,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5170938038195470297">Nelze použít váš profil, protože byl vytvořen v novější verzi aplikace Google Chrome.
 
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi aplikace Chrome.</translation>
+<translation id="7282192067747128786">Chrome – oznámení (nepřečtené: <ph name="QUANTITY"/>)</translation>
 <translation id="6011049234605203654">Přejděte do
           nabídky Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -124,6 +130,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2874156562296220396">Google Chrome staví na projektu s otevřeným zdrojovým kódem <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> a využívá i další <ph name="BEGIN_LINK_OSS"/>otevřený software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
+<translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="103396972844768118">Důležité informace o datech prohlížeče Chrome</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
@@ -151,7 +158,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="8547799825197623713">Spouštěč aplikací Chrome Canary</translation>
 <translation id="5577648424992741236">V tomto počítači je již nainstalována novější verze pluginu Google Chrome Frame. Jestliže software nefunguje, odinstalujte prosím plugin Google Chrome Frame a zkuste to znovu.</translation>
 <translation id="6326175484149238433">Odstranit z Chromu</translation>
-<translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>
 <translation id="1686446242839005801">Přihlašujete se do Chromu pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Budete moci přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="4147555960264124640">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí služby Dashboard, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
@@ -163,6 +169,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="870251953148363156">Aktualizace aplikace &amp;Google Chrome</translation>
 <translation id="130631256467250065">Změny se projeví po příštím restartu zařízení.</translation>
 <translation id="163860049029591106">Začínáme se systémem Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome používá vaši kameru.</translation>
 <translation id="1399397803214730675">V tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím prohlížeč Google Chrome a zkuste to znovu.</translation>
 <translation id="576822117893741893">Zobrazit nabídku Chrome</translation>
 <translation id="3444832043240812445">Pokud zvolíte možnost <ph name="BEGIN_LINK"/>povolit zprávy o selhání<ph name="END_LINK"/>, tato stránka bude zobrazovat jen informace o posledních selháních.</translation>
@@ -173,9 +180,10 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="5046764976540625289">Ukončit aplikaci Chrome</translation>
 <translation id="4251615635259297716">Chcete propojit údaje prohlížeče Chrome s tímto účtem?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome nemůže vytvořit zástupce aplikace, protože nedokáže zjistit aktuální prostředí pracovní plochy.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetový prohlížeč</translation>
+<translation id="8142608456917638009">Prohlížeči Google Chrome se nepodařilo vytvořit zástupce aplikace.</translation>
+<translation id="8255190535488645436">Google Chrome používá vaši kameru a mikrofon.</translation>
 <translation id="2189123953385179981">Google ChromeOS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">V nastavení firewallu a antivirového programu povolte prohlížeči Chrome
         přístup k síti.</translation>

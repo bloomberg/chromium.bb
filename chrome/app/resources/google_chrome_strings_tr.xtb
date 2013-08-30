@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Chrome uygulamaları, uzantılar ve web sitelerinden gelen tüm bildirimlerinizi burada görebilirsiniz.</translation>
 <translation id="2704356438731803243">Mevcut Chrome verilerinizi ayrı tutmak isterseniz, <ph name="USER_NAME"/> için yeni bir Chrome kullanıcısı oluşturabilirsiniz.</translation>
 <translation id="386202838227397562">Lütfen tüm Google Chrome pencerelerini kapatıp tekrar deneyin.</translation>
+<translation id="1225016890511909183">Chrome, bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız, ancak yine de bundan sonraki ödemeler için kartınızın güvenlik kodunu doğrulamanız gerekir.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım ivmesini kullan</translation>
 <translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Chrome OS'u kullanma konusunda yardım alın</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Google Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="4309555186815777032">(Chrome'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
+<translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME"/> kanalına güncelleniyor...</translation>
 <translation id="5339639696978861456">Chrome Frame güncellendi. Lütfen tarayıcınızı yeniden başlatın. Chrome sürümü: <ph name="TODO_0001"/>, Chrome Frame sürümü: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Uygulamaları kullanmak için Chrome'da oturum açmanız gerekiyor. Oturum açmanız, Chrome'un uygulamalarınızı, yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarınızda senkronize etmesine olanak sağlar.</translation>
 <translation id="5775197990071433230">Bu bilgisayar zaten Google Chrome bileşenlerinin daha yeni bir sürümüne sahip. Lütfen daha yeni bir yükleme programı kullanın.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Chrome'u kullanma konusunda yardım alın</translation>
 <translation id="7398801000654795464">Chrome'da <ph name="USER_EMAIL_ADDRESS"/> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Fatura ayrıntılarınız Chrome'a kaydedildi.</translation>
+<translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="4053720452172726777">Google Chrome'u özelleştirin ve kontrol edin</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu süresi bitmiş bir sertifika sundu. Sertifikanın süresi bittiğinden beri güvenliğinin olup olmadığı konusunda hiçbir bilgi yok. Yani Google Chrome bir saldırganla değil, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlandı. Bu doğru mu? Değilse, hatayı düzeltip bu sayfayı yenileyin.</translation>
 <translation id="3197823471738295152">Cihazınız güncel.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Chrome Canary Uygulamaları</translation>
 <translation id="8551886023433311834">Güncelleme neredeyse tamamlandı! Güncellemenin tamamlanması için cihazınızı yeniden başlatın.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - Bildirimler</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
 <translation id="3089968997497233615">Google Chrome'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
@@ -88,6 +93,7 @@
 <translation id="5170938038195470297">Profiliniz daha yeni bir Google Chrome sürümünden geldiği için kullanılamıyor.
 
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chrome sürümü kullanın.</translation>
+<translation id="7282192067747128786">Chrome - Bildirimler (<ph name="QUANTITY"/> okunmamış)</translation>
 <translation id="6011049234605203654">Chrome menüsü &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -117,6 +123,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="2874156562296220396">Google Chrome, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> açık kaynak projesi ve diğer <ph name="BEGIN_LINK_OSS"/>açık kaynak yazılımlar<ph name="END_LINK_OSS"/> ile oluşturulmuştur.</translation>
 <translation id="3847841918622877581">Google Chrome, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
 <translation id="7436949144778751379">Google Chrome, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
+<translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="103396972844768118">Chrome verileri ile ilgili önemli bilgiler</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
@@ -143,7 +150,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="8547799825197623713">Chrome Uygulama Başlatıcısı Canary</translation>
 <translation id="5577648424992741236">Bu bilgisayarda Google Chrome Frame'in daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome Frame'in yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="6326175484149238433">Chrome'dan kaldır</translation>
-<translation id="2871893339301912279">Chrome'da oturum açtınız!</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> hesabınızı kullanarak Chrome'da oturum açıyorsunuz. Oturum açtığınız tüm cihazlardan yer işaretlerinize, geçmişinize ve diğer ayarlara erişebileceksiniz.</translation>
 <translation id="4147555960264124640">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz.<ph name="LEARN_MORE"/></translation>
@@ -154,6 +160,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="870251953148363156">&amp;Google Chrome'u güncelle</translation>
 <translation id="130631256467250065">Yaptığınız değişiklikler cihazı yeniden başlattığınızda etkinleşecektir.</translation>
 <translation id="163860049029591106">Chrome OS'yi Kullanmaya Başlayın</translation>
+<translation id="1587223624401073077">Google Chrome kameranızı kullanıyor.</translation>
 <translation id="1399397803214730675">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'un yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="576822117893741893">Chrome menüsünü göster</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK"/>, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
@@ -164,9 +171,10 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="5046764976540625289">Chrome'dan Çık</translation>
 <translation id="4251615635259297716">Chrome verileriniz bu hesaba bağlansın mı?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome geçerli masaüstü ortamını belirleyemediğinden bir uygulama kısayolu oluşturamıyor.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
+<translation id="8142608456917638009">Google Chrome bir uygulama kısayolunu oluşturamadı.</translation>
+<translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını kullanmak için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı:  <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chrome'un ağa erişmesine
         izin verin.</translation>

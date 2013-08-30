@@ -95,6 +95,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si elle est associée à la valeur &quot;false&quot; ou si elle n'est pas configurée, la création et la connexion des comptes utilisateur supervisés sont désactivées. Tous les utilisateurs supervisés existants sont alors masqués.
 
           REMARQUE : Le comportement par défaut des appareils grand public diffère de celui des appareils professionnels : sur les appareils grand public, les comptes utilisateur supervisés sont autorisés par défaut, contrairement aux appareils professionnels.</translation>
+<translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="6649397154027560979">Cette règle a été abandonnée. Veuillez utiliser URLBlacklist à la place.
@@ -126,6 +127,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Un message d'erreur approprié s'affiche lorsqu'un utilisateur tente de se connecter avec un nom qui ne correspond pas à ce schéma.
 
       Si cette règle est laissée vide ou n'est pas définie, n'importe quel utilisateur peut alors se connecter à <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2892225385726009373">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME"/> exécute toujours une vérification de la révocation des certificats de serveur qui sont correctement validés et qui sont signés par des certificats CA installés localement.
+
+      S'il est impossible d'obtenir des informations relatives à l'état de la révocation par le biais de <ph name="PRODUCT_NAME"/>, ces certificats seront considérés comme révoqués (&quot;échec&quot;).
+
+      Si cette règle n'est pas définie ou si elle est définie sur &quot;False&quot;, les paramètres de vérification en ligne de la révocation sont alors utilisés dans Chrome.</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="3516856976222674451">Limite la durée maximale d'une session utilisateur.
 
@@ -136,6 +142,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est configurée, l'utilisateur ne peut ni la modifier, ni la contourner.
 
       La valeur de la règle doit être indiquée en millisecondes. Les valeurs doivent être comprises entre 30 secondes et 24 heures.</translation>
+<translation id="9200828125069750521">Paramètres pour l'URL d'image utilisant POST</translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
 <translation id="3478024346823118645">Effacer les données utilisateur à la déconnexion</translation>
 <translation id="8668394701842594241">Répertorie les plug-ins activés dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre. 
@@ -315,6 +322,7 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
       Si elle n'est pas définie, le délai de connexion s'élève à 0 milliseconde.
 
       Cette règle est définie en millisecondes.</translation>
+<translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="3570008976476035109">Bloquer les plug-ins sur ces sites</translation>
 <translation id="8749370016497832113">Permet la suppression de l'historique du navigateur et de l'historique des téléchargements dans <ph name="PRODUCT_NAME"/> sans permettre à l'utilisateur de modifier ce paramètre.
 
@@ -369,6 +377,16 @@ Si cette règle n'est pas configurée, le paramètre est défini sur l'option qu
 <translation id="8906768759089290519">Activer le mode invité</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
+<translation id="3234167886857176179">Voici la liste des règles suivies par <ph name="PRODUCT_NAME"/>.
+
+      Vous n'avez pas besoin de modifier ces paramètres manuellement. Vous pouvez télécharger des modèles faciles à utiliser à l'adresse suivante :
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>
+
+      La liste des règles compatibles est la même pour Chromium et Google Chrome.
+
+      Ces règles sont strictement prévues pour être utilisées dans le cadre de la configuration de copies de Chrome internes à votre entreprise. Si elles sont utilisées à l'extérieur de votre entreprise (dans le cadre d'un programme distribué publiquement, par exemple), cela est considéré comme une activité de logiciel malveillant. Sachez que Google et les distributeurs de logiciels antivirus sont susceptibles de signaler cette activité comme étant le fait d'un logiciel malveillant.
+
+      Remarque : À partir de la version 28 de Chrome, les règles sont chargées directement depuis l'API Group Policy sous Windows. Les règles rédigées manuellement dans le registre sont ignorées. Pour en savoir plus, accédez à l'adresse http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> peut utiliser un service Web de Google pour corriger les erreurs d'orthographe. En cas d'activation de ce paramètre, ce service est toujours utilisé. En cas de désactivation de ce paramètre, il n'est jamais utilisé.
 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
@@ -420,6 +438,7 @@ Pour voir des exemples de format, accédez à http://www.chromium.org/developers
       Si vous désactivez ce paramètre, les pages Web ne peuvent pas utiliser JavaScript et l'utilisateur n'est pas en mesure de le modifier.
 
       Si vous activez ce paramètre ou si vous ne le définissez pas, les pages Web peuvent utiliser JavaScript, mais l'utilisateur n'est pas en mesure de le modifier.</translation>
+<translation id="4047207703890139433">Définit le format d'horloge à utiliser pour l'appareil. Les utilisateurs peuvent le remplacer pour la session en cours. Il est cependant défini de nouveau sur la valeur spécifiée lorsqu'ils se déconnectent. Si une chaîne vide est fournie, la préférence définie par le propriétaire de l'appareil est utilisée.</translation>
 <translation id="1942957375738056236">Vous pouvez spécifier ici l'URL du serveur proxy. 
 
 Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels dans l'option &quot;Sélectionner le mode de spécification des paramètres de serveur proxy&quot;. 
@@ -450,6 +469,11 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
 
           En cas de désactivation ou de non-configuration de ce paramètre, l'utilisateur local ainsi que l'utilisateur à distance peuvent interagir avec l'hôte tant que ce celui-ci est partagé.</translation>
 <translation id="1426410128494586442">Oui</translation>
+<translation id="4897928009230106190">Spécifie les paramètres utilisés pour la recherche de suggestions avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{searchTerms}&quot; dans l'exemple ci-dessus, elle est remplacée par des termes de recherche réels.
+
+          Cette règle est facultative. Si elle n'est pas définie, la suggestion de requête de recherche sera envoyée à l'aide la méthode GET.
+
+          Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="4962195944157514011">Spécifie l'URL du moteur de recherche utilisé lorsque vous faites une recherche par défaut. L'URL doit contenir la chaîne &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; qui sera remplacée au moment de la requête par les termes que l'utilisateur recherche. 
 
 Cette option doit être définie lorsque la règle &quot;DefaultSearchProviderEnabled&quot; est activée et ne sera respectée que si c'est le cas.</translation>
@@ -552,6 +576,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="2498238926436517902">Toujours masquer automatiquement le répertoire</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
+<translation id="6997592395211691850">Définit si les vérifications en ligne OCSP/CRL sont requises pour les ancres d'approbation locales.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -616,6 +641,7 @@ Dans les deux cas, les utilisateurs ne peuvent pas le modifier ou le remplacer d
 
 Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette fonction ou non.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
+<translation id="8244525275280476362">Délai maximal de récupération après le rejet d'une règle</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="7417972229667085380">Pourcentage d'adaptation du délai d'inactivité en mode Présentation (abandonné)</translation>
 <translation id="3964909636571393861">Permet d'accéder à une liste d'URL.</translation>
@@ -647,7 +673,6 @@ Si cette règle n'est pas configurée, le paramètre &quot;BlockPopups&quot; est
 <translation id="8285435910062771358">Loupe plein écran activée</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="3864818549971490907">Paramètre de plug-ins par défaut</translation>
-<translation id="1910566775788829857">Déconnecter l'utilisateur</translation>
 <translation id="7151201297958662315">Détermine si un processus de <ph name="PRODUCT_NAME"/> doit être démarré dès la connexion au système d'exploitation et s'il doit continuer en arrière-plan jusqu'à la fermeture de la dernière fenêtre du navigateur. Le processus exécuté en arrière-plan affiche une icône dans la barre d'état du système et peut être fermé à tout moment à partir de cet emplacement.
 
        Si cette règle est définie sur &quot;true&quot;, le mode arrière-plan est activé et ne peut pas être contrôlé par l'utilisateur dans les paramètres du navigateur.
@@ -674,6 +699,11 @@ Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; 
           Cette valeur, qui doit être inférieure ou égale au délai d'inactivité, est définie en millisecondes.</translation>
 <translation id="1098794473340446990">Indiquer les périodes d'activité de l'appareil. Si ce paramètre est défini sur &quot;True&quot;, les périodes durant lesquelles l'appareil inscrit est utilisé sont régulièrement communiquées par celui-ci. Si ce paramètre n'est pas défini, ou s'il est défini sur &quot;False&quot;, les périodes d'activité ne sont ni enregistrées, ni communiquées.</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
+<translation id="427632463972968153">Spécifie les paramètres utilisés pour la recherche d'image avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{imageThumbnail}&quot; dans l'exemple ci-dessus, elle est remplacée par des miniatures d'images réelles.
+
+          Cette règle est facultative. Si elle n'est pas définie, la suggestion de requête de recherche d'image sera envoyée à l'aide la méthode GET.
+
+          Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="8818646462962777576">Les modèles de cette liste seront mis en correspondance avec la source de sécurité
       de l'URL à l'origine de la demande. En cas de correspondance, l'accès aux
       appareils de capture audio est autorisé sans avis préalable.
@@ -681,6 +711,8 @@ Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; 
       REMARQUE : Cette règle est n'acceptée qu'en mode Borne pour le moment.</translation>
 <translation id="489803897780524242">Paramètre contrôlant le positionnement des termes de recherche pour le moteur de recherche par défaut</translation>
 <translation id="316778957754360075">Ce paramètre a été supprimé à partir de la version 29 de <ph name="PRODUCT_NAME"/>. Pour configurer des collections d'extensions et d'applications hébergées par l'organisation, il est recommandé d'inclure le site hébergeant les packages CRX dans ExtensionInstallSources et d'insérer des liens directs de téléchargement dans les packages sur une page Web. Il est possible de créer un lanceur d'applications pour cette page à l'aide de la règle ExtensionInstallForcelist.</translation>
+<translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
+<translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
 <translation id="817455428376641507">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL.
 
@@ -718,6 +750,14 @@ Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; 
 <translation id="8102913158860568230">Paramètre MediaStream par défaut</translation>
 <translation id="6641981670621198190">Désactiver la prise en charge des API 3D graphics</translation>
 <translation id="7929480864713075819">Activer l'envoi d'informations sur la mémoire (taille du tas JS) à la page</translation>
+<translation id="5703863730741917647">Définit l'action à effectuer lorsque le délai d'inactivité est atteint.
+
+          Veuillez noter que cette règle est obsolète et qu'elle sera supprimée ultérieurement.
+
+          Cette règle définit une valeur de remplacement pour les règles plus spécifiques de <ph name="IDLEACTIONAC_POLICY_NAME"/> et de <ph name="IDLEACTIONBATTERY_POLICY_NAME"/>. Si cette règle est définie, sa valeur est utilisée lorsque les règles plus spécifiques respectives ne le sont pas.
+
+          Lorsqu'elle n'est pas définie, le comportement des règles plus spécifiques demeure inchangé.</translation>
+<translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="7003746348783715221">Préférences de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activer la traversée de pare-feu depuis le client d'accès à distance</translation>
 <translation id="6367755442345892511">Autoriser ou verrouiller la configuration de la version par l'utilisateur</translation>
@@ -779,16 +819,6 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 
           Si cette règle est définie sur &quot;False&quot;, l'activité vidéo n'empêche pas l'utilisateur d'être considéré comme inactif.</translation>
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
-<translation id="5857910801734294133">Il s'agit de la liste des règles respectées par <ph name="PRODUCT_NAME"/>.
-
-      Vous n'avez pas à modifier ces paramètres manuellement. Vous pouvez télécharger des modèles simples d'emploi à l'adresse suivante :
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      La liste des règles acceptées est la même pour Chromium et Google Chrome, mais l'emplacement de leur registre Windows est différent.
-
-      Elle commence par &quot;<ph name="CHROMIUM_KEY"/>&quot; pour les règles Chromium et par &quot;<ph name="GOOGLE_CHROME_KEY"/>&quot; pour les règles Google Chrome.
-
-      Ces règles doivent uniquement être utilisées pour configurer des instances de Chrome internes à votre entreprise. Utilisées en dehors de votre entreprise (dans le cadre d'un programme distribué au public, par exemple), ces règles sont considérées comme des logiciels malveillants, et il est probable que Google et les éditeurs de programmes antivirus les considèrent comme tels.</translation>
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="7091198954851103976">Toujours exécuter les plug-ins qui nécessitent une autorisation</translation>
@@ -908,6 +938,11 @@ Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnable
           Si ce paramètre est défini sur &quot;false&quot;, ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers sur Google Drive.</translation>
 <translation id="1964634611280150550">Mode navigation privée désactivé</translation>
 <translation id="5971128524642832825">Désactive Google Drive dans l'application Fichiers de Chrome OS.</translation>
+<translation id="1847960418907100918">Spécifie les paramètres utilisés pour la recherche instantanée avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{searchTerms}&quot; dans l'exemple ci-dessus, elle est remplacée par des termes de recherche réels.
+
+          Cette règle est facultative. Si elle n'est pas définie, la requête de recherche instantanée sera envoyée à l'aide la méthode GET.
+
+          Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="1454846751303307294">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle &quot;DefaultJavaScriptSetting&quot;, si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -915,6 +950,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2312134445771258233">Vous permet de configurer les pages chargées au démarrage.
 
       Le contenu de la liste &quot;URL à ouvrir au démarrage&quot; est ignoré, sauf si vous sélectionnez &quot;Ouvrir les pages suivantes&quot; dans &quot;Action au démarrage&quot;.</translation>
+<translation id="243972079416668391">Définit l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement de l'appareil sur une source d'alimentation CA.
+
+          Lorsque la règle est définie, elle indique l'action à effectuer sous <ph name="PRODUCT_OS_NAME"/> lorsque l'utilisateur reste inactif au-delà du délai d'inactivité, qui peut être configuré séparément.
+
+          Lorsque cette règle n'est pas définie, l'action par défaut est appliquée, soit la mise en veille.
+
+          Si l'action est la mise en veille, <ph name="PRODUCT_OS_NAME"/> peut être configuré séparément pour que l'écran soit verrouillé ou non avant la mise en veille.</translation>
 <translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
 <translation id="741903087521737762">Permet de définir le comportement du navigateur au démarrage.
 
@@ -966,6 +1008,7 @@ Si l'option &quot;Forcé&quot; est sélectionnée, les pages peuvent être ouver
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
+<translation id="4550478922814283243">Activer ou désactiver l'authentification sans code d'accès</translation>
 <translation id="7712109699186360774">Demander chaque fois qu'un site essaie d'accéder à la caméra et/ou au microphone</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="3711895659073496551">Arrêter</translation>
@@ -986,13 +1029,6 @@ Si vous le désactivez, les utilisateurs ne verront jamais la barre des favoris.
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME"/>. 
 
 Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette fonction ou non.</translation>
-<translation id="7546291275204811722">Indiquer l'action à effectuer au terme du délai d'inactivité
-
-          Lorsque cette règle est définie, elle précise l'action effectuée par <ph name="PRODUCT_OS_NAME"/> lorsque l'utilisateur reste inactif pendant toute la durée du délai d'inactivité défini, configurable séparément.
-
-          Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
-
-          Dans ce cas, <ph name="PRODUCT_OS_NAME"/> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt.</translation>
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="7287359148642300270">Indique les serveurs autorisés pour l'authentification intégrée. L'authentification intégrée ne s'active que lorsque <ph name="PRODUCT_NAME"/> reçoit une demande d'authentification d'un proxy ou d'un serveur faisant partie de la liste blanche.
 
@@ -1046,6 +1082,11 @@ Le fait de ne pas définir ces règles permet aux utilisateurs de sélectionner 
       Si ce paramètre est désactivé, <ph name="PRODUCT_NAME"/> ne vérifiera jamais s'il s'agit du navigateur par défaut et désactivera les contrôles utilisateur pour définir cette option.
 
       Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME"/> autorisera l'utilisateur à déterminer s'il s'agit du navigateur par défaut et si des notifications aux utilisateurs doivent être affichées dans le cas contraire.</translation>
+<translation id="3504791027627803580">Spécifie l'URL du moteur de recherche utilisé pour la recherche d'image. Les requêtes de recherche seront envoyées à l'aide la méthode GET. Si la règle &quot;DefaultSearchProviderImageURLPostParams&quot; est activée, elles seront envoyées à l'aide la méthode POST à la place de GET.
+
+          Cette règle est facultative. Si elle n'est pas définie, aucune recherche d'image ne sera utilisée.
+
+          Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="7529100000224450960">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à ouvrir des pop-ups. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle &quot;DefaultPopupsSetting&quot;, si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1067,6 +1108,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
 <translation id="4733471537137819387">Stratégies liées à l'authentification HTTP intégrée</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
+<translation id="603410445099326293">Paramètres pour l'URL de suggestion utilisant POST</translation>
 <translation id="2592091433672667839">Durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion en mode Point de vente</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
@@ -1097,6 +1139,15 @@ Si cette règle n'est pas configurée, le paramètre &quot;AllowJavaScript&quot;
       Si l'option est activée, un gros bouton rouge de déconnexion s'affiche dans la barre d'état système pendant que la session est active et que l'écran n'est pas verrouillé.
 
       Si l'option est désactivée ou si elle n'est pas configurée, aucun gros bouton rouge de déconnexion ne s'affiche dans la barre d'état système.</translation>
+<translation id="5111573778467334951">Définit l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement de l'appareil sur batterie
+
+          Lorsque la règle est définie, elle indique l'action à effectuer sous <ph name="PRODUCT_OS_NAME"/> lorsque l'utilisateur reste inactif au-delà du délai d'inactivité, qui peut être configuré séparément.
+
+
+          Lorsque cette règle n'est pas définie, l'action par défaut est appliquée, soit la mise en veille.
+
+
+          Si la mesure est la mise en veille, <ph name="PRODUCT_OS_NAME"/> peut être configuré séparément pour que l'écran soit verrouillé ou non avant la mise en veille.</translation>
 <translation id="3195451902035818945">Indiquer si le fractionnement des enregistrements SSL doit être désactivé. Le fractionnement des enregistrements est une solution de contournement appliquée en raison d'une vulnérabilité des protocoles SSL 3.0 et TLS 1.0. Il peut toutefois entraîner des problèmes de compatibilité avec certains serveurs et proxys HTTPS. Si la règle n'est pas définie, ou si elle est définie sur &quot;False&quot;, le fractionnement des enregistrements sera utilisé pour les connexions SSL/TLS qui utilisent les suites de chiffrement CBC.</translation>
 <translation id="6903814433019432303">Cette politique n'est active qu'en mode Point de vente.
 
@@ -1116,6 +1167,11 @@ Cette règle est facultative. Si elle n'est pas configurée, aucun mot clé n'ac
 Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
+<translation id="7831595031698917016">Spécifie le délai maximal en millisecondes entre la réception du rejet d'une règle et la récupération de la nouvelle règle auprès du service de gestion de l'appareil.
+
+      La définition de cette règle remplace la valeur par défaut de 5 000 millisecondes. Les valeurs valides pour cette règle sont comprises entre 1 000 millisecondes (1 seconde) et 300 000 millisecondes (5 minutes). Toute valeur se situant hors de cette plage sera rapportée à la valeur limite la plus proche.
+
+      En l'absence de définition de cette règle, la valeur par défaut de 5 000 millisecondes est utilisée dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8099880303030573137">Délai d'inactivité (batterie)</translation>
 <translation id="2761483219396643566">Délai d'inactivité avant l'affichage d'un avertissement (en cas d'utilisation de la batterie)</translation>
 <translation id="1468307069016535757">Définit l'état par défaut de la fonctionnalité d'accessibilité du mode Contraste élevé sur l'écran de connexion.
@@ -1131,7 +1187,11 @@ Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderE
 <translation id="350796261613621561">Autoriser la création de comptes utilisateur supervisés</translation>
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
+<translation id="8465065632133292531">Paramètres pour l'URL instantanée utilisant POST</translation>
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
+<translation id="7273823081800296768">Si ce paramètre est activé ou qu'il n'est pas configuré, les utilisateurs peuvent alors choisir d'associer les clients et les hôtes au moment de la connexion, ce qui permet d'éliminer la nécessité de saisir systématiquement un code d'accès.
+
+          S'il est désactivé, cette fonctionnalité est alors indisponible.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="4482640907922304445">Affiche le bouton &quot;Accueil&quot; sur la barre d'outils <ph name="PRODUCT_NAME"/>. 
@@ -1150,6 +1210,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Cette règle est facultative. Si vous ne la définissez pas, aucune URL alternative n'est utilisée pour extraire les termes de recherche.
 
           Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
+<translation id="436581050240847513">Générer un rapport sur les interfaces réseau de l'appareil</translation>
 <translation id="6282799760374509080">Autoriser ou interdire la capture audio</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
@@ -1241,6 +1302,91 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME"/> utilise la valeur par défaut de 3 heures.</translation>
 <translation id="7424751532654212117">Liste des exceptions à la liste des plug-ins désactivés</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
+<translation id="78524144210416006">Configure la gestion de l'alimentation sur l'écran de connexion sous <ph name="PRODUCT_OS_NAME"/>
+
+      Cette règle vous permet de configurer le comportement de <ph name="PRODUCT_OS_NAME"/> lorsque l'utilisateur reste inactif pendant un certain temps lors de l'affichage de l'écran de connexion. Elle contrôle de nombreux paramètres. Pour connaître la signification et les plages de valeurs de ces paramètres, consultez les règles correspondantes qui contrôlent la gestion de l'alimentation au cours d'une session. Les seules dérogations à ces règles sont les suivantes :
+      * L'action à effectuer en cas d'inactivité ou de fermeture du capot ne peut pas être la fermeture de la session.
+      * L'action à effectuer par défaut en cas d'inactivité lors du fonctionnement sur une source d'alimentation CA est la fermeture.
+
+      La règle doit être spécifiée sous forme de chaîne exprimant les paramètres individuels au format JSON, en suivant le schéma suivant :
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Paramètres de gestion de l'alimentation applicables uniquement en cas de fonctionnement sur une source d'alimentation CA&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant que l'écran ne s'estompe, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant la désactivation de l'écran, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant le déclenchement de l'action pour inactivité, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Action à effectuer lorsque le délai d'inactivité est atteint&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Paramètres de gestion de l'alimentation applicables uniquement en cas de fonctionnement sur batterie&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant que l'écran ne s'estompe, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant la désactivation de l'écran, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Délai d'inactivité de l'utilisateur avant le déclenchement de l'action pour inactivité, en millisecondes&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Action à effectuer lorsque le délai d'inactivité est atteint&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Action à effectuer à la fermeture du capot&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Pourcentage d'adaptation du délai d'estompage de l'écran en cas d'activité de l'utilisateur lorsque l'écran s'estompe ou peu de temps après la désactivation de l'écran&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Si un paramètre n'est pas défini, la valeur par défaut est utilisée.
+
+      Si cette règle n'est pas définie, les valeurs par défaut sont utilisées pour tous les paramètres.</translation>
 <translation id="8908294717014659003">Vous permet de définir si les sites Web sont autorisés à accéder aux périphériques de capture multimédia. L'accès aux périphériques de capture multimédia peut être autorisé par défaut, ou l'utilisateur doit confirmer son autorisation chaque fois qu'un site Web souhaite accéder à ceux-ci.
 
           En cas de non-configuration de cette règle, PromptOnAccess prévaut. L'utilisateur peut la modifier.</translation>
@@ -1261,6 +1407,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'inactivité.</translation>
 <translation id="1897365952389968758">Autoriser tous les sites à exécuter JavaScript</translation>
+<translation id="5244714491205147861">Gestion de l'alimentation sur l'écran de connexion</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Désactiver la synchronisation des données avec Google</translation>
@@ -1321,6 +1468,11 @@ Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnable
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="4578030379102330182">Activer l'attestation à distance pour l'utilisateur</translation>
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
+<translation id="6353901068939575220">Spécifie les paramètres utilisés pour la recherche d'URL avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{searchTerms}&quot; dans l'exemple ci-dessus, elle est remplacée par des termes de recherche réels.
+
+          Cette règle est facultative. Si elle n'est pas définie, la requête de recherche sera envoyée à l'aide la méthode GET.
+
+          Cette règle n'est respectée que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="3808945828600697669">Répertorier les plug-ins désactivés</translation>
@@ -1397,6 +1549,10 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7848840259379156480">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME"/> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
+<translation id="186719019195685253">Indique l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement sur une source d'alimentation CA.</translation>
+<translation id="7890264460280019664">Génére une liste d'interfaces réseau, avec leur type et leur adresse matérielle sur le serveur.
+
+      Si la règle n'est pas définie ou si elle est définie sur &quot;False&quot;, la liste d'interfaces ne sera pas générée.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement le répertoire</translation>
@@ -1442,6 +1598,7 @@ Pour voir plus d'options et des exemples détaillés, accédez à l'adresse :
 
       Si vous ne définissez pas cette règle, le répertoire de téléchargement par défaut est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="7381326101471547614">Désactiver l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME"/>. Si cette règle est activée, le protocole SPDY ne sera pas disponible dans <ph name="PRODUCT_NAME"/>. La désactivation de cette règle permet l'utilisation du protocole SPDY. En outre, si cette règle n'est pas définie, le protocole SPDY sera disponible.</translation>
+<translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME"/> par défaut</translation>
 <translation id="1047128214168693844">Interdire à tous les sites de suivre la position géographique des utilisateurs</translation>
 <translation id="4101778963403261403">Configure le type de la page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de la page d'accueil. La page d'accueil peut être définie soit sur une URL que vous spécifiez, soit sur la page Nouvel onglet. 
@@ -1513,6 +1670,15 @@ Pour plus d'exemples détaillés, accédez à l'adresse :
 <translation id="7187256234726597551">Si cette règle est définie sur &quot;True&quot;, l'attestation à distance est autorisée pour l'appareil, et un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
 
           Si la règle est définie sur &quot;False&quot;, ou si vous ne l'avez pas définie, aucun certificat n'est généré et les appels vers l'API d'extension enterprise.platformKeysPrivate échouent.</translation>
+<translation id="5242696907817524533">Configure une liste de favoris gérés
+
+      La règle est une liste de favoris, et chaque favori est un dictionnaire comprenant le nom du favori et l'URL cible.
+
+      Ces favoris sont placés dans un dossier &quot;Favoris gérés&quot; dans les favoris du mobile. Ils ne peuvent pas être modifiés par l'utilisateur.
+
+      Lorsque la règle est définie, le dossier &quot;Favoris gérés&quot; est le dossier ouvert par défaut lors de l'affichage des favoris dans Chrome.
+
+      Ils ne sont pas synchronisés avec le compte de l'utilisateur.</translation>
 <translation id="8303314579975657113">Indique la bibliothèque GSSAPI à utiliser pour l'authentification HTTP. Vous pouvez indiquer un nom de bibliothèque seul ou son chemin d'accès complet. 
 
 Si aucun paramètre n'est défini, <ph name="PRODUCT_NAME"/> utilise un nom de bibliothèque par défaut.</translation>

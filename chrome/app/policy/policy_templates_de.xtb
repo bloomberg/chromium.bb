@@ -74,6 +74,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
           Wurde &quot;false&quot; oder &quot;not configured&quot; festgelegt, wird die Erstellung und Anmeldung betreuter Nutzer deaktiviert. Alle vorhandenen betreuten Nutzer werden ausgeblendet.
 
           Hinweis: Das Standardverhalten bei Geräten für Kunden und bei Geräten für Unternehmen ist unterschiedlich: Bei Geräten für Kunden sind betreute Nutzer standardmäßig aktiviert, bei Geräten für Unternehmen hingegen sind sie standardmäßig deaktiviert.</translation>
+<translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="5469825884154817306">Bilder auf diesen Websites blockieren</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="6649397154027560979">Diese Richtlinie wird nicht mehr verwendet, nutzen Sie stattdessen die Richtlinie &quot;URLBlacklist&quot;.
@@ -105,6 +106,11 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
       Wenn sich ein Nutzer mit einem Nutzernamen anmelden möchte, der nicht diesem Muster entspricht, wird ein entsprechender Fehler ausgegeben.
 
       Werden diese Richtlinien weder festgelegt noch ausgefüllt, kann sich jeder Nutzer in <ph name="PRODUCT_NAME"/> anmelden.</translation>
+<translation id="2892225385726009373">Bei Aktivierung dieser Einstellung führt <ph name="PRODUCT_NAME"/> immer eine Widerrufprüfung für Serverzertifikate durch, die erfolgreich bestätigt und von lokal installierten CA-Zertifikaten signiert wurden.
+
+      Wenn <ph name="PRODUCT_NAME"/> keine Informationen zum Widerrufstatus abrufen kann, werden solche Zertifikate als widerrufen behandelt (&quot;hard-fail&quot;).
+
+      Wenn diese Richtlinie nicht festgelegt oder auf &quot;false&quot; gesetzt ist, verwendet Chrome die vorhandenen Online-Einstellungen zur Widerrufprüfung.</translation>
 <translation id="1438955478865681012">Mit dieser Richtlinie können Sie Richtlinien für Erweiterungen konfigurieren. Auf die schwarze Liste gesetzte Erweiterungen können vom Nutzer nur installiert werden, wenn diese in der weißen Liste enthalten sind. Sie können Erweiterungen auch in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> angeben, um ihre automatische Installation durch <ph name="PRODUCT_NAME"/> zu erzwingen. Die schwarze Liste hat Vorrang vor der Liste der auf diese Weise installierten Erweiterungen.</translation>
 <translation id="3516856976222674451">Maximale Dauer einer Nutzersitzung festlegen
 
@@ -115,6 +121,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
       Wenn Sie diese Richtlinie festlegen, können Nutzer sie nicht ändern oder übergehen.
 
       Der Richtlinienwert sollte in Millisekunden angegeben werden. Der Wert kann zwischen 30 Sekunden und 24 Stunden liegen.</translation>
+<translation id="9200828125069750521">Parameter für URL der Bildsuche, die POST verwendet</translation>
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remote-Zugriff-Hosts konfigurieren</translation>
 <translation id="3478024346823118645">Nutzerdaten bei Abmeldung löschen</translation>
 <translation id="8668394701842594241">Gibt eine Liste von Plug-ins an, die in <ph name="PRODUCT_NAME"/> aktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern. Die Platzhalterzeichen &quot;*&quot; und &quot;?&quot; können verwendet werden, um Übereinstimmungen mit beliebigen Zeichenfolgen herbeizuführen. &quot;*&quot; ergibt Übereinstimmungen mit einer beliebigen Anzahl von Zeichen, während &quot;?&quot; für ein einziges optionales Zeichen steht, also keinem oder einem Zeichen entspricht. Das Escape-Zeichen ist &quot;\&quot;, um also wirkliche Übereinstimmungen mit den Zeichen &quot;*&quot;, &quot;?&quot; und &quot;\&quot; zu finden, können Sie das &quot;\&quot;-Zeichen davor platzieren. Die angegebene Liste der Plug-ins wird in <ph name="PRODUCT_NAME"/> immer verwendet, wenn sie installiert sind. Die Plug-ins sind in &quot;about:plugins&quot; als aktiv markiert und können von Nutzern nicht deaktiviert werden. Beachten Sie, dass diese Richtlinie sowohl &quot;DisabledPlugins&quot; als auch &quot;DisabledPluginsExceptions&quot; außer Kraft setzt. Wenn die Richtlinie nicht konfiguriert ist, können Nutzer beliebige auf dem System installierte Plug-ins deaktivieren.</translation>
@@ -253,6 +260,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
       Wird diese Richtlinie nicht festgelegt, werden 0 Millisekunden als Timeout verwendet.
 
       Geben Sie den Richtlinienwert in Millisekunden an.</translation>
+<translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="3570008976476035109">Plug-ins auf diesen Websites blockieren</translation>
 <translation id="8749370016497832113">Diese Richtlinie ermöglicht das Löschen des Browserverlaufs und des Downloadverlaufs in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer diese Einstellung ändern.
 
@@ -295,6 +303,16 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
+<translation id="3234167886857176179">Dies ist die Liste der von <ph name="PRODUCT_NAME"/> befolgten Richtlinien.
+
+      Sie brauchen diese Einstellungen nicht manuell zu ändern. Sie können praktische Vorlagen unter
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> herunterladen.
+
+      Die Liste der unterstützten Richtlinien ist dieselbe für Chromium und Google Chrome.
+
+      Diese Richtlinien sind allein für die Konfiguration interner Chrome-Instanzen Ihrer Organisation vorgesehen. Die Verwendung dieser Richtlinien außerhalb Ihrer Organisation, zum Beispiel in einem öffentlich bereitgestellten Programm, wird als Malware betrachtet und wahrscheinlich von Google und Anbietern von Antivirenprogrammen entsprechend eingestuft.
+
+      Hinweis: Ab Chrome 28 werden Richtlinien direkt aus der Group Policy API unter Windows geladen. Manuell in die Registrierung geschriebene Richtlinien werden ignoriert. Details finden Sie unter http://crbug.com/259236.</translation>
 <translation id="2292084646366244343">In <ph name="PRODUCT_NAME"/> können mithilfe eines Google-Webdienstes Rechtschreibfehler korrigiert werden. Wenn diese Einstellung aktiviert ist, wird dieser Dienst immer verwendet. Ist die Einstellung deaktiviert, wird dieser Dienst nie verwendet.
 
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
@@ -337,6 +355,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
+<translation id="4047207703890139433">Gibt das für das Gerät verwendete Uhrzeitformat an. Nutzer können das Uhrzeitformat für die aktuelle Sitzung außer Kraft setzen. Beim Abmelden wird es auf den angegebenen Wert zurückgesetzt. Wenn ein leerer String bereitgestellt wird, wird die Einstellung des Geräteeigentümers verwendet.</translation>
 <translation id="1942957375738056236">Hier können Sie die URL des Proxyservers angeben. Die Richtlinie tritt nur dann in Kraft, wenn bei &quot;Auswählen, wie Proxyserver-Einstellungen angegeben werden&quot; manuelle Proxy-Einstellungen festgelegt wurden. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie eine andere Methode zur Festlegung der Proxy-Richtlinien ausgewählt haben. Weitere Optionen und ausführliche Beispiele finden Sie unter <ph name="PROXY_HELP_URL"/>.</translation>
 <translation id="6076008833763548615">Deaktiviert die Bereitstellung von externem Speicher.
 
@@ -360,6 +379,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
           Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, können lokale und Remote-Nutzer mit dem Host interagieren, sofern dieser freigegeben ist.</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="4897928009230106190">Gibt die Parameter für die Vorschlagsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
+
+          Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Vorschlagsuchanfrage mithilfe der GET-Methode gesendet.
+
+          Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="4962195944157514011">Gibt die URL einer Suchmaschine an, die für Standardsuchanfragen zum Einsatz kommt. Die URL sollte die Zeichenfolge &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; enthalten. Diese wird bei der Suchanfrage mit dem Text ersetzt, nach dem der Nutzer sucht. Diese Option muss konfiguriert werden, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist, und wird nur dann beachtet, wenn das der Fall ist.</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME"/> erlauben, die gelisteten Inhaltstypen zu verarbeiten. Wenn diese Richtlinie nicht konfiguriert ist, so kommt der Standard-Renderer für alle Websites gemäß der Richtlinie &quot;ChromeFrameRendererSettings&quot; zum Einsatz.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
@@ -430,6 +454,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="2498238926436517902">Ablage immer automatisch ausblenden</translation>
 <translation id="253135976343875019">Inaktivitätsspanne bis zur Warnung im Netzbetrieb</translation>
+<translation id="6997592395211691850">Gibt an, ob für lokale Vertrauensanker Online-OCSP/CRLS-Prüfungen erforderlich sind</translation>
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME"/> aktivieren</translation>
@@ -482,6 +507,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="209586405398070749">Stabiler Kanal</translation>
 <translation id="8170878842291747619">Aktiviert den integrierten Google Übersetzer-Dienst in <ph name="PRODUCT_NAME"/>. Wenn Sie diese Einstellung aktivieren, so wird in <ph name="PRODUCT_NAME"/> eine integrierte Symbolleiste angezeigt, über die Nutzer die Seite bei Bedarf übersetzen lassen können. Sollten Sie diese Einstellung deaktivieren, erscheint die Übersetzungsleiste grundsätzlich nicht. Das Aktivieren und Deaktivieren dieser Einstellung führt dazu, dass Nutzer diese Einstellung in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen können. Wenn die Einstellung nicht konfiguriert ist, so kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
+<translation id="8244525275280476362">Maximale Abrufverzögerung nach der Außerkraftsetzung einer Richtlinie</translation>
 <translation id="8587229956764455752">Erstellung neuer Nutzerkonten erlauben</translation>
 <translation id="7417972229667085380">Prozentsatz für die Skalierung der Inaktivitätsspanne im Präsentationsmodus (veraltet)</translation>
 <translation id="3964909636571393861">Zugriff auf aufgelistete URLs gewähren</translation>
@@ -511,7 +537,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="8285435910062771358">Vollbildlupe aktiviert</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="3864818549971490907">Standardeinstellung für Plug-ins</translation>
-<translation id="1910566775788829857">Nutzer abmelden</translation>
 <translation id="7151201297958662315">Legt fest, ob ein <ph name="PRODUCT_NAME"/>-Prozess bei der Anmeldung im Betriebssystem gestartet und nach dem Schließen des letzten Browserfensters weiterhin ausgeführt werden soll. Auf diese Weise können Apps im Hintergrund aktiv bleiben. Beim Ausführen eines Hintergrundprozesses erscheint ein Symbol in der Taskleiste, über das er jederzeit beendet werden kann.
 
       Wenn diese Richtlinie auf &quot;true&quot; gesetzt ist, ist der Hintergrundmodus aktiviert und kann nicht vom Nutzer in den Browsereinstellungen geändert werden.
@@ -536,6 +561,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
           Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="1098794473340446990">Hiermit wird die Aktivitätszeit von Geräten gemeldet. Wenn für diese Einstellung &quot;True&quot; festgelegt ist, melden registrierte Geräte, zu welchen Zeiten ein Nutzer auf dem Gerät aktiv war. Ist diese Einstellung nicht konfiguriert oder auf &quot;False&quot; festgelegt, wird die Aktivitätszeit nicht aufgezeichnet oder gemeldet.</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
+<translation id="427632463972968153">Gibt die Parameter für die Bildsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {imageThumbnail} im obigen Beispiel ist, wird er durch echte Miniaturansichtsdaten ersetzt.
+
+          Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Bildsuchanfrage mithilfe der GET-Methode gesendet.
+
+          Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="8818646462962777576">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der Zugriff
       auf Audioaufnahmegeräte ohne Nachfrage gestattet.
@@ -543,6 +573,8 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
       Hinweis: Diese Richtlinie wird derzeit nur im Kioskmodus unterstützt.</translation>
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="316778957754360075">Diese Einstellung wird ab <ph name="PRODUCT_NAME"/>-Version 29 nicht mehr verwendet. Zur Einrichtung einer Sammlung mit Erweiterungen oder Apps, die von der Organisation gehostet wird, empfehlen wir, die Host-Website der CRX-Pakete in &quot;ExtensionInstallSources&quot; einzufügen und auf einer Webseite direkte Downloadlinks zu den Paketen bereitzustellen. Eine Übersicht für diese Webseite kann mithilfe der Richtlinie &quot;ExtensionInstallForcelist&quot; erstellt werden.</translation>
+<translation id="6401669939808766804">Nutzer abmelden</translation>
+<translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
 <translation id="817455428376641507">Erlaubt den Zugriff auf die aufgeführten URLs als Ausnahmen von der schwarzen URL-Liste.
 
@@ -580,6 +612,14 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="8102913158860568230">Standardeinstellung für MediaStream</translation>
 <translation id="6641981670621198190">Unterstützung für 3D-Grafik-APIs deaktivieren</translation>
 <translation id="7929480864713075819">Weitergabe von Speicherinformationen (JS-Heap-Größe) an Seite aktivieren</translation>
+<translation id="5703863730741917647">Geben Sie die beim Erreichen der Leerlaufverzögerung auszuführende Aktion an.
+
+          Diese Richtlinie ist veraltet und wird in Zukunft entfernt werden.
+
+          Diese Richtlinie bietet einen Ersatzwert für die spezifischeren Richtlinien <ph name="IDLEACTIONAC_POLICY_NAME"/> und <ph name="IDLEACTIONBATTERY_POLICY_NAME"/>. Bei Festlegung dieser Richtlinie wird ihr Wert verwendet, wenn die jeweilige spezifischere Richtlinie nicht festgelegt ist.
+
+          Wenn diese Richtlinie nicht festgelegt ist, bleibt das Verhalten der spezifischeren Richtlinien unbeeinflusst.</translation>
+<translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Firewallausnahme über Client für Remote-Zugriff aktivieren</translation>
 <translation id="6367755442345892511">Ob der Release-Kanal vom Nutzer konfiguriert werden kann</translation>
@@ -633,15 +673,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
           Ist diese Richtlinie auf &quot;false&quot; eingestellt, wird der Nutzer trotz Videoaktivität als inaktiv betrachtet.</translation>
 <translation id="3965339130942650562">Timeout bis zur Abmeldung eines inaktiven Nutzers</translation>
-<translation id="5857910801734294133">Die folgenden Richtlinien werden von <ph name="PRODUCT_NAME"/> beachtet.
-
-Sie müssen diese Einstellungen nicht von Hand ändern, sondern können stattdessen nutzerfreundliche Vorlagen von <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> herunterladen.
-
-Die Liste der unterstützten Richtlinien ist bei Chromium und Google Chrome identisch. Allerdings befinden sich die Einträge in der Windows-Registrierung jeweils an unterschiedlicher Stelle.
-
-Die Liste der Chromium-Richtlinien beginnt mit den Einträgen unter <ph name="CHROMIUM_KEY"/> und die Liste der Google Chrome-Richtlinien mit den Einträgen unter <ph name="GOOGLE_CHROME_KEY"/>.
-
-Diese Richtlinien dienen ausschließlich zum Konfigurieren von Chrome-Instanzen innerhalb Ihrer Organisation. Die Verwendung der Richtlinien außerhalb Ihrer Organisation, etwa in einem öffentlich vertriebenen Programm, gilt als Malware und wird von Google und Virenschutzanbietern wahrscheinlich als solche gekennzeichnet und behandelt.</translation>
 <translation id="5814301096961727113">Standardstatus für das gesprochene Feedback auf der Anmeldeseite festlegen</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="7091198954851103976">Führt Plug-ins, die eine Autorisierung erfordern, immer aus</translation>
@@ -723,9 +754,21 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, werden Anfragen für Bi
 Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="1964634611280150550">Inkognito-Modus deaktiviert</translation>
 <translation id="5971128524642832825">Synchronisierung zwischen Google Drive und der App &quot;Dateien&quot; von Chrome OS deaktivieren</translation>
+<translation id="1847960418907100918">Gibt die Parameter für die Suche im Voraus mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
+
+          Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Anfrage für die Suche im Voraus mithilfe der GET-Methode gesendet.
+
+          Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie &quot;DefaultJavaScriptSetting&quot;, falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME"/> zulassen</translation>
 <translation id="2312134445771258233">Mit dieser Richtlinie können Sie konfigurieren, welche Seiten beim Start geladen werden. Der Inhalt der Liste &quot;Beim Start zu öffnende URLs&quot; wird ignoriert, sofern die Option &quot;URL-Liste öffnen&quot; unter &quot;Aktion beim Start&quot; nicht ausgewählt ist.</translation>
+<translation id="243972079416668391">Geben Sie die Aktion an, die während des Wechselstrombetriebs beim Erreichen der Leerlaufverzögerung ausgeführt werden soll.
+
+          Wenn diese Richtlinie festgelegt ist, gibt sie die Aktion an, die <ph name="PRODUCT_OS_NAME"/> ausführt, wenn der Nutzer für die von der Leerlaufverzögerung angegebene Zeitdauer inaktiv ist. Diese Zeitdauer kann separat konfiguriert werden.
+
+          Wenn diese Richtlinie nicht festgelegt ist, wird die Standardaktion ausgeführt: Es wird in den Suspend-Modus gewechselt.
+
+          Wenn als Aktion der Wechsel in den Suspend-Modus festgelegt ist, kann <ph name="PRODUCT_OS_NAME"/> separat dafür konfiguriert werden, den Bildschirm zu sperren oder nicht zu sperren.</translation>
 <translation id="7750991880413385988">&quot;Neuer Tab&quot;-Seite öffnen</translation>
 <translation id="741903087521737762">Hier können Sie das Startverhalten festlegen.
 
@@ -771,6 +814,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remote-Zugriff-Hosts aktivieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
+<translation id="4550478922814283243">Authentifizierung ohne PIN aktivieren oder deaktivieren</translation>
 <translation id="7712109699186360774">Nachfragen, wenn eine Website auf meine Kamera bzw. mein Mikrofon zugreifen möchte</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
@@ -781,13 +825,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7529144158022474049">Streufaktor automatisch aktualisieren</translation>
 <translation id="2188979373208322108">Aktiviert die Lesezeichenleiste in <ph name="PRODUCT_NAME"/>. Wenn Sie diese Einstellung aktivieren, so erscheint in <ph name="PRODUCT_NAME"/> eine Lesezeichenleiste. Sollten Sie sie deaktivieren, sehen Nutzer die Leiste nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Wenn diese Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte.</translation>
-<translation id="7546291275204811722">Hiermit wird angegeben, welche Aktion erfolgen soll, wenn die Inaktivitätsverzögerung erreicht ist.
-
-          Falls diese Richtlinie festgelegt ist, wird damit die Aktion definiert, die <ph name="PRODUCT_OS_NAME"/> ausführt, wenn der Nutzer solange inaktiv ist wie in der Inaktivitätsverzögerung angegeben. Diese kann gesondert konfiguriert werden.
-
-          Ist diese Richtlinie nicht konfiguriert, wird die Standardaktion verwendet. Diese ist der Suspend-Modus.
-
-          Falls der Suspend-Modus als Aktion festgelegt wird, kann gesondert konfiguriert werden, ob <ph name="PRODUCT_OS_NAME"/> den Bildschirm vorher sperren soll oder nicht.</translation>
 <translation id="5475361623548884387">Drucken aktivieren</translation>
 <translation id="7287359148642300270">Hiermit legen Sie fest, welche Server auf die Whitelist für integrierte Authentifizierung gesetzt werden. Integrierte Authentifizierung ist nur möglich, wenn <ph name="PRODUCT_NAME"/> eine Authentifizierungsanfrage von einem Proxy oder einem anderen Server erhält, der in dieser Liste erlaubter Server enthalten ist.
 
@@ -818,6 +855,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME"/> gespeichert werden. Bei Einstellung auf &quot;true&quot; werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME"/> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf &quot;false&quot; gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
 <translation id="3793095274466276777">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME"/> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern. Falls Sie diese Einstellung aktivieren, überprüft <ph name="PRODUCT_NAME"/> bei jedem Start, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch. Ist diese Einstellung deaktiviert, überprüft <ph name="PRODUCT_NAME"/> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert. Falls diese Einstellung nicht festgelegt ist, kann der Nutzer selbst steuern, ob <ph name="PRODUCT_NAME"/> der Standardbrowser ist und ob Nutzerbenachrichtigungen angezeigt werden sollen, wenn dies nicht der Fall ist.</translation>
+<translation id="3504791027627803580">Gibt die URL der Suchmaschine für die Bildsuche an. Suchanfragen werden mithilfe der GET-Methode gesendet. Wenn die Richtlinie &quot;DefaultSearchProviderBildURLPostParams&quot; festgelegt ist, wird bei Bildsuchanfragen stattdessen die POST-Methode verwendet.
+
+          Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird keine Bildsuche verwendet.
+
+          Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="7529100000224450960">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt für alle Websites entweder der globale Standardwert der Richtlinie &quot;DefaultPopupsSetting&quot;, sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
@@ -837,6 +879,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="4733471537137819387">Strategien im Hinblick auf die integrierte HTTP-Authentifizierung</translation>
 <translation id="8951350807133946005">Datenträger-Cache-Verzeichnis festlegen</translation>
+<translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="2592091433672667839">Dauer der Inaktivität, bevor im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Anzeige von Pop-ups für alle Websites zulassen</translation>
@@ -861,6 +904,13 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
       Wenn diese Option aktiviert wurde, wird während einer aktiven Sitzung und bei nicht gesperrtem Bildschirm eine große, rote Schaltfläche &quot;Abmelden&quot; in der Taskleiste angezeigt.
 
       Wenn diese Option deaktiviert oder nicht spezifiziert wurde, befindet sich in der Taskleiste keine große, rote Schaltfläche &quot;Abmelden&quot;.</translation>
+<translation id="5111573778467334951">Geben Sie die Aktion an, die während des Akkubetriebs beim Erreichen der Leerlaufverzögerung ausgeführt werden soll.
+
+          Wenn diese Richtlinie festgelegt ist, gibt sie die Aktion an, die <ph name="PRODUCT_OS_NAME"/> ausführt, wenn der Nutzer für die von der Leerlaufverzögerung angegebene Zeitdauer inaktiv ist. Diese Zeitdauer kann separat konfiguriert werden.
+
+          Wenn diese Richtlinie nicht festgelegt ist, wird die Standardaktion ausgeführt: Es wird in den Suspend-Modus gewechselt.
+
+          Wenn als Aktion der Wechsel in den Suspend-Modus festgelegt ist, kann <ph name="PRODUCT_OS_NAME"/> separat dafür konfiguriert werden, den Bildschirm zu sperren oder nicht zu sperren.</translation>
 <translation id="3195451902035818945">Gibt an, ob SSL Record Splitting deaktiviert werden soll. Record Splitting ist eine Problemumgehung für eine Schwachstelle in SSL 3.0 und TLS 1.0, kann jedoch Kompatibilitätsprobleme mit einigen HTTPS-Servern und Proxys verursachen. Wenn die Richtlinie nicht konfiguriert oder &quot;False&quot; festgelegt ist, wird Record Splitting bei SSL/TLS-Verbindungen mit CBC-Cipher-Suites eingesetzt.</translation>
 <translation id="6903814433019432303">Diese Richtlinie ist nur im Händlermodus aktiv.
 
@@ -876,6 +926,11 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
+<translation id="7831595031698917016">Gibt die maximale Verzögerung in Millisekunden zwischen dem Empfang der Außerkraftsetzung einer Richtlinie und dem Abrufen der neuen Richtlinie vom Geräteverwaltungsdienst an.
+
+      Durch das Festlegen dieser Richtlinie wird der Standardwert von 5.000 Millisekunden außer Kraft gesetzt. Für diese Richtlinie können Werte von 1.000 (1 Sekunde) bis 300.000 (5 Minuten) festgelegt werden. Werte außerhalb dieses Bereichs werden auf den nächstgelegenen Grenzwert gerundet.
+
+      Bei Festlegung dieser Richtlinie verwendet <ph name="PRODUCT_NAME"/> den Standardwert von 5.000 Millisekunden.</translation>
 <translation id="8099880303030573137">Inaktivitätsverzögerung im Akkubetrieb</translation>
 <translation id="2761483219396643566">Inaktivitätsspanne bis zur Warnung im Akkubetrieb</translation>
 <translation id="1468307069016535757">Hiermit wird der Standardstatus der Bedienungshilfefunktion für den Modus mit hohem Kontrast auf der Anmeldeseite festgelegt.
@@ -891,7 +946,11 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="350796261613621561">Erstellung von betreuten Nutzern aktivieren</translation>
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
+<translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
+<translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung ein Pairing von Clients und Hosts durchführen. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
+
+          Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
 <translation id="1675002386741412210">Unterstützt von:</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="4482640907922304445">Zeigt die Schaltfläche &quot;Startseite&quot; in der Symbolleiste von <ph name="PRODUCT_NAME"/> an. Wenn Sie diese Einstellung aktivieren, so wird die Schaltfläche &quot;Startseite&quot; immer angezeigt. Sollten Sie sie deaktivieren, erscheint die Schaltfläche nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Ist die Richtlinie nicht konfiguriert, so kann der Nutzer selbst bestimmen, ob die Schaltfläche &quot;Startseite&quot; zur Verfügung stehen soll.</translation>
@@ -902,6 +961,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
           Diese Richtlinie ist optional. Wird sie nicht festgelegt, werden keine alternativen URLs zum Extrahieren von Suchbegriffen verwendet.
 
           Diese Richtlinie wird nur befolgt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
+<translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME"/> erscheint</translation>
 <translation id="3264793472749429012">Standardsuchmaschinen-Codierungen</translation>
@@ -973,6 +1033,91 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_NAME"/> der Standardwert von 3 Stunden.</translation>
 <translation id="7424751532654212117">Liste der Ausnahmen von der Liste der deaktivierten Plug-ins</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
+<translation id="78524144210416006">Energieverwaltung auf dem Anmeldebildschirm in <ph name="PRODUCT_OS_NAME"/> konfigurieren
+
+      Über diese Richtlinie können Sie konfigurieren, wie sich <ph name="PRODUCT_OS_NAME"/> verhält, wenn der Nutzer während der Anzeige des Anmeldebildschirms für eine bestimmte Zeitdauer inaktiv ist. Die Richtlinie steuert mehrere Einstellungen. Informationen zu ihrer individuellen Semantik und ihren Wertbereichen finden Sie in den entsprechenden Richtlinien, die die Energieverwaltung innerhalb einer Sitzung steuern. Die einzigen Abweichungen von diesen Richtlinien sind folgende:
+      * Die auszuführende Aktion im Leerlauf oder beim Schließen des Laptops kann nicht das Beenden der Sitzung sein.
+      * Die Standardaktion im Leerlauf während des Wechselstrombetriebs ist das Herunterfahren.
+
+      Die Richtlinie sollte als ein String angegeben werden, der einzelne Einstellungen im JSON-Format enthält. Er muss dem folgenden Schema entsprechen:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Energieverwaltungseinstellungen für den Wechselstrombetrieb&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der der Bildschirm gedimmt wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der der Bildschirm ausgeschaltet wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der die Leerlaufaktion ausgeführt wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Auszuführende Aktion beim Erreichen der Leerlaufverzögerung&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Energieverwaltungseinstellungen für den Akkubetrieb&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der der Bildschirm gedimmt wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der der Bildschirm ausgeschaltet wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Zeitdauer ohne Nutzereingabe in Millisekunden, nach der die Leerlaufaktion ausgeführt wird&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Auszuführende Aktion beim Erreichen der Leerlaufverzögerung&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Auszuführende Aktion beim Schließen des Laptops&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Prozentsatz, um den die Verzögerung der Bildschirmdimmung skaliert wird, wenn bei gedimmtem Bildschirm oder kurz nach dem Ausschalten des Bildschirms eine Nutzeraktivität festgestellt wird&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Wenn eine Einstellung nicht festgelegt ist, wird ein Standardwert verwendet.
+
+      Wenn diese Richtlinie nicht festgelegt ist, werden für alle Einstellungen Standardwerte verwendet.</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 
           Ist diese Richtlinie nicht konfiguriert, wird &quot;PromptOnAccess&quot; verwendet und der Nutzer kann diese Einstellung ändern.</translation>
@@ -993,6 +1138,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="1897365952389968758">Ausführung von JavaScript für alle Websites zulassen</translation>
+<translation id="5244714491205147861">Energieverwaltung auf dem Anmeldebildschirm</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
@@ -1033,6 +1179,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="4578030379102330182">Remote-Bestätigung für den Nutzer aktivieren</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
+<translation id="6353901068939575220">Gibt die Parameter für die Suche nach einer URL mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
+
+          Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Suchanfrage mithilfe der GET-Methode gesendet.
+
+          Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="5307432759655324440">Inkognito-Modus - Verfügbarkeit</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="3808945828600697669">Liste der deaktivierten Plug-ins angeben</translation>
@@ -1099,6 +1250,10 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
           &quot;ExtensionInstallBlacklist&quot; hat Vorrang vor dieser Richtlinie. Eine Erweiterung auf der schwarzen Liste wird folglich nicht installiert, auch wenn sie von einer Website auf dieser Liste stammt.</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="7848840259379156480">Mit dieser Richtlinie können Sie die Standardanwendung für die HTML-Darstellung konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME"/> installiert ist. Bei der Standardeinstellung übernimmt der Host-Browser die Darstellung. Sie können dies jedoch wahlweise außer Kraft setzen und festlegen, dass HTML-Seiten standardmäßig mithilfe von <ph name="PRODUCT_FRAME_NAME"/> angezeigt werden sollen.</translation>
+<translation id="186719019195685253">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Wechselstrombetriebs</translation>
+<translation id="7890264460280019664">Liste der Netzwerkschnittstellen mit ihren Typen und Hardware-Adressen dem Server melden
+
+      Wenn die Richtlinie nicht festgelegt oder auf &quot;false&quot; gesetzt ist, wird die Schnittstellenliste nicht gemeldet.</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der &quot;Neuer Tab&quot;-Seite anzeigen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
@@ -1127,6 +1282,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
 
       Bleibt diese Richtlinie unkonfiguriert, wird der Standard-Downloadpfad verwendet, wobei dieser vom Nutzer geändert werden kann.</translation>
 <translation id="7381326101471547614">Hiermit wird die Verwendung des SPDY-Protokolls in <ph name="PRODUCT_NAME"/> verhindert. Wenn diese Richtlinie aktiviert ist, steht das SPDY-Protokoll in <ph name="PRODUCT_NAME"/> nicht zur Verfügung. Sollte sie deaktiviert werden, kann SPDY genutzt werden. Ist die Richtlinie nicht konfiguriert, steht SPDY zur Verfügung.</translation>
+<translation id="2208976000652006649">Parameter für URL der Suche, die POST verwendet</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME"/> verwenden</translation>
 <translation id="1047128214168693844">Verfolgung des physischen Standorts der Nutzer für keine Website zulassen</translation>
 <translation id="4101778963403261403">Konfiguriert die Art der Standardstartseite in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer Startseiteneinstellungen ändern. Die Startseite kann entweder auf eine von Ihnen angegebene URL oder auf die &quot;Neuer Tab&quot;-Seite festgelegt werden. Wenn Sie diese Einstellung aktivieren, kommt standardmäßig die &quot;Neuer Tab&quot;-Seite als Startseite zum Einsatz, wobei die Startseiten-URL ignoriert wird. Sollten Sie sie deaktivieren, dient die &quot;Neuer Tab&quot;-Seite nie als Startseite für den Nutzer, es sei denn, die URL wird auf &quot;chrome://newtab&quot; festgelegt. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer ihren Startseitentyp in <ph name="PRODUCT_NAME"/> nicht ändern. Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer selbst bestimmen, ob die &quot;Neuer Tab&quot;-Seite als Startseite dienen soll.</translation>
@@ -1162,6 +1318,15 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
 <translation id="7187256234726597551">Bei Festlegung auf &quot;true&quot; ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
           Wird die Richtlinie auf &quot;false&quot; gesetzt oder nicht konfiguriert, wird kein Zertifikat erstellt und Aufrufe der Erweiterungs-API &quot;enterprise.platformKeysPrivate&quot; schlagen fehl.</translation>
+<translation id="5242696907817524533">Konfiguriert eine Liste verwalteter Lesezeichen
+
+      Bei dieser Richtlinie handelt es sich um eine Liste von Lesezeichen. Jedes Lesezeichen ist ein Wörterbuch, das den Namen des Lesezeichens und die Ziel-URL enthält.
+
+      Diese Lesezeichen werden im Ordner für verwaltete Lesezeichen innerhalb der mobilen Lesezeichen platziert. Sie können nicht vom Nutzer geändert werden.
+
+      Wenn diese Richtlinie festgelegt ist, sind die verwalteten Lesezeichen der Standardordner, der beim Aufrufen der Lesezeichenansicht in Chrome geöffnet wird.
+
+      Verwaltete Lesezeichen werden nicht mit dem Nutzerkonto synchronisiert.</translation>
 <translation id="8303314579975657113">Gibt an, welche GSSAPI-Bibliothek für die HTTP-Authentifizierung verwendet werden soll. Sie können entweder nur den Namen einer Bibliothek oder einen vollständigen Pfad angeben. Wenn diese Einstellung nicht festgelegt ist, verwendet <ph name="PRODUCT_NAME"/> einen Standardnamen für die Bibliothek.</translation>
 <translation id="7749402620209366169">Aktiviert die Zwei-Faktor-Authentifizierung für Remote-Zugriff-Hosts anstelle einer vom Nutzer angegebenen PIN.
 

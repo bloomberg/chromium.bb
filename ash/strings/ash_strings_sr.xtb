@@ -2,22 +2,26 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="3595596368722241419">Батерија је пуна</translation>
-<translation id="5250713215130379958">Аутоматски сакриј покретач</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> и <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Стање Портал</translation>
 <translation id="30155388420722288">Дугме за додатне опције</translation>
+<translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth је омогућен</translation>
+<translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME"/> је промењен у <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth је онемогућен</translation>
+<translation id="7165320105431587207">Конфигурација мреже није успела</translation>
 <translation id="3775358506042162758">Можете да имате највише три налога за вишеструко пријављивање.</translation>
 <translation id="370649949373421643">Омогући Wi-Fi</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
+<translation id="595202126637698455">Праћење учинка је омогућено</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="5565793151875479467">Прокси...</translation>
 <translation id="938582441709398163">Постављени елемент тастатуре</translation>
 <translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
 <translation id="6979158407327259162">Google диск</translation>
+<translation id="3683428399328702079">Резолуција <ph name="DISPLAY_NAME"/> је промењена у <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP get није успео</translation>
 <translation id="2297568595583585744">Палета статуса</translation>
 <translation id="1661867754829461514">Недостаје PIN</translation>
@@ -34,39 +38,41 @@
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
 <translation id="3026237328237090306">Подеси податке за мобилне уређаје</translation>
+<translation id="5871632337994001636">Управљај уређајима...</translation>
 <translation id="785750925697875037">Прикажи налог за мобилне уређаје</translation>
 <translation id="153454903766751181">Покретање модема за мобилну мрежу...</translation>
 <translation id="4628814525959230255">Контрола над екраном се дели са корисником <ph name="HELPER_NAME"/> преко Hangouts-а.</translation>
-<translation id="8343941333792395995">Екран <ph name="DISPLAY_NAME"/> је ротиран</translation>
 <translation id="7864539943188674973">Онемогући Bluetooth</translation>
 <translation id="939252827960237676">Чување снимка екрана није успело</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="2268813581635650749">Одјави све</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7320906967354320621">Неактивно</translation>
-<translation id="6303423059719347535">Батерија је <ph name="PERCENTAGE"/>% пуна</translation>
 <translation id="15373452373711364">Велики показивач миша</translation>
-<translation id="2778346081696727092">Потврда аутентичности помоћу наведеног корисничког имена или лозинке није успела</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="2942516765047364088">Положај полице</translation>
 <translation id="2903907270192926896">УЛАЗ</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
 <translation id="7170041865419449892">Изван опсега</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
+<translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Конфигурација</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="4957722034734105353">Сазнајте више...</translation>
 <translation id="2964193600955408481">Онемогући Wi-Fi</translation>
-<translation id="811680302244032017">Додај уређај...</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
+<translation id="7973962044839454485">Провера аутентичности преко протокола PPP није успела због нетачног корисничког имена или лозинке</translation>
 <translation id="2509468283778169019">CAPS LOCK је укључен</translation>
 <translation id="3892641579809465218">Интерни екран</translation>
 <translation id="7823564328645135659">Језик је промењен са језика „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ након синхронизације подешавања.</translation>
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="8340999562596018839">Говорне повратне информације</translation>
 <translation id="8654520615680304441">Укључи Wi-Fi...</translation>
+<translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>.
 Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="2562916301614567480">Приватна мрежа</translation>
@@ -83,11 +89,12 @@
 <translation id="3626637461649818317">Преостало је <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Методи уноса</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2825619548187458965">Полица</translation>
 <translation id="2614835198358683673">Chromebook се можда неће пунити док је укључен. Размислите о коришћењу оригиналног пуњача.</translation>
 <translation id="1895658205118569222">Затварање</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
+<translation id="8681498213689260554">Поново покрените и обавите Powerwash да бисте ажурирали</translation>
 <translation id="4442424173763614572">DNS претрага није успела</translation>
-<translation id="6356500677799115505">Батерија је пуна и још увек се пуни.</translation>
 <translation id="7874779702599364982">Претраживање мобилних мрежа...</translation>
 <translation id="583281660410589416">Непознато</translation>
 <translation id="1383876407941801731">Претрага</translation>
@@ -96,7 +103,6 @@
 <translation id="2204305834655267233">Информације о мрежи</translation>
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Изађи из сесије госта</translation>
-<translation id="4471417012762451363">Батерија је <ph name="PERCENTAGE"/>% пуна и још увек се пуни</translation>
 <translation id="8308637677604853869">Претходни мени</translation>
 <translation id="4666297444214622512">Не можете да се пријавите на други налог.</translation>
 <translation id="1346748346194534595">Удесно</translation>
@@ -114,6 +120,7 @@
 <translation id="6312403991423642364">Непозната грешка на мрежи</translation>
 <translation id="1467432559032391204">Улево</translation>
 <translation id="5543001071567407895">SMS</translation>
+<translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Увећај</translation>
@@ -123,7 +130,6 @@
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="3784455785234192852">Закључај</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="8871072142849158571">Величина екрана <ph name="DISPLAY_NAME"/> је промењена у <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">Активација није успела</translation>
 <translation id="5097002363526479830">Повезивање са мрежом „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
@@ -131,6 +137,7 @@
 <translation id="7052914147756339792">Подеси позадину...</translation>
 <translation id="8678698760965522072">Стање На мрежи</translation>
 <translation id="2532589005999780174">Режим високог контраста</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Интерна грешка</translation>
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
@@ -153,20 +160,24 @@
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
+<translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE"/>% пуна.</translation>
 <translation id="2983818520079887040">Подешавања...</translation>
+<translation id="1195412055398077112">ивично подручје екрана</translation>
 <translation id="1717216362413677834">Режим базне станице</translation>
+<translation id="112308213915226829">Аутоматски сакриј полицу</translation>
 <translation id="8927026611342028580">Захтева се повезивање</translation>
 <translation id="8300849813060516376">OTASP није успео</translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
 <translation id="8660803626959853127">Синхронизовање <ph name="COUNT"/> датотеке(а)</translation>
+<translation id="5958529069007801266">Корисник под надзором</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
 <translation id="6248847161401822652">Притисните Control Shift Q двапут да бисте изашли.</translation>
+<translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE"/>% пуна и још увек се пуни.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Активирање...</translation>
+<translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="1391854757121130358">Можда сте искористили додељени пакет података за мобилне уређаје.</translation>
-<translation id="5413208160176941586">Корисник којим се локално управља</translation>
-<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
-<translation id="4864165860509564259">Положај покретача</translation>
+<translation id="5947494881799873997">Врати</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
 <translation id="3050422059534974565">CAPS LOCK је укључен.
@@ -179,22 +190,24 @@
 <translation id="6692173217867674490">Неисправна приступна фраза</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="9046895021617826162">Повезивање није успело</translation>
+<translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Ова сесија ће се завршити за <ph name="SESSION_TIME_REMAINING"/>. Бићете аутоматски одјављени.</translation>
 <translation id="8372369524088641025">Неисправна WEP шифра</translation>
 <translation id="6636709850131805001">Непознато стање</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE"/>“ (потребно је поновно покретање)</translation>
 <translation id="8103386449138765447">SMS поруке: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Подешавања Google диска...</translation>
-<translation id="1510238584712386396">Покретач</translation>
 <translation id="7209101170223508707">CAPS LOCK је укључен.
 Притисните Alt + тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE"/>%)</translation>
+<translation id="4918086044614829423">Прихвати</translation>
 <translation id="5102001756192215136">Преостало је <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">Контрола над екраном се дели преко Hangouts-а.</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="4015692727874266537">Пријави ме на други налог...</translation>
 <translation id="5941711191222866238">Смањи</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> с <ph name="MINUTE"/> м до краја пуњења</translation>
 <translation id="6359806961507272919">SMS са броја <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Мобилни оператер</translation>

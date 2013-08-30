@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Здесь можно просмотреть все оповещения от приложений, расширений и веб-сайтов Chrome.</translation>
 <translation id="2704356438731803243">Чтобы закрыть доступ к уже существующим данным Chrome, можно создать новый профиль Chrome для аккаунта <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
+<translation id="1225016890511909183">Chrome будет хранить ваши данные в защищенном виде, и их не придется вводить повторно – достаточно будет лишь указать код безопасности кредитной карты.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="6982337800632491844">До начала работы с устройством необходимо ознакомиться с Условиями использования на веб-сайте <ph name="DOMAIN"/> и принять их. Эти условия не дополняют, не заменяют и не ограничивают Условий использования Chrome OS.</translation>
 <translation id="4309555186815777032">(необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chrome)</translation>
+<translation id="8030318113982266900">Переключение устройства на канал <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Установлено обновление для Chrome Frame. Перезапустите браузер. Версия Chrome: <ph name="TODO_0001"/>; версия Chrome Frame: <ph name="TODO_0002"/>.</translation>
 <translation id="8471072774411320686">Для работы с приложениями необходимо выполнить вход в Chrome. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
 <translation id="5775197990071433230">На компьютере уже есть более новые компоненты Google Chrome. Используйте более новую версию установщика.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Помощь по использованию Chrome</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS"/>. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Платежные данные сохранены в Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome использует микрофон.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="6423071462708908582">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер представил просроченный сертификат безопасности. Неизвестно, был ли этот сертификат признан небезопасным с момента истечения срока действия. Это значит, что Chromium не может гарантировать, что вы обмениваетесь данными с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. Часы вашего компьютера показывают <ph name="CURRENT_TIME"/>. Проверьте точность времени. Если оно неверно, исправьте его и обновите страницу.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Приложения Chrome Canary</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - Оповещения</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
@@ -86,6 +91,7 @@
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="6557998774620459028">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которую операционная система компьютера не считает надежной. Это может означать, что сервер создал свой собственный сертификат, которому Google Chrome не может доверять, или что вмешался злоумышленник.</translation>
 <translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
+<translation id="7282192067747128786">Chrome - Оповещения (новых: <ph name="QUANTITY"/>)</translation>
 <translation id="6011049234605203654">Выберите
           меню Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -116,6 +122,7 @@
 <translation id="2874156562296220396">Браузер Google Chrome создан на основе проекта <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и другого <ph name="BEGIN_LINK_OSS"/>программного обеспечения с открытым исходным кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Браузер Google Chrome может использовать различные веб-службы, которые делают работу в Интернете более удобной и приятной.</translation>
 <translation id="7436949144778751379">Для работы Google Chrome необходима ОС Windows XP и выше. Некоторые функции могут не работать.</translation>
+<translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="103396972844768118">Важная информация о ваших данных Chrome</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
@@ -143,7 +150,6 @@
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
 <translation id="5577648424992741236">На компьютере уже установлена последняя версия Google Chrome Frame. Если она не работает, удалите ее и установите снова.</translation>
 <translation id="6326175484149238433">Удалить</translation>
-<translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="1686446242839005801">Для входа в Chrome используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME"/>. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE"/></translation>
@@ -155,6 +161,7 @@
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
 <translation id="163860049029591106">Начало работы с Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
 <translation id="576822117893741893">Открыть меню Chrome</translation>
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
@@ -165,9 +172,10 @@
 <translation id="5046764976540625289">Закрыть Chrome</translation>
 <translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome не удается создать ярлык приложения, поскольку невозможно определить текущее окружение рабочего стола.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Веб-браузер</translation>
+<translation id="8142608456917638009">Google Chrome не удалось создать ярлык для приложения.</translation>
+<translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>
 <translation id="2189123953385179981">Google Chrome OS не поддерживает запуск внешних приложений для обработки ссылок типа <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Разрешите доступ к сети для Chrome в настройках брандмауэра и антивирусного ПО.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>

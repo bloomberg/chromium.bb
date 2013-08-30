@@ -74,6 +74,7 @@
           Hvis dette er angivet som falsk eller ikke er konfigureret, vil oprettelse af overvågede brugere og login for sådanne brugere være deaktiveret. Alle eksisterende overvågede brugere vil blive skjult.
 
           BEMÆRK! Forbruger- og virksomhedsenheder opfører sig som standard forskelligt. På forbrugerenheder er overvågede brugere som standard aktiveret, men på virksomhedsenheder er de som standard deaktiveret.</translation>
+<translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="6649397154027560979">Denne politik er ved at blive udfaset. Brug i stedet URLBlacklist.
@@ -105,6 +106,11 @@
       Der vises en fejl, hvis en bruger forsøger at logge ind med et brugernavn, som ikke svarer til dette mønster.
 
       Hvis denne politik ikke angives eller ikke udfyldes, kan alle brugere logge ind på <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2892225385726009373">Når denne indstilling er aktiveret, vil <ph name="PRODUCT_NAME"/> altid forsøge at søge efter tilbagekaldelse af servercertifikater, som validerer og er signeret af lokalt installerede CA-certifikater.
+
+      Hvis <ph name="PRODUCT_NAME"/> ikke kan hente oplysninger om tilbagekaldelsesstatus, bliver sådanne certifikater behandlet som tilbagekaldt (&quot;alvorlig fejl&quot;).
+
+      Hvis denne politik ikke er angivet eller angivet som falsk, vil Chrome anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
 <translation id="1438955478865681012">Konfigurerer udvidelsesrelaterede politikker. Det er ikke tilladt for brugeren at installere sortlistede udvidelser, medmindre de bliver hvidlistet. Du kan også tvinge <ph name="PRODUCT_NAME"/> til automatisk at installere udvidelser ved at angive dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sortlisten har forrang over listen over tvungne udvidelser.</translation>
 <translation id="3516856976222674451">Begrænser den maksimale længde for en brugersession.
 
@@ -115,6 +121,7 @@
       Hvis du indstiller denne politik, kan brugere ikke ændre eller tilsidesætte den.
 
       Politikkens værdi skal angives i millisekunder. Værdierne fastgøres til et interval fra 30 sekunder til 24 timer.</translation>
+<translation id="9200828125069750521">Parametre for billedets webadresse, som anvender POST</translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
 <translation id="8668394701842594241">Angiver en liste over plugins, som er aktiveret i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre indstillingen.
@@ -288,6 +295,7 @@
       Hvis denne politik ikke er angivet, anvendes 0 millisekunder som timeout.
 
       Denne politik angives i millisekunder.</translation>
+<translation id="7275334191706090484">Administrerede bogmærker</translation>
 <translation id="3570008976476035109">Bloker plugins på disse websites</translation>
 <translation id="8749370016497832113">Aktiverer sletning af browserhistorik og downloadhistorik i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre denne indstilling.
 
@@ -342,6 +350,16 @@
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
+<translation id="3234167886857176179">Dette er listen over politikker, som <ph name="PRODUCT_NAME"/> respekterer.
+
+      Du behøver ikke at ændre disse indstillinger manuelt! Du kan downloade brugervenlige skabeloner på
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Listen over understøttede politikker er den samme for Chromium og Google Chrome.
+
+      Disse politikker må kun bruges til at konfigurere installationer af Chrome internt i din organisation. Hvis du bruger disse politikker uden for din organisation (f.eks. i et program, der distribueres offentligt), betragtes det som malware og bliver sandsynligvis angivet som malware af Google og udbydere af antivirussoftware.
+
+      Bemærk! Fra Chrome 28 indlæses politikker direkte fra Group Policy API i Windows. Politikker, der skrives manuelt til registreringsdatabasen bliver ignoreret. Se http://crbug.com/259236 for at få flere oplysninger.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan anvende Googles webtjeneste til at rette stavefejl. Hvis denne indstilling er aktiveret, bruges denne tjeneste altid. Hvis indstillingen er deaktiveret, bruges tjenesten aldrig.
 
       Stavekontrol kan stadig udføres ved hjælp af den downloadede ordbog. Denne politik kontrollerer kun brugen af onlinetjenesten.
@@ -384,6 +402,7 @@
       Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript, og brugeren kan ikke ændre denne indstilling.
 
       Hvis denne indstilling er deaktiveret eller ikke angivet, kan websider anvende JavaScript, men brugeren kan ændre denne indstilling.</translation>
+<translation id="4047207703890139433">Angiver det urformat, der bruges på enheden. Brugerne kan tilsidesætte urformatet for den aktuelle session. Ved logout sættes det tilbage til den angivne værdi. Hvis der angives en tom streng, anvendes enhedens ejers præference.</translation>
 <translation id="1942957375738056236">Du kan angive webadressen på proxyserveren her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i &quot;Vælg, hvordan du angiver indstillinger for proxyserveren&quot;. Du bør ikke angive denne politik, hvis du har valgt en anden tilstand til indstilling af proxypolitikker. Du kan finde flere valgmuligheder og detaljerede eksempler på: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6076008833763548615">Deaktiver isætning af eksternt lager.
 
@@ -407,6 +426,11 @@
 
           Hvis denne indstilling deaktiveres eller ikke angives, kan både lokale brugere og fjernbrugere interagere med en host, når den deles.</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgeord.
+
+          Denne politik er valgfri. Hvis dette ikke angives, sendes der søgeforslag ved hjælp af GET-metoden.
+
+          Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="4962195944157514011">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, som erstattes af søgeord, når brugeren foretager en søgning. Denne indstilling skal aktiveres, når politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
 <translation id="6009903244351574348">Tillad, at <ph name="PRODUCT_FRAME_NAME"/> kan håndtere de angivne indholdstyper. Hvis denne politik ikke er angivet, anvendes standardgengiveren for alle websites som angivet i politikken &quot;ChromeFrameRendererSettings&quot;.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
@@ -477,6 +501,7 @@
 <translation id="3236046242843493070">Webadressemønstre, der tillader installation af udvidelser, apps og brugerscripts fra</translation>
 <translation id="2498238926436517902">Skjul altid hylden automatisk</translation>
 <translation id="253135976343875019">Advarsel om inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
+<translation id="6997592395211691850">Om der kræves online OCSP/CRL-kontroller for lokale tillidsankere</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -529,6 +554,7 @@
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="8170878842291747619">Aktiverer den integrerede tjeneste Google Oversæt på <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, vil <ph name="PRODUCT_NAME"/> vise en integreret værktøjslinje, der tilbyder at oversætte siden for brugeren, når det er relevant. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se oversættelsesbjælken. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling ikke angives, kan brugeren vælge, om funktionen skal anvendes eller ej.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
+<translation id="8244525275280476362">Maksimal henteforsinkelse efter ugyldiggørelse af en politik</translation>
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="3964909636571393861">Giver adgang til en liste over webadresser</translation>
@@ -558,7 +584,6 @@
 <translation id="8285435910062771358">Lup i fuld skærm er aktiveret</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="3864818549971490907">Standardindstillinger for plugins</translation>
-<translation id="1910566775788829857">Log brugeren ud</translation>
 <translation id="7151201297958662315">Bestemmer, om en proces i <ph name="PRODUCT_NAME"/> starter i OS-login og fortsætter med at køre, når det sidste browservindue lukkes, så baggrundsappen kan forblive aktiv. Baggrundsprocessen viser et ikon i systembakken og kan altid lukkes herfra.
 
       Hvis denne politik er angivet til Sand, er baggrundstilstanden aktiveret og kan ikke kontrolleres af brugeren i browserindstillingerne.
@@ -583,6 +608,11 @@
           Værdien for politikken aktiveres inden for millisekunder. Værdierne er låste til mindre end eller det samme som inaktivitetsforsinkelsen.</translation>
 <translation id="1098794473340446990">Rapportér tidspunkter for aktiviteter på enheden. Hvis denne indstilling er angivet som Sand, rapporterer tilmeldte enheder de tidsperioder, hvor en bruger er aktiv på enheden. Hvis denne indstilling ikke er angivet, eller hvis den er angivet som Falsk, registreres og rapporteres der ikke aktive tidspunkter på enheden.</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
+<translation id="427632463972968153">Angiver de parametre, der anvendes ved billedsøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {imageThumbnail} i ovenstående eksempel, bliver den erstattet af data om rigtige miniaturebilleder.
+
+          Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.
+
+          Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="8818646462962777576">Mønstre på denne liste sammenlignes med sikkerhedskilden
       for den anmodede webadresse. Hvis der findes et match, gives der adgang til
       lydoptagelsesenheder, uden at du behøver at give tilladelse til det.
@@ -590,6 +620,8 @@
       BEMÆRK! Denne politik understøttes i øjeblikket kun i terminaltilstand.</translation>
 <translation id="489803897780524242">Parameter, der styrer placeringen af søgeudtryk i standardsøgemaskinen</translation>
 <translation id="316778957754360075">Denne indstilling er blevet trukket tilbage fra og med <ph name="PRODUCT_NAME"/> version 29. Den anbefalede metode til konfiguration af organisationshostede udvidelse-/app-samlinger er at medtage det website, der hoster CRX-pakkerne, i ExtensionInstallSources og placere direkte downloadlinks til pakkerne på en webside. Du kan oprette en applikationsliste for denne webside vha. politikken ExtensionInstallForcelist.</translation>
+<translation id="6401669939808766804">Log brugeren ud</translation>
+<translation id="4826326557828204741">Handling, der igangsættes ved inaktive forsinkelser på batteristrøm</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
 <translation id="817455428376641507">Giver adgang til de angivne webadresser som undtagelser til sortlisten for webadresser.
 
@@ -627,6 +659,14 @@
 <translation id="8102913158860568230">Standardindstilling for mediestrøm</translation>
 <translation id="6641981670621198190">Deaktiver understøttelse af API'er til 3D-grafik</translation>
 <translation id="7929480864713075819">Aktiver rapportering af hukommelsesoplysninger (JavaScript heap size) til siden</translation>
+<translation id="5703863730741917647">Angiv handling, der igangsættes ved inaktiv forsinkelse.
+
+          Bemærk, at denne politik udfases og bliver fjernet senere.
+
+          Denne politik udgør en nødværdi for de mere specifikke politikker <ph name="IDLEACTIONAC_POLICY_NAME"/> og <ph name="IDLEACTIONBATTERY_POLICY_NAME"/>. Hvis denne politik er angivet, anvendes dens værdier, hvis den mere specifikke politik ikke er angivet.
+
+          Når denne politik ikke er angivet, forbliver adfærden angivet i mere specifikke politikker upåvirkede.</translation>
+<translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
 <translation id="7003746348783715221">Præferencer for <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktiver gennemgang af firewall fra fjernklient</translation>
 <translation id="6367755442345892511">Om udgivelseskanalen skal konfigureres af brugeren</translation>
@@ -680,16 +720,6 @@
 
           Hvis denne politik er angivet til Falsk, forhindrer videoaktiviteten ikke brugeren i at blive betragtet som inaktiv.</translation>
 <translation id="3965339130942650562">Timeout, indtil brugeren logges ud på grund af inaktivitet</translation>
-<translation id="5857910801734294133">Her er listen over politikker, som <ph name="PRODUCT_NAME"/> overholder.
-
-      Du behøver ikke at ændre disse indstillinger manuelt.  Du kan downloade brugervenlige skabeloner på
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Listen over understøttede politikker er den samme for Chromium og Google Chrome, men deres placering af Windows-registreringsdatabase er ikke den samme.
-
-      Den starter med <ph name="CHROMIUM_KEY"/> for Chromium-politikker og med <ph name="GOOGLE_CHROME_KEY"/> for Google Chrome-politikker.
-
-      Disse politikker er udelukkende beregnet til at blive brugt til at konfigurere forekomster af Chrome internt i din virksomhed. Brug af disse politikker uden for din virksomhed (f.eks. i et offentligt distribueret program) betragtes som malware og vil højst sandsynligt blive markeret som malware af Google og antivirus-leverandører.</translation>
 <translation id="5814301096961727113">Indstil standardtilstanden for talefeedback på loginskærmen</translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="7091198954851103976">Kør altid plugins, der kræver godkendelse</translation>
@@ -734,7 +764,7 @@
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="467236746355332046">Understøttede funktioner:</translation>
-<translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
+<translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="3038323923255997294">Fortsætter med at køre baggrundsapps, når <ph name="PRODUCT_NAME"/> er lukket</translation>
 <translation id="4652284479838524692">Aktivér fjernattestering for enheden.</translation>
 <translation id="8909280293285028130">Angiver den tid uden brugerinput, der udløser skærmlås, når strømforsyningen er tilsluttet.
@@ -771,9 +801,21 @@
           Hvis denne politik ikke er angivet eller er angivet til Falsk, kan brugerne overføre filer til Google Drev.</translation>
 <translation id="1964634611280150550">Inkognitotilstand er deaktiveret</translation>
 <translation id="5971128524642832825">Deaktiverer Drev i Chrome OS-appen Filer</translation>
+<translation id="1847960418907100918">Angiver de parametre, der anvendes ved direkte søgning med POST. Det består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgeord.
+
+          Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om direkte søgning ved hjælp af GET-metoden.
+
+          Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultJavaScriptSetting&quot;, hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME"/> håndterer følgende indholdstyper.</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen &quot;Webadresser, der skal åbnes ved opstart&quot; ignoreres, medmindre du vælger &quot;Åbn en liste over webadresser&quot; i &quot;Handling ved opstart&quot;.</translation>
+<translation id="243972079416668391">Angiv den handling, der igangsættes ved inaktiv forsinkelse, når der er fast strømforsyning.
+
+          Når denne politik er angivet, specificerer den det, som <ph name="PRODUCT_OS_NAME"/> skal gøre, når brugeren er inaktiv i den tid, der er angivet af den inaktive forsinkelse, som kan konfigureres særskilt.
+
+          Når denne politik ikke er angivet, udføres standardhandlingen, hvilket er suspendering.
+
+          Hvis handlingen er suspendering, kan <ph name="PRODUCT_OS_NAME"/> konfigureres særskilt for enten at låse eller ikke at låse skærmen før suspendering.</translation>
 <translation id="7750991880413385988">Åbn siden Ny fane</translation>
 <translation id="741903087521737762">Giver dig mulighed for at angive adfærd ved opstart.
 
@@ -819,6 +861,7 @@
 <translation id="6699880231565102694">Aktivér godkendelse med to faktorer for værter med fjernadgang</translation>
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="3072045631333522102">Pauseskærm, som skal bruges på loginskærmen i detailtilstand</translation>
+<translation id="4550478922814283243">Aktivér eller deaktiver bekræftelse uden pinkode</translation>
 <translation id="7712109699186360774">Spørg mig, hver gang et website ønsker at få adgang til kameraet og/eller mikrofonen</translation>
 <translation id="350797926066071931">Aktiver Oversæt</translation>
 <translation id="3711895659073496551">Suspender</translation>
@@ -829,13 +872,6 @@
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsmeddelelser</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME"/> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
-<translation id="7546291275204811722">Angiv den handling, der skal udløses ved inaktivitetsforsinkelsen.
-
-          Hvis denne politik er indstillet, angives den handling, som <ph name="PRODUCT_OS_NAME"/> foretager, når brugeren er inaktiv i den tid, der er angivet af inaktivitetsforsinkelsen, som kan konfigureres separat.
-
-          Hvis denne politik ikke indstilles, anvendes standardhandlingen, som er suspendering.
-
-          Hvis handlingen suspenderes, kan <ph name="PRODUCT_OS_NAME"/> konfigureres separat til enten at  låse eller ikke låse skærmen, inden suspendering.</translation>
 <translation id="5475361623548884387">Aktiver udskrivning</translation>
 <translation id="7287359148642300270">Angiver, hvilke servere der skal føjes til hvidlisten til integreret godkendelse. Integreret godkendelse aktiveres kun, når <ph name="PRODUCT_NAME"/> modtager en godkendelsesanmodning fra en proxy eller fra en server, der er tilladt på denne liste.
 
@@ -866,6 +902,11 @@
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME"/> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME"/>, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
 <translation id="3793095274466276777">Konfigurerer standardbrowserens tjek i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre dem. Hvis du aktiverer denne indstilling, tjekker <ph name="PRODUCT_NAME"/> altid ved opstart, om den er standardbrowser, og registrerer automatisk sig selv, hvis det er muligt. Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME"/> aldrig se om den er standardbrowseren, og deaktivere brugerens kontrol over denne indstilling. Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises meddelelser til brugeren, når den ikke er det.</translation>
+<translation id="3504791027627803580">Angiver webadressen på den søgemaskine, der bruges til billedsøgning. Søgeanmodninger sendes ved hjælp af GET-metoden. Hvis politikken DefaultSearchProviderImageURLPostParams er angivet, vil anmodninger om billedsøgning anvende POST-metoden i stedet.
+
+          Denne politik er valgfri. Hvis den ikke er angivet, anvendes der ikke nogen billedsøgning.
+
+          Denne politik respekteres, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultPopupsSetting&quot;, hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
@@ -886,6 +927,7 @@
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="4733471537137819387">Politikker i forbindelse med integreret HTTP-godkendelse.</translation>
 <translation id="8951350807133946005">Angiv mappen for diskens cache</translation>
+<translation id="603410445099326293">Parametre for forslagswebadresser, som anvender POST</translation>
 <translation id="2592091433672667839">Varighed af inaktivitet, før pauseskærmen vises på loginskærmen i detailtilstand</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Tillad, at alle websites viser pop op-vinduer</translation>
@@ -910,6 +952,13 @@
       Hvis den er aktiveret, vises der en stor, rød log ud-knap i systembakken, når en session er aktiv, og skærmen ikke er låst.
 
       Hvis den er deaktiveret eller ikke angivet, vises der ikke en stor, rød log ud-knap i systembakken.</translation>
+<translation id="5111573778467334951">Angiv den handling, der skal igangsættes ved inaktiv forsinkelse på batteristrøm.
+
+          Når denne politik er angivet, specificerer den den handling, som <ph name="PRODUCT_OS_NAME"/> skal udføre, når brugeren er inaktiv i den tid, der kan konfigureres særskilt.
+
+          Når denne politik ikke er angivet, foretages standardhandlingen, hvilket er suspendering.
+
+          Hvis handlingen er suspendering, kan <ph name="PRODUCT_OS_NAME"/> konfigureres særskilt til enten at låse eller ikke at låse skærmen før suspendering.</translation>
 <translation id="3195451902035818945">Angiver, om opdeling af SSL-poster skal deaktiveres. Opdeling af poster er en løsning for en svaghed i SSL 3.0 og TLS 1.0, men kan medføre kompatibilitetsproblemer på nogle HTTPS-servere og proxyservere. Hvis politikken ikke er angivet, eller hvis den er angivet som Falsk, anvendes opdeling af poster på SSL/TLS-forbindelser, der anvender CBC-ciphersuites.</translation>
 <translation id="6903814433019432303">Denne politik er kun aktiv i detailtilstand.
 
@@ -925,6 +974,11 @@
 <translation id="8711086062295757690">Angiver det nøgleord, som er den genvej, der bruges i omnifeltet til at udløse søgningen for denne udbyder. Denne politik er valgfri. Hvis den ikke angives, vil ingen søgeord aktivere søgemaskinen. Denne politik tages kun i betragtning, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="5774856474228476867">Søgewebadresse for standardsøgemaskinen</translation>
 <translation id="4650759511838826572">Deaktiver protokolskemaer for webadresser</translation>
+<translation id="7831595031698917016">Specificerer den maksimale forsinkelse i millisekunder mellem modtagelse af en ugyldiggørelse af en politik og hentningen af den nye politik fra tjenesten til enhedshåndtering.
+
+      Når denne politik angives, tilsidesættes standardværdien på 5000 millisekunder. Gyldige værdier for denne politik går fra 1000 (1 sekund) til 300000 (5 minutter). Værdier uden for intervallet rundes af til den nærmeste grænse.
+
+      Hvis du ikke angiver denne politik, vil <ph name="PRODUCT_NAME"/> anvende standardværdien på 5000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse, når batteriet bruges</translation>
 <translation id="2761483219396643566">Advarsel om inaktivitetsforsinkelse, når batteriet anvendes</translation>
 <translation id="1468307069016535757">Indstil standardtilstanden for tilgængelighedsfunktionen Høj kontrast på loginskærmen.
@@ -940,7 +994,11 @@
 <translation id="350796261613621561">Aktivér oprettelse af overvågede brugere.</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="3030000825273123558">Aktivér datarapportering</translation>
+<translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="6559057113164934677">Tillad ikke, at websites får adgang til kameraet og mikrofonen</translation>
+<translation id="7273823081800296768">Hvis denne indstilling er aktiveret eller ikke konfigureret, kan brugerne fravælge at parre klienter og hosts på forbindelsestidspunktet, hvilket fjerner behovet for at indtaste en pinkode hver gang.
+
+          Hvis denne indstilling deaktiveres, vil denne funktion ikke være tilgængelig.</translation>
 <translation id="1675002386741412210">Understøttes på:</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="4482640907922304445">Viser knappen Start på værktøjslinjen i <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, vises knappen Start altid. Hvis du deaktiverer denne indstilling, vises knappen Start aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Start skal vises.</translation>
@@ -951,6 +1009,7 @@
           Politikken er valgfri. Hvis den ikke angives, bruges ingen alternative webadresser til at udlede søgeudtryk.
 
            Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
+<translation id="436581050240847513">Rapportér enhedens netværksgrænseflader</translation>
 <translation id="6282799760374509080">Tillad eller afvis lydoptagelse</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodninger for standardsøgemaskinen</translation>
@@ -1022,6 +1081,91 @@
       Hvis denne politik ikke indstilles, anvender <ph name="PRODUCT_NAME"/> standardværdien på 3 timer.</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>
 <translation id="6233173491898450179">Angiv mappen til download</translation>
+<translation id="78524144210416006">Konfigurer strømstyring på loginskærmen i <ph name="PRODUCT_OS_NAME"/>.
+
+      Denne politik giver dig mulighed for at konfigurere, hvordan <ph name="PRODUCT_OS_NAME"/> opfører sig, når der ikke findes nogen brugeraktivitet i et stykke tid, mens loginskærmen vises. Politikken styrer forskellige indstillinger. Se deres individuelle beskrivelse og værdiintervaller i de tilsvarende politikker, der kontrollerer strømstyring i en session. De eneste afvigelser fra disse politikker er:
+      * Handling ved inaktivitet eller lukket skærm kan ikke være at afslutte sessionen.
+      * Standardhandlingen ved inaktivitet ved fast strømforsyning er at lukke ned.
+
+      Politikken skal specificeres som en streng, der udtrykker de enkelte indstillinger i JSON-format i henhold til dette skema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Indstillinger for strømstyring gælder kun ved fast strømforsyning&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter skærmen nedtones, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter skærmen slukkes, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter inaktivitetshandlingen igangsættes, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Handling, der skal igangsættes ved inaktiv forsinkelse&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Indstillinger for strømstyring gælder kun ved batteristrøm&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter skærmen nedtones, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter skærmen slukkes, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Det tidsrum uden brugerinput, hvorefter inaktivitetshandlingen igangsættes, angivet i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Handling, der igangsættes ved inaktiv forsinkelse&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Handling, der igangsættes, når skærmen lukkes&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Den procentdel, som skærmen skal nedtones med, når der registreres brugeraktivitet, når skærmen er nedtonet, eller kort efter skærmen er blevet slukket&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Hvis en indstilling ikke er angivet, anvendes der en standardværdi.
+
+      Hvis denne politik ikke er angivet, anvendes der standardværdier for alle indstillinger.</translation>
 <translation id="8908294717014659003">Giver dig mulighed for at angive, om websites skal have adgang til optageenheder. Der kan gives adgang til optageenheder som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at få adgang til optageenheder.
 
           Hvis denne politik ikke indstilles, anvendes &quot;PromptOnAccess&quot;, og brugeren vil være i stand til at ændre den.</translation>
@@ -1042,6 +1186,7 @@
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med inaktivitetsforsinkelsen.</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
+<translation id="5244714491205147861">Strømstyring på loginskærmen</translation>
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="7323896582714668701">Yderligere kommandolinjeparametre for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering af data med Google</translation>
@@ -1082,6 +1227,11 @@
 <translation id="5535973522252703021">Hvidliste for Kerberos-delegeringsserver</translation>
 <translation id="4578030379102330182">Aktivér fjernattestering for brugeren.</translation>
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
+<translation id="6353901068939575220">Specificerer de anvendte parametre ved søgning efter en webadresse med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes de med rigtige søgeord.
+
+          Denne politik er valgfri. Hvis den ikke angives, sendes der søgeanmodninger ved hjælp af GET-metoden.
+
+          Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
 <translation id="5307432759655324440">Inkognitotilstandens tilgængelighed</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokol</translation>
 <translation id="3808945828600697669">Angiv en liste over deaktiverede plugins</translation>
@@ -1148,6 +1298,10 @@
          ExtensionInstallBlacklist har forrang i forhold til denne politik. Dvs. at en sortlistet udvidelse ikke vil blive installeret, selvom det sker fra et website på denne liste.</translation>
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
 <translation id="7848840259379156480">Giver dig mulighed for at konfigurere din standardgengivelse af HTML, når <ph name="PRODUCT_FRAME_NAME"/> er installeret. Standardindstillingen er, at værtsbrowseren foretager gengivelsen, men du har mulighed for at tilsidesætte denne og få <ph name="PRODUCT_FRAME_NAME"/> til at gengive HTML-sider som standard.</translation>
+<translation id="186719019195685253">Den handling, der igangsættes ved inaktiv forsinkelse på fast strømforsyning</translation>
+<translation id="7890264460280019664">Rapportér en liste over netværksgrænseflader med deres typer og hardwareadresser til serveren.
+
+      Hvis politikken ikke er angivet eller angivet som falsk, rapporteres listen over grænseflader ikke.</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
 <translation id="2127599828444728326">Tillad meddelelser på disse websites</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
@@ -1176,6 +1330,7 @@
 
       Hvis denne politik ikke angives, anvendes standardmappen til downloads, og brugeren vil kunne ændre den.</translation>
 <translation id="7381326101471547614">Deaktiverer brug af SPDY-protokollen i <ph name="PRODUCT_NAME"/>. Hvis denne politik er aktiveret, vil SPDY-protokollen ikke være tilgængelig i <ph name="PRODUCT_NAME"/>. Hvis du deaktiverer denne politik, tillades brug af ​​SPDY. Hvis retningslinjerne for denne politik ikke angives, vil SPDY være tilgængelig.</translation>
+<translation id="2208976000652006649">Parametre for søgewebadresse, som anvender POST</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME"/> som standard</translation>
 <translation id="1047128214168693844">Tillad ikke, at websites sporer brugerens fysiske placering</translation>
 <translation id="4101778963403261403">Konfigurerer typen af standardstartside i <ph name="PRODUCT_NAME"/> og forhindrer, at brugerne kan ændre præferencerne for startsiden. Startsiden kan enten angives som en webadresse, som du angiver, eller den kan angives som siden Ny fane. Hvis du aktiverer denne indstilling, anvendes siden Ny fane altid som startside, og placeringen for startsidens webadresse ignoreres. Hvis du deaktiverer denne indstilling, vil brugerens startside aldrig være siden Ny fane, medmindre dens webadresse er angivet som &quot;chrome://newtab&quot;. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre deres startsidetype i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, kan brugeren selv vælge, om siden Ny fane skal være startsiden.</translation>
@@ -1211,7 +1366,16 @@
 <translation id="7187256234726597551">Hvis den er indstillet til sand, er fjernattestering tilladt for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
 
           Hvis den er indstillet til falsk, eller hvis den ikke er indstillet, genereres der ikke noget certifikat, og kald til enterprise.platformKeysPrivate extension API mislykkes.</translation>
-<translation id="8303314579975657113">Angiver, hvilket GSSAPI-bibliotek der skal bruges til HTTP-godkendelse. Du kan enten angive et biblioteksnavn eller en hel sti. Hvis der ikke angives en indstilling, går <ph name="PRODUCT_NAME"/> tilbage til at bruge et standardbiblioteksnavn.</translation>
+<translation id="5242696907817524533">Konfigurerer en liste over administrerede bogmærker.
+
+      Politikken er en liste over bogmærker, og hvert bogmærke er en ordbog med bogmærkets &quot;navn&quot; og &quot;destinationsadresse&quot;.
+
+      Disse bogmærker er placeret i mappen Administrerede bogmærker i Bogmærker på mobil. Disse bogmærker kan ikke redigeres af brugeren.
+
+      Når denne politik er angivet, åbnes de administrerede bogmærker som standard, når visningen Bogmærker åbnes i Chrome.
+
+      Administrerede bogmærker synkroniseres ikke med brugerkontoen.</translation>
+<translation id="8303314579975657113">Angiver, hvilket GSSAPI-samling der skal bruges til HTTP-godkendelse. Du kan enten angive et samlingsnavn eller en hel sti. Hvis der ikke angives en indstilling, går <ph name="PRODUCT_NAME"/> tilbage til at bruge et standardsamlingsnavn.</translation>
 <translation id="7749402620209366169">Aktiverer godkendelse med to faktorer for værter med fjernadgang i stedet for en brugerangivet pinkode.
 
           Hvis denne indstilling er aktiveret, skal brugerne angive en gyldig kode med to faktorer, når de forsøger at få adgang til en vært.

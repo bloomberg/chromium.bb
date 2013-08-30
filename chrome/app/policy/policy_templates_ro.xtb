@@ -74,6 +74,7 @@
           Dacă această politică nu este activată sau configurată, crearea și conectarea utilizatorilor monitorizați vor fi dezactivate. Toți utilizatorii monitorizați existenți vor fi ascunși.
 
           NOTĂ: comportamentul prestabilit pentru dispozitivele destinate consumatorilor și întreprinderilor diferă: utilizatorii monitorizați sunt activați în mod prestabilit pe dispozitivele destinate consumatorilor, iar pe dispozitivele destinate întreprinderilor, aceștia sunt dezactivați în mod prestabilit.</translation>
+<translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="5469825884154817306">Blocați imagini de pe aceste site-uri</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="6649397154027560979">Această politică este învechită. Utilizați, în schimb, URLBlacklist.
@@ -105,6 +106,11 @@
       Dacă un utilizator încearcă să se conecteze cu un nume de utilizator care nu se potrivește cu acest model, este afișată o eroare corespunzătoare.
 
       Dacă această politică nu este setată sau este necompletată, atunci toți utilizatorii se pot conecta la <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2892225385726009373">Când această setare este activată, <ph name="PRODUCT_NAME"/> va efectua întotdeauna verificarea revocării certificatelor de server care au fost validate și care sunt semnate de certificate CA instalate local.
+
+      Dacă <ph name="PRODUCT_NAME"/> nu poate obține informații despre starea revocării, certificatele de acest fel vor fi considerate revocate („blocate”).
+
+      Dacă această politică nu este setată sau nu este activată, Chrome va utiliza setările existente pentru verificarea revocărilor online.</translation>
 <translation id="1438955478865681012">Configurează politicile privind extensiile. Utilizatorul nu are permisiunea de a instala extensii introduse pe lista neagră, cu excepția cazului în care acestea sunt introduse pe lista albă. De asemenea, puteți forța <ph name="PRODUCT_NAME"/> să instaleze în mod automat extensii specificându-le în <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Lista neagră are prioritate față de lista cu extensii impuse.</translation>
 <translation id="3516856976222674451">Limitați durata maximă a sesiunii unui utilizator.
 
@@ -115,6 +121,7 @@
       Dacă setați această politică, utilizatorii nu pot să o modifice sau să o ignore.
 
       Valoarea politicii trebuie specificată în milisecunde. Valorile variază între 30 de secunde și 24 de ore.</translation>
+<translation id="9200828125069750521">Parametrii pentru adresa URL a imaginii care utilizează POST</translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
 <translation id="3478024346823118645">Ștergeți datele utilizatorului la deconectare</translation>
 <translation id="8668394701842594241">Specifică o listă de pluginuri care sunt activate în <ph name="PRODUCT_NAME"/> și împiedică modificarea acestei setări de către utilizatori. Pentru a crea corespondențe între secvențe de caractere arbitrare pot fi folosite metacaracterele „*” și „?”. „*” corespunde unui număr arbitrar de caractere, în timp ce „?” specifică un caracter opțional unic, adică înlocuiește zero caractere sau un singur caracter. Caracterul escape este „\”, astfel încât pentru a realiza corespondența cu caracterele „*”, „?” și „\” în sine, puteți plasa caracterul „\” în fața acestora. Lista specificată de pluginuri este întotdeauna utilizată în <ph name="PRODUCT_NAME"/> în cazul în care acestea sunt instalate. Pluginurile sunt marcate ca activate în „about:plugins”, iar utilizatorii nu le pot dezactiva. Rețineți că această politică are prioritate atât față de DisabledPlugins, cât și față de DisabledPluginsExceptions. Dacă această politică rămâne nesetată, utilizatorul poate dezactiva toate pluginurile instalate în sistem.</translation>
@@ -253,6 +260,7 @@
       Dacă setarea acestei politici este anulată, valoarea utilizată pentru timpul limită va fi de 0 milisecunde.
 
       Această politică este specificată în milisecunde.</translation>
+<translation id="7275334191706090484">Marcaje gestionate</translation>
 <translation id="3570008976476035109">Blocați pluginuri de pe aceste site-uri</translation>
 <translation id="8749370016497832113">Permite ștergerea istoricului browserului și a istoricului descărcărilor din <ph name="PRODUCT_NAME"/> și îi împiedică pe utilizatori să modifice această setare.
 
@@ -295,6 +303,16 @@
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="838870586332499308">Activați roamingul de date</translation>
+<translation id="3234167886857176179">Aceasta este lista politicilor respectate de <ph name="PRODUCT_NAME"/>.
+
+      Nu este necesar să modificați aceste setări manual!  Puteți să descărcați șabloane ușor de folosit de la
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Lista politicilor acceptate este identică pentru Chromium și Google Chrome.
+
+      Aceste politici nu pot fi utilizate decât cu scopul de a configura instanțe ale browserului Chrome în cadrul organizației dvs. Utilizarea acestor politici în afara organizației (de exemplu, într-un program distribuit în mod public) este considerată program malware și probabil va fi etichetată ca atare de Google și de furnizorii de programe antivirus.
+
+      Notă: începând cu Chrome versiunea 28, politicile sunt încărcate în Windows direct din API-ul Group Policy. Politicile scrise manual în registry vor fi ignorate. Pentru detalii, consultați http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> poate utiliza un serviciu web Google pentru a ajuta la soluționarea greșelilor de ortografie. Dacă setarea este activată, atunci se va utiliza întotdeauna acest serviciu. Dacă setarea este dezactivată, atunci acest serviciu nu va fi utilizat niciodată.
 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
@@ -337,6 +355,7 @@
       Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
 
       Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
+<translation id="4047207703890139433">Specifică formatul ceasului pentru dispozitiv. Utilizatorii pot înlocui formatul ceasului pentru sesiunea curentă. Cu toate acestea, la deconectare, acesta este resetat la valoarea specificată. Dacă este indicat un șir gol, va fi utilizată preferința setată de proprietarul dispozitivului.</translation>
 <translation id="1942957375738056236">Puteți să specificați aici adresa URL a serverului proxy. Această politică are efect numai dacă ați selectat manual setările pentru proxy la „Alegeți cum să specificați setările pentru serverul proxy”. Trebuie să lăsați această politică nesetată dacă ați selectat orice alt mod pentru setarea politicilor de proxy. Pentru mai multe opțiuni și exemple detaliate, accesați: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6076008833763548615">Dezactivați conectarea dispozitivelor de stocare externe.
 
@@ -360,6 +379,11 @@
 
           Dacă această setare este dezactivată sau neconfigurată, atunci atât utilizatorii locali, cât și cei de la distanță pot interacționa cu gazda când se permite accesul la aceasta.</translation>
 <translation id="1426410128494586442">Da</translation>
+<translation id="4897928009230106190">Specifică parametrii utilizați la căutarea sugestiilor cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
+
+          Această politică este opțională. Dacă nu este setată, solicitarea de căutare a sugestiilor va fi trimisă prin metoda GET.
+
+          Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="4962195944157514011">Specifică adresa URL a motorului de căutare utilizat la efectuarea unei căutări prestabilite. Adresa URL trebuie să conțină șirul „<ph name="SEARCH_TERM_MARKER"/>”, care va fi înlocuit în momentul interogării cu termenii căutați de către utilizator. Această opțiune trebuie setată dacă este activată politica „DefaultSearchProviderEnabled” și va fi respectată numai în cazul acesta.</translation>
 <translation id="6009903244351574348">Permiteți ca <ph name="PRODUCT_FRAME_NAME"/> să gestioneze tipurile de conținut enumerate. Dacă această politică nu este setată, programul de redare prestabilit va fi folosit pentru toate site-urile așa cum se specifică în politica „ChromeFrameRendererSettings”.</translation>
 <translation id="3381968327636295719">Utilizați în mod prestabilit browserul gazdă</translation>
@@ -430,6 +454,7 @@
 <translation id="3236046242843493070">Modele de adrese URL de la care se permite instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="2498238926436517902">Ascundeți întotdeauna automat raftul</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
+<translation id="6997592395211691850">Dacă verificările OCSP/CRL online sunt necesare sau nu pentru ancorele de încredere locale</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="8992176907758534924">Nu permiteți niciunui site să afișeze imagini</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -482,6 +507,7 @@
 <translation id="209586405398070749">Canalul în versiune stabilă</translation>
 <translation id="8170878842291747619">Activează serviciul integrat Google Traducere pe <ph name="PRODUCT_NAME"/>. Dacă activați această setare, <ph name="PRODUCT_NAME"/> va afișa o bară de instrumente integrată, care oferă traducerea paginii pentru utilizator, atunci când este cazul. Dacă dezactivați această setare, utilizatorii nu vor vedea bara de traducere. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
+<translation id="8244525275280476362">Întârzierea maximă la preluare după invalidarea unei politici</translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="3964909636571393861">Permite accesul la o listă de adrese URL</translation>
@@ -511,7 +537,6 @@
 <translation id="8285435910062771358">Lupă ecran complet activată</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
-<translation id="1910566775788829857">Deconectați utilizatorul</translation>
 <translation id="7151201297958662315">Stabilește dacă un proces <ph name="PRODUCT_NAME"/> este pornit la conectarea sistemului de operare și continuă să funcționeze atunci când ultima fereastră a browserului este închisă, permițând aplicațiilor din fundal să rămână active. Procesul din fundal afișează o pictogramă în bara de sistem și poate fi întotdeauna închis de acolo.
 
       Dacă această politică este activată, modul fundal este activat și nu poate fi stabilit de utilizator din setările browserului.
@@ -536,6 +561,11 @@
           Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
 <translation id="1098794473340446990">Raportează perioadele de activitate ale dispozitivului. Dacă această setare este activată, dispozitivele înscrise vor raporta perioadele de timp când un utilizator este activ pe acest dispozitiv. Dacă setarea nu este configurată sau nu este activată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
+<translation id="427632463972968153">Specifică parametrii utilizați la căutarea de imagini cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {imageThumbnail} din exemplul de mai sus, acesta va fi înlocuit cu datele miniaturii imaginii reale.
+
+          Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
+
+          Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="8818646462962777576">Șabloanele din această listă vor fi comparate cu originea
       de securitate a adresei URL solicitante. Dacă este identificată o potrivire, accesul la dispozitivele
       de capturare a conținutului audio va fi acordat automat.
@@ -543,6 +573,8 @@
       NOTĂ: momentan, această politică este acceptată numai la rularea în modul Chioșc.</translation>
 <translation id="489803897780524242">Parametru care controlează poziționarea termenilor de căutare pentru furnizorul prestabilit de servicii de căutare</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME"/> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
+<translation id="6401669939808766804">Deconectați utilizatorul</translation>
+<translation id="4826326557828204741">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează energia bateriei</translation>
 <translation id="7912255076272890813">Configurați tipurile de aplicații/extensii permise</translation>
 <translation id="817455428376641507">Permite accesul la adresele URL enumerate, ca excepții de la lista neagră cu adrese URL.
 
@@ -580,6 +612,14 @@
 <translation id="8102913158860568230">Setarea implicită pentru mediastream</translation>
 <translation id="6641981670621198190">Dezactivați asistența pentru API-uri grafice 3D</translation>
 <translation id="7929480864713075819">Activați raportarea informațiilor privind memoria (dimensiunea memoriei JavaScript) în pagină</translation>
+<translation id="5703863730741917647">Specificați acțiunea de urmat după trecerea intervalului de inactivitate.
+
+          Rețineți să această politică este învechită și va fi eliminată în viitor.
+
+          Politica indică o valoare alternativă pentru politicile <ph name="IDLEACTIONAC_POLICY_NAME"/> și <ph name="IDLEACTIONBATTERY_POLICY_NAME"/> care sunt specifice. Dacă această politică este setată, valorile acesteia vor fi utilizate dacă nu este setată politica specifică.
+
+          Comportamentul politicilor specifice nu va fi afectat dacă setarea acestei politici este anulată.</translation>
+<translation id="5997543603646547632">Utilizați în mod prestabilit formatul de 24 de ore</translation>
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activați trecerea prin firewall de la clientul cu acces la distanță</translation>
 <translation id="6367755442345892511">Această politică stabilește dacă utilizatorul poate configura canalul de lansare</translation>
@@ -633,16 +673,6 @@
 
           Dacă politica este dezactivată, utilizatorul este considerat inactiv în timpul redării conținutului video.</translation>
 <translation id="3965339130942650562">Timp limită până când este executată deconectarea utilizatorului inactiv</translation>
-<translation id="5857910801734294133">Aceasta este lista politicilor pe care le respectă <ph name="PRODUCT_NAME"/>.
-
-      Nu este necesar să modificați manual aceste setări! Puteți să descărcați șabloane ușor de utilizat de la
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Lista de politici acceptate este aceeași pentru Chromium și Google Chrome, însă locul acestora în registry-ul din Windows diferă.
-
-      Începe cu <ph name="CHROMIUM_KEY"/> pentru politicile Chromium și cu <ph name="GOOGLE_CHROME_KEY"/> pentru politicile Google Chrome.
-
-      Aceste politici sunt destinate exclusiv utilizării pentru a configura instanțele Chrome din cadrul organizației dvs. Utilizarea acestor politici în afara organizației (de exemplu, într-un program distribuit public) se consideră malware și, cel mai probabil, va fi marcată ca malware de Google și de distribuitorii de software antivirus.</translation>
 <translation id="5814301096961727113">Setați starea prestabilită de feedback vocal pe ecranul de conectare.</translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
 <translation id="7091198954851103976">Rulează întotdeauna pluginuri care necesită autorizare</translation>
@@ -724,9 +754,21 @@
           Dacă nu este configurată sau este dezactivată, utilizatorii vor putea să transfere fișiere pe Google Drive.</translation>
 <translation id="1964634611280150550">Modul incognito a fost dezactivat</translation>
 <translation id="5971128524642832825">Dezactivează Google Drive în aplicația Fișiere din sistemul de operare Chrome</translation>
+<translation id="1847960418907100918">Specifică parametrii utilizați la căutarea instant cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
+
+          Această politică este opțională. Dacă nu este setată, solicitarea de căutare instant va fi trimisă prin metoda GET.
+
+          Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME"/> să gestioneze următoarele tipuri de conținut.</translation>
 <translation id="2312134445771258233">Vă permite să configurați paginile încărcate la pornire. Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectați „Deschideți o listă cu adrese URL” în „Acțiune la pornire”.</translation>
+<translation id="243972079416668391">Specificați acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.
+
+          Dacă politica este setată, aceasta indică ce acțiune realizează <ph name="PRODUCT_OS_NAME"/> când utilizatorul rămâne inactiv pentru perioada de timp dată de intervalul de inactivitate, care poate fi configurat separat.
+
+          Dacă setarea politicii este anulată, este urmată acțiunea prestabilită, care este suspendarea.
+
+          Dacă acțiunea este de suspendare, <ph name="PRODUCT_OS_NAME"/> poate fi configurat separat astfel încât să blocheze sau să nu blocheze ecranul înainte de suspendare.</translation>
 <translation id="7750991880413385988">Deschideți pagina Filă nouă</translation>
 <translation id="741903087521737762">Vă permite să specificați comportamentul la pornire.
 
@@ -772,6 +814,7 @@
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="3072045631333522102">Screen saver setat pentru ecranul de conectare în modul Vânzare</translation>
+<translation id="4550478922814283243">Activați sau dezactivați autentificarea fără PIN</translation>
 <translation id="7712109699186360774">Doresc să fiu întrebat(ă) de fiecare dată când un site încearcă să acceseze camera și/sau microfonul</translation>
 <translation id="350797926066071931">Activați serviciul Google Traducere</translation>
 <translation id="3711895659073496551">Suspendați</translation>
@@ -782,13 +825,6 @@
 <translation id="706669471845501145">Permiteți site-urilor să afișeze notificări pe desktop</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
 <translation id="2188979373208322108">Activează bara de marcaje în <ph name="PRODUCT_NAME"/>. Dacă activați această setare, <ph name="PRODUCT_NAME"/> va afișa o bară de marcaje. Dacă dezactivați această setare, utilizatorii nu vor vedea niciodată bara de marcaje. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această setare este lăsată nesetată, utilizatorul poate decide să folosească sau nu această funcție.</translation>
-<translation id="7546291275204811722">Indicați măsura care se va lua la atingerea intervalului maxim de inactivitate.
-
-          Dacă politica este setată, aceasta specifică măsura pe care o ia <ph name="PRODUCT_OS_NAME"/> atunci când utilizatorul este inactiv pentru intervalul de inactivitate specificat, care poate fi configurat separat.
-
-          Dacă această politică nu este setată, se ia măsura prestabilită, suspendarea.
-
-          Dacă măsura este suspendarea, <ph name="PRODUCT_OS_NAME"/> se poate configura separat pentru a bloca sau a nu bloca ecranul înainte de suspendare.</translation>
 <translation id="5475361623548884387">Activați printarea</translation>
 <translation id="7287359148642300270">Specifică serverele care trebuie trecute pe lista albă pentru autentificarea integrată. Autentificarea integrată este activată numai atunci când <ph name="PRODUCT_NAME"/> primește o verificare de autentificare de la un proxy sau de la un server care se află în această listă cu servere acceptate.
 
@@ -819,6 +855,11 @@
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
 <translation id="3984028218719007910">Această politică stabilește dacă <ph name="PRODUCT_OS_NAME"/> păstrează datele contului local după deconectare. Dacă politica este activată, <ph name="PRODUCT_OS_NAME"/> nu va păstra conturi persistente, iar toate datele din sesiunea utilizatorului vor fi eliminate după deconectare. Dacă această politică nu este activată sau nu este configurată, dispozitivul poate păstra (criptate) datele locale ale utilizatorului.</translation>
 <translation id="3793095274466276777">Configurează verificările pentru browserul prestabilit în <ph name="PRODUCT_NAME"/> și împiedică modificarea acestora de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME"/> va verifica întotdeauna la pornire dacă este browserul prestabilit și se va înregistra în mod automat dacă este posibil. Dacă această setare este dezactivată, <ph name="PRODUCT_NAME"/> nu va verifica niciodată dacă este browserul prestabilit și va dezactiva comenzile utilizatorului pentru setarea acestei opțiuni. Dacă această setare nu este setată, <ph name="PRODUCT_NAME"/> va permite utilizatorului să stabilească dacă acesta este browserul prestabilit și dacă trebuie afișate notificări pentru utilizator atunci când nu este.</translation>
+<translation id="3504791027627803580">Specifică adresa URL a motorului de căutare utilizat pentru a oferi căutarea de imagini. Solicitările de căutare vor fi trimise prin metoda GET. Dacă este setată politica „DefaultSearchProviderImageURLPostParams”, solicitările pentru căutarea de imagini vor utiliza metoda POST.
+
+          Această politică este opțională. Dacă nu este setată, nu va fi utilizată căutarea de imagini.
+
+          Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="1530812829012954197">Redați întotdeauna următoarele modele pentru adresele URL în browserul gazdă</translation>
@@ -838,6 +879,7 @@
 <translation id="847472800012384958">Nu permiteți niciunui site să afișeze ferestre de tip pop-up</translation>
 <translation id="4733471537137819387">Politici referitoare la autentificarea integrată HTTP.</translation>
 <translation id="8951350807133946005">Setați directorul pentru memorare în cache pe disc</translation>
+<translation id="603410445099326293">Parametrii pentru adresa URL a sugestiei care utilizează POST</translation>
 <translation id="2592091433672667839">Durata de inactivitate înainte ca screen saverul să fie afișat pe ecranul de conectare în modul Vânzare</translation>
 <translation id="166427968280387991">Server proxy</translation>
 <translation id="2805707493867224476">Permiteți tuturor site-urilor să afișeze ferestre de tip pop-up</translation>
@@ -862,6 +904,13 @@
       Dacă este activată, un buton mare, roșu, de deconectare, este afișat în bara de sistem cât timp sesiunea este activă și ecranul nu este blocat.
 
       Dacă este dezactivată sau nu este specificată, în bara de sistem nu apare niciun buton mare, roșu, de deconectare.</translation>
+<translation id="5111573778467334951">Specificați acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează energia bateriei.
+
+          Dacă politica este setată, aceasta indică ce acțiune realizează <ph name="PRODUCT_OS_NAME"/> când utilizatorul rămâne inactiv pentru perioada de timp dată de intervalul de inactivitate, care poate fi configurat separat.
+
+          Dacă setarea politicii este anulată, este urmată acțiunea prestabilită, care este suspendarea.
+
+          Dacă acțiunea este de suspendare, <ph name="PRODUCT_OS_NAME"/> poate fi configurat separat astfel încât să blocheze sau să nu blocheze ecranul înainte de suspendare.</translation>
 <translation id="3195451902035818945">Specifică dacă trebuie dezactivată divizarea înregistrărilor SSL. Divizarea înregistrărilor este o soluție pentru o vulnerabilitate din SSL 3.0 și TLS 1.0, dar poate provoca probleme de compatibilitate cu unele servere și proxy-uri HTTPS. Dacă politica nu este setată sau nu este activată, atunci divizarea înregistrărilor va fi utilizată pentru conexiuni SSL/TLS care utilizează combinații de algoritmi de criptare CBC.</translation>
 <translation id="6903814433019432303">Această politică este activă numai în modul Vânzare. 
 
@@ -877,6 +926,11 @@
 <translation id="8711086062295757690">Specifică cuvântul cheie care este comanda rapidă utilizată în caseta polivalentă pentru a declanșa căutarea pentru acest furnizor. Această politică este opțională. Dacă nu este setată, niciun cuvânt cheie nu va activa furnizorul de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="5774856474228476867">Adresa URL de căutare a furnizorului prestabilit de căutare</translation>
 <translation id="4650759511838826572">Dezactivați schemele pentru protocolul adresei URL</translation>
+<translation id="7831595031698917016">Specifică întârzierea maximă în milisecunde de la primirea unei invalidări a politicii și până la preluarea politicii noi de la serviciul de gestionare a dispozitivului.
+
+      Setarea acestei politici înlocuiește valoarea prestabilită de 5000 de milisecunde. Valorile valide pentru această politică sunt cuprinse între 1000 (1 secundă) și 300000 (5 minute). Toate valorile care nu se află în acest interval vor fi fixate în limitele respective.
+
+      Dacă această politică nu este setată, <ph name="PRODUCT_NAME"/> va utiliza valoarea prestabilită de 5000 de milisecunde.</translation>
 <translation id="8099880303030573137">Interval de inactivitate la funcționarea pe baterie</translation>
 <translation id="2761483219396643566">Interval de inactivitate la funcționarea pe baterie</translation>
 <translation id="1468307069016535757">Setați funcția de accesibilitate pentru modul de contrast ridicat ca stare prestabilită pe ecranul de conectare.
@@ -892,7 +946,11 @@
 <translation id="350796261613621561">Permiteți crearea utilizatorilor monitorizați.</translation>
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
+<translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
 <translation id="6559057113164934677">Nu permiteți niciunui site să acceseze camera și microfonul</translation>
+<translation id="7273823081800296768">Dacă această setare este activată sau nu este configurată, utilizatorii pot alege să împerecheze clienții și gazdele în momentul conectării, eliminând necesitatea de a introduce un PIN de fiecare dată.
+
+          Dacă setarea este dezactivată, această funcție nu va fi disponibilă.</translation>
 <translation id="1675002386741412210">Acceptată pentru:</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="4482640907922304445">Afișează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME"/>. Dacă activați această setare, butonul Pagina de pornire este întotdeauna afișat. Dacă dezactivați această setare, butonul Pagina de pornire nu este afișat. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă lăsați această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afișeze sau nu butonul Pagină de pornire.</translation>
@@ -903,6 +961,7 @@
           Această politică este opțională. Dacă nu este setată, nu vor fi utilizate adrese URL alternative pentru a extrage termenii de căutare.
 
           Această politică este respectată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="436581050240847513">Raportează interfețele de rețea pentru dispozitiv</translation>
 <translation id="6282799760374509080">Permiteți sau refuzați preluarea conținutului audio</translation>
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codificări pentru furnizorul de căutare prestabilit</translation>
@@ -974,6 +1033,91 @@
       Dacă nu setați această politică, <ph name="PRODUCT_NAME"/> va utiliza valoarea prestabilită de 3 ore.</translation>
 <translation id="7424751532654212117">Lista cu excepții de la lista cu pluginuri dezactivate</translation>
 <translation id="6233173491898450179">Setați directorul de descărcare</translation>
+<translation id="78524144210416006">Configurați gestionarea energiei pentru ecranul de conectare din <ph name="PRODUCT_OS_NAME"/>.
+
+      Această politică vă permite să configurați comportamentul <ph name="PRODUCT_OS_NAME"/> în cazul în care nu a existat o activitate inițiată de utilizator într-un interval de timp în care s-a afișat ecranul de conectare. Politica controlează mai multe setări. Pentru intervalele de valori și semantica fiecăreia dintre acestea, consultați politicile corespunzătoare care controlează gestionarea energiei în timpul unei sesiuni. Singurele abateri de la această politică sunt următoarele:
+      * Acțiunile de urmat după intervalul de inactivitate sau la închiderea capacului nu pot duce la terminarea sesiunii.
+      * Acțiunea prestabilită de urmat după trecerea intervalului de inactivitate, dacă se utilizează o sursă de c.a., este oprirea dispozitivului.
+
+      Politica trebuie să fie specificată ca șir ce exprimă setările individuale în format JSON, în conformitate cu următoarea schemă:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Setările privind gestionarea energiei, aplicabile numai dacă se utilizează o sursă de c.a.&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care urmează estomparea ecranului, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care ecranul este dezactivat, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care se trece în starea de inactivitate, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Acțiunea de urmat după trecerea intervalului de inactivitate&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Setările privind gestionarea energiei, aplicabile numai dacă se utilizează energia bateriei&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care urmează estomparea ecranului, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care ecranul este oprit, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Intervalul de timp fără o activitate inițiată de utilizator după care se trece în starea de inactivitate, exprimat în milisecunde&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Acțiunea de urmat după trecerea intervalului de inactivitate&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Acțiunea de urmat la închiderea capacului&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Procentajul cu care este scalată amânarea estompării ecranului când este detectată o activitate inițiată de utilizator în timp ce ecranul este estompat sau imediat după ce acesta a fost dezactivat&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Dacă o setare rămâne nespecificată, este utilizată o valoare prestabilită.
+
+      Dacă setarea acestei politici este anulată, sunt utilizate valorile prestabilite pentru toate setările.</translation>
 <translation id="8908294717014659003">Vă permite să stabiliți dacă site-urile web au acces la dispozitivele de captură media. Accesul la dispozitivele de captură media poate fi permis în mod prestabilit sau se poate solicita confirmarea utilizatorului de fiecare dată când un site web dorește acces la dispozitivele de captură media.
 
           Dacă această politică nu este setată, se va utiliza „PromptOnAccess”, iar utilizatorul va putea să o schimbe.</translation>
@@ -994,6 +1138,7 @@
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.</translation>
 <translation id="1897365952389968758">Permiteți tuturor site-urilor să ruleze JavaScript</translation>
+<translation id="5244714491205147861">Gestionarea energiei pentru ecranul de conectare</translation>
 <translation id="922540222991413931">Configurați sursele pentru instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="7323896582714668701">Parametri de linie de comandă suplimentari pentru <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Dezactivați sincronizarea datelor cu Google</translation>
@@ -1034,6 +1179,11 @@
 <translation id="5535973522252703021">Lista albă a serverelor pentru delegare în protocolul Kerberos</translation>
 <translation id="4578030379102330182">Activați atestarea la distanță pentru utilizator.</translation>
 <translation id="9187743794267626640">Dezactivați conectarea dispozitivelor de stocare externe</translation>
+<translation id="6353901068939575220">Specifică parametrii utilizați la căutarea unei adrese URL cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
+
+          Această politică este opțională. Dacă nu este setată, solicitarea de căutare va fi trimisă prin metoda GET.
+
+          Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="5307432759655324440">Disponibilitatea modului incognito</translation>
 <translation id="4056910949759281379">Dezactivați protocolul SPDY</translation>
 <translation id="3808945828600697669">Specificați o listă cu pluginuri dezactivate</translation>
@@ -1100,6 +1250,10 @@
           ExtensionInstallBlacklist are prioritate față de această politică. Aceasta înseamnă că o extensie de pe lista neagră nu va fi instalată, chiar dacă se întâmplă să provină de la un site de pe această listă.</translation>
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
 <translation id="7848840259379156480">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME"/> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME"/> să redea paginile HTML în mod prestabilit.</translation>
+<translation id="186719019195685253">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.</translation>
+<translation id="7890264460280019664">Raportează lista cu interfețe de rețea, care cuprinde tipurile acestora și adresele hardware către server.
+
+      Dacă politica nu este setată sau nu este activată, lista cu interfețe nu va fi raportată.</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="3973371701361892765">Nu ascundeți niciodată automat raftul</translation>
@@ -1128,6 +1282,7 @@
 
       Dacă această politică este lăsată nesetată, va fi utilizat directorul prestabilit pentru descărcare, dar utilizatorul îl va putea schimba.</translation>
 <translation id="7381326101471547614">Dezactivează utilizarea protocolul SPDY în <ph name="PRODUCT_NAME"/>. Dacă această politică este activată, protocolul SPDY nu va fi disponibil în <ph name="PRODUCT_NAME"/>. Dezactivarea acestei politici va permite utilizarea protocolului SPDY. Dacă această politică rămâne nesetată, SPDY va fi disponibil.</translation>
+<translation id="2208976000652006649">Parametrii pentru adresa URL a căutării care utilizează POST</translation>
 <translation id="1583248206450240930">Utilizați <ph name="PRODUCT_FRAME_NAME"/> în mod prestabilit</translation>
 <translation id="1047128214168693844">Nu permiteți niciunui site să urmărească locația fizică a utilizatorilor</translation>
 <translation id="4101778963403261403">Configurează tipul paginii de pornire prestabilite în <ph name="PRODUCT_NAME"/> și împiedică modificarea de către utilizatori a preferințelor pentru pagina de pornire. Pagina de pornire poate fi setată la o adresă URL pe care o specificați sau la pagina Filă nouă. Dacă activați această setare, este utilizată întotdeauna pagina Filă nouă pentru pagina de pornire, iar locația adresei URL a paginii de pornire este ignorată. Dacă dezactivați această setare, pagina de pornire a utilizatorului nu va fi niciodată pagina Filă nouă, cu excepția cazului în care adresa URL a acesteia este setată la „chrome://newtab”. Dacă activați sau dezactivați această setare, utilizatorii nu își pot schimba tipul paginii de pornire în <ph name="PRODUCT_NAME"/>. Dacă nu setați această politică, utilizatorul va putea să aleagă pe cont propriu dacă pagina Filă nouă este pagina sa de pornire.</translation>
@@ -1163,6 +1318,15 @@
 <translation id="7187256234726597551">Dacă această politică este activată, atestarea la distanță este permisă pentru dispozitiv. De asemenea, un certificat va fi generat și încărcat în mod automat pe Serverul de gestionare a dispozitivelor.
 
           Dacă această politică nu este activată sau configurată, nu se va genera niciun certificat și apelurile către API-ul pentru extensia enterprise.platformKeysPrivate nu vor reuși.</translation>
+<translation id="5242696907817524533">Configurează o listă de marcaje gestionate.
+
+      Politica este o listă de marcaje, iar fiecare marcaj este un dicționar care conține „numele marcajului” și „adresa url” țintă.
+
+      Aceste marcaje sunt plasate într-un dosar Marcaje gestionate, din Marcaje mobile. Marcajele nu pot modificate de utilizator.
+
+      Dacă această politică este setată, Marcaje gestionate este dosarul deschis în mod prestabilit la deschiderea afișării marcajelor în Chrome.
+
+      Marcajele gestionate nu sunt sincronizate cu contul utilizatorului.</translation>
 <translation id="8303314579975657113">Specifică biblioteca GSSAPI de utilizat pentru autentificarea HTTP. Puteți seta fie numai un nume de bibliotecă, fie o cale completă. Dacă nu este furnizată nicio setare, <ph name="PRODUCT_NAME"/> va utiliza ca alternativă un nume de bibliotecă prestabilit.</translation>
 <translation id="7749402620209366169">Activează autentificarea cu doi factori pentru gazdele de acces la distanță, în locul unui PIN specificat de utilizator.
 

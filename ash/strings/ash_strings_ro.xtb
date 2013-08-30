@@ -2,22 +2,26 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="3595596368722241419">Baterie încărcată</translation>
-<translation id="5250713215130379958">Ascundeți automat lansatorul</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Stare portal</translation>
 <translation id="30155388420722288">Butonul Overflow</translation>
+<translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth activat</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> a fost rotit la <ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
+<translation id="7165320105431587207">Rețeaua nu a putut fi configurată</translation>
 <translation id="3775358506042162758">Conectarea multiplă acceptă maximum trei conturi.</translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
+<translation id="595202126637698455">Urmărirea performanței este activată</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="7982789257301363584">Rețea</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Suprapunere a tastaturii</translation>
 <translation id="4387004326333427325">Certificatul de autentificare a fost respins de la distanță</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME"/> a fost modificată la <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Metoda GET a protocolului HTTP a eșuat</translation>
 <translation id="2297568595583585744">Bara de stare</translation>
 <translation id="1661867754829461514">Codul PIN lipsește</translation>
@@ -34,39 +38,41 @@
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="3846575436967432996">Nu sunt disponibile informații despre rețele</translation>
 <translation id="3026237328237090306">Configurați datele mobile</translation>
+<translation id="5871632337994001636">Gestionați dispozitivele...</translation>
 <translation id="785750925697875037">Afișați contul mobil</translation>
 <translation id="153454903766751181">Se inițializează modemul mobil...</translation>
 <translation id="4628814525959230255">În prezent, <ph name="HELPER_NAME"/> vă poate controla ecranul prin intermediul Hangouts.</translation>
-<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> a fost rotit</translation>
 <translation id="7864539943188674973">Dezactivați Bluetooth</translation>
 <translation id="939252827960237676">Captura de ecran nu a putut fi salvată.</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="2268813581635650749">Deconectați toți utilizatorii</translation>
 <translation id="735745346212279324">Rețea VPN deconectată</translation>
 <translation id="7320906967354320621">Inactivă</translation>
-<translation id="6303423059719347535">Nivelul bateriei este de <ph name="PERCENTAGE"/> %</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
-<translation id="2778346081696727092">Autentificarea cu numele de utilizator sau parola furnizate a eșuat</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="8190698733819146287">Personalizați limbile și modul de introducere...</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="2942516765047364088">Poziție raft</translation>
 <translation id="2903907270192926896">INTRARE</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="7170041865419449892">Fără acoperire</translation>
 <translation id="4804818685124855865">Deconectați-vă</translation>
 <translation id="2544853746127077729">Certificatul de autentificare a fost respins de rețea</translation>
 <translation id="5222676887888702881">Deconectați-vă</translation>
+<translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Configurare</translation>
 <translation id="1272079795634619415">Opriți</translation>
 <translation id="4957722034734105353">Aflați mai multe...</translation>
 <translation id="2964193600955408481">Dezactivați Wi-Fi</translation>
-<translation id="811680302244032017">Adăugați un dispozitiv...</translation>
 <translation id="4279490309300973883">Oglindire</translation>
+<translation id="7973962044839454485">Autentificarea PPP nu a reușit, din cauza unui nume de utilizator sau a unei parole greșite</translation>
 <translation id="2509468283778169019">Tasta CAPS LOCK este activată</translation>
 <translation id="3892641579809465218">Afișaj intern</translation>
 <translation id="7823564328645135659">După sincronizarea setărilor, limba a fost modificată de la „<ph name="FROM_LOCALE"/>” la „<ph name="TO_LOCALE"/>”.</translation>
 <translation id="3368922792935385530">Conectat</translation>
 <translation id="8340999562596018839">Feedback vocal</translation>
 <translation id="8654520615680304441">Activați Wi-Fi...</translation>
+<translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>.
         Apăsați pe Shift + Alt pentru a comuta.</translation>
 <translation id="2562916301614567480">Rețea privată</translation>
@@ -83,11 +89,12 @@
 <translation id="3626637461649818317">Nivel disponibil: <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Metode de introducere</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="2825619548187458965">Raft</translation>
 <translation id="2614835198358683673">Este posibil ca laptopul Chromebook să nu se încarce în timp ce este pornit. Se recomandă să utilizați încărcătorul original.</translation>
 <translation id="1895658205118569222">Închideți</translation>
 <translation id="4430019312045809116">Volum</translation>
+<translation id="8681498213689260554">Pentru a actualiza, reporniți și efectuați Powerwash</translation>
 <translation id="4442424173763614572">Căutarea DNS a eșuat</translation>
-<translation id="6356500677799115505">Bateria este plină și se încarcă.</translation>
 <translation id="7874779702599364982">Se caută rețele mobile...</translation>
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="1383876407941801731">Căutare</translation>
@@ -96,7 +103,6 @@
 <translation id="2204305834655267233">Informații despre rețea</translation>
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Ieșiți din sesiunea pentru invitați</translation>
-<translation id="4471417012762451363">Nivelul bateriei este de <ph name="PERCENTAGE"/> % și se încarcă</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
 <translation id="4666297444214622512">Nu vă mai puteți conecta la alt cont.</translation>
 <translation id="1346748346194534595">Dreapta</translation>
@@ -114,6 +120,7 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="6312403991423642364">Eroare de rețea necunoscută</translation>
 <translation id="1467432559032391204">Stânga</translation>
 <translation id="5543001071567407895">SMS</translation>
+<translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maximizați</translation>
@@ -123,7 +130,6 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
 <translation id="3784455785234192852">Blocați</translation>
 <translation id="2805756323405976993">Google Apps</translation>
-<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> a fost redimensionat la <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">Activare nereușită</translation>
 <translation id="5097002363526479830">A eșuat conectarea la rețeaua „<ph name="NAME"/>”: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
@@ -131,6 +137,7 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="7052914147756339792">Setați o imagine de fundal...</translation>
 <translation id="8678698760965522072">Stare online</translation>
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Eroare internă</translation>
 <translation id="3019353588588144572">Timp rămas până la încărcarea completă a bateriei: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
@@ -153,20 +160,24 @@ Mesaj server: <ph name="SERVER_MSG"/></translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="4872237917498892622">Alt+Căutare sau Shift</translation>
+<translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Setări...</translation>
+<translation id="1195412055398077112">suprascanare</translation>
 <translation id="1717216362413677834">Mod de andocare</translation>
+<translation id="112308213915226829">Ascundeți automat raftul</translation>
 <translation id="8927026611342028580">Conectare solicitată</translation>
 <translation id="8300849813060516376">OTASP a eșuat</translation>
 <translation id="2792498699870441125">Alt+Căutare</translation>
 <translation id="8660803626959853127">Se sincronizează <ph name="COUNT"/> (de) fișiere</translation>
+<translation id="5958529069007801266">Utilizator monitorizat</translation>
 <translation id="3709443003275901162">Peste 9</translation>
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6248847161401822652">Apăsați de două ori Control Shift Q pentru a ieși.</translation>
+<translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE"/>% și se încarcă.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: se activează...</translation>
+<translation id="4895488851634969361">Bateria este încărcată complet.</translation>
 <translation id="1391854757121130358">Este posibil să fi consumat complet alocarea datelor mobile.</translation>
-<translation id="5413208160176941586">Utilizator gestionat local</translation>
-<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
-<translation id="4864165860509564259">Poziția lansatorului</translation>
+<translation id="5947494881799873997">Reveniți</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="3050422059534974565">Tasta CAPS LOCK este activată.
@@ -179,22 +190,24 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6692173217867674490">Expresie de acces greșită</translation>
 <translation id="6165508094623778733">Aflați mai multe</translation>
 <translation id="9046895021617826162">Conectarea a eșuat</translation>
+<translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Această sesiune se va încheia în <ph name="SESSION_TIME_REMAINING"/>. Veți fi deconectat(ă) automat.</translation>
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="6636709850131805001">Stare nerecunoscută</translation>
 <translation id="3573179567135747900">Modificați înapoi la „<ph name="FROM_LOCALE"/>” (este necesară repornirea)</translation>
 <translation id="8103386449138765447">Mesaje SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Setări Disc Google...</translation>
-<translation id="1510238584712386396">Lansator</translation>
 <translation id="7209101170223508707">Tasta CAPS LOCK este activată.
 Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8940956008527784070">Baterie slabă (<ph name="PERCENTAGE"/> %)</translation>
+<translation id="4918086044614829423">Accept</translation>
 <translation id="5102001756192215136">Timp rămas: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">În prezent, permiteți controlul la ecran prin intermediul Hangouts.</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="4015692727874266537">Conectați-vă la alt cont...</translation>
 <translation id="5941711191222866238">Minimizați</translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h. <ph name="MINUTE"/> min. până la încărcare completă</translation>
 <translation id="6359806961507272919">SMS de la <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operator</translation>

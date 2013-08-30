@@ -2,7 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="7606912958770842224">Iespējot attālos savienojumus</translation>
+<translation id="3785447812627779171">Chrome saites
+saimniekdators</translation>
 <translation id="1841799852846221389">Notiek attālo savienojumu atspējošana šim datoram…</translation>
+<translation id="2676780859508944670">Notiek apstrāde...</translation>
 <translation id="5843054235973879827">Kāpēc tas ir droši?</translation>
 <translation id="5619148062500147964">Ar šo datoru</translation>
 <translation id="4068946408131579958">Visi savienojumi</translation>
@@ -10,6 +13,7 @@
 <translation id="2801119484858626560">Tika konstatēta nesaderīga Chrome attālās darbvirsmas versija. Pārbaudiet, vai abos datoros lietojat pārlūka Chrome un lietotnes Chrome attālā darbvirsma jaunāko versiju, un mēģiniet vēlreiz.</translation>
 <translation id="6998989275928107238">Ar</translation>
 <translation id="406849768426631008">Vai vēlaties palīdzēt kādam lietotājam video tērzēšanas sarunas laikā? Izmēģiniet <ph name="LINK_BEGIN"/>Google Hangouts lietotni Attālā darbvirsma<ph name="LINK_END"/>.</translation>
+<translation id="5397086374758643919">Chrome attālās darbvirsmas saimniekdatora atinstalēšanas programma</translation>
 <translation id="3258789396564295715">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
 <translation id="5070121137485264635">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome attālajai darbvirsmai papildu atļaujas piekļūt šai adresei:</translation>
 <translation id="4808503597364150972">Lūdzu, ievadiet saimniekdatora <ph name="HOSTNAME"/> PIN.</translation>
@@ -18,24 +22,31 @@
 <translation id="4368630973089289038">Vai vēlaties palīdzēt uzlabot Chrome saiti? <ph name="LINK_BEGIN"/>Atbildiet uz aptaujas jautājumiem!<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Rediģējiet datora nosaukumu.</translation>
 <translation id="1996161829609978754">No pārlūka Chrome tiek lejupielādēta Chrome saites saimniekdatoram paredzētā instalēšanas programma. Kad lejupielāde būs pabeigta, lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
+<translation id="2046651113449445291">Tālāk norādītie klienti ir savienoti pārī ar šo datoru un var izveidot savienojumu, nenorādot PIN kodu. Varat atsaukt šo atļauju jebkurā brīdī (individuāli vai visiem klientiem).</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7782471917492991422">Lūdzu, pārbaudiet datora barošanas pārvaldības iestatījumus: datoram ir jābūt konfigurētam tā, lai netiktu aktivizēts miega režīms, kad dators netiek lietots.</translation>
 <translation id="2707879711568641861">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai esat instalējis jaunāko versiju, un mēģiniet vēlreiz.</translation>
 <translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
+<translation id="677755392401385740">Saimniekdators startēts šādam lietotājam: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Lai izmantotu Chrome saiti, vispirms piešķiriet paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienu reizi.</translation>
 <translation id="8355326866731426344">Šī piekļuves koda derīguma termiņš beigsies pēc <ph name="TIMEOUT"/>.</translation>
+<translation id="985602178874221306">Chromium autori</translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
 <translation id="170207782578677537">Neizdevās reģistrēt šo datoru.</translation>
 <translation id="4804818685124855865">Atvienot</translation>
 <translation id="5708869785009007625">Jūsu darbvirsma šobrīd tiek koplietota ar lietotāju <ph name="USER"/>.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
+<translation id="6304318647555713317">Klients</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME"/> (bezsaistē)</translation>
 <translation id="4472575034687746823">Sākt darbu</translation>
 <translation id="2813770873348017932">Savienojumi ar attālo datoru īslaicīgi ir bloķēti, jo kāda persona mēģināja izveidot savienojumu, izmantojot nederīgu PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6746493157771801606">Notīrīt vēsturi</translation>
 <translation id="4430435636878359009">Atspējojiet attālos savienojumus ar šo datoru.</translation>
+<translation id="6001953797859482435">Chrome attālās darbvirsmas saimniekdatora preferences</translation>
 <translation id="9188433529406846933">Autorizēšana</translation>
+<translation id="228809120910082333">Lūdzu, tālāk apstipriniet kontu un PIN kodu, lai piekļūtu Chrome saitei.</translation>
+<translation id="5826423541626112308">Chrome attālās darbvirsmas saimniekdators</translation>
 <translation id="2851674870054673688">Tiklīdz kods ir ievadīts, tiek sākta koplietošanas sesija.</translation>
 <translation id="5593560073513909978">Šobrīd pakalpojums nav pieejams. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="3908017899227008678">Samazināt, lai ietilptu</translation>
@@ -43,12 +54,18 @@
 <translation id="5379087427956679853">Izmantojot Chrome attālo darbvirsmu, varat droši koplietot savu datoru tīmeklī. Abiem lietotājiem ir jāizmanto lietotne Chrome attālā darbvirsma, kas ir pieejama vietnē <ph name="URL"/>.</translation>
 <translation id="1409991159633941777">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai lietojat jaunāko pārlūka Chrome versiju, un mēģiniet vēlreiz.</translation>
 <translation id="174018511426417793">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumus ar kādu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
+<translation id="253387295088602549">Ļaujiet citam lietotājam droši piekļūt jūsu datoram, izmantojot interneta savienojumu.</translation>
+<translation id="629730747756840877">Konts</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (novecojis)</translation>
+<translation id="3884839335308961732">Lai atļautu piekļuvi, izmantojot Chrome attālo darbvirsmu, lūdzu, apstipriniet kontu un PIN kodu.</translation>
 <translation id="327263477022142889">Vai vēlaties palīdzēt uzlabot Chrome attālo darbvirsmu? <ph name="LINK_BEGIN"/>Atbildiet uz aptaujas jautājumiem!<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Savienojums ir izveidots:</translation>
+<translation id="8509907436388546015">Darbvirsmas integrācijas process</translation>
 <translation id="4736223761657662401">Savienojumu vēsture</translation>
 <translation id="4430915108080446161">Notiek piekļuves koda ģenerēšana...</translation>
+<translation id="2013996867038862849">Visi pārī savienotie klienti ir dzēsti.</translation>
+<translation id="7081428606750359611">Chrome saites saimniekdators</translation>
 <translation id="8228265668171617545">Tika konstatēta nesaderīga Chrome saites versija. Lūdzu, pārliecinieties, vai abos datoros ir instalēta jaunākā pārlūka Chrome un lietotnes Chrome saite versija, un mēģiniet vēlreiz.</translation>
 <translation id="6985691951107243942">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME"/>? Ja pārdomāsiet, savienojumus ar šo datoru varēsiet iespējot tikai klātienē.</translation>
 <translation id="9149992051684092333">Lai koplietotu savu darbvirsmu, paziņojiet tālāk redzamo piekļuves kodu lietotājam, kurš jums palīdzēs.</translation>
@@ -57,9 +74,11 @@
 <translation id="4481276415609939789">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumu ar kādu datoru, instalējiet Chrome saiti attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
 <translation id="2013884659108657024">No pārlūka Chrome tiek lejupielādēta Chrome attālās darbvirsmas saimniekdatoram paredzētā instalēšanas programma. Kad lejupielāde būs pabeigta, lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
 <translation id="1742469581923031760">Notiek savienojuma izveide…</translation>
+<translation id="8998327464021325874">Chrome attālās darbvirsmas saimniekdatora kontrolleris</translation>
 <translation id="6748108480210050150">No</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
 <translation id="1291443878853470558">Ja vēlaties piekļūt šim datoram, izmantojot Chrome saiti, ir jāiespējo attālie savienojumi.</translation>
+<translation id="2599300881200251572">Izmantojot šo pakalpojumu, tiek iespējota ienākošo savienojumu izveide no Chrome attālās darbvirsmas klientiem.</translation>
 <translation id="6091564239975589852">Sūtīt taustiņus</translation>
 <translation id="4572065712096155137">Piekļūt</translation>
 <translation id="5908809458024685848">Jūs neesat pierakstījies Chrome saitē. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
@@ -75,15 +94,19 @@
 <translation id="1342297293546459414">Skatiet un kontrolējiet kopīgotu datoru.</translation>
 <translation id="1520828917794284345">Mainīt darbvirsmas izmērus, lai tā atbilstu</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
+<translation id="6099500228377758828">Chrome attālās darbvirsmas pakalpojums</translation>
 <translation id="2747641796667576127">Programmatūras atjauninājumi parasti tiek veikti automātiski, taču dažkārt šis process var neizdoties. Programmatūras atjaunināšana ilgst ne vairāk kā dažas minūtes un var tikt veikta, kamēr esat izveidojis attālu savienojumu ar datoru.</translation>
 <translation id="3933246213702324812">Chrome saite saimniekdatorā <ph name="HOSTNAME"/> ir novecojusi un ir jāatjaunina.</translation>
 <translation id="6193698048504518729">Izveidojiet savienojumu ar <ph name="HOSTNAME"/>.</translation>
 <translation id="3020807351229499221">Neizdevās atjaunināt PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
+<translation id="2647232381348739934">Chrome saites pakalpojums</translation>
 <translation id="579702532610384533">Atkārtoti savienot</translation>
 <translation id="4211066471404647515">Trūkst dažu Chrome saitei nepieciešamo komponentu. Pārbaudiet, vai lietojat jaunāko pārlūka Chrome versiju, un mēģiniet vēlreiz.</translation>
+<translation id="5773590752998175013">Datums, kad savienots pārī</translation>
 <translation id="5265129178187621741">(Šī funkcija vēl nav pieejama Chromebook datoriem… Gaidiet jaunumus!)</translation>
 <translation id="5156271271724754543">Lūdzu, ievadiet vienu un to pašu PIN abos lodziņos.</translation>
 <translation id="4361728918881830843">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
+<translation id="7444276978508498879">Klients, kas izveidojis savienojumu: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">tiek gaidīta savienojuma izveide...</translation>
 <translation id="5714695932513333758">Savienojumu vēsture</translation>
 <translation id="811307782653349804">Piekļūstiet savam datoram, atrodoties jebkurā vietā.</translation>
@@ -92,34 +115,48 @@
 <translation id="5625493749705183369">Droši piekļūstiet citiem datoriem vai ļaujiet citam lietotājam piekļūt jūsu datoram, izmantojot interneta savienojumu.</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="2699970397166997657">Chrome saite</translation>
+<translation id="4812684235631257312">Saimniekdators</translation>
 <translation id="897805526397249209">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome saiti attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
+<translation id="1704090719919187045">Chrome saites saimniekdatora preferences</translation>
 <translation id="809687642899217504">Mani datori</translation>
 <translation id="3106379468611574572">Attālais dators nereaģē uz savienojuma pieprasījumiem. Pārbaudiet, vai tam ir savienojums ar internetu, un mēģiniet vēlreiz.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
+<translation id="2078880767960296260">Saimniekdatora process</translation>
 <translation id="1643640058022401035">Aizverot šo lapu, Chrome saites sesija tiks pārtraukta.</translation>
+<translation id="8261506727792406068">Dzēst</translation>
 <translation id="2235518894410572517">Koplietojiet šo datoru, lai cits lietotājs redzētu un kontrolētu tā darbvirsmu.</translation>
 <translation id="1023096696228309145">Lūdziet lietotājam, kura datoram vēlaties piekļūt, noklikšķināt uz “Kopīgot tūlīt” un pēc tam paziņot jums piekļuves kodu.</translation>
+<translation id="4240294130679914010">Chrome saites saimniekdatora atinstalēšanas programma</translation>
 <translation id="80739703311984697">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome saitei papildu atļaujas piekļūt šai adresei:</translation>
 <translation id="4006787130661126000">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
+<translation id="177096447311351977">Klienta kanāla IP: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
 <translation id="6930242544192836755">Ilgums</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="2926340305933667314">Šim datoram neizdevās atspējot attālo piekļuvi. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
+<translation id="6865175692670882333">Skatīt/rediģēt</translation>
 <translation id="2089514346391228378">Šim datoram tika iespējoti attālie savienojumi.</translation>
 <translation id="8246880134154544773">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties lietotnē Chrome saite.</translation>
 <translation id="1654128982815600832">Notiek attālo savienojumu iespējošana šim datoram…</translation>
+<translation id="8187079423890319756">Autortiesības 2013 Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="7038683108611689168">Palīdziet mums uzlabot Chrome saiti, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
+<translation id="4405930547258349619">Galvenā bibliotēka</translation>
+<translation id="310979712355504754">Dzēst visu</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="3581045510967524389">Nevarēja izveidot savienojumu ar tīklu. Lūdzu, pārbaudiet, vai ierīce darbojas tiešsaistes režīmā.</translation>
 <translation id="4517233780764084060">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome saiti varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="4176825807642096119">Piekļuves kods</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
+<translation id="4573676252416618192">Chrome attālās
+darbvirsmas saimniekdators</translation>
 <translation id="4703799847237267011">Jūsu Chrome saites sesija ir pārtraukta.</translation>
 <translation id="1369030621715708553">Ekrāndrukāšanas taustiņš</translation>
 <translation id="8178433417677596899">Ekrāna koplietošana — ideāli piemērota, lai saņemtu attālo tehnisko atbalstu.</translation>
 <translation id="652218476070540101">Notiek šī datora PIN atjaunināšana…</translation>
+<translation id="4563926062592110512">Atvienotais klients: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Savienot</translation>
 <translation id="7319983568955948908">Pārtraukt koplietošanu</translation>
+<translation id="6681800064886881394">Autortiesības © 2013 Google Inc. Visas tiesības paturētas.</translation>
 <translation id="1462361961931793308">Nepieprasīt PIN kodu vēlreiz, kad no šī datora izveidoju savienojumu ar šo saimniekdatoru.</translation>
 <translation id="6668065415969892472">Jūsu PIN ir atjaunināts.</translation>
 <translation id="4277736576214464567">Piekļuves kods nav derīgs. Lūdzu, mēģiniet vēlreiz.</translation>
@@ -129,12 +166,17 @@
 <translation id="6011539954251327702">Izmantojot Chrome saiti, varat droši koplietot savu datoru tīmeklī. Abiem lietotājiem ir jāizmanto lietotne Chrome saite, kas ir pieejama vietnē <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Šobrīd jūs koplietojat šo ierīci ar citu lietotāju. Vai vēlaties turpināt koplietošanu?</translation>
 <translation id="4207623512727273241">Lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
+<translation id="3596628256176442606">Izmantojot šo pakalpojumu, tiek iespējoti ienākošie savienojumi no Chrome saites klientiem.</translation>
+<translation id="4277463233460010382">Šajā datorā ir konfigurēta atļauja vienam vai vairākiem klientiem izveidot savienojumu, neievadot PIN kodu.</translation>
 <translation id="837021510621780684">No šī datora</translation>
+<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="7215059001581613786">Lūdzu, ievadiet PIN, kura garums ir vismaz seši cipari.</translation>
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
 <translation id="6965382102122355670">Labi</translation>
+<translation id="7434397035092923453">Piekļuve liegta šim klientam: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome saites saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
 <translation id="9016232822027372900">Izveidot savienojumu jebkurā gadījumā</translation>
 <translation id="4394049700291259645">Atspējot</translation>
 <translation id="4156740505453712750">Lai izveidotu drošu savienojumu ar šo datoru, lūdzu, izvēlieties tādu PIN, kura garums ir <ph name="BOLD_START"/>vismaz seši cipari<ph name="BOLD_END"/>. Šis PIN būs nepieciešams, lai izveidotu savienojumu no citas atrašanās vietas.</translation>
+<translation id="3286521253923406898">Chrome saites saimniekdatora kontrolleris</translation>
 </translationbundle>

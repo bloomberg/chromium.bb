@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Aici puteți vedea toate notificările de la aplicațiile, extensiile și site-urile web Chrome.</translation>
 <translation id="2704356438731803243">Dacă preferați să păstrați separat datele Chrome existente, puteți crea un utilizator Chrome nou pentru <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Închideți toate ferestrele Google Chrome și încercați din nou.</translation>
+<translation id="1225016890511909183">Chrome va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="2770231113462710648">Schimbați browserul prestabilit la:</translation>
 <translation id="2077129598763517140">Utilizați accelerarea hardware când este disponibilă</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Google Chrome.</translation>
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON"/>repornirea<ph name="END_BUTTON"/> Chrome)</translation>
+<translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Chrome Frame s-a actualizat. Reporniți browserul. Versiune Google Chrome: <ph name="TODO_0001"/>. Versiune Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Trebuie să fiți conectat(ă) la Chrome pentru a utiliza aplicațiile. Astfel, Chrome vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="5775197990071433230">Acest computer are deja o versiune mai recentă a componentelor Google Chrome. Vă rugăm să folosiți un program de instalare mai recent.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Obțineți ajutor în legătură cu utilizarea Chrome</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS"/>. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Detaliile de facturare au fost salvate în Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="6423071462708908582">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat expirat. Nu sunt disponibile informații care să indice dacă certificatul respectiv a fost compromis, din cauza faptului că este expirat. Acest lucru înseamnă că Google Chrome nu vă poate garanta că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Aplicații Chrome Canary</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome – Notificări</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
@@ -86,6 +91,7 @@
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificați dacă există suficient spațiu liber și dacă aveți drepturile necesare pentru a instala software-ul.</translation>
 <translation id="6557998774620459028">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat emis de către o entitate care nu este de încredere pentru sistemul de operare al computerului dvs. Acest lucru poate însemna că serverul a generat propriile sale acreditări de securitate, pe care Google Chrome nu se poate baza pentru informații de identitate sau este posibil ca un atacator să încerce să intercepteze comunicațiile dvs.</translation>
 <translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
+<translation id="7282192067747128786">Chrome – Notificări (<ph name="QUANTITY"/> necitite)</translation>
 <translation id="6011049234605203654">Accesați
           meniul Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -116,6 +122,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> și a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome poate utiliza servicii web pentru îmbunătățirea experienței de navigare.</translation>
 <translation id="7436949144778751379">Google Chrome necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
+<translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="103396972844768118">Informații importante cu privire la datele dvs. Chrome</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
@@ -143,7 +150,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8547799825197623713">Lansatorul de aplicații Chrome Canary</translation>
 <translation id="5577648424992741236">Acest computer are deja o versiune mai recentă de Google Chrome Frame. Dacă software-ul nu funcționează, dezinstalați Google Chrome Frame și încercați din nou.</translation>
 <translation id="6326175484149238433">Eliminați din Chrome</translation>
-<translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="1686446242839005801">Vă conectați la Chrome utilizând contul <ph name="USER_EMAIL_ADDRESS"/>. Vă veți putea accesa marcajele, istoricul și alte setări pe toate dispozitivele de pe care v-ați conectat.</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE"/></translation>
@@ -155,6 +161,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>
 <translation id="130631256467250065">Modificările dvs. se vor aplica următoarea dată când reporniți dispozitivul.</translation>
 <translation id="163860049029591106">Noțiuni introductive despre sistemul de operare Chrome</translation>
+<translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercați din nou.</translation>
 <translation id="576822117893741893">Afișați meniul Chrome</translation>
 <translation id="3444832043240812445">Această pagină afișează informații cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activați raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
@@ -165,9 +172,10 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5046764976540625289">Ieșiți din Chrome</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome nu poate crea o comandă rapidă pentru o aplicație, deoarece nu poate stabili mediul de desktop curent.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
+<translation id="8142608456917638009">Google Chrome nu a putut crea o comandă rapidă pentru aplicație.</translation>
+<translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>
 <translation id="2189123953385179981">Google ChromeOS nu acceptă lansarea unei aplicații externe pentru a gestiona linkurile <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
         antivirus.</translation>

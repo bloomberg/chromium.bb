@@ -82,10 +82,10 @@
 <translation id="8541249477527128034">управление мультимедиа</translation>
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS"/> симв. (сейчас <ph name="CURRENT_LENGTH"/> симв.).</translation>
 <translation id="6101327004457443354">включение звуковой дорожки</translation>
-<translation id="1822429046913737220">до полудня/после полудня</translation>
+<translation id="1822429046913737220">AM/PM</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="2908441821576996758">Введите адреса электронной почты через запятую.</translation>
-<translation id="5939518447894949180">Изменить</translation>
+<translation id="5939518447894949180">Сбросить</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>
 <translation id="1842960171412779397">выбрать</translation>

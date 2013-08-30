@@ -71,6 +71,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
           Se questa norma è impostata su false o non è configurata, la creazione di utenti controllati e il relativo accesso saranno disattivati. Tutti gli utenti controllati esistenti saranno nascosti.
 
           NOTA. Il comportamento predefinito per dispositivi consumer ed enterprise è diverso: sui dispositivi consumer, gli utenti controllati sono abilitati per impostazione predefinita, mentre sui dispositivi enterprise sono disabilitati per impostazione predefinita.</translation>
+<translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
 <translation id="6649397154027560979">Questa norma non è più supportata; utilizza la norma URLBlacklist.
@@ -102,6 +103,11 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 Viene visualizzato un errore appropriato se un utente tenta di accedere con un nome utente non corrispondente allo schema indicato.
 
 Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente potrà accedere a <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2892225385726009373">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME"/> eseguirà sempre il controllo delle revoche per i certificati server che vengono convalidati e vengono firmati tramite certificati CA installati localmente.
+
+Se <ph name="PRODUCT_NAME"/> non riesce a ottenere informazioni sullo stato delle revoche, tali certificati vengono considerati revocati (&quot;hard-fail&quot;).
+
+Se questa norma non viene impostata o se viene impostata su false, Chrome utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
 <translation id="1438955478865681012">Configura le norme correlate alle estensioni. L'utente non può installare le estensioni elencate nella blacklist a meno che non siano riportate nella whitelist. Puoi anche imporre a <ph name="PRODUCT_NAME"/> l'installazione automatica delle estensioni, specificandole in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La blacklist ha la precedenza sull'elenco delle estensioni imposte.</translation>
 <translation id="3516856976222674451">Limita la durata massima di una sessione utente.
 
@@ -112,6 +118,7 @@ Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente pot
       Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
       Il valore del criterio deve essere specificato in millisecondi. I valori sono limitati a un intervallo compreso tra 30 secondi e 24 ore.</translation>
+<translation id="9200828125069750521">Parametri per l'URL dell'immagine che utilizza POST</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
 <translation id="8668394701842594241">Consente di specificare un elenco di plug-in attivi in <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare questa impostazione. È possibile utilizzare i caratteri jolly &quot;*&quot; e &quot;?&quot; in corrispondenza delle sequenze di caratteri arbitrari. Il carattere &quot;*&quot; corrisponde a un numero arbitrario di caratteri, mentre &quot;?&quot; indica un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è &quot;\&quot; quindi, per indicare i caratteri &quot;*&quot;, &quot;?&quot; e &quot;\&quot; effettivi, puoi inserire prima di tali caratteri un simbolo &quot;\&quot;. L'elenco di plug-in specificato verrà utilizzato sempre in <ph name="PRODUCT_NAME"/> se i plug-in sono installati. I plug-in verranno contrassegnati come attivi in &quot;about:plugins&quot; e gli utenti non potranno disattivarli. Tieni presente che questa norma ha la precedenza sulle norme DisabledPlugins e DisabledPluginsExceptions. Se questa norma non viene impostata, gli utenti potranno disattivare qualsiasi plug-in installato sul sistema.</translation>
@@ -250,6 +257,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questa norma non è impostata, verrà utilizzato un timeout di 0 millisecondi.
 
       Questa norma è specificata in millisecondi.</translation>
+<translation id="7275334191706090484">Preferiti gestiti</translation>
 <translation id="3570008976476035109">Blocca plug-in su questi siti</translation>
 <translation id="8749370016497832113">Consente di eliminare la cronologia del browser e la cronologia dei download in <ph name="PRODUCT_NAME"/> e impedisce agli utenti di modificare questa impostazione.
 
@@ -290,6 +298,15 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
+<translation id="3234167886857176179">Questo è l'elenco di norme che vengono rispettate da <ph name="PRODUCT_NAME"/>.
+
+Non è necessario modificare queste impostazioni manualmente. Puoi scaricare modelli di facile utilizzo da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+L'elenco di norme supportate è lo stesso per Chromium e Google Chrome.
+
+Queste norme devono essere utilizzate esclusivamente per la configurazione delle istanze di Chrome interne all'organizzazione. L'utilizzo di queste norme al di fuori dell'organizzazione (ad esempio in un programma distribuito pubblicamente) viene considerato malware e potrebbe essere contrassegnato come malware da Google e dai fornitori di software antivirus.
+
+Nota. A partire da Chrome 28 le norme vengono caricate direttamente dall'API Group Policy su Windows. Le norme scritte manualmente nel registro di sistema verranno ignorate. Per informazioni dettagliate, visita il sito all'indirizzo http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -332,6 +349,7 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
       Se questa impostazione viene disattivata, le pagine web non potranno utilizzare JavaScript e l'utente non potrà modificare tale impostazione.
 
       Se questa impostazione viene attivata o non è impostata, le pagine web potranno utilizzare JavaScript ma l'utente potrà modificare tale impostazione.</translation>
+<translation id="4047207703890139433">Consente di specificare il formato dell'orologio da utilizzare per il dispositivo. Gli utenti possono sostituire tale formato per la sessione corrente ma, quando si disconnettono, viene ripristinato il valore specificato. Se viene fornita una stringa vuota, viene utilizzata la preferenza del proprietario del dispositivo.</translation>
 <translation id="1942957375738056236">Qui puoi specificare l'URL del server proxy. Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in &quot;Scegli come specificare le impostazioni del server proxy&quot;. Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non dovresti impostare questa norma. Per ulteriori opzioni ed esempi dettagliati, visita il sito all'indirizzo: <ph name="PROXY_HELP_URL"/>.</translation>
 <translation id="6076008833763548615">Disabilita il montaggio di una memoria esterna.
 
@@ -355,6 +373,11 @@ Se questa impostazione viene attivata, i dispositivi di input e output fisici de
 
 Se questa impostazione viene disattivata o non viene impostata, sia gli utenti locali che remoti potranno interagire con l'host quando viene condiviso.</translation>
 <translation id="1426410128494586442">Sì</translation>
+<translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
+
+Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di suggerimenti verrà inviata utilizzando il metodo GET.
+
+Questa norma viene rispettata soltanto se la norma &quot;DefaultSearchProviderEnabled&quot; è attiva.</translation>
 <translation id="4962195944157514011">Consente di specificare l'URL del motore di ricerca utilizzato per eseguire una ricerca per impostazione predefinita. L'URL deve contenere la stringa &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, che verrà sostituita in fase di query dai termini di ricerca inseriti dall'utente. Questa opzione deve essere impostata quando la norma &quot;DefaultSearchProviderEnabled&quot; è attiva e verrà rispettata soltanto in questo caso.</translation>
 <translation id="6009903244351574348">Consente di permettere a <ph name="PRODUCT_FRAME_NAME"/> di gestire i tipi di contenuti elencati. Se questa norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito specificato dalla norma &quot;ChromeFrameRendererSettings&quot;.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
@@ -425,6 +448,7 @@ Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_
 <translation id="3236046242843493070">Pattern URL per consentire installazioni di estensioni, applicazioni e script utente da</translation>
 <translation id="2498238926436517902">Nascondi sempre automaticamente lo shelf</translation>
 <translation id="253135976343875019">Ritardo avviso inattività in caso di utilizzo di CA</translation>
+<translation id="6997592395211691850">Se i controlli OCSP/CRL online sono obbligatori o meno per i trust anchor locali</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -477,6 +501,7 @@ Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="8170878842291747619">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME"/>. Se attivi questa impostazione, in <ph name="PRODUCT_NAME"/> verrà visualizzata una barra degli strumenti integrata che si offrirà di tradurre la pagina, se opportuno. Se disattivi questa impostazione, gli utenti non troveranno mai la barra di traduzione. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se questa impostazione non viene configurata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
+<translation id="8244525275280476362">Ritardo di recupero massimo dopo l'invalidazione di una norma</translation>
 <translation id="8587229956764455752">Consenti la creazione di nuovi account utente</translation>
 <translation id="7417972229667085380">Percentuale di regolazione del ritardo di inattività in modalità di presentazione (obsoleta)</translation>
 <translation id="3964909636571393861">Consente l'accesso a un elenco di URL</translation>
@@ -506,7 +531,6 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="8285435910062771358">Ingrandimento a schermo intero attivo</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="3864818549971490907">Impostazione plug-in predefiniti</translation>
-<translation id="1910566775788829857">Disconnetti l'utente</translation>
 <translation id="7151201297958662315">Consente di stabilire se avviare o meno un processo <ph name="PRODUCT_NAME"/> all'accesso al sistema operativo e se tenerlo in esecuzione dopo la chiusura dell'ultima finestra del browser per tenere attive le applicazioni in background. Nella barra delle applicazioni viene visualizzata un'icona per il processo in background che consente di chiudere il processo in qualsiasi momento.
 
       Se questa norma viene impostata su True, la modalità in background viene attivata e non può essere controllata dall'utente tramite le impostazioni del browser.
@@ -531,11 +555,18 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
           Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
 <translation id="1098794473340446990">Consente di indicare i tempi di attività del dispositivo. Se questa impostazione viene impostata su True, i dispositivi registrati indicheranno i periodi di tempo di attività di un utente sul dispositivo. Se l'impostazione non viene impostata o viene impostata su False, i tempi di attività del dispositivo non verranno registrati o indicati.</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
+<translation id="427632463972968153">Consente di specificare i parametri utilizzati durante la ricerca di immagini con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {imageThumbnail} nell'esempio precedente, verrà sostituito con i dati delle miniature di immagini reali.
+
+Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di immagini verrà inviata utilizzando il metodo GET.
+
+Questa norma viene rispettata soltanto se la norma &quot;DefaultSearchProviderEnabled&quot; è attiva.</translation>
 <translation id="8818646462962777576">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione audio viene concesso senza richieste.
 
 NOTA. Al momento questa norma è supportata soltanto in modalità kiosk.</translation>
 <translation id="489803897780524242">Parametro di controllo sostituzione termini di ricerca per fornitore ricerca predefinito</translation>
 <translation id="316778957754360075">Questa impostazione non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME"/>. Il metodo consigliato per la configurazione di raccolte di estensioni/app ospitate dall'organizzazione consiste nell'includere il sito che ospita i pacchetti CRX in ExtensionInstallSources e inserire link di download diretti per i pacchetti in una pagina web. È possibile creare una funzione Avvio applicazioni per la pagina web utilizzando la norma ExtensionInstallForcelist.</translation>
+<translation id="6401669939808766804">Disconnetti l'utente</translation>
+<translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
 <translation id="817455428376641507">Consente l'accesso agli URL elencati, sotto forma di eccezioni alla blacklist di URL.
 
@@ -573,6 +604,14 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 <translation id="8102913158860568230">Impostazione stream multimediale predefinito</translation>
 <translation id="6641981670621198190">Disattiva supporto per le API grafiche 3D</translation>
 <translation id="7929480864713075819">Attiva rapporti sulla memoria (dimensioni heap JS) per la pagina</translation>
+<translation id="5703863730741917647">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività.
+
+Tieni presente che questa norma è obsoleta e verrà rimossa in futuro.
+
+Questa norma fornisce un valore di riserva per le norme più specifiche <ph name="IDLEACTIONAC_POLICY_NAME"/> e <ph name="IDLEACTIONBATTERY_POLICY_NAME"/>. Se questa norma viene impostata, il suo valore viene utilizzato se non viene impostata la rispettiva norma più specifica.
+
+Se questa norma non viene impostata, il comportamento delle norme più specifiche rimane invariato.</translation>
+<translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Abilita attraversamento firewall da client di accesso remoto</translation>
 <translation id="6367755442345892511">Eventuale configurazione del canale della versione da parte dell'utente</translation>
@@ -623,16 +662,6 @@ Questa norma viene applicata per tutti i tipi di ingressi video e non soltanto p
 
           Se questa norma viene impostata su False, l'attività video non impedisce di considerare inattivo l'utente.</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
-<translation id="5857910801734294133">Questo è l'elenco delle norme rispettate da <ph name="PRODUCT_NAME"/>.
-
-      Non è necessario modificare queste impostazioni manualmente. Puoi scaricare dei modelli facili da utilizzare da
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      L'elenco delle norme supportate è uguale per Chromium e Google Chrome, ma le posizioni del registro di Windows sono diverse.
-
-      Inizia con <ph name="CHROMIUM_KEY"/> per le norme di Chromium e con <ph name="GOOGLE_CHROME_KEY"/> per le norme di Google Chrome.
-
-      Queste norme sono strettamente destinate all'uso per configurare le istanze di Chrome interne all'organizzazione. L'utilizzo di queste norme al di fuori della tua organizzazione (ad esempio in un programma distribuito pubblicamente) è considerato malware e verrà probabilmente etichettato come malware da Google e dai fornitori di software antivirus.</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito dei feedback vocali nella schermata di accesso</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="7091198954851103976">Esegue sempre i plug-in che richiedono l'autorizzazione</translation>
@@ -714,9 +743,21 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se la norma non è impostata o è impostata su False, gli utenti possono trasferire i file su Google Drive.</translation>
 <translation id="1964634611280150550">Modalità di navigazione in incognito non attiva</translation>
 <translation id="5971128524642832825">Consente di disattivare Drive nell'app File di Chrome OS</translation>
+<translation id="1847960418907100918">Consente di specificare i parametri utilizzati durante la ricerca istantanea con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
+
+Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca istantanea verrà inviata utilizzando il metodo GET.
+
+Questa norma viene rispettata soltanto se la norma &quot;DefaultSearchProviderEnabled&quot; è attiva.</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma &quot;DefaultJavaScriptSetting&quot;, se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME"/> di gestire i seguenti tipi di contenuto.</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco &quot;Pagine da aprire all'avvio&quot; vengono ignorati a meno che non selezioni &quot;Apri un elenco di URL&quot; in &quot;Azione all'avvio&quot;.</translation>
+<translation id="243972079416668391">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività durante l'utilizzo della corrente CA.
+
+Se questa norma viene impostata, consente di specificare l'azione compiuta da <ph name="PRODUCT_OS_NAME"/> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
+
+Se questa norma non viene impostata, viene compiuta l'azione predefinita, vale a dire la sospensione.
+
+Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME"/> può essere configurato separatamente per bloccare o non bloccare lo schermo prima della sospensione.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="741903087521737762">Consente di specificare il comportamento all'avvio.
 
@@ -762,6 +803,7 @@ Se questa impostazione viene impostata su true o non viene configurata, gli uten
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="3072045631333522102">Screensaver da utilizzare nella schermata di accesso in modalità retail</translation>
+<translation id="4550478922814283243">Attiva o disattiva l'autenticazione senza PIN</translation>
 <translation id="7712109699186360774">Chiedi ogni volta che un sito vuole accedere alla fotocamera e/o al microfono</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
 <translation id="3711895659073496551">Sospensione</translation>
@@ -772,13 +814,6 @@ Se questa impostazione viene impostata su true o non viene configurata, gli uten
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
 <translation id="2188979373208322108">Consente di attivare la barra dei Preferiti in <ph name="PRODUCT_NAME"/>. Se attivi questa impostazione verrà visualizzata una barra dei Preferiti in <ph name="PRODUCT_NAME"/>. Se disattivi questa impostazione, gli utenti non potranno mai visualizzare la barra dei Preferiti. Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se questa impostazione non viene impostata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
-<translation id="7546291275204811722">Consente di specificare l'azione da compiere al raggiungimento del ritardo di inattività.
-
-Se questa norma viene impostata, consente di specificare l'azione compiuta da <ph name="PRODUCT_OS_NAME"/> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
-
-Se questa norma non viene impostata, viene compiuta l'azione predefinita, vale a dire la sospensione.
-
-Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5475361623548884387">Attiva la stampa</translation>
 <translation id="7287359148642300270">Consente di specificare quali server devono essere autorizzati per l'autenticazione integrata. L'autenticazione integrata è attivata solo quando <ph name="PRODUCT_NAME"/> riceve una richiesta di autenticazione da un proxy o da un server che si trova in questo elenco di autorizzazione.
 
@@ -809,6 +844,11 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
 <translation id="6158324314836466367">Nome del web store dell'azienda (obsoleta)</translation>
 <translation id="3984028218719007910">Consente di stabilire se tenere o meno memorizzati in <ph name="PRODUCT_OS_NAME"/> i dati degli account locali dopo l'uscita. Se la norma viene impostata su true, in <ph name="PRODUCT_OS_NAME"/> non verranno conservati gli account persistenti e tutti i dati della sessione utente verranno eliminati dopo l'uscita. Se la norma viene impostata su false o non viene configurata, il dispositivo potrebbe conservare i dati utente locali (crittografati).</translation>
 <translation id="3793095274466276777">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME"/> e impedisce agli utenti di modificarli. Se attivi questa impostazione, all'avvio <ph name="PRODUCT_NAME"/> verifica sempre di essere il browser predefinito e, se possibile, si registra automaticamente. Se l'impostazione è disattivata, <ph name="PRODUCT_NAME"/> non potrà mai verificare di essere il browser predefinitoe disattiva i controlli utente per rendere attiva l'opzione. Se l'impostazione non è configurata, <ph name="PRODUCT_NAME"/> consente all'utente di controllare se il browser predefinito è impostato e, in caso contrario, se devono essere visualizzate le notifiche per gli utenti.</translation>
+<translation id="3504791027627803580">Consente di specificare l'URL del motore di ricerca utilizzato per la ricerca di immagini. Le richieste di ricerca verranno inviate con il metodo GET. Se viene impostata la norma DefaultSearchProviderImageURLPostParams, per le richieste di ricerca di immagini viene utilizzato il metodo POST.
+
+Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ricerca di immagini.
+
+Questa norma viene rispettata soltanto se viene attivata la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="7529100000224450960">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma &quot;DefaultPopupsSetting&quot;, se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="6155936611791017817">Impostazione stato predefinito del puntatore grande nella schermata di accesso</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
@@ -828,6 +868,7 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="4733471537137819387">Norme relative all'autenticazione HTTP integrata.</translation>
 <translation id="8951350807133946005">Impostazione directory della cache su disco</translation>
+<translation id="603410445099326293">Parametri per l'URL del suggerimento che utilizza POST</translation>
 <translation id="2592091433672667839">Durata inattività prima della visualizzazione dello screensaver nella schermata di accesso in modalità retail</translation>
 <translation id="166427968280387991">Server proxy</translation>
 <translation id="2805707493867224476">Consenti la visualizzazione di popup in tutti i siti</translation>
@@ -852,6 +893,13 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
       Se il criterio è attivato, nell'area di notifica viene visualizzato un grosso pulsante di uscita rosso quando è attiva una sessione e lo schermo non è bloccato.
 
       Se il criterio è disattivato o non specificato, non viene visualizzato il grosso pulsante di uscita rosso nell'area di notifica.</translation>
+<translation id="5111573778467334951">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività durante l'utilizzo della batteria.
+
+Se questa norma viene impostata, consente di specificare l'azione compiuta da <ph name="PRODUCT_OS_NAME"/> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
+
+Se questa norma non viene impostata, viene compiuta l'azione predefinita, vale a dire la sospensione.
+
+Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME"/> può essere configurato separatamente per bloccare o non bloccare lo schermo prima della sospensione.</translation>
 <translation id="3195451902035818945">Consente di specificare se disattivare o meno la suddivisione dei record SSL. La suddivisione dei record è una soluzione a una debolezza di SSL 3.0 e TLS 1.0 ma potrebbe causare problemi di compatibilità con alcuni proxy e server HTTPS. Se la norma non viene impostata o viene impostata su false, la suddivisione dei record verrà utilizzata per le connessioni SSL/TLS che utilizzano ciphersuite CBC.</translation>
 <translation id="6903814433019432303">Questa norma è attiva soltanto in modalità retail.
 
@@ -867,6 +915,11 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
 <translation id="8711086062295757690">Consente di specificare la parola chiave, che è la scorciatoia utilizzata nella omnibox per attivare la ricerca con il provider. Questa norma è facoltativa. Se non viene impostata, nessuna parola chiave attiverà il provider di ricerca. Questa norma viene considerata soltanto se è attiva la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
+<translation id="7831595031698917016">Consente di specificare il ritardo massimo in millisecondi tra il ricevimento dell'invalidamento di una norma e il recupero della nuova norma dal servizio di gestione del dispositivo.
+
+Se questa norma viene impostata, il suo valore sostituisce il valore predefinito di 5000 millisecondi. I valori validi di questa norma sono compresi tra 1000 (1 secondo) e 300000 (5 minuti). I valori non compresi in questo intervallo verranno fissati al rispettivo limite.
+
+Se questa norma non viene impostata, <ph name="PRODUCT_NAME"/> utilizzerà il valore predefinito di 5000 millisecondi.</translation>
 <translation id="8099880303030573137">Ritardo inattività in caso di utilizzo della batteria</translation>
 <translation id="2761483219396643566">Ritardo avviso inattività in caso di utilizzo della batteria</translation>
 <translation id="1468307069016535757">Consente di impostare lo stato predefinito della funzione di accessibilità della modalità ad alto contrasto nella schermata di accesso.
@@ -882,7 +935,11 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="350796261613621561">Attivazione della creazione di utenti controllati.</translation>
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
+<translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
+<translation id="7273823081800296768">Se questa impostazione viene attivata o non viene configurata, gli utenti possono decidere di accoppiare client e host in fase di connessione, evitando di dover inserire un codice PIN ogni volta.
+
+Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="4482640907922304445">Consente di visualizzare il pulsante Pagina iniziale sulla barra degli strumenti di <ph name="PRODUCT_NAME"/>. Se attivi questa impostazione il pulsante Pagina iniziale verrà sempre visualizzato, in caso contrario non verrà mai visualizzato. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se non imposti questa norma gli utenti potranno scegliere se visualizzare o meno il pulsante Pagina iniziale.</translation>
@@ -893,6 +950,7 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
           Questa norma è facoltativa. Se non è impostata, non verrà utilizzato alcun URL alternativo per estrarre i termini di ricerca.
 
           Questa norma viene rispettata solo se è attiva la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
+<translation id="436581050240847513">Riporta interfacce di rete del dispositivo</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
@@ -964,6 +1022,164 @@ Se la norma non viene configurata, il feedback vocale viene inizialmente disatti
       Se questa norma non viene impostata, per <ph name="PRODUCT_NAME"/> verrà utilizzato il valore predefinito di tre ore.</translation>
 <translation id="7424751532654212117">Elenco delle eccezioni all'elenco dei plug-in disattivati</translation>
 <translation id="6233173491898450179">Imposta directory di download</translation>
+<translation id="78524144210416006">Consente di configurare la gestione dell'alimentazione nella schermata di accesso in <ph name="PRODUCT_OS_NAME"/>.
+
+Questa norma consente di configurare il comportamento di <ph name="PRODUCT_OS_NAME"/> quando non è presente attività dell'utente per un periodo di tempo durante la visualizzazione della schermata di accesso. La norma controlla diverse impostazioni. Per conoscere i singoli intervalli di valori e le singole semantiche, vedi le norme corrispondenti che controllano la gestione dell'alimentazione all'interno di una sessione. Le uniche differenze da queste norme sono:
+      * Le azioni da compiere in caso di inattività o chiusura del coperchio non possono essere la chiusura della sessione.
+      * L'azione predefinita compiuta in caso di inattività durante l'utilizzo della corrente CA è lo spegnimento.
+
+La norma dovrebbe essere specificata come stringa che esprima le singole impostazioni in formato JSON, secondo lo schema seguente:
+      {
+
+        &quot;type&quot;: &quot;object&quot;,
+
+        &quot;properties&quot;: {
+
+          &quot;AC&quot;: {
+
+            &quot;description&quot;: &quot;Power management settings applicable only when running on AC power&quot;,
+
+            &quot;type&quot;: &quot;object&quot;,
+
+            &quot;properties&quot;: {
+
+              &quot;Delays&quot;: {
+
+                &quot;type&quot;: &quot;object&quot;,
+
+                &quot;properties&quot;: {
+
+                  &quot;ScreenDim&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  },
+
+                  &quot;ScreenOff&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  },
+
+                  &quot;Idle&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  }
+
+                }
+
+              },
+
+              &quot;IdleAction&quot;: {
+
+                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+
+              }
+
+            }
+
+          },
+
+          &quot;Battery&quot;: {
+
+            &quot;description&quot;: &quot;Power management settings applicable only when running on battery power&quot;,
+
+            &quot;type&quot;: &quot;object&quot;,
+
+            &quot;properties&quot;: {
+
+              &quot;Delays&quot;: {
+
+                &quot;type&quot;: &quot;object&quot;,
+
+                &quot;properties&quot;: {
+
+                  &quot;ScreenDim&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  },
+
+                  &quot;ScreenOff&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  },
+
+                  &quot;Idle&quot;: {
+
+                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
+
+                    &quot;type&quot;: &quot;integer&quot;,
+
+                    &quot;minimum&quot;: 0
+
+                  }
+
+                }
+
+              },
+
+              &quot;IdleAction&quot;: {
+
+                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
+
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+
+              }
+
+            }
+
+          },
+
+          &quot;LidCloseAction&quot;: {
+
+            &quot;description&quot;: &quot;Action to take when the lid is closed&quot;,
+
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+
+          },
+
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+
+            &quot;description&quot;: &quot;Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off&quot;,
+
+            &quot;type&quot;: &quot;integer&quot;,
+
+            &quot;minimum&quot;: 100
+
+          }
+
+        }
+
+      }
+
+Se un'impostazione non viene specificata, viene utilizzato un valore predefinito.
+
+Se questa norma non viene impostata, vengono utilizzati i valori predefiniti di tutte le impostazioni.</translation>
 <translation id="8908294717014659003">Consente di stabilire se i siti web possono accedere ai dispositivi di acquisizione dei contenuti multimediali. L'accesso ai dispositivi di acquisizione dei contenuti multimediali può essere consentito per impostazione predefinita oppure l'utente può visualizzare una richiesta ogni volta che un sito web vuole accedere ai dispositivi di acquisizione dei contenuti multimediali.
 
           Se questa norma non viene impostata, verrà utilizzata la norma &quot;PromptOnAccess&quot; e l'utente sarà in grado di modificarla.</translation>
@@ -984,6 +1200,7 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
 <translation id="1897365952389968758">Consenti l'esecuzione di JavaScript in tutti i siti</translation>
+<translation id="5244714491205147861">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disattiva la sincronizzazione dei dati con Google</translation>
@@ -1024,6 +1241,11 @@ Se la norma non viene configurata, l'ingrandimento dello schermo viene inizialme
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="4578030379102330182">Attivazione dell'attestazione da remoto per l'utente.</translation>
 <translation id="9187743794267626640">Disabilita il montaggio di una memoria esterna</translation>
+<translation id="6353901068939575220">Consente di specificare i parametri utilizzati durante la ricerca di un URL con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
+
+Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca verrà inviata utilizzando il metodo GET.
+
+Questa norma viene rispettata soltanto se la norma &quot;DefaultSearchProviderEnabled&quot; è attiva.</translation>
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
 <translation id="3808945828600697669">Specifica un elenco dei plug-in disattivati</translation>
@@ -1091,6 +1313,10 @@ Ogni voce presente in questo elenco è uno schema di corrispondenza in stile di 
 La norma ExtensionInstallBlacklist ha la precedenza su questa norma. Ciò significa che un'estensione presente nella blacklist non verrà installata, anche se è di un sito presente in questo elenco.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="7848840259379156480">Consente di configurare il renderer HTML predefinito quando <ph name="PRODUCT_FRAME_NAME"/> è installato. Per impostazione predefinita, il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME"/>.</translation>
+<translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
+<translation id="7890264460280019664">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware.
+
+Se la norma non viene impostata o viene impostata su false, l'elenco di interfacce non viene comunicato.</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
@@ -1119,6 +1345,7 @@ Se questa norma viene impostata su False, l'attività audio non impedisce di con
 
       Se questa norma non viene impostata, verrà utilizzata la directory di download predefinita e l'utente sarà in grado di modificarla.</translation>
 <translation id="7381326101471547614">Consente di disattivare l'utilizzo del protocollo SPDY in <ph name="PRODUCT_NAME"/>. Se questa norma viene attivata, il protocollo SPDY non sarà disponibile in <ph name="PRODUCT_NAME"/>. Se la norma viene disattivata sarà possibile utilizzare il protocollo. Se la norma non viene impostata, il protocollo SPDY sarà disponibile.</translation>
+<translation id="2208976000652006649">Parametri per l'URL di ricerca che utilizza POST</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME"/> per impostazione predefinita</translation>
 <translation id="1047128214168693844">Non consentire ad alcun sito di monitorare la posizione fisica degli utenti</translation>
 <translation id="4101778963403261403">Consente di configurare il tipo di pagina iniziale predefinita in <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare le preferenze della pagina iniziale. È possibile impostare come pagina iniziale un URL specificato oppure la pagina Nuova scheda. Se attivi questa impostazione, come pagina iniziale verrà sempre utilizzata la pagina Nuova scheda e la posizione dell'URL della pagina iniziale verrà ignorata. Se disattivi l'impostazione, la pagina iniziale degli utenti non sarà mai la pagina Nuova scheda, a meno che il relativo URL sia &quot;chrome://newtab&quot;. Se l'impostazione viene attivata o disattivata, gli utenti non potranno cambiare il tipo di pagina iniziale in <ph name="PRODUCT_NAME"/>. Se questa norma non viene impostata, gli utenti potranno scegliere se utilizzare o meno come pagina iniziale la pagina Nuova scheda.</translation>
@@ -1154,6 +1381,15 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="7187256234726597551">Se la norma viene impostata su true, l'attestazione da remoto viene consentita per il dispositivo e viene generato automaticamente un certificato che viene caricato sul Server di gestione del dispositivo.
 
 Se la norma viene impostata su false o non viene impostata, non verrà generato alcun certificato e le chiamate all'API di estensione enterprise.platformKeysPrivate non andranno a buon fine.</translation>
+<translation id="5242696907817524533">Consente di configurare un elenco di Preferiti gestiti.
+
+Questa norma è un elenco di Preferiti e ogni preferito è un dizionario contenente il &quot;nome&quot; del preferito e &quot;l'URL&quot; del target.
+
+Questi Preferiti vengono inseriti in una cartella Preferiti gestiti all'interno dei Preferiti per cellulari. Questi Preferiti non possono essere modificati dall'utente.
+
+Se questa norma viene impostata, Preferiti gestiti è la cartella predefinita aperta quando viene aperta la visualizzazione Preferiti in Chrome.
+
+I Preferiti gestiti non vengono sincronizzati con l'account utente.</translation>
 <translation id="8303314579975657113">Consente di specificare la libreria GSSAPI da utilizzare per l'autenticazione HTTP. Puoi impostare semplicemente un nome di libreria oppure un percorso completo. Se non viene fornita alcuna impostazione, <ph name="PRODUCT_NAME"/> dovrà ricorrere a un nome di libreria predefinito.</translation>
 <translation id="7749402620209366169">Consente di abilitare l'autenticazione a due fattori per gli host di accesso remoto invece di un PIN specificato dall'utente.
 

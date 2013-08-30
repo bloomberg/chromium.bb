@@ -17,6 +17,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="4167057906098955729">ሁሉም ማሳወቂያዎችዎን እዚህ ካሉት የChrome መተግበሪያዎች፣ ቅጥያዎች፣ እና ድር ጣቢያዎች ሆነው ማየት ይችላሉ።</translation>
 <translation id="2704356438731803243">ነባሩ የChrome ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME"/> አዲስ የChrome ተጠቃሚ መፍጠር ይችላሉ።</translation>
 <translation id="386202838227397562">እባክዎ ሁሉንም የChrome መስኮቶች ይዝጉና እንደገና ይሞክሩ።</translation>
+<translation id="1225016890511909183">Chrome መረጃዎን በድጋሚ መተየብ እንዳይኖርብዎ ደህንነቱ በተጠበቀ ሁኔታ ያስቀምጣል፣ ነገር ግን ለወደፊት ክፍያዎች አሁንም የካርድዎን የደህንነት ኮድ ማረጋገጥ አለብዎ።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
 <translation id="2077129598763517140">ሲገኝ የሃርድዌር ማጣደፍን ተጠቀም</translation>
 <translation id="1065672644894730302">አማራጮችዎ ሊነበቡ አልቻሉም።
@@ -36,6 +37,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1773601347087397504">Chrome OSን መጠቀም ላይ እገዛን ያግኙ</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነቡ እና እንዲቀበሉ ይፈልጋል። ይህ ውል የGoogle Chrome OS ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>
 <translation id="4309555186815777032">(የChrome <ph name="BEGIN_BUTTON"/>ዳግም መጀመር<ph name="END_BUTTON"/> ያስፈልገዋል)</translation>
+<translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME"/> ሰርጥ በማዘመን ላይ...</translation>
 <translation id="5339639696978861456">Chrome ክፍለ ገጸ ድር ተዘምኗል። እባክዎ አሳሽዎን ዳግም ያስጀምሩት። Chrome ስሪት፦ <ph name="TODO_0001"/>፣ Chrome የክፍለ ገጸ ድር ስሪት፦ <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">መተግበሪያዎችን ለመጠቀም Chrome ውስጥ መግባት አለብዎት። ይሄ Chrome መተግበሪያዎችዎን፣ ዕልባቶችዎን፣ ታሪክዎን፣ የይለፍ ቃላትዎን እና ሌሎች ቅንብሮችዎን በተለያዩ መሣሪያዎች ላይ እንዲያመሳስል ያስችለዋል።</translation>
 <translation id="5775197990071433230">ይህ ኮምፒውተር አስቀድሞ ይበልጥ የቅርብ ጊዜ ስሪት የሆነ የGoogle Chrome ምንዝሮች አሉት። እባክዎ ይበልጥ የቅርብ ጊዜ ጫኚ ይጠቀሙ።</translation>
@@ -62,6 +64,8 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1393853151966637042">ስለ Chrome አጠቃቀም ላይ እገዛን ያግኙ</translation>
 <translation id="7398801000654795464">እንደ <ph name="USER_EMAIL_ADDRESS"/> ሆነው ወደ Chrome ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
 <translation id="1697213158865901863">Google Chrome ፍሬም</translation>
+<translation id="4513711165509885787">የክፍያ መጠየቂያ ዝርዝሮችዎ በChrome ውስጥ ተቀምጠዋል።</translation>
+<translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ አስበዋል፣ ግን አገልጋዩ ጊዜው ያለፈበት የእውቅና ማረጋገጫ ነው ያቀረበው። ያ የእውቅና ማረጋገጫ ጊዜው ካለፈበት ጊዜ ጀምሮ ተጠቅቶ ከሆነ የሚያመላክት ምንም መረጃ የለም። ይሄ ማለት Google Chrome ከአጥቂ ጋር ሳይሆን ከ&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር እየተገናኙ መሆንዎን ሊያረጋግጥ አይችልም። የኮምፒውተርዎ ሰዐት በአሁኑ ጊዜ <ph name="CURRENT_TIME"/> ይላል። ትክክል ይመስላል? ካልሆነ ስህተቱን አርመው ይህን ገጽ ማደስ አለብዎት።</translation>
 <translation id="3197823471738295152">መሣሪያዎ የተዘመነ ነው።</translation>
@@ -69,6 +73,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1434626383986940139">የChrome Canary መተግበሪያዎች</translation>
 <translation id="8551886023433311834">የተዘመነ ለመሆን ጥቂት ብቻ ቀርቷል! ዝማኔውን ለማጠናቀቅ መሣሪያዎን ዳግም ያስጀምሩት።</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - ማሳወቂያዎች</translation>
 <translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3089968997497233615">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የGoogle Chrome ስሪት ይገኛል።</translation>
@@ -94,6 +99,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="5170938038195470297">መገለጫዎ የአዲስ Google Chrome ስሪት አካል ስለሆነ መጠቀም አይቻልም።
 
 አንዳንድ ባሕሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም አዲሱን የChrome ስሪት ይጠቀሙ።</translation>
+<translation id="7282192067747128786">Chrome - ማሳወቂያዎች (<ph name="QUANTITY"/> ያልተነበቡ)</translation>
 <translation id="6011049234605203654">ወደ
           የChrome ምናሌ &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -124,6 +130,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="2874156562296220396">Google Chrome በ<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>  ክፍት ሶርስ ፕሮጀክት እና በሌላ <ph name="BEGIN_LINK_OSS"/>ክፍት ሶርስ ሶፍትዌር<ph name="END_LINK_OSS"/> ሊሰራ ችሏል።</translation>
 <translation id="3847841918622877581">Google Chrome የአሰሳ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል።</translation>
 <translation id="7436949144778751379">Google Chrome Windows XP ወይም ከዚያ በኋላ የሆነ ያስፈልገዋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
+<translation id="5877064549588274448">ስርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="103396972844768118">የChrome ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>
 <translation id="6145223986912084844">Chrome</translation>
 <translation id="6757767188268205357">አታርመኝ</translation>
@@ -150,7 +157,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8547799825197623713">የChrome መተግበሪያ አስጀማሪ Canary</translation>
 <translation id="5577648424992741236">ይህ ኮምፒውተር አስቀድሞ ይበልጥ የቅርብ ጊዜ የሆነ የGoogle Chrome ክፍለ ገጸ ድር ይዟል። ሶፍትዌሩ እየሰራ ካልሆነ እባክዎ Google Chrome ክፍለ ገጸ ድርን ያራግፉና እንደገና ይሞክሩ።</translation>
 <translation id="6326175484149238433">ከChrome አስወግድ</translation>
-<translation id="2871893339301912279">ወደ Chrome ገብተዋል!</translation>
 <translation id="7161904924553537242">ወደ Google Chrome እንኳን ደህና መጡ</translation>
 <translation id="1686446242839005801">የ<ph name="USER_EMAIL_ADDRESS"/> መለያዎን ተጠቅመው ወደ Chrome እየገቡ ነው። ሁሉንም ዕልባቶችዎ፣ ታሪክዎ እና ሌሎች ቅንብሮችዎን በሁሉም የተገባባቸው መሣሪያዎችዎ ላይ ሊደርሱባቸው ይችላሉ።</translation>
 <translation id="4147555960264124640">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ የእርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME"/> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE"/></translation>
@@ -162,6 +168,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="870251953148363156">&amp;Google Chromeን አዘምን</translation>
 <translation id="130631256467250065">ለውጦችዎ መሣሪያዎን ዳግም በሚያስጀምሩበት ቀጣዩ ጊዜ ላይ ይተገበራሉ።</translation>
 <translation id="163860049029591106">በChrome OS ይጀምሩ</translation>
+<translation id="1587223624401073077">Google Chrome ካሜራዎን እየተጠቀመ ነው።</translation>
 <translation id="1399397803214730675">ይህ ኮምፒውተር አስቀድሞ ይበልጥ የቅርብ ጊዜ የሆነ የGoogle Chrome ስሪት አለው። ሶፍትዌሩ የማይሰራ ከሆነ እባክዎ Google Chromeን ያራግፉና እንደገና ይሞክሩ።</translation>
 <translation id="576822117893741893">የChrome ምናሌን አሳይ</translation>
 <translation id="3444832043240812445">ይህ ገጽ <ph name="BEGIN_LINK"/>የብልሽት ሪፖርት ማድረግ<ph name="END_LINK"/>ን ካነቁ የቅርብ ጊዜ ብልሽቶችዎን ብቻ ነው መረጃ የሚያሳየው።</translation>
@@ -172,9 +179,10 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="5046764976540625289">Chromeን ዝጋና ውጣ</translation>
 <translation id="4251615635259297716">የChrome ውሂብዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome የአሁኑ የዴስክቶፕ ምህዳሩን ሊያውቅ ስላልቻለ የመተግበሪያ አቋራጭ መፍጠር አይችልም።</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">የበይነመረብ አሳሽ</translation>
+<translation id="8142608456917638009">Google Chrome የመተግበሪያ አቋራጭ መፍጠር አልቻልም።</translation>
+<translation id="8255190535488645436">Google Chrome ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
 <translation id="2189123953385179981">Google ChromeOS <ph name="SCHEME"/> አገናኞችን ለማስተናገድ የውጪ መተግበሪያ ማስጀመርን አይደግፍም። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
 <translation id="7396375882099008034">Chrome በኬላ ወይም የጸረ-ቫይረስ ቅንብሮችዎን አውታረ መረቡን እንዲደርስበት
         ይፍቀዱለት።</translation>

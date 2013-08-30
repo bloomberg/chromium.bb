@@ -23,6 +23,7 @@
 <translation id="731644333568559921">&amp;Chromium OSን አዘምን</translation>
 <translation id="7421823331379285070">Chromium Windows XP ወይም ከዚያ በኋላ ይፈልጋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
 <translation id="7419987137528340081">ነባሩ የChromium ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME"/> አዲስ የChromium ተጠቃሚ መፍጠር ይችላሉ።</translation>
+<translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME"/> ሰርጥ በማዘመን ላይ...</translation>
 <translation id="3549345495227188780">በChromium OS ይጀምሩ</translation>
 <translation id="4330297532943865716">በስርዓቱ ላይ የሚጋጭ የChromium እና Chromium Frame ጭነት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="6953661834318318668">Chromium የመሣሪያ አሞሌ</translation>
@@ -72,6 +73,7 @@
         ይሄ ችግሩን ካልፈታው ለተሻሻለ አፈጻጸም ይህን አማራጭ እንደገና መምረጥ እንመክራለን።</translation>
 <translation id="4124681358536363708">የChromium ጭነት አቃፊ በስራ ላይ ያለ ይመስላል። እባክዎ ኮምፒውተርዎን ዳግም ያስነሱና እንደገና ይሞክሩ።</translation>
 <translation id="8770560772173120024">Chromium አሁን ተወዳጆች/ዕልባቶችን በማስመጣት ላይ ነው።</translation>
+<translation id="7463979740390522693">Chromium - ማሳወቂያዎች (<ph name="QUANTITY"/> ያልተነበቡ)</translation>
 <translation id="225614027745146050">እንኳን ደህና መጡ</translation>
 <translation id="9191268552238695869">አንድ አስተዳዳሪ በዚህ ስርዓት ላይ Chromiumን ጭኗል፣ እና ለሁሉም ተጠቃሚዎች ይገኛል። የስርዓት-ደረጃ Chromium የተጠቃሚ-ደረጃ ጭነትዎን አሁን ይተካዋል።</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -84,6 +86,7 @@
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="5714819759736651024">የChrome መተግበሪያዎችን ለመጠቀም Chromiumን በዴስክቶፑ ላይ ዳግም ማስጀመር አለብዎት።</translation>
 <translation id="7707841053049645517">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉ።</translation>
+<translation id="7338384957110970244">Chromium የመተግበሪያ አቋራጭ መፍጠር አልቻልም።</translation>
 <translation id="6055895534982063517">አዲስ የChromium ስሪት ይገኛል፣ እና ከመቼውም በበለጠ ፈጣን ሆኗል።</translation>
 <translation id="2407806170074302369">ስለChromium ክፈፍ...</translation>
 <translation id="5405650547142096840">ከChromium አስወግድ</translation>
@@ -99,7 +102,6 @@
 <translation id="5358375970380395591">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Chromium መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ እርስዎ  መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chromium ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME"/> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Chromiumን ጀምር</translation>
 <translation id="9036189287518468038">Chromium የመተግበሪያ አስጀማሪ</translation>
-<translation id="2881203820889150661">Chromium የአሁኑ የዴስክቶፕ ምህዳሩን ማወቅ ስላልቻለ የመተግበሪያ አቋራጭ መፍጠር አይችልም።</translation>
 <translation id="4886158514168859177">ይህ ኮምፒውተር አስቀድሞ ይበልጥ የቅርብ ጊዜ የChromium ክፍለ ገጸ ድር ስሪት አለው። ስፍትዌሩ የማይሰራ ከሆነ እባክዎ Chromium ክፍለ ገጸ ድርን ያራግፉና እንደገና ይሞክሩ።</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነቡት እና እንዲቀበሉት ይፈልጋል። ይህ ውል የChromium OS ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>
@@ -112,11 +114,14 @@
 <translation id="9022552996538154597">Chromium ውስጥ ይግቡ</translation>
 <translation id="4365115785552740256">Chromium በ<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>  ክፍት ምንጭ ፕሮጀክት እና በሌላ <ph name="BEGIN_LINK_OSS"/>ክፍት ምንጭ ሶፍትዌር<ph name="END_LINK_OSS"/> እውን ሊሆን ችሏል።</translation>
 <translation id="2216475571518225820">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ተኳሃኝ አሳሽ ያውርዱ።</translation>
+<translation id="5877064549588274448">ስርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="6248213926982192922">Chromium ነባሪውን አሳሽ ያድርጉ።</translation>
+<translation id="6309712487085796862">Chromium ካሜራዎን እየተጠቀመ ነው።</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium ሰሪ</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">አታርመኝ</translation>
+<translation id="1745962126679160932">Chromium መረጃዎን በድጋሚ መተየብ እንዳይኖርብዎ ደህንነቱ በተጠበቀ ሁኔታ ያስቀምጣል፣ ነገር ግን ለወደፊት ክፍያዎች አሁንም የካርድዎን የደህንነት ኮድ ማረጋገጥ አለብዎ።</translation>
 <translation id="275588974610408078">የብልሽት ሪፖርት በChromium ውስጥ አይገኝም።</translation>
 <translation id="5909170354645388250">በChromium ውስጥ አልተሰራበትም። ቦታ ያዥ የመርጃ ካርታዎችን በማመሳሰል ውስጥ ሊያቆያቸው ነው። አንድ ነጋሪ እሴት ይጠብቃል፦ $1።</translation>
 <translation id="7937630085815544518">እንደ <ph name="USER_EMAIL_ADDRESS"/> ሆነው ወደ Chromium ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
@@ -150,13 +155,13 @@
 <translation id="8187289872471304532">ወደ
           መተግበሪያዎች &gt; የስርዓት ምርጫዎች &gt; አውታረ መረብ &gt; የላቁ &gt; ተኪዎች
           ይሂዱና የተመረጡ ማናቸውም ተኪዎችን አይምረጡ።</translation>
+<translation id="4488676065623537541">የክፍያ መጠየቂያ ዝርዝሮችዎ በChromium ውስጥ ተቀምጠዋል።</translation>
 <translation id="1691304614444223855">Chromium ክፍለ ገጸ ድር ተዘምኗል። እባክዎ አሳሽዎን ዳግም ያስጀምሩ። Chromium ስሪት፦ <ph name="TODO_0001"/>፣ Chromium ክፍለ ገጸ ድር ስሪት፦ <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">ለውጦችዎ መሣሪያዎን ዳግም በሚያስጀምሩበት ቀጣዩ ጊዜ ላይ ይተገበራሉ።</translation>
 <translation id="3244477511402911926">የChromium ማሳወቂያ ማዕከል</translation>
 <translation id="1105130903706696483">Google Chrome በትክክል አልተዘጋም። ከፍተዋቸው የነበሩትን ገፆች ዳግም ለመክፈት እነበረበት መልስ የሚለውን ጠቅ ያድርጉ።</translation>
 <translation id="1531452407274881270">የ<ph name="USER_EMAIL_ADDRESS"/> መለያዎን ተጠቅመው ወደ Chromium እየገቡ ነው። ሁሉንም ዕልባቶችዎ፣ ታሪክዎ እና ሌሎች ቅንብሮችዎን በሁሉም የተገባባቸው መሣሪያዎችዎ ላይ ሊደርሱባቸው ይችላሉ።</translation>
 <translation id="1929939181775079593">Chromium መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
-<translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
 <translation id="3155163173539279776">Chromiumን ዳግም አስጀምር</translation>
 <translation id="2966088006374919794">Chromium የ<ph name="SCHEME"/> አገናኞችን ለማስተናገድ አንድ ውጫዊ መተግበሪያ ማስጀመር አለበት። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
 <translation id="6287463253129672858">አሁን እያሄደ ያለ ተመሳሳዩን የChromium ክፍለ ገጸ ድር ስሪት መጫን አይቻልም። እባክዎ Chromium ክፍለ ገጸ ድርን ይዝጉ እና እንደገና ይሞክሩ።</translation>
@@ -173,12 +178,14 @@
 <translation id="2910007522516064972">ስለ &amp;Chromium</translation>
 <translation id="8453117565092476964">የጫኚው መዝገብ ተበላሽቷል ወይም ትክክል አይደለም። እባክዎ Chromiumን እንደገና ያውርዱ።</translation>
 <translation id="6763060723530774166">የመተግበሪያ አስጀማሪውን ለመጠቀም Chromiumን በዴስክቶፑ ላይ ዳግም ማስጀመር አለብዎት።</translation>
+<translation id="3130323860337406239">Chromium ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
 <translation id="3249425904492147663">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ ሞክረዋል፣ ግን አገልጋዩ ጊዜው ያለፈበት የእውቅና ማረጋገጫ ነው ያቀረበው። ጊዜው ካለፈበት ጀምሮ ያ የእውቅና ማረጋገጫ ጥቃት ደርሶበት እንደሆነ ምንም የሚያሳይ መረጃ አይገኝም። ይህ ማለት Chromium ከአጥቂ ይልቅ ከ&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር እየተገናኙ መሆንዎን ሊያረጋግጥ አይችልም። የኮምፒውርዎ ሰዓት በአሁኑ ጊዜ <ph name="CURRENT_TIME"/> እንዲል ተዋቅሯል። ትክክል ይመስላል? ካልሆነ ስህተቱን አርመው ይህን ገጽ ማደስ አለብዎት።</translation>
 <translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
 <translation id="457845228957001925">የChromium ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>
 <translation id="7483335560992089831">እየሄደ ያለውን ተመሳሳዩን የChromium ስሪት መጫን አይቻልም። እባክዎ Chromiumን ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="7641113255207688324">Chromium ነባሪ አሳሽዎ አይደለም።</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
+<translation id="761356813943268536">Chromium ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
 <translation id="805745970029938373">ሁሉም ማሳወቂያዎችዎን እዚህ ካሉት የChromium መተግበሪያዎች፣ ቅጥያዎች፣ እና ድር ጣቢያዎች ሆነው ማየት ይችላሉ።</translation>
 <translation id="2119636228670142020">&amp;ስለChromium OS</translation>
 <translation id="1708666629004767631">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የChromium ስሪት አለ።</translation>
@@ -214,5 +221,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="8823523095753232532">የChromium ውሂቤን ከዚህ መለያ ጋር አገናኝ</translation>
 <translation id="1221340462641866827">Chromium OS የ<ph name="SCHEME"/> አገናኞችን ለማስተናገድ የውጫዊ መተግበሪያዎችን ማስጀመር አይደግፍም። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
 <translation id="328888136576916638">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የChromium ተግባራት ይሰናከላሉ።</translation>
+<translation id="2602806952220118310">Chromium - ማሳወቂያዎች</translation>
 <translation id="5032989939245619637">ዝርዝሮችን Chromium ውስጥ አስቀምጥ</translation>
 </translationbundle>

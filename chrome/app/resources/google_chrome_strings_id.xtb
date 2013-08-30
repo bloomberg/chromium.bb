@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Anda dapat melihat semua pemberitahuan dari aplikasi, ekstensi, dan situs web Chrome di sini.</translation>
 <translation id="2704356438731803243">Jika Anda memilih untuk menjaga data Chrome yang sudah ada tetap terpisah, Anda dapat membuat pengguna Chrome baru untuk <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
+<translation id="1225016890511909183">Chrome akan menyimpan informasi dengan aman sehingga Anda tidak harus mengetiknya lagi, tapi Anda masih harus memverifikasi kode keamanan kartu untuk pembayaran di masa mendatang.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chrome OS.</translation>
 <translation id="4309555186815777032">(Chrome perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
+<translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Chrome Frame telah diperbarui. Harap luncurkan ulang browser Anda. Versi Chrome: <ph name="TODO_0001"/>, Versi Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Anda perlu masuk ke Chrome untuk menggunakan aplikasi. Tindakan ini mengizinkan Chrome menyinkronkan aplikasi, bookmark, riwayat, sandi, atau setelan Anda yang lain di seluruh perangkat.</translation>
 <translation id="5775197990071433230">Komputer ini telah memiliki versi yang lebih anyar dari komponen Google Chrome. Gunakan pemasang yang lebih anyar.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS"/>. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="4053720452172726777">Menyesuaikan dan mengontrol Google Chrome</translation>
 <translation id="6423071462708908582">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang kedaluwarsa. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut telah disusupi sejak masa kedaluwarsa. Hal ini mengindikasikan bahwa Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi kesalahan ini dan menyegarkan laman.</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Aplikasi Chrome Canary</translation>
 <translation id="8551886023433311834">Hampir selesai diperbarui! Nyalakan ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - Pemberitahuan</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
@@ -86,6 +91,7 @@
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
 <translation id="6557998774620459028">Anda bermaksud membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang diterbitkan oleh entitas yang tidak dipercayai oleh sistem operasi komputer Anda. Ini mungkin berarti server telah membuat kredensial keamanannya sendiri, yang tidak dapat diandalkan Chrome untuk informasi identitas, atau penyerang mungkin mencoba mencegat komunikasi Anda.</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
+<translation id="7282192067747128786">Chrome - Pemberitahuan (<ph name="QUANTITY"/> belum dibaca)</translation>
 <translation id="6011049234605203654">Buka
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -116,6 +122,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="2874156562296220396">Google Chrome bisa ada berkat proyek sumber terbuka yaitu <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan berbagai <ph name="BEGIN_LINK_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_OSS"/> lainnya.</translation>
 <translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman menjelajahi Anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
+<translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="103396972844768118">Informasi penting terkait data Chrome Anda</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
@@ -143,7 +150,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="8547799825197623713">Peluncur Aplikasi Chrome Canary</translation>
 <translation id="5577648424992741236">Komputer ini telah memiliki Google Chrome Frame versi teranyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome Frame dan coba lagi.</translation>
 <translation id="6326175484149238433">Hapus dari Chrome</translation>
-<translation id="2871893339301912279">Anda sudah masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="1686446242839005801">Anda masuk ke Chrome menggunakan akun <ph name="USER_EMAIL_ADDRESS"/> Anda. Anda akan dapat mengakses bookmark, riwayat, dan setelan lain di semua perangkat Anda yang sudah masuk.</translation>
 <translation id="4147555960264124640">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Google Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE"/></translation>
@@ -155,6 +161,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
 <translation id="130631256467250065">Perubahan Anda akan diterapkan pada saat Anda nanti menyalakan ulang perangkat.</translation>
 <translation id="163860049029591106">Memulai dengan Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome menggunakan kamera Anda.</translation>
 <translation id="1399397803214730675">Komputer ini telah memiliki versi Google Chrome yang lebih anyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome dan coba lagi.</translation>
 <translation id="576822117893741893">Tampilkan menu Chrome</translation>
 <translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK"/>mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK"/>.</translation>
@@ -165,9 +172,10 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="5046764976540625289">Keluar dari Chrome</translation>
 <translation id="4251615635259297716">Tautkan data Chrome Anda ke akun ini?</translation>
 <translation id="9039578207253536065">Pekerja Google Chrome</translation>
-<translation id="2680623880102270805">Google Chrome tidak dapat membuat pintasan aplikasi karena tidak dapat menentukan lingkungan desktop saat ini.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
+<translation id="8142608456917638009">Google Chrome tidak dapat membuat pintasan aplikasi.</translation>
+<translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
 <translation id="2189123953385179981">Google ChromeOS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Izinkan Chrome untuk mengakses jaringan di setelan firewall atau antivirus
         Anda.</translation>

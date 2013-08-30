@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Hier finden Sie alle Benachrichtigungen von Chrome-Apps, Erweiterungen und Websites.</translation>
 <translation id="2704356438731803243">Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie einen neuen Chrome-Nutzer für <ph name="USER_NAME"/> erstellen.</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
+<translation id="1225016890511909183">Ihre Informationen werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht erneut einzugeben. Sie müssen aber bei zukünftigen Zahlungen immer noch den Sicherheitscode Ihrer Karte bestätigen.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="6982337800632491844">Vor der Verwendung dieses Geräts ist es erforderlich, dass Sie die folgenden Nutzungsbedingungen von <ph name="DOMAIN"/> akzeptieren. Durch diese Nutzungsbedingungen werden die Google Chrome OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
 <translation id="4309555186815777032">Ein <ph name="BEGIN_BUTTON"/>Neustart<ph name="END_BUTTON"/> von Chrome ist erforderlich.</translation>
+<translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME"/> aktualisiert...</translation>
 <translation id="5339639696978861456">Google Chrome Frame wurde aktualisiert. Bitte starten Sie Ihren Browser neu. Google Chrome-Version: <ph name="TODO_0001"/>, Google Chrome Frame-Version: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Sie können Apps verwenden, wenn Sie in Chrome angemeldet sind. Chrome kann dann Ihre Apps, Lesezeichen, Passwörter, Ihren Verlauf und andere Einstellungen auf Ihren Geräten synchronisieren.</translation>
 <translation id="5775197990071433230">Dieser Computer verfügt bereits über eine neuere Version der Google Chrome-Komponenten. Bitte verwenden Sie einen neueren Installer.</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Hilfe für Chrome aufrufen</translation>
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS"/> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Ihre Zahlungsangaben wurden in Chrome gespeichert.</translation>
+<translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
 <translation id="4053720452172726777">Google Chrome anpassen und einstellen</translation>
 <translation id="6423071462708908582">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem abgelaufenen Zertifikat ausgewiesen. Es liegen keine Informationen dahin gehend vor, ob dieses Zertifikat seit seinem Ablauf in fremden Besitz gelangt ist. Das bedeutet, dass Google Chrome nicht garantieren kann, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="3197823471738295152">Ihr Gerät ist auf dem neuesten Stand.</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Chrome Canary-Apps</translation>
 <translation id="8551886023433311834">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome – Benachrichtigungen</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
@@ -86,6 +91,7 @@
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
 <translation id="6557998774620459028">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von einem Aussteller herausgegeben wurde, dem das Betriebssystem des Computers nicht vertraut. Dies bedeutet möglicherweise, dass der Server seine eigenen Sicherheitsinformationen erzeugt hat, auf die Chrome als Identitätsangabe nicht vertrauen kann, oder dass ein Hacker versucht, Ihre Kommunikation abzufangen.</translation>
 <translation id="5170938038195470297">Ihr Profil kann nicht verwendet werden, da es von einer neueren Version von Google Chrome stammt. Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Google Chrome.</translation>
+<translation id="7282192067747128786">Chrome – Benachrichtigungen (<ph name="QUANTITY"/> ungelesen)</translation>
 <translation id="6011049234605203654">Gehen Sie zum Chrome-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; &gt; &quot;<ph name="PROXIES_TITLE"/>&quot; und vergewissern Sie sich, dass in Ihrer Konfiguration die Einstellung &quot;Kein Proxy&quot; oder &quot;Direkt&quot; verwendet wird.</translation>
 <translation id="8738921060445980047">Unbekannte Version</translation>
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
@@ -109,6 +115,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2874156562296220396">Google Chrome wird durch das Open-Source-Projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> und andere <ph name="BEGIN_LINK_OSS"/>Open-Source-Software<ph name="END_LINK_OSS"/> ermöglicht.</translation>
 <translation id="3847841918622877581">Google Chrome kann das Browserverhalten mithilfe von Webdiensten verbessern.</translation>
 <translation id="7436949144778751379">Für Google Chrome ist Windows XP oder höher erforderlich. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
+<translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="103396972844768118">Wichtige Informationen zu Ihren Chrome-Daten</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Keine Anfragen mehr</translation>
@@ -129,7 +136,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="8547799825197623713">Chrome-App-Übersicht für Canary</translation>
 <translation id="5577648424992741236">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome Frame. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>
-<translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="7161904924553537242">Willkommen bei Chrome</translation>
 <translation id="1686446242839005801">Sie werden mit Ihrem Konto <ph name="USER_EMAIL_ADDRESS"/> in Chrome angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="4147555960264124640">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE"/></translation>
@@ -139,6 +145,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>
 <translation id="130631256467250065">Ihre Änderungen werden beim nächsten Neustart wirksam.</translation>
 <translation id="163860049029591106">Erste Schritte mit Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
 <translation id="1399397803214730675">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="576822117893741893">Chrome-Menü anzeigen</translation>
 <translation id="3444832043240812445">Diese Seite zeigt nur Informationen zu Ihren letzten Abstürzen, wenn Sie die <ph name="BEGIN_LINK"/>Absturzberichtsfunktion aktivieren<ph name="END_LINK"/>.</translation>
@@ -149,9 +156,10 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5046764976540625289">Google Chrome beenden</translation>
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome kann keine App-Verknüpfung erstellen, weil die aktuelle Desktop-Umgebung nicht erkannt wird.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
+<translation id="8142608456917638009">Google Chrome konnte keine Anwendungsverknüpfung erstellen.</translation>
+<translation id="8255190535488645436">Google Chrome verwendet Ihre Kamera und Ihr Mikrofon.</translation>
 <translation id="2189123953385179981">Google Chrome OS unterstützt keine externe App zur Verarbeitung von <ph name="SCHEME"/>-Links. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Erlauben Sie Chrome in Ihren Firewall- und Virenschutzeinstellungen den Zugriff auf das Netzwerk.</translation>
 <translation id="8205111949707227942">Optional: Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome OS automatisch an Google senden</translation>

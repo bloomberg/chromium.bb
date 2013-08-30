@@ -17,6 +17,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="4167057906098955729">Овде можете да видите сва обавештења из Chrome апликација, додатака и веб-сајтова.</translation>
 <translation id="2704356438731803243">Ако желите да постојећи Chrome подаци буду раздвојени, можете да направите новог Chrome корисника за <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
+<translation id="1225016890511909183">Chrome ће безбедно складиштити информације, па нећете морати поново да их уносите, али ћете и даље морати да верификујете безбедносни кôд картице за будућа плаћања.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2077129598763517140">Користи хардверско убрзање када је доступно</translation>
 <translation id="1065672644894730302">Подешавања не могу да се прочитају.
@@ -36,6 +37,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="1773601347087397504">Пронађи помоћ за коришћење Chrome ОС-а</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> захтева да прочитате и прихватите следеће Услове коришћења услуге пре него што почнете да користите овај уређај. Ови услови не представљају проширење, измену или ограничење Услова за Google Chrome ОС.</translation>
 <translation id="4309555186815777032">(захтева <ph name="BEGIN_BUTTON"/>поновно покретање<ph name="END_BUTTON"/> Chrome-а)</translation>
+<translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Chrome Frame је ажуриран. Поново покрените прегледач. Верзија Chrome прегледача: <ph name="TODO_0001"/>, верзија Chrome Frame-а: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Потребно је да будете пријављени на Chrome да бисте користили апликације. То омогућава Chrome-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на свим уређајима.</translation>
 <translation id="5775197990071433230">Овај рачунар већ има новију верзију Google Chrome компоненти. Користите новији инсталациони програм.</translation>
@@ -62,6 +64,8 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="1393853151966637042">Пронађи помоћ за коришћење Chrome-а</translation>
 <translation id="7398801000654795464">Били сте пријављени на Chrome као <ph name="USER_EMAIL_ADDRESS"/>. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Детаљи обрачуна су сачувани у Chrome-у.</translation>
+<translation id="7098166902387133879">Google Chrome користи микрофон.</translation>
 <translation id="4053720452172726777">Прилагодите и контролишите Google Chrome</translation>
 <translation id="6423071462708908582">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао истекли сертификат. Нису доступне никакве информације које би указале на то да ли је сертификат компромитован од када је истекао. То значи да Google Chrome не може да гарантује да комуницирате са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не са нападачем. Сат на рачунару је тренутно подешен на  <ph name="CURRENT_TIME"/>. Да ли вам то делује тачно? Ако не делује, треба да исправите грешку и освежите ову страницу.</translation>
 <translation id="3197823471738295152">Уређај је ажуриран.</translation>
@@ -69,6 +73,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="1434626383986940139">Chrome Canary апликације</translation>
 <translation id="8551886023433311834">Ажурирање је скоро готово! Покрените поново уређај да бисте довршили ажурирање.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="1073391069195728457">Chrome – Обавештења</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="3282568296779691940">Пријављивање на Chrome</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
@@ -94,6 +99,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5170938038195470297">Профил не може да се користи јер је из новије верзије Google Chrome-а.
 
 Неке функције су можда недоступне. Наведите други директоријум профила или користите новију верзију Chrome-а.</translation>
+<translation id="7282192067747128786">Chrome – Обавештења (непрочитаних: <ph name="QUANTITY"/>)</translation>
 <translation id="6011049234605203654">Идите у
           Chrome мени &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -124,6 +130,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> пројекат софтвера отвореног кода и други типови <ph name="BEGIN_LINK_OSS"/>софтвера отвореног кода<ph name="END_LINK_OSS"/> су омогућили настанак програма Google Chrome.</translation>
 <translation id="3847841918622877581">Google Chrome може да користи веб услуге да би побољшао доживљај прегледања.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
+<translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="103396972844768118">Важне информације у вези са Chrome подацима</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
@@ -151,7 +158,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8547799825197623713">Покретач Chrome апликација Canary</translation>
 <translation id="5577648424992741236">Овај рачунар већ има новију верзију Google Chrome Frame-а. Ако софтвер не функционише, деинсталирајте Google Chrome Frame и покушајте поново.</translation>
 <translation id="6326175484149238433">Уклони из Chrome-а</translation>
-<translation id="2871893339301912279">Пријављени сте на Chrome!</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="1686446242839005801">Пријављујете се на Chrome помоћу налога <ph name="USER_EMAIL_ADDRESS"/>. Моћи ћете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="4147555960264124640">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Google Chrome профилом. Chrome подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME"/>. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE"/></translation>
@@ -161,6 +167,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
 <translation id="130631256467250065">Промене ће ступити на снагу када следећи пут поново покренете уређај.</translation>
 <translation id="163860049029591106">Почетни кораци за Chrome ОС</translation>
+<translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
 <translation id="576822117893741893">Приказивање Chrome менија</translation>
 <translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
@@ -171,9 +178,10 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5046764976540625289">Напусти Chrome</translation>
 <translation id="4251615635259297716">Желите ли да повежете Chrome податке са овим налогом?</translation>
 <translation id="9039578207253536065">Google Chrome радник</translation>
-<translation id="2680623880102270805">Google Chrome не може да направи пречицу апликације јер не може да одреди тренутно рачунарско окружење.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Интернет прегледач</translation>
+<translation id="8142608456917638009">Google Chrome није могао да направи пречицу за апликацију.</translation>
+<translation id="8255190535488645436">Google Chrome користи камеру и микрофон.</translation>
 <translation id="2189123953385179981">Google ChromeOS не подржава покретање спољних апликација ради обраде <ph name="SCHEME"/> веза. Потребна веза је <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Дозволите Chrome-у да приступа мрежи у заштитном зиду или антивирусним
         подешавањима.</translation>

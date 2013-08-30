@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Chrome のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
 <translation id="2704356438731803243">既存の Chrome データを個別に保持したい場合は、<ph name="USER_NAME"/> 用の新しい Chrome ユーザーを作成できます。</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
+<translation id="1225016890511909183">Chrome で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
+<translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME"/> チャンネルに更新しています...</translation>
 <translation id="5339639696978861456">Chrome Frame が更新されました。ブラウザを再起動してください。Chrome のバージョン: <ph name="TODO_0001"/>、Chrome Frame のバージョン: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">アプリを使用するには Chrome にログインする必要があります。ログインすると、Chrome ではアプリ、ブックマーク、履歴、パスワード、その他の設定をデバイス間で同期できます。</translation>
 <translation id="5775197990071433230">新しいバージョンの Google Chrome コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
@@ -56,6 +58,8 @@
 <translation id="1393853151966637042">Chrome の使用に関するアドバイス</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS"/> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="1697213158865901863">Google Chrome フレーム</translation>
+<translation id="4513711165509885787">お支払い情報を Chrome に保存しました。</translation>
+<translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書は有効期限が切れています。この証明書の有効期限が切れた後に証明書がセキュリティ侵害を受けたのかどうかについて確認できる情報はありません。つまり Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
@@ -63,6 +67,7 @@
 <translation id="1434626383986940139">Chrome Canary アプリ</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - お知らせ</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
@@ -86,6 +91,7 @@
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="6557998774620459028">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムで信頼されていない発行元です。サーバーで独自に生成されたセキュリティ認証情報が、Chrome で認証情報として使用できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
+<translation id="7282192067747128786">Chrome - お知らせ（<ph name="QUANTITY"/> 件未読）</translation>
 <translation id="6011049234605203654">このオプションを無効にするには:
           Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -116,6 +122,7 @@
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
 <translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
+<translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="103396972844768118">Chrome データに関する重要な情報</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
@@ -143,7 +150,6 @@
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
 <translation id="5577648424992741236">新しいバージョンの Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6326175484149238433">Chrome から削除</translation>
-<translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chrome にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>
@@ -155,6 +161,7 @@
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
 <translation id="163860049029591106">Chrome OS のスタート ガイド</translation>
+<translation id="1587223624401073077">Google Chrome がカメラを使用しています。</translation>
 <translation id="1399397803214730675">新しいバージョンの Google Chrome が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome をアンインストールしてからもう一度お試しください。</translation>
 <translation id="576822117893741893">Chrome メニューを表示する</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>障害レポートを有効<ph name="END_LINK"/>にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
@@ -165,9 +172,10 @@
 <translation id="5046764976540625289">Chrome を終了</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome では、現在のデスクトップ環境を特定できないため、アプリケーション ショートカットを作成できません。</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
+<translation id="8142608456917638009">Google Chrome ではアプリケーションのショートカットを作成できませんでした。</translation>
+<translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
         許可します。</translation>

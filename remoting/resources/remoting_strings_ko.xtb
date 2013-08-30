@@ -2,7 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="7606912958770842224">원격 연결 사용</translation>
+<translation id="3785447812627779171">Chromoting
+호스트</translation>
 <translation id="1841799852846221389">컴퓨터의 원격 연결을 사용중지하는 중...</translation>
+<translation id="2676780859508944670">처리 중…</translation>
 <translation id="5843054235973879827">안전한 이유</translation>
 <translation id="5619148062500147964">이 컴퓨터로의 연결</translation>
 <translation id="4068946408131579958">모든 연결</translation>
@@ -10,6 +13,7 @@
 <translation id="2801119484858626560">Chrome 원격 데스크톱의 호환되지 않는 버전이 감지되었습니다. 양쪽 컴퓨터의 Chrome과 Chrome 원격 데스크톱이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6998989275928107238">호스트</translation>
 <translation id="406849768426631008">영상 채팅 중 다른 사용자를 도와주려면 <ph name="LINK_BEGIN"/>Google 행아웃의 원격 데스크톱<ph name="LINK_END"/>을 사용해보세요.</translation>
+<translation id="5397086374758643919">Chrome 원격 데스크톱 호스트 제거 프로그램</translation>
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
@@ -18,24 +22,31 @@
 <translation id="4368630973089289038">Chromoting을 개선하도록 도와주려면 <ph name="LINK_BEGIN"/>설문조사에 참여하세요.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">컴퓨터 이름 수정</translation>
 <translation id="1996161829609978754">Chrome에서 Chromoting 호스트 설치 프로그램을 다운로드 중입니다. 다운로드가 완료되면 설치 프로그램을 실행하고 계속하세요.</translation>
+<translation id="2046651113449445291">다음 클라이언트는 이 컴퓨터와 페어링되었으며 PIN을 제공하지 않고도 연결할 수 있습니다. 언제든지 개별 클라이언트 또는 모든 클라이언트에 대해 이 권한을 취소할 수 있습니다.</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7782471917492991422">컴퓨터의 전원 관리 설정을 확인하고 유휴 상태일 때 절전 모드로 전환되도록 설정되지 않았는지 확인하세요.</translation>
 <translation id="2707879711568641861">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. 최신 버전을 설치했는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="2499160551253595098">사용 통계 및 오류 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
+<translation id="677755392401385740">사용자(<ph name="HOST_USERNAME"/>)의 호스트가 시작되었습니다.</translation>
 <translation id="8864965950780407789">Chromoting을 사용하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한 번만 수행하면 됩니다.</translation>
 <translation id="8355326866731426344">액세스 코드가 <ph name="TIMEOUT"/>초 후에 만료됩니다.</translation>
+<translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="5708869785009007625">내 컴퓨터를 <ph name="USER"/>님과 공유하고 있습니다.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5222676887888702881">로그아웃</translation>
+<translation id="6304318647555713317">클라이언트</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME"/>(오프라인)</translation>
 <translation id="4472575034687746823">시작하기</translation>
 <translation id="2813770873348017932">누군가 잘못된 PIN으로 연결을 시도하여 원격 컴퓨터에 대한 연결이 일시적으로 차단되었습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="6746493157771801606">기록 삭제</translation>
 <translation id="4430435636878359009">컴퓨터에 원격 연결 사용중지</translation>
+<translation id="6001953797859482435">Chrome 원격 데스크톱 호스트 환경설정</translation>
 <translation id="9188433529406846933">승인</translation>
+<translation id="228809120910082333">Chromoting을 통해 액세스할 수 있도록 계정 및 PIN을 확인하세요.</translation>
+<translation id="5826423541626112308">Chrome 원격 데스크톱 호스트</translation>
 <translation id="2851674870054673688">액세스 코드를 입력하면 공유 세션이 시작됩니다.</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="3908017899227008678">크기에 맞게 축소</translation>
@@ -43,12 +54,18 @@
 <translation id="5379087427956679853">Chrome 원격 데스크톱을 사용하면 웹에서 내 컴퓨터를 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL"/> 페이지에 있는 Chrome 원격 데스크톱 앱을 실행해야 합니다.</translation>
 <translation id="1409991159633941777">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
+<translation id="253387295088602549">다른 사용자가 인터넷을 통해 안전하게 내 컴퓨터에 액세스할 수 있습니다.</translation>
+<translation id="629730747756840877">계정</translation>
 <translation id="8525306231823319788">전체화면</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>(이전 버전)</translation>
+<translation id="3884839335308961732">Chrome 원격 데스크톱스으로 액세스할 수 있도록 아래 계정 및 PIN을 확인하세요.</translation>
 <translation id="327263477022142889">Chrome 원격 데스크톱을 개선하도록 도와주려면 <ph name="LINK_BEGIN"/>설문조사에 참여하세요.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">연결됨:</translation>
+<translation id="8509907436388546015">데스크톱 통합 프로세스</translation>
 <translation id="4736223761657662401">연결 기록</translation>
 <translation id="4430915108080446161">액세스 코드 생성 중...</translation>
+<translation id="2013996867038862849">페어링된 클라이언트가 모두 삭제되었습니다.</translation>
+<translation id="7081428606750359611">Chromoting 호스트</translation>
 <translation id="8228265668171617545">호환되지 않는 Chromoting이 감지되었습니다. 양쪽 컴퓨터의 Chrome 및 Chromoting이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/>와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
@@ -57,9 +74,11 @@
 <translation id="4481276415609939789">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chromoting을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="2013884659108657024">Chrome에서 원격 데스크톱 호스트 설치 프로그램을 다운로드 중입니다. 다운로드가 완료되면 계속하기 전에 설치 프로그램을 실행하세요.</translation>
 <translation id="1742469581923031760">연결 중...</translation>
+<translation id="8998327464021325874">Chrome 원격 데스크톱 호스트 컨트롤러</translation>
 <translation id="6748108480210050150">클라이언트</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="1291443878853470558">Chromoting을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
+<translation id="2599300881200251572">이 서비스를 이용하면 Chrome 원격 데스크톱 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="6091564239975589852">키 보내기</translation>
 <translation id="4572065712096155137">액세스</translation>
 <translation id="5908809458024685848">Chromoting에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
@@ -75,15 +94,19 @@
 <translation id="1342297293546459414">공유한 컴퓨터를 보고 제어합니다.</translation>
 <translation id="1520828917794284345">데스크톱 크기 조정</translation>
 <translation id="701976023053394610">원격 지원</translation>
+<translation id="6099500228377758828">Chrome 원격 데스크톱 서비스</translation>
 <translation id="2747641796667576127">소프트웨어 업데이트는 보통 자동으로 시행되며, 드물지만 실패하는 경우도 있습니다. 소프트웨어 업데이트는 몇 분 정도 소요되며 컴퓨터가 원격으로 연결되어 있을 때 이루어집니다.</translation>
 <translation id="3933246213702324812"><ph name="HOSTNAME"/>의 Chromoting이 오래되어 업데이트해야 합니다.</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME"/>에 연결</translation>
 <translation id="3020807351229499221">PIN을 업데이트하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="2647232381348739934">Chromoting 서비스</translation>
 <translation id="579702532610384533">다시 연결</translation>
 <translation id="4211066471404647515">Chromoting에 필요한 일부 구성 요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>
+<translation id="5773590752998175013">페어링 날짜</translation>
 <translation id="5265129178187621741">(아직 크롬북에서 사용할 수 없는 기능입니다. 조금만 기다려 주시기 바랍니다.)</translation>
 <translation id="5156271271724754543">두 입력란에 같은 PIN을 입력하세요.</translation>
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
+<translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">연결 대기 중...</translation>
 <translation id="5714695932513333758">연결 기록</translation>
 <translation id="811307782653349804">어디서든 내 컴퓨터에 액세스할 수 있습니다.</translation>
@@ -92,34 +115,48 @@
 <translation id="5625493749705183369">다른 컴퓨터에 액세스하거나 다른 사용자가 인터넷을 통해 안전하게 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
+<translation id="4812684235631257312">호스트</translation>
 <translation id="897805526397249209">다른 컴퓨터에 원격 연결을 사용하려면 그 컴퓨터에 Chromoting을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
+<translation id="1704090719919187045">Chromoting 호스트 환경설정</translation>
 <translation id="809687642899217504">내 컴퓨터</translation>
 <translation id="3106379468611574572">원격 컴퓨터가 연결 요청에 응답하지 않습니다. 온라인 상태인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="2359808026110333948">계속</translation>
+<translation id="2078880767960296260">호스트 프로세스</translation>
 <translation id="1643640058022401035">이 페이지를 닫으면 Chromoting 세션이 종료됩니다.</translation>
+<translation id="8261506727792406068">삭제</translation>
 <translation id="2235518894410572517">다른 사용자가 보고 제어할 수 있도록 이 컴퓨터를 공유합니다.</translation>
 <translation id="1023096696228309145">내가 액세스하고 싶은 컴퓨터의 사용자에게 '지금 공유'를 클릭한 다음 액세스 코드를 알려달라고 요청하세요.</translation>
+<translation id="4240294130679914010">Chromoting 호스트 제거 프로그램</translation>
 <translation id="80739703311984697">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chromoting에 추가 권한을 허용해야 합니다.</translation>
 <translation id="4006787130661126000">Chrome 원격 데스크톱을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
+<translation id="177096447311351977">클라이언트용 채널 IP: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'</translation>
 <translation id="6930242544192836755">기간</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="2926340305933667314">컴퓨터에 대한 원격 액세스를 사용중지하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="6865175692670882333">보기/수정</translation>
 <translation id="2089514346391228378">컴퓨터의 원격 연결을 사용하도록 설정했습니다.</translation>
 <translation id="8246880134154544773">인증에 실패했습니다. Chromoting에 다시 로그인하세요.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
+<translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="7038683108611689168">사용 통계 및 오류 보고서 수집을 허용하여 Chromoting 개선에 참여하겠습니다.</translation>
 <translation id="6040143037577758943">닫기</translation>
+<translation id="4405930547258349619">핵심 라이브러리</translation>
+<translation id="310979712355504754">모두 삭제</translation>
 <translation id="7649070708921625228">도움말</translation>
 <translation id="3581045510967524389">네트워크에 연결할 수 없습니다. 기기가 온라인 상태인지 확인하시기 바랍니다.</translation>
 <translation id="4517233780764084060">참고: 모든 단축키를 사용하려면 Chromoting을 '창으로 열기'로 설정합니다.</translation>
 <translation id="4176825807642096119">액세스 코드</translation>
 <translation id="7144878232160441200">다시 시도</translation>
+<translation id="4573676252416618192">Chrome 원격
+데스크톱 호스트</translation>
 <translation id="4703799847237267011">Chromoting 세션이 종료되었습니다.</translation>
 <translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">사용자 간 화면 공유가 가능하며 원격 기술 지원에 적합합니다.</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
+<translation id="4563926062592110512">연결 해제된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="7319983568955948908">공유 중지</translation>
+<translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
 <translation id="1462361961931793308">이 컴퓨터에서 이 호스트로 연결할 때 PIN을 다시 요청하지 않습니다.</translation>
 <translation id="6668065415969892472">PIN이 업데이트되었습니다.</translation>
 <translation id="4277736576214464567">액세스 코드가 잘못되었습니다. 다시 시도해 주세요.</translation>
@@ -129,12 +166,17 @@
 <translation id="6011539954251327702">Chromoting을 사용하면 컴퓨터를 웹에서 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL"/>에 있는 Chromoting 앱을 실행해야 합니다.</translation>
 <translation id="2919669478609886916">현재 이 컴퓨터를 다른 사용자와 공유하고 있습니다. 계속 공유하시겠습니까?</translation>
 <translation id="4207623512727273241">계속하기 전에 설치 프로그램을 실행하세요.</translation>
+<translation id="3596628256176442606">이 서비스를 이용하면 Chromoting 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
+<translation id="4277463233460010382">이 컴퓨터는 한 개 이상의 클라이언트가 PIN을 입력하지 않고도 연결할 수 있도록 구성되었습니다.</translation>
 <translation id="837021510621780684">이 컴퓨터에서 시작한 연결</translation>
+<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="7215059001581613786">6자리 이상의 숫자로 구성된 PIN을 입력하세요.</translation>
 <translation id="1546934824884762070">예기치 않은 오류가 발생했습니다. 개발자에게 문제를 신고해 주세요.</translation>
 <translation id="6965382102122355670">확인</translation>
+<translation id="7434397035092923453"><ph name="CLIENT_USERNAME"/> 클라이언트의 액세스가 거부되었습니다.</translation>
 <translation id="3403830762023901068">정책 설정에서 이 컴퓨터를 Chromoting 호스트로 공유하는 것을 허용하지 않습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.</translation>
 <translation id="9016232822027372900">연결하기</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4156740505453712750">액세스 제한을 통해 이 컴퓨터를 보호하려면 <ph name="BOLD_START"/>최소 6자리<ph name="BOLD_END"/>의 PIN을 선택하세요. 이 PIN은 다른 위치에서 연결할 때 필요합니다.</translation>
+<translation id="3286521253923406898">Chromoting 호스트 컨트롤러</translation>
 </translationbundle>

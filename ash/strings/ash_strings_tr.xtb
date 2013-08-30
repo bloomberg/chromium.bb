@@ -2,22 +2,26 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="3595596368722241419">Pil tam dolu</translation>
-<translation id="5250713215130379958">Başlatıcıyı otomatik gizle</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ve <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portal durumu</translation>
 <translation id="30155388420722288">Taşma Düğmesi</translation>
+<translation id="8673028979667498656">270°</translation>
 <translation id="5571066253365925590">Bluetooth etkin</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> dönme ayarı <ph name="ROTATION"/> olarak değiştirildi</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth devre dışı</translation>
+<translation id="7165320105431587207">Ağ yapılandırılamadı</translation>
 <translation id="3775358506042162758">Çoklu oturum açmada en fazla üç hesabınız olabilir.</translation>
 <translation id="370649949373421643">Kablosuzu Etkinleştir</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
+<translation id="595202126637698455">Performans izleme etkin</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
 <translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> çözünürlüğü <ph name="RESOLUTION"/> olarak değiştirildi</translation>
 <translation id="6943836128787782965">HTTP get işlevi başarısız oldu</translation>
 <translation id="2297568595583585744">Durum tepsisi</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
@@ -34,39 +38,41 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
 <translation id="3026237328237090306">Mobil verileri ayarla</translation>
+<translation id="5871632337994001636">Cihazları yönet...</translation>
 <translation id="785750925697875037">Mobil hesabı görüntüle</translation>
 <translation id="153454903766751181">Hücresel modem başlatılıyor...</translation>
 <translation id="4628814525959230255">Ekranınızın denetimi Hangouts üzerinden <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
-<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> döndürüldü</translation>
 <translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
 <translation id="939252827960237676">Ekran görüntüsü kaydedilemedi</translation>
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
 <translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
 <translation id="735745346212279324">VPN bağlantısı kesildi</translation>
 <translation id="7320906967354320621">Boşta</translation>
-<translation id="6303423059719347535">Pil %<ph name="PERCENTAGE"/> dolu</translation>
 <translation id="15373452373711364">Büyük fare imleci</translation>
-<translation id="2778346081696727092">Sağlanan kullanıcı adı ve şifreyle kimlik doğrulanamadı</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="2942516765047364088">Raf konumu</translation>
 <translation id="2903907270192926896">GİRİŞ</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="7170041865419449892">Aralık dışında</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
 <translation id="5222676887888702881">Çıkış</translation>
+<translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Yapılandırma</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="4957722034734105353">Daha fazla bilgi edinin...</translation>
 <translation id="2964193600955408481">Kablosuz bağlantıyı devre dışı bırak</translation>
-<translation id="811680302244032017">Cihaz ekle...</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
+<translation id="7973962044839454485">Yanlış kullanıcı adı veya şifreden dolayı PPP kimlik doğrulaması başarısız oldu</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="3892641579809465218">Dahili Ekran</translation>
 <translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra &quot;<ph name="FROM_LOCALE"/>&quot; olan dil &quot;<ph name="TO_LOCALE"/>&quot; olarak değiştirildi.</translation>
 <translation id="3368922792935385530">Bağlı</translation>
 <translation id="8340999562596018839">Sesli geri bildirim</translation>
 <translation id="8654520615680304441">Kablosuz'u aç...</translation>
+<translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2562916301614567480">Özel Ağ</translation>
@@ -83,11 +89,12 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3626637461649818317">%<ph name="PERCENTAGE"/> kaldı</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="2825619548187458965">Raf</translation>
 <translation id="2614835198358683673">Chromebook'unuz açıkken şarj edilemeyebilir. Orijinal şarj cihazını kullanmayı düşünün.</translation>
 <translation id="1895658205118569222">Kapat</translation>
 <translation id="4430019312045809116">Ses</translation>
+<translation id="8681498213689260554">Güncellemek için yeniden başlatın ve Powerwash yapın</translation>
 <translation id="4442424173763614572">DNS arama başarısız oldu</translation>
-<translation id="6356500677799115505">Pil dolu ve şarj oluyor.</translation>
 <translation id="7874779702599364982">Hücresel ağlar aranıyor...</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="1383876407941801731">Arama</translation>
@@ -96,7 +103,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2204305834655267233">Ağ Bilgisi</translation>
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Misafir oturumundan çık</translation>
-<translation id="4471417012762451363">Pil %<ph name="PERCENTAGE"/> dolu ve şarj oluyor</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="4666297444214622512">Başka bir hesapta oturum açılamıyor.</translation>
 <translation id="1346748346194534595">Sağa</translation>
@@ -114,6 +120,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="6312403991423642364">Bilinmeyen ağ hatası</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="5543001071567407895">SMS</translation>
+<translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> etkinleştiriliyor</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
 <translation id="1398853756734560583">Büyüt</translation>
@@ -123,7 +130,6 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="3784455785234192852">Kilitle</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
-<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> ekranı <ph name="RESOLUTION"/> olarak yeniden boyutlandırıldı</translation>
 <translation id="1512064327686280138">Etkinleştirme hatası</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' ağına bağlanamadı: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Kablosuz kapalı.</translation>
@@ -131,6 +137,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
 <translation id="8678698760965522072">Çevrimiçi durumu</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Dahili hata</translation>
 <translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
@@ -153,20 +160,24 @@ Sunucu mesajı: <ph name="SERVER_MSG"/></translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
 <translation id="8454013096329229812">Kablosuz açık.</translation>
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
+<translation id="9201131092683066720">Pil %<ph name="PERCENTAGE"/> dolu.</translation>
 <translation id="2983818520079887040">Ayarlar...</translation>
+<translation id="1195412055398077112">fazla tarama</translation>
 <translation id="1717216362413677834">Yuva modu</translation>
+<translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="8927026611342028580">Bağlantı İstendi</translation>
 <translation id="8300849813060516376">OTASP başarısız oldu</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> dosya senkronize ediliyor</translation>
+<translation id="5958529069007801266">Denetlenen kullanıcı</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
 <translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
+<translation id="6785414152754474415">Pil %<ph name="PERCENTAGE"/> dolu ve şarj oluyor.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Etkinleştiriliyor...</translation>
+<translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="1391854757121130358">Mobil veri hakkınızı bitirmiş olabilirsiniz.</translation>
-<translation id="5413208160176941586">Yerel olarak yönetilen kullanıcı</translation>
-<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
-<translation id="4864165860509564259">Başlatıcı konumu</translation>
+<translation id="5947494881799873997">Geri döndür</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="3050422059534974565">CAPS LOCK açık.
@@ -179,22 +190,24 @@ Sunucu mesajı: <ph name="SERVER_MSG"/></translation>
 <translation id="6692173217867674490">Hatalı parola</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="9046895021617826162">Bağlantı başarısız oldu</translation>
+<translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="973896785707726617">Bu oturum <ph name="SESSION_TIME_REMAINING"/> içinde sona erecek. Oturumunuz otomatik olarak kapatılacaktır.</translation>
 <translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
 <translation id="6636709850131805001">Tanınmayan durum</translation>
 <translation id="3573179567135747900">Tekrar &quot;<ph name="FROM_LOCALE"/>&quot; ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
-<translation id="1510238584712386396">Başlatıcı</translation>
 <translation id="7209101170223508707">CAPS LOCK açık.
 İptal için Alt+Arama veya Üst Karakter tuşlarına basın.</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE"/>)</translation>
+<translation id="4918086044614829423">Kabul et</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kaldı</translation>
 <translation id="520760366042891468">Ekranınızın denetimi Hangouts üzerinden paylaşılıyor.</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="4015692727874266537">Başka bir hesapta oturum açın...</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Tam dolana kadar <ph name="HOUR"/> sa <ph name="MINUTE"/> dk var</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> numaradan SMS alındı</translation>
 <translation id="1244147615850840081">Operatör</translation>

@@ -17,6 +17,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="4167057906098955729">You can see all your notifications from Chrome apps, extensions and websites here.</translation>
 <translation id="2704356438731803243">If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
+<translation id="1225016890511909183">Chrome will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="1065672644894730302">Your preferences cannot be read.
@@ -36,6 +37,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.</translation>
 <translation id="4309555186815777032">(requires Chrome <ph name="BEGIN_BUTTON"/>restart<ph name="END_BUTTON"/>)</translation>
+<translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME"/> channel...</translation>
 <translation id="5339639696978861456">Chrome Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001"/>, Chrome Frame version: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
 <translation id="5775197990071433230">This computer already has a more recent version of the Google Chrome components. Please use a more recent installer.</translation>
@@ -62,6 +64,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
 <translation id="6423071462708908582">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
@@ -69,6 +73,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - Notifications</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
@@ -94,6 +99,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5170938038195470297">Your profile cannot be used because it is from a newer version of Google Chrome.
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
+<translation id="7282192067747128786">Chrome - Notifications (<ph name="QUANTITY"/> unread)</translation>
 <translation id="6011049234605203654">Go to
           the Chrome menu &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -124,6 +130,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
+<translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="103396972844768118">Important information regarding your Chrome data</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
@@ -151,7 +158,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
 <translation id="6326175484149238433">Remove from Chrome</translation>
-<translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="1686446242839005801">You're signing in to Chrome using your <ph name="USER_EMAIL_ADDRESS"/> account. You will be able to access your bookmarks, history and other settings on all of your signed in devices.</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>
@@ -163,6 +169,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
 <translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="576822117893741893">Show the Chrome menu</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
@@ -173,9 +180,10 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5046764976540625289">Exit Chrome</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome cannot create an application shortcut because it cannot determine the current desktop environment.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
+<translation id="8142608456917638009">Google Chrome could not create an application shortcut.</translation>
+<translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
 <translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
         settings.</translation>

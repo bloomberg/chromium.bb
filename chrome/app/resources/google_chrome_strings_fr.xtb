@@ -17,6 +17,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="4167057906098955729">Vous pouvez consulter ici toutes les notifications qui vous sont transmises depuis les applications, les extensions et les sites Web Chrome.</translation>
 <translation id="2704356438731803243">Si vous préférez conserver vos données Google Chrome à part, vous pouvez créer un utilisateur Google Chrome pour <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Veuillez fermer toutes les fenêtres de Google Chrome et réessayer.</translation>
+<translation id="1225016890511909183">Chrome va stocker les informations vous concernant de manière sécurisée. Vous n'aurez donc pas besoin de les saisir à nouveau. En revanche, vous devrez valider le code de sécurité de votre carte lors de vos prochains paiements.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="1065672644894730302">Impossible de lire vos préférences.
@@ -35,6 +36,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1773601347087397504">Obtenir de l'aide sur l'utilisation de Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> implique que vous lisiez et acceptiez les présentes conditions d'utilisation pour utiliser cet appareil. Ces dernières n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Google Chrome.</translation>
 <translation id="4309555186815777032">(nécessite le <ph name="BEGIN_BUTTON"/>redémarrage<ph name="END_BUTTON"/> de Chrome)</translation>
+<translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME"/>…</translation>
 <translation id="5339639696978861456">Chrome Frame a été mis à jour. Veuillez relancer votre navigateur. Version de Google Chrome : <ph name="TODO_0001"/>, version de Chrome Frame : <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Vous devez être connecté à Google Chrome pour utiliser les applications. Cela permet à Google Chrome de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et vos autres paramètres sur tous vos appareils.</translation>
 <translation id="5775197990071433230">Cet ordinateur contient déjà une version plus récente des composants Google Chrome. Veuillez utiliser un programme d'installation plus récent.</translation>
@@ -61,6 +63,8 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1393853151966637042">Obtenir de l'aide sur l'utilisation de Google Chrome</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS"/>. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Vos informations de facturation ont été enregistrées dans Chrome.</translation>
+<translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="6423071462708908582">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat qui a expiré. Aucune information ne permet de savoir si ce certificat a été corrompu depuis son expiration. Google Chrome ne peut donc pas garantir que vous communiquez avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non avec un pirate informatique. L'horloge de votre ordinateur indique qu'il est actuellement <ph name="CURRENT_TIME"/>. Est-ce correct ? Si ce n'est pas le cas, corrigez toute erreur, puis actualisez cette page.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
@@ -68,6 +72,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Notifications – Chrome</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="3282568296779691940">Se connecter à Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
@@ -94,6 +99,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5170938038195470297">Votre profil ne peut pas être utilisé parce qu'il vient d'une version plus récente de Google Chrome. 
 
 Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
+<translation id="7282192067747128786">Notifications – Chrome (<ph name="QUANTITY"/> non lues)</translation>
 <translation id="6011049234605203654">Accédez au
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -124,6 +130,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2874156562296220396">Google Chrome fonctionne grâce au projet Open Source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> et à d'autres <ph name="BEGIN_LINK_OSS"/>logiciels libres<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="7436949144778751379">Google Chrome requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
+<translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="103396972844768118">Information importante concernant vos données Google Chrome</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
@@ -151,7 +158,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
 <translation id="5577648424992741236">Une version plus récente de Google Chrome Frame est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, veuillez désinstaller Google Chrome Frame, puis réessayer.</translation>
 <translation id="6326175484149238433">Supprimer de Google Chrome</translation>
-<translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="1686446242839005801">Vous êtes en train de vous connecter à Chrome avec le compte <ph name="USER_EMAIL_ADDRESS"/>. Vous pourrez accéder à vos favoris, à votre historique et aux autres paramètres de tous les appareils auxquels vous êtes connecté.</translation>
 <translation id="4147555960264124640">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE"/></translation>
@@ -163,6 +169,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>
 <translation id="130631256467250065">Vos modifications seront prises en compte au prochain démarrage de l'appareil.</translation>
 <translation id="163860049029591106">Premiers pas avec Google Chrome OS</translation>
+<translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="1399397803214730675">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez Google Chrome, puis réessayez.</translation>
 <translation id="576822117893741893">Afficher le menu Chrome</translation>
 <translation id="3444832043240812445">Cette page affiche uniquement des informations sur les erreurs récentes si vous <ph name="BEGIN_LINK"/>activez l'envoi de rapports d'erreur<ph name="END_LINK"/>.</translation>
@@ -173,9 +180,10 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="5046764976540625289">Quitter Chrome</translation>
 <translation id="4251615635259297716">Associer vos données Chrome à ce compte ?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Impossible de créer le raccourci d'application dans Google Chrome, car l'environnement actuellement utilisé n'a pas pu être déterminé.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navigateur Internet</translation>
+<translation id="8142608456917638009">Échec de la création d'un raccourci d'application dans Google Chrome.</translation>
+<translation id="8255190535488645436">Votre webcam et votre micro sont en cours d'utilisation dans Google Chrome.</translation>
 <translation id="2189123953385179981">Google Chrome OS ne permet pas de lancer une application externe qui gère les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Autoriser Chrome à accéder au réseau dans les paramètres de votre pare-feu ou
         de votre antivirus</translation>

@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích mở rộng và trang web Chrome của bạn tại đây.</translation>
 <translation id="2704356438731803243">Nếu bạn muốn giữ riêng biệt dữ liệu Chrome hiện có, bạn có thể tạo người dùng Chrome mới cho <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
+<translation id="1225016890511909183">Chrome sẽ lưu trữ an toàn thông tin của bạn nên bạn không cần phải nhập lại thông tin nhưng sẽ vẫn phải xác minh mã bảo mật cho thẻ của bạn để thanh toán trong tương lai.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Nhận trợ giúp về cách sử dụng Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Google Chrome OS.</translation>
 <translation id="4309555186815777032">(yêu cầu Chrome <ph name="BEGIN_BUTTON"/>khởi động lại<ph name="END_BUTTON"/>)</translation>
+<translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="5339639696978861456">Chrome Frame đã được cập nhật. Vui lòng khởi chạy lại trình duyệt của bạn. Phiên bản Chrome: <ph name="TODO_0001"/>, phiên bản Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Bạn cần phải đăng nhập vào Chrome để sử dụng các ứng dụng. Điều này cho phép Chrome đồng bộ hóa ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn trên thiết bị.</translation>
 <translation id="5775197990071433230">Máy tính này đã có phiên bản mới hơn của các cấu phần Google Chrome. Vui lòng sử dụng một trình cài đặt mới hơn.</translation>
@@ -58,6 +60,8 @@
 <translation id="1393853151966637042">Nhận trợ giúp về cách sử dụng Chrome</translation>
 <translation id="7398801000654795464">Bạn đã đăng nhập vào Chrome là <ph name="USER_EMAIL_ADDRESS"/>. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4513711165509885787">Chi tiết thanh toán của bạn đã được lưu trong Chrome.</translation>
+<translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
 <translation id="4053720452172726777">Tùy chỉnh và điều khiển Google Chrome</translation>
 <translation id="6423071462708908582">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ hết hạn. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó đã bị xâm phạm hay chưa kể từ khi hết hạn. Điều này có nghĩa là Google Chrome không thể đảm bảo rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải là kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
@@ -65,6 +69,7 @@
 <translation id="1434626383986940139">Ứng dụng Chrome Canary</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - Thông báo</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="3282568296779691940">Đăng nhập vào Chrome</translation>
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
@@ -91,6 +96,7 @@
 <translation id="5170938038195470297">Không thể sử dụng tiểu sử của bạn vì tiểu sử được tạo từ phiên bản Google Chrome mới hơn.
 
 Một số tính năng có thể không khả dụng. Vui lòng chỉ định thư mục tiểu sử khác hoặc sử dụng phiên bản Chrome mới hơn.</translation>
+<translation id="7282192067747128786">Chrome - Thông báo (<ph name="QUANTITY"/> thông báo chưa đọc)</translation>
 <translation id="6011049234605203654">Đi tới
           trình đơn Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -121,6 +127,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2874156562296220396">Google Chrome được xây dựng bằng dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> và <ph name="BEGIN_LINK_OSS"/>phần mềm nguồn mở<ph name="END_LINK_OSS"/> khác.</translation>
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
+<translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="103396972844768118">Thông tin quan trọng liên quan đến dữ liệu Chrome của bạn</translation>
 <translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
@@ -148,7 +155,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8547799825197623713">Canary trình khởi chạy ứng dụng Chrome</translation>
 <translation id="5577648424992741236">Máy tính này đã có phiên bản Google Chrome Frame mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và thử lại.</translation>
 <translation id="6326175484149238433">Xóa khỏi Chrome</translation>
-<translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
 <translation id="1686446242839005801">Bạn đang đăng nhập vào Chrome bằng tài khoản <ph name="USER_EMAIL_ADDRESS"/>. Bạn sẽ có thể truy cập vào dấu trang, lịch sử và các cài đặt khác trên tất cả các thiết bị mà bạn đã đăng nhập.</translation>
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE"/></translation>
@@ -160,6 +166,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
 <translation id="130631256467250065">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn khởi động lại thiết bị của mình.</translation>
 <translation id="163860049029591106">Bắt đầu với Chrome OS</translation>
+<translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1399397803214730675">Máy tính này đã có phiên bản Google Chrome mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome và thử lại.</translation>
 <translation id="576822117893741893">Hiển thị trình đơn Chrome</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
@@ -170,9 +177,10 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5046764976540625289">Thoát khỏi Chrome</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome không thể tạo lối tắt ứng dụng do Google Chrome không thể xác định môi trường màn hình hiện tại.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
+<translation id="8142608456917638009">Google Chrome không thể tạo lối tắt cho ứng dụng.</translation>
+<translation id="8255190535488645436">Google Chrome đang sử dụng máy ảnh và micrô của bạn.</translation>
 <translation id="2189123953385179981">Hệ điều hành Google ChromeOS không hỗ trợ khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút
         của bạn.</translation>

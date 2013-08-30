@@ -15,6 +15,7 @@
 <translation id="4167057906098955729">Chrome অ্যাপ্লিকেশান, এক্সটেনশান, এবং ওয়েবসাইটগুলি থেকে আপনার সব বিজ্ঞপ্তি আপনি এখানে দেখতে পারবেন৷</translation>
 <translation id="2704356438731803243">যদি আপনি আপনার বিদ্যমান Chrome ডেটা আলাদা রাখতে পছন্দ করেন, তাহলে <ph name="USER_NAME"/> এর জন্য একটি নতুন Chrome ব্যবহারকারী তৈরি করতে পারেন৷</translation>
 <translation id="386202838227397562">দয়া করে সকল Google Chrome উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
+<translation id="1225016890511909183">Chrome আপনার তথ্য নিরাপদে সঞ্চয় করে নেবে তাই আপনার আর টাইপ করা প্রয়োজন হবে না, কিন্তু ভবিষ্যতের অর্থপ্রদানের জন্য আপনাকে এখনো আপনার কার্ডের নিরাপত্তা কোড যাচাইকরণের প্রয়োজন হবে৷</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
 <translation id="2077129598763517140">যখনই উপলব্ধ তখন হার্ডওয়্যার অ্যাক্সিলারেশন ব্যবহার করুন</translation>
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
@@ -32,6 +33,7 @@
 <translation id="1773601347087397504">Chrome OS ব্যবহার করে সাহায্য নিন</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> এ এই ডিভাইসটি ব্যবহার করার আগে আপনাকে নিম্নলিখিত পরিষেবার শর্তাদি পড়তে হবে এবং এটিকে স্বীকার করতে হবে৷ এই শর্তাদি Chrome OS এর শর্তাদিকে প্রসারণ, সংশোধন বা সীমাবদ্ধ করে না৷</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON"/>পুনরায় চালু করা<ph name="END_BUTTON"/> প্রয়োজন)</translation>
+<translation id="8030318113982266900">আপনার ডিভাইস <ph name="CHANNEL_NAME"/> চ্যানেলে আপডেট করা হচ্ছে...</translation>
 <translation id="5339639696978861456">Chrome ফ্রেম আপডেট করা হয়েছে৷ দয়া করে আপনার ব্রাউজার পুনঃলঞ্চকরুন৷ Chrome সংস্করণ: <ph name="TODO_0001"/>,  Chrome ফ্রেম সংস্করন: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">অ্যাপ্লিকেশানগুলি ব্যবহার করতে আপনাকে Chrome এ সাইন ইন করতে হবে৷ এটি Chrome কে আপনার অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ডগুলি এবং ডিভাইস জুড়ে অন্যান্য সেটিংস সিঙ্ক করার অনুমতি দেয়৷</translation>
 <translation id="5775197990071433230">এই কম্পিউটারটিতে Google Chrome উপাদানের একটি আরো সাম্প্রতিক সংস্করণ আছে৷ দয়া করে আরো সাম্প্রতিক ইনস্টলার ব্যবহার করুন৷</translation>
@@ -58,6 +60,8 @@
 <translation id="1393853151966637042">Chrome ব্যবহার করে সাহায্য নিন</translation>
 <translation id="7398801000654795464">আপনি <ph name="USER_EMAIL_ADDRESS"/> হিসাবে Chrome এ সাইন ইন করেছেন৷ আবার সাইন করতে দয়া করে একই অ্যাকাউন্ট ব্যবহার করুন৷</translation>
 <translation id="1697213158865901863">Google Chrome ফ্রেম</translation>
+<translation id="4513711165509885787">আপনার বিলের বিশদ বিবরণ Chrome এ সংরক্ষিত হয়েছে৷</translation>
+<translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="6423071462708908582">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;এতে পৌঁছাতে চেষ্টা করেছেন, কিন্তু সার্ভারটি একটি মেয়াদ শেষ হওয়া শংসাপত্র পেশ করেছে৷ সেইরকম কোন তথ্য পাওয়া যায়নি যাতে নির্দেশ করবে যে শংসাশাপত্র মেয়াদ শেষ হবার পর্যন্ত মীমাংসা হয়েছে৷ এর অর্থ হল Google Chrome অঙ্গীকারবদ্ধ হতে পারেনা যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;এর সঙ্গে যোগাযোগ করছেন এবং কোন আক্রমণকারী হিসাবে নয়৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/>-এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার ত্রুটিটি ঠিক করা ও এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
 <translation id="3197823471738295152">আপনার ডিভাইসটি আপ-টু-ডেট আছে৷</translation>
@@ -65,6 +69,7 @@
 <translation id="1434626383986940139">Chrome Canary অ্যাপ্লিকেশানগুলি</translation>
 <translation id="8551886023433311834">প্রায় আপ-টু-ডেট! আপডেট সমাপ্ত করতে আপনার ডিভাইস পুনরারম্ভ করুন৷</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="1073391069195728457">Chrome - বিজ্ঞপ্তিগুলি</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
 <translation id="3282568296779691940">Chrome-এ সাইন ইন করুন</translation>
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ সংস্করণ উপলব্ধ৷</translation>
@@ -90,6 +95,7 @@
 <translation id="5170938038195470297">আপনার প্রোফাইল ব্যবহার করা যাবে কারণ এটি Google Chrome-এর একটি নতুন সংস্করণে গঠিত৷ 
 
 কিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল নির্দেশিকা সুনির্দিষ্টভাবে উল্লেখ করুন অথবা Chrome এর নতুন সংস্করণ ব্যবহার করুন৷</translation>
+<translation id="7282192067747128786">Chrome - বিজ্ঞপ্তিগুলি (<ph name="QUANTITY"/>টি অপঠিত)</translation>
 <translation id="6011049234605203654">Chrome মেনুতে
           যান &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -120,6 +126,7 @@
 <translation id="2874156562296220396">Google Chrome, সম্ভবত <ph name="BEGIN_LINK_CHROMIUM"/>ক্রোমিয়াম<ph name="END_LINK_CHROMIUM"/> মুক্ত উৎস প্রোজেক্ট এবং অন্যান্য <ph name="BEGIN_LINK_OSS"/>মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_OSS"/> দ্বারা তৈরি করা হয়েছে৷</translation>
 <translation id="3847841918622877581">আপনার ব্রাউজিং অভিজ্ঞতার উন্নতি ঘটাতে Google Chrome ওয়েব পরিষেবা ব্যবহার করতে পারে৷</translation>
 <translation id="7436949144778751379">Google Chrome-এর Windows XP বা পরবর্তী প্রয়োজন৷ কিছু বৈশিষ্ট্য নাও কাজ করতে পারে৷</translation>
+<translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস পুনরায় শুরু করুন৷</translation>
 <translation id="103396972844768118">আপনার Chrome ডেটা সংক্রান্ত গুরুত্বপূর্ণ তথ্য</translation>
 <translation id="6145223986912084844">Chrome</translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
@@ -146,7 +153,6 @@
 <translation id="8547799825197623713">Chrome অ্যাপ্লিকেশান লঞ্চার Canary</translation>
 <translation id="5577648424992741236">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
-<translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
 <translation id="1686446242839005801">আপনি আপনার <ph name="USER_EMAIL_ADDRESS"/> অ্যাকাউন্ট ব্যবহার করে Chrome এ সাইন ইন করছেন৷ আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসগুলিতে বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংস অ্যাক্সেস করতে সক্ষম হবেন৷</translation>
 <translation id="4147555960264124640">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে সাইন ইন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশানগুলি, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্যান্য সেটিংস <ph name="USER_NAME"/> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু আপনি অন্য একটি অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE"/></translation>
@@ -157,6 +163,7 @@
 <translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
 <translation id="130631256467250065">পরের বার আপনি আপনার ডিভাইস পুনরারম্ভ করলে আপনার পরিবর্তনগুলি প্রভাবী হবে৷</translation>
 <translation id="163860049029591106">Chrome OS দিয়ে শুরু করুন</translation>
+<translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="1399397803214730675">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome -এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
 <translation id="576822117893741893">Chrome মেনু দেখান</translation>
 <translation id="3444832043240812445">যদি আপনি <ph name="BEGIN_LINK"/>ক্র্যাশ প্রতিবেদন সক্ষম করেন<ph name="END_LINK"/> তাহলে এই পৃষ্ঠাটি কেবল আপনার সাম্প্রতিক ক্র্যাশগুলির তথ্য দেখায়৷</translation>
@@ -167,9 +174,10 @@
 <translation id="5046764976540625289">Chrome বন্ধ করুন</translation>
 <translation id="4251615635259297716">এই অ্যাকাউন্টে আপনার Chrome ডেটা লিঙ্ক করবেন?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
-<translation id="2680623880102270805">Google Chrome শর্টকাট অ্যাপ্লিকেশন তৈরি করতে পারে না কারণ এটি সাম্প্রতিক ডেক্সটপ পরিবেশকে নির্ধারণ করতে পারে না৷</translation>
 <translation id="9171640504251796339"><ph name="GRITLANGCODE_1"/>http://www.google.com/support/chrome/bin/answer.py?answer=161796</translation>
 <translation id="8865765905101981392">ইন্টারনেট ব্রাউজার</translation>
+<translation id="8142608456917638009">Google Chrome একটি অ্যাপ্লিকেশন শর্টকাট তৈরি করতে পারেনি৷</translation>
+<translation id="8255190535488645436">Google Chrome আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="2189123953385179981"><ph name="SCHEME"/> লিঙ্কগুলিকে পরিচালনা করার জন্য Google ChromeOS কোন বাইরের অ্যাপ্লিকেশন সমর্থন করে না৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="7396375882099008034">আপনার ফায়ারওয়াল বা অ্যান্টিভাইরাস সেটিংসে Chrome কে নেটওয়ার্ক অ্যাক্সেস 
         করতে মঞ্জুরি দিন৷</translation>

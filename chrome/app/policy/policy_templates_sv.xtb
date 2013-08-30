@@ -95,6 +95,7 @@
           Om &quot;false&quot; anges eller om ingen konfiguration utförs inaktiveras alternativet att skapa övervakade användare och att logga in. Alla befintliga övervakade användare döljs.
 
           OBS! Standardbeteendet skiljer sig åt mellan kund- och företagsenheter: på kundenheter aktiveras övervakade användare som standard men på företagsenheter inaktiveras de som standard.</translation>
+<translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="6649397154027560979">Den här principen är föråldrad, använd URLBlacklist i stället.
@@ -126,6 +127,11 @@
       Ett lämpligt fel visas om en användare försöker logga in med ett användarnamn som inte matchar detta mönster. 
 
       Om denna policy inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2892225385726009373">När den här inställningen är aktiverad kommer <ph name="PRODUCT_NAME"/> alltid att utföra kontroller för återkallning av servercertifikat som valideras och signeras av lokalt installerade CA-certifikat.
+
+      Om <ph name="PRODUCT_NAME"/> inte kan hämta statusinformation för återkallning kommer sådana certifikat att behandlas som återkallade (&quot;hard-fail&quot;).
+
+      Om den här policyn inte är angiven eller har värdet falskt använder Chrome de befintliga inställningarna för kontroller för återkallning online.</translation>
 <translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
 <translation id="3516856976222674451">Begränsa den maximala längden för en användarsession.
 
@@ -136,6 +142,7 @@
       Om du tillämpar policyn kan användarna inte ändra eller åsidosätta den.
 
       Policyvärdet ska anges i millisekunder. Värden anges inom ett intervall från 30 sekunder till 24 timmar.</translation>
+<translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="8668394701842594241">Policyn anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
@@ -314,6 +321,7 @@
       Om policyn inte har angetts används 0 millisekunder som tidsgräns.
 
       Policyn anges i millisekunder.</translation>
+<translation id="7275334191706090484">Hanterade bokmärken</translation>
 <translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
 <translation id="8749370016497832113">Aktiverar borttagning av webb- och hämtningshistorik i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar den här inställningen.
 
@@ -368,6 +376,16 @@
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
+<translation id="3234167886857176179">Det här är listan med policyer som <ph name="PRODUCT_NAME"/> följer.
+
+      Du behöver inte ändra dessa inställningar manuellt!  Du kan hämta enkla mallar från
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Listan med policyer som stöds är densamma för Chromium och Google Chrome.
+
+      Dessa policyer är endast avsedda för att konfigurera förekomster av Chrome internt inom din organisation. Användning av dessa policyer utanför organisationen (t.ex. i ett offentligt distribuerat program) anses utgöra skadlig programvara och kommer förmodligen att betecknas som sådan av Google och leverantörer av antivirusprogram.
+
+      Obs! Fr.o.m. Chrome 28 läses policyer in direkt från API:t för gruppolicyer i Windows. Policyer som skrivits manuellt till registret ignoreras. Mer information finns på http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
 
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du hämtar. Policyn styr endast användningen av onlinetjänsten.
@@ -418,6 +436,7 @@
       Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
 
       Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
+<translation id="4047207703890139433">Anger tidsformatet som används för enheten. Användare kan åsidosätta tidsformatet för den aktuella sessionen. Vid utloggning tillämpas dock det angivna värdet. Om en tom sträng anges används den inställning ägaren till enheten har angett.</translation>
 <translation id="1942957375738056236">Här kan du ange proxyserverns webbadress.
 
           Den här policyn används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
@@ -448,6 +467,11 @@
 
           Om inställningen inaktiveras eller inte har konfigurerats kan både lokala användare och fjärranvändare kommunicera med värden när den delas.</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="4897928009230106190">Anger parametrarna som används när en förslagssökning görs med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, ersätts den av riktiga söktermer.
+
+          Den här policyn är valfri. Om den inte anges kommer begäran om förslagssökningar att skickas via GET-metoden.
+
+          Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4962195944157514011">Policyn anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av användarens sökord när sökningen utförs.
 
           Alternativet måste anges om policyn DefaultSearchProviderEnabled är aktiverad och används bara om så är fallet.</translation>
@@ -550,6 +574,7 @@
 <translation id="3236046242843493070">Webbadressmönster för att tillåta installationer av tillägg, appar och användarskript från</translation>
 <translation id="2498238926436517902">Dölj alltid hyllan automatiskt</translation>
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
+<translation id="6997592395211691850">Om OCSP/CRL-kontroller online krävs för lokala tillitsankare</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -614,6 +639,7 @@
 
       Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
+<translation id="8244525275280476362">Längsta fördröjning av hämtning efter en ogiltigförklarad policy</translation>
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="3964909636571393861">Ger åtkomst till en lista med webbadresser</translation>
@@ -645,7 +671,6 @@
 <translation id="8285435910062771358">Helskärmsförstoraren är aktiverad</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="3864818549971490907">Standardinställning för plugin-program</translation>
-<translation id="1910566775788829857">Logga ut användaren</translation>
 <translation id="7151201297958662315">Avgör om en <ph name="PRODUCT_NAME"/>-process startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret stängs så att bakgrundsappar kan fortsätta vara aktiva. Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
       Om den här policyn är inställd på sant aktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
@@ -672,6 +697,11 @@
           Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="1098794473340446990">Rapportera aktivitetstider för enhet. Om inställningen är True kommer registrerade enheter att rapportera tidsperioder när en användare är aktiv på enheten. Om inställningen inte är angiven eller inställd på False kommer enhetens aktivitetstider inte att registreras eller rapporteras.</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
+<translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
+
+          Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
+
+          Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="8818646462962777576">Mönster på den här listan kommer att matchas mot
       den begärande webbadressens säkerhetsursprung. Om det blir en träff får adressen åtkomst
       till ljudinspelningsenheter utan meddelande.
@@ -679,6 +709,8 @@
       Obs! Den här principen stöds för närvarande enbart i kioskläge.</translation>
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME"/> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta hämtningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
+<translation id="6401669939808766804">Logga ut användaren</translation>
+<translation id="4826326557828204741">Åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
 <translation id="817455428376641507">Tillåter åtkomst till de webbadresser som anges, som undantag till svartlistan för webbadresser.
 
@@ -716,6 +748,14 @@
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
 <translation id="7929480864713075819">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan</translation>
+<translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
+
+          Tänk på att den här policyn är på väg att fasas ut och kommer att tas bort i framtiden.
+
+          Den här policyn utgör ett alternativt värde för de mer specifika policyerna <ph name="IDLEACTIONAC_POLICY_NAME"/> och <ph name="IDLEACTIONBATTERY_POLICY_NAME"/>. Om policyn inte anges används dess värde om respektive mer specifika policy inte har angetts.
+
+          När den här policyn inte har angetts påverkas inte de mer specifika policyerna.</translation>
+<translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
 <translation id="7003746348783715221">Inställningar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
 <translation id="6367755442345892511">Anger om lanseringskanalen ska kunna konfigureras av användaren</translation>
@@ -781,16 +821,6 @@
 
           Om policyn är inställd på falskt förhindrar inte videoaktivitet att användaren räknas som inaktiv.</translation>
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
-<translation id="5857910801734294133">Här är en lista över policyer som <ph name="PRODUCT_NAME"/> följer.
-
-      Du behöver inte ändra dessa inställningar manuellt. Du kan hämta lättanvända mallar från
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Listan över policyer som stöds är samma för både Chromium och Google Chrome, men platserna för deras respektive Windows-register skiljer sig åt.
-
-      Den börjar med <ph name="CHROMIUM_KEY"/> för Chromiums policy och med <ph name="GOOGLE_CHROME_KEY"/> för Google Chromes policy.
-
-      Policyerna är avsedda att användas för att konfigurera delar av Chrome internt inom din organisation. Att använda dessa policyer utanför sin organisation (till exempel i ett offentligt distribuerat program) anses vara skadligt och de kommer i så fall troligen att betraktas som skadlig programvara av Google och antivirusleverantören.</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
@@ -910,6 +940,11 @@
           Om det inte finns någon inställning eller om den är inställd på falskt kommer användaren att kunna överföra filer till Google Drive.</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
 <translation id="5971128524642832825">Inaktiverar Drive i appen Filer i Chrome OS</translation>
+<translation id="1847960418907100918">Anger parametrarna som används vid sökningar på Instant med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, kommer det att ersättas med riktiga söktermer.
+
+          Den här policyn är valfri. Om den inte anges kommer begäran om sökningar på Instant att använda GET-metoden.
+
+          Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -917,6 +952,13 @@
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
 
       Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
+<translation id="243972079416668391">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät.
+
+          När policyn har angetts anges den åtgärd som <ph name="PRODUCT_OS_NAME"/> vidtar när användaren är inaktiv under den tid som angetts av fördröjningen på grund av inaktivitet, som kan konfigureras separat.
+
+          När policyn inte har angetts kommer standardåtgärden avstängning att vidtas.
+
+          Om åtgärden blir avstängning kan <ph name="PRODUCT_OS_NAME"/> konfigureras separat för att antingen låsa eller inte låsa skärmen före avstängningen.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
 <translation id="741903087521737762">Innebär att du kan ange beteende vid start.
 
@@ -968,6 +1010,7 @@
 <translation id="6699880231565102694">Aktivera tvåstegsverifiering för fjärråtkomstvärdar</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
+<translation id="4550478922814283243">Aktivera eller inaktivera autentisering utan pinkod</translation>
 <translation id="7712109699186360774">Fråga varje gång en webbplats vill komma åt min kamera och/eller mikrofon</translation>
 <translation id="350797926066071931">Aktivera Översätt</translation>
 <translation id="3711895659073496551">Stäng av</translation>
@@ -987,13 +1030,6 @@
       Om du aktiverar eller inaktiverar inställningen kan den inte ändras i <ph name="PRODUCT_NAME"/> av användarna.
 
       Om inställningen inte anges kan användaren avgöra om funktionen ska användas eller inte.</translation>
-<translation id="7546291275204811722">Ange vilken åtgärd som ska vidtas när inaktivitetstiden nås.
-
-          Om den här policyn är inställd anger den vilken åtgärd  som ska vidtas av <ph name="PRODUCT_OS_NAME"/> om användaren är inaktiv så lång tid som anges av inaktivitetstiden, som ställs in separat.
-
-          Om policyn inte är inställd vidtas standardåtgärden, som är att enheten stängs av.
-
-          Om åtgärden är att enheten ska stängas av kan <ph name="PRODUCT_OS_NAME"/> konfigureras separat så att skärmen låses eller inte låses innan enheten stängs av.</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="7287359148642300270">Anger vilka servrar som ska godkännas för integrerad autentisering. Integrerad autentisering är endast aktiverad när <ph name="PRODUCT_NAME"/> får en autentiseringsutmaning från en proxyserver som finns i listan över godkända servrar.
 
@@ -1047,6 +1083,11 @@
       Om inställningen är inaktiverad kontrollerar <ph name="PRODUCT_NAME"/> aldrig om den är standardwebbläsare och användarkontrollerna för inställningen inaktiveras.
 
       Om inställningen inte anges kan användaren avgöra om <ph name="PRODUCT_NAME"/> ska vara standardwebbläsare och om ett meddelande ska visas för användaren när den inte är det.</translation>
+<translation id="3504791027627803580">Anger webbadressen till sökmotorn som används vid bildsökning. Sökförfrågningar skickas via GET-metoden. Om policyn DefaultSearchProviderImageURLPostParams har angetts kommer POST-metoden att användas vid bildsökningar i stället.
+
+          Den här policyn är valfri. Om den inte anges kommer ingen bildsökning att användas.
+
+          Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
@@ -1068,6 +1109,7 @@
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
+<translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
@@ -1098,6 +1140,13 @@
       Om funktionen aktiveras visas en stor röd utloggningsknapp i systemfältet medan en session är aktiv och skärmen inte är låst.
 
       Om funktionen inaktiveras eller inte används visas ingen stor röd utloggningsknapp i systemfältet.</translation>
+<translation id="5111573778467334951">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift.
+
+          När policyn har angetts anges vilken åtgärd som <ph name="PRODUCT_OS_NAME"/> vidtar när användaren är inaktiv under den tid som anges av fördröjningen på grund av inaktivitet, som kan konfigureras separat.
+
+          När policyn inte har angetts kommer standardåtgärden avstängning att vidtas.
+
+          Om åtgärden är avstängning kan <ph name="PRODUCT_OS_NAME"/> konfigureras separat för att antingen låsa eller inte låsa skärmen före avstängningen.</translation>
 <translation id="3195451902035818945">Anger om delade SSL-poster ska inaktiveras. Delade poster är ett sätt att komma runt en svaghet i SSL 3.0 och TLS 1.0, men funktionen kan orsaka kompatibilitetsproblem med vissa HTTPS-servrar och proxyservrar.
 
       Om policyn inte är angiven eller inställd på False kommer delade poster att användas på SSL/TLS-anslutningar som använder CBC-krypteringsmetoder.</translation>
@@ -1119,6 +1168,11 @@
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
 <translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
+<translation id="7831595031698917016">Anger den längsta fördröjningen i millisekunder mellan att en ogiltigförklaring av policyn tas emot och att den nya policyn hämtas från tjänsten för enhetshantering.
+
+      Om den här policyn anges åsidosätts standardvärdet 5 000 millisekunder. Giltiga värden för den här policyn ligger i intervallet från 1 000 (1 sekund) till 300 000 (5 minuter). Värden utanför detta intervall kommer att fästas vid respektive gräns.
+
+      Om policyn inte anges använder <ph name="PRODUCT_NAME"/> standardvärdet 5 000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="1468307069016535757">Välj standardtillståndet för hjälpmedelsfunktionen högkontrastläge på inloggningsskärmen.
@@ -1134,7 +1188,11 @@
 <translation id="350796261613621561">Aktivera alternativet att skapa övervakade användare.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
+<translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
 <translation id="6559057113164934677">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
+<translation id="7273823081800296768">Om inställningen är aktiverad eller inte konfigurerad kan användare välja att koppla ihop klienter och värdar vid anslutningstillfället så att de slipper ange en pinkod varje gång.
+
+          Om inställningen inaktiveras kommer inte funktionen att vara tillgänglig.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME"/>.
@@ -1153,6 +1211,7 @@
           Policyn är valfri. Om den inte anges används inga alternativa webbadresser för att extrahera sökord.
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="436581050240847513">Rapporteringsgränssnitt för nätverk med enheter</translation>
 <translation id="6282799760374509080">Tillåta eller neka ljudinspelning</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME"/> inte visas.</translation>
 <translation id="3264793472749429012">Kodningar för standardsökleverantör</translation>
@@ -1244,6 +1303,91 @@
       Om policyn inte anges används standardvärdet 3 timmar i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
 <translation id="6233173491898450179">Ange hämtningskatalog</translation>
+<translation id="78524144210416006">Konfigurera energibesparing på inloggningssidan i <ph name="PRODUCT_OS_NAME"/>.
+
+      Med den här policyn kan du konfigurera hur <ph name="PRODUCT_OS_NAME"/> fungerar när det inte förekommer någon användaraktivitet under en viss tid medan inloggningssidan visas. Policyn styr flera inställningar. Information om deras enskilda betydelse och värdeintervall finns i motsvarande policyer som styr energibesparingen under en session. De enda avvikelserna från dessa policyer är att:
+      * åtgärderna som ska vidtas vid inaktivitet eller när locket stängs inte kan vara att avsluta sessionen
+      * standardåtgärden som ska vidtas vid inaktivitet när enheten är ansluten till ett elnät är avstängning.
+
+      Policyn ska anges som en sträng som uttrycker de enskilda inställningarna i JSON-formatet, enligt följande schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;AC&quot;: {
+            &quot;description&quot;: &quot;Inställningar för energibesparing gäller endast vid anslutning till ett elnät&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen blir mörk, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen stängs av, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken åtgärden vid inaktivitet vidtas, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Åtgärden som vidtas när fördröjning på grund av inaktivitet har uppnåtts&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;Battery&quot;: {
+            &quot;description&quot;: &quot;Inställningar för energibesparing gäller endast vid batteridrift&quot;,
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;Delays&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;ScreenDim&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen blir mörk, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;ScreenOff&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken skärmen stängs av, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  },
+                  &quot;Idle&quot;: {
+                    &quot;description&quot;: &quot;Tiden utan aktivitet från användaren efter vilken åtgärden vid inaktivitet vidtas, i millisekunder&quot;,
+                    &quot;type&quot;: &quot;integer&quot;,
+                    &quot;minimum&quot;: 0
+                  }
+                }
+              },
+              &quot;IdleAction&quot;: {
+                &quot;description&quot;: &quot;Åtgärden som vidtas när fördröjning på grund av inaktivitet har uppnåtts&quot;,
+                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+              }
+            }
+          },
+          &quot;LidCloseAction&quot;: {
+            &quot;description&quot;: &quot;Åtgärden som vidtas när locket är stängt&quot;,
+            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
+          },
+          &quot;UserActivityScreenDimDelayScale&quot;: {
+            &quot;description&quot;: &quot;Procentandelen som mörkläggningen av skärmen anpassas efter när användaraktiviteten observeras medan skärmen mörkläggs eller så snart skärmen har stängts av&quot;,
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 100
+          }
+        }
+      }
+
+      Om en inställning inte anges används standardvärdet.
+
+      Om policyn inte anges används standardvärdena för alla inställningar.</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 
          Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
@@ -1264,6 +1408,7 @@
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="5244714491205147861">Energibesparing på inloggningssidan</translation>
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
@@ -1324,6 +1469,11 @@
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="4578030379102330182">Aktivera fjärrattestering för användaren.</translation>
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
+<translation id="6353901068939575220">Anger parametrarna som används vid sökning efter en webbadress med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, ersätts det av riktiga söktermer.
+
+          Policyn är valfri. Om den inte anges skickas sökförfrågningar via GET-metoden.
+
+          Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
 <translation id="3808945828600697669">Ange en lista med inaktiverade plugin-program</translation>
@@ -1399,6 +1549,10 @@
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
+<translation id="186719019195685253">Åtgärd som vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät</translation>
+<translation id="7890264460280019664">Rapportera en lista över nätverksgränssnitt med deras typer och maskinvaruadresser till servern.
+
+      Om policyn inte anges, eller anges som falsk, rapporteras inte gränssnittslistan.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
@@ -1450,6 +1604,7 @@
       Om den här policyn inaktiveras kan SPDY användas.
 
       Om den här policyn inte anges kommer SPDY att bli tillgängligt.</translation>
+<translation id="2208976000652006649">Parametrar för sökadress som använder POST</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME"/> som standard</translation>
 <translation id="1047128214168693844">Tillåt inte att någon webbplats spårar användarnas fysiska plats</translation>
 <translation id="4101778963403261403">Policyn konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningar för startsidan. Startsidan kan vara inställd på en webbadress du anger eller på sidan Ny flik.
@@ -1520,6 +1675,15 @@
 <translation id="7187256234726597551">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det läggs upp på enhetshanteringsservern.
 
           Om detta är falskt, eller om alternativet inte har angetts, skapas inget certifikat och anrop till tilläggs-API:et enterprise.platformKeysPrivate misslyckas.</translation>
+<translation id="5242696907817524533">Konfigurerar en lista med hanterade bokmärken.
+
+      Policyn är en lista med bokmärken och varje bokmärke är en ordlista som innehåller bokmärkena &quot;name&quot; och &quot;url&quot; för målet.
+
+      Dessa bokmärken placeras i mappen Hanterade bokmärken i Bokmärken i mobilen. Dessa bokmärken kan inte ändras av användaren.
+
+      När policyn har angetts blir Hanterade bokmärken den standardmapp som öppnas när bokmärkesvyn öppnas i Chrome.
+
+      Hanterade bokmärken synkroniseras inte med användarkontot.</translation>
 <translation id="8303314579975657113">Policyn anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
 
       Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>

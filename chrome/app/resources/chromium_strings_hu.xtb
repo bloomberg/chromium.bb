@@ -21,6 +21,7 @@
 <translation id="731644333568559921">A &amp;Chromium OS frissítése</translation>
 <translation id="7421823331379285070">A Chromium Windows XP-t vagy újabb operációs rendszert igényel. Lehet, hogy korábbi verziójú operációs rendszeren néhány funkció nem fog működni.</translation>
 <translation id="7419987137528340081">Ha meglévő Chromium-adatait külön szeretné tárolni, új Chromium-felhasználót hozhat létre <ph name="USER_NAME"/> számára.</translation>
+<translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME"/> csatornára...</translation>
 <translation id="3549345495227188780">A Chromium OS használatának megkezdése</translation>
 <translation id="4330297532943865716">Már telepítve van a Chromium vagy a Chromium Frame a rendszeren, és ez ütközést okoz. Kérjük, távolítsa el, majd próbálkozzon újra.</translation>
 <translation id="6953661834318318668">Chromium eszköztár</translation>
@@ -70,6 +71,7 @@
         Ha ettől nem szűnik meg a probléma, javasoljuk, hogy jelölje be ismét ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
 <translation id="4124681358536363708">A Chromium telepítési mappa használatban van. Kérjük, indítsa újra a számítógépet, majd próbálja újra.</translation>
 <translation id="8770560772173120024">A kedvencek és könyvjelzők importálása folyamatban van.</translation>
+<translation id="7463979740390522693">Chromium – Értesítések (<ph name="QUANTITY"/> olvasatlan)</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
 <translation id="9191268552238695869">A rendszergazda már telepítette a Chromiumot a rendszeren, így az elérhető minden felhasználó számára. A felhasználói szintű telepítését le fogjuk cserélni a Chromium rendszerszintű változatára.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -82,6 +84,7 @@
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="5714819759736651024">A Chrome-alkalmazások használatához újra kell indítania a Chromiumot az asztalon.</translation>
 <translation id="7707841053049645517">Ez a webhely a Chromium Frame plug-int használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
+<translation id="7338384957110970244">A Chromium nem tudott létrehozni egy alkalmazás-parancsikont.</translation>
 <translation id="6055895534982063517">Elérhető a Chromium új verziója, amely minden korábbinál sokkal gyorsabb.</translation>
 <translation id="2407806170074302369">A Chromium Frame névjegye...</translation>
 <translation id="5405650547142096840">Eltávolítás a Chromiumból</translation>
@@ -97,7 +100,6 @@
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">A Chromium indítása</translation>
 <translation id="9036189287518468038">Chromium Alkalmazásindító</translation>
-<translation id="2881203820889150661">A Chromium nem tud létrehozni alkalmazás-parancsikont, mert nem tudja megállapítani a jelenlegi asztali környezetet.</translation>
 <translation id="4886158514168859177">A számítógépen már megtalálható a Chromium Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromium Frame-et, majd próbálkozzon újra.</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN"/> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
@@ -110,11 +112,14 @@
 <translation id="9022552996538154597">Bejelentkezés a Chromiumba</translation>
 <translation id="4365115785552740256">A Chromium a <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS"/>nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS"/> köszönhetően jött létre.</translation>
 <translation id="2216475571518225820">Ez a webhely a Chromium Frame plug-int használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd töltsön le egy kompatibilis böngészőt.</translation>
+<translation id="5877064549588274448">Módosult a csatorna. Indítsa újra az eszközt a módosítások alkalmazásához.</translation>
 <translation id="6248213926982192922">Legyen a Chromium az alapértelmezett böngészőm</translation>
+<translation id="6309712487085796862">A Chromium használja a kamerát.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
+<translation id="1745962126679160932">A Chromium biztonságosan tárolja az Ön adatait, így nem kell újra begépelnie azokat, de kártyája biztonsági kódját igazolnia kell majd a későbbi kifizetésekhez.</translation>
 <translation id="275588974610408078">A hibajelentések nem állnak rendelkezésre a Chromiumban.</translation>
 <translation id="5909170354645388250">Nincs használatban a Chromiumban. Az erőforrástérképeket szinkronban tartó helyőrző. A következő argumentumot várja: $1.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS"/> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
@@ -144,13 +149,13 @@
 <translation id="3014684866565908571">Chromium segédprogram</translation>
 <translation id="1298199220304005244">Segítség kérése a Chromium OS használatával  kapcsolatban</translation>
 <translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
+<translation id="4488676065623537541">Számlázási adatait a Chromium mentette.</translation>
 <translation id="1691304614444223855">A Chromium Frame frissült. Kérjük, indítsa újra a böngészőt. Chromium verzió: <ph name="TODO_0001"/>, Chromium Frame verzió: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">A módosítások az eszköz következő újraindításakor lépnek életbe.</translation>
 <translation id="3244477511402911926">Chromium értesítési központ</translation>
 <translation id="1105130903706696483">A Chromium nem záródott be megfelelően. A megnyitott alkalmazások visszaállításához kattintson a Visszaállítás lehetőségre.</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> fiók használatával jelentkezik be a Chromiumba. Könyvjelzőit, előzményeit és más beállításait minden olyan eszközön elérheti majd, amelyen bejelentkezett.</translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
-<translation id="1414495520565016063">Bejelentkezett a Chromiumba.</translation>
 <translation id="3155163173539279776">A Chromium újraindítása</translation>
 <translation id="2966088006374919794">A Chromiumnak külső alkalmazást kell indítania a(z) <ph name="SCHEME"/> linkek kezeléséhez. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nem lehet ugyanazt a Chromium Frame-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromium Frame-et, és próbálja újra.</translation>
@@ -167,12 +172,14 @@
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="6763060723530774166">Az alkalmazásindító használatához újra kell indítania a Chromiumot az asztalon.</translation>
+<translation id="3130323860337406239">A Chromium használja a mikrofont.</translation>
 <translation id="3249425904492147663">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver tanúsítványa lejárt. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítványt meghamisították-e a lejárat óta. Ez azt jelenti, hogy a Chromium nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/>. Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="457845228957001925">Fontos információ az Ön Chromium-adatairól</translation>
 <translation id="7483335560992089831">Nem lehet ugyanazt a Chromium-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromiumot, és próbálja újra.</translation>
 <translation id="7641113255207688324">A Chromium nem az alapértelmezett böngésző.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
+<translation id="761356813943268536">A Chromium használja a kamerát és a mikrofont.</translation>
 <translation id="805745970029938373">Itt tekintheti meg a Chromium-alkalmazások és bővítmények, valamint a webhelyek értesítéseit.</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
@@ -208,5 +215,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8823523095753232532">Chromium-adataim társítása ehhez a fiókhoz</translation>
 <translation id="1221340462641866827">A Chromium OS nem támogatja külső alkalmazás indítását a(z) <ph name="SCHEME"/> linkek kezeléséhez. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="328888136576916638">Hiányoznak Google API-kulcsok. A Chromium egyes funkciói kikapcsolnak.</translation>
+<translation id="2602806952220118310">Chromium – Értesítések</translation>
 <translation id="5032989939245619637">Részletek mentése a Chromiumban</translation>
 </translationbundle>
