@@ -33,7 +33,6 @@
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
-#include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
@@ -186,10 +185,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         IBusInputContextClient::Create(client_type));
     ibus_engine_factory_service_.reset(
         IBusEngineFactoryService::Create(ibus_bus_.get(), client_type));
-    ibus_panel_service_.reset(
-        IBusPanelService::Create(client_type,
-                                 ibus_bus_.get(),
-                                 ibus_input_context_client_.get()));
 
     ibus_engine_services_.clear();
   }
@@ -339,10 +334,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_engine_services_.erase(object_path);
   }
 
-  virtual IBusPanelService* GetIBusPanelService() OVERRIDE {
-    return ibus_panel_service_.get();
-  }
-
  private:
   // Initializes |client| with the |system_bus_|.
   void InitClient(DBusClient* client) {
@@ -425,7 +416,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<IBusInputContextClient> ibus_input_context_client_;
   scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
   std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;
-  scoped_ptr<IBusPanelService> ibus_panel_service_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
 
   std::string ibus_address_;

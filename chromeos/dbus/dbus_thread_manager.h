@@ -40,7 +40,6 @@ class IBusClient;
 class IBusEngineFactoryService;
 class IBusEngineService;
 class IBusInputContextClient;
-class IBusPanelService;
 class ImageBurnerClient;
 class IntrospectableClient;
 class ModemMessagingClient;
@@ -134,7 +133,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) = 0;
   virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
-  virtual IBusPanelService* GetIBusPanelService() = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;

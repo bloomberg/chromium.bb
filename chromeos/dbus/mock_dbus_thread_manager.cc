@@ -14,7 +14,6 @@
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_panel_service.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_shill_device_client.h"
 #include "chromeos/dbus/mock_shill_ipconfig_client.h"

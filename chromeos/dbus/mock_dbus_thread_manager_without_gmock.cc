@@ -24,7 +24,6 @@
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_panel_service.h"
 #include "chromeos/dbus/power_policy_controller.h"
 
 namespace chromeos {
@@ -77,7 +76,6 @@ void MockDBusThreadManagerWithoutGMock::InitIBusBus(
   mock_ibus_input_context_client_.reset(new MockIBusInputContextClient);
   mock_ibus_engine_service_.reset(new MockIBusEngineService);
   mock_ibus_engine_factory_service_.reset(new MockIBusEngineFactoryService);
-  mock_ibus_panel_service_.reset(new MockIBusPanelService);
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
@@ -232,10 +230,6 @@ IBusEngineService* MockDBusThreadManagerWithoutGMock::GetIBusEngineService(
 
 void MockDBusThreadManagerWithoutGMock::RemoveIBusEngineService(
     const dbus::ObjectPath& object_path) {
-}
-
-IBusPanelService* MockDBusThreadManagerWithoutGMock::GetIBusPanelService() {
-  return mock_ibus_panel_service_.get();
 }
 
 }  // namespace chromeos
