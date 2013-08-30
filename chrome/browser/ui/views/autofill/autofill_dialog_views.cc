@@ -152,7 +152,10 @@ void DrawArrow(gfx::Canvas* canvas,
 // expand a single child).
 class SectionRowView : public views::View {
  public:
-  SectionRowView() {}
+  SectionRowView() {
+    set_border(views::Border::CreateEmptyBorder(10, 0, 0, 0));
+  }
+
   virtual ~SectionRowView() {}
 
   // views::View implementation:
@@ -170,7 +173,8 @@ class SectionRowView : public views::View {
       }
     }
 
-    return gfx::Size(width, height);
+    gfx::Insets insets = GetInsets();
+    return gfx::Size(width + insets.width(), height + insets.height());
   }
 
   virtual void Layout() OVERRIDE {
@@ -1066,7 +1070,7 @@ AutofillDialogViews::SuggestionView::SuggestionView(
 
   // TODO(estade): get the sizing and spacing right on this textfield.
   decorated_->SetVisible(false);
-  decorated_->set_default_width_in_chars(10);
+  decorated_->set_default_width_in_chars(15);
   label_container->AddChildView(decorated_);
 
   // TODO(estade): need to get the line height right.
@@ -1075,8 +1079,7 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   label_line_2_->SetMultiLine(true);
   AddChildView(label_line_2_);
 
-  // TODO(estade): do something about this '2'.
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 2, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 }
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
