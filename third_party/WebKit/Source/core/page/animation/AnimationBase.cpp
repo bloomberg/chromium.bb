@@ -75,11 +75,6 @@ bool AnimationBase::playStatePlaying() const
     return m_animation->playState() == AnimPlayStatePlaying;
 }
 
-bool AnimationBase::animationsMatch(const CSSAnimationData* anim) const
-{
-    return m_animation->animationsMatch(anim);
-}
-
 void AnimationBase::updateStateMachine(AnimStateInput input, double param)
 {
     if (!m_compAnim)

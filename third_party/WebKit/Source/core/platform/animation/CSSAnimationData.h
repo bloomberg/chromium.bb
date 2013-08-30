@@ -136,9 +136,6 @@ public:
 
     CSSAnimationData& operator=(const CSSAnimationData& o);
 
-    // return true if all members of this class match (excluding m_next)
-    bool animationsMatch(const CSSAnimationData*, bool matchPlayStates = true) const;
-
     // return true every CSSAnimationData in the chain (defined by m_next) match
     bool operator==(const CSSAnimationData& o) const { return animationsMatch(&o); }
     bool operator!=(const CSSAnimationData& o) const { return !(*this == o); }
@@ -149,6 +146,9 @@ public:
 private:
     CSSAnimationData();
     explicit CSSAnimationData(const CSSAnimationData&);
+
+    // return true if all members of this class match (excluding m_next)
+    bool animationsMatch(const CSSAnimationData*, bool matchPlayStates = true) const;
 
     AtomicString m_name;
     CSSPropertyID m_property;

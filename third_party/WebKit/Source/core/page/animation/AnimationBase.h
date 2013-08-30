@@ -137,8 +137,6 @@ public:
 
     void fireAnimationEventsIfNeeded();
 
-    bool animationsMatch(const CSSAnimationData*) const;
-
     void setAnimation(const CSSAnimationData* anim) { m_animation = const_cast<CSSAnimationData*>(anim); }
 
     // Return true if this animation is overridden. This will only be the case for
