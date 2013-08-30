@@ -1,0 +1,15 @@
+Testcase for bug 279193: setAttributeNode() does not set the new value to an existing attribute if specified attribute is in a different case. This testcase verifies that attributes with the same name but in different case are overwritten for HTML documents.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS doc.documentElement.attributes.length is 1
+PASS doc.documentElement.getAttribute("x") is "X"
+PASS doc.documentElement.getAttribute("X") is "X"
+PASS doc.documentElement.attributes.length is 1
+PASS doc.documentElement.getAttribute("x") is "Y"
+PASS doc.documentElement.getAttribute("X") is "Y"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

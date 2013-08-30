@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#test { width: 100px; height: 100px; }
+</style>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<div id="test" style="background-color: red;"></div>
+<script>
+description('Testcase for bug <a href="http://crbug.com/279193">279193</a>: setAttributeNode() does not set the new value to an existing attribute if specified attribute is in a different case.\nThe issue can be manually verified by ascertaining that a green colored block is displayed instead of a red one.');
+        
+var testElement = document.getElementById('test');
+var newAttr = document.createAttribute("STYLE");
+newAttr.value = "background-color: green;";
+testElement.setAttributeNode(newAttr);
+
+shouldBe('testElement.attributes.length', '2');
+shouldBeEqualToString('testElement.style.backgroundColor', 'green');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

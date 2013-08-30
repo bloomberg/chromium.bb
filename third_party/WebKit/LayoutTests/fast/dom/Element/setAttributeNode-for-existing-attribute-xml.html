@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+    description('Testcase for bug <a href="http://crbug.com/279193">279193</a>: setAttributeNode() does not set the new value to an existing attribute if specified attribute is in a different case.\nThis testcase verifies that attributes with the same name but in different case are added separately for XML documents.');
+
+    var doc = document.implementation.createDocument(null, 'root', null);
+    doc.documentElement.setAttribute('x', 'x');
+
+    var attr = doc.createAttribute('X');
+    attr.value = 'X';
+    doc.documentElement.setAttributeNode(attr);
+
+    shouldBe('doc.documentElement.attributes.length', '2');
+    shouldBeEqualToString('doc.documentElement.getAttribute("x")', 'x');
+    shouldBeEqualToString('doc.documentElement.getAttribute("X")', 'X');
+
+    var attr2 = doc.createAttribute('X');
+    attr2.value = 'Y';
+    doc.documentElement.setAttributeNode(attr2);
+
+    shouldBe('doc.documentElement.attributes.length', '2');
+    shouldBeEqualToString('doc.documentElement.getAttribute("x")', 'x');
+    shouldBeEqualToString('doc.documentElement.getAttribute("X")', 'Y');
+</script>
+</head>
+<body>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
