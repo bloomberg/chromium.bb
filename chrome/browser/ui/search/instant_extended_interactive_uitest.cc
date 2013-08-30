@@ -275,8 +275,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
 class InstantExtendedPrefetchTest : public InstantExtendedTest {
  public:
   InstantExtendedPrefetchTest()
-      : factory_(new net::FakeURLFetcherFactory(
-            net::URLFetcherImpl::factory())) {
+      : factory_(new net::URLFetcherImplFactory()),
+        fake_factory_(new net::FakeURLFetcherFactory(factory_.get())) {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -285,11 +285,16 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
     InstantTestBase::Init(instant_url, true);
-    factory_->SetFakeResponse(GoogleURLTracker::kSearchDomainCheckURL,
-                              ".google.com", true);
   }
 
-  scoped_ptr<net::FakeURLFetcherFactory> factory_;
+  net::FakeURLFetcherFactory* fake_factory() { return fake_factory_.get(); }
+
+ private:
+  // Used to instantiate FakeURLFetcherFactory.
+  scoped_ptr<net::URLFetcherImplFactory> factory_;
+
+  // Used to mock default search provider suggest response.
+  scoped_ptr<net::FakeURLFetcherFactory> fake_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantExtendedPrefetchTest);
 };
@@ -1682,9 +1687,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ntp_url, ntp_contents->GetURL());
 }
 
-// TODO(kmadhusu): Fix this flaky test. crbug.com/280247.
-IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
-                       DISABLED_SetPrefetchQuery) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
@@ -1703,7 +1706,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
 
   // Set the fake response for suggest request. Response has prefetch details.
   // Ensure that the page received the prefetch query.
-  factory_->SetFakeResponse(
+  fake_factory()->SetFakeResponse(
       instant_url().spec() + "#q=pupp",
       "[\"pupp\",[\"puppy\", \"puppies\"],[],[],"
       "{\"google:clientdata\":{\"phi\": 0},"
@@ -1729,9 +1732,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
   ASSERT_EQ("puppy", prefetch_query_value_);
 }
 
-// TODO(kmadhusu): Fix this flaky test. crbug.com/280247.
-IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
-                       DISABLED_ClearPrefetchedResults) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
@@ -1751,7 +1752,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
   // Set the fake response for suggest request. Response has no prefetch
   // details. Ensure that the page received a blank query to clear the
   // prefetched results.
-  factory_->SetFakeResponse(
+  fake_factory()->SetFakeResponse(
       instant_url().spec() + "#q=dogs",
       "[\"dogs\",[\"https://dogs.com\"],[],[],"
           "{\"google:suggesttype\":[\"NAVIGATION\"],"
