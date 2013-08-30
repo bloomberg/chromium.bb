@@ -37,12 +37,12 @@
 namespace WebCore {
 
 Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
-    : m_tileImage(image)
-    , m_repeatX(repeatX)
+    : m_repeatX(repeatX)
     , m_repeatY(repeatY)
     , m_externalMemoryAllocated(0)
 {
-    ASSERT(m_tileImage);
+    ASSERT(image);
+    m_tileImage = image->nativeImageForCurrentFrame();
 }
 
 Pattern::~Pattern()
@@ -56,12 +56,11 @@ SkShader* Pattern::shader()
     if (m_pattern)
         return m_pattern.get();
 
-    RefPtr<NativeImageSkia> image = m_tileImage->nativeImageForCurrentFrame();
     // If we don't have a bitmap, return a transparent shader.
-    if (!image)
+    if (!m_tileImage)
         m_pattern = adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
     else if (m_repeatX && m_repeatY)
-        m_pattern = adoptRef(SkShader::CreateBitmapShader(image->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
     else {
         // Skia does not have a "draw the tile only once" option. Clamp_TileMode
         // repeats the last line of the image after drawing one tile. To avoid
@@ -77,11 +76,11 @@ SkShader* Pattern::shader()
         // original, then copy the orignal into it.
         // FIXME: Is there a better way to pad (not scale) an image in skia?
         SkBitmap bm2;
-        bm2.setConfig(image->bitmap().config(), image->bitmap().width() + expandW, image->bitmap().height() + expandH);
+        bm2.setConfig(m_tileImage->bitmap().config(), m_tileImage->bitmap().width() + expandW, m_tileImage->bitmap().height() + expandH);
         bm2.allocPixels();
         bm2.eraseARGB(0x00, 0x00, 0x00, 0x00);
         SkCanvas canvas(bm2);
-        canvas.drawBitmap(image->bitmap(), 0, 0);
+        canvas.drawBitmap(m_tileImage->bitmap(), 0, 0);
         bm2.setImmutable();
         m_pattern = adoptRef(SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY));
 

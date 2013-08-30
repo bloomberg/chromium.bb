@@ -49,8 +49,6 @@ public:
     }
     ~Pattern();
 
-    Image* tileImage() const { return m_tileImage.get(); }
-
     SkShader* shader();
 
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
@@ -62,7 +60,7 @@ public:
 private:
     Pattern(PassRefPtr<Image>, bool repeatX, bool repeatY);
 
-    RefPtr<Image> m_tileImage;
+    RefPtr<NativeImageSkia> m_tileImage;
     bool m_repeatX;
     bool m_repeatY;
     AffineTransform m_patternSpaceTransformation;
