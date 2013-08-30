@@ -791,6 +791,8 @@ void DeleteSelectionCommand::doApply()
     // set up our state
     initializePositionData();
 
+    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(VisiblePosition(m_upstreamStart).previous());
+
     // Delete any text that may hinder our ability to fixup whitespace after the delete
     deleteInsignificantTextDownstream(m_trailingWhitespace);
 
@@ -819,7 +821,8 @@ void DeleteSelectionCommand::doApply()
         m_needPlaceholder = !isStartOfParagraph(visualEnding, CanCrossEditingBoundary)
             && isEndOfParagraph(visualEnding, CanCrossEditingBoundary)
             && lineBreakExistsAtVisiblePosition(visualEnding)
-            && visualEnding.next(CannotCrossEditingBoundary).isNull();
+            && visualEnding.next(CannotCrossEditingBoundary).isNull()
+            && lineBreakBeforeStart;
     }
 
     RefPtr<Node> placeholder = m_needPlaceholder ? createBreakElement(document()).get() : 0;
